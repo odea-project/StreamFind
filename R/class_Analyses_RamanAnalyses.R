@@ -201,13 +201,13 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
     x@analyses <- x@analyses[order(names(x@analyses))]
   }
   if (!is.null(x@results[["spectra"]])) {
-    Spectra_names <- names(x@results$Spectra)
-    if (!x@results$Spectra$is_averaged) {
-      x@results$Spectra <- x@results$Spectra[x$names %in% Spectra_names]
-      x@results$Spectra <- x@results$Spectra[order(names(x@results$Spectra))]
+    spectra_names <- names(x@results$spectra)
+    if (!x@results$spectra$is_averaged) {
+      x@results$spectra <- x@results$spectra[x$names %in% spectra_names]
+      x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     } else {
-      x@results$Spectra <- x@results$Spectra[x$replicates %in% Spectra_names]
-      x@results$Spectra <- x@results$Spectra[order(names(x@results$Spectra))]
+      x@results$spectra <- x@results$spectra[x$replicates %in% spectra_names]
+      x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     }
   }
   x
@@ -221,10 +221,10 @@ S7::method(`[`, RamanAnalyses) <- function(x, i) {
     spectra_names <- names(x@results$spectra$spectra)
     if (!x@results$spectra$is_averaged) {
       x@results$spectra <- x@results$spectra[x$names %in% spectra_names]
-      x@results$spectra <- x@results$spectra[order(names(x@results$Spectra))]
+      x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     } else {
       x@results$spectra <- x@results$spectra[x$replicates %in% spectra_names]
-      x@results$spectra <- x@results$spectra[order(names(x@results$Spectra))]
+      x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     }
   }
   return(x)
@@ -242,13 +242,13 @@ S7::method(`[<-`, RamanAnalyses) <- function(x, i, value) {
 S7::method(`[[`, RamanAnalyses) <- function(x, i) {
   x@analyses <- x@analyses[[i]]
   if (x@has_processed_spectra) {
-    Spectra_names <- names(x@results$Spectra)
-    if (!x@results$Spectra$is_averaged) {
-      x@results$Spectra <- x@results$Spectra[x$names %in% Spectra_names]
-      x@results$Spectra <- x@results$Spectra[order(names(x@results$Spectra))]
+    spectra_names <- names(x@results$spectra)
+    if (!x@results$spectra$is_averaged) {
+      x@results$spectra <- x@results$spectra[x$names %in% spectra_names]
+      x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     } else {
-      x@results$Spectra <- x@results$Spectra[x$replicates %in% Spectra_names]
-      x@results$Spectra <- x@results$Spectra[order(names(x@results$Spectra))]
+      x@results$spectra <- x@results$spectra[x$replicates %in% spectra_names]
+      x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     }
   }
   return(x)

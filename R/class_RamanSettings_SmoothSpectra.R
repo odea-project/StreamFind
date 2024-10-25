@@ -35,13 +35,10 @@ RamanSettings_SmoothSpectra_movingaverage <- S7::new_class("RamanSettings_Smooth
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "SmoothSpectra"),
-      checkmate::test_choice(self@algorithm, "movingaverage"),
-      checkmate::test_number(self@parameters$windowSize)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "SmoothSpectra")
+    checkmate::assert_choice(self@algorithm, "movingaverage")
+    checkmate::assert_number(self@parameters$windowSize)
     NULL
   }
 )
@@ -139,15 +136,12 @@ RamanSettings_SmoothSpectra_savgol <- S7::new_class("RamanSettings_SmoothSpectra
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "SmoothSpectra"),
-      checkmate::test_choice(self@algorithm, "savgol"),
-      checkmate::test_number(self@parameters$fl),
-      checkmate::test_number(self@parameters$forder),
-      checkmate::test_number(self@parameters$dorder)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "SmoothSpectra")
+    checkmate::assert_choice(self@algorithm, "savgol")
+    checkmate::assert_number(self@parameters$fl)
+    checkmate::assert_number(self@parameters$forder)
+    checkmate::assert_number(self@parameters$dorder)
     NULL
   }
 )

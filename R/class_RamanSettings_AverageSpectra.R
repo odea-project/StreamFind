@@ -35,13 +35,10 @@ RamanSettings_AverageSpectra_StreamFind <- S7::new_class("RamanSettings_AverageS
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "AverageSpectra"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_logical(self@parameters$collapseTime, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "AverageSpectra")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_logical(self@parameters$collapseTime, max.len = 1)
     NULL
   }
 )

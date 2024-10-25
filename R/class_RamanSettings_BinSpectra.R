@@ -5,13 +5,15 @@
 
 #' **RamanSettings_BinSpectra_StreamFind**
 #'
-#' @description Bins spectral data according to units of a given variable (e.g., 5 retention time values) or based on 
-#' bins given as a named list of numeric values, where the names are the bin labels (i.e. the name of the column) and 
-#' the values are the bin dimensions (e.g. 5 seconds).
+#' @description Bins spectral data based on variables.
 #' 
-#' @param unitsVal Character of length one with the column name of the variable to be used for binning.
-#' @param unitsNumber Integer of length one with the number of units to be used for binning.
-#' @param bins Named list of numeric values with the bin dimensions.
+#' @param binNames Character with the variable names for building the bins. Possible values are *rt* and *shift*. Note 
+#' that the `binNames` must be in the spectra column names.
+#' @param binValues Numeric with the bin values for each variable.
+#' @param byUnit Logical of length one to bin by unit, meaning that the binning is performed by the number of units not
+#' actual values. For instance, if the bin is 10 and `binName` is *rt*, then the binning is performed by 10 seconds not
+#' 10 values for each bin. If byUnit is `FALSE`, then the binning is performed by the actual values but only the first 
+#' of binNames and binValues is used.
 #' @param refBinAnalysis The analysis index to use a reference for creating the bins.
 #' 
 #' @returns A RamanSettings_BinSpectra_StreamFind object.
@@ -22,9 +24,9 @@ RamanSettings_BinSpectra_StreamFind <- S7::new_class("RamanSettings_BinSpectra_S
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(unitsVal = NULL,
-                         unitsNumber = NULL,
-                         bins = NULL,
+  constructor = function(binNames = c("rt"),
+                         binValues = c(5),
+                         byUnit = FALSE,
                          refBinAnalysis = NULL) {
     
     S7::new_object(ProcessingSettings(
@@ -32,9 +34,9 @@ RamanSettings_BinSpectra_StreamFind <- S7::new_class("RamanSettings_BinSpectra_S
       method = "BinSpectra",
       algorithm = "StreamFind",
       parameters = list(
-        unitsVal = unitsVal,
-        unitsNumber = unitsNumber,
-        bins = bins,
+        binNames = binNames,
+        binValues = binValues,
+        byUnit = byUnit,
         refBinAnalysis = refBinAnalysis
       ),
       number_permitted = 1,
@@ -48,16 +50,15 @@ RamanSettings_BinSpectra_StreamFind <- S7::new_class("RamanSettings_BinSpectra_S
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "BinSpectra"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_character(self@parameters$unitsVal, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$unitsNumber, len = 1, null.ok = TRUE),
-      checkmate::test_list(self@parameters$bins, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$refBinAnalysis, len = 1, null.ok = TRUE)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "BinSpectra")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_character(self@parameters$binNames)
+    checkmate::assert_true(all(self@parameters$binNames %in% c("rt", "shift")))
+    checkmate::assert_numeric(self@parameters$binValues)
+    checkmate::assert_true(length(self@parameters$binNames) == length(self@parameters$binValues))
+    checkmate::assert_logical(self@parameters$byUnit, len = 1)
+    checkmate::assert_numeric(self@parameters$refBinAnalysis, len = 1, null.ok = TRUE)
     NULL
   }
 )
@@ -76,6 +77,11 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
     return(FALSE)
   }
   
+  if (!engine$has_spectra()) {
+    warning("No spectra results object available! Not done.")
+    return(FALSE)
+  }
+  
   spec_list <- engine$spectra$spectra
   
   cache <- .load_chache("bin_spectra", spec_list, x)
@@ -87,9 +93,9 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
     return(TRUE)
   }
   
-  unitsVal = x$parameters$unitsVal
-  unitsNumber = x$parameters$unitsNumber
-  bins = x$parameters$bins
+  binNames = x$parameters$binNames
+  binValues = x$parameters$binValues
+  byUnit = x$parameters$byUnit
   refBinAnalysis = x$parameters$refBinAnalysis
   
   useRefBins <- FALSE
@@ -115,21 +121,21 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
       return(FALSE)
     }
     
-    if (!is.null(bins)) {
+    if (byUnit && !is.null(binNames)) {
       
-      if (!all(names(bins) %in% colnames(refSpec))) stop("Names in bins not found in spectra columns")
+      if (!all(names(binNames) %in% colnames(refSpec))) stop("Names in bins not found in spectra columns")
       
       .make_bin_sequence <- function(vec, bin_size) seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
       
-      ref_bins_seq_list <- Map(function(name, val) .make_bin_sequence(refSpec[[name]], val), names(bins), bins)
+      ref_bins_seq_list <- Map(function(name, val) .make_bin_sequence(refSpec[[name]], val), binNames, binValues)
       
       ref_bin_matrix <- as.data.frame(do.call(expand.grid, ref_bins_seq_list))
       
-      colnames(ref_bin_matrix) <- names(bins)
+      colnames(ref_bin_matrix) <- binNames
       
       ref_bin_key <- apply(ref_bin_matrix, 1, function(x) paste0(x, collapse = "-"))
       
-      useRefBins <- TRUE
+      if (length(ref_bin_key) > 0) useRefBins <- TRUE
     }
   }
   
@@ -137,18 +143,17 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
     
     if (nrow(z) == 0) return(data.table::data.table())
     
-    # performs binning based on number of units, i.e. traces, for a given dimension
-    if (!is.null(unitsVal) && !is.null(unitsNumber) && is.null(bins)) {
+    if (!byUnit && binNames[1] %in% colnames(z)) {
       
       intensity <- NULL
       
-      unitVal <- unique(z[[unitsVal]])
+      unitVal <- unique(z[[binNames[1]]])
       
       max_i <- length(unitVal) # maximum number of scan
       
       min_i <- 1
       
-      unitSections <- seq(min_i, max_i, unitsNumber)
+      unitSections <- seq(min_i, max_i, binValues[1])
       
       idx <- seq_len(max_i)
       
@@ -158,7 +163,7 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
       
       names(binKey) <- as.character(unitVal)
       
-      res <- data.table::data.table("intensity" = z$intensity, "bin_key" = binKey[as.character(z[[unitsVal]])])
+      res <- data.table::data.table("intensity" = z$intensity, "bin_key" = binKey[as.character(z[[binNames[1]]])])
       
       xVals <- colnames(z)
       
@@ -166,19 +171,19 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
       
       for (i in xVals) res[[i]] <- z[[i]]
       
-      valKeys <- xVals[!xVals %in% unitsVal]
+      valKeys <- xVals[!xVals %in% binNames[1]]
       
-      res[["z"]] <- res[[unitsVal]]
+      res[["z"]] <- res[[binNames[1]]]
       
       res <- res[, .(z = mean(z), intensity = mean(intensity)), by = c("bin_key", valKeys)]
       
-      res[[unitsVal]] <- res[["z"]]
+      res[[binNames[1]]] <- res[["z"]]
       
       res$z <- NULL
       
       res <- unique(res)
       
-      data.table::setcolorder(res, c(unitsVal, valKeys, "intensity"))
+      data.table::setcolorder(res, c(binNames[1], valKeys, "intensity"))
       
       res$bin_key <- NULL
       
@@ -194,7 +199,7 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
       
       res
       
-    } else if (!is.null(bins)) {
+    } else if (byUnit) {
       
       if (useRefBins) {
         bins_seq_list <- ref_bins_seq_list
@@ -203,25 +208,29 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
         
       } else {
         
-        if (!all(names(bins) %in% colnames(z))) stop("Names in bins not fouond in spectra columns!")
+        if (!all(binNames %in% colnames(z))) stop("Names in bins not fouond in spectra columns!")
         
         .make_bin_sequence <- function(vec, bin_size) seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
         
-        bins_seq_list <- Map(function(name, val) .make_bin_sequence(z[[name]], val), names(bins), bins)
+        bins_seq_list <- Map(function(name, val) .make_bin_sequence(z[[name]], val), binNames, binValues)
         
         bin_matrix <- as.data.frame(do.call(expand.grid, bins_seq_list))
         
-        colnames(bin_matrix) <- names(bins)
+        colnames(bin_matrix) <- binNames
         
         bin_key <- apply(bin_matrix, 1, function(i) paste0(i, collapse = "-"))
       }
       
+      bins <- lapply(seq_along(binNames), function(z) binValues[z])
+      names(bins) <- binNames
+      
       ints <- rcpp_fill_bin_spectra(z, bin_matrix, bins, overlap = 0.1, summaryFunction = "mean")
+      
+      browser()
       
       out <- data.table::data.table(
         "analysis" = unique(z$analysis),
         "id" = unique(z$id),
-        "polarity" = unique(z$polarity),
         "rt" = bin_matrix$rt,
         "mz" = bin_matrix$mz,
         "mass" = bin_matrix$mass,

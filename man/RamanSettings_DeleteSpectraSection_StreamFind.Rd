@@ -4,15 +4,25 @@
 \alias{RamanSettings_DeleteSpectraSection_StreamFind}
 \title{\strong{RamanSettings_DeleteSpectraSection_StreamFind}}
 \usage{
-RamanSettings_DeleteSpectraSection_StreamFind(section = list())
+RamanSettings_DeleteSpectraSection_StreamFind(
+  shiftmin = NULL,
+  shiftmax = NULL,
+  rtmin = NULL,
+  rtmax = NULL
+)
 }
 \arguments{
-\item{section}{Named list with the variable to be used for sectioning and the window for the sectioning. The names
-should match column names in the data.}
+\item{shiftmin}{Numeric vector (length 1) with the minimum shift value to delete.}
+
+\item{shiftmax}{Numeric vector (length 1) with the maximum shift value to delete.}
+
+\item{rtmin}{Numeric vector (length 1) with the minimum retention time value to delete.}
+
+\item{rtmax}{Numeric vector (length 1) with the maximum retention time value to delete.}
 }
 \value{
 A RamanSettings_DeleteSpectraSection_StreamFind object.
 }
 \description{
-Deletes a section of the spectra based on a named list of data ranges for a given variable (i.e. column name).
+Deletes a section of the spectra between \emph{shift} and/or \emph{rt} minimum and maximum values.
 }

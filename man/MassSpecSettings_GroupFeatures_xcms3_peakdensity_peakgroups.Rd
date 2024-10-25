@@ -19,7 +19,6 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups(
   smooth = "loess",
   span = 0.2,
   family = "gaussian",
-  peakGroupsMatrix = matrix(nrow = 0, ncol = 0),
   subset = integer(),
   subsetAdjust = "average"
 )
@@ -78,11 +77,6 @@ This parameter is passed to the internal call to loess.}
 
 \item{family}{character defining the method to be used for loess smoothing.
 Allowed values are "gaussian" and "symmetric".See loess for more information.}
-
-\item{peakGroupsMatrix}{optional matrix of (raw) retention times for the peak
-groups on which the alignment should be performed. Each column represents a
-sample, each row a feature/peak group. Such a matrix is for example returned
-by the adjustRtimePeakGroups method.}
 
 \item{subset}{integer with the indices of samples within the experiment on
 which the alignment models should be estimated. Samples not part of the subset

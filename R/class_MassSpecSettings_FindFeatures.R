@@ -298,24 +298,21 @@ MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "FindFeatures"),
-      checkmate::test_choice(self@algorithm, "xcms3_centwave"),
-      checkmate::test_numeric(self@parameters$ppm, len = 1),
-      checkmate::test_numeric(self@parameters$peakwidth, len = 2),
-      checkmate::test_numeric(self@parameters$snthresh, len = 1),
-      checkmate::test_numeric(self@parameters$prefilter, len = 2),
-      checkmate::test_choice(self@parameters$mzCenterFun, c("wMean", "mean", "apex", "wMeanApex3", "meanApex3")),
-      checkmate::test_integer(self@parameters$integrate, len = 1),
-      checkmate::test_numeric(self@parameters$mzdiff, len = 1),
-      checkmate::test_logical(self@parameters$fitgauss, len = 1),
-      checkmate::test_numeric(self@parameters$noise, len = 1),
-      checkmate::test_logical(self@parameters$verboseColumns, len = 1),
-      checkmate::test_logical(self@parameters$firstBaselineCheck, len = 1),
-      checkmate::test_logical(self@parameters$extendLengthMSW, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FindFeatures")
+    checkmate::assert_choice(self@algorithm, "xcms3_centwave")
+    checkmate::assert_numeric(self@parameters$ppm, len = 1)
+    checkmate::assert_numeric(self@parameters$peakwidth, len = 2)
+    checkmate::assert_numeric(self@parameters$snthresh, len = 1)
+    checkmate::assert_numeric(self@parameters$prefilter, len = 2)
+    checkmate::assert_choice(self@parameters$mzCenterFun, c("wMean", "mean", "apex", "wMeanApex3", "meanApex3"))
+    checkmate::assert_integer(self@parameters$integrate, len = 1)
+    checkmate::assert_numeric(self@parameters$mzdiff, len = 1)
+    checkmate::assert_logical(self@parameters$fitgauss, len = 1)
+    checkmate::assert_numeric(self@parameters$noise, len = 1)
+    checkmate::assert_logical(self@parameters$verboseColumns, len = 1)
+    checkmate::assert_logical(self@parameters$firstBaselineCheck, len = 1)
+    checkmate::assert_logical(self@parameters$extendLengthMSW, len = 1)
     NULL
   }
 )
@@ -424,22 +421,19 @@ MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class("MassSpecSett
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "FindFeatures"),
-      checkmate::test_choice(self@algorithm, "xcms3_matchedfilter"),
-      checkmate::test_numeric(self@parameters$binSize, len = 1),
-      checkmate::test_choice(self@parameters$impute, c("none", "lin", "linbase", "intlin")),
-      checkmate::test_numeric(self@parameters$baseValue, len = 1),
-      checkmate::test_numeric(self@parameters$distance, len = 1),
-      checkmate::test_numeric(self@parameters$fwhm, len = 1),
-      checkmate::test_numeric(self@parameters$max, len = 1),
-      checkmate::test_numeric(self@parameters$snthresh, len = 1),
-      checkmate::test_numeric(self@parameters$steps, len = 1),
-      checkmate::test_numeric(self@parameters$mzdiff, len = 1),
-      checkmate::test_logical(self@parameters$index, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FindFeatures")
+    checkmate::assert_choice(self@algorithm, "xcms3_matchedfilter")
+    checkmate::assert_numeric(self@parameters$binSize, len = 1)
+    checkmate::assert_choice(self@parameters$impute, c("none", "lin", "linbase", "intlin"))
+    checkmate::assert_numeric(self@parameters$baseValue, len = 1)
+    checkmate::assert_numeric(self@parameters$distance, len = 1)
+    checkmate::assert_numeric(self@parameters$fwhm, len = 1)
+    checkmate::assert_numeric(self@parameters$max, len = 1)
+    checkmate::assert_numeric(self@parameters$snthresh, len = 1)
+    checkmate::assert_numeric(self@parameters$steps, len = 1)
+    checkmate::assert_numeric(self@parameters$mzdiff, len = 1)
+    checkmate::assert_logical(self@parameters$index, len = 1)
     NULL
   }
 )
@@ -551,7 +545,6 @@ MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeat
                          isotopeFilteringModel = "none",
                          MZScoring13C = FALSE,
                          useSmoothedInts = FALSE,
-                         extraOpts = NULL,
                          intSearchRTWindow = 3,
                          useFFMIntensities = FALSE,
                          verbose = FALSE) {
@@ -580,7 +573,6 @@ MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeat
         isotopeFilteringModel = isotopeFilteringModel,
         MZScoring13C = MZScoring13C,
         useSmoothedInts = useSmoothedInts,
-        extraOpts = extraOpts,
         intSearchRTWindow = intSearchRTWindow,
         useFFMIntensities = useFFMIntensities,
         verbose = verbose
@@ -596,35 +588,31 @@ MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeat
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "FindFeatures"),
-      checkmate::test_choice(self@algorithm, "openms"),
-      checkmate::test_numeric(self@parameters$noiseThrInt, len = 1),
-      checkmate::test_numeric(self@parameters$chromSNR, len = 1),
-      checkmate::test_numeric(self@parameters$chromFWHM, len = 1),
-      checkmate::test_numeric(self@parameters$mzPPM, len = 1),
-      checkmate::test_logical(self@parameters$reEstimateMTSD, len = 1),
-      checkmate::test_choice(self@parameters$traceTermCriterion, c("outlier", "sample_rate")),
-      checkmate::test_numeric(self@parameters$traceTermOutliers, len = 1),
-      checkmate::test_numeric(self@parameters$minSampleRate, len = 1),
-      checkmate::test_numeric(self@parameters$minTraceLength, len = 1),
-      checkmate::test_numeric(self@parameters$maxTraceLength, len = 1),
-      checkmate::test_choice(self@parameters$widthFiltering, c("fixed", "auto")),
-      checkmate::test_numeric(self@parameters$minFWHM, len = 1),
-      checkmate::test_numeric(self@parameters$maxFWHM, len = 1),
-      checkmate::test_logical(self@parameters$traceSNRFiltering, len = 1),
-      checkmate::test_numeric(self@parameters$localRTRange, len = 1),
-      checkmate::test_numeric(self@parameters$localMZRange, len = 1),
-      checkmate::test_choice(self@parameters$isotopeFilteringModel, c("none", "2%", "5%", "averagine")),
-      checkmate::test_logical(self@parameters$MZScoring13C, len = 1),
-      checkmate::test_logical(self@parameters$useSmoothedInts, len = 1),
-      checkmate::test_list(self@parameters$extraOpts, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$intSearchRTWindow, len = 1),
-      checkmate::test_logical(self@parameters$useFFMIntensities, len = 1),
-      checkmate::test_logical(self@parameters$verbose, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FindFeatures")
+    checkmate::assert_choice(self@algorithm, "openms")
+    checkmate::assert_numeric(self@parameters$noiseThrInt, len = 1)
+    checkmate::assert_numeric(self@parameters$chromSNR, len = 1)
+    checkmate::assert_numeric(self@parameters$chromFWHM, len = 1)
+    checkmate::assert_numeric(self@parameters$mzPPM, len = 1)
+    checkmate::assert_logical(self@parameters$reEstimateMTSD, len = 1)
+    checkmate::assert_choice(self@parameters$traceTermCriterion, c("outlier", "sample_rate"))
+    checkmate::assert_numeric(self@parameters$traceTermOutliers, len = 1)
+    checkmate::assert_numeric(self@parameters$minSampleRate, len = 1)
+    checkmate::assert_numeric(self@parameters$minTraceLength, len = 1)
+    checkmate::assert_numeric(self@parameters$maxTraceLength, len = 1)
+    checkmate::assert_choice(self@parameters$widthFiltering, c("fixed", "auto"))
+    checkmate::assert_numeric(self@parameters$minFWHM, len = 1)
+    checkmate::assert_numeric(self@parameters$maxFWHM, len = 1)
+    checkmate::assert_logical(self@parameters$traceSNRFiltering, len = 1)
+    checkmate::assert_numeric(self@parameters$localRTRange, len = 1)
+    checkmate::assert_numeric(self@parameters$localMZRange, len = 1)
+    checkmate::assert_choice(self@parameters$isotopeFilteringModel, c("none", "2%", "5%", "averagine"))
+    checkmate::assert_logical(self@parameters$MZScoring13C, len = 1)
+    checkmate::assert_logical(self@parameters$useSmoothedInts, len = 1)
+    checkmate::assert_numeric(self@parameters$intSearchRTWindow, len = 1)
+    checkmate::assert_logical(self@parameters$useFFMIntensities, len = 1)
+    checkmate::assert_logical(self@parameters$verbose, len = 1)
     NULL
   }
 )
@@ -701,19 +689,16 @@ MassSpecSettings_FindFeatures_kpic2 <- S7::new_class("MassSpecSettings_FindFeatu
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "FindFeatures"),
-      checkmate::test_choice(self@algorithm, "kpic2"),
-      checkmate::test_numeric(self@parameters$level, len = 1),
-      checkmate::test_numeric(self@parameters$mztol, len = 1),
-      checkmate::test_numeric(self@parameters$gap, len = 1),
-      checkmate::test_numeric(self@parameters$width, len = 1),
-      checkmate::test_numeric(self@parameters$min_snr, len = 1),
-      checkmate::test_logical(self@parameters$kmeans, len = 1),
-      if (self@parameters$kmeans) checkmate::test_numeric(self@parameters$alpha, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FindFeatures")
+    checkmate::assert_choice(self@algorithm, "kpic2")
+    checkmate::assert_numeric(self@parameters$level, len = 1)
+    checkmate::assert_numeric(self@parameters$mztol, len = 1)
+    checkmate::assert_numeric(self@parameters$gap, len = 1)
+    checkmate::assert_numeric(self@parameters$width, len = 1)
+    checkmate::assert_numeric(self@parameters$min_snr, len = 1)
+    checkmate::assert_logical(self@parameters$kmeans, len = 1)
+    if (self@parameters$kmeans) checkmate::assert_numeric(self@parameters$alpha, len = 1)
     NULL
   }
 )
@@ -764,14 +749,11 @@ MassSpecSettings_FindFeatures_qalgorithms <- S7::new_class("MassSpecSettings_Fin
   },
   
   validator = function(self) {
-   valid <- all(
-     checkmate::test_choice(self@engine, "MassSpec"),
-     checkmate::test_choice(self@method, "FindFeatures"),
-     checkmate::test_choice(self@algorithm, "qalgorithms"),
-     checkmate::test_numeric(self@parameters$ppm, len = 1)
-   )
-   if (!valid) return(FALSE)
-   NULL
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FindFeatures")
+    checkmate::assert_choice(self@algorithm, "qalgorithms")
+    checkmate::assert_numeric(self@parameters$ppm, len = 1)
+    NULL
   }
 )
 

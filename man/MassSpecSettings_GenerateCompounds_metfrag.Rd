@@ -21,9 +21,7 @@ MassSpecSettings_GenerateCompounds_metfrag(
   scoreWeights = 1,
   preProcessingFilters = c("UnconnectedCompoundFilter", "IsotopeFilter"),
   postProcessingFilters = c("InChIKeyFilter"),
-  maxCandidatesToStop = 100,
-  identifiers = NULL,
-  extraOpts = NULL
+  maxCandidatesToStop = 100
 )
 }
 \arguments{
@@ -65,11 +63,6 @@ Valid values are: FALSE (never use it), TRUE (always use it) or "auto" (default,
 
 \item{maxCandidatesToStop}{Numeric (length 1) with the maximum number of candidates to be returned before stopping the
 MetFrag query for a feature group.}
-
-\item{identifiers}{A list containing for each feature group a character vector with database identifiers that should
-be used to find candidates for a feature group (the list should be named by feature group names). Can be \code{NULL}.}
-
-\item{extraOpts}{A named list containing further settings MetFrag.}
 }
 \value{
 A \code{MassSpecSettings_GenerateCompounds_metfrag} object.

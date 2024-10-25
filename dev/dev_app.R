@@ -51,14 +51,3 @@ ms$run_app()
 raman <- RamanEngine$new(analyses = raman_files)
 raman$save(paste0(getwd(), "/raman.rds"))
 raman$run_app()
-
-
-new_order <- c("X\n1_FindFeatures_openms\nDetails", "X\n2_AnnotateFeatures_StreamFind\nDetails", "X\n3_GroupFeatures_openms\nDetails")
-
-vapply(new_order, function(x) strsplit(x, "\n")[[1]][2], NA_character_)
-
-StreamFind::MassSpecSettings_BinSpectra_StreamFind()
-# , "X\n4_FilterFeatures_StreamFind\nDetails"
-# [5] "X\n5_FilterFeatures_patRoon\nDetails"              "X\n6_LoadFeaturesEIC_StreamFind\nDetails"          "X\n7_CalculateFeaturesQuality_StreamFind\nDetails" "X\n8_FilterFeatures_StreamFind\nDetails"
-# [9] "X\n9_LoadFeaturesMS1_StreamFind\nDetails"          "X\n10_LoadFeaturesMS2_StreamFind\nDetails"         "X\n11_LoadMSPeakLists_StreamFind\nDetails"         "X\n12_GenerateFormulas_genform\nDetails"
-# [13] "X\n13_GenerateCompounds_metfrag\nDetails"

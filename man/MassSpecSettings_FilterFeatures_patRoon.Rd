@@ -32,10 +32,8 @@ MassSpecSettings_FilterFeatures_patRoon(
   featQualityRange = NULL,
   groupQualityRange = NULL,
   rGroups = NULL,
-  results = NULL,
   removeBlanks = FALSE,
   removeISTDs = FALSE,
-  checkFeaturesSession = NULL,
   removeNA = FALSE,
   negate = FALSE
 )
@@ -95,14 +93,9 @@ MassSpecSettings_FilterFeatures_patRoon(
 
 \item{rGroups}{List of replicate groups.}
 
-\item{results}{Only keep feature groups that have results in the object specified by results. See
-\code{\link[patRoon]{replicateGroupSubtract}} for further information.}
-
 \item{removeBlanks}{Logical length one. Remove blank samples.}
 
 \item{removeISTDs}{Logical length one. Remove internal standards.}
-
-\item{checkFeaturesSession}{Check features session.}
 
 \item{removeNA}{Logical length one. Remove NA values.}
 

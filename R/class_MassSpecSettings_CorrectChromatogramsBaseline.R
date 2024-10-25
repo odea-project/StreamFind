@@ -3,33 +3,33 @@
 # baseline -----
 # ______________________________________________________________________________________________________________________
 
-#' **MassSpecSettings_CorrectChromatogramsBaseline_baseline**
+#' **MassSpecSettings_CorrectChromatogramsBaseline_baseline_als**
 #'
-#' @description Performs baseline correction to chromatograms using the \pkg{baseline} package.
+#' @description Performs baseline correction to chromatograms using the Asymmetric Least Squares (ALS) algorithm from the 
+#' \pkg{baseline} package.
 #' 
-#' @param method Character (length 1) with the method to be used for baseline correction. Possible values are "als",
-#' "fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", "peakDetection", "rfbaseline", "rollingBall", "shirley" 
-#' and "TAP".
-#' @param args List with additional arguments for the selected method. See the documentation of the \pkg{baseline} package
-#' for more details.
+#' @param lambda Numeric (length 1) with the 2nd derivative constraint.
+#' @param p Numeric (length 1) with the weighting of positive residuals.
+#' @param maxit Integer (length 1) with the maximum number of iterations.
 #'
-#' @return A MassSpecSettings_CorrectChromatogramsBaseline_baseline object.
+#' @return A MassSpecSettings_CorrectChromatogramsBaseline_baseline_als object.
 #'
 #' @export
 #'
-MassSpecSettings_CorrectChromatogramsBaseline_baseline <- S7::new_class("MassSpecSettings_CorrectChromatogramsBaseline_baseline",
+MassSpecSettings_CorrectChromatogramsBaseline_baseline_als <- S7::new_class("MassSpecSettings_CorrectChromatogramsBaseline_baseline_als",
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(method = "als", args = list(lambda = 5, p = 0.05, maxit = 10)) {
+  constructor = function(lambda = 5, p = 0.05, maxit = 10) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CorrectChromatogramsBaseline",
-      algorithm = "baseline",
+      algorithm = "baseline_als",
       parameters = list(
-        method = method,
-        args = args
+        lambda = lambda,
+        p = p,
+        maxit = maxit
       ),
       number_permitted = Inf,
       version = as.character(packageVersion("StreamFind")),
@@ -42,22 +42,19 @@ MassSpecSettings_CorrectChromatogramsBaseline_baseline <- S7::new_class("MassSpe
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "CorrectChromatogramsBaseline"),
-      checkmate::test_choice(self@algorithm, "baseline"),
-      checkmate::test_choice(self@parameters$method, c("als", "fillPeaks", "irls", "lowpass", "medianWindow", "modpolyfit", 
-                                                    "peakDetection", "rfbaseline", "rollingBall", "shirley", "TAP")),
-      checkmate::test_list(self@parameters$args, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "CorrectChromatogramsBaseline")
+    checkmate::assert_choice(self@algorithm, "baseline_als")
+    checkmate::assert_number(self@parameters$lambda)
+    checkmate::assert_number(self@parameters$p)
+    checkmate::assert_integer(as.integer(self@parameters$maxit))
     NULL
   }
 )
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecSettings_CorrectChromatogramsBaseline_baseline) <- function(x, engine = NULL) {
+S7::method(run, MassSpecSettings_CorrectChromatogramsBaseline_baseline_als) <- function(x, engine = NULL) {
   
   if (!requireNamespace("baseline", quietly = TRUE)) {
     warning("Package baseline not found but required! Not done.")
@@ -79,8 +76,13 @@ S7::method(run, MassSpecSettings_CorrectChromatogramsBaseline_baseline) <- funct
     return(FALSE)
   }
   
-  baseline_method <- x$parameters$method
-  baseline_args <- x$parameters$args
+  baseline_method <- "als"
+  
+  baseline_args <- list(
+    lambda = x$parameters$lambda,
+    p = x$parameters$p,
+    maxit = x$parameters$maxit
+  )
   
   chrom_list <- engine$chromatograms$chromatograms
   
@@ -99,7 +101,7 @@ S7::method(run, MassSpecSettings_CorrectChromatogramsBaseline_baseline) <- funct
           z
         })
         
-        z <- rbindlist(temp_x)
+        z <- data.table::rbindlist(temp_x)
         
       } else {
         baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
@@ -161,15 +163,12 @@ MassSpecSettings_CorrectChromatogramsBaseline_airpls <- S7::new_class("MassSpecS
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "CorrectChromatogramsBaseline"),
-      checkmate::test_choice(self@algorithm, "airpls"),
-      checkmate::test_number(self@parameters$lambda),
-      checkmate::test_integer(as.integer(self@parameters$differences)),
-      checkmate::test_integer(as.integer(self@parameters$itermax))
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "CorrectChromatogramsBaseline")
+    checkmate::assert_choice(self@algorithm, "airpls")
+    checkmate::assert_number(self@parameters$lambda)
+    checkmate::assert_integer(as.integer(self@parameters$differences))
+    checkmate::assert_integer(as.integer(self@parameters$itermax))
     NULL
   }
 )

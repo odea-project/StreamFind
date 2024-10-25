@@ -56,19 +56,16 @@ MassSpecSettings_IntegrateChromatograms_StreamFind <- S7::new_class("MassSpecSet
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "IntegrateChromatograms"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_logical(self@parameters$merge, max.len = 1),
-      checkmate::test_number(self@parameters$closeByThreshold),
-      checkmate::test_number(self@parameters$minPeakHeight),
-      checkmate::test_number(self@parameters$minPeakDistance),
-      checkmate::test_number(self@parameters$minPeakWidth),
-      checkmate::test_number(self@parameters$maxPeakWidth),
-      checkmate::test_number(self@parameters$minSN)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "IntegrateChromatograms")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_logical(self@parameters$merge, max.len = 1)
+    checkmate::assert_number(self@parameters$closeByThreshold)
+    checkmate::assert_number(self@parameters$minPeakHeight)
+    checkmate::assert_number(self@parameters$minPeakDistance)
+    checkmate::assert_number(self@parameters$minPeakWidth)
+    checkmate::assert_number(self@parameters$maxPeakWidth)
+    checkmate::assert_number(self@parameters$minSN)
     NULL
   }
 )

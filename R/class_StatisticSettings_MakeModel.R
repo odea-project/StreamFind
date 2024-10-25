@@ -10,7 +10,7 @@
 #' @param ncomp Integer (length 1) with the number of components to be calculated.
 #' @param exclrows Integer vector with the row indices to be excluded.
 #' @param exclcols Integer vector with the column indices to be excluded.
-#' @param x.test Matrix with the test data.
+#' @param x.test A `data.frame` with the test data.
 #' @param method Character (length 1) with the method to be used for PCA. Possible values are "svd" and "nipals".
 #' @param rand Integer (length 1) with the random seed.
 #' @param lim.type Character (length 1) with the type of limit for the PCA. Possible values are "jm" Jackson-Mudholkar 
@@ -69,22 +69,19 @@ StatisticSettings_MakeModel_pca_mdatools <- S7::new_class("StatisticSettings_Mak
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Statistic"),
-      checkmate::test_choice(self@method, "MakeModel"),
-      checkmate::test_choice(self@algorithm, "pca_mdatools"),
-      checkmate::test_number(self@parameters$ncomp, null.ok = TRUE),
-      checkmate::test_number(self@parameters$exclrows, null.ok = TRUE),
-      checkmate::test_number(self@parameters$exclcols, null.ok = TRUE),
-      checkmate::test_matrix(self@parameters$x.test, null.ok = TRUE),
-      checkmate::test_choice(self@parameters$method, c("svd", "nipals")),
-      checkmate::test_number(self@parameters$rand, null.ok = TRUE),
-      checkmate::test_choice(self@parameters$lim.type, c("jm", "chisq", "ddmoments", "ddrobust")),
-      checkmate::test_number(self@parameters$alpha),
-      checkmate::test_number(self@parameters$gamma),
-      checkmate::test_character(self@parameters$info)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@method, "MakeModel")
+    checkmate::assert_choice(self@algorithm, "pca_mdatools")
+    checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
+    checkmate::assert_number(self@parameters$exclrows, null.ok = TRUE)
+    checkmate::assert_number(self@parameters$exclcols, null.ok = TRUE)
+    checkmate::assert_data_frame(self@parameters$x.test, null.ok = TRUE)
+    checkmate::assert_choice(self@parameters$method, c("svd", "nipals"))
+    checkmate::assert_number(self@parameters$rand, null.ok = TRUE)
+    checkmate::assert_choice(self@parameters$lim.type, c("jm", "chisq", "ddmoments", "ddrobust"))
+    checkmate::assert_number(self@parameters$alpha)
+    checkmate::assert_number(self@parameters$gamma)
+    checkmate::assert_character(self@parameters$info)
     NULL
   }
 )
@@ -192,18 +189,16 @@ StatisticSettings_MakeModel_mcrpure_mdatools <- S7::new_class("StatisticSettings
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Statistic"),
-      checkmate::test_choice(self@method, "MakeModel"),
-      checkmate::test_choice(self@algorithm, "mcrpure_mdatools"),
-      checkmate::test_number(self@parameters$ncomp, null.ok = TRUE),
-      checkmate::test_number(self@parameters$purevars, null.ok = TRUE),
-      checkmate::test_number(self@parameters$offset, null.ok = TRUE),
-      checkmate::test_number(self@parameters$exclrows, null.ok = TRUE),
-      checkmate::test_number(self@parameters$exclcols, null.ok = TRUE),
-      checkmate::test_character(self@parameters$info)
-    )
-    if (!valid) return(FALSE)
+    
+    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@method, "MakeModel")
+    checkmate::assert_choice(self@algorithm, "mcrpure_mdatools")
+    checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
+    checkmate::assert_number(self@parameters$purevars, null.ok = TRUE)
+    checkmate::assert_number(self@parameters$offset, null.ok = TRUE)
+    checkmate::assert_number(self@parameters$exclrows, null.ok = TRUE)
+    checkmate::assert_number(self@parameters$exclcols, null.ok = TRUE)
+    checkmate::assert_character(self@parameters$info)
     NULL
   }
 )
@@ -269,8 +264,6 @@ S7::method(run, StatisticSettings_MakeModel_mcrpure_mdatools) <- function(x, eng
 #' R package \pkg{mdatools}.
 #' 
 #' @param ncomp Integer (length 1) with the number of components to be calculated.
-#' @param cont.constraints List with constraints to be applied to contributions (see details in \link[mdatools]{mcrals}).
-#' @param spec.constraints List with constraints to be applied to spectra (see details in \link[mdatools]{mcrals}).
 #' @param cont.solver Character (length 1) with the name of the to solve the pure components contributions (see details 
 #' in \link[mdatools]{mcrals}).
 #' @param spec.solver Character (length 1) with the name of the function to solve the pure components spectra (see 
@@ -299,8 +292,6 @@ StatisticSettings_MakeModel_mcrals_mdatools <- S7::new_class("StatisticSettings_
   package = "StreamFind",
   
   constructor = function(ncomp = NULL,
-                         cont.constraints = list(),
-                         spec.constraints = list(),
                          cont.solver = "mcrals.nnls",
                          spec.solver = "mcrals.nnls",
                          exclrows = NULL,
@@ -316,8 +307,8 @@ StatisticSettings_MakeModel_mcrals_mdatools <- S7::new_class("StatisticSettings_
       algorithm = "mcrals_mdatools",
       parameters = list(
         ncomp = ncomp,
-        cont.constraints = cont.constraints,
-        spec.constraints = spec.constraints,
+        cont.constraints = NULL,
+        spec.constraints = NULL,
         cont.solver = cont.solver,
         spec.solver = spec.solver,
         exclrows = exclrows,
@@ -338,23 +329,18 @@ StatisticSettings_MakeModel_mcrals_mdatools <- S7::new_class("StatisticSettings_
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Statistic"),
-      checkmate::test_choice(self@method, "MakeModel"),
-      checkmate::test_choice(self@algorithm, "mcrals_mdatools"),
-      checkmate::test_number(self@parameters$ncomp, null.ok = TRUE),
-      checkmate::test_list(self@parameters$cont.constraints),
-      checkmate::test_list(self@parameters$spec.constraints),
-      checkmate::test_choice(self@parameters$cont.solver, c("mcrals.nnls", "mcrals.ols")),
-      checkmate::test_choice(self@parameters$spec.solver, c("mcrals.nnls", "mcrals.ols")),
-      checkmate::test_number(self@parameters$exclrows, null.ok = TRUE),
-      checkmate::test_number(self@parameters$exclcols, null.ok = TRUE),
-      checkmate::test_logical(self@parameters$verbose, max.len = 1),
-      checkmate::test_number(self@parameters$max.niter),
-      checkmate::test_number(self@parameters$tol),
-      checkmate::test_character(self@parameters$info)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@method, "MakeModel")
+    checkmate::assert_choice(self@algorithm, "mcrals_mdatools")
+    checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
+    checkmate::assert_choice(self@parameters$cont.solver, c("mcrals.nnls", "mcrals.ols"))
+    checkmate::assert_choice(self@parameters$spec.solver, c("mcrals.nnls", "mcrals.ols"))
+    checkmate::assert_number(self@parameters$exclrows, null.ok = TRUE)
+    checkmate::assert_number(self@parameters$exclcols, null.ok = TRUE)
+    checkmate::assert_logical(self@parameters$verbose, max.len = 1)
+    checkmate::assert_number(self@parameters$max.niter)
+    checkmate::assert_number(self@parameters$tol)
+    checkmate::assert_character(self@parameters$info)
     NULL
   }
 )
@@ -477,14 +463,11 @@ StatisticSettings_MakeModel_knn <- S7::new_class("StatisticSettings_MakeModel_kn
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Statistic"),
-      checkmate::test_choice(self@method, "MakeModel"),
-      checkmate::test_choice(self@algorithm, "knn"),
-      checkmate::test_number(self@parameters$k),
-      checkmate::test_number(self@parameters$l)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@method, "MakeModel")
+    checkmate::assert_choice(self@algorithm, "knn")
+    checkmate::assert_number(self@parameters$k)
+    checkmate::assert_number(self@parameters$l)
     NULL
   }
 )

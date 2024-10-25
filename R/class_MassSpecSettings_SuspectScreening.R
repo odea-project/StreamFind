@@ -65,27 +65,27 @@ MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "SuspectScreening"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_number(self@parameters$ppm),
-      checkmate::test_number(self@parameters$sec),
-      checkmate::test_number(self@parameters$ppmMS2),
-      checkmate::test_number(self@parameters$minFragments),
-      checkmate::test_number(self@parameters$isolationWindow),
-      checkmate::test_number(self@parameters$mzClust),
-      checkmate::test_number(self@parameters$presence),
-      checkmate::test_number(self@parameters$minIntensity),
-      checkmate::test_logical(self@parameters$filtered, max.len = 1)
-    ) && if (is.data.frame(self@parameters$database)) {
-      all(c("name", "mass") %in% colnames(self@parameters$database)) ||
-        all(c("name", "neutralMass") %in% colnames(self@parameters$database)) ||
-          all(c("name", "mz") %in% colnames(self@parameters$database))
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "SuspectScreening")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_number(self@parameters$ppm)
+    checkmate::assert_number(self@parameters$sec)
+    checkmate::assert_number(self@parameters$ppmMS2)
+    checkmate::assert_number(self@parameters$minFragments)
+    checkmate::assert_number(self@parameters$isolationWindow)
+    checkmate::assert_number(self@parameters$mzClust)
+    checkmate::assert_number(self@parameters$presence)
+    checkmate::assert_number(self@parameters$minIntensity)
+    checkmate::assert_logical(self@parameters$filtered, max.len = 1)
+    if (is.data.frame(self@parameters$database)) {
+      if (!(
+            all(c("name", "mass") %in% colnames(self@parameters$database)) ||
+            all(c("name", "neutralMass") %in% colnames(self@parameters$database)) ||
+            all(c("name", "mz") %in% colnames(self@parameters$database))
+          )) stop("Database must have at least the columns name and mass or name and neutralMass or name and mz!")
     } else {
-      FALSE
+      stop("Database must be a data.frame!")
     }
-    if (!valid) return(FALSE)
     NULL
   }
 )
@@ -260,16 +260,13 @@ MassSpecSettings_SuspectScreening_forident <- S7::new_class("MassSpecSettings_Su
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "SuspectScreening"),
-      checkmate::test_choice(self@algorithm, "forident"),
-      dir.exists(self@parameters$path),
-      is.character(self@parameters$name),
-      length(self@parameters$name) == 1,
-      checkmate::test_logical(self@parameters$addMS2, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "SuspectScreening")
+    checkmate::assert_choice(self@algorithm, "forident")
+    checkmate::assert_true(dir.exists(self@parameters$path))
+    checkmate::assert_true(is.character(self@parameters$name))
+    checkmate::assert_true(length(self@parameters$name) == 1)
+    checkmate::assert_logical(self@parameters$addMS2, max.len = 1)
     NULL
   }
 )
@@ -468,20 +465,20 @@ MassSpecSettings_SuspectScreening_patRoon <- S7::new_class("MassSpecSettings_Sus
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "SuspectScreening"),
-      checkmate::test_choice(self@algorithm, "patRoon"),
-      checkmate::test_number(self@parameters$rtWindow),
-      checkmate::test_number(self@parameters$mzWindow),
-      checkmate::test_logical(self@parameters$filtered, max.len = 1)
-    ) && if (is.data.frame(self@parameters$suspects)) {
-      all(c("name", "neutralMass") %in% colnames(self@parameters$suspects)) ||
-        all(c("name", "mz") %in% colnames(self@parameters$suspects))
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "SuspectScreening")
+    checkmate::assert_choice(self@algorithm, "patRoon")
+    checkmate::assert_number(self@parameters$rtWindow)
+    checkmate::assert_number(self@parameters$mzWindow)
+    checkmate::assert_logical(self@parameters$filtered, max.len = 1)
+    if (is.data.frame(self@parameters$suspects)) {
+      if (!(
+          all(c("name", "neutralMass") %in% colnames(self@parameters$suspects)) ||
+          all(c("name", "mz") %in% colnames(self@parameters$suspects))
+          )) stop("Suspects must have at least the columns name and neutralMass or name and mz!")
     } else {
-      FALSE
+      stop("Suspects must be a data.frame!")
     }
-    if (!valid) return(FALSE)
     NULL
   }
 )

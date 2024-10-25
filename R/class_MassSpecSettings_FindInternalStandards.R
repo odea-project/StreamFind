@@ -42,19 +42,19 @@ MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSett
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "FindInternalStandards"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_number(self@parameters$ppm),
-      checkmate::test_number(self@parameters$sec)
-    ) && if (is.data.frame(self@parameters$database)) {
-      all(c("name", "mass", "rt") %in% colnames(self@parameters$database)) ||
-        all(c("name", "mz", "rt") %in% colnames(self@parameters$database))
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FindInternalStandards")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_number(self@parameters$ppm)
+    checkmate::assert_number(self@parameters$sec)
+    if (is.data.frame(self@parameters$database)) {
+      if (!(
+          all(c("name", "mass", "rt") %in% colnames(self@parameters$database)) ||
+          all(c("name", "mz", "rt") %in% colnames(self@parameters$database)))
+        ) stop("Database must have at least the columns name, mass, and rt or name, mz, and rt!")
     } else {
-      FALSE
+      stop("Database must be a data.frame!")
     }
-    if (!valid) return(FALSE)
     NULL
   }
 )

@@ -5,10 +5,12 @@
 
 #' **RamanSettings_DeleteSpectraSection_StreamFind**
 #'
-#' @description Deletes a section of the spectra based on a named list of data ranges for a given variable (i.e. column name).
+#' @description Deletes a section of the spectra between *shift* and/or *rt* minimum and maximum values.
 #' 
-#' @param section Named list with the variable to be used for sectioning and the window for the sectioning. The names 
-#' should match column names in the data.
+#' @param shiftmin Numeric vector (length 1) with the minimum shift value to delete.
+#' @param shiftmax Numeric vector (length 1) with the maximum shift value to delete.
+#' @param rtmin Numeric vector (length 1) with the minimum retention time value to delete.
+#' @param rtmax Numeric vector (length 1) with the maximum retention time value to delete.
 #'
 #' @return A RamanSettings_DeleteSpectraSection_StreamFind object.
 #'
@@ -18,13 +20,21 @@ RamanSettings_DeleteSpectraSection_StreamFind <- S7::new_class("RamanSettings_De
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(section = list()) {
+  constructor = function(shiftmin = NULL,
+                         shiftmax = NULL,
+                         rtmin = NULL,
+                         rtmax = NULL) {
     
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "DeleteSpectraSection",
       algorithm = "StreamFind",
-      parameters = list(section = section),
+      parameters = list(
+        shiftmin = shiftmin,
+        shiftmax = shiftmax,
+        rtmin = rtmin,
+        rtmax = rtmax
+      ),
       number_permitted = Inf,
       version = as.character(packageVersion("StreamFind")),
       software = "StreamFind",
@@ -36,13 +46,13 @@ RamanSettings_DeleteSpectraSection_StreamFind <- S7::new_class("RamanSettings_De
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "DeleteSpectraSection"),
-      checkmate::test_choice(self@algorithm, "StreamFind")
-      # TODO add section checks in validation of RamanSettings_DeleteSpectraSection_StreamFind
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "DeleteSpectraSection")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_numeric(self@parameters$shiftmin, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$shiftmax, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$rtmin, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$rtmax, len = 1, null.ok = TRUE)
     NULL
   }
 )
@@ -66,41 +76,42 @@ S7::method(run, RamanSettings_DeleteSpectraSection_StreamFind) <- function(x, en
     return(FALSE)
   }
   
-  section <- x$parameters$section
-  
-  if (length(section) == 0) {
-    warning("Sections not found! Not done.")
-    return(FALSE)
-  }
+  shiftmin <- x$parameters$shiftmin
+  shiftmax <- x$parameters$shiftmax
+  rtmin <- x$parameters$rtmin
+  rtmax <- x$parameters$rtmax
   
   spec_list <- engine$spectra$spectra
   
-  spec_del <- lapply(spec_list, function(z) {
+  if (!(is.null(shiftmin) && is.null(shiftmax))) {
+    shiftrange <- c(shiftmin, shiftmax)
     
-    if (nrow(z) > 0) {
+    spec_list <- lapply(spec_list, function(z) {
       
-      sel <- logical()
-      
-      for (i in names(section)) {
-        if (i %in% colnames(z)) {
-          section[[i]] <- sort(section[[i]])
-          
-          if (length(sel) == 0) {
-            sel <- (z[[i]] >= section[[i]][1]) & (z[[i]] <= section[[i]][2])
-            
-          } else {
-            sel <- sel & (z[[i]] >= section[[i]][1]) & (z[[i]] <= section[[i]][2])
-          }
-        }
+      if (nrow(z) > 0 && "shift" %in% colnames(z)) {
+        sel <- (z$shift >= shiftrange[1]) & (z$shift <= shiftrange[2])
+        if (length(sel) > 0) z <- z[!sel, ]
       }
       
-      if (length(sel) > 0) z <- z[!sel, ]
-    }
-    
-    z
-  })
+      z
+    })
+  }
   
-  engine$spectra$spectra <- spec_del
+  if (!(is.null(rtmin) && is.null(rtmax))) {
+    rtrange <- c(rtmin, rtmax)
+    
+    spec_list <- lapply(spec_list, function(z) {
+      
+      if (nrow(z) > 0 && "rt" %in% colnames(z)) {
+        sel <- (z$rt >= rtrange[1]) & (z$rt <= rtrange[2])
+        if (length(sel) > 0) z <- z[!sel, ]
+      }
+      
+      z
+    })
+  }
+  
+  engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra section deleted!"))
   invisible(TRUE)
 }

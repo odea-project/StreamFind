@@ -35,13 +35,10 @@ MassSpecSettings_SubtractBlankSpectra_StreamFind <- S7::new_class("MassSpecSetti
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "SubtractBlankSpectra"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_logical(self@parameters$negativeToZero, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "SubtractBlankSpectra")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_logical(self@parameters$negativeToZero, max.len = 1)
     NULL
   }
 )

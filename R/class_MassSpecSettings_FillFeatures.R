@@ -58,20 +58,17 @@ MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fill
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "FillFeatures"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_logical(self@parameters$withinReplicate, len = 1),
-      checkmate::test_numeric(self@parameters$rtExpand, len = 1),
-      checkmate::test_numeric(self@parameters$mzExpand, len = 1),
-      checkmate::test_integer(as.integer(self@parameters$minNumberTraces), len = 1),
-      checkmate::test_numeric(self@parameters$minTracesIntensity, len = 1),
-      checkmate::test_numeric(self@parameters$baseCut, len = 1),
-      checkmate::test_numeric(self@parameters$minSignalToNoiseRatio, len = 1),
-      checkmate::test_numeric(self@parameters$minGaussianFit, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FillFeatures")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_logical(self@parameters$withinReplicate, len = 1)
+    checkmate::assert_numeric(self@parameters$rtExpand, len = 1)
+    checkmate::assert_numeric(self@parameters$mzExpand, len = 1)
+    checkmate::assert_integer(as.integer(self@parameters$minNumberTraces), len = 1)
+    checkmate::assert_numeric(self@parameters$minTracesIntensity, len = 1)
+    checkmate::assert_numeric(self@parameters$baseCut, len = 1)
+    checkmate::assert_numeric(self@parameters$minSignalToNoiseRatio, len = 1)
+    checkmate::assert_numeric(self@parameters$minGaussianFit, len = 1)
     NULL
   }
 )

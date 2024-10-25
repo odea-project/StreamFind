@@ -15,18 +15,13 @@
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     
-    .app_util_add_notifications <- function(warnings, name_msg, msg) {
-      shiny::showNotification(msg, duration = 5, type = "warning")
-      warnings[[name_msg]] <- msg
-      return(warnings)
-    }
-    
     .wrap_analyses_ui_in_divs <- function(elements) {
       lapply(elements, function(x) {
         htmltools::div(style = sprintf("min-width: %dpx; height: %dpx; display: flex; align-items: center;", 40, 40),x)
       })
     }
     
+    # out Analyses Table -----
     output$AnalysesTable <- DT::renderDT({
       
       analyses <- reactive_analyses()
@@ -60,6 +55,7 @@
       )
     }, server = TRUE)
     
+    # event Analyses Table Editing -----
     shiny::observeEvent(input$AnalysesTable_cell_edit, {
       analyses <- reactive_analyses()
       analyses_info <- analyses@info
@@ -74,6 +70,7 @@
       reactive_analyses(analyses)
     })
     
+    # out Analyses Overview Buttons -----
     output$analyses_overview_buttons <- shiny::renderUI({
       filetypes <- reactive_analyses()@possible_formats
       filetypes <- gsub("[.]", "", filetypes)
@@ -96,7 +93,7 @@
       }
     })
     
-    ## event Add analyses -----
+    # event Add analyses -----
     shiny::observeEvent(input$add_analyses_button, {
       fileinfo <- shinyFiles::parseFilePaths(reactive_volumes(), input$add_analyses_button)
       if (nrow(fileinfo) > 0) {
@@ -150,7 +147,7 @@
     #   }
     # })
     
-    ## event Remove analyses -----
+    # event Remove analyses -----
     shiny::observeEvent(input$remove_selected_analyses, {
       analyses <- reactive_analyses()
       if (length(input$AnalysesTable_cells_selected) == 0) {
@@ -161,7 +158,7 @@
       reactive_analyses(analyses)
     })
     
-    ## event Remove all analyses -----
+    # event Remove all analyses -----
     shiny::observeEvent(input$remove_all_analyses, {
       analyses <- reactive_analyses()
       if (length(analyses) == 0) {
@@ -172,12 +169,10 @@
       reactive_analyses(analyses)
     })
     
-    ## out Notes Analyses -----
+    # out Notes Analyses -----
     output$notes_analyses <- shiny::renderUI({
       shiny::div(style = "margin-bottom: 25px;margin-top: 25px;",
         shiny::tagList(
-          # shiny::tags$hr(),
-          # shiny::tags$h4("Notes:"),
           shiny::tags$ul(
             shiny::tags$li("Add analyses by selecting the 'Add Analyses' button."),
             shiny::tags$li("Remove analyses by selecting the analysis cells in the table and clicking the 'Delete Selected Analyses' button."),

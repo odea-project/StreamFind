@@ -31,9 +31,6 @@
 #' @param postProcessingFilters Character vector with the post-processing filters to be used for the MetFrag annotation.
 #' @param maxCandidatesToStop Numeric (length 1) with the maximum number of candidates to be returned before stopping the
 #' MetFrag query for a feature group.
-#' @param identifiers A list containing for each feature group a character vector with database identifiers that should 
-#' be used to find candidates for a feature group (the list should be named by feature group names). Can be `NULL`.
-#' @param extraOpts A named list containing further settings MetFrag.
 #' 
 #' @details Detailed documentation can be found in \link[patRoon]{generateCompoundsMetFrag}.
 #'
@@ -75,9 +72,7 @@ MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class("MassSpecSettings_Ge
                          scoreWeights = 1,
                          preProcessingFilters = c("UnconnectedCompoundFilter", "IsotopeFilter"),
                          postProcessingFilters = c("InChIKeyFilter"),
-                         maxCandidatesToStop = 100,
-                         identifiers = NULL,
-                         extraOpts = NULL) {
+                         maxCandidatesToStop = 100) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
@@ -100,9 +95,7 @@ MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class("MassSpecSettings_Ge
         scoreWeights = scoreWeights,
         preProcessingFilters = preProcessingFilters,
         postProcessingFilters = postProcessingFilters,
-        maxCandidatesToStop = maxCandidatesToStop,
-        identifiers = identifiers,
-        extraOpts = extraOpts
+        maxCandidatesToStop = maxCandidatesToStop
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -115,31 +108,26 @@ MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class("MassSpecSettings_Ge
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "GenerateCompounds"),
-      checkmate::test_choice(self@algorithm, "metfrag"),
-      checkmate::test_choice(self@parameters$method, c("CL", "R")),
-      checkmate::test_number(self@parameters$timeout),
-      checkmate::test_number(self@parameters$timeoutRetries),
-      checkmate::test_number(self@parameters$errorRetries),
-      checkmate::test_number(self@parameters$topMost),
-      checkmate::test_number(self@parameters$dbRelMzDev),
-      checkmate::test_number(self@parameters$fragRelMzDev),
-      checkmate::test_number(self@parameters$fragAbsMzDev),
-      checkmate::test_character(self@parameters$adduct, null.ok = TRUE),
-      checkmate::test_choice(self@parameters$database, c("pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv", "csv")),
-      checkmate::test_choice(self@parameters$extendedPubChem, c("auto", TRUE, FALSE)),
-      checkmate::test_character(self@parameters$chemSpiderToken),
-      checkmate::test_character(self@parameters$scoreTypes, min.len = 1),
-      checkmate::test_numeric(self@parameters$scoreWeights, min.len = 1),
-      checkmate::test_character(self@parameters$preProcessingFilters, min.len = 1),
-      checkmate::test_character(self@parameters$postProcessingFilters, min.len = 1),
-      checkmate::test_number(self@parameters$maxCandidatesToStop),
-      checkmate::test_list(self@parameters$identifiers, len = 1, null.ok = TRUE),
-      checkmate::test_list(self@parameters$extraOpts, len = 1, null.ok = TRUE)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "GenerateCompounds")
+    checkmate::assert_choice(self@algorithm, "metfrag")
+    checkmate::assert_choice(self@parameters$method, c("CL", "R"))
+    checkmate::assert_number(self@parameters$timeout)
+    checkmate::assert_number(self@parameters$timeoutRetries)
+    checkmate::assert_number(self@parameters$errorRetries)
+    checkmate::assert_number(self@parameters$topMost)
+    checkmate::assert_number(self@parameters$dbRelMzDev)
+    checkmate::assert_number(self@parameters$fragRelMzDev)
+    checkmate::assert_number(self@parameters$fragAbsMzDev)
+    checkmate::assert_character(self@parameters$adduct, null.ok = TRUE)
+    checkmate::assert_choice(self@parameters$database, c("pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv", "csv"))
+    checkmate::assert_choice(self@parameters$extendedPubChem, c("auto", TRUE, FALSE))
+    checkmate::assert_character(self@parameters$chemSpiderToken)
+    checkmate::assert_character(self@parameters$scoreTypes, min.len = 1)
+    checkmate::assert_numeric(self@parameters$scoreWeights, min.len = 1)
+    checkmate::assert_character(self@parameters$preProcessingFilters, min.len = 1)
+    checkmate::assert_character(self@parameters$postProcessingFilters, min.len = 1)
+    checkmate::assert_number(self@parameters$maxCandidatesToStop)
     NULL
   }
 )

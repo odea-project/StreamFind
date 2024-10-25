@@ -3,7 +3,7 @@
 # StreamFind -----
 # ______________________________________________________________________________________________________________________
 
-#' **MassSpecSettings_LoadSpectra**
+#' **MassSpecSettings_LoadSpectra_StreamFind**
 #'
 #' @description .
 #' 
@@ -16,21 +16,21 @@
 #' @param mobilitymax A numeric vector with the maximum mobility values to be used.
 #' @param minIntensity A numeric value with the minimum intensity to be used.
 #'
-#' @return A `MassSpecSettings_LoadSpectra` object.
+#' @return A `MassSpecSettings_LoadSpectra_StreamFind` object.
 #'
 #' @export
 #'
-MassSpecSettings_LoadSpectra <- S7::new_class("MassSpecSettings_LoadSpectra",
+MassSpecSettings_LoadSpectra_StreamFind <- S7::new_class("MassSpecSettings_LoadSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(levels = NULL,
-                         mzmin = NULL,
-                         mzmax = NULL,
-                         rtmin = NULL,
-                         rtmax = NULL,
-                         mobilitymin = NULL,
-                         mobilitymax = NULL,
+  constructor = function(levels = 1,
+                         mzmin = 0,
+                         mzmax = 0,
+                         rtmin = 0,
+                         rtmax = 0,
+                         mobilitymin = 0,
+                         mobilitymax = 0,
                          minIntensity = 0) {
     
     S7::new_object(ProcessingSettings(
@@ -58,27 +58,24 @@ MassSpecSettings_LoadSpectra <- S7::new_class("MassSpecSettings_LoadSpectra",
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "LoadSpectra"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_numeric(self@parameters$levels),
-      checkmate::test_numeric(self@parameters$mzmin, len = 1),
-      checkmate::test_numeric(self@parameters$mzmax, len = 1),
-      checkmate::test_numeric(self@parameters$rtmin, len = 1),
-      checkmate::test_numeric(self@parameters$rtmax, len = 1),
-      checkmate::test_numeric(self@parameters$mobilitymin, len = 1),
-      checkmate::test_numeric(self@parameters$mobilitymax, len = 1),
-      checkmate::test_numeric(self@parameters$minIntensity, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "LoadSpectra")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_numeric(self@parameters$levels)
+    checkmate::assert_numeric(self@parameters$mzmin, len = 1)
+    checkmate::assert_numeric(self@parameters$mzmax, len = 1)
+    checkmate::assert_numeric(self@parameters$rtmin, len = 1)
+    checkmate::assert_numeric(self@parameters$rtmax, len = 1)
+    checkmate::assert_numeric(self@parameters$mobilitymin, len = 1)
+    checkmate::assert_numeric(self@parameters$mobilitymax, len = 1)
+    checkmate::assert_numeric(self@parameters$minIntensity, len = 1)
     NULL
   }
 )
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecSettings_LoadSpectra) <- function(x, engine = NULL) {
+S7::method(run, MassSpecSettings_LoadSpectra_StreamFind) <- function(x, engine = NULL) {
   
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
@@ -90,7 +87,7 @@ S7::method(run, MassSpecSettings_LoadSpectra) <- function(x, engine = NULL) {
     return(FALSE)
   }
   
-  if (!any(engine$get_spectra_number > 0)) {
+  if (!any(engine$get_spectra_number() > 0)) {
     warning("There are no spectra! Not done.")
     return(FALSE)
   }
@@ -103,18 +100,20 @@ S7::method(run, MassSpecSettings_LoadSpectra) <- function(x, engine = NULL) {
     rtmin = parameters$rtmin,
     rtmax = parameters$rtmax,
     mobilitymin = parameters$mobilitymin,
-    mobilitymax = parameters$mobilitymax,
-    minIntensity = parameters$minIntensity
+    mobilitymax = parameters$mobilitymax
   )
   
-  spec <- engine$get_spectra(levels = parameters$levels, mz = ranges)
-  
-  spec <- Spectra(spec, FALSE)
-  
-  engine$Spectra <- spec
-
-  message(paste0("\U2713 ", "Spectra loaded!"))
-
-  TRUE
-
+  tryCatch({
+    engine$load_spectra(
+      levels = parameters$levels,
+      mz = ranges,
+      minIntensityMS1 = parameters$minIntensity,
+      minIntensityMS2 = parameters$minIntensity
+    )
+    message(paste0("\U2713 ", "Spectra loaded!"))
+    TRUE
+  }, error = function(e) {
+    warning("Error loading spectra! Not done.")
+    return(FALSE)
+  })
 }

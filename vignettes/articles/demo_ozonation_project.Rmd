@@ -44,6 +44,9 @@ db <- db[, cols, with = FALSE]
 db_with_ms2 <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 db_with_ms2 <- db_with_ms2[db_with_ms2$tag %in% "S", ]
 db_with_ms2 <- db_with_ms2[, c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments"), with = FALSE]
+db_with_ms2$polarity[db_with_ms2$polarity == 1] <- "positive"
+db_with_ms2$polarity[is.na(db_with_ms2$polarity)] <- "positive"
+db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 ```
 
 <style>
@@ -184,7 +187,6 @@ ffs <- MassSpecSettings_FindFeatures_openms(
   isotopeFilteringModel = "none",
   MZScoring13C = FALSE,
   useSmoothedInts = FALSE,
-  extraOpts = NULL,
   intSearchRTWindow = 3,
   useFFMIntensities = FALSE,
   verbose = FALSE
@@ -224,8 +226,6 @@ workflow <- StreamFind::Workflow(
       maxAlignMZ = 0.008,
       maxGroupRT = 5,
       maxGroupMZ = 0.008,
-      extraOptsRT = NULL,
-      extraOptsGroup = NULL,
       verbose = FALSE
     ),
     

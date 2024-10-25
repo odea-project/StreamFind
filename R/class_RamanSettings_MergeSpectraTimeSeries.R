@@ -35,13 +35,10 @@ RamanSettings_MergeSpectraTimeSeries_StreamFind <- S7::new_class("RamanSettings_
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "MergeSpectraTimeSeries"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_number(self@parameters$preCut)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "MergeSpectraTimeSeries")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_number(self@parameters$preCut)
     NULL
   }
 )
@@ -101,11 +98,11 @@ S7::method(run, RamanSettings_MergeSpectraTimeSeries_StreamFind) <- function(x, 
       
       names(spectral) <- as.character(rtvec[-(1:preCut)])
       
-      spectra <- rbindlist(spectral, idcol = "rt")
+      spectra <- data.table::rbindlist(spectral, idcol = "rt")
       
       spectra$rt <- as.numeric(spectra$rt)
       
-      setcolorder(spectra, c("rt"))
+      data.table::setcolorder(spectra, c("rt"))
       
       message("\U2699 Writting unified analysis file..." , appendLF = FALSE)
       

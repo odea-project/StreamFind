@@ -1,5 +1,5 @@
 #' @noRd
-.mod_WorkflowAssembler_Explorer_MassSpec_UI <- function(id, ns) {
+S7::method(.mod_WorkflowAssembler_Explorer_UI, MassSpecAnalyses) <- function(x, id, ns) {
   ns2 <- shiny::NS(id)
   
   shinydashboard::tabBox(width = 12, height = "1080px",
@@ -24,22 +24,40 @@
 }
 
 #' @noRd 
-.mod_WorkflowAssembler_Explorer_MassSpec_Server <- function(id, ns, reactive_analyses, reactive_volumes) {
+S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function(x, id, ns, reactive_analyses, reactive_volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     
-    has_spectra <- shiny::reactiveVal(max(reactive_analyses()@spectra_number) > 0)
-    has_chromatograms <- shiny::reactiveVal(max(reactive_analyses()@chromatograms_number) > 0)
-    levels <- shiny::reactiveVal(as.numeric(unlist(strsplit(unique(reactive_analyses()@spectra_level), ", "))))
-    rt_end <- shiny::reactiveVal(round(max(reactive_analyses()@spectra_highest_rt), digits = 0))
-    rt_start <- shiny::reactiveVal(round(min(reactive_analyses()@spectra_lowest_rt), digits = 0))
+    has_spectra <- shiny::reactiveVal(FALSE)
+    has_chromatograms <- shiny::reactiveVal(FALSE)
+    levels <- shiny::reactiveVal(1)
+    rt_end <- shiny::reactiveVal(0)
+    rt_start <- shiny::reactiveVal(0)
+    
+    init_analyses <- reactive_analyses()
+    if (length(init_analyses) > 0) {
+      has_spectra(max(init_analyses@spectra_number) > 0)
+      has_chromatograms(max(init_analyses@chromatograms_number) > 0)
+      levels(as.numeric(unlist(strsplit(unique(init_analyses@spectra_level), ", "))))
+      rt_end(round(max(init_analyses@spectra_highest_rt), digits = 0))
+      rt_start(round(min(init_analyses@spectra_lowest_rt), digits = 0))
+    }
     
     shiny::observe({
-      has_spectra(max(reactive_analyses()@spectra_number) > 0)
-      has_chromatograms(max(reactive_analyses()@chromatograms_number) > 0)
-      levels(as.numeric(unlist(strsplit(unique(reactive_analyses()@spectra_level), ", "))))
-      rt_end(round(max(reactive_analyses()@spectra_highest_rt), digits = 0))
-      rt_start(round(min(reactive_analyses()@spectra_lowest_rt), digits = 0))
+      analyses <- reactive_analyses()
+      if (length(analyses) > 0) {
+        has_spectra(max(reactive_analyses()@spectra_number) > 0)
+        has_chromatograms(max(reactive_analyses()@chromatograms_number) > 0)
+        levels(as.numeric(unlist(strsplit(unique(reactive_analyses()@spectra_level), ", "))))
+        rt_end(round(max(reactive_analyses()@spectra_highest_rt), digits = 0))
+        rt_start(round(min(reactive_analyses()@spectra_lowest_rt), digits = 0))
+      } else {
+        has_spectra(FALSE)
+        has_chromatograms(FALSE)
+        levels(1)
+        rt_end(0)
+        rt_start(0)
+      }
     })
     
     shinyFiles::shinyFileSave(input, "summary_plot_save", roots = reactive_volumes(), defaultRoot = "wd", session = session)

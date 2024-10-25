@@ -6,8 +6,6 @@
 \usage{
 StatisticSettings_MakeModel_mcrals_mdatools(
   ncomp = NULL,
-  cont.constraints = list(),
-  spec.constraints = list(),
   cont.solver = "mcrals.nnls",
   spec.solver = "mcrals.nnls",
   exclrows = NULL,
@@ -20,10 +18,6 @@ StatisticSettings_MakeModel_mcrals_mdatools(
 }
 \arguments{
 \item{ncomp}{Integer (length 1) with the number of components to be calculated.}
-
-\item{cont.constraints}{List with constraints to be applied to contributions (see details in \link[mdatools]{mcrals}).}
-
-\item{spec.constraints}{List with constraints to be applied to spectra (see details in \link[mdatools]{mcrals}).}
 
 \item{cont.solver}{Character (length 1) with the name of the to solve the pure components contributions (see details
 in \link[mdatools]{mcrals}).}

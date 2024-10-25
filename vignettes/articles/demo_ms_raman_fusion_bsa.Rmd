@@ -192,39 +192,57 @@ ms$plot_spectra_ms1(rt = rt_av, sec = 0.5, colorBy = "replicates",
 ```
 
 According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingSettings* for 
-deconvolution, as shown below. The first step is to load from the mzML files the traces within the retention time and 
-*m/z* ranges selected.
+deconvolution, as shown below. The workflow is an ordered list of *ProcessingSettings* objects for each workflow step, 
+which is added to the engine. The exact parameters for each method can be optimized individually by calling the specific 
+method directly. Once the settings are added, the workflow can be inspected with the `print_workflow()` method.
 
 ```{r}
-# Range of m/z and average rt +/- 1 second for deconvolution
-spectra_ranges <- data.table::data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = rt_av - 1, "rtmax" = rt_av + 1)
-spectra_ranges
-```
-
-```{r}
-# Load the spectra within the ranges
-ms$load_spectra(mz = spectra_ranges)
-ms$analyses$has_spectra
-```
-
-The workflow is an ordered list of *ProcessingSettings* objects for each workflow step, which is added to the engine. 
-The exact parameters for each method can be optimized individually by calling the specific method directly. Once the 
-settings are added, the workflow can be inspected with the `print_workflow()` method.
-
-```{r}
-ms_workflow <- list(
-  MassSpecSettings_ClusterSpectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2),
-  MassSpecSettings_CalculateSpectraCharges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000),
-  MassSpecSettings_DeconvoluteSpectra_StreamFind(),
-  MassSpecSettings_SmoothSpectra_movingaverage(windowSize = 15),
-  MassSpecSettings_BinSpectra_StreamFind(bins = list("rt" = 5, "mass" = 20), refBinAnalysis = 1),
-  MassSpecSettings_AverageSpectra_StreamFind(),
-  MassSpecSettings_NormalizeSpectra_minmax(),
-  MassSpecSettings_NormalizeSpectra_blockweight()
+ms_workflow <- StreamFind::Workflow(
+  list(
+    
+    MassSpecSettings_LoadSpectra_StreamFind(
+      mzmin = 1200,
+      mzmax = 2000,
+      rtmin = rt_av - 1,
+      rtmax = rt_av + 1,
+      levels = 1
+    ),
+    
+    MassSpecSettings_ClusterSpectra_StreamFind(
+      val = "mz",
+      clustVal = 0.01,
+      presence = 0.2
+    ),
+    
+    MassSpecSettings_CalculateSpectraCharges_StreamFind(
+      roundVal = 15,
+      relLowCut = 0.2,
+      absLowCut = 8000
+    ),
+    
+    MassSpecSettings_DeconvoluteSpectra_StreamFind(),
+    
+    MassSpecSettings_SmoothSpectra_movingaverage(
+      windowSize = 15
+    ),
+    
+    MassSpecSettings_BinSpectra_StreamFind(
+      binNames = c("rt", "mass"),
+      binValues = c(5, 20),
+      byUnit = TRUE,
+      refBinAnalysis = 1
+    ),
+    
+    MassSpecSettings_AverageSpectra_StreamFind(),
+    
+    MassSpecSettings_NormalizeSpectra_minmax(),
+    
+    MassSpecSettings_NormalizeSpectra_blockweight()
+  )
 )
 
 # Replaces the settings added to integrate the TIC chromatograms
-ms$workflow <- StreamFind::Workflow(ms_workflow)
+ms$workflow <- ms_workflow
 
 ms$print_workflow()
 ```
@@ -236,7 +254,7 @@ ms$run_workflow()
 ```
 
 ```{r ,fig.cap="Deconvoluted and pre-processed spectra for each analysis."}
-ms$plot_spectra(colorBy = "analyses")
+plot_spectra(ms$analyses, colorBy = "analyses")
 ```
 
 ## Raman
@@ -293,22 +311,63 @@ raman$plot_spectra(rt = c(430, 440), colorBy = "analyses")
 As for MS data, the workflow for Raman data is also assembled using an ordered list of processing settings, as shown below. 
 
 ```{r}
-raman_workflow <- list(
-  RamanSettings_BinSpectra_StreamFind(unitsVal = "rt", unitsNumber = 20),
-  RamanSettings_SubtractSpectraSection_StreamFind(sectionVal = "rt", sectionWindow = c(0, 200)), # time window
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 315))),
-  RamanSettings_SmoothSpectra_savgol(fl = 11, forder = 2, dorder = 0),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(315, 330))),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(2300, 2600))),
-  RamanSettings_CorrectSpectraBaseline_baseline(method = "als", args = list(lambda = 3, p = 0.015, maxit = 10)),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("rt" = c(0, 420))),
-  RamanSettings_DeleteSpectraSection_StreamFind(list("rt" = c(430, 900))),
-  RamanSettings_AverageSpectra_StreamFind(),
-  RamanSettings_NormalizeSpectra_minmax(),
-  RamanSettings_NormalizeSpectra_blockweight()
+raman_workflow <- StreamFind::Workflow(
+  list(
+    RamanSettings_BinSpectra_StreamFind(
+      binNames = "rt",
+      binValues = 20,
+      byUnit = FALSE
+    ),
+    
+    RamanSettings_SubtractSpectraSection_StreamFind(
+      sectionVal = "rt",
+      sectionWindow = c(0, 200)
+    ),
+    
+    RamanSettings_DeleteSpectraSection_StreamFind(
+      shiftmin = -100,
+      shiftmax = 315
+    ),
+    
+    RamanSettings_SmoothSpectra_savgol(
+      fl = 11,
+      forder = 2,
+      dorder = 0
+    ),
+    
+    RamanSettings_DeleteSpectraSection_StreamFind(
+      shiftmin = 315,
+      shiftmax = 330
+    ),
+    
+    RamanSettings_DeleteSpectraSection_StreamFind(
+      shiftmin = 2300,
+      shiftmax = 2600
+    ),
+    
+    RamanSettings_CorrectSpectraBaseline_baseline_als(
+      lambda = 3,
+      p = 0.015,
+      maxit = 10
+    ),
+    
+    RamanSettings_DeleteSpectraSection_StreamFind(
+      rtmin = 0,
+      rtmax = 420
+    ),
+    
+    RamanSettings_DeleteSpectraSection_StreamFind(
+      rtmin = 430,
+      rtmax = 900
+    ),
+    
+    RamanSettings_AverageSpectra_StreamFind(),
+    
+    RamanSettings_NormalizeSpectra_minmax()
+  ) 
 )
 
-raman$workflow <- StreamFind::Workflow(raman_workflow)
+raman$workflow <- raman_workflow
 
 raman$print_workflow()
 ```

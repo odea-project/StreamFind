@@ -42,15 +42,12 @@ MassSpecSettings_CalculateSpectraCharges_StreamFind <- S7::new_class("MassSpecSe
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "CalculateSpectraCharges"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_number(self@parameters$roundVal),
-      checkmate::test_number(self@parameters$relLowCut),
-      checkmate::test_number(self@parameters$absLowCut)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "CalculateSpectraCharges")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_number(self@parameters$roundVal)
+    checkmate::assert_number(self@parameters$relLowCut)
+    checkmate::assert_number(self@parameters$absLowCut)
     NULL
   }
 )

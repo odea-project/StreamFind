@@ -20,20 +20,35 @@ ProcessingSettings <- S7::new_class("ProcessingSettings", package = "StreamFind"
   ),
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_character(self@engine, len = 1),
-      checkmate::test_character(self@method, len = 1),
-      checkmate::test_character(self@algorithm, len = 1),
-      checkmate::test_list(self@parameters),
-      checkmate::test_numeric(self@number_permitted, len = 1),
-      checkmate::test_character(self@version, len = 1),
-      checkmate::test_character(self@software, len = 1),
-      checkmate::test_character(self@developer, len = 1),
-      checkmate::test_character(self@contact, len = 1),
-      checkmate::test_character(self@link, len = 1),
-      checkmate::test_character(self@doi, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_character(self@engine, len = 1)
+    checkmate::assert_character(self@method, len = 1)
+    checkmate::assert_character(self@algorithm, len = 1)
+    checkmate::assert_list(self@parameters)
+    checkmate::assert_numeric(self@number_permitted, len = 1)
+    checkmate::assert_character(self@version, len = 1)
+    checkmate::assert_character(self@software, len = 1)
+    checkmate::assert_character(self@developer, len = 1)
+    checkmate::assert_character(self@contact, len = 1)
+    checkmate::assert_character(self@link, len = 1)
+    checkmate::assert_character(self@doi, len = 1)
+    if (is.list(self@parameters)) {
+      lapply(names(self@parameters), function(x) {
+        param <- self@parameters[[x]]
+        if (!(is.data.frame(param) ||
+              is.character(param) ||
+              is.numeric(param) ||
+              is.integer(param) ||
+              is.logical(param) ||
+              is.null(param))) {
+          stop(
+            paste(
+              "Invalid type for parameter ", x, " in ", self$method, "_", self$algorithm, "!",
+              collapse = "", sep = ""
+            )
+          )
+        }
+      })
+    }
     NULL
   }
 )

@@ -33,12 +33,9 @@ RamanSettings_NormalizeSpectra_minmax <- S7::new_class("RamanSettings_NormalizeS
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "minmax")
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "minmax")
     NULL
   }
 )
@@ -78,7 +75,7 @@ S7::method(run, RamanSettings_NormalizeSpectra_minmax) <- function(x, engine = N
           z
         })
         
-        z <- rbindlist(temp_x)
+        z <- data.table::rbindlist(temp_x)
         
       } else {
         max_int <- max(z$intensity)
@@ -132,13 +129,10 @@ RamanSettings_NormalizeSpectra_snv <- S7::new_class("RamanSettings_NormalizeSpec
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "snv"),
-      checkmate::test_logical(self@parameters$liftTozero, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "snv")
+    checkmate::assert_logical(self@parameters$liftTozero, max.len = 1)
     NULL
   }
 )
@@ -181,7 +175,7 @@ S7::method(run, RamanSettings_NormalizeSpectra_snv) <- function(x, engine = NULL
           z
         })
         
-        z <- rbindlist(temp_x)
+        z <- data.table::rbindlist(temp_x)
         
       } else {
         mean_int <- mean(z$intensity)
@@ -234,12 +228,9 @@ RamanSettings_NormalizeSpectra_scale <- S7::new_class("RamanSettings_NormalizeSp
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "scale")
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "scale")
     NULL
   }
 )
@@ -278,7 +269,7 @@ S7::method(run, RamanSettings_NormalizeSpectra_scale) <- function(x, engine = NU
           z
         })
         
-        z <- rbindlist(temp_x)
+        z <- data.table::rbindlist(temp_x)
         
       } else {
         sd_int <- sd(z$intensity)
@@ -329,12 +320,9 @@ RamanSettings_NormalizeSpectra_blockweight <- S7::new_class("RamanSettings_Norma
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "blockweight")
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "blockweight")
     NULL
   }
 )
@@ -372,7 +360,7 @@ S7::method(run, RamanSettings_NormalizeSpectra_blockweight) <- function(x, engin
           z
         })
         
-        z <- rbindlist(temp_x)
+        z <- data.table::rbindlist(temp_x)
         
       } else {
         z$intensity <- z$intensity / sqrt(length(z$intensity))
@@ -422,12 +410,9 @@ RamanSettings_NormalizeSpectra_meancenter <- S7::new_class("RamanSettings_Normal
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "meancenter")
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "meancenter")
     NULL
   }
 )
@@ -466,7 +451,7 @@ S7::method(run, RamanSettings_NormalizeSpectra_meancenter) <- function(x, engine
           z
         })
         
-        z <- rbindlist(temp_x)
+        z <- data.table::rbindlist(temp_x)
         
       } else {
         mean_int <- mean(z$intensity)

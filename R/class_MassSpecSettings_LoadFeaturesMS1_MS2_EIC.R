@@ -52,17 +52,14 @@ MassSpecSettings_LoadFeaturesMS1_StreamFind <- S7::new_class("MassSpecSettings_L
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "LoadFeaturesMS1"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_double(as.numeric(self@parameters$rtWindow), max.len = 2),
-      checkmate::test_double(as.numeric(self@parameters$mzWindow), max.len = 2),
-      checkmate::test_number(self@parameters$mzClust),
-      checkmate::test_number(self@parameters$minIntensity),
-      checkmate::test_logical(self@parameters$filtered, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "LoadFeaturesMS1")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_double(as.numeric(self@parameters$rtWindow), max.len = 2)
+    checkmate::assert_double(as.numeric(self@parameters$mzWindow), max.len = 2)
+    checkmate::assert_number(self@parameters$mzClust)
+    checkmate::assert_number(self@parameters$minIntensity)
+    checkmate::assert_logical(self@parameters$filtered, max.len = 1)
     NULL
   }
 )
@@ -187,16 +184,13 @@ MassSpecSettings_LoadFeaturesMS2_StreamFind <- S7::new_class("MassSpecSettings_L
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "LoadFeaturesMS2"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_number(self@parameters$isolationWindow),
-      checkmate::test_number(self@parameters$mzClust),
-      checkmate::test_number(self@parameters$minIntensity),
-      checkmate::test_logical(self@parameters$filtered, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "LoadFeaturesMS2")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_number(self@parameters$isolationWindow)
+    checkmate::assert_number(self@parameters$mzClust)
+    checkmate::assert_number(self@parameters$minIntensity)
+    checkmate::assert_logical(self@parameters$filtered, max.len = 1)
     NULL
   }
 )
@@ -314,16 +308,13 @@ MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class("MassSpecSettings_L
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "LoadFeaturesEIC"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_number(self@parameters$rtExpand),
-      checkmate::test_number(self@parameters$mzExpand),
-      checkmate::test_number(self@parameters$minIntensity),
-      checkmate::test_logical(self@parameters$filtered, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "LoadFeaturesEIC")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_number(self@parameters$rtExpand)
+    checkmate::assert_number(self@parameters$mzExpand)
+    checkmate::assert_number(self@parameters$minIntensity)
+    checkmate::assert_logical(self@parameters$filtered, max.len = 1)
     NULL
   }
 )

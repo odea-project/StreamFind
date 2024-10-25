@@ -73,7 +73,15 @@
 }
 
 #' @noRd
-.mod_WorkflowAssembler_workflow_Server <- function(id, ns, engine, engine_type, reactive_workflow, reactive_saved_workflow, reactive_warnings, reactive_volumes) {
+.mod_WorkflowAssembler_workflow_Server <- function(id, ns,
+                                                   engine, engine_type,
+                                                   reactive_analyses,
+                                                   reactive_workflow,
+                                                   reactive_saved_workflow,
+                                                   reactive_results,
+                                                   reactive_warnings,
+                                                   reactive_volumes) {
+  
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     
@@ -99,7 +107,7 @@
         "Load Workflow",
         "Select a JSON or RDS file with workflow processing settings",
         multiple = FALSE,
-        style = "width: 200px;"
+        style = "width: 150px;"
       )
     })
     
@@ -107,7 +115,7 @@
     output$clear_workflow_ui <- shiny::renderUI({
       rw <- reactive_workflow()
       if (length(rw) > 0) {
-        shiny::actionButton(ns(ns2("clear_workflow")), "Clear Changes")
+        shiny::actionButton(ns(ns2("clear_workflow")), "Clear Changes", width = 150)
       }
     })
     
@@ -132,7 +140,7 @@
           title = "Save the workflow as .json or .rds",
           class = "btn-success",
           filename = gsub(".sqlite|.rds", "", basename(rw_file)),
-          filetype = extensions, style = "width: 200px;"
+          filetype = extensions, style = "width: 150px;"
         )
       }
     })
@@ -142,7 +150,7 @@
       rw <- reactive_workflow()
       saved_rw <- reactive_saved_workflow()
       if (!identical(rw, saved_rw)) {
-        shiny::actionButton(ns(ns2("discard_changes")), "Discard Changes", class = "btn-danger")
+        shiny::actionButton(ns(ns2("discard_changes")), "Discard Changes", class = "btn-danger", width = 150)
       }
     })
     
@@ -150,7 +158,7 @@
     output$run_workflow_ui <- shiny::renderUI({
       rw <- reactive_workflow()
       if (length(rw) > 0) {
-        shiny::actionButton(ns(ns2("run_workflow")), "Run Workflow", class = "btn-success")
+        shiny::actionButton(ns(ns2("run_workflow")), "Run Workflow", class = "btn-info", width = 150)
       }
     })
     
@@ -211,8 +219,8 @@
         
         shiny::column(12, htmltools::p(" ")),
         shiny::column(12, htmltools::p("Select Processing Method")),
-        shiny::column(9, shiny::selectInput(ns(ns2("settings_selector")), label = NULL, choices = processing_methods_short, multiple = FALSE)),
-        shiny::column(3, shiny::actionButton(ns(ns2("add_workflow_step")), "Add Workflow Step")),
+        shiny::column(12, shiny::selectInput(ns(ns2("settings_selector")), label = NULL, choices = processing_methods_short, multiple = FALSE)),
+        shiny::column(12, htmltools::div(style = "display: flex; align-items: center; margin-bottom: 20px;", shiny::actionButton(ns(ns2("add_workflow_step")), "Add Workflow Step"))),
         shiny::column(12, htmltools::h3("Workflow")),
         
         shiny::column(12,
@@ -243,7 +251,6 @@
         file <- fileinfo$datapath
         if (length(file) == 1) {
           if (file.exists(file)) {
-            
             tryCatch({
               rw <- read(rw, file)
               reactive_workflow(rw)
@@ -252,7 +259,6 @@
             }, warning = function(w) {
               shiny::showNotification(paste("Warning loading workflow:", w$message), duration = 5, type = "warning")
             })
-            
           } else {
             shiny::showNotification("File does not exist!", duration = 5, type = "warning")
           }
@@ -298,9 +304,25 @@
     
     # obs Run Workflow -----
     shiny::observeEvent(input$run_workflow, {
+      shiny::req(input$run_workflow)
       
-      shiny::showNotification("Not yet implemented!", duration = 5, type = "warning")
+      shiny::showModal(shiny::modalDialog(
+        title = "Processing",
+        "The workflow is running. Please wait...",
+        footer = NULL # No footer buttons to close the modal manually
+      ))
       
+      tryCatch({
+        engine$workflow <- reactive_workflow()
+        engine$run_workflow()
+        reactive_analyses(engine$analyses)
+        reactive_workflow(engine$workflow)
+        reactive_results(engine$results)
+        shiny::removeModal()
+      }, error = function(e) {
+        shiny::showNotification(paste("Error running workflow:", e$message), duration = 5, type = "error")
+        shiny::removeModal()
+      })
     })
     
     # obs Add Workflow Step -----
@@ -329,7 +351,7 @@
       if (selected_method %in% rw@names) {
         htmltools::tagList(
           shiny::h3(selected_method, style = "color: #3498DB; margin-bottom: 20px;"),
-          shiny::actionButton(ns(ns2("update_method")), "Update Settings", class = "btn-primary", style = "color: white; margin-top: 20px;"),
+          shiny::actionButton(ns(ns2("update_method")), "Update Settings", class = "btn-primary", style = "color: white; margin-top: 20px; margin-bottom: 20px"),
           shiny::uiOutput(ns(ns2("method_parameters_ui")))
         )
       }
@@ -385,7 +407,8 @@
       method_name <- processing_methods[short_selected_method]
       help_url <- paste0("https://odea-project.github.io/StreamFind/reference/", method_name, ".html")
       settings <- rw[[selected_method]]
-
+      
+      ## func Create Parameter UI NoEdit -----
       create_parameter_ui_noedit <- function(param_name, param_value) {
         value_display <- if (is.atomic(param_value) && length(param_value) == 1) {
           as.character(param_value)
@@ -412,10 +435,11 @@
           shiny::tags$dd(value_display)
         )
       }
-
+      
+      ## func Create Parameter UI -----
       create_parameter_ui <- function(ns2, param_name, param_value) {
-
         input_element <- NULL
+        
         if (is.null(param_value)) {
           input_element <- shiny::textInput(ns(ns2(param_name)), label = NULL, value = "")
           
@@ -455,23 +479,10 @@
 
       shiny::tags$div(
         class = "method-details",
-        shiny::tags$dl(
-          lapply(other_names, function(param) {
-            create_parameter_ui_noedit(param, settings[[param]])
-          })
-        ),
-        shiny::tags$div(
-          class = "parameters-section",
-          shiny::tags$h4("Parameters"),
-          shiny::tags$dl(
-            lapply(param_names, function(param) {
-              create_parameter_ui(ns2, param, settings$parameters[[param]])
-            })
-          )
-        ),
+        
         if (!is.null(help_url)) {
           shiny::tags$div(
-            style = "margin-top: 20px;",
+            style = "margin-top: 20px;margin-bottom: 20px;",
             shiny::tags$a(
               href = help_url,
               target = "_blank",
@@ -480,8 +491,24 @@
             )
           )
         } else {
-          shiny::tags$div(style = "margin-top: 20px;", "No help documentation available.")
-        }
+          shiny::tags$div(style = "margin-top: 20px;margin-bottom: 20px;", "No help documentation available.")
+        },
+        
+        shiny::tags$dl(
+          lapply(other_names, function(param) {
+            create_parameter_ui_noedit(param, settings[[param]])
+          })
+        ),
+        
+        shiny::tags$div(
+          class = "parameters-section",
+          shiny::tags$h4("Parameters"),
+          shiny::tags$dl(
+            lapply(param_names, function(param) {
+              create_parameter_ui(ns2, param, settings$parameters[[param]])
+            })
+          )
+        )
       )
     })
   })

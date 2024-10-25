@@ -19,7 +19,7 @@
     
     shinydashboard::tabItem(tabName = ns("workflow"), shiny::fluidRow(shiny::uiOutput(ns("workflow_ui")))),
     
-    shinydashboard::tabItem(tabName = ns("results"), shiny::fluidRow())
+    shinydashboard::tabItem(tabName = ns("results"), shiny::fluidRow(shiny::uiOutput(ns("results_ui"))))
   )
 }
 
@@ -33,6 +33,7 @@
     mandatory_header_names <- c("name", "author", "file", "date")
     volumes <- .app_util_get_volumes()
     engine <- NULL
+    analyses_class_dummy <- NULL
     
     # _Global Reactive Variables -----
     reactive_wdir <- shiny::reactiveVal(getwd())
@@ -40,9 +41,11 @@
     reactive_headers <- shiny::reactiveVal(NULL)
     reactive_analyses <- shiny::reactiveVal(NULL)
     reactive_workflow <- shiny::reactiveVal(NULL)
+    reactive_results <- shiny::reactiveVal(NULL)
     reactive_saved_headers <- shiny::reactiveVal(NULL)
     reactive_saved_analyses <- shiny::reactiveVal(NULL)
     reactive_saved_workflow <- shiny::reactiveVal(NULL)
+    reactive_saved_results <- shiny::reactiveVal(NULL)
     
     ## obs Engine Save File -----
     shiny::observeEvent(reactive_engine_save_file(), {
@@ -63,6 +66,9 @@
         engine_call <- get(engine_type, envir = .GlobalEnv)
         engine_call_new <- engine_call[["new"]]
         engine <<- suppressMessages(do.call(engine_call_new, list()))
+        engine_data_type <- gsub("Engine", "", engine_type)
+        analyses_call <- get(paste0(engine_data_type, "Analyses"), envir = .GlobalEnv)
+        analyses_class_dummy <<- suppressMessages(do.call(analyses_call, list()))
         
         if (!is.na(reactive_engine_save_file())) {
           tryCatch({
@@ -79,9 +85,11 @@
         reactive_headers(engine$headers)
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
+        reactive_results(engine$results)
         reactive_saved_headers(engine$headers)
         reactive_saved_analyses(engine$analyses)
         reactive_saved_workflow(engine$workflow)
+        reactive_saved_results(engine$results)
         reactive_clean_start(FALSE)
       }
     })
@@ -94,7 +102,8 @@
       equal_history <- all(
         identical(reactive_headers(), reactive_saved_headers()),
         identical(reactive_analyses(), reactive_saved_analyses()),
-        identical(reactive_workflow(), reactive_saved_workflow())
+        identical(reactive_workflow(), reactive_saved_workflow()),
+        identical(reactive_results(), reactive_saved_results())
       )
       if (!equal_history && !has_unsaved_changes) {
         reactive_warnings(.app_util_add_notifications(reactive_warnings(), "unsaved_changes", "Unsaved changes in the engine!"))
@@ -136,9 +145,11 @@
       reactive_headers(engine$headers)
       reactive_analyses(engine$analyses)
       reactive_workflow(engine$workflow)
+      reactive_results(engine$results)
       reactive_saved_headers(engine$headers)
       reactive_saved_analyses(engine$analyses)
       reactive_saved_workflow(engine$workflow)
+      reactive_saved_results(engine$results)
     })
     
     ## event Save Engine File -----
@@ -150,15 +161,18 @@
         engine$headers <- reactive_headers()
         engine$analyses <- reactive_analyses()
         engine$workflow <- reactive_workflow()
+        engine$results <- reactive_results()
         engine$save(file_path)
         reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
         reactive_headers(engine$headers)
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
+        reactive_results(engine$results)
         reactive_engine_save_file(engine$file$path)
         reactive_saved_headers(engine$headers)
         reactive_saved_analyses(engine$analyses)
         reactive_saved_workflow(engine$workflow)
+        reactive_saved_results(engine$results)
       }
     })
     
@@ -178,18 +192,22 @@
         reactive_headers(engine$headers)
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
+        reactive_results(engine$results)
         reactive_saved_headers(engine$headers)
         reactive_saved_analyses(engine$analyses)
         reactive_saved_workflow(engine$workflow)
+        reactive_saved_results(engine$results)
       } else {
         engine$load(reactive_engine_save_file())
         reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
         reactive_headers(engine$headers)
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
+        reactive_results(engine$results)
         reactive_saved_headers(engine$headers)
         reactive_saved_analyses(engine$analyses)
         reactive_saved_workflow(engine$workflow)
+        reactive_saved_results(engine$results)
       }
     })
     
@@ -237,73 +255,68 @@
         shiny::showNotification("Analyses not implemented for CoreEngine", duration = 5, type = "warning")
         return(htmltools::div(" "))
       }
-      
-      # As the Analyses S7 children classes have similar structure/interface, we can use the same module for all
       .mod_WorkflowAssembler_Analyses_Server("analyses", ns, reactive_analyses, reactive_warnings, reactive_volumes)
       .mod_WorkflowAssembler_Analyses_UI("analyses", ns)
     })
     
     # _Explorer -----
     output$explorer_ui <- shiny::renderUI({
-      engine_type <- reactive_engine_type()
-
-      if (engine_type %in% "MassSpecEngine") {
-
-        if (length(reactive_analyses()) == 0) {
-          shiny::showNotification("No analyses loaded for MassSpecEngine", duration = 5, type = "warning")
-          return(htmltools::div(" "))
-        }
-
-        .mod_WorkflowAssembler_Explorer_MassSpec_Server("summary", ns, reactive_analyses, reactive_volumes)
-        .mod_WorkflowAssembler_Explorer_MassSpec_UI("summary", ns)
-
-      } else if (engine_type %in% "RamanEngine") {
-
-        if (length(reactive_analyses()) == 0) {
-          shiny::showNotification("No files loaded for RamanEngine", duration = 5, type = "warning")
-          return(htmltools::div(" "))
-        }
-
-        .mod_WorkflowAssembler_Explorer_Raman_Server("summary", engine, reactive_analyses, volumes)
-        .mod_WorkflowAssembler_Explorer_Raman_UI("summary", engine)
-
-      } else {
-        shiny::showNotification(paste0("Explorer not implemented for ", engine_type), duration = 5, type = "warning")
-        htmltools::div(" ")
+      
+      if (is.null(analyses_class_dummy)) {
+        shiny::showNotification("No analyses class defined!", duration = 5, type = "warning")
+        return(htmltools::div(" "))
       }
+      
+      tryCatch({
+        .mod_WorkflowAssembler_Explorer_Server(analyses_class_dummy, "summary", ns, reactive_analyses, reactive_volumes)
+        .mod_WorkflowAssembler_Explorer_UI(analyses_class_dummy, "summary", ns)
+      }, error = function(e) {
+        msg <- paste("Explorer not rendering for class ", class(analyses_class_dummy)[1], ":", conditionMessage(e), collapse = "")
+        shiny::showNotification(msg, duration = 10, type = "error")
+        shiny::div(style = "color: red;", msg)
+      })
     })
     
     # _Workflow -----
     output$workflow_ui <- shiny::renderUI({
-      
       engine_type <- reactive_engine_type()
-
       if (engine_type %in% "CoreEngine") {
         shiny::showNotification("Workflow not implemented for CoreEngine", duration = 5, type = "warning")
         return(htmltools::div(" "))
       }
-
-      .mod_WorkflowAssembler_workflow_Server("workflow", ns, engine, engine_type, reactive_workflow, reactive_saved_workflow, reactive_warnings, reactive_volumes)
+      .mod_WorkflowAssembler_workflow_Server("workflow", ns, engine, engine_type, reactive_analyses, reactive_workflow, reactive_saved_workflow, reactive_results, reactive_warnings, reactive_volumes)
       .mod_WorkflowAssembler_workflow_UI("workflow", ns)
     })
     
-    # _History -----
-    # output$historyTable <- DT::renderDT({
-    #   h_list <- reactive_history()
-    #   h_dt <- data.table::rbindlist(h_list, fill = TRUE)
-    #   h_dt$time <- format(h_dt$time, "%Y-%m-%d %H:%M:%S")
-    #   DT::datatable(
-    #     h_dt,
-    #     filter = "top",
-    #     selection = list(mode = 'single', selected = 1, target = 'row'),
-    #     options = list(pageLength = 20)
-    #   )
-    # })
-    
-    
-    
-    
-    
+    # _Results -----
+    output$results_ui <- shiny::renderUI({
+      
+      if (reactive_engine_type() %in% "CoreEngine") {
+        shiny::showNotification("Results not implemented for CoreEngine", duration = 5, type = "warning")
+        return(htmltools::div(" "))
+      }
+      
+      res <- reactive_results()
+      
+      if (length(res) > 0) {
+        
+        res_class <- vapply(res, is, "")
+        
+        htmltools::div(
+          htmltools::h4("Results"),
+          htmltools::tagList(
+            lapply(seq_len(length(res_class)), function(x) {
+              htmltools::div(paste0(" ", x, ": ", res_class[x]))
+            })
+          )
+        )
+      } else {
+        htmltools::div(htmltools::h4("No results found!"))
+      }
+      
+      # .mod_WorkflowAssembler_Results_Server("results", ns, reactive_results)
+      # .mod_WorkflowAssembler_Results_UI("results", ns)
+    })
     
     
     

@@ -33,12 +33,9 @@ MassSpecSettings_NormalizeSpectra_minmax <- S7::new_class("MassSpecSettings_Norm
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "minmax")
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "minmax")
     NULL
   }
 )
@@ -132,13 +129,10 @@ MassSpecSettings_NormalizeSpectra_snv <- S7::new_class("MassSpecSettings_Normali
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "snv"),
-      checkmate::test_logical(self@parameters$liftTozero, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "snv")
+    checkmate::assert_logical(self@parameters$liftTozero, max.len = 1)
     NULL
   }
 )
@@ -238,12 +232,9 @@ MassSpecSettings_NormalizeSpectra_scale <- S7::new_class("MassSpecSettings_Norma
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "scale")
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "scale")
     NULL
   }
 )
@@ -335,12 +326,9 @@ MassSpecSettings_NormalizeSpectra_blockweight <- S7::new_class("MassSpecSettings
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "blockweight")
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "blockweight")
     NULL
   }
 )
@@ -428,12 +416,9 @@ MassSpecSettings_NormalizeSpectra_meancenter <- S7::new_class("MassSpecSettings_
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "NormalizeSpectra"),
-      checkmate::test_choice(self@algorithm, "meancenter")
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "NormalizeSpectra")
+    checkmate::assert_choice(self@algorithm, "meancenter")
     NULL
   }
 )

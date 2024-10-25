@@ -335,16 +335,28 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
       }
     }
     
-    if (is.null(targets)) targets <- data.table::data.table()
+    if (is.null(targets)) targets <- data.table::data.table(
+      "id" = 0,
+      "mz" = 0,
+      "rt" = 0,
+      "mobility" = 0,
+      "mzmin" = 0,
+      "mzmax" = 0,
+      "rtmin" = 0,
+      "rtmax" = 0,
+      "mobilitymin" = 0,
+      "mobilitymax" = 0,
+      "analysis" = analyses,
+      "polarity" = polarities
+    )
     
     S7::new_object(S7::S7_object(), targets = targets)
   },
     
   validator = function(self) {
-    cols <- c("id", "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax")
-    valid <- checkmate::test_data_frame(self@targets) &&
-      if (ncol(self@targets) > 0) checkmate::test_true(all(cols %in% colnames(self@targets))) else TRUE
-    if (!valid) return(FALSE)
+    cols <- c("id", "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax", "analysis", "polarity")
+    checkmate::assert_data_frame(self@targets)
+    checkmate::assert_true(all(cols %in% colnames(self@targets)))
     NULL
   }
 )

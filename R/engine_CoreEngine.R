@@ -70,7 +70,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     results = function(value) {
       if (missing(value)) return(self$analyses$results)
       if (is(value, "list")) {
-        if (all(vapply(value, is, "StreamFind::Results"))) {
+        if (all(vapply(value, function(x) is(x, "StreamFind::Results"), FALSE))) {
           results_names <- vapply(value, function(x) x@name, "")
           for (i in seq_along(results_names)) {
             self$analyses$results[[results_names[i]]] <- value[[i]]
@@ -472,6 +472,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (self$has_settings()) {
         settings_list <- self$workflow@settings
         self$workflow <- Workflow()
+        if (self$has_results()) self$analyses$results <- list()
         lapply(settings_list, function(x) self$run(x))
       } else {
         warning("There are no processing settings to run!")

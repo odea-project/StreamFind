@@ -39,14 +39,11 @@ MassSpecSettings_DeconvoluteSpectra_StreamFind <- S7::new_class("MassSpecSetting
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "DeconvoluteSpectra"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_number(self@parameters$clustVal),
-      checkmate::test_number(self@parameters$window, null.ok = TRUE)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "DeconvoluteSpectra")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_number(self@parameters$clustVal)
+    checkmate::assert_number(self@parameters$window, null.ok = TRUE)
     NULL
   }
 )

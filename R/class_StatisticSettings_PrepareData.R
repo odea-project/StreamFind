@@ -41,14 +41,11 @@ StatisticSettings_PrepareData_autoscale <- S7::new_class("StatisticSettings_Prep
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Statistic"),
-      checkmate::test_choice(self@method, "PrepareData"),
-      checkmate::test_choice(self@algorithm, "autoscale"),
-      checkmate::test_logical(self@parameters$center, max.len = 1),
-      checkmate::test_logical(self@parameters$scale, max.len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@method, "PrepareData")
+    checkmate::assert_choice(self@algorithm, "autoscale")
+    checkmate::assert_logical(self@parameters$center, max.len = 1)
+    checkmate::assert_logical(self@parameters$scale, max.len = 1)
     NULL
   }
 )

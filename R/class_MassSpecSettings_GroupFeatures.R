@@ -258,16 +258,11 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSetti
       method = "GroupFeatures",
       algorithm = "xcms3_peakdensity",
       parameters = list(
-        "rtalign" = FALSE,
-        "groupParam" = list(
-          class = "PeakDensityParam",
-          sampleGroups = "holder",
-          bw = bw,
-          minFraction = minFraction,
-          minSamples = minSamples,
-          binSize = binSize,
-          maxFeatures = maxFeatures
-        )
+        bw = bw,
+        minFraction = minFraction,
+        minSamples = minSamples,
+        binSize = binSize,
+        maxFeatures = maxFeatures
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -280,21 +275,15 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSetti
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "GroupFeatures"),
-      checkmate::test_choice(self@algorithm, "xcms3_peakdensity"),
-      checkmate::test_logical(self@parameters$rtalign, len = 1),
-      checkmate::test_list(self@parameters$groupParam),
-      checkmate::test_choice(self@parameters$groupParam$class, "PeakDensityParam"),
-      checkmate::test_character(self@parameters$groupParam$sampleGroups, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$bw, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$minFraction, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$minSamples, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$binSize, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$maxFeatures, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "GroupFeatures")
+    checkmate::assert_choice(self@algorithm, "xcms3_peakdensity")
+    checkmate::assert_logical(self@parameters$rtalign, len = 1)
+    checkmate::assert_numeric(self@parameters$groupParam$bw, len = 1)
+    checkmate::assert_numeric(self@parameters$groupParam$minFraction, len = 1)
+    checkmate::assert_numeric(self@parameters$groupParam$minSamples, len = 1)
+    checkmate::assert_numeric(self@parameters$groupParam$binSize, len = 1)
+    checkmate::assert_numeric(self@parameters$groupParam$maxFeatures, len = 1)
     NULL
   }
 )
@@ -302,7 +291,27 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSetti
 #' @export
 #' @noRd
 S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x, engine = NULL) {
-  .run_group_features_patRoon(x, engine)
+  
+  settings <- list()
+  
+  settings[["algorithm"]] <- x$algorithm
+  
+  parameters = list(
+    "rtalign" = FALSE,
+    "groupParam" = list(
+      class = "PeakDensityParam",
+      sampleGroups = "holder",
+      bw = x$parameters$bw,
+      minFraction = x$parameters$minFraction,
+      minSamples = x$parameters$minSamples,
+      binSize = x$parameters$binSize,
+      maxFeatures = x$parameters$maxFeatures
+    )
+  )
+  
+  settings[["parameters"]] <- parameters
+  
+  .run_group_features_patRoon(settings, engine)
 }
 
 # ______________________________________________________________________________________________________________________
@@ -357,10 +366,6 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x,
 #' This parameter is passed to the internal call to loess.
 #' @param family character defining the method to be used for loess smoothing.
 #' Allowed values are "gaussian" and "symmetric".See loess for more information.
-#' @param peakGroupsMatrix optional matrix of (raw) retention times for the peak
-#' groups on which the alignment should be performed. Each column represents a
-#' sample, each row a feature/peak group. Such a matrix is for example returned
-#' by the adjustRtimePeakGroups method.
 #' @param subset integer with the indices of samples within the experiment on
 #' which the alignment models should be estimated. Samples not part of the subset
 #' are adjusted based on the closest subset sample. See description above
@@ -404,7 +409,6 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
                          smooth = "loess",
                          span = 0.2,
                          family = "gaussian",
-                         peakGroupsMatrix = matrix(nrow = 0, ncol = 0),
                          subset = integer(),
                          subsetAdjust = "average") {
     
@@ -413,36 +417,22 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
       method = "GroupFeatures",
       algorithm = "xcms3_peakdensity_peakgroups",
       parameters = list(
-        "rtalign" = TRUE,
-        "groupParam" = list(
-          class = "PeakDensityParam",
-          sampleGroups = "holder",
-          bw = bw,
-          minFraction = minFraction,
-          minSamples = minSamples,
-          binSize = binSize,
-          maxFeatures = maxFeatures
-        ),
-        "preGroupParam" = list(
-          class = "PeakDensityParam",
-          sampleGroups = "holder",
-          bw = pre_bw,
-          minFraction = pre_minFraction,
-          minSamples = pre_minSamples,
-          binSize = pre_binSize,
-          maxFeatures = maxFeatures
-        ),
-        "retAlignParam" = list(
-          class = "PeakGroupsParam",
-          minFraction = rtAlignMinFraction,
-          extraPeaks = extraPeaks,
-          smooth = smooth,
-          span = span,
-          family = family,
-          peakGroupsMatrix = peakGroupsMatrix,
-          subset = as.integer(subset),
-          subsetAdjust = "average"
-        )
+        bw = bw,
+        minFraction = minFraction,
+        minSamples = minSamples,
+        binSize = binSize,
+        pre_bw = pre_bw,
+        pre_minFraction = pre_minFraction,
+        pre_minSamples = pre_minSamples,
+        pre_binSize = pre_binSize,
+        maxFeatures = maxFeatures,
+        rtAlignMinFraction = rtAlignMinFraction,
+        extraPeaks = extraPeaks,
+        smooth = smooth,
+        span = span,
+        family = family,
+        subset = subset,
+        subsetAdjust = subsetAdjust
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -455,39 +445,25 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "GroupFeatures"),
-      checkmate::test_choice(self@algorithm, "xcms3_peakdensity_peakgroups"),
-      checkmate::test_logical(self@parameters$rtalign, len = 1),
-      checkmate::test_list(self@parameters$groupParam, len = 1),
-      checkmate::test_choice(self@parameters$groupParam$class, "PeakDensityParam"),
-      checkmate::test_list(self@parameters$groupParam$sampleGroups, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$bw, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$minFraction, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$minSamples, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$binSize, len = 1),
-      checkmate::test_numeric(self@parameters$groupParam$maxFeatures, len = 1),
-      checkmate::test_list(self@parameters$preGroupParam, len = 1),
-      checkmate::test_choice(self@parameters$preGroupParam$class, "PeakDensityParam"),
-      checkmate::test_list(self@parameters$preGroupParam$sampleGroups, len = 1),
-      checkmate::test_numeric(self@parameters$preGroupParam$bw, len = 1),
-      checkmate::test_numeric(self@parameters$preGroupParam$minFraction, len = 1),
-      checkmate::test_numeric(self@parameters$preGroupParam$minSamples, len = 1),
-      checkmate::test_numeric(self@parameters$preGroupParam$binSize, len = 1),
-      checkmate::test_numeric(self@parameters$preGroupParam$maxFeatures, len = 1),
-      checkmate::test_list(self@parameters$retAlignParam, len = 1),
-      checkmate::test_choice(self@parameters$retAlignParam$class, "PeakGroupsParam"),
-      checkmate::test_numeric(self@parameters$retAlignParam$minFraction, len = 1),
-      checkmate::test_numeric(self@parameters$retAlignParam$extraPeaks, len = 1),
-      checkmate::test_choice(self@parameters$retAlignParam$smooth, c("loess", "linear")),
-      checkmate::test_numeric(self@parameters$retAlignParam$span, len = 1),
-      checkmate::test_choice(self@parameters$retAlignParam$family, c("gaussian", "symmetric")),
-      checkmate::test_matrix(self@parameters$retAlignParam$peakGroupsMatrix),
-      checkmate::test_integer(self@parameters$retAlignParam$subset),
-      checkmate::test_choice(self@parameters$retAlignParam$subsetAdjust, c("previous", "average"))
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "GroupFeatures")
+    checkmate::assert_choice(self@algorithm, "xcms3_peakdensity_peakgroups")
+    checkmate::assert_numeric(self@parameters$bw, len = 1)
+    checkmate::assert_numeric(self@parameters$minFraction, len = 1)
+    checkmate::assert_numeric(self@parameters$minSamples, len = 1)
+    checkmate::assert_numeric(self@parameters$binSize, len = 1)
+    checkmate::assert_numeric(self@parameters$pre_bw, len = 1)
+    checkmate::assert_numeric(self@parameters$pre_minFraction, len = 1)
+    checkmate::assert_numeric(self@parameters$pre_minSamples, len = 1)
+    checkmate::assert_numeric(self@parameters$pre_binSize, len = 1)
+    checkmate::assert_numeric(self@parameters$maxFeatures, len = 1)
+    checkmate::assert_numeric(self@parameters$rtAlignMinFraction, len = 1)
+    checkmate::assert_numeric(self@parameters$extraPeaks, len = 1)
+    checkmate::assert_choice(self@parameters$smooth, c("loess", "linear"))
+    checkmate::assert_numeric(self@parameters$span, len = 1)
+    checkmate::assert_choice(self@parameters$family, c("gaussian", "symmetric"))
+    checkmate::assert_integer(self@parameters$subset)
+    checkmate::assert_choice(self@parameters$subsetAdjust, c("previous", "average"))
     NULL
   }
 )
@@ -495,7 +471,48 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
 #' @export
 #' @noRd
 S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- function(x, engine = NULL) {
-  .run_group_features_patRoon(x, engine)
+  
+  settings <- list()
+  
+  settings[["algorithm"]] <- x$algorithm
+  
+  
+  parameters <- list(
+    "rtalign" = TRUE,
+    "groupParam" = list(
+      class = "PeakDensityParam",
+      sampleGroups = "holder",
+      bw = x$parameters$bw,
+      minFraction = x$parameters$minFraction,
+      minSamples = x$parameters$minSamples,
+      binSize = x$parameters$binSize,
+      maxFeatures = x$parameters$maxFeatures
+    ),
+    "preGroupParam" = list(
+      class = "PeakDensityParam",
+      sampleGroups = "holder",
+      bw = x$parameters$pre_bw,
+      minFraction = x$parameters$pre_minFraction,
+      minSamples = x$parameters$pre_minSamples,
+      binSize = x$parameters$pre_binSize,
+      maxFeatures = x$parameters$maxFeatures
+    ),
+    "retAlignParam" = list(
+      class = "PeakGroupsParam",
+      minFraction = x$parameters$rtAlignMinFraction,
+      extraPeaks = x$parameters$extraPeaks,
+      smooth = x$parameters$smooth,
+      span = x$parameters$span,
+      family = x$parameters$family,
+      peakGroupsMatrix = matrix(nrow = 0, ncol = 0),
+      subset = as.integer(x$parameters$subset),
+      subsetAdjust = x$parameters$subsetAdjust
+    )
+  )
+  
+  settings[["parameters"]] <- parameters
+  
+  .run_group_features_patRoon(settings, engine)
 }
 
 # ______________________________________________________________________________________________________________________
@@ -520,10 +537,6 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- 
 #' feature pairing when performing grouping.
 #' @param maxGroupMZ Numeric length one. Maximum *m/z* (in Da) for
 #' feature pairing when performing grouping.
-#' @param extraOptsRT Named list containing extra options that will be passed
-#' to MapAlignerPoseClustering.
-#' @param extraOptsGroup Named list containing extra options that will be passed
-#' to FeatureLinkerUnlabeledQT/FeatureLinkerUnlabeled.
 #' @param verbose Logical of length one. When TRUE adds processing information
 #' to the console.
 #'
@@ -550,8 +563,6 @@ MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFe
                          maxAlignMZ = 0.008,
                          maxGroupRT = 5,
                          maxGroupMZ = 0.008,
-                         extraOptsRT = NULL,
-                         extraOptsGroup = NULL,
                          verbose = FALSE) {
     
     S7::new_object(ProcessingSettings(
@@ -565,8 +576,6 @@ MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFe
         maxAlignMZ = maxAlignMZ,
         maxGroupRT = maxGroupRT,
         maxGroupMZ = maxGroupMZ,
-        extraOptsRT = extraOptsRT,
-        extraOptsGroup = extraOptsGroup,
         verbose = verbose
       ),
       number_permitted = 1,
@@ -580,21 +589,16 @@ MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFe
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "GroupFeatures"),
-      checkmate::test_choice(self@algorithm, "openms"),
-      checkmate::test_logical(self@parameters$rtalign, len = 1),
-      checkmate::test_logical(self@parameters$QT, len = 1),
-      checkmate::test_numeric(self@parameters$maxAlignRT, len = 1),
-      checkmate::test_numeric(self@parameters$maxAlignMZ, len = 1),
-      checkmate::test_numeric(self@parameters$maxGroupRT, len = 1),
-      checkmate::test_numeric(self@parameters$maxGroupMZ, len = 1),
-      checkmate::test_list(self@parameters$extraOptsRT, null.ok = TRUE),
-      checkmate::test_list(self@parameters$extraOptsGroup, null.ok = TRUE),
-      checkmate::test_logical(self@parameters$verbose, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "GroupFeatures")
+    checkmate::assert_choice(self@algorithm, "openms")
+    checkmate::assert_logical(self@parameters$rtalign, len = 1)
+    checkmate::assert_logical(self@parameters$QT, len = 1)
+    checkmate::assert_numeric(self@parameters$maxAlignRT, len = 1)
+    checkmate::assert_numeric(self@parameters$maxAlignMZ, len = 1)
+    checkmate::assert_numeric(self@parameters$maxGroupRT, len = 1)
+    checkmate::assert_numeric(self@parameters$maxGroupMZ, len = 1)
+    checkmate::assert_logical(self@parameters$verbose, len = 1)
     NULL
   }
 )

@@ -38,13 +38,10 @@ StatisticSettings_Quantify_mcrals <- S7::new_class("StatisticSettings_Quantify_m
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Statistic"),
-      checkmate::test_choice(self@method, "Quantify"),
-      checkmate::test_choice(self@algorithm, "mcrals"),
-      checkmate::test_numeric(self@parameters$concentrations)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@method, "Quantify")
+    checkmate::assert_choice(self@algorithm, "mcrals")
+    checkmate::assert_numeric(self@parameters$concentrations)
     NULL
   }
 )

@@ -109,30 +109,27 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "GenerateFormulas"),
-      checkmate::test_choice(self@algorithm, "genform"),
-      checkmate::test_number(self@parameters$relMzDev),
-      checkmate::test_character(self@parameters$elements, min.len = 1),
-      checkmate::test_logical(self@parameters$hetero, len = 1),
-      checkmate::test_logical(self@parameters$oc, len = 1),
-      checkmate::test_numeric(self@parameters$thrMS, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$thrMSMS, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$thrComb, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$maxCandidates, len = 1),
-      checkmate::test_character(self@parameters$extraOpts, null.ok = TRUE),
-      checkmate::test_logical(self@parameters$calculateFeatures, len = 1),
-      checkmate::test_numeric(self@parameters$featThreshold, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$featThresholdAnn, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$absAlignMzDev, len = 1, null.ok = TRUE),
-      checkmate::test_choice(self@parameters$MSMode, c("MS", "MSMS", "both")),
-      checkmate::test_logical(self@parameters$isolatePrec),
-      checkmate::test_numeric(self@parameters$timeout, len = 1),
-      checkmate::test_numeric(self@parameters$topMost, len = 1),
-      checkmate::test_numeric(self@parameters$batchSize, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "GenerateFormulas")
+    checkmate::assert_choice(self@algorithm, "genform")
+    checkmate::assert_number(self@parameters$relMzDev)
+    checkmate::assert_character(self@parameters$elements, min.len = 1)
+    checkmate::assert_logical(self@parameters$hetero, len = 1)
+    checkmate::assert_logical(self@parameters$oc, len = 1)
+    checkmate::assert_numeric(self@parameters$thrMS, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$thrMSMS, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$thrComb, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$maxCandidates, len = 1)
+    checkmate::assert_character(self@parameters$extraOpts, null.ok = TRUE)
+    checkmate::assert_logical(self@parameters$calculateFeatures, len = 1)
+    checkmate::assert_numeric(self@parameters$featThreshold, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$featThresholdAnn, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$absAlignMzDev, len = 1, null.ok = TRUE)
+    checkmate::assert_choice(self@parameters$MSMode, c("MS", "MSMS", "both"))
+    checkmate::assert_logical(self@parameters$isolatePrec)
+    checkmate::assert_numeric(self@parameters$timeout, len = 1)
+    checkmate::assert_numeric(self@parameters$topMost, len = 1)
+    checkmate::assert_numeric(self@parameters$batchSize, len = 1)
     NULL
   }
 )

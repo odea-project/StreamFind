@@ -22,7 +22,12 @@ MassSpecSettings_CalculateFeaturesQuality_StreamFind <- S7::new_class("MassSpecS
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(filtered = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 6, baseCut = 0) {
+  constructor = function(filtered = FALSE,
+                         rtExpand = 0,
+                         mzExpand = 0,
+                         minTracesIntensity = 0,
+                         minNumberTraces = 6,
+                         baseCut = 0) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
@@ -47,18 +52,15 @@ MassSpecSettings_CalculateFeaturesQuality_StreamFind <- S7::new_class("MassSpecS
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "CalculateFeaturesQuality"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_logical(self@parameters$filtered, max.len = 1),
-      checkmate::test_number(self@parameters$rtExpand),
-      checkmate::test_number(self@parameters$mzExpand),
-      checkmate::test_integer(as.integer(self@parameters$minNUmberTraces)),
-      checkmate::test_number(self@parameters$minTracesIntensity),
-      checkmate::test_number(self@parameters$baseCut)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "CalculateFeaturesQuality")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_logical(self@parameters$filtered, max.len = 1)
+    checkmate::assert_number(self@parameters$rtExpand)
+    checkmate::assert_number(self@parameters$mzExpand)
+    checkmate::assert_integer(as.integer(self@parameters$minNUmberTraces))
+    checkmate::assert_number(self@parameters$minTracesIntensity)
+    checkmate::assert_number(self@parameters$baseCut)
     NULL
   }
 )

@@ -24,7 +24,7 @@ StatisticSettings_MakeModel_pca_mdatools(
 
 \item{exclcols}{Integer vector with the column indices to be excluded.}
 
-\item{x.test}{Matrix with the test data.}
+\item{x.test}{A \code{data.frame} with the test data.}
 
 \item{method}{Character (length 1) with the method to be used for PCA. Possible values are "svd" and "nipals".}
 

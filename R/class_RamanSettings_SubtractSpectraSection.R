@@ -39,14 +39,11 @@ RamanSettings_SubtractSpectraSection_StreamFind <- S7::new_class("RamanSettings_
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "Raman"),
-      checkmate::test_choice(self@method, "SubtractSpectraSection"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_character(self@parameters$sectionVal, min.len = 1),
-      checkmate::test_numeric(self@parameters$sectionWindow, len = 2)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "SubtractSpectraSection")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_character(self@parameters$sectionVal, min.len = 1)
+    checkmate::assert_numeric(self@parameters$sectionWindow, len = 2)
     NULL
   }
 )
@@ -80,9 +77,9 @@ S7::method(run, RamanSettings_SubtractSpectraSection_StreamFind) <- function(x, 
   
   spec_cut <- lapply(spec_list, function(z) {
     
-    if (nrow(z) == 0) return(data.table())
+    if (nrow(z) == 0) return(data.table::data.table())
     
-    res <- copy(z)
+    res <- data.table::copy(z)
     
     if (!is.null(sectionVal) && !is.null(sectionWindow)) {
       
@@ -107,7 +104,7 @@ S7::method(run, RamanSettings_SubtractSpectraSection_StreamFind) <- function(x, 
               z
             }, cutSec = cutSec)
             
-            res <- rbindlist(res_list)
+            res <- data.table::rbindlist(res_list)
           }
         }
       }

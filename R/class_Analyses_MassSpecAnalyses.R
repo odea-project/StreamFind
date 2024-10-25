@@ -2410,7 +2410,7 @@ S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
   if ("name" %in% colnames(fts)) {
     tar_ids <- fts$name
     names(tar_ids) <- unique_fts_id
-    ms1$name <- tar_ids[unique_ms2_id]
+    ms2$name <- tar_ids[unique_ms2_id]
   }
   
   ms2

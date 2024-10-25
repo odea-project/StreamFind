@@ -41,15 +41,12 @@ MassSpecSettings_ClusterSpectra_StreamFind <- S7::new_class("MassSpecSettings_Cl
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "ClusterSpectra"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_character(self@parameters$val, min.len = 1),
-      checkmate::test_number(self@parameters$clustVal),
-      checkmate::test_number(self@parameters$presence)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "ClusterSpectra")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_character(self@parameters$val, min.len = 1)
+    checkmate::assert_number(self@parameters$clustVal)
+    checkmate::assert_number(self@parameters$presence)
     NULL
   }
 )

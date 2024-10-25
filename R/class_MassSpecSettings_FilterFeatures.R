@@ -43,16 +43,13 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "FilterFeatures"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_numeric(self@parameters$minSnRatio, len = 1, null.ok = TRUE),
-      checkmate::test_logical(self@parameters$excludeIsotopes, len = 1, null.ok = TRUE),
-      checkmate::test_logical(self@parameters$excludeAdducts, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$minIntensity, len = 1, null.ok = TRUE)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FilterFeatures")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_numeric(self@parameters$minSnRatio, len = 1, null.ok = TRUE)
+    checkmate::assert_logical(self@parameters$excludeIsotopes, len = 1, null.ok = TRUE)
+    checkmate::assert_logical(self@parameters$excludeAdducts, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$minIntensity, len = 1, null.ok = TRUE)
     NULL
   }
 )
@@ -701,11 +698,8 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
 #' @param featQualityRange Numeric length two. Feature quality range for a feature.
 #' @param groupQualityRange Numeric length two. Group quality range for a feature group.
 #' @param rGroups List of replicate groups.
-#' @param results Only keep feature groups that have results in the object specified by results. See 
-#' \code{\link[patRoon]{replicateGroupSubtract}} for further information.
 #' @param removeBlanks Logical length one. Remove blank samples.
 #' @param removeISTDs Logical length one. Remove internal standards.
-#' @param checkFeaturesSession Check features session.
 #' @param removeNA Logical length one. Remove NA values.
 #' @param negate Logical length one. Negate the filter.
 #'
@@ -749,11 +743,8 @@ MassSpecSettings_FilterFeatures_patRoon <- S7::new_class("MassSpecSettings_Filte
                          featQualityRange = NULL,
                          groupQualityRange = NULL,
                          rGroups = NULL,
-                         results = NULL,
                          removeBlanks = FALSE,
                          removeISTDs = FALSE,
-                         checkFeaturesSession = NULL,
-                         # predAggrParams = patRoon::getDefPredAggrParams(),
                          removeNA = FALSE,
                          negate = FALSE) {
     
@@ -789,11 +780,8 @@ MassSpecSettings_FilterFeatures_patRoon <- S7::new_class("MassSpecSettings_Filte
         "featQualityRange" = featQualityRange,
         "groupQualityRange" = groupQualityRange,
         "rGroups" = rGroups,
-        "results" = results,
         "removeBlanks" = removeBlanks,
         "removeISTDs" = removeISTDs,
-        "checkFeaturesSession" = checkFeaturesSession,
-        # "predAggrParams" = predAggrParams,
         "removeNA" = removeNA,
         "negate" = negate
       ),
@@ -808,45 +796,40 @@ MassSpecSettings_FilterFeatures_patRoon <- S7::new_class("MassSpecSettings_Filte
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "FilterFeatures"),
-      checkmate::test_choice(self@algorithm, "patRoon"),
-      checkmate::test_numeric(self@parameters$absMinIntensity, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$relMinIntensity, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$preAbsMinIntensity, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$preRelMinIntensity, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$absMinAnalyses, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$relMinAnalyses, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$absMinReplicates, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$relMinReplicates, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$absMinFeatures, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$relMinFeatures, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$absMinReplicateAbundance, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$relMinReplicateAbundance, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$absMinConc, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$relMinConc, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$absMaxTox, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$relMaxTox, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$absMinConcTox, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$relMinConcTox, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$maxReplicateIntRSD, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$blankThreshold, len = 1, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$retentionRange, len = 2, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$mzRange, len = 2, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$mzDefectRange, len = 2, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$chromWidthRange, len = 2, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$featQualityRange, len = 2, null.ok = TRUE),
-      checkmate::test_numeric(self@parameters$groupQualityRange, len = 2, null.ok = TRUE),
-      checkmate::test_character(self@parameters$rGroups, null.ok = TRUE),
-      checkmate::test_list(self@parameters$results, null.ok = TRUE),
-      checkmate::test_logical(self@parameters$removeBlanks, len = 1),
-      checkmate::test_logical(self@parameters$removeISTDs, len = 1),
-      checkmate::test_list(self@parameters$checkFeaturesSession, null.ok = TRUE),
-      checkmate::test_logical(self@parameters$removeNA, len = 1),
-      checkmate::test_logical(self@parameters$negate, len = 1)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FilterFeatures")
+    checkmate::assert_choice(self@algorithm, "patRoon")
+    checkmate::assert_numeric(self@parameters$absMinIntensity, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$relMinIntensity, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$preAbsMinIntensity, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$preRelMinIntensity, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$absMinAnalyses, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$relMinAnalyses, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$absMinReplicates, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$relMinReplicates, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$absMinFeatures, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$relMinFeatures, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$absMinReplicateAbundance, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$relMinReplicateAbundance, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$absMinConc, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$relMinConc, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$absMaxTox, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$relMaxTox, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$absMinConcTox, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$relMinConcTox, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$maxReplicateIntRSD, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$blankThreshold, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$retentionRange, len = 2, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$mzRange, len = 2, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$mzDefectRange, len = 2, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$chromWidthRange, len = 2, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$featQualityRange, len = 2, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$groupQualityRange, len = 2, null.ok = TRUE)
+    checkmate::assert_character(self@parameters$rGroups, null.ok = TRUE)
+    checkmate::assert_logical(self@parameters$removeBlanks, len = 1)
+    checkmate::assert_logical(self@parameters$removeISTDs, len = 1)
+    checkmate::assert_logical(self@parameters$removeNA, len = 1)
+    checkmate::assert_logical(self@parameters$negate, len = 1)
     NULL
   }
 )

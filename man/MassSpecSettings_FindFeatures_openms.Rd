@@ -24,7 +24,6 @@ MassSpecSettings_FindFeatures_openms(
   isotopeFilteringModel = "none",
   MZScoring13C = FALSE,
   useSmoothedInts = FALSE,
-  extraOpts = NULL,
   intSearchRTWindow = 3,
   useFFMIntensities = FALSE,
   verbose = FALSE
@@ -91,8 +90,6 @@ lipidomics!). Disable for general metabolites
 
 \item{useSmoothedInts}{Use LOWESS intensities instead of raw intensities.}
 
-\item{extraOpts}{= NULL,}
-
 \item{intSearchRTWindow}{Retention time window (in seconds, +/- feature
 retention time) that is used to find the closest data point to the retention
 time to obtain the intensity of a feature (this is needed since OpenMS does
@@ -106,6 +103,8 @@ experimental, may be less accurate and requires a recent version of OpenMS
 (>=2.7).}
 
 \item{verbose}{Logical of length one. When TRUE adds processing information to the console.}
+
+\item{extraOpts}{= NULL,}
 }
 \value{
 A \code{MassSpecSettings_FindFeatures_openms} object.

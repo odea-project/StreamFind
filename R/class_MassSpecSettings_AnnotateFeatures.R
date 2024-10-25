@@ -55,16 +55,13 @@ MassSpecSettings_AnnotateFeatures_StreamFind <- S7::new_class("MassSpecSettings_
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "AnnotateFeatures"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_count(self@parameters$maxIsotopes),
-      checkmate::test_count(self@parameters$maxCharge),
-      checkmate::test_count(self@parameters$maxGaps),
-      checkmate::test_number(self@parameters$rtWindowAlignment)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "AnnotateFeatures")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_count(self@parameters$maxIsotopes)
+    checkmate::assert_count(self@parameters$maxCharge)
+    checkmate::assert_count(self@parameters$maxGaps)
+    checkmate::assert_number(self@parameters$rtWindowAlignment)
     NULL
   }
 )

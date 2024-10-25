@@ -11,8 +11,6 @@ MassSpecSettings_GroupFeatures_openms(
   maxAlignMZ = 0.008,
   maxGroupRT = 5,
   maxGroupMZ = 0.008,
-  extraOptsRT = NULL,
-  extraOptsGroup = NULL,
   verbose = FALSE
 )
 }
@@ -33,12 +31,6 @@ feature pairing when performing grouping.}
 
 \item{maxGroupMZ}{Numeric length one. Maximum \emph{m/z} (in Da) for
 feature pairing when performing grouping.}
-
-\item{extraOptsRT}{Named list containing extra options that will be passed
-to MapAlignerPoseClustering.}
-
-\item{extraOptsGroup}{Named list containing extra options that will be passed
-to FeatureLinkerUnlabeledQT/FeatureLinkerUnlabeled.}
 
 \item{verbose}{Logical of length one. When TRUE adds processing information
 to the console.}
