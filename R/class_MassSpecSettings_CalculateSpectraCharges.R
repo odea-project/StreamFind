@@ -20,16 +20,18 @@ MassSpecSettings_CalculateSpectraCharges_StreamFind <- S7::new_class("MassSpecSe
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(roundVal = 35, relLowCut = 0.2, absLowCut = 300) {
+  constructor = function(roundVal = 35,
+                         relLowCut = 0.2,
+                         absLowCut = 300) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CalculateSpectraCharges",
       algorithm = "StreamFind",
       parameters = list(
-        roundVal = roundVal,
-        relLowCut = relLowCut,
-        absLowCut = absLowCut
+        roundVal = as.numeric(roundVal),
+        relLowCut = as.numeric(relLowCut),
+        absLowCut = as.numeric(absLowCut)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),

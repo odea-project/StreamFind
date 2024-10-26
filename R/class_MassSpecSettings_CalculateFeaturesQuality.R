@@ -34,12 +34,12 @@ MassSpecSettings_CalculateFeaturesQuality_StreamFind <- S7::new_class("MassSpecS
       method = "CalculateFeaturesQuality",
       algorithm = "StreamFind",
       parameters = list(
-        "filtered" = filtered,
-        "rtExpand" = rtExpand,
-        "mzExpand" = mzExpand,
-        "minTracesIntensity" = minTracesIntensity,
-        "minNumberTraces" = minNumberTraces,
-        "baseCut" = baseCut
+        "filtered" = as.logical(filtered),
+        "rtExpand" = as.numeric(rtExpand),
+        "mzExpand" = as.numeric(mzExpand),
+        "minTracesIntensity" = as.numeric(minTracesIntensity),
+        "minNumberTraces" = as.numeric(minNumberTraces),
+        "baseCut" = as.numeric(baseCut)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),

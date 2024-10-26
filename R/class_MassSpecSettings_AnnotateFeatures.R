@@ -39,10 +39,10 @@ MassSpecSettings_AnnotateFeatures_StreamFind <- S7::new_class("MassSpecSettings_
       method = "AnnotateFeatures",
       algorithm = "StreamFind",
       parameters = list(
-        maxIsotopes = maxIsotopes,
-        maxCharge = maxCharge,
-        rtWindowAlignment = rtWindowAlignment,
-        maxGaps = maxGaps
+        maxIsotopes = as.integer(maxIsotopes),
+        maxCharge = as.integer(maxCharge),
+        rtWindowAlignment = as.numeric(rtWindowAlignment),
+        maxGaps = as.integer(maxGaps)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),

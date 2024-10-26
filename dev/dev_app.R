@@ -21,14 +21,14 @@ workflow <- StreamFind::Workflow(
     MassSpecSettings_CalculateFeaturesQuality_StreamFind(),
     MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5),
     MassSpecSettings_LoadFeaturesMS1_StreamFind(),
-    MassSpecSettings_LoadFeaturesMS2_StreamFind(),
-    MassSpecSettings_LoadMSPeakLists_StreamFind(),
-    MassSpecSettings_GenerateFormulas_genform(),
-    MassSpecSettings_GenerateCompounds_metfrag()
+    MassSpecSettings_LoadFeaturesMS2_StreamFind()
+    # MassSpecSettings_LoadMSPeakLists_StreamFind(),
+    # MassSpecSettings_GenerateFormulas_genform(),
+    # MassSpecSettings_GenerateCompounds_metfrag()
   )
 )
 
-save(workflow, format = "rds", name = "workflow")
+# save(workflow, format = "rds", name = "workflow")
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -43,7 +43,7 @@ core$save(paste0(getwd(), "/core.rds"))
 core$run_app()
 
 # MassSpecEngine ---------------------------------------------------------------
-ms <- MassSpecEngine$new(analyses = dev_files, workflow = NULL)
+ms <- MassSpecEngine$new(analyses = dev_files, workflow = workflow)
 ms$save(paste0(getwd(), "/ms.rds"))
 ms$run_app()
 
@@ -51,3 +51,11 @@ ms$run_app()
 raman <- RamanEngine$new(analyses = raman_files)
 raman$save(paste0(getwd(), "/raman.rds"))
 raman$run_app()
+
+
+
+save(MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 3), format = "json")
+read(MassSpecSettings_FilterFeatures_StreamFind(), "settings.json")
+
+
+paste(capture.output(str(db)), collapse = "\n")

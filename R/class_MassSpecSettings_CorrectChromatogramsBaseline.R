@@ -20,16 +20,18 @@ MassSpecSettings_CorrectChromatogramsBaseline_baseline_als <- S7::new_class("Mas
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(lambda = 5, p = 0.05, maxit = 10) {
+  constructor = function(lambda = 5,
+                         p = 0.05,
+                         maxit = 10) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CorrectChromatogramsBaseline",
       algorithm = "baseline_als",
       parameters = list(
-        lambda = lambda,
-        p = p,
-        maxit = maxit
+        lambda = as.numeric(lambda),
+        p = as.numeric(p),
+        maxit = as.numeric(maxit)
       ),
       number_permitted = Inf,
       version = as.character(packageVersion("StreamFind")),
@@ -145,13 +147,19 @@ MassSpecSettings_CorrectChromatogramsBaseline_airpls <- S7::new_class("MassSpecS
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(lambda = 10, differences = 1, itermax = 20) {
+  constructor = function(lambda = 10,
+                         differences = 1,
+                         itermax = 20) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CorrectChromatogramsBaseline",
       algorithm = "airpls",
-      parameters = list(lambda = lambda, differences = differences, itermax = itermax),
+      parameters = list(
+        lambda = as.numeric(lambda),
+        differences = as.numeric(differences),
+        itermax = as.numeric(itermax)
+      ),
       number_permitted = Inf,
       version = as.character(packageVersion("StreamFind")),
       software = "airPLS",

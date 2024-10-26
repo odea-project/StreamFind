@@ -38,14 +38,14 @@ MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fill
       method = "FillFeatures",
       algorithm = "StreamFind",
       parameters = list(
-        withinReplicate = withinReplicate,
-        rtExpand = rtExpand,
-        mzExpand = mzExpand,
-        minTracesIntensity = minTracesIntensity,
-        minNumberTraces = minNumberTraces,
-        baseCut = baseCut,
-        minSignalToNoiseRatio = minSignalToNoiseRatio,
-        minGaussianFit = minGaussianFit
+        withinReplicate = as.logical(withinReplicate),
+        rtExpand = as.numeric(rtExpand),
+        mzExpand = as.numeric(mzExpand),
+        minTracesIntensity = as.numeric(minTracesIntensity),
+        minNumberTraces = as.numeric(minNumberTraces),
+        baseCut = as.numeric(baseCut),
+        minSignalToNoiseRatio = as.numeric(minSignalToNoiseRatio),
+        minGaussianFit = as.numeric(minGaussianFit)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),

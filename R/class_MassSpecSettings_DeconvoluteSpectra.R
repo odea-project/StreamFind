@@ -25,8 +25,8 @@ MassSpecSettings_DeconvoluteSpectra_StreamFind <- S7::new_class("MassSpecSetting
       method = "DeconvoluteSpectra",
       algorithm = "StreamFind",
       parameters = list(
-        clustVal = clustVal,
-        window = window
+        clustVal = as.numeric(clustVal),
+        window = as.numeric(window)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -43,7 +43,7 @@ MassSpecSettings_DeconvoluteSpectra_StreamFind <- S7::new_class("MassSpecSetting
     checkmate::assert_choice(self@method, "DeconvoluteSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$clustVal)
-    checkmate::assert_number(self@parameters$window, null.ok = TRUE)
+    checkmate::assert_number(self@parameters$window)
     NULL
   }
 )
@@ -88,7 +88,7 @@ S7::method(run, MassSpecSettings_DeconvoluteSpectra_StreamFind) <- function(x, e
     
     profiles <- lapply(seq_len(nrow(y)), function(j) {
       
-      if (is.null(windowVal)) {
+      if (is.na(windowVal) || length(windowVal) == 0) {
         
         if (j == nrow(y)) {
           window <- (y$mz[j] - y$mz[j - 1]) / 2

@@ -3,10 +3,18 @@
   ns2 <- shiny::NS(id)
   htmltools::tagList(
     shiny::fluidRow(
-      shiny::column(6, shiny::uiOutput(ns(ns2("workflow_settings")))),
-      shiny::column(6, shiny::uiOutput(ns(ns2("selected_method_details"))))
+      shiny::column(6, class = "workflow-column", shiny::uiOutput(ns(ns2("workflow_settings")))),
+      shiny::column(6, class = "method-column", shiny::uiOutput(ns(ns2("selected_method_details"))))
     ),
     htmltools::tags$style(htmltools::HTML("
+      .workflow-column {
+        padding-right: 0px;
+        margin-right: 0px;
+      }
+      .method-column {
+        padding-left: 0px;
+        margin-left: 0px;
+      }
       .custom-button {
         background-color: #3498DB;
         color: white;
@@ -48,25 +56,27 @@
         padding: 15px;
         margin-bottom: 20px;
       }
-      .method-details {
-        background-color: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 5px;
-        padding: 20px;
-      }
       .method-details dt {
         font-weight: bold;
         float: left;
         clear: left;
         width: 120px;
+        padding-bottom: 1px;
+        padding-top: 1px;
+        margin-bottom: 0px;
+        margin-top: 0px;
       }
       .method-details dd {
         margin-left: 130px;
+        padding-bottom: 1px;
+        padding-top: 12px;
+        margin-bottom: 0px;
+        margin-top: 0px;
       }
       .parameters-section {
-        margin-top: 20px;
-        border-top: 1px solid #e9ecef;
-        padding-top: 20px;
+        margin-top: 2px;
+        border-top: 1px solid #ccc;
+        padding-top: 2px;
       }
     "))
   )
@@ -346,97 +356,16 @@
     # out Selected Method Details -----
     output$selected_method_details <- shiny::renderUI({
       shiny::req(reactive_selected_method())
-      selected_method <- reactive_selected_method()
-      rw <- reactive_workflow()
-      if (selected_method %in% rw@names) {
-        htmltools::tagList(
-          shiny::h3(selected_method, style = "color: #3498DB; margin-bottom: 20px;"),
-          shiny::actionButton(ns(ns2("update_method")), "Update Settings", class = "btn-primary", style = "color: white; margin-top: 20px; margin-bottom: 20px"),
-          shiny::uiOutput(ns(ns2("method_parameters_ui")))
-        )
-      }
-    })
-    
-    # obs Update Method -----
-    shiny::observeEvent(input$update_method, {
-      rw <- reactive_workflow()
-      selected_method <- reactive_selected_method()
-      shiny::req(selected_method %in% rw@names)
-      settings <- rw[[selected_method]]
-      param_names <- names(settings$parameters)
-      
-      for (param_name in param_names) {
-        param_class <- class(settings$parameters[[param_name]])
-        
-        if (param_class == "logical") {
-          settings$parameters[[param_name]] <- as.logical(input[[param_name]])
-          
-        } else if (param_class == "numeric") {
-          settings$parameters[[param_name]] <- as.numeric(input[[param_name]])
-          
-        } else if (param_class == "character") {
-          settings$parameters[[param_name]] <- as.character(input[[param_name]])
-          
-        } else if (param_class == "integer") {
-          settings$parameters[[param_name]] <- as.integer(input[[param_name]])
-          
-        } else if (param_class == "data.frame") {
-          settings$parameters[[param_name]] <- as.data.frame(input[[param_name]])
-          
-        } else if (param_class == "NULL") {
-          settings$parameters[param_name] <- list(NULL)
-          
-        } else {
-          browser()
-          shiny::showNotification(paste("Unsupported parameter type for ", param_name), duration = 5, type = "warning")
-        }
-      }
-      
-      rw[[selected_method]] <- settings
-      reactive_workflow(rw)
-      shiny::showNotification("Settings updated successfully!", type = "message")
-    })
-    
-    # out Method Parameters -----
-    output$method_parameters_ui <- shiny::renderUI({
-      shiny::req(reactive_selected_method())
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
       shiny::req(selected_method %in% rw@names)
       short_selected_method <- gsub("\\d+_", "", selected_method)
+      idx_selected_method <- gsub("\\D", "", selected_method)
       method_name <- processing_methods[short_selected_method]
       help_url <- paste0("https://odea-project.github.io/StreamFind/reference/", method_name, ".html")
       settings <- rw[[selected_method]]
+      method_editor_title <- paste0(idx_selected_method, ": ", short_selected_method)
       
-      ## func Create Parameter UI NoEdit -----
-      create_parameter_ui_noedit <- function(param_name, param_value) {
-        value_display <- if (is.atomic(param_value) && length(param_value) == 1) {
-          as.character(param_value)
-        } else if (is.list(param_value)) {
-          shiny::tags$ul(
-            style = "list-style-type: none; padding-left: 0;",
-            lapply(names(param_value), function(sub_param) {
-              shiny::tags$li(
-                shiny::tags$span(style = "color: #2980B9; font-weight: bold;", sub_param), ": ",
-                if (is.atomic(param_value[[sub_param]])) {
-                  as.character(param_value[[sub_param]])
-                } else {
-                  "NULL"
-                }
-              )
-            })
-          )
-        } else {
-          "NULL"
-        }
-
-        shiny::tagList(
-          shiny::tags$dt(shiny::tags$strong(param_name)),
-          shiny::tags$dd(value_display)
-        )
-      }
-      
-      ## func Create Parameter UI -----
       create_parameter_ui <- function(ns2, param_name, param_value) {
         input_element <- NULL
         
@@ -452,64 +381,207 @@
         } else if (is.character(param_value)) {
           input_element <- shiny::textInput(ns(ns2(param_name)), label = NULL, value = param_value)
           
-        # TODO all method must have character. logical, numeric, integer or data.frame not list
-        } else if (is.list(param_value) && all(sapply(param_value, is.character))) {
-          input_element <- shiny::tags$ul(
-            style = "list-style-type: none; padding-left: 0;",
-            lapply(seq_along(param_value), function(i) {
-              shiny::tags$li(
-                shiny::textInput(ns(ns2(paste0(param_name, "_", i))), label = NULL, value = param_value[[i]])
-              )
-            })
+        } else if (is.data.frame(param_value)) {
+          
+          pram_load_name <- paste0(selected_method, "_load_", param_name)
+          pram_save_name <- paste0(selected_method, "_save_", param_name)
+          
+          custom_datatable_str_out <- function(dt, n = 5) {
+            output <- paste0("Data Table with ", nrow(dt), " observations of ", ncol(dt), " variables:<br>")
+            for (col_name in names(dt)) {
+              col_type <- class(dt[[col_name]])
+              col_values <- head(dt[[col_name]], n)
+              col_values_str <- paste(col_values, collapse = ", ")
+              output <- paste0(output, "$ ", col_name, " : ", col_type, "<br>")
+            }
+            shiny::tags$span(shiny::HTML(output))
+          }
+          
+          shinyFiles::shinyFileChoose(input, pram_load_name, roots = reactive_volumes(), defaultRoot = "wd", session = session, filetypes = list(csv = "csv"))
+          shinyFiles::shinyFileSave(input, pram_save_name, roots = reactive_volumes(), defaultRoot = "wd", session = session)
+          
+          input_element <- shiny::tags$div(
+            shinyFiles::shinyFilesButton(
+              ns(ns2(pram_load_name)),
+              "Load (.csv)",
+              paste0("Select a CSV file for parameter ", param_name),
+              multiple = FALSE,
+              style = "width: 150px;margin-bottom: 12px;"
+            ),
+            shinyFiles::shinySaveButton(
+              ns(ns2(pram_save_name)),
+              label = "Save (.csv)",
+              title = paste0("Save as CSV the parameter ", param_name),
+              filename = param_name,
+              filetype = list(csv = "csv"),
+              style = "width: 150px;margin-bottom: 12px;"
+            ),
+            shiny::tags$br(),
+            custom_datatable_str_out(param_value, 5)
           )
           
-        # TODO Add support for data.frame by loading a csv from disk, validation of the csv is done a the settings class
+          shiny::observeEvent(input[[pram_load_name]], {
+            fileinfo <- shinyFiles::parseFilePaths(roots = reactive_volumes(), input[[pram_load_name]])
+            if (nrow(fileinfo) > 0) {
+              file <- fileinfo$datapath
+              if (length(file) == 1) {
+                if (file.exists(file)) {
+                  tryCatch({
+                    param_value <- read.csv(param_value, file)
+                  }, error = function(e) {
+                    shiny::showNotification(paste("Error loading csv file:", e$message), duration = 5, type = "error")
+                  }, warning = function(w) {
+                    shiny::showNotification(paste("Warning loading csv file:", w$message), duration = 5, type = "warning")
+                  })
+                } else {
+                  shiny::showNotification("CSV file does not exist!", duration = 5, type = "warning")
+                }
+              }
+            }
+          })
+          
+          shiny::observeEvent(input[[pram_save_name]], {
+            shiny::req(input[[pram_save_name]])
+            file_info <- shinyFiles::parseSavePath(roots = reactive_volumes(), input[[pram_save_name]])
+            if (nrow(file_info) > 0) {
+              file_path <- file_info$datapath
+              
+              tryCatch({
+                write.csv(param_value, file_path, row.names = FALSE)
+                shiny::showNotification(paste("Parameter saved successfully as ", file_path), duration = 5, type = "message")
+              }, error = function(e) {
+                shiny::showNotification(paste("Error saving csv:", e$message), duration = 5, type = "error")
+              }, warning = function(w) {
+                shiny::showNotification(paste("Warning saving csv:", w$message), duration = 5, type = "warning")
+              })
+            }
+          })
+          
         } else {
           input_element <- shiny::tags$p(paste("Unsupported parameter type: ", class(param_value)))
         }
 
-        shiny::tagList(
+        shiny::div(style = "display: flex; align-items: center;border-bottom: 1px solid #ccc;",
           shiny::tags$dt(shiny::tags$strong(param_name)),
-          shiny::tags$dd(style = "display: flex; align-items: center;", input_element)
+          shiny::tags$dd(input_element)
         )
       }
 
       param_names <- names(settings$parameters)
-      other_names <- setdiff(names(settings), c("parameters"))
-
-      shiny::tags$div(
-        class = "method-details",
-        
-        if (!is.null(help_url)) {
-          shiny::tags$div(
-            style = "margin-top: 20px;margin-bottom: 20px;",
-            shiny::tags$a(
-              href = help_url,
-              target = "_blank",
-              "View Help Documentation",
-              style = "color: #3498DB; text-decoration: underline; cursor: pointer; font-size: 16px;"
-            )
-          )
-        } else {
-          shiny::tags$div(style = "margin-top: 20px;margin-bottom: 20px;", "No help documentation available.")
-        },
-        
-        shiny::tags$dl(
-          lapply(other_names, function(param) {
-            create_parameter_ui_noedit(param, settings[[param]])
-          })
-        ),
+      
+      shinydashboard::box(width = 12, title = NULL, solidHeader = TRUE, class = "method-box",
         
         shiny::tags$div(
-          class = "parameters-section",
-          shiny::tags$h4("Parameters"),
-          shiny::tags$dl(
-            lapply(param_names, function(param) {
-              create_parameter_ui(ns2, param, settings$parameters[[param]])
-            })
+          
+          class = "method-details",
+          
+          shiny::h3(method_editor_title, style = "margin-bottom: 10px;"),
+          
+          shiny::tags$div(
+            shiny::tags$b("Software: "),
+            shiny::tags$span(settings$software),
+            shiny::tags$br(),
+            shiny::tags$b("Developer: "),
+            shiny::tags$span(settings$developer),
+            shiny::tags$br(),
+            shiny::tags$b("Contact: "),
+            shiny::tags$span(settings$contact),
+            shiny::tags$br(),
+            shiny::tags$b("Link: "),
+            shiny::tags$span(settings$link),
+            shiny::tags$br(),
+            shiny::tags$b("DOI: "),
+            shiny::tags$span(settings$doi)
+          ),
+          
+          if (!is.null(help_url)) {
+            shiny::tags$div(
+              style = "margin-top: 5px;margin-bottom: 5px;",
+              shiny::tags$a(
+                href = help_url,
+                target = "_blank",
+                "View Help Documentation",
+                style = "color: #3498DB; text-decoration: underline; cursor: pointer; font-size: 14px;"
+              )
+            )
+          } else {
+            shiny::tags$div(style = "margin-top: 5px;margin-bottom: 5px;", "No help documentation available.")
+          },
+          
+          shiny::actionButton(ns(ns2("update_method")), "Update Parameters", class = "btn-primary", style = "color: white; margin-top: 10px; margin-bottom: 10px"),
+          
+          shiny::actionButton(ns(ns2("reset_method")), "Reset Parameters", class = "btn-primary", style = "color: white; margin-top: 10px; margin-bottom: 10px"),
+          
+          shiny::tags$div(
+            class = "parameters-section",
+            shiny::tags$dl(
+              lapply(param_names, function(param) {
+                create_parameter_ui(ns2, param, settings$parameters[[param]])
+              })
+            )
           )
         )
       )
+    })
+    
+    # obs Update Method -----
+    shiny::observeEvent(input$update_method, {
+      rw <- reactive_workflow()
+      selected_method <- reactive_selected_method()
+      shiny::req(selected_method %in% rw@names)
+      settings <- rw[[selected_method]]
+      param_names <- names(settings$parameters)
+      
+      for (param_name in param_names) {
+        param_class <- class(settings$parameters[[param_name]])
+        
+        if (param_class == "logical") {
+          value <- as.logical(input[[param_name]])
+          if (length(value) == 0) value <- as.logical(NA)
+          settings$parameters[[param_name]] <- as.logical(value)
+          
+        } else if (param_class == "numeric") {
+          value <- as.numeric(input[[param_name]])
+          if (length(value) == 0) value <- as.numeric(NA_real_)
+          settings$parameters[[param_name]] <- as.numeric(value)
+          
+        } else if (param_class == "character") {
+          value <- as.character(input[[param_name]])
+          if (length(value) == 0) value <- as.character(NA_character_)
+          settings$parameters[[param_name]] <- as.character(value)
+          
+        } else if (param_class == "integer") {
+          value <- as.integer(input[[param_name]])
+          if (length(value) == 0) value <- as.integer(NA_integer_)
+          settings$parameters[[param_name]] <- as.integer(value)
+          
+        } else if (grepl("data.frame", param_class)) {
+          settings$parameters[[param_name]] <- data.table::as.data.table(input[[param_name]])
+          
+        } else if (param_class == "NULL") {
+          shiny::showNotification(paste("Parameter ", param_name, " is NULL"), duration = 5, type = "warning")
+          
+        } else {
+          shiny::showNotification(paste("Unsupported parameter type for ", param_name), duration = 5, type = "warning")
+        }
+      }
+      
+      rw[[selected_method]] <- settings
+      reactive_workflow(rw)
+      shiny::showNotification("Settings updated successfully!", type = "message")
+    })
+    
+    # obs Reset Method -----
+    shiny::observeEvent(input$reset_method, {
+      rw <- reactive_workflow()
+      selected_method <- reactive_selected_method()
+      shiny::req(selected_method %in% rw@names)
+      short_selected_method <- gsub("\\d+_", "", selected_method)
+      method_name <- processing_methods[short_selected_method]
+      settings <- do.call(method_name, list())
+      rw[[selected_method]] <- settings
+      reactive_workflow(rw)
+      shiny::showNotification("Settings reset successfully!", type = "message")
     })
   })
 }

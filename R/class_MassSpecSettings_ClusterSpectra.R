@@ -19,16 +19,18 @@ MassSpecSettings_ClusterSpectra_StreamFind <- S7::new_class("MassSpecSettings_Cl
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(val = "mz", clustVal = 0.001, presence = 0.1) {
+  constructor = function(val = "mz",
+                         clustVal = 0.001,
+                         presence = 0.1) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "ClusterSpectra",
       algorithm = "StreamFind",
       parameters = list(
-        val = val,
-        clustVal = clustVal,
-        presence = presence
+        val = as.character(val),
+        clustVal = as.numeric(clustVal),
+        presence = as.numeric(presence)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),

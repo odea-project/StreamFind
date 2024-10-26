@@ -27,7 +27,7 @@ MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(database = NULL,
+  constructor = function(database = data.table::data.table(),
                          ppm = 5,
                          sec = 10,
                          ppmMS2 = 10,
@@ -43,7 +43,7 @@ MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_
       method = "SuspectScreening",
       algorithm = "StreamFind",
       parameters = list(
-        "database" = database,
+        "database" = data.table::as.data.table(database),
         "ppm" = ppm,
         "sec" = sec,
         "ppmMS2" = ppmMS2,
@@ -77,14 +77,13 @@ MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_
     checkmate::assert_number(self@parameters$presence)
     checkmate::assert_number(self@parameters$minIntensity)
     checkmate::assert_logical(self@parameters$filtered, max.len = 1)
-    if (is.data.frame(self@parameters$database)) {
+    checkmate::assert_data_table(self@parameters$database)
+    if (nrow(self@parameters$database) > 0) {
       if (!(
             all(c("name", "mass") %in% colnames(self@parameters$database)) ||
             all(c("name", "neutralMass") %in% colnames(self@parameters$database)) ||
             all(c("name", "mz") %in% colnames(self@parameters$database))
           )) stop("Database must have at least the columns name and mass or name and neutralMass or name and mz!")
-    } else {
-      stop("Database must be a data.frame!")
     }
     NULL
   }
@@ -442,17 +441,17 @@ MassSpecSettings_SuspectScreening_patRoon <- S7::new_class("MassSpecSettings_Sus
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(suspects = NULL, rtWindow = 12, mzWindow = 0.005, filtered = FALSE) {
+  constructor = function(suspects = data.table::data.table(), rtWindow = 12, mzWindow = 0.005, filtered = FALSE) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "SuspectScreening",
       algorithm = "patRoon",
       parameters = list(
-        "suspects" = suspects,
-        "rtWindow" = rtWindow,
-        "mzWindow" = mzWindow,
-        "filtered" = filtered
+        "suspects" = data.table::as.data.table(suspects),
+        "rtWindow" = as.numeric(rtWindow),
+        "mzWindow" = as.numeric(mzWindow),
+        "filtered" = as.logical(filtered)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -471,13 +470,12 @@ MassSpecSettings_SuspectScreening_patRoon <- S7::new_class("MassSpecSettings_Sus
     checkmate::assert_number(self@parameters$rtWindow)
     checkmate::assert_number(self@parameters$mzWindow)
     checkmate::assert_logical(self@parameters$filtered, max.len = 1)
-    if (is.data.frame(self@parameters$suspects)) {
+    checkmate::assert_data_table(self@parameters$suspects)
+    if (nrow(self@parameters$suspects) > 0) {
       if (!(
           all(c("name", "neutralMass") %in% colnames(self@parameters$suspects)) ||
           all(c("name", "mz") %in% colnames(self@parameters$suspects))
           )) stop("Suspects must have at least the columns name and neutralMass or name and mz!")
-    } else {
-      stop("Suspects must be a data.frame!")
     }
     NULL
   }
@@ -504,6 +502,11 @@ S7::method(run, MassSpecSettings_SuspectScreening_patRoon) <- function(x, engine
   
   if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
+    return(FALSE)
+  }
+  
+  if (nrow(x$parameters$suspects) == 0) {
+    warning("Suspects data.frame is empty! Not done.")
     return(FALSE)
   }
   

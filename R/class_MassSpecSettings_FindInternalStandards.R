@@ -7,7 +7,7 @@
 #'
 #' @description Settings for finding internal standards using a data.frame.
 #'
-#' @param database A data.frame with at least the columns name, mass, and rt indicating the name, neutral monoisotopic 
+#' @param database A data.table with at least the columns name, mass, and rt indicating the name, neutral monoisotopic 
 #' mass and retention time of the internal standards, respectively.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
@@ -20,7 +20,13 @@ MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSett
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(database = NULL, ppm = 5, sec = 10) {
+  constructor = function(database = data.table::data.table(
+                            name = character(),
+                            mass = numeric(),
+                            rt = numeric()
+                          ),
+                         ppm = 5,
+                         sec = 10) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
@@ -28,8 +34,8 @@ MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSett
       algorithm = "StreamFind",
       parameters = list(
         database = data.table::as.data.table(database),
-        ppm = ppm,
-        sec = sec
+        ppm = as.numeric(ppm),
+        sec = as.numeric(sec)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -47,13 +53,12 @@ MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSett
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$ppm)
     checkmate::assert_number(self@parameters$sec)
-    if (is.data.frame(self@parameters$database)) {
+    checkmate::assert_data_table(self@parameters$database)
+    if (nrow(self@parameters$database) > 0) {
       if (!(
           all(c("name", "mass", "rt") %in% colnames(self@parameters$database)) ||
           all(c("name", "mz", "rt") %in% colnames(self@parameters$database)))
         ) stop("Database must have at least the columns name, mass, and rt or name, mz, and rt!")
-    } else {
-      stop("Database must be a data.frame!")
     }
     NULL
   }
@@ -107,6 +112,11 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
   database <- x$parameters$database
   
   database <- data.table::as.data.table(database)
+  
+  if (nrow(database) == 0) {
+    warning("Database is empty!")
+    return(FALSE)
+  }
   
   internal_standards <- engine$get_suspects(
     database = database,

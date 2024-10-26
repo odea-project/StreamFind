@@ -27,17 +27,17 @@ MassSpecSettings_BinSpectra_StreamFind <- S7::new_class("MassSpecSettings_BinSpe
   constructor = function(binNames = c("rt", "mz"),
                          binValues = c(5, 10),
                          byUnit = TRUE,
-                         refBinAnalysis = NULL) {
+                         refBinAnalysis = NA_integer_) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "BinSpectra",
       algorithm = "StreamFind",
       parameters = list(
-        binNames = binNames,
-        binValues = binValues,
-        byUnit = byUnit,
-        refBinAnalysis = refBinAnalysis
+        binNames = as.character(binNames),
+        binValues = as.numeric(binValues),
+        byUnit = as.logical(byUnit),
+        refBinAnalysis = as.integer(refBinAnalysis)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -58,7 +58,7 @@ MassSpecSettings_BinSpectra_StreamFind <- S7::new_class("MassSpecSettings_BinSpe
     checkmate::assert_numeric(self@parameters$binValues)
     checkmate::assert_true(length(self@parameters$binNames) == length(self@parameters$binValues))
     checkmate::assert_logical(self@parameters$byUnit, len = 1)
-    checkmate::assert_numeric(self@parameters$refBinAnalysis, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$refBinAnalysis, len = 1)
     NULL
   }
 )
@@ -104,8 +104,8 @@ S7::method(run, MassSpecSettings_BinSpectra_StreamFind) <- function(x, engine = 
   ref_bin_key <- NULL
   . <- NULL
   
-  if (!is.null(refBinAnalysis)) {
-    if (is.numeric(refBinAnalysis) && length(refBinAnalysis) == 1) {
+  if (!is.na(refBinAnalysis)) {
+    if (is.integer(refBinAnalysis) && length(refBinAnalysis) == 1) {
       refBinAnalysis <- engine$analyses$names[refBinAnalysis]
     }
     
