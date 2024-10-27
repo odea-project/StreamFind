@@ -27,7 +27,11 @@ MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(database = data.table::data.table(),
+  constructor = function(database = data.table::data.table(
+                           name = character(),
+                           formula = character(),
+                           mass = numeric()
+                         ),
                          ppm = 5,
                          sec = 10,
                          ppmMS2 = 10,
@@ -44,15 +48,15 @@ MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_
       algorithm = "StreamFind",
       parameters = list(
         "database" = data.table::as.data.table(database),
-        "ppm" = ppm,
-        "sec" = sec,
-        "ppmMS2" = ppmMS2,
-        "minFragments" = minFragments,
-        "isolationWindow" = isolationWindow,
-        "mzClust" = mzClust,
-        "presence" = presence,
-        "minIntensity" = minIntensity,
-        "filtered" = filtered
+        "ppm" = as.numeric(ppm),
+        "sec" = as.numeric(sec),
+        "ppmMS2" = as.numeric(ppmMS2),
+        "minFragments" = as.numeric(minFragments),
+        "isolationWindow" = as.numeric(isolationWindow),
+        "mzClust" = as.numeric(mzClust),
+        "presence" = as.numeric(presence),
+        "minIntensity" = as.numeric(minIntensity),
+        "filtered" = as.logical(filtered)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -78,13 +82,11 @@ MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_
     checkmate::assert_number(self@parameters$minIntensity)
     checkmate::assert_logical(self@parameters$filtered, max.len = 1)
     checkmate::assert_data_table(self@parameters$database)
-    if (nrow(self@parameters$database) > 0) {
-      if (!(
-            all(c("name", "mass") %in% colnames(self@parameters$database)) ||
-            all(c("name", "neutralMass") %in% colnames(self@parameters$database)) ||
-            all(c("name", "mz") %in% colnames(self@parameters$database))
-          )) stop("Database must have at least the columns name and mass or name and neutralMass or name and mz!")
-    }
+    checkmate::assert_true(
+      all(c("name", "mass") %in% colnames(self@parameters$database)) ||
+      all(c("name", "neutralMass") %in% colnames(self@parameters$database)) ||
+      all(c("name", "mz") %in% colnames(self@parameters$database))
+    )
     NULL
   }
 )

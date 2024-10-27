@@ -78,7 +78,6 @@ The function uses the package <span class="pkg">patRoon</span> in the background
 <span>  isotopeFilteringModel <span class="op">=</span> <span class="st">"none"</span>,</span>
 <span>  MZScoring13C <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  useSmoothedInts <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  extraOpts <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  intSearchRTWindow <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  useFFMIntensities <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -187,10 +186,6 @@ lipidomics!). Disable for general metabolites
 <dd><p>Use LOWESS intensities instead of raw intensities.</p></dd>
 
 
-<dt id="arg-extraopts">extraOpts<a class="anchor" aria-label="anchor" href="#arg-extraopts"></a></dt>
-<dd><p>= NULL,</p></dd>
-
-
 <dt id="arg-intsearchrtwindow">intSearchRTWindow<a class="anchor" aria-label="anchor" href="#arg-intsearchrtwindow"></a></dt>
 <dd><p>Retention time window (in seconds, +/- feature
 retention time) that is used to find the closest data point to the retention
@@ -209,6 +204,10 @@ experimental, may be less accurate and requires a recent version of OpenMS
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical of length one. When TRUE adds processing information to the console.</p></dd>
+
+
+<dt id="arg-extraopts">extraOpts<a class="anchor" aria-label="anchor" href="#arg-extraopts"></a></dt>
+<dd><p>= NULL,</p></dd>
 
 </dl></div>
     <div class="section level2">

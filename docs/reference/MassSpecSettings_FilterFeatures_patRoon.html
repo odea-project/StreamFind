@@ -80,10 +80,8 @@ in <code><a href="https://rdrr.io/pkg/patRoon/man/feature-filtering.html" class=
 <span>  featQualityRange <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  groupQualityRange <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  rGroups <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  results <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  removeBlanks <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  removeISTDs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  checkFeaturesSession <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  removeNA <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  negate <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -198,12 +196,7 @@ in <code><a href="https://rdrr.io/pkg/patRoon/man/feature-filtering.html" class=
 
 
 <dt id="arg-rgroups">rGroups<a class="anchor" aria-label="anchor" href="#arg-rgroups"></a></dt>
-<dd><p>List of replicate groups.</p></dd>
-
-
-<dt id="arg-results">results<a class="anchor" aria-label="anchor" href="#arg-results"></a></dt>
-<dd><p>Only keep feature groups that have results in the object specified by results. See
-<code><a href="https://rdrr.io/pkg/patRoon/man/feature-filtering.html" class="external-link">replicateGroupSubtract</a></code> for further information.</p></dd>
+<dd><p>Character with the replicate group names to filter.</p></dd>
 
 
 <dt id="arg-removeblanks">removeBlanks<a class="anchor" aria-label="anchor" href="#arg-removeblanks"></a></dt>
@@ -212,10 +205,6 @@ in <code><a href="https://rdrr.io/pkg/patRoon/man/feature-filtering.html" class=
 
 <dt id="arg-removeistds">removeISTDs<a class="anchor" aria-label="anchor" href="#arg-removeistds"></a></dt>
 <dd><p>Logical length one. Remove internal standards.</p></dd>
-
-
-<dt id="arg-checkfeaturessession">checkFeaturesSession<a class="anchor" aria-label="anchor" href="#arg-checkfeaturessession"></a></dt>
-<dd><p>Check features session.</p></dd>
 
 
 <dt id="arg-removena">removeNA<a class="anchor" aria-label="anchor" href="#arg-removena"></a></dt>

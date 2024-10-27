@@ -21,8 +21,8 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
   package = "StreamFind",
   
   constructor = function(minSnRatio = NA_real_,
-                         excludeIsotopes = NA_real_,
-                         excludeAdducts = NA_real_,
+                         excludeIsotopes = FALSE,
+                         excludeAdducts = FALSE,
                          minIntensity = NA_real_) {
     
     S7::new_object(ProcessingSettings(
@@ -31,8 +31,8 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
       algorithm = "StreamFind",
       parameters = list(
         minSnRatio = as.numeric(minSnRatio),
-        excludeIsotopes = as.numeric(excludeIsotopes),
-        excludeAdducts = as.numeric(excludeAdducts),
+        excludeIsotopes = as.logical(excludeIsotopes),
+        excludeAdducts = as.logical(excludeAdducts),
         minIntensity = as.numeric(minIntensity)
       ),
       number_permitted = Inf,
@@ -802,37 +802,37 @@ MassSpecSettings_FilterFeatures_patRoon <- S7::new_class("MassSpecSettings_Filte
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FilterFeatures")
     checkmate::assert_choice(self@algorithm, "patRoon")
-    checkmate::assert_numeric(self@parameters$absMinIntensity, len = 1)
-    checkmate::assert_numeric(self@parameters$relMinIntensity, len = 1)
-    checkmate::assert_numeric(self@parameters$preAbsMinIntensity, len = 1)
-    checkmate::assert_numeric(self@parameters$preRelMinIntensity, len = 1)
-    checkmate::assert_numeric(self@parameters$absMinAnalyses, len = 1)
-    checkmate::assert_numeric(self@parameters$relMinAnalyses, len = 1)
-    checkmate::assert_numeric(self@parameters$absMinReplicates, len = 1)
-    checkmate::assert_numeric(self@parameters$relMinReplicates, len = 1)
-    checkmate::assert_numeric(self@parameters$absMinFeatures, len = 1)
-    checkmate::assert_numeric(self@parameters$relMinFeatures, len = 1)
-    checkmate::assert_numeric(self@parameters$absMinReplicateAbundance, len = 1)
-    checkmate::assert_numeric(self@parameters$relMinReplicateAbundance, len = 1)
-    checkmate::assert_numeric(self@parameters$absMinConc, len = 1)
-    checkmate::assert_numeric(self@parameters$relMinConc, len = 1)
-    checkmate::assert_numeric(self@parameters$absMaxTox, len = 1)
-    checkmate::assert_numeric(self@parameters$relMaxTox, len = 1)
-    checkmate::assert_numeric(self@parameters$absMinConcTox, len = 1)
-    checkmate::assert_numeric(self@parameters$relMinConcTox, len = 1)
-    checkmate::assert_numeric(self@parameters$maxReplicateIntRSD, len = 1)
-    checkmate::assert_numeric(self@parameters$blankThreshold, len = 1)
-    checkmate::assert_numeric(self@parameters$retentionRange, len = 2)
-    checkmate::assert_numeric(self@parameters$mzRange, len = 2)
-    checkmate::assert_numeric(self@parameters$mzDefectRange, len = 2)
-    checkmate::assert_numeric(self@parameters$chromWidthRange, len = 2)
-    checkmate::assert_numeric(self@parameters$featQualityRange, len = 2)
-    checkmate::assert_numeric(self@parameters$groupQualityRange, len = 2)
+    checkmate::assert_numeric(self@parameters$absMinIntensity)
+    checkmate::assert_numeric(self@parameters$relMinIntensity)
+    checkmate::assert_numeric(self@parameters$preAbsMinIntensity)
+    checkmate::assert_numeric(self@parameters$preRelMinIntensity)
+    checkmate::assert_numeric(self@parameters$absMinAnalyses)
+    checkmate::assert_numeric(self@parameters$relMinAnalyses)
+    checkmate::assert_numeric(self@parameters$absMinReplicates)
+    checkmate::assert_numeric(self@parameters$relMinReplicates)
+    checkmate::assert_numeric(self@parameters$absMinFeatures)
+    checkmate::assert_numeric(self@parameters$relMinFeatures)
+    checkmate::assert_numeric(self@parameters$absMinReplicateAbundance)
+    checkmate::assert_numeric(self@parameters$relMinReplicateAbundance)
+    checkmate::assert_numeric(self@parameters$absMinConc)
+    checkmate::assert_numeric(self@parameters$relMinConc)
+    checkmate::assert_numeric(self@parameters$absMaxTox)
+    checkmate::assert_numeric(self@parameters$relMaxTox)
+    checkmate::assert_numeric(self@parameters$absMinConcTox)
+    checkmate::assert_numeric(self@parameters$relMinConcTox)
+    checkmate::assert_numeric(self@parameters$maxReplicateIntRSD)
+    checkmate::assert_numeric(self@parameters$blankThreshold)
+    checkmate::assert_numeric(self@parameters$retentionRange)
+    checkmate::assert_numeric(self@parameters$mzRange)
+    checkmate::assert_numeric(self@parameters$mzDefectRange)
+    checkmate::assert_numeric(self@parameters$chromWidthRange)
+    checkmate::assert_numeric(self@parameters$featQualityRange)
+    checkmate::assert_numeric(self@parameters$groupQualityRange)
     checkmate::assert_character(self@parameters$rGroups)
-    checkmate::assert_logical(self@parameters$removeBlanks, len = 1)
-    checkmate::assert_logical(self@parameters$removeISTDs, len = 1)
-    checkmate::assert_logical(self@parameters$removeNA, len = 1)
-    checkmate::assert_logical(self@parameters$negate, len = 1)
+    checkmate::assert_logical(self@parameters$removeBlanks)
+    checkmate::assert_logical(self@parameters$removeISTDs)
+    checkmate::assert_logical(self@parameters$removeNA)
+    checkmate::assert_logical(self@parameters$negate)
     NULL
   }
 )
@@ -874,7 +874,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
   
   if ("features" %in% is(pat$data)) parameters <- parameters[names(parameters) %in% possible_only_in_features]
   
-  parameters <- lapply(parameters, function(z) if (is.na(z) || length(z) == 0) return(NULL))
+  parameters <- lapply(parameters, function(z) if (is.na(z) || length(z) == 0) return(NULL) else z)
   
   filter_fun <- patRoon::filter
   

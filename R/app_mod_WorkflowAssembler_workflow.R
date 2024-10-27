@@ -60,14 +60,14 @@
         font-weight: bold;
         float: left;
         clear: left;
-        width: 120px;
+        width: 30%;
         padding-bottom: 1px;
         padding-top: 1px;
         margin-bottom: 0px;
         margin-top: 0px;
       }
       .method-details dd {
-        margin-left: 130px;
+        width: 70%;
         padding-bottom: 1px;
         padding-top: 12px;
         margin-bottom: 0px;
@@ -77,6 +77,16 @@
         margin-top: 2px;
         border-top: 1px solid #ccc;
         padding-top: 2px;
+      }
+      .modal-content {
+        resize: both;
+        overflow: auto;
+      }
+      .modal-dialog {
+        position: relative;
+        width: auto;
+        max-width: 80%;
+        min-width: 500px;
       }
     "))
   )
@@ -125,7 +135,7 @@
     output$clear_workflow_ui <- shiny::renderUI({
       rw <- reactive_workflow()
       if (length(rw) > 0) {
-        shiny::actionButton(ns(ns2("clear_workflow")), "Clear Changes", width = 150)
+        shiny::actionButton(ns(ns2("clear_workflow")), "Clear Workflow", width = 150)
       }
     })
     
@@ -370,16 +380,16 @@
         input_element <- NULL
         
         if (is.null(param_value)) {
-          input_element <- shiny::textInput(ns(ns2(param_name)), label = NULL, value = "")
+          input_element <- shiny::textInput(ns(ns2(param_name)), label = NULL, value = "", width = '100%')
           
         } else if (is.logical(param_value)) {
           input_element <- shiny::checkboxInput(ns(ns2(param_name)), label = NULL, value = param_value)
           
         } else if (is.numeric(param_value)) {
-          input_element <- shiny::numericInput(ns(ns2(param_name)), label = NULL, value = param_value)
+          input_element <- shiny::numericInput(ns(ns2(param_name)), label = NULL, value = param_value, width = '100%')
           
         } else if (is.character(param_value)) {
-          input_element <- shiny::textInput(ns(ns2(param_name)), label = NULL, value = param_value)
+          input_element <- shiny::textInput(ns(ns2(param_name)), label = NULL, value = param_value, width = '100%')
           
         } else if (is.data.frame(param_value)) {
           
@@ -428,6 +438,9 @@
                 if (file.exists(file)) {
                   tryCatch({
                     param_value <- read.csv(param_value, file)
+                    settings$parameters[[param_name]] <- param_value
+                    rw[[selected_method]] <- settings
+                    reactive_workflow(rw)
                   }, error = function(e) {
                     shiny::showNotification(paste("Error loading csv file:", e$message), duration = 5, type = "error")
                   }, warning = function(w) {
@@ -445,7 +458,6 @@
             file_info <- shinyFiles::parseSavePath(roots = reactive_volumes(), input[[pram_save_name]])
             if (nrow(file_info) > 0) {
               file_path <- file_info$datapath
-              
               tryCatch({
                 write.csv(param_value, file_path, row.names = FALSE)
                 shiny::showNotification(paste("Parameter saved successfully as ", file_path), duration = 5, type = "message")
@@ -500,13 +512,15 @@
               shiny::tags$a(
                 href = help_url,
                 target = "_blank",
-                "View Help Documentation",
+                "View Online Reference Page",
                 style = "color: #3498DB; text-decoration: underline; cursor: pointer; font-size: 14px;"
               )
             )
           } else {
             shiny::tags$div(style = "margin-top: 5px;margin-bottom: 5px;", "No help documentation available.")
           },
+          
+          shiny::actionButton(ns(ns2("open_help_modal")), "Help", style = "margin-top: 10px; margin-bottom: 10px"),
           
           shiny::actionButton(ns(ns2("update_method")), "Update Parameters", class = "btn-primary", style = "color: white; margin-top: 10px; margin-bottom: 10px"),
           
@@ -524,46 +538,88 @@
       )
     })
     
-    # obs Update Method -----
-    shiny::observeEvent(input$update_method, {
+    # obs Help Modal -----
+    shiny::observeEvent(input$open_help_modal, {
+      
+      shiny::req(reactive_selected_method())
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
+      shiny::req(selected_method %in% rw@names)
+      short_selected_method <- gsub("\\d+_", "", selected_method)
+      idx_selected_method <- gsub("\\D", "", selected_method)
+      method_name <- processing_methods[short_selected_method]
+      package_name <- "StreamFind"
+      package_path <- find.package(package_name, lib.loc = .libPaths())
+      
+      tryCatch({
+        rd <- tools:::fetchRdDB(paste0(package_path, "/help/StreamFind"), method_name)
+        help_page <- capture.output(tools::Rd2HTML(rd, out = "", options = list(underline_titles = FALSE)))
+        
+        shiny::showModal(shiny::modalDialog(
+          title = NULL,
+          size = "l",
+          shiny::HTML(help_page),
+          easyClose = TRUE,
+          footer = NULL
+        ))
+      }, error = function(e) {
+        shiny::showNotification(paste("Error getting help file for ", method_name, ":", e$message), duration = 5, type = "error")
+        return()
+      }, warning = function(w) {
+        shiny::showNotification(paste("Warning getting help file for ", method_name, ":", w$message), duration = 5, type = "warning")
+        return()
+      })
+    })
+    
+    # obs Update Method -----
+    shiny::observeEvent(input$update_method, {
+      shiny::req(input$update_method)
+      rw <- reactive_workflow()
+      selected_method <- reactive_selected_method()
+      
       shiny::req(selected_method %in% rw@names)
       settings <- rw[[selected_method]]
       param_names <- names(settings$parameters)
       
       for (param_name in param_names) {
-        param_class <- class(settings$parameters[[param_name]])
         
-        if (param_class == "logical") {
-          value <- as.logical(input[[param_name]])
-          if (length(value) == 0) value <- as.logical(NA)
-          settings$parameters[[param_name]] <- as.logical(value)
+        tryCatch({
+          param_class <- class(settings$parameters[[param_name]])
           
-        } else if (param_class == "numeric") {
-          value <- as.numeric(input[[param_name]])
-          if (length(value) == 0) value <- as.numeric(NA_real_)
-          settings$parameters[[param_name]] <- as.numeric(value)
-          
-        } else if (param_class == "character") {
-          value <- as.character(input[[param_name]])
-          if (length(value) == 0) value <- as.character(NA_character_)
-          settings$parameters[[param_name]] <- as.character(value)
-          
-        } else if (param_class == "integer") {
-          value <- as.integer(input[[param_name]])
-          if (length(value) == 0) value <- as.integer(NA_integer_)
-          settings$parameters[[param_name]] <- as.integer(value)
-          
-        } else if (grepl("data.frame", param_class)) {
-          settings$parameters[[param_name]] <- data.table::as.data.table(input[[param_name]])
-          
-        } else if (param_class == "NULL") {
-          shiny::showNotification(paste("Parameter ", param_name, " is NULL"), duration = 5, type = "warning")
-          
-        } else {
-          shiny::showNotification(paste("Unsupported parameter type for ", param_name), duration = 5, type = "warning")
-        }
+          if ("logical" %in% param_class) {
+            value <- as.logical(input[[param_name]])
+            if (length(value) == 0) value <- as.logical(NA)
+            settings$parameters[[param_name]] <- as.logical(value)
+            
+          } else if ("numeric" %in% param_class) {
+            value <- as.numeric(input[[param_name]])
+            if (length(value) == 0) value <- as.numeric(NA_real_)
+            settings$parameters[[param_name]] <- as.numeric(value)
+            
+          } else if ("character" %in% param_class) {
+            value <- as.character(input[[param_name]])
+            if (length(value) == 0) value <- as.character(NA_character_)
+            settings$parameters[[param_name]] <- as.character(value)
+            
+          } else if ("integer" %in% param_class) {
+            value <- as.integer(input[[param_name]])
+            if (length(value) == 0) value <- as.integer(NA_integer_)
+            settings$parameters[[param_name]] <- as.integer(value)
+            
+          } else if ("data.frame" %in% param_class) {
+            next
+            
+          } else if (param_class == "NULL") {
+            shiny::showNotification(paste("Parameter ", param_name, " is NULL"), duration = 5, type = "warning")
+            
+          } else {
+            shiny::showNotification(paste("Unsupported parameter type for ", param_name), duration = 5, type = "warning")
+          }
+        }, error = function(e) {
+          shiny::showNotification(paste("Error getting parameter ", param_name, " value:", e$message), duration = 5, type = "error")
+        }, warning = function(w) {
+          shiny::showNotification(paste("Warning getting parameter ", param_name, " value:", w$message), duration = 5, type = "warning")
+        })
       }
       
       rw[[selected_method]] <- settings

@@ -11,7 +11,7 @@ MassSpecSettings_LoadMSPeakLists_patRoon(
   topMost = 100,
   minIntensityPre = 50,
   minIntensityPost = 50,
-  avgFun = mean,
+  avgFun = "mean",
   method = "hclust",
   retainPrecursorMSMS = TRUE
 )

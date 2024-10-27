@@ -56,7 +56,7 @@ MassSpecSettings_LoadMSPeakLists_patRoon <- S7::new_class("MassSpecSettings_Load
                          topMost = 100,
                          minIntensityPre = 50,
                          minIntensityPost = 50,
-                         avgFun = mean,
+                         avgFun = "mean",
                          method = "hclust",
                          retainPrecursorMSMS = TRUE) {
     
@@ -86,21 +86,19 @@ MassSpecSettings_LoadMSPeakLists_patRoon <- S7::new_class("MassSpecSettings_Load
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "LoadMSPeakLists"),
-      checkmate::test_choice(self@algorithm, "patRoon"),
-      checkmate::test_numeric(self@parameters$maxMSRtWindow, len = 1),
-      checkmate::test_numeric(self@parameters$precursorMzWindow, len = 1),
-      checkmate::test_numeric(self@parameters$clusterMzWindow, len = 1),
-      checkmate::test_numeric(self@parameters$topMost, len = 1),
-      checkmate::test_numeric(self@parameters$minIntensityPre, len = 1),
-      checkmate::test_numeric(self@parameters$minIntensityPost, len = 1),
-      checkmate::test_function(self@parameters$avgFun),
-      checkmate::test_choice(self@parameters$method, c("hclust", "distance")),
-      checkmate::test_logical(self@parameters$retainPrecursorMSMS, len = 1)
-    )
-    if (!valid) return(FALSE)
+      checkmate::assert_choice(self@engine, "MassSpec")
+      checkmate::assert_choice(self@method, "LoadMSPeakLists")
+      checkmate::assert_choice(self@algorithm, "patRoon")
+      checkmate::assert_numeric(self@parameters$maxMSRtWindow, len = 1)
+      checkmate::assert_numeric(self@parameters$precursorMzWindow, len = 1)
+      checkmate::assert_numeric(self@parameters$clusterMzWindow, len = 1)
+      checkmate::assert_numeric(self@parameters$topMost, len = 1)
+      checkmate::assert_numeric(self@parameters$minIntensityPre, len = 1)
+      checkmate::assert_numeric(self@parameters$minIntensityPost, len = 1)
+      checkmate::assert_character(self@parameters$avgFun)
+      checkmate::assert_choice(self@parameters$method, c("hclust", "distance"))
+      checkmate::assert_logical(self@parameters$retainPrecursorMSMS, len = 1)
+    
     NULL
   }
 )
@@ -132,6 +130,8 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_patRoon) <- function(x, engine 
   }
   
   parameters <- x$parameters
+  
+  parameters$avgFun <- get(parameters$avgFun)
   
   av_args <- list(
     clusterMzWindow =  parameters$clusterMzWindow,
@@ -183,7 +183,7 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_patRoon) <- function(x, engine 
 #' be removed (applied prior to selection by `topMost`) before averaging.
 #' @param minIntensityPost MS peaks with intensities below this value will
 #' be removed after averaging.
-#' @param avgFun Function that is used to calculate average m/z values.
+#' @param avgFun Character with the function name that is used to calculate average m/z values.
 #' @param method Method used for producing averaged MS spectra. Valid
 #' values are "hclust", used for hierarchical clustering (using the
 #' fastcluster package), and "distance", to use the between peak distance.
@@ -202,7 +202,7 @@ MassSpecSettings_LoadMSPeakLists_StreamFind <- S7::new_class("MassSpecSettings_L
                          topMost = 100,
                          minIntensityPre = 50,
                          minIntensityPost = 50,
-                         avgFun = mean,
+                         avgFun = "mean",
                          method = "distance") {
     
     S7::new_object(ProcessingSettings(
@@ -228,18 +228,15 @@ MassSpecSettings_LoadMSPeakLists_StreamFind <- S7::new_class("MassSpecSettings_L
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "LoadMSPeakLists"),
-      checkmate::test_choice(self@algorithm, "StreamFind"),
-      checkmate::test_numeric(self@parameters$clusterMzWindow, len = 1),
-      checkmate::test_numeric(self@parameters$topMost, len = 1),
-      checkmate::test_numeric(self@parameters$minIntensityPre, len = 1),
-      checkmate::test_numeric(self@parameters$minIntensityPost, len = 1),
-      checkmate::test_function(self@parameters$avgFun),
-      checkmate::test_choice(self@parameters$method, c("hclust", "distance"))
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "LoadMSPeakLists")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_numeric(self@parameters$clusterMzWindow, len = 1)
+    checkmate::assert_numeric(self@parameters$topMost, len = 1)
+    checkmate::assert_numeric(self@parameters$minIntensityPre, len = 1)
+    checkmate::assert_numeric(self@parameters$minIntensityPost, len = 1)
+    checkmate::assert_character(self@parameters$avgFun)
+    checkmate::assert_choice(self@parameters$method, c("hclust", "distance"))
     NULL
   }
 )
@@ -276,6 +273,8 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
   }
   
   parameters <- x$parameters
+  
+  parameters$avgFun <- get(parameters$avgFun)
   
   mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(engine, parameters)
 

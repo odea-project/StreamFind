@@ -13,7 +13,7 @@ MassSpecSettings_GenerateCompounds_metfrag(
   dbRelMzDev = 8,
   fragRelMzDev = 10,
   fragAbsMzDev = 0.005,
-  adduct = NULL,
+  adduct = character(),
   database = "comptox",
   extendedPubChem = "auto",
   chemSpiderToken = "",

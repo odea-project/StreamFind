@@ -37,8 +37,10 @@
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_ClusterSpectra_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectChromatogramsBaseline_airpls.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectChromatogramsBaseline_baseline.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectChromatogramsBaseline_baseline_als.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectSpectraBaseline_airpls.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectSpectraBaseline_baseline.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_CorrectSpectraBaseline_baseline_als.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_DeconvoluteSpectra_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FillFeatures_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_FilterFeatures_patRoon.html</loc></url>
@@ -61,6 +63,7 @@
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadMSPeakLists_patRoon.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadMSPeakLists_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadSpectra.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_LoadSpectra_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_blockweight.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_meancenter.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecSettings_NormalizeSpectra_minmax.html</loc></url>
@@ -83,6 +86,7 @@
 <url><loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_BinSpectra_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_CorrectSpectraBaseline_airpls.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_CorrectSpectraBaseline_baseline.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_CorrectSpectraBaseline_baseline_als.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_DeleteSpectraSection_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_MergeSpectraTimeSeries_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/RamanSettings_NormalizeSpectra_blockweight.html</loc></url>

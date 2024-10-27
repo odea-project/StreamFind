@@ -171,15 +171,17 @@ scroll_box(width = "100%", height = "400px")
 <br>
 
 ```{r ms-workflow}
-ms_workflow <- list(
-  MassSpecSettings_BinSpectra_StreamFind(bins = list("rt" = 5, "mz" = 2), refBinAnalysis = 1),
-  MassSpecSettings_NormalizeSpectra_minmax(),
-  MassSpecSettings_AverageSpectra_StreamFind(),
-  MassSpecSettings_SubtractBlankSpectra_StreamFind(negativeToZero = TRUE),
-  MassSpecSettings_NormalizeSpectra_blockweight()
+ms_workflow <- StreamFind::Workflow(
+  list(
+    MassSpecSettings_BinSpectra_StreamFind(binNames = c("rt", "mz"), binValues = c(5, 2), refBinAnalysis = 1),
+    MassSpecSettings_NormalizeSpectra_minmax(),
+    MassSpecSettings_AverageSpectra_StreamFind(),
+    MassSpecSettings_SubtractBlankSpectra_StreamFind(negativeToZero = TRUE),
+    MassSpecSettings_NormalizeSpectra_blockweight()
+  )
 )
 
-ms$workflow <- StreamFind::Workflow(ms_workflow)
+ms$workflow <- ms_workflow
 
 ms$print_workflow()
 ```
@@ -284,16 +286,26 @@ scroll_box(width = "100%", height = "400px")
 ```
 
 ```{r raman-workflow}
-run(RamanSettings_AverageSpectra_StreamFind(), raman)
-run(RamanSettings_SubtractBlankSpectra_StreamFind(), raman)
-run(RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0), raman)
-run(RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))), raman)
-run(RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))), raman)
-run(RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30), raman)
-run(RamanSettings_NormalizeSpectra_minmax(), raman)
-run(RamanSettings_NormalizeSpectra_blockweight(), raman)
+raman_workflow <- StreamFind::Workflow(
+  list(
+    RamanSettings_AverageSpectra_StreamFind(),
+    RamanSettings_SubtractBlankSpectra_StreamFind(),
+    RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
+    RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -100, shiftmax = 350),
+    RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 1800, shiftmax = 2500),
+    RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30),
+    RamanSettings_NormalizeSpectra_minmax(),
+    RamanSettings_NormalizeSpectra_blockweight()
+  )
+)
+
+raman$workflow <- raman_workflow
 
 raman$print_workflow()
+```
+
+```{r raman-run-workflow}
+raman$run_workflow()
 ```
 
 ```{r plot-raman-spectra, fig.cap="Pre-processed Raman spectra for analysis replicate."}
@@ -370,54 +382,3 @@ stat2$run(StatisticSettings_MakeModel_knn(k = 3))
 stat2$predict(test_set)
 stat2$model$prediction$results
 ```
-
-<!-- ## Only MS -->
-
-<!-- ```{r pca-only-ms} -->
-<!-- ms_spec_mat <- mdatools::prep.autoscale(ms_spec_mat, center = TRUE, scale = FALSE) -->
-<!-- main_set_ms <- ms_spec_mat[c(7:9, 16:21, 25:33), ] -->
-<!-- test_set_ms <- ms_spec_mat[c(1:6, 10:15, 22:24, 34:42), ] -->
-<!-- stat_ms <- StatisticEngine$new(data = main_set_ms) -->
-<!-- stat_ms$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5)) -->
-<!-- ``` -->
-
-<!-- ```{r plot-pca-only-ms, fig.cap="PCA model for MS data only (native plot from mdatools R package).", fig.height=9} -->
-<!-- plot(stat_ms$model) -->
-<!-- ``` -->
-
-<!-- ```{r pca-omly-ms-predict, fig.cap="PCA model prediction distances for only MS data."} -->
-<!-- stat_ms$predict(test_set_ms) -->
-<!-- stat_ms$plot_predicted_distances() -->
-<!-- ``` -->
-
-<!-- Using MS data only for evaluation of quality deviations would not separate completely the analyses when compared to  -->
-<!-- fused MS and Raman data. Thus, the contribution of Raman spectroscopy to explain structural deviations brings an  -->
-<!-- advantage for routine quality evaluation of paracetamol and other pharmaceuticals.  -->
-
-<!-- ## Only Raman -->
-
-<!-- ```{r pca-only-raman} -->
-<!-- raman_spec_mat <- mdatools::prep.autoscale(raman_spec_mat, center = TRUE, scale = FALSE) -->
-<!-- main_set_raman <- raman_spec_mat[c(7:9, 16:21, 25:33), ] -->
-<!-- test_set_raman <- raman_spec_mat[c(1:6, 10:15, 22:24, 34:42), ] -->
-<!-- stat_raman <- StatisticEngine$new(data = main_set_raman) -->
-<!-- stat_raman$process(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 1E-4, gamma = 1E-5)) -->
-<!-- ``` -->
-
-<!-- ```{r plot-pca-only-raman, fig.cap="PCA model for Raman data only (native plot from mdatools R package).", fig.height=9} -->
-<!-- plot(stat_raman$model) -->
-<!-- ``` -->
-
-<!-- ```{r pca-omly-raman-predict, fig.cap="PCA model prediction distances for only Raman data."} -->
-<!-- stat_raman$predict(test_set_raman) -->
-<!-- stat_raman$plot_predicted_distances() -->
-<!-- ``` -->
-
-<!-- In the case of only using Raman data for evaluation of quality deviations, the separation of the analyses is clearer  -->
-<!-- than when using fused MS and Raman data. This is due to the fact that the Raman data is more sensitive to structural  -->
-<!-- deviations in the analyses. The lack of aspirin and acetic acid signals in the MS data probably contributed to the less  -->
-<!-- clear separation of the analyses when using only MS data. On the contrary, because the signal of caffeine (*m/z* 194 Da)  -->
-<!-- was visible in the MS data, a separation of the caffeine contaminated analyses was obtained also for MS only data. MS  -->
-<!-- data is more precise when the goal is identification of the active product ingredient (i.e, paracetamol) therefore,  -->
-<!-- the fusion of MS and Raman data is recommended for quality evaluation of pharmaceuticals as both techniques are  -->
-<!-- complementary. -->

@@ -59,11 +59,11 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
                          elements = "CHNOP",
                          hetero = TRUE,
                          oc = FALSE,
-                         thrMS = NULL,
-                         thrMSMS = NULL,
-                         thrComb = NULL,
+                         thrMS = numeric(),
+                         thrMSMS = numeric(),
+                         thrComb = numeric(),
                          maxCandidates = Inf,
-                         extraOpts = NULL,
+                         extraOpts = character(),
                          calculateFeatures = TRUE,
                          featThreshold = 0,
                          featThresholdAnn = 0.75,
@@ -79,24 +79,24 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
       method = "GenerateFormulas",
       algorithm = "genform",
       parameters = list(
-        relMzDev = relMzDev,
-        elements = elements,
-        hetero = hetero,
-        oc = oc,
-        thrMS = thrMS,
-        thrMSMS = thrMSMS,
-        thrComb = thrComb,
-        maxCandidates = maxCandidates,
-        extraOpts = extraOpts,
-        calculateFeatures = calculateFeatures,
-        featThreshold = featThreshold,
-        featThresholdAnn = featThresholdAnn,
-        absAlignMzDev = absAlignMzDev,
-        MSMode = MSMode,
-        isolatePrec = isolatePrec,
-        timeout = timeout,
-        topMost = topMost,
-        batchSize = batchSize
+        relMzDev = as.numeric(relMzDev),
+        elements = as.character(elements),
+        hetero = as.logical(hetero),
+        oc = as.logical(oc),
+        thrMS = as.numeric(thrMS),
+        thrMSMS = as.numeric(thrMSMS),
+        thrComb = as.numeric(thrComb),
+        maxCandidates = as.numeric(maxCandidates),
+        extraOpts = as.character(extraOpts),
+        calculateFeatures = as.logical(calculateFeatures),
+        featThreshold = as.numeric(featThreshold),
+        featThresholdAnn = as.numeric(featThresholdAnn),
+        absAlignMzDev = as.numeric(absAlignMzDev),
+        MSMode = as.character(MSMode),
+        isolatePrec = as.logical(isolatePrec),
+        timeout = as.numeric(timeout),
+        topMost = as.integer(topMost),
+        batchSize = as.integer(batchSize)
       ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
@@ -116,20 +116,20 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
     checkmate::assert_character(self@parameters$elements, min.len = 1)
     checkmate::assert_logical(self@parameters$hetero, len = 1)
     checkmate::assert_logical(self@parameters$oc, len = 1)
-    checkmate::assert_numeric(self@parameters$thrMS, len = 1, null.ok = TRUE)
-    checkmate::assert_numeric(self@parameters$thrMSMS, len = 1, null.ok = TRUE)
-    checkmate::assert_numeric(self@parameters$thrComb, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$thrMS)
+    checkmate::assert_numeric(self@parameters$thrMSMS)
+    checkmate::assert_numeric(self@parameters$thrComb)
     checkmate::assert_numeric(self@parameters$maxCandidates, len = 1)
-    checkmate::assert_character(self@parameters$extraOpts, null.ok = TRUE)
+    checkmate::assert_character(self@parameters$extraOpts)
     checkmate::assert_logical(self@parameters$calculateFeatures, len = 1)
-    checkmate::assert_numeric(self@parameters$featThreshold, len = 1, null.ok = TRUE)
-    checkmate::assert_numeric(self@parameters$featThresholdAnn, len = 1, null.ok = TRUE)
-    checkmate::assert_numeric(self@parameters$absAlignMzDev, len = 1, null.ok = TRUE)
+    checkmate::assert_numeric(self@parameters$featThreshold)
+    checkmate::assert_numeric(self@parameters$featThresholdAnn)
+    checkmate::assert_numeric(self@parameters$absAlignMzDev)
     checkmate::assert_choice(self@parameters$MSMode, c("MS", "MSMS", "both"))
-    checkmate::assert_logical(self@parameters$isolatePrec)
+    checkmate::assert_logical(self@parameters$isolatePrec, len = 1)
     checkmate::assert_numeric(self@parameters$timeout, len = 1)
-    checkmate::assert_numeric(self@parameters$topMost, len = 1)
-    checkmate::assert_numeric(self@parameters$batchSize, len = 1)
+    checkmate::assert_integer(self@parameters$topMost, len = 1)
+    checkmate::assert_integer(self@parameters$batchSize, len = 1)
     NULL
   }
 )
@@ -161,6 +161,11 @@ S7::method(run, MassSpecSettings_GenerateFormulas_genform) <- function(x, engine
   }
 
   parameters <- x$parameters
+  
+  parameters <- lapply(parameters, function(z) {
+    if (length(z) == 0) return(NULL)
+    z
+  })
   
   algorithm <- x$algorithm
   

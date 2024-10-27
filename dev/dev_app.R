@@ -51,11 +51,3 @@ ms$run_app()
 raman <- RamanEngine$new(analyses = raman_files)
 raman$save(paste0(getwd(), "/raman.rds"))
 raman$run_app()
-
-
-
-save(MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 3), format = "json")
-read(MassSpecSettings_FilterFeatures_StreamFind(), "settings.json")
-
-
-paste(capture.output(str(db)), collapse = "\n")

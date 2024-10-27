@@ -93,8 +93,8 @@ raman$analyses$blanks <- c(rep("blank", length(raman$analyses)))
 ```{r raman-overview, echo=FALSE}
 ov_quant <- raman$get_overview()[, 1:3]
 data.table::setorder(ov_quant, replicate)
-ov_quant$concentration <- as.numeric(c(rep(0, 9), sub(".*?(\\d+).*", "\\1", ov_quant$replicate[10:nrow(ov_quant)]))) / 10
-ov_quant$concentration[ov_quant$replicate %in% "par_3"] <- NA_real_
+ov_quant$concentration <- as.numeric(c(rep(0, 9), sub(".*?(\\d+).*", "\\1", ov_quant$replicate[10:54]), rep(0, nrow(ov_quant) - 54))) / 10
+ov_quant$concentration[ov_quant$replicate %in% c("par", "fiz_a", "fiz_b")] <- NA_real_
 kable(ov_quant, caption = "Overview of Raman analyses and respective analysis replicate groups and blanks.") %>%
   kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
   scroll_box(width = "100%", height = "400px")
@@ -128,8 +128,8 @@ raman_workflow <- StreamFind::Workflow(
     RamanSettings_AverageSpectra_StreamFind(),
     RamanSettings_SubtractBlankSpectra_StreamFind(),
     RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-    RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-100, 350))),
-    RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(1800, 2500))),
+    RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -100, shiftmax = 350),
+    RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 1800, shiftmax = 2500),
     RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30)
   )
 )

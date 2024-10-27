@@ -5,13 +5,14 @@
 \title{\strong{MassSpecSettings_FindInternalStandards_StreamFind}}
 \usage{
 MassSpecSettings_FindInternalStandards_StreamFind(
-  database = NULL,
+  database = data.table::data.table(name = character(), formula = character(), mass =
+    numeric(), rt = numeric()),
   ppm = 5,
   sec = 10
 )
 }
 \arguments{
-\item{database}{A data.frame with at least the columns name, mass, and rt indicating the name, neutral monoisotopic
+\item{database}{A data.table with at least the columns name, mass, and rt indicating the name, neutral monoisotopic
 mass and retention time of the internal standards, respectively.}
 
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}

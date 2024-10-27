@@ -5,10 +5,10 @@
 \title{\strong{MassSpecSettings_FilterFeatures_StreamFind}}
 \usage{
 MassSpecSettings_FilterFeatures_StreamFind(
-  minSnRatio = NULL,
-  excludeIsotopes = NULL,
-  excludeAdducts = NULL,
-  minIntensity = NULL
+  minSnRatio = NA_real_,
+  excludeIsotopes = FALSE,
+  excludeAdducts = FALSE,
+  minIntensity = NA_real_
 )
 }
 \arguments{

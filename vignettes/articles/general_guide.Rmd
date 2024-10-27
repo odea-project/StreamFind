@@ -19,7 +19,6 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-# Libraries
 library(knitr)
 library(kableExtra)
 library(magrittr)
@@ -27,22 +26,23 @@ library(ggplot2)
 library(plotly)
 library(StreamFind)
 
-# Global options
 knitr::opts_chunk$set(
-  echo = TRUE, fig.align = "center", fig.width = 9, results = "markup", comment = '', message = FALSE, warning = FALSE
+  echo = TRUE,
+  fig.align = "center",
+  fig.width = 9,
+  results = "markup",
+  comment = '',
+  message = FALSE,
+  warning = FALSE
 )
 
-# Working directory
 path_wd <- getwd()
-
 ```
 
 ```{r resources, include=FALSE}
-# MS files
 all_files <- StreamFindData::get_ms_file_paths()
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 
-# Chemicals database
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
 db <- db[grepl("S", db$tag), ]
 cols <- c("name", "formula", "mass", "rt", "tag")
@@ -144,11 +144,11 @@ MassSpecSettings_AnnotateFeatures_StreamFind()
 
 ## Saving and loading
 
-The `CoreEngine` also holds the functionality to save the project in the engine (as an *.rds* file) and load it back. 
-As shown below, the `save()` and `load()` methods are used for saving and loading the project, respectively.
+The `CoreEngine` also holds the functionality to save the project in the engine (as an *.rds* or *.sqlite* file) and 
+load it back. As shown below, the `save()` and `load()` methods are used for saving and loading the project, respectively.
 
 ```{r}
-project_file_path <- file.path(getwd(), "/project.sqlite")
+project_file_path <- file.path(getwd(), "/project.rds")
 core$save(project_file_path)
 ```
 
@@ -245,13 +245,13 @@ ps <- list(
   RamanSettings_SmoothSpectra_movingaverage(windowSize = 4),
   
   # removes a section from the spectra from -40 to 470
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(-40, 300))),
+  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -40, shiftmax = 300),
   
   # removes a section from the spectra from -40 to 470
-  RamanSettings_DeleteSpectraSection_StreamFind(list("shift" = c(2000, 3000))),
+  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 2000, shiftmax = 3000),
  
   # performs baseline correction 
-  RamanSettings_CorrectSpectraBaseline_baseline(method = "als", args = list(lambda = 3, p = 0.06, maxit = 10))
+  RamanSettings_CorrectSpectraBaseline_baseline_als(lambda = 3, p = 0.06, maxit = 10)
 )
 
 workflow <- Workflow(ps)

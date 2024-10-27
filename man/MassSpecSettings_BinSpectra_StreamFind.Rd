@@ -8,7 +8,7 @@ MassSpecSettings_BinSpectra_StreamFind(
   binNames = c("rt", "mz"),
   binValues = c(5, 10),
   byUnit = TRUE,
-  refBinAnalysis = NULL
+  refBinAnalysis = NA_integer_
 )
 }
 \arguments{

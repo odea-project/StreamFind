@@ -9,7 +9,7 @@ MassSpecSettings_LoadMSPeakLists_StreamFind(
   topMost = 100,
   minIntensityPre = 50,
   minIntensityPost = 50,
-  avgFun = mean,
+  avgFun = "mean",
   method = "distance"
 )
 }
@@ -33,7 +33,7 @@ be removed (applied prior to selection by \code{topMost}) before averaging.}
 \item{minIntensityPost}{MS peaks with intensities below this value will
 be removed after averaging.}
 
-\item{avgFun}{Function that is used to calculate average m/z values.}
+\item{avgFun}{Character with the function name that is used to calculate average m/z values.}
 
 \item{method}{Method used for producing averaged MS spectra. Valid
 values are "hclust", used for hierarchical clustering (using the

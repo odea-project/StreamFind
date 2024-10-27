@@ -64,7 +64,7 @@ it is highly recommended to check the original documentation of the function in 
 <span>  dbRelMzDev <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>  fragRelMzDev <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  fragAbsMzDev <span class="op">=</span> <span class="fl">0.005</span>,</span>
-<span>  adduct <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  adduct <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  database <span class="op">=</span> <span class="st">"comptox"</span>,</span>
 <span>  extendedPubChem <span class="op">=</span> <span class="st">"auto"</span>,</span>
 <span>  chemSpiderToken <span class="op">=</span> <span class="st">""</span>,</span>
@@ -72,9 +72,7 @@ it is highly recommended to check the original documentation of the function in 
 <span>  scoreWeights <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  preProcessingFilters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"UnconnectedCompoundFilter"</span>, <span class="st">"IsotopeFilter"</span><span class="op">)</span>,</span>
 <span>  postProcessingFilters <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"InChIKeyFilter"</span><span class="op">)</span>,</span>
-<span>  maxCandidatesToStop <span class="op">=</span> <span class="fl">100</span>,</span>
-<span>  identifiers <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  extraOpts <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  maxCandidatesToStop <span class="op">=</span> <span class="fl">100</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -153,15 +151,6 @@ Valid values are: FALSE (never use it), TRUE (always use it) or "auto" (default,
 <dt id="arg-maxcandidatestostop">maxCandidatesToStop<a class="anchor" aria-label="anchor" href="#arg-maxcandidatestostop"></a></dt>
 <dd><p>Numeric (length 1) with the maximum number of candidates to be returned before stopping the
 MetFrag query for a feature group.</p></dd>
-
-
-<dt id="arg-identifiers">identifiers<a class="anchor" aria-label="anchor" href="#arg-identifiers"></a></dt>
-<dd><p>A list containing for each feature group a character vector with database identifiers that should
-be used to find candidates for a feature group (the list should be named by feature group names). Can be <code>NULL</code>.</p></dd>
-
-
-<dt id="arg-extraopts">extraOpts<a class="anchor" aria-label="anchor" href="#arg-extraopts"></a></dt>
-<dd><p>A named list containing further settings MetFrag.</p></dd>
 
 </dl></div>
     <div class="section level2">

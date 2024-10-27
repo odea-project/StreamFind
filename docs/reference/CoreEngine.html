@@ -51,9 +51,10 @@
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
     <p>If there are <code>ProcessingSettings</code> objects with the same method names it is better to use <code>run_workflow()</code>.</p>
-<p>The engine data is saved in an <strong>sqlite</strong> file and loaded in the app. If save file is defined in the engine
-it is used, otherwise the save file name is automatically set to the engine class name and the date. Changes made
-in the app can be saved in the <strong>sqlite</strong> file and then loaded for scripting.</p>
+<p>The engine data is saved in an <strong>rds</strong> file and loaded in the app. If save file is defined in the engine
+it is used, otherwise the save file name is automatically set to the engine class name and the date in the format
+<strong>rds</strong>. Changes made in the app can be saved in the <strong>rds</strong> file and then loaded to continue working on the
+engine by scripting.</p>
     </div>
     <div class="section level2">
     <h2 id="active-bindings">Active bindings<a class="anchor" aria-label="anchor" href="#active-bindings"></a></h2>
@@ -70,7 +71,7 @@ in the app can be saved in the <strong>sqlite</strong> file and then loaded for 
 
 
 <dt><code>results</code></dt>
-<dd><p>List of results.</p></dd>
+<dd><p>List of results in the analyses.</p></dd>
 
 
 <dt><code>history</code></dt>
@@ -79,7 +80,7 @@ in the app can be saved in the <strong>sqlite</strong> file and then loaded for 
 
 <dt><code>file</code></dt>
 <dd><p>An <code>EngineSaveFile</code> S7 class object. When setting the value it can be also a character with an
-<code>sqlite</code> file path to save the engine.</p></dd>
+<code>sqlite</code> or <code>rds</code> file path to save the engine.</p></dd>
 
 
 </dl><p></p></div>
@@ -111,7 +112,6 @@ in the app can be saved in the <strong>sqlite</strong> file and then loaded for 
 <li><p><a href="#method-CoreEngine-import_headers"><code>CoreEngine$import_headers()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-import_workflow"><code>CoreEngine$import_workflow()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-import_analyses"><code>CoreEngine$import_analyses()</code></a></p></li>
-<li><p><a href="#method-CoreEngine-import"><code>CoreEngine$import()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-run_app"><code>CoreEngine$run_app()</code></a></p></li>
 <li><p><a href="#method-CoreEngine-clone"><code>CoreEngine$clone()</code></a></p></li>
 </ul></div><p></p><hr><a id="method-CoreEngine-new"></a><div class="section">
@@ -124,7 +124,7 @@ in the app can be saved in the <strong>sqlite</strong> file and then loaded for 
 <div class="section">
 <h4 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
-<dd><p>Character of length one with the full path to the <code>sqlite</code> save file of the engine.</p></dd>
+<dd><p>Character of length one with the full path to the <code>sqlite</code> or <code>rds</code> save file of the engine.</p></dd>
 
 
 <dt><code>headers</code></dt>
@@ -176,7 +176,7 @@ in the app can be saved in the <strong>sqlite</strong> file and then loaded for 
 
 </div><p></p><hr><a id="method-CoreEngine-save"></a><div class="section">
 <h3 id="method-save-">Method <code><a href="https://rdrr.io/r/base/save.html" class="external-link">save()</a></code><a class="anchor" aria-label="anchor" href="#method-save-"></a></h3>
-<p>Saves the engine data as an <strong>sqlite</strong> file.</p><div class="section">
+<p>Saves the engine data as an <strong>sqlite</strong> or <strong>rds</strong> file.</p><div class="section">
 <h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">save</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -184,17 +184,21 @@ in the app can be saved in the <strong>sqlite</strong> file and then loaded for 
 <div class="section">
 <h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
-<dd><p>A string with the full file path of the <strong>sqlite</strong> file. If <code>NA</code> (the default) and no save file
-is defined in the engine, the file name is automatically created with the engine class name and the date in the
-headers.</p></dd>
+<dd><p>A string with the full file path of the <strong>sqlite</strong> or <strong>rds</strong> file. If <code>NA</code> (the default) and
+no save file is defined in the engine, the file name is automatically created with the engine class name and the
+date in the headers in the <strong>rds</strong> format.</p></dd>
 
 
 </dl><p></p></div>
 </div>
+<div class="section">
+<h4 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a></h4>
+<p>Invisible.</p>
+</div>
 
 </div><p></p><hr><a id="method-CoreEngine-load"></a><div class="section">
 <h3 id="method-load-">Method <code><a href="https://rdrr.io/r/base/load.html" class="external-link">load()</a></code><a class="anchor" aria-label="anchor" href="#method-load-"></a></h3>
-<p>Loads the engine data from an <strong>sqlite</strong> file.</p><div class="section">
+<p>Loads the engine data from an <strong>sqlite</strong> or <strong>rds</strong> file.</p><div class="section">
 <h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">load</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -202,10 +206,14 @@ headers.</p></dd>
 <div class="section">
 <h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>file</code></dt>
-<dd><p>A string with the full file path of the <strong>sqlite</strong> file containing the engine data saved.</p></dd>
+<dd><p>A string with the full file path of the <strong>sqlite</strong> or <strong>rds</strong> file containing the engine data saved.</p></dd>
 
 
 </dl><p></p></div>
+</div>
+<div class="section">
+<h4 id="returns-1">Returns<a class="anchor" aria-label="anchor" href="#returns-1"></a></h4>
+<p>Invisible.</p>
 </div>
 
 </div><p></p><hr><a id="method-CoreEngine-add_analyses"></a><div class="section">
@@ -218,14 +226,19 @@ headers.</p></dd>
 <div class="section">
 <h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
-<dd><p>A Analysis S3 class object or a list with Analysis S3 class objects as elements (see <code>?Analysis</code>
-for more information) or a character vector with full path to analysis files.</p></dd>
+<dd><p>An engine specific analysis object or a list of engine specific analysis objects.</p></dd>
 
 
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns">Returns<a class="anchor" aria-label="anchor" href="#returns"></a></h4>
+<h4 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h4>
+<p>By adding analyses to the engine the results are removed as data reprocessing must be done. The
+analyses object can be a specific engine analysis object or a file path to a engine specific format.</p>
+</div>
+
+<div class="section">
+<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
 <p>Invisible.</p>
 </div>
 
@@ -245,7 +258,7 @@ for more information) or a character vector with full path to analysis files.</p
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-1">Returns<a class="anchor" aria-label="anchor" href="#returns-1"></a></h4>
+<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
 <p>Invisible.</p>
 </div>
 
@@ -309,7 +322,7 @@ data is patRoon.</p></dd>
 </div>
 
 <div class="section">
-<h4 id="returns-2">Returns<a class="anchor" aria-label="anchor" href="#returns-2"></a></h4>
+<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
 <p>Invisible.</p>
 </div>
 
@@ -425,7 +438,7 @@ data is patRoon.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-3">Returns<a class="anchor" aria-label="anchor" href="#returns-3"></a></h4>
+<h4 id="returns-5">Returns<a class="anchor" aria-label="anchor" href="#returns-5"></a></h4>
 <p>Invisible.</p>
 </div>
 
@@ -445,7 +458,7 @@ data is patRoon.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-4">Returns<a class="anchor" aria-label="anchor" href="#returns-4"></a></h4>
+<h4 id="returns-6">Returns<a class="anchor" aria-label="anchor" href="#returns-6"></a></h4>
 <p>Invisible.</p>
 </div>
 
@@ -465,34 +478,14 @@ data is patRoon.</p></dd>
 </dl><p></p></div>
 </div>
 <div class="section">
-<h4 id="returns-5">Returns<a class="anchor" aria-label="anchor" href="#returns-5"></a></h4>
-<p>Invisible.</p>
-</div>
-
-</div><p></p><hr><a id="method-CoreEngine-import"></a><div class="section">
-<h3 id="method-import-">Method <code>import()</code><a class="anchor" aria-label="anchor" href="#method-import-"></a></h3>
-<p>Imports a CoreEngine saved as <em>json</em> or <em>rds</em>.</p><div class="section">
-<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">import</span><span class="op">(</span>file <span class="op">=</span> <span class="cn">NA_character_</span><span class="op">)</span></span></code></pre></div><p></p></div>
-</div>
-
-<div class="section">
-<h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
-<p></p><div class="arguments"><dl><dt><code>file</code></dt>
-<dd><p>A <em>json</em> or <em>rds</em> file.</p></dd>
-
-
-</dl><p></p></div>
-</div>
-<div class="section">
-<h4 id="returns-6">Returns<a class="anchor" aria-label="anchor" href="#returns-6"></a></h4>
+<h4 id="returns-7">Returns<a class="anchor" aria-label="anchor" href="#returns-7"></a></h4>
 <p>Invisible.</p>
 </div>
 
 </div><p></p><hr><a id="method-CoreEngine-run_app"></a><div class="section">
 <h3 id="method-run-app-">Method <code><a href="run_app.html">run_app()</a></code><a class="anchor" aria-label="anchor" href="#method-run-app-"></a></h3>
 <p>Runs a Shiny app to explore and manage the engine.</p><div class="section">
-<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
+<h4 id="usage-21">Usage<a class="anchor" aria-label="anchor" href="#usage-21"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">run_app</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -500,12 +493,12 @@ data is patRoon.</p></dd>
 </div><p></p><hr><a id="method-CoreEngine-clone"></a><div class="section">
 <h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
 <p>The objects of this class are cloneable with this method.</p><div class="section">
-<h4 id="usage-23">Usage<a class="anchor" aria-label="anchor" href="#usage-23"></a></h4>
+<h4 id="usage-22">Usage<a class="anchor" aria-label="anchor" href="#usage-22"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">CoreEngine</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
-<h4 id="arguments-15">Arguments<a class="anchor" aria-label="anchor" href="#arguments-15"></a></h4>
+<h4 id="arguments-14">Arguments<a class="anchor" aria-label="anchor" href="#arguments-14"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 

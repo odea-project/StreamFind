@@ -76,7 +76,6 @@ package <span class="pkg">patRoon</span> in the background.</p>
 <span>  smooth <span class="op">=</span> <span class="st">"loess"</span>,</span>
 <span>  span <span class="op">=</span> <span class="fl">0.2</span>,</span>
 <span>  family <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
-<span>  peakGroupsMatrix <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span>nrow <span class="op">=</span> <span class="fl">0</span>, ncol <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  subset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  subsetAdjust <span class="op">=</span> <span class="st">"average"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -166,13 +165,6 @@ This parameter is passed to the internal call to loess.</p></dd>
 <dt id="arg-family">family<a class="anchor" aria-label="anchor" href="#arg-family"></a></dt>
 <dd><p>character defining the method to be used for loess smoothing.
 Allowed values are "gaussian" and "symmetric".See loess for more information.</p></dd>
-
-
-<dt id="arg-peakgroupsmatrix">peakGroupsMatrix<a class="anchor" aria-label="anchor" href="#arg-peakgroupsmatrix"></a></dt>
-<dd><p>optional matrix of (raw) retention times for the peak
-groups on which the alignment should be performed. Each column represents a
-sample, each row a feature/peak group. Such a matrix is for example returned
-by the adjustRtimePeakGroups method.</p></dd>
 
 
 <dt id="arg-subset">subset<a class="anchor" aria-label="anchor" href="#arg-subset"></a></dt>

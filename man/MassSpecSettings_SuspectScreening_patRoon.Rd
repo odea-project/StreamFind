@@ -5,7 +5,7 @@
 \title{\strong{MassSpecSettings_SuspectScreening_patRoon}}
 \usage{
 MassSpecSettings_SuspectScreening_patRoon(
-  suspects = NULL,
+  suspects = data.table::data.table(),
   rtWindow = 12,
   mzWindow = 0.005,
   filtered = FALSE

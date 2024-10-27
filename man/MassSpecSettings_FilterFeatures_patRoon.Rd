@@ -91,7 +91,7 @@ MassSpecSettings_FilterFeatures_patRoon(
 
 \item{groupQualityRange}{Numeric length two. Group quality range for a feature group.}
 
-\item{rGroups}{List of replicate groups.}
+\item{rGroups}{Character with the replicate group names to filter.}
 
 \item{removeBlanks}{Logical length one. Remove blank samples.}
 

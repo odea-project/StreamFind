@@ -5,7 +5,8 @@
 \title{\strong{MassSpecSettings_SuspectScreening_StreamFind}}
 \usage{
 MassSpecSettings_SuspectScreening_StreamFind(
-  database = NULL,
+  database = data.table::data.table(name = character(), formula = character(), mass =
+    numeric()),
   ppm = 5,
   sec = 10,
   ppmMS2 = 10,

@@ -21,10 +21,11 @@ MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSett
   package = "StreamFind",
   
   constructor = function(database = data.table::data.table(
-                            name = character(),
-                            mass = numeric(),
-                            rt = numeric()
-                          ),
+                           name = character(),
+                           formula = character(),
+                           mass = numeric(),
+                           rt = numeric()
+                         ),
                          ppm = 5,
                          sec = 10) {
     
@@ -54,12 +55,11 @@ MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSett
     checkmate::assert_number(self@parameters$ppm)
     checkmate::assert_number(self@parameters$sec)
     checkmate::assert_data_table(self@parameters$database)
-    if (nrow(self@parameters$database) > 0) {
-      if (!(
-          all(c("name", "mass", "rt") %in% colnames(self@parameters$database)) ||
-          all(c("name", "mz", "rt") %in% colnames(self@parameters$database)))
-        ) stop("Database must have at least the columns name, mass, and rt or name, mz, and rt!")
-    }
+    checkmate::assert_true(
+      all(c("name", "neutralMass", "rt") %in% colnames(self@parameters$database)) ||
+      all(c("name", "mass", "rt") %in% colnames(self@parameters$database)) ||
+      all(c("name", "mz", "rt") %in% colnames(self@parameters$database))
+    )
     NULL
   }
 )
