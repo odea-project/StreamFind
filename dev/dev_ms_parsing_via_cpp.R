@@ -10,8 +10,19 @@ files <- all_files[grepl("o3sw", all_files)]
 
 
 
-# path <- "C:/Users/apoli/Documents/example_ms_files"
-# files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+path <- "C:/Users/apoli/Documents/example_ms_files"
+files <- list.files(path, pattern = ".mzML", full.names = TRUE)
+
+qA_path <- "C:/Users/apoli/Documents/github/qAlgorithms/qAlgorithms.exe"
+qA_res <- paste0(system2(qA_path, args = c("-h"), stdout = TRUE), collapse = "\n")
+
+system2("C:/Users/apoli/Documents/github/qAlgorithms/qAlgorithms.exe -h", stdout = TRUE)
+
+system2("C:/qAlgorithms/qAlgorithms.exe",
+  args = c("-i", files[4], "-o", paste0(getwd(), "/log/qAlgorithms"), "-printpeaks"),
+  stdout = TRUE
+)
+
 
 ## databases -------------------------------------------------------------------
 db <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -36,7 +47,7 @@ targets <- make_ms_targets(
     rt = c(carb_rt, diu_rt)
   ),
   ppm = ppm_dev,
-  sec = sec_dev
+  # sec = sec_dev
 )
 
 neutral_targets <- make_ms_targets(
@@ -115,9 +126,40 @@ cols <- c("name", "formula", "mass", "rt")
 
 # NTS Working group -------------------------------------------------------------
 
+library(rhdf5)
+
+mz5file <- "C:/Users/apoli/Documents/github/StreamCraft/excluded/example.mz5"
+
+res <- test_read_hdf5(mz5file)
+
+length(res)
+
+file_contents <- rhdf5::h5ls(mz5file, all = TRUE)
+
+file_contents$name
+
+h5f <- rhdf5::H5Fopen(mz5file)
+for (i in 2) { #seq_len(length(file_contents$name))
+  print(file_contents$name[i])
+  data <- rhdf5::h5read(h5f, file_contents$name[i], compoundAsDataFrame = FALSE, bit64conversion = 'bit64', read.attributes = TRUE)
+  str(data)
+}
+rhdf5::H5Fclose(h5f)
+
+file_dump <- h5dump(mz5file, load = FALSE)
+spectrum_metadata_structure <- file_dump$SpectrumMetaData
+str(spectrum_metadata_structure)
+spectrum_metadata_info <- file_contents$SpectrumMetadata
 
 
 
+
+rhdf5::H5Fclose(h5f)
+str(spectrum_metadata)
+
+#h5f$SpectrumIntensity
+
+rhdf5::h5closeAll()
 # spectra ----------------------------------------------------------------------
 # clear_cache("all")
 

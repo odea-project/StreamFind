@@ -20,6 +20,10 @@ devtools::load_all() #Ctrl+Shift+L
 # Lists TODOs
 todor::todor()
 
+
+#chattr::chattr_use("copilot")
+chattr::chattr_app()
+
 zlibbioc::pkgconfig()
 
 # Code lines -------------------------------------------------------------------
@@ -44,7 +48,6 @@ file_content <- readLines(file_path, encoding = "UTF-8")
 non_ascii_lines <- grep("[^\x01-\x7F]", file_content, value = TRUE)
 cat("Non-ASCII characters found in the following lines:\n")
 print(non_ascii_lines)
-
 
 # Others -----------------------------------------------------------------------
 

@@ -31,7 +31,9 @@ library(plotly)
 library(StreamFind)
 
 # Global options
-knitr::opts_chunk$set(echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", results = "markup", message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(
+  echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", results = "markup", message = FALSE, warning = FALSE
+)
 
 # Working directory
 path_wd <- getwd()
@@ -69,102 +71,121 @@ pre code {
 
 # StreamFind
 
-The StreamFind is an R package and can be used for data management, processing, visualization and reporting. This guide uses mass spectrometry (MS) data as example and aims to instruct developers to implement new processing modules and additional processing algorithms for new or existing processing methods in StreamFind.
+The StreamFind is an R package and can be used for data management, processing, visualization and reporting. This guide 
+uses mass spectrometry (MS) data as example and aims to instruct developers to implement new processing modules and 
+additional processing algorithms for new or existing processing methods in StreamFind.
 
 ## Setup
 
-The R package is in the [StreamFind GitHub repository](https://github.com/odea-project/StreamFind) of the [ODEA Project](https://github.com/odea-project). For development, the recommendation is to download the repository locally using [git](https://git-scm.com/) tracking for version control. The [GitHub desktop](https://desktop.github.com/) tool can be used for more easily install and configure git with your GitHub account, which is recommended for authoring contributions. Since it is an R package, the [RStudio](https://posit.co/products/open-source/rstudio/) IDE is recommended for development. Yet, others (e.g., [VS Code](https://code.visualstudio.com/download)) will also work. When using RStudio, the repository can be downloaded via new project, selecting version control, then git and finally adding the GitHub *url* https://github.com/odea-project/StreamFind. This should create a local image of the StreamFind repository directly with git tracking, if git or GitHub desktop were properly installed and configured. When using RStudio, the project should directly be identified as package development where all tools are available to support development. We recommend setting the *Use devtools package functions if available* and *generate documentation via Roxygen* (in the configure bottom you select all options) located in the *Build* tab under the *Configure Build Tools...*. For other IDEs, we recommend using the package [devtools](https://www.r-project.org/nosvn/pandoc/devtools.html). Considering that the local image of the StreamFind repository is installed with git tracking, the first step for development is to create a dedicated branch for implementation of new processing modules and/or algorithms. The master branch should not be changed directly but modified by pull requests from the dedicated development branch, giving the opportunity for code revision.
+The R package is in the [StreamFind GitHub repository](https://github.com/odea-project/StreamFind) of the 
+[ODEA Project](https://github.com/odea-project). For development, the recommendation is to download the repository 
+locally using [git](https://git-scm.com/) tracking for version control. The [GitHub desktop](https://desktop.github.com/) 
+tool can be used for more easily install and configure git with your GitHub account, which is recommended for authoring 
+contributions. Since it is an R package, the [RStudio](https://posit.co/products/open-source/rstudio/) IDE is 
+recommended for development. Yet, others (e.g., [VS Code](https://code.visualstudio.com/download)) will also work. When 
+using RStudio, the repository can be downloaded via new project, selecting version control, then git and finally adding 
+the GitHub *url* https://github.com/odea-project/StreamFind. This should create a local image of the StreamFind repository 
+directly with git tracking, if git or GitHub desktop were properly installed and configured. When using RStudio, the 
+project should directly be identified as package development where all tools are available to support development. We 
+recommend setting the *Use devtools package functions if available* and *generate documentation via Roxygen* (in the 
+configure bottom you select all options) located in the *Build* tab under the *Configure Build Tools...*. For other 
+IDEs, we recommend using the package [devtools](https://www.r-project.org/nosvn/pandoc/devtools.html). Considering that 
+the local image of the StreamFind repository is installed with git tracking, the first step for development is to create 
+a dedicated branch for implementation of new processing modules and/or algorithms. The master branch should not be 
+changed directly but modified by pull requests from the dedicated development branch, giving the opportunity for code 
+revision.
 
 ## Structure
 
-The streamFind R package is centered around the [R6](https://r6.r-lib.org/index.html) class system, which brings object oriented programming to R. For MS, the [MassSpecEngine](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) R6 class is used to encapsulate both the data and methods. The data is stored in private fields within the *MassSpecEngine* and can only be accessed and processed via the public methods. Below the creation of a *MassSpecEngine* object and the way to access and change data is briefly shown.
+The streamFind R package is centered around the [R6](https://r6.r-lib.org/index.html) class system, which brings object 
+oriented programming to R. For MS, the [MassSpecEngine](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) 
+R6 class is used to encapsulate both the data and methods. The data is stored in private fields within the 
+*MassSpecEngine* and can be accessed and processed via the public methods/fields. Below the creation of a *MassSpecEngine* 
+object and the way to access and change data is briefly shown.
 
 ```{r create-empty-ms, results='markup'}
 ms <- MassSpecEngine$new()
-
-ms$add_headers(name = "Example", author = "Person A")
-
-ms$get_headers()
 
 # print method. Note that MS data files were not yet added!
 ms
 ```
 
-For implementation of processing methods, the [S3](https://rstudio-education.github.io/hopr/s3.html) class [ProcessingSettings](https://odea-project.github.io/StreamFind/reference/ProcessingSettings.html) is used to dispatch settings to processing methods. See article [Evaluation of Wastewater Ozonation with Mass Spectrometry](https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html) for demonstration of usage. In essence, a given algorithm to be applied to a processing method is added to the *MassSpecEngine* as a *ProcessingSettings* object which is then used to process the data with the defined settings or parameters. The structure of a *ProcessingSettings* is exemplified below for the algorithm `openms` to be applied to the method `MassSpecEngine$find_features()`.
+Under development...
 
-```{r example-settings, results='markup'}
-ffs <- MassSpecSettings_FindFeatures_openms()
+<!-- For implementation of processing methods, the [S7](https://rconsortium.github.io/S7/index.html) class *ProcessingSettings*  -->
+<!-- is used to dispatch settings to processing methods. See article [Evaluation of Wastewater Ozonation with Mass Spectrometry](https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html) for demonstration of usage.  -->
+<!-- In essence, a given algorithm to be applied to a processing method is added to the *MassSpecEngine* or to a *Workflow*  -->
+<!-- object as a *ProcessingSettings* which is then used to process the data with the defined settings or parameters. The  -->
+<!-- structure of a *ProcessingSettings* is exemplified below for the algorithm `openms` to find features in MS data. -->
 
-ffs
-```
+<!-- ```{r example-settings, results='markup'} -->
+<!-- ffs <- MassSpecSettings_FindFeatures_openms() -->
 
-As shown, the constructor of a *ProcessingSettings* is a function always including `[engine name upper cammel case]Settings_[method name upper cammel case]_[algorithm name]`; More details are given in the Semantics (\@ref(semantics)). Then, the *ProcessingSettings* can be directly added to the *MassSpecEngine*.
+<!-- ffs -->
+<!-- ``` -->
 
-```{r add-settings, results='markup'}
-ms$add_settings(ffs)
+<!-- As shown, the constructor of a *ProcessingSettings* is a function always including `[engine name upper cammel case]Settings_[method name upper cammel case]_[algorithm name]`; More details are given in the Semantics (\@ref(semantics)). Then, the *ProcessingSettings* can  -->
+<!-- be directly applied to the *MassSpecEngine* or used to assemble an S7 class *Workflow* object. -->
 
-ms
-```
+<!-- ```{r add-settings, results='markup'} -->
+<!-- workflow <- Workflow(list(ffs)) -->
 
-Alternatively, the *ProcessingSettings* can be saved as a JSON string and imported from a JSON file, as demonstrated below.
+<!-- workflow -->
+<!-- ``` -->
 
-```{r save-settings, results='markup'}
-save_default_ProcessingSettings(
-  engine = "MassSpec",
-  call = "FindFeatures",
-  algorithm = "xcms3_centwave",
-  name = "ffs",
-  path = getwd()
-)
-```
+<!-- Alternatively, the *ProcessingSettings* can be saved as a JSON string and imported from a JSON file, as demonstrated below. -->
 
-```{r show-json, results='markup'}
-jsonlite::prettify(readLines("ffs.json"))
-```
+<!-- ```{r save-settings, results='markup'} -->
+<!-- save(ffs, format = "json", name = "ffs") -->
+<!-- ``` -->
 
-```{r import-settings, results='markup'}
-ms$import_settings("ffs.json")
+<!-- ```{r show-json, results='markup'} -->
+<!-- jsonlite::prettify(readLines("ffs.json")) -->
+<!-- ``` -->
 
-# "openms" replaced by "xcms3_centwave"
-ms
-```
+<!-- ```{r import-settings, results='markup'} -->
+<!-- ffs <- read(ProcessingSettings(), "ffs.json") -->
 
-The use of the S3 object system for *ProcessingSettings* gives flexibility to the list of parameters, meaning that each parameter entry can be a single numeric value, a vector of strings or even a full data.frame if required. Each *ProcessingSettings* constructor (i.e., `[engine name upper cammel case]Settings_[method name upper cammel case]_[algorithm name]`) has a dedicated validation method to ensure that the parameters and metadata are in conformity (as shown below). The validation of a *ProcessingSettings* is always performed before applying it to a processing method.
+<!-- # "openms" replaced by "xcms3_centwave" -->
+<!-- ffs -->
+<!-- ``` -->
 
-```{r validate-settings, results='markup'}
-validate(ffs)
-```
+<!-- The use of the S3 object system for *ProcessingSettings* gives flexibility to the list of parameters, meaning that each parameter entry can be a single numeric value, a vector of strings or even a full data.frame if required. Each *ProcessingSettings* constructor (i.e., `[engine name upper cammel case]Settings_[method name upper cammel case]_[algorithm name]`) has a dedicated validation method to ensure that the parameters and metadata are in conformity (as shown below). The validation of a *ProcessingSettings* is always performed before applying it to a processing method. -->
 
-Besides the S3 class *ProcessingSettings*, the *ProcessingSettings* object receives other class names that are used for S3 method dispatchment (i.e., direct the object to the dedicated S3 method where the actual processing algorithm is applied). Below we show the classes of the `ffs` *ProcessingSettings*. The class *patRoon* means that the algorithm `openms` is applied via the package [patRoon](https://github.com/rickhelmus/patRoon). The class *MassSpecSettings_FindFeatures_openms* directs the object to the right processing method and indicates which algorithm to be applied. For this, an [S3 generic](http://adv-r.had.co.nz/S3.html) is used in each processing method (e.g., `MassSpecEngine$find_features()` or `MassSpecEngine$group_features()`) for the dispatchment. This process is not visible to the user but is essential for the developer. Implementation of new processing methods and/or algorithms must consider this structure. In the section Implementation (\@ref(implementation)) the process of adding new methods and algorithms is described in more detail.
+<!-- ```{r validate-settings, results='markup'} -->
+<!-- validate(ffs) -->
+<!-- ``` -->
 
-```{r other-classes, results='markup'}
-class(ffs)
-```
+<!-- Besides the S3 class *ProcessingSettings*, the *ProcessingSettings* object receives other class names that are used for S3 method dispatchment (i.e., direct the object to the dedicated S3 method where the actual processing algorithm is applied). Below we show the classes of the `ffs` *ProcessingSettings*. The class *patRoon* means that the algorithm `openms` is applied via the package [patRoon](https://github.com/rickhelmus/patRoon). The class *MassSpecSettings_FindFeatures_openms* directs the object to the right processing method and indicates which algorithm to be applied. For this, an [S3 generic](http://adv-r.had.co.nz/S3.html) is used in each processing method (e.g., `MassSpecEngine$find_features()` or `MassSpecEngine$group_features()`) for the dispatchment. This process is not visible to the user but is essential for the developer. Implementation of new processing methods and/or algorithms must consider this structure. In the section Implementation (\@ref(implementation)) the process of adding new methods and algorithms is described in more detail. -->
 
-## Semantics
+<!-- ```{r other-classes, results='markup'} -->
+<!-- class(ffs) -->
+<!-- ``` -->
 
-Consistent semantics are attempted within the StreamFind R package. Some of the class and method names were already mentioned above and a clear use of the *underscore* to separate words for methods and use of *Upper Camel Case* for classes is visible. In this section, we try to highlight the defined rules for the most important semantic aspects. All the methods available via the class `MassSpecEngine$` are written with underscore to separate the words (e.g., `get_analysis_names()` or `annotate_features()`). The arguments of methods, functions and class constructors are always written with *Lower Camel Case* when more than one word is needed (e.g., `colorBy` or `minIntensity`). Classes are written with *Upper Camel Case* when two or more words are used (e.g., *MassSpecAnalysis* or *ProjectHeaders*) with the exception of the specific constructor functions for the different algorithm settings, which use the syntax `[engine name]Settings_[method name]_[algorithm name]` (e.g., *MassSpecSettings_FilterFeatures_StreamFind* or *RamanSettings_BinSpectra_StreamFind*); This supports and facilitates the association of the settings with the respective engine and processing method. Functions or methods not available to the user (i.e., not exported via the package NAMESPACE) are written with `.` at the beginning, followed by *underscore* to separate words (e.g., *.get_colors()* or *.plot_spectra_ms2_static()*). This is also applied to the S3 generics of the processing modules, which use the syntax `.s3_[module method]` (e.g., `.s3_FindFeatures` or `.s3_GroupFeatures`).
+<!-- ## Semantics -->
 
-## Files
+<!-- Consistent semantics are attempted within the StreamFind R package. Some of the class and method names were already mentioned above and a clear use of the *underscore* to separate words for methods and use of *Upper Camel Case* for classes is visible. In this section, we try to highlight the defined rules for the most important semantic aspects. All the methods available via the class `MassSpecEngine$` are written with underscore to separate the words (e.g., `get_analysis_names()` or `annotate_features()`). The arguments of methods, functions and class constructors are always written with *Lower Camel Case* when more than one word is needed (e.g., `colorBy` or `minIntensity`). Classes are written with *Upper Camel Case* when two or more words are used (e.g., *MassSpecAnalysis* or *ProjectHeaders*) with the exception of the specific constructor functions for the different algorithm settings, which use the syntax `[engine name]Settings_[method name]_[algorithm name]` (e.g., *MassSpecSettings_FilterFeatures_StreamFind* or *RamanSettings_BinSpectra_StreamFind*); This supports and facilitates the association of the settings with the respective engine and processing method. Functions or methods not available to the user (i.e., not exported via the package NAMESPACE) are written with `.` at the beginning, followed by *underscore* to separate words (e.g., *.get_colors()* or *.plot_spectra_ms2_static()*). This is also applied to the S3 generics of the processing modules, which use the syntax `.s3_[module method]` (e.g., `.s3_FindFeatures` or `.s3_GroupFeatures`). -->
 
-The file structure of the StreamFind package is in line with the [CRAN official package development guideline](https://cran.r-project.org/doc/manuals/R-exts.html#:~:text=Contents%5D%5BIndex%5D-,1.1%20Package%20structure,which%20should%20not%20be%20empty).). All relevant files for the developer are in the R, src, man-roxygen, tests and vignettes. In the R folder are the R scripts, in the src folder are C++ libraries and the [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html) interface functions, in the man-roxygen are the templates for documentation of arguments, in the tests are the test units that should be applied for each processing method and each algorithm implementation and finally, in the vignettes are articles, tutorials and guides for the users. R file names in the R folder have a defined name syntax according to the content/function. Class files are named with `class_[class type in capital_[class name].R]`. Exported MS function files are named with `fct_[optional engine associated]_[unique name].R`. Utility functions not exported are named with `utils_[unique name].R`. S3 methods for processing modules are written with `methods_S3_[engine name]_[method name]_[algorithm].R`. *ProcessingSettings* constructors for a given engine are placed in a file named `class_S3_[engine name]Settings.R`.
+<!-- ## Files -->
 
-# Implementation
+<!-- The file structure of the StreamFind package is in line with the [CRAN official package development guideline](https://cran.r-project.org/doc/manuals/R-exts.html#:~:text=Contents%5D%5BIndex%5D-,1.1%20Package%20structure,which%20should%20not%20be%20empty).). All relevant files for the developer are in the R, src, man-roxygen, tests and vignettes. In the R folder are the R scripts, in the src folder are C++ libraries and the [Rcpp](https://cran.r-project.org/web/packages/Rcpp/index.html) interface functions, in the man-roxygen are the templates for documentation of arguments, in the tests are the test units that should be applied for each processing method and each algorithm implementation and finally, in the vignettes are articles, tutorials and guides for the users. R file names in the R folder have a defined name syntax according to the content/function. Class files are named with `class_[class type in capital_[class name].R]`. Exported MS function files are named with `fct_[optional engine associated]_[unique name].R`. Utility functions not exported are named with `utils_[unique name].R`. S3 methods for processing modules are written with `methods_S3_[engine name]_[method name]_[algorithm].R`. *ProcessingSettings* constructors for a given engine are placed in a file named `class_S3_[engine name]Settings.R`. -->
 
-The implementation of new processing methods and new algorithms for a given processing method differs in terms of impact change. While addition of new processing methods require the change of the main *MassSpecEngine* class and addition of new S3 generics, adding new algorithms for existing modules do not require changes in the existing files. Therefore, we describe their implementation in two separate sections.
+<!-- # Implementation -->
 
-## New methods
+<!-- The implementation of new processing methods and new algorithms for a given processing method differs in terms of impact change. While addition of new processing methods require the change of the main *MassSpecEngine* class and addition of new S3 generics, adding new algorithms for existing modules do not require changes in the existing files. Therefore, we describe their implementation in two separate sections. -->
 
-Under definition.
+<!-- ## New methods -->
+
+<!-- Under definition. -->
 
 
 
-## New algorithms
+<!-- ## New algorithms -->
 
-Under definition.
+<!-- Under definition. -->
 
-```{r remove-ffs, include=FALSE}
-file.remove("ffs.json")
-```
+<!-- # ```{r remove-ffs, include=FALSE} -->
+<!-- # file.remove("ffs.json") -->
+<!-- # ``` -->
 
 ***

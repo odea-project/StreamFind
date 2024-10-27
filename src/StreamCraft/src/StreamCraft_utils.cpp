@@ -6,7 +6,29 @@
 #include <stdexcept>
 #include <zlib.h>
 
-std::string sc::utils::encode_little_endian(const std::vector<double>& input, const int& precision) {
+std::string sc::utils::encode_little_endian_from_float(const std::vector<float>& input, const int& precision) {
+
+  if (precision == 8) {
+    std::vector<uint8_t> bytes(sizeof(double) * input.size());
+    for (size_t i = 0; i < input.size(); ++i) {
+      double doubleValue = static_cast<double>(input[i]);
+      std::memcpy(bytes.data() + i * sizeof(double), &doubleValue, sizeof(double));
+    }
+    std::string result(bytes.begin(), bytes.end());
+    return result;
+
+  } else if (precision == 4) {
+    std::vector<uint8_t> bytes(sizeof(float) * input.size());
+    std::memcpy(bytes.data(), input.data(), bytes.size());
+    std::string result(bytes.begin(), bytes.end());
+    return result;
+
+  } else {
+    throw std::runtime_error("Precision must be 4 (32-bit) or 8 (64-bit)!");
+  }
+};
+
+std::string sc::utils::encode_little_endian_from_double(const std::vector<double>& input, const int& precision) {
 
   if (precision == 8) {
     std::vector<uint8_t> bytes(sizeof(double) * input.size());
@@ -28,7 +50,44 @@ std::string sc::utils::encode_little_endian(const std::vector<double>& input, co
   }
 };
 
-std::string sc::utils::encode_big_endian(const std::vector<double>& input, const int& precision) {
+std::string sc::utils::encode_big_endian_from_float(const std::vector<float>& input, const int& precision) {
+
+  if (precision == 8) {
+    std::vector<uint8_t> bytes(sizeof(double) * input.size());
+    
+    for (size_t i = 0; i < input.size(); ++i) {
+      double doubleValue = static_cast<double>(input[i]);
+      uint64_t value;
+      std::memcpy(&value, &doubleValue, sizeof(double));
+      for (size_t j = 0; j < sizeof(double); ++j) {
+        bytes[i * sizeof(double) + j] = (value >> (8 * (sizeof(double) - 1 - j))) & 0xFF;
+      }
+    }
+
+    std::string result(bytes.begin(), bytes.end());
+    return result;
+
+  } else if (precision == 4) {
+    std::vector<uint8_t> bytes(sizeof(float) * input.size());
+    
+    for (size_t i = 0; i < input.size(); ++i) {
+      float floatValue = input[i];
+      uint32_t value;
+      std::memcpy(&value, &floatValue, sizeof(float));
+      for (size_t j = 0; j < sizeof(float); ++j) {
+        bytes[i * sizeof(float) + j] = (value >> (8 * (sizeof(float) - 1 - j))) & 0xFF;
+      }
+    }
+
+    std::string result(bytes.begin(), bytes.end());
+    return result;
+
+  } else {
+    throw std::runtime_error("Precision must be 4 (32-bit) or 8 (64-bit)!");
+  }
+};
+
+std::string sc::utils::encode_big_endian_from_double(const std::vector<double>& input, const int& precision) {
 
   if (precision == 8) {
     std::vector<uint8_t> bytes(sizeof(double) * input.size());
@@ -65,9 +124,37 @@ std::string sc::utils::encode_big_endian(const std::vector<double>& input, const
   } else {
     throw std::runtime_error("Precision must be 4 (32-bit) or 8 (64-bit)!");
   }
-}
+};
 
-std::vector<double> sc::utils::decode_little_endian(const std::string& str, const int& precision) {
+std::vector<float> sc::utils::decode_little_endian_to_float(const std::string& str, const int& precision) {
+
+  std::vector<unsigned char> bytes(str.begin(), str.end());
+
+  if (precision != sizeof(double) && precision != sizeof(float)) {
+    throw std::invalid_argument("Precision must be sizeof(double) or sizeof(float)!");
+  }
+
+  size_t bytes_size = bytes.size() / precision;
+  std::vector<float> result(bytes_size);
+
+  for (size_t i = 0; i < bytes_size; ++i) {
+    if (precision == sizeof(double)) {
+      double doubleValue;
+      std::memcpy(&doubleValue, &bytes[i * precision], sizeof(double));
+      result[i] = static_cast<float>(doubleValue);
+    } else if (precision == sizeof(float)) {
+      float floatValue;
+      std::memcpy(&floatValue, &bytes[i * precision], sizeof(float));
+      result[i] = floatValue;
+    } else {
+      throw std::runtime_error("Precision must be 4 (32-bit) or 8 (64-bit)!");
+    }
+  }
+
+  return result;
+};
+
+std::vector<double> sc::utils::decode_little_endian_to_double(const std::string& str, const int& precision) {
 
   std::vector<unsigned char> bytes(str.begin(), str.end());
 
@@ -95,7 +182,44 @@ std::vector<double> sc::utils::decode_little_endian(const std::string& str, cons
   return result;
 };
 
-std::vector<double> sc::utils::decode_big_endian(const std::string& str, const int& precision) {
+std::vector<float> sc::utils::decode_big_endian_to_float(const std::string& str, const int& precision) {
+
+  std::vector<unsigned char> bytes(str.begin(), str.end());
+
+  if (precision != sizeof(double) && precision != sizeof(float)) {
+    throw std::invalid_argument("Precision must be sizeof(double) or sizeof(float)!");
+  }
+
+  size_t bytes_size = bytes.size() / precision;
+  std::vector<float> result(bytes_size);
+
+  for (size_t i = 0; i < bytes_size; ++i) {
+
+    if (precision == sizeof(double)) {
+      uint64_t value = 0;
+      for (int j = 0; j < precision; ++j) {
+        value = (value << 8) | bytes[i * precision + j];
+      }
+      double doubleValue;
+      std::memcpy(&doubleValue, &value, sizeof(double));
+      result[i] = static_cast<float>(doubleValue);
+    } else if (precision == sizeof(float)) {
+      uint32_t value = 0;
+      for (int j = 0; j < precision; ++j) {
+        value = (value << 8) | bytes[i * precision + j];
+      }
+      float floatValue;
+      std::memcpy(&floatValue, &value, sizeof(float));
+      result[i] = floatValue;
+    } else {
+      throw std::runtime_error("Precision must be 4 (32-bit) or 8 (64-bit)!");
+    }
+  }
+
+  return result;
+};
+
+std::vector<double> sc::utils::decode_big_endian_to_double(const std::string& str, const int& precision) {
 
   std::vector<unsigned char> bytes(str.begin(), str.end());
 

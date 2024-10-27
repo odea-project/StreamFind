@@ -13,7 +13,7 @@
 std::string trim_whitespaces_before_and_after(const std::string& str) {
   size_t first = str.find_first_not_of(" \t\n\r");
   size_t last = str.find_last_not_of(" \t\n\r");
-  if (first < 100) str.substr(first, (last - first + 1));
+  if (first < 100) std::string str_sub = str.substr(first, (last - first + 1));
   return str;
 }
 

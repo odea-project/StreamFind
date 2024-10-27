@@ -16,28 +16,14 @@ reference:
 
 - title: Project Headers
   desc: >
-    The _ProjectHeaders_ S3 class is used to store, assign and dispatch the project headers to the processing engines.
+    The _ProjectHeaders_ S7 class is used to manage and store project headers (i.e. metadata) in the processing engines.
   contents:
     - ProjectHeaders
 
-- title: Analysis
-  desc: >
-    The _Analysis_ S3 class and data dedicated childs are used to store, assign and dispatch the analysis data to the processing engines.
-  contents:
-    - Analysis
-    - MassSpecAnalysis
-    - RamanAnalysis
-    - StatisticAnalysis
-
 - title: Processing settings
   desc: >
-    The _ProcessingSettings_ S3 class is used to store, assign and dispatch
-    the algorithm and respective parameters to processing methods. The
-    _ProcessingSettings_ object obtains a subclass according to the assinged
-    algorithm for each engine and processing method. Below the available subclasses
-    for _ProcessingSettings_ are listed for each type of processing engine.
-  contents:
-    - ProcessingSettings
+    A data processing workflow in StreamFind is assemble by creating an ordered list of proessing settings objects. 
+    Each processing method is assigened to a processing engine and an algorithm.
 
 - subtitle: MassSpec Settings
   contents:
@@ -51,25 +37,9 @@ reference:
   contents:
     - matches("StatisticSettings")
 
-- subtitle: General get and save default settings
-  desc: >
-    Funtions to uniformily get and save _ProcessingSettings_ are available.
-    These return the default _ProcessingSettings_ according the arguments
-    **call** and **algorithm**.
-  contents:
-    - get_default_ProcessingSettings
-    - save_default_ProcessingSettings
-
-
-- title: S3 Generics
-  contents:
-    - validate
-
 - title: Other MS functions
   contents:
     - convert_ms_files
     - trim_ms_files_spectra
-    - import_MassSpecEngine
-    - combine_MassSpecEngine
-    - make_ms_targets
     - clear_cache
+    - run_app

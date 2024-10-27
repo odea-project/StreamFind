@@ -1,0 +1,95 @@
+---
+title: "Short Report on Mass Spectrometry"
+author: "Ricardo Cunha"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+toc: true
+format:
+  html:
+    grid:
+      sidebar-width: 300px
+      body-width: 1200px
+      margin-width: 300px
+      gutter-width: 1.5rem
+    other-links:
+      - text: StreamFind
+        href: https://odea-project.github.io/StreamFind/
+        icon: github
+    html-math-method: katex
+    theme: journal
+    code-tools: true
+    anchor-sections: true
+    code-fold: true
+    code-overflow: scroll
+    code-line-numbers: false
+    code-copy: true
+    cap-location: top
+    self-contained: true
+    embed-resources: true
+    toc: true
+    toc-location: left
+execute:
+  warning: false
+---
+
+```{r}
+#| include: false
+
+options(DT.options = list(
+  dom = "lfrtip",
+  autoWidth = TRUE,
+  pageLength = 10,
+  lengthMenu = c(10, 20, 50, 75, 100),
+  initComplete = htmlwidgets::JS(
+    "function(settings, json) {",
+    "$(this.api().table().body()).css({'font-size': '12px'});",
+    "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+    "}"
+  )
+))
+```
+
+```{r}
+#| include: false
+
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(DT)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(StreamFind)
+```
+
+```{r}
+#| include: false
+
+ms_files <- StreamFindData::get_ms_file_paths()[10:27]
+db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
+db <- db[, cols, with = FALSE]
+dbis <- db[grepl("IS", db$tag), ]
+dbsus <- db[!grepl("IS", db$tag), ]
+path <- "C:/Users/apoli/Documents/example_ms_files"
+```
+
+# Analyses
+
+```{r}
+#| code-fold: show
+ms <- MassSpecEngine$new(analyses = ms_files)
+```
+
+```{r}
+DT::datatable(ms$analyses$info)
+```
+
+<br>  
+<br>  
+
+```{r}
+ms$plot_spectra_tic(levels = 1, interactive = TRUE, colorBy = "replicates", title = "Total Ion Chromatograms (TICs)")
+```
+
+<br>  
+<br>  
