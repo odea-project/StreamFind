@@ -139,6 +139,15 @@
       pat@features[[a]]$adduct <- "[M-H]-"
     }
     
+    n_features <- nrow(pat@features[[a]])
+    empty_dt_list <- list(rep(data.table::data.table(), n_features))
+    
+    pat@features[[a]]$ID <- paste0(
+      "F", seq_len(n_features),
+      "_MZ", round(pat@features[[a]]$mz, digits = 0),
+      "_RT", round(pat@features[[a]]$ret, digits = 0)
+    )
+    
     pat@features[[a]]$mz <- round(pat@features[[a]]$mz, 5)
     pat@features[[a]]$mzmin <- round(pat@features[[a]]$mzmin, 5)
     pat@features[[a]]$mzmax <- round(pat@features[[a]]$mzmax, 5)
@@ -150,15 +159,15 @@
     pat@features[[a]]$area <- round(pat@features[[a]]$area, 2)
     
     pat@features[[a]]$filtered <- FALSE
+    pat@features[[a]]$filter <- NA_character_
     pat@features[[a]]$filled <- FALSE
-    pat@features[[a]]$quality <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$isotope <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$annotation <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$eic <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$ms1 <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$ms2 <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$istd <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$suspects <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$quality <- empty_dt_list
+    pat@features[[a]]$annotation <- empty_dt_list
+    pat@features[[a]]$eic <- empty_dt_list
+    pat@features[[a]]$ms1 <- empty_dt_list
+    pat@features[[a]]$ms2 <- empty_dt_list
+    pat@features[[a]]$istd <- empty_dt_list
+    pat@features[[a]]$suspects <- empty_dt_list
   }
   
   pols <- engine$get_spectra_polarity()

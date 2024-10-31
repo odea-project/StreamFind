@@ -6,508 +6,9 @@
 #include <cmath>
 #include <algorithm>
 #include <filesystem>
-
-#define STREAMCRAFT_HEADER_ONLY
-#include "StreamCraft/src/StreamCraft_lib.hpp"
-
-// [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_analysis(std::string file_path) {
-  
-  Rcpp::List list_out;
-  
-  Rcpp::CharacterVector na_charvec(1, NA_STRING);
-  
-  Rcpp::DataFrame empty_df;
-  
-  empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-  
-  Rcpp::List empty_list;
-  
-  sc::MS_ANALYSIS ana(file_path);
-  
-  list_out["name"] = ana.file_name;
-  
-  list_out["replicate"] = na_charvec;
-  
-  list_out["blank"] = na_charvec;
-  
-  list_out["file"] = ana.file_path;
-  
-  list_out["format"] = ana.get_format();
-  
-  list_out["type"] = ana.get_type();
-  
-  list_out["spectra_number"] = ana.get_number_spectra();
-  
-  if (ana.get_number_spectra() > 0) {
-    sc::MS_SPECTRA_HEADERS hd = ana.get_spectra_headers();
-    
-    Rcpp::List hdl;
-    
-    hdl["index"] = hd.index;
-    hdl["scan"] = hd.scan;
-    hdl["array_length"] = hd.array_length;
-    hdl["level"] = hd.level;
-    hdl["mode"] = hd.mode;
-    hdl["polarity"] = hd.polarity;
-    hdl["configuration"] = hd.configuration;
-    hdl["lowmz"] = hd.lowmz;
-    hdl["highmz"] = hd.highmz;
-    hdl["bpmz"] = hd.bpmz;
-    hdl["bpint"] = hd.bpint;
-    hdl["tic"] = hd.tic;
-    hdl["rt"] = hd.rt;
-    hdl["mobility"] = hd.mobility;
-    hdl["window_mz"] = hd.window_mz;
-    hdl["pre_mzlow"] = hd.window_mzlow;
-    hdl["pre_mzhigh"] = hd.window_mzhigh;
-    hdl["pre_mz"] = hd.precursor_mz;
-    hdl["pre_charge"] = hd.precursor_charge;
-    hdl["pre_intensity"] = hd.precursor_intensity;
-    hdl["pre_ce"] = hd.activation_ce;
-    
-    hdl.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-    
-    list_out["spectra_headers"] = hdl;
-    
-  } else {
-    list_out["spectra_headers"] = empty_df;
-  }
-  
-  list_out["spectra"] = empty_df;
-  
-  list_out["chromatograms_number"] = ana.get_number_chromatograms();
-  
-  if (ana.get_number_chromatograms() > 0) {
-    
-    sc::MS_CHROMATOGRAMS_HEADERS hd2 = ana.get_chromatograms_headers();
-    
-    Rcpp::List hdl2;
-    
-    hdl2["index"] = hd2.index;
-    hdl2["id"] = hd2.id;
-    hdl2["array_length"] = hd2.array_length;
-    hdl2["polarity"] = hd2.polarity;
-    hdl2["pre_mz"] = hd2.precursor_mz;
-    hdl2["pro_mz"] = hd2.product_mz;
-    hdl2["pre_ce"] = hd2.activation_ce;
-    
-    hdl2.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-    
-    list_out["chromatograms_headers"] = hdl2;
-    
-  } else {
-    list_out["chromatograms_headers"] = empty_df;
-  }
-  
-  list_out["chromatograms"] = empty_df;
-  
-  list_out["metadata"] = empty_list;
-  
-  list_out.attr("class") = Rcpp::CharacterVector::create("MassSpecAnalysis", "Analysis");
-  
-  return list_out;
-}
-
-// [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_spectra_headers(std::string file_path) {
-  
-  Rcpp::List list_out;
-  
-  sc::MS_ANALYSIS ana(file_path);
-  
-  if (ana.get_number_spectra() == 0) return list_out;
-  
-  sc::MS_SPECTRA_HEADERS headers = ana.get_spectra_headers();
-  
-  list_out["index"] = headers.index;
-  list_out["scan"] = headers.scan;
-  list_out["array_length"] = headers.array_length;
-  list_out["level"] = headers.level;
-  list_out["mode"] = headers.mode;
-  list_out["polarity"] = headers.polarity;
-  list_out["configuration"] = headers.configuration;
-  list_out["lowmz"] = headers.lowmz;
-  list_out["highmz"] = headers.highmz;
-  list_out["bpmz"] = headers.bpmz;
-  list_out["bpint"] = headers.bpint;
-  list_out["tic"] = headers.tic;
-  list_out["rt"] = headers.rt;
-  list_out["mobility"] = headers.mobility;
-  list_out["window_mz"] = headers.window_mz;
-  list_out["pre_mzlow"] = headers.window_mzlow;
-  list_out["pre_mzhigh"] = headers.window_mzhigh;
-  list_out["pre_mz"] = headers.precursor_mz;
-  list_out["pre_charge"] = headers.precursor_charge;
-  list_out["pre_intensity"] = headers.precursor_intensity;
-  list_out["pre_ce"] = headers.activation_ce;
-  
-  list_out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-  
-  return list_out;
-}
-
-// [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_chromatograms_headers(std::string file_path) {
-  
-  Rcpp::List list_out;
-  
-  sc::MS_ANALYSIS ana(file_path);
-  
-  if (ana.get_number_chromatograms() == 0) return list_out;
-  
-  sc::MS_CHROMATOGRAMS_HEADERS headers = ana.get_chromatograms_headers();
-  
-  list_out["index"] = headers.index;
-  list_out["id"] = headers.id;
-  list_out["array_length"] = headers.array_length;
-  list_out["polarity"] = headers.polarity;
-  list_out["pre_mz"] = headers.precursor_mz;
-  list_out["pro_mz"] = headers.product_mz;
-  list_out["pre_ce"] = headers.activation_ce;
-  
-  list_out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-  
-  return list_out;
-}
-
-// [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
-                                 std::vector<int> levels,
-                                 Rcpp::DataFrame targets,
-                                 float minIntensityMS1,
-                                 float minIntensityMS2) {
-  
-  Rcpp::DataFrame empty_df;
-  empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-  
-  Rcpp::List out;
-  
-  const std::string file = analysis["file"];
-  
-  const Rcpp::List& hd = analysis["spectra_headers"];
-  
-  const std::vector<float>& rt = hd["rt"];
-  
-  const float minIntLv1 = minIntensityMS1;
-  const float minIntLv2 = minIntensityMS2;
-
-  const int number_spectra = rt.size();
-  
-  const int number_levels = levels.size();
-  
-  if (number_spectra == 0) return empty_df;
-  
-  const int n_tg = targets.nrow();
-  
-  sc::MS_ANALYSIS ana(file);
-
-  if (n_tg == 0) {
-    
-    const std::vector<int>& polarity = hd["polarity"];
-    const std::vector<int>& configuration = hd["configuration"];
-    const std::vector<int>& level = hd["level"];
-    const std::vector<float>& pre_mz = hd["pre_mz"];
-    const std::vector<float>& pre_ce = hd["pre_ce"];
-    const std::vector<float>& mobility = hd["mobility"];
-    
-    std::vector<bool> spectra_filter(number_spectra, false);
-    
-    for (int i = 0; i < number_spectra; i++) {
-      for (int j = 0; j < number_levels; j++) {
-        
-        if (configuration[i] >= 3) break;
-        
-        if (level[i] == levels[j]) {
-          spectra_filter[i] = true;
-          break;
-        }
-      }
-    }
-    
-    std::vector<int> indices;
-    
-    for (int i = 0; i < number_spectra; i++) if (spectra_filter[i]) indices.push_back(i);
-    
-    const std::vector<std::vector<std::vector<float>>> spectra = ana.get_spectra(indices);
-    
-    const int number_spectra_extracted = spectra.size();
-    
-    const int number_arrays = spectra[0].size();
-    
-    if (number_arrays == 0) return empty_df;
-    
-    int total_traces = 0;
-    
-    for (int i = 0; i < number_spectra_extracted; i++) {
-      const int n = spectra[i][0].size(); 
-      total_traces += n;
-    }
-    
-    std::vector<int> polarity_out(total_traces);
-    std::vector<int> level_out(total_traces);
-    std::vector<float> pre_mz_out(total_traces);
-    std::vector<float> pre_ce_out(total_traces);
-    std::vector<float> rt_out(total_traces);
-    std::vector<float> mobility_out(total_traces);
-    std::vector<float> mz_out(total_traces);
-    std::vector<float> intensity_out(total_traces);
-
-    int trace = 0;
-    for (int i = 0; i < number_spectra_extracted; i++) {
-      const std::vector<float>& mz_ref = spectra[i][0];
-      const std::vector<float>& intensity_ref = spectra[i][1];
-      const int n = mz_ref.size();
-      
-      for (int k = 0; k < n; k++) {
-        polarity_out[trace] = polarity[indices[i]];
-        level_out[trace] = level[indices[i]];
-        pre_mz_out[trace] = pre_mz[indices[i]];
-        pre_ce_out[trace] = pre_ce[indices[i]];
-        rt_out[trace] = rt[indices[i]];
-        mobility_out[trace] = mobility[indices[i]];
-        mz_out[trace] = mz_ref[k];
-        intensity_out[trace] = intensity_ref[k];
-        trace += 1;
-      }
-    }
-    
-    out["polarity"] = polarity_out;
-    out["level"] = level_out;
-    out["pre_mz"] = pre_mz_out;
-    out["pre_ce"] = pre_ce_out;
-    out["rt"] = rt_out;
-    out["mobility"] = mobility_out;
-    out["mz"] = mz_out;
-    out["intensity"] = intensity_out;
-    
-    out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-    return out;
-    
-  } else {
-    
-    std::vector<int> tg_idx(n_tg);
-    std::iota(tg_idx.begin(), tg_idx.end(), 0);
-    
-    const std::vector<std::string> df_id = targets["id"];
-    
-    int tg_level = 0;
-    if (number_levels == 1) tg_level = levels[0];
-    std::vector<int> df_level(n_tg, tg_level);
-    Rcpp::CharacterVector tg_col_names = targets.names();
-    if (std::find(tg_col_names.begin(), tg_col_names.end(), "level") != tg_col_names.end()) {
-      std::vector<int> temp_df_level = targets["level"];
-      for (int i = 0; i < n_tg; i++) df_level[i] = temp_df_level[i];
-    }
-    
-    const std::vector<int> df_polarity = targets["polarity"];
-    const std::vector<bool> df_precursor = targets["precursor"];
-    const std::vector<float> df_mzmin = targets["mzmin"];
-    const std::vector<float> df_mzmax = targets["mzmax"];
-    const std::vector<float> df_rtmin = targets["rtmin"];
-    const std::vector<float> df_rtmax = targets["rtmax"];
-    const std::vector<float> df_mobilitymin = targets["mobilitymin"];
-    const std::vector<float> df_mobilitymax = targets["mobilitymax"];
-    
-    sc::MS_TARGETS tg = {
-      tg_idx,
-      df_id,
-      df_level,
-      df_polarity,
-      df_precursor,
-      df_mzmin,
-      df_mzmax,
-      df_rtmin,
-      df_rtmax,
-      df_mobilitymin,
-      df_mobilitymax
-    };
-
-    std::set<int> idx;
-    
-    const std::vector<int>& hd_index = hd["index"];
-    const std::vector<int>& hd_polarity = hd["polarity"];
-    const std::vector<int>& hd_configuration = hd["configuration"];
-    const std::vector<int>& hd_level = hd["level"];
-    const std::vector<float>& hd_pre_mz = hd["pre_mz"];
-    const std::vector<float>& hd_pre_mz_low = hd["pre_mzlow"];
-    const std::vector<float>& hd_pre_mz_high = hd["pre_mzhigh"];
-    const std::vector<float>& hd_pre_ce = hd["pre_ce"];
-    const std::vector<float>& hd_mobility = hd["mobility"];
-    
-    sc::MS_SPECTRA_HEADERS headers;
-    headers.resize_all(number_spectra);
-    
-    headers.index = hd_index;
-    headers.rt = rt;
-    headers.polarity = hd_polarity;
-    headers.configuration = hd_configuration;
-    headers.level = hd_level;
-    headers.precursor_mz = hd_pre_mz;
-    headers.activation_ce = hd_pre_ce;
-    headers.mobility = hd_mobility;
-    
-    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(tg, headers, minIntLv1, minIntLv2);
-    
-    out["id"] = res.id;
-    out["polarity"] = res.polarity;
-    out["level"] = res.level;
-    out["pre_mz"] = res.pre_mz;
-    out["pre_mzlow"] = res.pre_mzlow;
-    out["pre_mzhigh"] = res.pre_mzhigh;
-    out["pre_ce"] = res.pre_ce;
-    out["rt"] = res.rt;
-    out["mobility"] = res.mobility;
-    out["mz"] = res.mz;
-    out["intensity"] = res.intensity;
-
-    out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
-    return out;
-  }
-  
-  return empty_df;
-}
-
-// [[Rcpp::export]]
-Rcpp::List rcpp_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx) {
-  
-  Rcpp::DataFrame empty_df;
-  empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-  
-  Rcpp::List out;
-  
-  const std::string file = analysis["file"];
-  
-  const Rcpp::List& hd = analysis["chromatograms_headers"];
-  
-  const std::vector<int> index = hd["index"];
-  const std::vector<std::string> id = hd["id"];
-  const std::vector<int> polarity = hd["polarity"];
-  const std::vector<float> pre_mz = hd["pre_mz"];
-  const std::vector<float> pre_ce = hd["pre_ce"];
-  const std::vector<float> pro_mz = hd["pro_mz"];
-  
-  const int number_chromatograms = index.size();
-  
-  if (number_chromatograms == 0) return empty_df;
-  
-  sc::MS_ANALYSIS ana(file);
-  
-  if (idx.size() == 0) idx = index;
-  
-  const std::vector<std::vector<std::vector<float>>> chromatograms = ana.get_chromatograms(idx);
-  
-  const int number_extracted_chromatograms = chromatograms.size();
-  
-  if (number_extracted_chromatograms == 0) return empty_df;
-  
-  int total_traces = 0;
-  
-  for (int i = 0; i < number_extracted_chromatograms; i++) total_traces += chromatograms[i][0].size();
-  
-  if (total_traces == 0) return empty_df;
-    
-  std::vector<int> index_out(total_traces);
-  std::vector<std::string> id_out(total_traces);
-  std::vector<int> polarity_out(total_traces);
-  std::vector<float> pre_mz_out(total_traces);
-  std::vector<float> pre_ce_out(total_traces);
-  std::vector<float> pro_mz_out(total_traces);
-  std::vector<float> rt_out(total_traces);
-  std::vector<float> intensity_out(total_traces);
-    
-  int trace = 0;
-    
-  for (int i = 0; i < number_extracted_chromatograms; i++) {
-    
-    const std::vector<float>& rtj = chromatograms[i][0];
-    const std::vector<float>& intj = chromatograms[i][1];
- 
-    const int n = rtj.size();
-    
-    if (n == 0) continue;
-      
-    for (int j = 0; j < n; j++) {
-      
-      index_out[trace] = index[i];
-      id_out[trace] = id[i];
-      polarity_out[trace] = polarity[i];
-      pre_mz_out[trace] = pre_mz[i];
-      pre_ce_out[trace] = pre_ce[i];
-      pro_mz_out[trace] = pro_mz[i];
-      rt_out[trace] = rtj[j];
-      intensity_out[trace] = intj[j];
-      
-      trace += 1;
-    }
-  }
-    
-  out["index"] = index_out;
-  out["id"] = id_out;
-  out["polarity"] = polarity_out;
-  out["pre_mz"] = pre_mz_out;
-  out["pre_ce"] = pre_ce_out;
-  out["pro_mz"] = pro_mz_out;
-  out["rt"] = rt_out;
-  out["intensity"] = intensity_out;
-  
-  out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-  
-  return out;
-}
-
-sc::MS_SPECTRA_HEADERS get_analysis_headers(const Rcpp::List& analysis) {
-  sc::MS_SPECTRA_HEADERS headers;
-  const Rcpp::List& hd = analysis["spectra_headers"];
-  const std::vector<int>& hd_index = hd["index"];
-  const std::vector<int>& hd_polarity = hd["polarity"];
-  const std::vector<int>& hd_configuration = hd["configuration"];
-  const std::vector<float>& hd_rt = hd["rt"];
-  const std::vector<int>& hd_level = hd["level"];
-  const std::vector<float>& hd_pre_mz = hd["pre_mz"];
-  const std::vector<float>& hd_pre_mz_low = hd["pre_mzlow"];
-  const std::vector<float>& hd_pre_mz_high = hd["pre_mzhigh"];
-  const std::vector<float>& hd_pre_ce = hd["pre_ce"];
-  const std::vector<float>& hd_mobility = hd["mobility"];
-  
-  const int number_spectra = hd_index.size();
-  headers.resize_all(number_spectra);
-  
-  headers.index = hd_index;
-  headers.rt = hd_rt;
-  headers.polarity = hd_polarity;
-  headers.configuration = hd_configuration;
-  headers.level = hd_level;
-  headers.precursor_mz = hd_pre_mz;
-  headers.activation_ce = hd_pre_ce;
-  headers.mobility = hd_mobility;
-  
-  return headers;
-}
-
-void merge_traces_within_rt(std::vector<float>& rt, std::vector<float>& mz, std::vector<float>& intensity) {
-  std::vector<float> rt_out;
-  std::vector<float> mz_out;
-  std::vector<float> intensity_out;
-  for (size_t z = 0; z < rt.size(); z++) {
-    if (std::find(rt_out.begin(), rt_out.end(), rt[z]) == rt_out.end()) {
-      rt_out.push_back(rt[z]);
-      mz_out.push_back(mz[z]);
-      intensity_out.push_back(intensity[z]);
-    } else {
-      auto it = std::find(rt_out.begin(), rt_out.end(), rt[z]);
-      int index = std::distance(rt_out.begin(), it);
-      if (intensity[z] > intensity_out[index]) {
-        mz_out[index] = mz[z];
-        intensity_out[index] = intensity[z];
-      }
-    }
-  }
-  rt = rt_out;
-  mz = mz_out;
-  intensity = intensity_out;
-}
+#include "StreamCraft_lib.h"
+#include "cpp_r_obj_exchange.h"
+#include "NTS_utils.h"
 
 Rcpp::List cluster_spectra(const Rcpp::List& spectra, const float& mzClust = 0.005, const float& presence = 0.8) {
   
@@ -822,216 +323,201 @@ Rcpp::List cluster_spectra(const Rcpp::List& spectra, const float& mzClust = 0.0
   return out;
 }
 
-float mean(const std::vector<float>& v) {
-  return accumulate(v.begin(), v.end(), 0.0) / v.size();
-}
+// MARK: rcpp_ms_annotate_features 
 
-float standard_deviation(const std::vector<float>& v, float mean_val) {
-  float sum = 0.0;
-  for (float num : v) {
-    sum += pow(num - mean_val, 2);
-  }
-  return sqrt(sum / v.size());
-}
-
-size_t find_max_index(const std::vector<float>& v) {
-  return max_element(v.begin(), v.end()) - v.begin();
-}
-
-size_t find_min_index(const std::vector<float>& v) {
-  return min_element(v.begin(), v.end()) - v.begin();
-}
-
-void trim_to_equal_length_around_max_position(std::vector<float>& x, const size_t max_position) {
-  const int n = x.size();
-  std::vector<float> x_out(n);
-  size_t n_points = std::min(max_position, x.size() - max_position - 1);
-  x_out.resize(2 * n_points + 1);
-  for (size_t i = 0; i < x_out.size(); ++i) {
-    x_out[i] = x[max_position - n_points + i];
-  }
-  x = x_out;
-}
-
-float gaussian(float A, float mu, float sigma, float x) {
-  return A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
-  // return A * exp(-0.5 * pow((x - mu) / sigma, 2));
-}
-
-float fit_gaussian_cost_function(const std::vector<float>& x, const std::vector<float>& y, float A, float mu, float sigma) {
-  float cost = 0.0;
-  for (size_t i = 0; i < x.size(); ++i) {
-    float y_pred = gaussian(A, mu, sigma, x[i]);
-    cost += pow(y[i] - y_pred, 2);
-  }
-  return cost;
-}
-
-void fit_gaussian(const std::vector<float>& x, const std::vector<float>& y, float& A_fitted, float& mu_fitted, float& sigma_fitted) {
+// [[Rcpp::export]]
+Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
+                                     double rtWindowAlignment = 0.3,
+                                     int maxIsotopes = 5,
+                                     int maxCharge = 1,
+                                     int maxGaps = 1) {
   
-  // Optimization parameters
-  const float learning_rate = 0.001;
-  const int max_iterations = 10000;
-  const float tolerance = 1e-08;
+  nts::MS_ISOTOPE_SET isotopes;
   
-  for (int iter = 0; iter < max_iterations; ++iter) {
-    float current_cost = fit_gaussian_cost_function(x, y, A_fitted, mu_fitted, sigma_fitted);
+  std::vector<std::string> elements = {"C","H", "N", "O", "S", "Cl", "Br", "Si"};
+  
+  isotopes.filter(elements);
+  
+  const int max_number_elements = 5;
+  
+  Rcpp::Rcout << "Building combinatorial isotopic chains with length "<< max_number_elements << "...";
+  nts::MS_ISOTOPE_COMBINATIONS combinations(isotopes, max_number_elements);
+  Rcpp::Rcout << "Done!" << std::endl;
+  
+  const int number_analyses = feature_list.size();
+  
+  if (number_analyses == 0) return feature_list;
+  
+  for (int a = 0; a < number_analyses; a++) {
     
-    // Numerical gradient calculation
-    float grad_A = (fit_gaussian_cost_function(x, y, A_fitted + tolerance, mu_fitted, sigma_fitted) - current_cost) / tolerance;
-    float grad_mu = (fit_gaussian_cost_function(x, y, A_fitted, mu_fitted + tolerance, sigma_fitted) - current_cost) / tolerance;
-    float grad_sigma = (fit_gaussian_cost_function(x, y, A_fitted, mu_fitted, sigma_fitted + tolerance) - current_cost) / tolerance;
+    Rcpp::List features = feature_list[a];
     
-    // Update parameters using gradient descent
-    A_fitted -= learning_rate * grad_A;
-    mu_fitted -= learning_rate * grad_mu;
-    sigma_fitted -= learning_rate * grad_sigma;
+    const nts::MS_FEATURES_MZ_SORTED fdf(features);
     
-    if (sigma_fitted <= 0) {
-      sigma_fitted = 2; // Set to a small positive number if non-positive
-    }
-    if (sigma_fitted > 1e6) { // Arbitrary upper bound for sigma
-      sigma_fitted = 10;
+    const std::vector<std::string> fts = features["feature"];
+    
+    const int number_features = fdf.n;
+    
+    nts::MS_ANNOTATION af(number_features);
+    
+    Rcpp::Rcout << "Annotating isotopes in " << number_features << " features...";
+    
+    for (int f = 0; f < number_features; f++) {
+      
+      const int& index = fdf.index[f];
+      
+      if (af.iso_step[index] > 0) continue; // already isotope
+      
+      const std::string& feature = fdf.feature[f];
+      const int& polarity = fdf.polarity[f];
+      const float& rt = fdf.rt[f];
+      float rtmin = fdf.rtmin[f];
+      float rtmax = fdf.rtmax[f];
+      const float& mz = fdf.mz[f];
+      const float& mzmin = fdf.mzmin[f];
+      const float& mzmax = fdf.mzmax[f];
+      const float max_mz_chain = (mz + maxIsotopes) * 1.05;
+      
+      std::vector<int> candidates = nts::find_isotopic_candidates(
+        number_features,
+        fdf.feature, fdf.mz, fdf.rt, fdf.polarity,
+        polarity, feature, mz, mzmin, mzmax, rt, rtmin, rtmax,
+        rtWindowAlignment, max_mz_chain
+      );
+      
+      const int number_candidates = candidates.size();
+      
+      if (number_candidates > 0) {
+        
+        candidates.insert(candidates.begin(), f);
+        
+        nts::MS_CANDIDATE_CHAIN candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
+        
+        annotate_isotopes(af, combinations, candidates_chain, maxIsotopes, maxCharge, maxGaps);
+        
+      } else {
+        af.index[index] = index;
+        af.feature[index] = feature;
+        af.component_feature[index] = feature;
+        af.iso_step[index] = 0;
+        af.iso_cat[index] = "M+0";
+        af.iso_isotope[index] = "";
+        af.iso_charge[index] = 1;
+        af.iso_mzr[index] = 0;
+        af.iso_mass_distance[index] = 0;
+        af.iso_theoretical_mass_distance[index] = 0;
+        af.iso_mass_distance_error[index] = 0;
+        af.iso_time_error[index] = 0;
+        af.iso_relative_intensity[index] = 1;
+        af.iso_theoretical_min_relative_intensity[index] = 0;
+        af.iso_theoretical_max_relative_intensity[index] = 0;
+        af.iso_number_carbons[index] = 0;
+        af.iso_size[index] = 0;
+      }
     }
     
-    // Check convergence
-    if (abs(grad_A) < tolerance && abs(grad_mu) < tolerance && abs(grad_sigma) < tolerance) {
-      break;
+    Rcpp::Rcout << "Done!" << std::endl;
+    
+    Rcpp::Rcout << "Annotating adducts in " << number_features << " features...";
+    
+    for (int f = 0; f < number_features; f++) {
+      
+      const int& index = fdf.index[f];
+      
+      if (af.iso_step[index] > 0) continue; // already isotope
+      
+      if (af.adduct_cat[index] != "") continue; // already adduct
+      
+      const int& polarity = fdf.polarity[f];
+      const float& rt = fdf.rt[f];
+      float rtmin = fdf.rtmin[f];
+      float rtmax = fdf.rtmax[f];
+      const float& mz = fdf.mz[f];
+      const float& mzmin = fdf.mzmin[f];
+      const float& mzmax = fdf.mzmax[f];
+      const float max_mz_adducts = (mz + 100);
+      
+      std::vector<int> candidates = nts::find_adduct_candidates(
+        number_features, fdf.mz, fdf.rt, fdf.polarity, af.iso_step, polarity, mz, mzmin, mzmax, rt, rtmin, rtmax, rtWindowAlignment, max_mz_adducts);
+      
+      const int number_candidates = candidates.size();
+      
+      if (number_candidates > 0) {
+        candidates.insert(candidates.begin(), f);
+        nts::MS_CANDIDATE_CHAIN candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
+        nts::annotate_adducts(af, candidates_chain, polarity);
+      }
     }
-  }
-}
-
-float calculate_gaussian_rsquared(const std::vector<float>& x, const std::vector<float>& y, float A, float mu, float sigma) {
-  float ss_total = 0.0;
-  float ss_residual = 0.0;
-  float mean_y = accumulate(y.begin(), y.end(), 0.0) / y.size();
-  
-  for (size_t i = 0; i < x.size(); ++i) {
-    float y_pred = gaussian(A, mu, sigma, x[i]);
-    ss_residual += pow(y[i] - y_pred, 2);
-    ss_total += pow(y[i] - mean_y, 2);
-  }
-  return 1 - (ss_residual / ss_total);
-}
-
-Rcpp::List calculate_gaussian_fit(const std::string& ft,
-                                  const std::vector<float>& rt,
-                                  const std::vector<float>& intensity,
-                                  const float& baseCut) {
-  
-  float noise = 0;
-  float sn = 0;
-  float A_fitted = 0;
-  float mu_fitted = 0;
-  float sigma_fitted = 0;
-  float r_squared = 0;
-  
-  Rcpp::List quality = Rcpp::List::create(
-    Rcpp::Named("feature") = ft,
-    Rcpp::Named("noise") = noise,
-    Rcpp::Named("sn") = sn,
-    Rcpp::Named("gauss_a") = A_fitted,
-    Rcpp::Named("gauss_u") = mu_fitted,
-    Rcpp::Named("gauss_s") = sigma_fitted,
-    Rcpp::Named("gauss_f") = r_squared
-  );
-  
-  size_t max_position = find_max_index(intensity);
-  const float max_intensity = intensity[max_position];
-  
-  const size_t min_position = find_min_index(intensity);
-  noise = intensity[min_position];
-  sn = max_intensity / noise;
-  noise = round(noise);
-  sn = round(sn * 10) / 10;
-  quality["noise"] = noise;
-  quality["sn"] = sn;
-  
-  const float low_cut = max_intensity * baseCut;
-  
-  const int n = rt.size();
-  
-  std::vector<float> rt_trimmed(n);
-  std::vector<float> int_trimmed(n);
-  
-  for (int z = 0; z < n; z++) {
-    int_trimmed[z] = intensity[z] - low_cut;
-    rt_trimmed[z] = rt[z];
-  }
-  
-  auto it_int_trimmed = int_trimmed.begin();
-  auto it_rt_trimmed = rt_trimmed.begin();
-  
-  while (it_int_trimmed != int_trimmed.end()) {
-    if (*it_int_trimmed <= 0) {
-      it_int_trimmed = int_trimmed.erase(it_int_trimmed);
-      it_rt_trimmed = rt_trimmed.erase(it_rt_trimmed);
-    } else {
-      ++it_int_trimmed;
-      ++it_rt_trimmed;
+    
+    Rcpp::Rcout << "Done!" << std::endl;
+    
+    Rcpp::List list_annotation(number_features);
+    
+    for (int f = 0; f < number_features; f++) {
+      
+      const int& index = fdf.index[f];
+      
+      Rcpp::List temp = Rcpp::List::create(
+        Rcpp::Named("index") = index,
+        Rcpp::Named("feature") = af.feature[f],
+                                           Rcpp::Named("component_feature") = af.component_feature[f],
+                                                                                                  Rcpp::Named("iso_size") = af.iso_size[f],
+                                                                                                                                       Rcpp::Named("iso_charge") = af.iso_charge[f],
+                                                                                                                                                                                Rcpp::Named("iso_step") = af.iso_step[f],
+                                                                                                                                                                                                                     Rcpp::Named("iso_cat") = af.iso_cat[f],
+                                                                                                                                                                                                                                                        Rcpp::Named("iso_isotope") = af.iso_isotope[f],
+                                                                                                                                                                                                                                                                                                   Rcpp::Named("iso_mzr") = af.iso_mzr[f],
+                                                                                                                                                                                                                                                                                                                                      Rcpp::Named("iso_relative_intensity") = af.iso_relative_intensity[f],
+                                                                                                                                                                                                                                                                                                                                                                                                       Rcpp::Named("iso_theoretical_min_relative_intensity") = af.iso_theoretical_min_relative_intensity[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        Rcpp::Named("iso_theoretical_max_relative_intensity") = af.iso_theoretical_max_relative_intensity[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Rcpp::Named("iso_mass_distance") = af.iso_mass_distance[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                Rcpp::Named("iso_theoretical_mass_distance") = af.iso_theoretical_mass_distance[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               Rcpp::Named("iso_mass_error") = af.iso_mass_distance_error[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         Rcpp::Named("iso_time_error") = af.iso_time_error[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          Rcpp::Named("iso_number_carbons") = af.iso_number_carbons[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   Rcpp::Named("adduct_element") = af.adduct_element[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Rcpp::Named("adduct_cat") = af.adduct_cat[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             Rcpp::Named("adduct_time_error") = af.adduct_time_error[f],
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    Rcpp::Named("adduct_mass_error") = af.adduct_mass_error[f]
+      );
+      
+      temp.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      
+      list_annotation[index] = temp;
     }
+    
+    features["annotation"] = list_annotation;
+    
+    feature_list[a] = features;
+    
+    // list_out["index"] = af.index;
+    // list_out["feature"] = af.feature;
+    // list_out["mz"] = fdf.mz;
+    // list_out["rt"] = fdf.rt;
+    // list_out["intensity"] = fdf.intensity;
+    // list_out["component_feature"] = af.component_feature;
+    // list_out["iso_size"] = af.iso_size;
+    // list_out["iso_charge"] = af.iso_charge;
+    // list_out["iso_step"] = af.iso_step;
+    // list_out["iso_cat"] = af.iso_cat;
+    // list_out["iso_isotope"] = af.iso_isotope;
+    // list_out["iso_mzr"] = af.iso_mzr;
+    // list_out["iso_relative_intensity"] = af.iso_relative_intensity;
+    // list_out["iso_theoretical_min_relative_intensity"] = af.iso_theoretical_min_relative_intensity;
+    // list_out["iso_theoretical_max_relative_intensity"] = af.iso_theoretical_max_relative_intensity;
+    // list_out["iso_mass_distance"] = af.iso_mass_distance;
+    // list_out["iso_theoretical_mass_distance"] = af.iso_theoretical_mass_distance;
+    // list_out["iso_error"] = af.iso_mass_distance_error;
+    // list_out["iso_number_carbons"] = af.iso_number_carbons;
+    // list_out["adduct_element"] = af.adduct_element;
+    // list_out["adduct_cat"] = af.adduct_cat;
+    // list_out["adduct_error"] = af.adduct_error;
+    // list_out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+    
   }
   
-  int n_trimmed = int_trimmed.size();
-  
-  if (n_trimmed < 3) return quality;
-  
-  max_position = find_max_index(int_trimmed);
-  
-  trim_to_equal_length_around_max_position(rt_trimmed, max_position);
-  trim_to_equal_length_around_max_position(int_trimmed, max_position);
-  
-  n_trimmed = rt_trimmed.size();
-  
-  if (n_trimmed < 3) return quality;
-  
-  max_position = find_max_index(int_trimmed);
-  
-  A_fitted = int_trimmed[max_position];
-  mu_fitted = rt_trimmed[max_position];
-  sigma_fitted = (rt_trimmed.back() - rt_trimmed.front()) / 4.0;
-  
-  fit_gaussian(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
-  
-  r_squared = calculate_gaussian_rsquared(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
-  
-  A_fitted = round(A_fitted);
-  mu_fitted = round(mu_fitted * 10) / 10;
-  sigma_fitted = round(sigma_fitted * 10) / 10;
-  r_squared = round(r_squared * 10000) / 10000;
-  
-  quality["gauss_a"] = A_fitted;
-  quality["gauss_u"] = mu_fitted;
-  quality["gauss_s"] = sigma_fitted;
-  quality["gauss_f"] = r_squared;
-  
-  return quality;
-}
-
-// std::vector<float> get_fit_gaussian_vector(const std::vector<float>& x, float A, float mu, float sigma) {
-//   std::vector<float> y(x.size());
-//   for (size_t i = 0; i < x.size(); ++i) {
-//     y[i] = gaussian(A, mu, sigma, x[i]);
-//   }
-//   return y;
-// }
-
-float trapezoidal_area(const std::vector<float>& x, const std::vector<float>& intensity) {
-  if (x.size() != intensity.size() || x.size() < 2) {
-    throw std::invalid_argument("Vectors must have the same size and contain at least two elements.");
-  }
-  
-  float area = 0.0;
-  
-  // Iterate over the x and intensity vectors and apply the trapezoidal rule
-  for (std::size_t i = 1; i < x.size(); ++i) {
-    float dx = x[i] - x[i - 1];  // Difference between consecutive x values
-    float avg_intensity = (intensity[i] + intensity[i - 1]) / 2.0;  // Average of consecutive intensities
-    area += dx * avg_intensity;  // Trapezoid area for this segment
-  }
-  
-  return area;
-}
+  return feature_list;
+};
 
 // [[Rcpp::export]]
 Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
@@ -1135,13 +621,13 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
     
     const Rcpp::List& analysis = analyses[i];
     
-    sc::MS_SPECTRA_HEADERS headers = get_analysis_headers(analysis);
+    sc::MS_SPECTRA_HEADERS headers = sc_r::get_ms_analysis_list_headers(analysis);
     
     const std::string file = analysis["file"];
     
     if (!std::filesystem::exists(file)) continue;
     
-    sc::MS_ANALYSIS ana(file);
+    sc::MS_FILE ana(file);
     
     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
     
@@ -1153,7 +639,7 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
       
       sc::MS_TARGETS_SPECTRA res_j = res[id_j];
       
-      merge_traces_within_rt(res_j.rt, res_j.mz, res_j.intensity);
+      nts::merge_traces_within_rt(res_j.rt, res_j.mz, res_j.intensity);
       
       const int n = res_j.rt.size();
       const std::vector<std::string> id_vec = std::vector<std::string>(n, id_j);
@@ -1209,10 +695,10 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
   
   std::vector<std::string> features_analyses_names = features.names();
   
-  int rtWindowMax_idx = find_max_index(rtWindow);
-  int rtWindowMin_idx = find_min_index(rtWindow);
-  int mzWindowMax_idx = find_max_index(mzWindow);
-  int mzWindowMin_idx = find_min_index(mzWindow);
+  int rtWindowMax_idx = nts::find_max_index(rtWindow);
+  int rtWindowMin_idx = nts::find_min_index(rtWindow);
+  int mzWindowMax_idx = nts::find_max_index(mzWindow);
+  int mzWindowMin_idx = nts::find_min_index(mzWindow);
   
   for (int i = 0; i < number_analyses; i++) {
     
@@ -1285,13 +771,13 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
     
     const Rcpp::List& analysis = analyses[i];
     
-    sc::MS_SPECTRA_HEADERS headers = get_analysis_headers(analysis);
+    sc::MS_SPECTRA_HEADERS headers = sc_r::get_ms_analysis_list_headers(analysis);
     
     const std::string file = analysis["file"];
     
     if (!std::filesystem::exists(file)) continue;
     
-    sc::MS_ANALYSIS ana(file);
+    sc::MS_FILE ana(file);
     
     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
     
@@ -1435,13 +921,13 @@ Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
     
     const Rcpp::List& analysis = analyses[i];
     
-    sc::MS_SPECTRA_HEADERS headers = get_analysis_headers(analysis);
+    sc::MS_SPECTRA_HEADERS headers = sc_r::get_ms_analysis_list_headers(analysis);
     
     const std::string file = analysis["file"];
     
     if (!std::filesystem::exists(file)) continue;
     
-    sc::MS_ANALYSIS ana(file);
+    sc::MS_FILE ana(file);
     
     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, 0, minTracesIntensity);
     
@@ -1715,13 +1201,13 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
     
     const Rcpp::List& analysis = analyses[j];
     
-    const sc::MS_SPECTRA_HEADERS headers = get_analysis_headers(analysis);
+    const sc::MS_SPECTRA_HEADERS headers = sc_r::get_ms_analysis_list_headers(analysis);
     
     const std::string file = analysis["file"];
     
     if (!std::filesystem::exists(file)) continue;
     
-    sc::MS_ANALYSIS ana(file);
+    sc::MS_FILE ana(file);
     
     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(ana_targets[j], headers, minTracesIntensity, 0);
     
@@ -1770,9 +1256,9 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       
       if (n_res_i < minNumberTraces) continue;
       
-      merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
+      nts::merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
 
-      Rcpp::List quality = calculate_gaussian_fit(id_i, res_i.rt, res_i.intensity, baseCut);
+      Rcpp::List quality = nts::calculate_gaussian_fit(id_i, res_i.rt, res_i.intensity, baseCut);
 
       const float& sn = quality["sn"];
 
@@ -1782,13 +1268,13 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
       if (gauss_f < minGaussianFit) continue;
       
-      const float area_i = trapezoidal_area(res_i.rt, res_i.intensity);
+      const float area_i = nts::trapezoidal_area(res_i.rt, res_i.intensity);
       
-      const size_t max_position = find_max_index(res_i.intensity);
+      const size_t max_position = nts::find_max_index(res_i.intensity);
  
       const float rt_i = res_i.rt[max_position];
 
-      const float mz_i = mean(res_i.mz);
+      const float mz_i = nts::mean(res_i.mz);
 
       const float mass_i = mz_i - (res_i.polarity[0] * 1.007276);
 
@@ -1997,13 +1483,13 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
     
     const Rcpp::List& analysis = analyses[i];
     
-    const sc::MS_SPECTRA_HEADERS headers = get_analysis_headers(analysis);
+    const sc::MS_SPECTRA_HEADERS headers = sc_r::get_ms_analysis_list_headers(analysis);
     
     const std::string file = analysis["file"];
     
     if (!std::filesystem::exists(file)) continue;
     
-    sc::MS_ANALYSIS ana(file);
+    sc::MS_FILE ana(file);
     
     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
     
@@ -2032,7 +1518,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
         rt = res_j.rt;
         mz = res_j.mz;
         intensity = res_j.intensity;
-        merge_traces_within_rt(rt, mz, intensity);
+        nts::merge_traces_within_rt(rt, mz, intensity);
         Rcpp::List eic = Rcpp::List::create(
           Rcpp::Named("feature") = id_j,
           Rcpp::Named("polarity") = res_j.polarity,
@@ -2056,7 +1542,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
 
       const int n = rt.size();
 
-      if (n > minNumberTraces) quality = calculate_gaussian_fit(id_j, rt, intensity, baseCut);
+      if (n > minNumberTraces) quality = nts::calculate_gaussian_fit(id_j, rt, intensity, baseCut);
       
       fts_quality[j] = quality;
     }

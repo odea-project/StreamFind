@@ -417,6 +417,81 @@ S7::method(`[[`, NTS) <- function(x, i) {
   return(x)
 }
 
+#' @export
+#' @noRd
+S7::method(report, NTS) <- function(x,
+                                    path = paste0(getwd(), "/report"),
+                                    filtered = FALSE,
+                                    settingsFile = system.file("report", "settings.yml", package = "patRoon"),
+                                    eicRtWindow = 30,
+                                    eicTopMost = 1,
+                                    eicTopMostByRGroup = TRUE,
+                                    eicOnlyPresent = TRUE,
+                                    eicMzExpWindow = 0.001,
+                                    adductPos = "[M+H]+",
+                                    adductNeg = "[M-H]-",
+                                    specSimMethod = "cosine",
+                                    specSimRemovePrecursor = FALSE,
+                                    specSimMzWeight = 0,
+                                    specSimIntWeight = 1,
+                                    specSimAbsMzDev = 0.005,
+                                    specSimRelMinIntensity = 0.05,
+                                    specSimMinPeaks = 1,
+                                    specSimShift = "none",
+                                    specSimCombineMethod = "mean",
+                                    clearPath = FALSE,
+                                    openReport = TRUE,
+                                    parallel = TRUE) {
+  
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found!")
+    return(NULL)
+  }
+  
+  if (!x$has_groups) {
+    warning("No feature groups found to report!")
+    return(NULL)
+  }
+  
+  patRoon::report(
+    x$features,
+    x$mspl,
+    formulas = x$formulas,
+    compounds = x$compounds,
+    compsCluster = NULL,
+    components = NULL,
+    TPs = NULL,
+    settingsFile = settingsFile,
+    path = path,
+    EICParams = list(
+      rtWindow = eicRtWindow,
+      topMost = eicTopMost,
+      topMostByRGroup = eicTopMostByRGroup,
+      onlyPresent = eicOnlyPresent,
+      mzExpWindow = eicMzExpWindow,
+      setsAdductPos = adductPos,
+      setsAdductNeg = adductNeg
+    ),
+    specSimParams = list(
+      method = specSimMethod,
+      removePrecursor = specSimRemovePrecursor,
+      mzWeight = specSimMzWeight,
+      intWeight = specSimIntWeight,
+      absMzDev = specSimAbsMzDev,
+      relMinIntensity = specSimRelMinIntensity,
+      minPeaks = specSimMinPeaks,
+      shift = specSimShift,
+      setCombineMethod = specSimCombineMethod
+    ),
+    clearPath = clearPath,
+    openReport = openReport,
+    parallel = parallel,
+    overrideSettings = list()
+  )
+  
+  message("\U2713 Report generated!")
+}
+
 # Utility functions -----
 
 #' @noRd

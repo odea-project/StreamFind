@@ -300,6 +300,10 @@ read <- S7::new_generic("read", "x")
 remove <- S7::new_generic("remove", "x")
 
 #' @export
+#'@noRd
+report <- S7::new_generic("report", "x")
+
+#' @export
 #' @noRd
 run <- S7::new_generic("run", "x")
 

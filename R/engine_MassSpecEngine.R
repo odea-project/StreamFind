@@ -1643,74 +1643,85 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
 
     #' @description Saves the HTML report from the function \link[patRoon]{report} from the package \pkg{patRoon}. 
     #' The interface is exactly the same and the arguments description are taken from the documentation in \pkg{patRoon}.
-    #' Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in \pkg{patRoon}.
+    #' Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in 
+    #' \pkg{patRoon}.
     #'
     #' @param path Character (length 1) with the path to the report destination.
-    #' @param settingsFile The path to the report settings file used for report
-    #' configuration (see Report settings in \link[patRoon]{report}).
-    #' @param EICParams A named list with parameters used for extracted ion
-    #' chromatogram (EIC) creation. See \link[patRoon]{getDefEICParams}.
-    #' @param specSimParams A named list with parameters that influence the
-    #' calculation of MS spectra similarities. See \link[patRoon]{getDefSpecSimParams}.
-    #' @param clearPath If TRUE then the report destination path will be
-    #' (recursively) removed prior to reporting.
-    #' @param openReport If set to TRUE then the output report file will be
-    #' opened with the system browser.
+    #' @param settingsFile The path to the report settings file used for report configuration (see Report settings in 
+    #' \link[patRoon]{report}).
+    #' @param eicRtWindow Retention time (in seconds) that will be subtracted/added to respectively the minimum and 
+    #' maximum retention time of the feature. Thus, setting this value to ‘⁠>0⁠’ will 'zoom out' on the retention time axis.
+    #' @param eicTopMost Only create EICs for this number of top most intense features. If NULL then EICs are created 
+    #' for all features.
+    #' @param eicTopMostByRGroup If set to TRUE and topMost is set: only create EICs for the top most features in each 
+    #' replicate group. For instance, when topMost=1 and topMostByRGroup=TRUE, then EICs will be plotted for the most 
+    #' intense feature of each replicate group.
+    #' @param eicOnlyPresent If TRUE then EICs are created only for analyses in which a feature was detected. If 
+    #' onlyPresent=FALSE then EICs are generated for all analyses. The latter is handy to evaluate if a peak was 
+    #' 'missed' during feature detection or removed during e.g. filtering.
+    #' @param eicMzExpWindow If eicOnlyPresent is TRUE, to create EICs for analyses in which no feature was found, the 
+    #' m/z value is derived from the min/max values of all features in the feature group. The value of mzExpWindow 
+    #' further expands this window.
+    #' @param adductPos In sets workflows the adduct must be known to calculate the ionized m/z. If a feature is 
+    #' completely absent in a particular set then it follows no adduct annotations are available and the value of 
+    #' adductPos (positive ionization data) or adductNeg (negative ionization data) will be used instead.
+    #' @param adductNeg as adductPos.
+    #' @param specSimMethod The similarity method: either "cosine" or "jaccard".
+    #' @param specSimRemovePrecursor If TRUE then precursor peaks (i.e. the mass peak corresponding to the feature) are 
+    #' removed prior to similarity calculation.
+    #' @param specSimMzWeight Mass weights used for cosine calculation.
+    #' @param specSimIntWeight Intensity weights used for cosine calculation.
+    #' @param specSimAbsMzDev Maximum absolute m/z deviation between mass peaks, used for binning spectra.
+    #' @param specSimRelMinIntensity The minimum relative intensity for mass peaks (‘⁠0-1⁠’). Peaks with lower intensities
+    #' are not considered for similarity calculation. The relative intensities are called after the precursor peak is 
+    #' removed when removePrecursor=TRUE.
+    #' @param specSimMinPeaks Only consider spectra that have at least this amount of peaks (after the spectrum is 
+    #' filtered).
+    #' @param specSimShift If and how shifting is applied prior to similarity calculation. Valid options are: "none" 
+    #' (no shifting), "precursor" (all mass peaks of the second spectrum are shifted by the mass difference between the 
+    #' precursors of both spectra) or "both" (the spectra are first binned without shifting, and peaks still unaligned 
+    #' are then shifted as is done when shift="precursor").
+    #' @param specSimCombineMethod Determines how spectral similarities from different sets are combined. Possible 
+    #' values are "mean", "min" or "max", which calculates the combined value as the mean, minimum or maximum value, 
+    #' respectively. NA values (e.g. if a set does not have peak list data to combine) are removed in advance.
+    #' @param clearPath If TRUE then the report destination path will be (recursively) removed prior to reporting.
+    #' @param openReport If set to TRUE then the output report file will be opened with the system browser.
     #' @param parallel If set to TRUE then code is executed in parallel.
-    #' @param overrideSettings A list with settings that override those from
-    #' the report settings file. See \link[patRoon]{report}.
+    #' @param overrideSettings A list with settings that override those from the report settings file. See 
+    #' \link[patRoon]{report}.
     #'
     #' @return An interactive HTML report from the package \pkg{patRoon}.
     #'
     report = function(path = paste0(getwd(), "/report"),
                       filtered = FALSE,
                       settingsFile = system.file("report", "settings.yml", package = "patRoon"),
-                      EICParams = patRoon::getDefEICParams(topMost = 1, topMostByRGroup = TRUE),
-                      specSimParams = patRoon::getDefSpecSimParams(),
+                      eicRtWindow = 30,
+                      eicTopMost = 1,
+                      eicTopMostByRGroup = TRUE,
+                      eicOnlyPresent = TRUE,
+                      eicMzExpWindow = 0.001,
+                      adductPos = "[M+H]+",
+                      adductNeg = "[M-H]-",
+                      specSimMethod = "cosine",
+                      specSimRemovePrecursor = FALSE,
+                      specSimMzWeight = 0,
+                      specSimIntWeight = 1,
+                      specSimAbsMzDev = 0.005,
+                      specSimRelMinIntensity = 0.05,
+                      specSimMinPeaks = 1,
+                      specSimShift = "none",
+                      specSimCombineMethod = "mean",
                       clearPath = FALSE,
                       openReport = TRUE,
-                      parallel = TRUE,
-                      overrideSettings = list()) {
-
-      if (!requireNamespace("patRoon", quietly = TRUE)) {
-        return(invisible(self))
-      }
-
-      if (length(self$analyses) == 0) {
-        warning("There are no MS analyses!")
-        return(invisible(self))
-      }
-
-      if (!self$analyses$has_nts) {
-        warning("No NTS results found!")
-        return(invisible(self))
-      }
+                      parallel = TRUE) {
       
-      if (!self$analyses$nts$has_groups) {
-        warning("No NTS feature groups found!")
-        return(invisible(self))
-      }
-      
-      nts <- self$analyses$nts
-
-      patRoon::report(
-        nts$features,
-        nts$mspl,
-        formulas = nts$formulas,
-        compounds = nts$compounds,
-        compsCluster = NULL,
-        components = NULL,
-        TPs = NULL,
-        settingsFile = settingsFile,
-        path = path,
-        EICParams = EICParams,
-        specSimParams = specSimParams,
-        clearPath = clearPath,
-        openReport = openReport,
-        parallel = parallel,
-        overrideSettings = overrideSettings
+      report(
+        self$nts, path, filtered, settingsFile, eicRtWindow, eicTopMost, eicTopMostByRGroup, eicOnlyPresent, 
+        eicMzExpWindow, adductPos, adductNeg, specSimMethod, specSimRemovePrecursor, specSimMzWeight, 
+        specSimIntWeight, specSimAbsMzDev, specSimRelMinIntensity, specSimMinPeaks, specSimShift, 
+        specSimCombineMethod, clearPath, openReport, parallel
       )
-
+      
       invisible(self)
     }
   )

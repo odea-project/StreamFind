@@ -32,8 +32,62 @@ path <- "C:/Users/apoli/Documents/example_ms_files"
 ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 # NTS workflow -----
+ms <- MassSpecEngine$new(analyses = ms_files_df)
+ms$run(MassSpecSettings_FindFeatures_openms())
+ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
 
-## MS Targets -----
+
+
+ms$get_features(mass = dbis[7, ])$annotation[[1]]
+
+
+
+
+ms$analyses@analyses[[1]]
+
+
+
+
+
+
+
+
+
+
+
+# PatRoon report -----
+ms <- MassSpecEngine$new()
+ms$load("ms.rds")
+ms$run_app()
+
+
+
+ms$get_features()$quality[1]
+ms$get_features()$annotation[1]
+
+
+
+
+
+# ms$run(MassSpecSettings_FindFeatures_openms())
+# ms$run(MassSpecSettings_GroupFeatures_openms())
+# ms$run(MassSpecSettings_FillFeatures_StreamFind())
+# ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+# ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
+# ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
+# ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
+# ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000))
+# ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
+# ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
+# ms$run(MassSpecSettings_GenerateFormulas_genform())
+# ms$run(MassSpecSettings_GenerateCompounds_metfrag())
+# ms$save("ms.rds")
+# report(ms$nts)
+
+# MS Targets -----
 
 
 StreamFind::MassSpecTargets(
@@ -259,21 +313,7 @@ map_features_intensity(ms$analyses, interactive = TRUE, colorBy = "replicates")
 
 
 
-ms$run(MassSpecSettings_GroupFeatures_openms())
-ms$run(MassSpecSettings_FillFeatures_StreamFind())
-# ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
-# ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
-# ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
-# ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
-# ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000))
-# ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
-# ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
-# ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
-# ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
-# ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
-# ms$run(MassSpecSettings_GenerateFormulas_genform())
-# ms$run(MassSpecSettings_GenerateCompounds_metfrag())
-# ms$run(MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 15, sec = 30))
+
 
 
 res <- rcpp_ms_load_features_eic(
