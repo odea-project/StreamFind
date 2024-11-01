@@ -12,29 +12,31 @@ CoreEngine <- R6::R6Class("CoreEngine",
 
   # _ private fields -----
   private = list(
-    
+
     ## ___ .headers -----
     .headers = NULL,
-    
+
     ## ___ .workflow -----
     .workflow = NULL,
-    
+
     ## ___ .analyses -----
     .analyses = NULL,
-    
+
     ## ___ .file -----
     .file = NULL,
-    
+
     ## ___ .history -----
     .history = NULL
   ),
-  
+
   # _ active bindings -----
   active = list(
-    
+
     #' @field headers `ProjectHeaders` S7 class object.
     headers = function(value) {
-      if (missing(value)) return(private$.headers)
+      if (missing(value)) {
+        return(private$.headers)
+      }
       if (is(value, "StreamFind::ProjectHeaders")) {
         private$.headers <- value
       } else {
@@ -42,10 +44,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     #' @field workflow `Workflow` S7 class object.
     workflow = function(value) {
-      if (missing(value)) return(private$.workflow)
+      if (missing(value)) {
+        return(private$.workflow)
+      }
       if (is(value, "StreamFind::Workflow")) {
         private$.workflow <- value
       } else {
@@ -53,10 +57,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     #' @field analyses `Analyses` S7 class object.
     analyses = function(value) {
-      if (missing(value)) return(private$.analyses)
+      if (missing(value)) {
+        return(private$.analyses)
+      }
       if (is(value, "StreamFind::Analyses")) {
         private$.analyses <- value
       } else {
@@ -64,11 +70,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     #' @field results List of results in the analyses.
-    #' 
+    #'
     results = function(value) {
-      if (missing(value)) return(self$analyses$results)
+      if (missing(value)) {
+        return(self$analyses$results)
+      }
       if (is(value, "list")) {
         if (all(vapply(value, function(x) is(x, "StreamFind::Results"), FALSE))) {
           results_names <- vapply(value, function(x) x@name, "")
@@ -85,39 +93,44 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     #' @field history Audit trail of changes.
-    #' 
+    #'
     history = function() {
-      private$.history 
+      private$.history
     },
-    
-    #' @field file An `EngineSaveFile` S7 class object. When setting the value it can be also a character with an 
+
+    #' @field file An `EngineSaveFile` S7 class object. When setting the value it can be also a character with an
     #' `sqlite` or `rds` file path to save the engine.
-    #'  
+    #'
     file = function(value) {
-      if (missing(value)) return(private$.file)
+      if (missing(value)) {
+        return(private$.file)
+      }
       if (is(value, "StreamFind::EngineSaveFile")) {
         private$.file <- value
       } else if (is.character(value)) {
-        tryCatch({
-          private$.file <- EngineSaveFile(file = value)
-        }, error = function(e) {
-          warning(e)
-        })
+        tryCatch(
+          {
+            private$.file <- EngineSaveFile(file = value)
+          },
+          error = function(e) {
+            warning(e)
+          }
+        )
       } else {
         warning("Invalid file object! Not added.")
       }
       invisible(self)
     }
   ),
-    
+
   # _ public fields/methods -----
   public = list(
     ## ___ create -----
-    
+
     #' @description Creates a `CoreEngine` R6 class object.
-    #' 
+    #'
     #' @param file Character of length one with the full path to the `sqlite` or `rds` save file of the engine.
     #' @param headers A `ProjectHeaders` S7 class object.
     #' @param analyses An `Analyses` S7 class object.
@@ -125,23 +138,27 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
       self$file <- EngineSaveFile()
-      
+
       if (!is.null(file)) {
-        tryCatch({
-          self$file <- file
-          if (self$file$engine %in% is(self)) {
-            self$load()
-            return(invisible(self))
+        tryCatch(
+          {
+            self$file <- file
+            if (self$file$engine %in% is(self)) {
+              self$load()
+              return(invisible(self))
+            }
+          },
+          error = function(e) {
+            warning(e)
+          },
+          warning = function(w) {
+            warning(w)
           }
-        }, error = function(e) {
-          warning(e)
-        }, warning = function(w) {
-          warning(w)
-        })
+        )
       }
-      
+
       self$headers <- ProjectHeaders()
-      
+
       if (!is.null(headers)) {
         if (is(headers, "StreamFind::ProjectHeaders")) {
           self$headers <- headers
@@ -149,9 +166,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
           warning("Headers not added! Not valid.")
         }
       }
-      
+
       self$workflow <- Workflow()
-      
+
       if (!is.null(workflow)) {
         if (is(workflow, "StreamFind::Workflow")) {
           self$workflow <- workflow
@@ -159,16 +176,16 @@ CoreEngine <- R6::R6Class("CoreEngine",
           warning("Workflow not added! Not valid.")
         }
       }
-      
+
       engine_type <- gsub("Engine", "", is(self))
-      
+
       if (engine_type == "Core") {
         private$.analyses <- Analyses()
       } else {
         analyses_call <- paste0(engine_type, "Analyses")
         private$.analyses <- do.call(analyses_call, list())
       }
-      
+
       if (!is.null(analyses)) {
         if (is(analyses, "StreamFind::Analyses")) {
           self$analyses <- analyses
@@ -181,13 +198,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
           }
         }
       }
-      
+
       message("\U2713 Engine created!")
       invisible(self)
     },
-    
+
     ## ___ print -----
-    
+
     #' @description Prints a summary to the console.
     #'
     print = function() {
@@ -200,55 +217,59 @@ CoreEngine <- R6::R6Class("CoreEngine",
         "file          ", self$file@path, "\n",
         sep = ""
       )
-      
+
       self$print_workflow()
-      
+
       self$print_analyses()
     },
-    
+
     #' @description Prints the headers.
     #'
     print_headers = function() {
       show(self$headers)
     },
-    
+
     #' @description Prints the analyses.
     #'
     print_analyses = function() {
       show(self$analyses)
     },
-    
+
     #' @description Prints the workflow.
     #'
     print_workflow = function() {
       show(self$workflow)
     },
-    
+
     ## ___ save/load -----
-    
+
     #' @description Saves the engine data as an **sqlite** or **rds** file.
-    #' 
-    #' @param file A string with the full file path of the **sqlite** or **rds** file. If \code{NA} (the default) and 
-    #' no save file is defined in the engine, the file name is automatically created with the engine class name and the 
+    #'
+    #' @param file A string with the full file path of the **sqlite** or **rds** file. If \code{NA} (the default) and
+    #' no save file is defined in the engine, the file name is automatically created with the engine class name and the
     #' date in the headers in the **rds** format.
-    #' 
+    #'
     #' @return Invisible.
     #'
     save = function(file = NA_character_) {
       if (is.na(file)) file <- self$file$path
-      if (is.na(file)) file <- paste0(getwd(), "/" ,is(self), "_", format(private$.headers$date, "%Y%m%d%H%M%S"), ".rds")
+      if (is.na(file)) file <- paste0(getwd(), "/", is(self), "_", format(private$.headers$date, "%Y%m%d%H%M%S"), ".rds")
       if (!self$file$path %in% file) {
-        tryCatch({
-          self$file <- EngineSaveFile(file = file)
-        }, error = function(e) {
-          warning(e)
-          return(invisible(self))
-        }, warning = function(w) {
-          warning(w)
-          return(invisible(self))
-        })
+        tryCatch(
+          {
+            self$file <- EngineSaveFile(file = file)
+          },
+          error = function(e) {
+            warning(e)
+            return(invisible(self))
+          },
+          warning = function(w) {
+            warning(w)
+            return(invisible(self))
+          }
+        )
       }
-      
+
       if (self$file$format %in% "sqlite") {
         data <- list(
           engine = is(self),
@@ -257,12 +278,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
           analyses = self$analyses,
           history = self$history
         )
-        
+
         hash <- .make_hash(is(self))
         .save_cache(is(self), data, hash, file)
-        
       } else if (self$file$format %in% "rds") {
-        
         data <- list(
           engine = is(self),
           headers = self$headers,
@@ -270,49 +289,52 @@ CoreEngine <- R6::R6Class("CoreEngine",
           analyses = self$analyses,
           history = self$history
         )
-        
+
         saveRDS(data, file)
-        
       } else {
         warning("File format not valid!")
         return(invisible(self))
       }
-      
+
       if (file.exists(file)) {
         message("\U2713 Engine data saved in ", file, "!")
       } else {
         warning("Data not saved!")
       }
-      
+
       invisible(self)
     },
-    
+
     #' @description Loads the engine data from an **sqlite** or **rds** file.
-    #' 
+    #'
     #' @param file A string with the full file path of the **sqlite** or **rds** file containing the engine data saved.
-    #' 
+    #'
     #' @return Invisible.
-    #' 
+    #'
     load = function(file = NA_character_) {
       if (is.na(file)) file <- self$file$path
-      
+
       if (!file.exists(file)) {
         warning("File does not exist!")
         return(invisible(self))
       }
-      
+
       if (!self$file$path %in% file) {
-        tryCatch({
-          self$file <- EngineSaveFile(file = file)
-        }, error = function(e) {
-          warning("File not valid! Not loaded.")
-          return(invisible(self))
-        }, warning = function(w) {
-          warning(w)
-          return(invisible(self))
-        })
+        tryCatch(
+          {
+            self$file <- EngineSaveFile(file = file)
+          },
+          error = function(e) {
+            warning("File not valid! Not loaded.")
+            return(invisible(self))
+          },
+          warning = function(w) {
+            warning(w)
+            return(invisible(self))
+          }
+        )
       }
-      
+
       if (is(self) == self$file$engine) {
         if (self$file$format %in% "sqlite") {
           hash <- .make_hash(is(self))
@@ -326,7 +348,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
           } else {
             warning("No data loaded from cache!")
           }
-          
         } else if (self$file$format %in% "rds") {
           data <- readRDS(file)
           if (is(data, "list")) {
@@ -350,15 +371,15 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     ## ___ add/remove -----
-    
+
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
     #' @param analyses An engine specific analysis object or a list of engine specific analysis objects.
-    #' 
-    #' @details By adding analyses to the engine the results are removed as data reprocessing must be done. The 
-    #' analyses object can be a specific engine analysis object or a file path to a engine specific format. 
+    #'
+    #' @details By adding analyses to the engine the results are removed as data reprocessing must be done. The
+    #' analyses object can be a specific engine analysis object or a file path to a engine specific format.
     #'
     #' @return Invisible.
     #'
@@ -366,9 +387,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       self$analyses <- add(self$analyses, analyses)
       invisible(self)
     },
-    
+
     #' @description Removes analyses.
-    #' 
+    #'
     #' @param analyses A string or a vector of strings with the name/s or numeric with indices of the analyses to remove.
     #'
     #' @return Invisible.
@@ -378,42 +399,42 @@ CoreEngine <- R6::R6Class("CoreEngine",
       self$analyses <- remove(self$analyses, analyses)
       invisible(self)
     },
-    
+
     ## ___ has -----
-    
+
     #' @description Checks if there are processing settings, returning `TRUE` or `FALSE`.
     #'
     has_settings = function() {
       length(self$workflow) > 0
     },
-    
+
     #' @description Checks if analyses are present, returning `TRUE` or `FALSE`.
     #'
     has_analyses = function() {
       length(self$analyses) > 0
     },
-    
+
     #' @description Checks if results are present, returning `TRUE` or `FALSE`.
-    #' 
+    #'
     #' @param names A string or a vector of strings with the name/s of the
-    #' results data. The actual names depends of the applied algorithms. For 
-    #' instance, when algorithms via patRoon are used, the name of the module 
+    #' results data. The actual names depends of the applied algorithms. For
+    #' instance, when algorithms via patRoon are used, the name of the module
     #' data is patRoon.
     #'
     has_results = function(names = NULL) {
       if (is.null(names)) names <- names(self$results)
       !all(vapply(private$.results[names], is.null, FALSE))
     },
-    
+
     ## ___ processing -----
-    
+
     #' @description Runs a processing method according to the provided settings.
-    #' 
-    #' @param settings A `ProcessingSettings` object or a `character` string with the method name of a previously added 
+    #'
+    #' @param settings A `ProcessingSettings` object or a `character` string with the method name of a previously added
     #' `ProcessingSettings` in the engine.
-    #' 
+    #'
     #' @note If there are `ProcessingSettings` objects with the same method names it is better to use `run_workflow()`.
-    #' 
+    #'
     run = function(settings = NULL) {
       if (is.null(settings)) {
         warning("No processing settings provided!")
@@ -435,7 +456,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         return(invisible(self))
       }
       engine <- settings$engine
-      if (!checkmate::test_choice(paste0(engine,"Engine"), is(self))) {
+      if (!checkmate::test_choice(paste0(engine, "Engine"), is(self))) {
         warning("Engine type ", engine, " not matching with current engine! Not done.")
         return(invisible(self))
       }
@@ -445,10 +466,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
         warning(paste0(call, " not available!"))
         return(invisible(self))
       }
-      
+
       message("\U2699 Running ", settings$method, " using ", settings$algorithm)
       processed <- run(settings, self)
-      
+
       if (processed) {
         if (settings$method %in% self$workflow@methods) {
           if (settings$number_permitted > 1) {
@@ -463,7 +484,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     #' @description Runs all processing methods in workflow.
     #'
     #' @return Invisible.
@@ -479,35 +500,35 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     ## ___ export -----
-    
+
     #' @description Exports the headers as \emph{json} (the default) or \emph{rds}.
     #'
     export_headers = function(format = "json", name = "headers", path = getwd()) {
       save(self$headers, format, name, path)
       invisible(self)
     },
-    
+
     #' @description Exports the workflow as \emph{json} (the default) or \emph{rds}.
     #'
     export_workflow = function(format = "json", name = "settings", path = getwd()) {
       save(self$workflow, format, name, path)
       invisible(self)
     },
-    
+
     #' @description Exports the analyses as \emph{json} (the default) or \emph{rds}.
     #'
     export_analyses = function(format = "json", name = "analyses", path = getwd()) {
       save(self$analyses, format, name, path)
       invisible(self)
     },
-    
+
     #' @description Exports the engine data as as \emph{json} (the default) or \emph{rds}.
     #'
     export = function(format = "json", name = "EngineData", path = getwd()) {
       if (format %in% "json") {
-        list_all = list(
+        list_all <- list(
           headers = as.list(self$headers),
           settings = as.list(self$workflow),
           analyses = as.list(self$analyses),
@@ -519,11 +540,11 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (format %in% "rds") saveRDS(self, file = paste0(path, "/", name, ".rds"))
       invisible(self)
     },
-    
+
     ## ___ import -----
-    
+
     #' @description Imports headers from an \emph{rds} or \emph{json} file.
-    #' 
+    #'
     #' @param file A \emph{json} or \emph{rds} file.
     #'
     #' @return Invisible.
@@ -538,11 +559,11 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     #' @description Imports workflow from an \emph{rds} or \emph{json} file.
-    #' 
+    #'
     #' @param file A \emph{json} or \emph{rds} file.
-    #' 
+    #'
     #' @return Invisible.
     #'
     import_workflow = function(file = NA_character_) {
@@ -555,11 +576,11 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     #' @description Imports analyses from an \emph{rds} or \emph{json} file.
-    #' 
+    #'
     #' @param file A \emph{json} or \emph{rds} file.
-    #' 
+    #'
     #' @return Invisible.
     #'
     import_analyses = function(file = NA_character_) {
@@ -572,51 +593,51 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-    
+
     ## ___ app -----
-    
+
     #' @description Runs a Shiny app to explore and manage the engine.
-    #' 
+    #'
     #' @note The engine data is saved in an **rds** file and loaded in the app. If save file is defined in the engine
     #' it is used, otherwise the save file name is automatically set to the engine class name and the date in the format
-    #' **rds**. Changes made in the app can be saved in the **rds** file and then loaded to continue working on the 
+    #' **rds**. Changes made in the app can be saved in the **rds** file and then loaded to continue working on the
     #' engine by scripting.
-    #' 
+    #'
     run_app = function() {
       self$save()
       file <- self$file$path
       engine_type <- is(self)
-      
+
       if (!requireNamespace("shiny", quietly = TRUE)) {
         warning("Shiny package not installed!")
         return(invisible(self))
       }
-      
+
       if (!requireNamespace("htmltools", quietly = TRUE)) {
         warning("htmltools package not installed!")
         return(invisible(self))
       }
-      
+
       if (!requireNamespace("shinydashboard", quietly = TRUE)) {
         warning("shinydashboard package not installed!")
         return(invisible(self))
       }
-      
+
       if (!requireNamespace("shinycssloaders", quietly = TRUE)) {
         warning("shinycssloaders package not installed!")
         return(invisible(self))
       }
-      
+
       if (!requireNamespace("shinyFiles", quietly = TRUE)) {
         warning("shinyFiles package not installed!")
         return(invisible(self))
       }
-      
+
       if (!requireNamespace("sortable", quietly = TRUE)) {
         warning("sortable package not installed!")
         return(invisible(self))
       }
-      
+
       run_app(file = file, engine_type = engine_type)
     }
   )

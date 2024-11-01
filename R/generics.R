@@ -249,6 +249,10 @@ plot_spectra <- S7::new_generic("plot_spectra", "x")
 
 #' @export
 #' @noRd
+plot_spectra_3d <- S7::new_generic("plot_spectra_3d", "x")
+
+#' @export
+#' @noRd
 plot_spectra_baseline <- S7::new_generic("plot_spectra_baseline", "x")
 
 #' @export

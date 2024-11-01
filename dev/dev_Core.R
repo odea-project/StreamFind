@@ -40,12 +40,12 @@ ms$run(MassSpecSettings_GroupFeatures_openms())
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(minIntensity = 5000))
 ms$run(
   MassSpecSettings_FillFeatures_StreamFind(
-    withinReplicate = FALSE, 
+    withinReplicate = FALSE,
     rtExpand = 2,
     mzExpand = 0.0005,
     minTracesIntensity = 1000,
-    minNumberTraces = 6,
-    baseCut = 0.3,
+    minNumberTraces = 5,
+    baseCut = 0.2,
     minSignalToNoiseRatio = 3,
     minGaussianFit = 0.2
   )
@@ -60,10 +60,14 @@ ms$run(
     baseCut = 0
   )
 )
+
+
 ms$nts <- ms$nts[, ms$get_groups(mass = dbsus)$group]
 
 
-ms$get_features()
+fts <- ms$get_features(filtered = TRUE)
+
+fts[grepl("FL", fts$feature), ]
 
 clear_cache("all")
 clear_cache("calculate_quality")

@@ -1,17 +1,17 @@
 #' @noRd
-Analyses <- S7::new_class("Analyses", package = "StreamFind",
-  
+Analyses <- S7::new_class("Analyses",
+  package = "StreamFind",
   properties = list(
-    
+
     # ___ possible_formats -----
     possible_formats = S7::new_property(S7::class_character, default = NA_character_),
-    
+
     # ___ analyses -----
     analyses = S7::new_property(S7::class_list, default = list()),
-    
+
     # ___ results -----
     results = S7::new_property(S7::class_list, default = list()),
-    
+
     # ___ info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
       if (self@length > 0) {
@@ -26,18 +26,18 @@ Analyses <- S7::new_class("Analyses", package = "StreamFind",
       }
     }, default = data.frame())
   ),
-  
   constructor = function(analyses = list(), results = list()) {
     S7::new_object(S7::S7_object(), possible_formats = NA_character_, analyses = analyses, results = results)
   },
-  
   validator = function(self) {
     valid <- all(
       checkmate::test_character(self@possible_formats),
       checkmate::test_list(self@analyses) || checkmate::test_data_frame(self@analyses),
       checkmate::test_list(self@results)
     )
-    if (!valid) return(FALSE)
+    if (!valid) {
+      return(FALSE)
+    }
     NULL
   }
 )
@@ -148,9 +148,17 @@ S7::method(as.list, Analyses) <- function(x) {
 
 #' @export
 #' @noRd
-S7::method(save, Analyses) <- function(x, format = "json", name = "settings", path = getwd()) {
-  if (format %in% "json") x <- .convert_to_json(as.list(x))
-  .save_data_to_file(x, format, name, path)
+S7::method(save, Analyses) <- function(x, file = "analyses.json") {
+  format <- tools::file_ext(file)
+  if (format %in% "json") {
+    x <- .convert_to_json(as.list(x))
+    write(x, file)
+  } else if (format %in% "rds") {
+    saveRDS(x, file)
+  } else {
+    warning("Invalid format!")
+  }
+  invisible(NULL)
 }
 
 #' @export
@@ -188,7 +196,9 @@ S7::method(read, Analyses) <- function(x, file) {
     }
   } else if (grepl(".rds", file)) {
     res <- readRDS(file)
-    if (is(res, "StreamFind::Analyses")) return(res)
+    if (is(res, "StreamFind::Analyses")) {
+      return(res)
+    }
   }
   NULL
 }

@@ -1575,8 +1575,8 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
         adduct_i = "[M-H]-";
 
       std::string feature = "FL" + std::to_string(i + 1);
-      feature = feature + "_MZ" + std::to_string(std::round(mz_i));
-      feature = feature + "_RT" + std::to_string(std::round(rt_i));
+      feature += "_MZ" + std::to_string(static_cast<int>(std::round(mz_i)));
+      feature += "_RT" + std::to_string(static_cast<int>(std::round(rt_i)));
 
       const int n = res_i.rt.size();
       const std::vector<std::string> id_vec = std::vector<std::string>(n, feature);
@@ -1599,8 +1599,9 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       quality.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
       list_quality.push_back(quality);
 
-      Rcpp::List empty_list;
-      empty_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      Rcpp::List empty_dt = Rcpp::List::create();
+      empty_dt.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      Rcpp::List empty_list = Rcpp::List::create(empty_dt);
 
       Rcpp::List out_targets;
       out_targets["analysis"] = analyses_names[j];

@@ -229,9 +229,17 @@ S7::method(as.list, ProjectHeaders) <- function(x) {
 
 #' @export
 #' @noRd
-S7::method(save, ProjectHeaders) <- function(x, format = "json", name = "settings", path = getwd()) {
-  if (format %in% "json") x <- .convert_to_json(as.list(x))
-  .save_data_to_file(x, format, name, path)
+S7::method(save, ProjectHeaders) <- function(x, file = "headers.json") {
+  format <- tools::file_ext(file)
+  if (format %in% "json") {
+    x <- .convert_to_json(as.list(x))
+    write(x, file)
+  } else if (format %in% "rds") {
+    saveRDS(x, file)
+  } else {
+    warning("Invalid format!")
+  }
+  invisible(NULL)
 }
 
 #' @export

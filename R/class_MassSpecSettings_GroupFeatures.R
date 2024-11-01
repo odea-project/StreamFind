@@ -1,56 +1,54 @@
-
 # ______________________________________________________________________________________________________________________
 # utility functions -----
 # ______________________________________________________________________________________________________________________
 
 #' @noRd
 .run_group_features_patRoon <- function(x, engine = NULL) {
-  
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
-  
+
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
+
   if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
-  
+
   nts <- engine$nts
-  
+
   if (nts@number_features == 0) {
     warning("NTS object is empty! Not done.")
     return(FALSE)
   }
-  
+
   if ("featureGroups" %in% is(nts@features)) {
     pat_features <- nts@features@features
   } else {
     pat_features <- nts@features
   }
-  
+
   algorithm <- x$algorithm
-  
+
   if (grepl("_", algorithm, fixed = FALSE)) algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
-  
+
   if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
     if (!requireNamespace("xcms")) {
       warning("xcms package is not installed!")
       return(FALSE)
     }
   }
-  
+
   parameters <- x$parameters
-  
+
   if ("class" %in% names(parameters)) {
     parameters[["Class"]] <- parameters$class
     parameters[["class"]] <- NULL
-    
+
     parameters <- lapply(parameters, function(z) {
       if (is.list(z) & length(z) > 0) {
         z[[1]]
@@ -58,25 +56,23 @@
         z
       }
     })
-    
+
     if (parameters$Class %in% "PeakGroupsParam") {
       parameters$peakGroupsMatrix <- as.matrix(parameters$peakGroupsMatrix)
     }
-    
+
     if (parameters$Class %in% "PeakGroupsParam") {
       parameters$subset <- as.integer(parameters$subset)
     }
-    
+
     parameters <- do.call("new", parameters)
-    
   } else if (is.list(parameters)) {
-    
     parameters <- lapply(parameters, function(par) {
       if (is.list(par)) {
         if ("class" %in% names(par)) {
           par[["Class"]] <- par$class
           par[["class"]] <- NULL
-          
+
           par <- lapply(par, function(z) {
             if (is.list(z) & length(z) > 0) {
               z[[1]]
@@ -84,53 +80,52 @@
               z
             }
           })
-          
+
           if (par$Class %in% "PeakGroupsParam") {
             par$peakGroupsMatrix <- as.matrix(par$peakGroupsMatrix)
           }
-          
+
           if (par$Class %in% "PeakGroupsParam") {
             par$subset <- as.integer(par$subset)
           }
-          
+
           par <- do.call("new", par)
         }
       }
       par
     })
   }
-  
+
   if (algorithm == "xcms3") {
     if ("Param" %in% is(parameters)) {
       parameters <- list("groupParam" = parameters)
     }
-    
+
     parameters$groupParam@sampleGroups <- engine$analyses@replicates
-    
+
     if ("rtalign" %in% names(parameters)) {
       if (parameters$rtalign) {
         parameters$preGroupParam@sampleGroups <- engine$analyses@replicates
       }
     }
-    
+
     # when multiple polarities it makes setFeatureGroups, no rt alignment possible
     if (length(unique(engine$get_spectra_polarity())) > 1) {
       parameters <- parameters["groupParam"]
     }
   }
-  
+
   ag <- list("obj" = pat_features, "algorithm" = algorithm)
-  
+
   if (!"verbose" %in% names(parameters)) parameters[["verbose"]] <- TRUE
-  
+
   pat <- do.call(patRoon::groupFeatures, c(ag, parameters))
-  
+
   nts <- NTS(features = pat, filtered = nts@filtered)
-  
+
   if (is(nts, "StreamFind::NTS")) {
     engine$nts <- nts
     TRUE
-    
   } else {
     FALSE
   }
@@ -138,23 +133,23 @@
 
 # .extract_time_alignment <- function(pat, self) {
 #   if ("featureGroupsXCMS3" %in% is(pat)) {
-#     
+#
 #     if (xcms::hasAdjustedRtime(pat@xdata)) {
 #       rtAdj <- xcms::adjustedRtime(pat@xdata)
 #       pkAdj <- xcms::processHistory(pat@xdata,
 #                                     type = "Retention time correction"
 #       )[[1]]
 #       pkAdj <- pkAdj@param
-#       
+#
 #       addAdjPoints <- FALSE
 #       if ("PeakGroupsParam" %in% is(pkAdj)) {
 #         addAdjPoints <- TRUE
 #         pkAdj <- xcms::peakGroupsMatrix(pkAdj)
 #       }
-#       
+#
 #       # hasSpectra = all(self$has_loaded_spectra())
 #       hasSpectra <- FALSE
-#       
+#
 #       if (!hasSpectra) {
 #         rtOrg <- lapply(self$get_files(), function(x) {
 #           file_link <- mzR::openMSfile(x, backend = "pwiz")
@@ -163,12 +158,12 @@
 #           sH$retentionTime
 #         })
 #       }
-#       
+#
 #       alignment <- lapply(self$get_analysis_names(),
 #         function(ana, rtOrg, rtAdj, addAdjPoints, pkAdj, all_ana) {
 #           ana_idx <- which(all_ana %in% ana)
 #           n_ana <- length(all_ana)
-#           
+#
 #           rts <- names(rtAdj)
 #           ana_idx_string <- paste0(
 #             "F",
@@ -177,14 +172,14 @@
 #           )
 #           rts <- grepl(ana_idx_string, rts)
 #           rts <- rtAdj[rts]
-#           
+#
 #           temp <- data.frame(
 #             "rt_original" = rtOrg[[ana]],
 #             "rt_adjusted" = rts
 #           )
-#           
+#
 #           temp$adjustment <- temp$rt_original - temp$rt_adjusted
-#           
+#
 #           if (addAdjPoints) {
 #             adjPoints <- unique(pkAdj[, ana_idx])
 #             adjPoints <- adjPoints[adjPoints %in% temp$rt_original]
@@ -199,7 +194,7 @@
 #         pkAdj = pkAdj,
 #         all_ana = self$get_analysis_names()
 #       )
-#       
+#
 #       return(alignment)
 #     }
 #   }
@@ -217,11 +212,11 @@
 #' \href{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}{peakDensity}.
 #' The function uses the package \pkg{patRoon} in the background.
 #'
-#' @param bw numeric(1) defining the bandwidth (standard deviation of the smoothing kernel) to be used. This argument 
+#' @param bw numeric(1) defining the bandwidth (standard deviation of the smoothing kernel) to be used. This argument
 #' is passed to the `density()` method.
-#' @param minFraction numeric(1) defining the minimum fraction of analyses in at least one analysis replicate group in 
+#' @param minFraction numeric(1) defining the minimum fraction of analyses in at least one analysis replicate group in
 #' which the features have to be present to be considered as a feature group.
-#' @param minSamples numeric(1) with the minimum number of analyses in at least one analysis replicate group in which 
+#' @param minSamples numeric(1) with the minimum number of analyses in at least one analysis replicate group in which
 #' the features have to be detected to be considered a feature group.
 #' @param binSize numeric(1) defining the size of the overlapping slices in mz dimension.
 #' @param maxFeatures numeric(1) with the maximum number of feature groups to be identified in a single mz slice.
@@ -246,13 +241,11 @@
 MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSettings_GroupFeatures_xcms3_peakdensity",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(bw = 5,
                          minFraction = 1,
                          minSamples = 1,
                          binSize = 0.008,
                          maxFeatures = 100) {
-    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GroupFeatures",
@@ -273,7 +266,6 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSetti
       doi = "https://doi.org/10.1021/ac051437y"
     ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
@@ -291,12 +283,11 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSetti
 #' @export
 #' @noRd
 S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x, engine = NULL) {
-  
   settings <- list()
-  
+
   settings[["algorithm"]] <- x$algorithm
-  
-  parameters = list(
+
+  parameters <- list(
     "rtalign" = FALSE,
     "groupParam" = list(
       class = "PeakDensityParam",
@@ -308,9 +299,9 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x,
       maxFeatures = x$parameters$maxFeatures
     )
   )
-  
+
   settings[["parameters"]] <- parameters
-  
+
   .run_group_features_patRoon(settings, engine)
 }
 
@@ -320,10 +311,10 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x,
 
 #' **MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups**
 #'
-#' @description Settings for aligning and grouping features (i.e., chromatographic peaks) across mzML/mzXML files using 
+#' @description Settings for aligning and grouping features (i.e., chromatographic peaks) across mzML/mzXML files using
 #' the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
 #' \href{https://rdrr.io/bioc/xcms/man/adjustRtime-peakGroups.html}{peakGroups} for retention time alignment and the algorithm
-#' \href{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}{peakdensity} for grouping. The function uses the 
+#' \href{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}{peakdensity} for grouping. The function uses the
 #' package \pkg{patRoon} in the background.
 #'
 #' @param bw numeric(1) defining the bandwidth (standard deviation of the
@@ -394,7 +385,6 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x,
 MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(bw = 5,
                          minFraction = 1,
                          minSamples = 1,
@@ -411,7 +401,6 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
                          family = "gaussian",
                          subset = integer(),
                          subsetAdjust = "average") {
-    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GroupFeatures",
@@ -443,7 +432,6 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
       doi = "https://doi.org/10.1021/ac051437y"
     ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
@@ -471,12 +459,11 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
 #' @export
 #' @noRd
 S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- function(x, engine = NULL) {
-  
   settings <- list()
-  
+
   settings[["algorithm"]] <- x$algorithm
-  
-  
+
+
   parameters <- list(
     "rtalign" = TRUE,
     "groupParam" = list(
@@ -509,9 +496,9 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- 
       subsetAdjust = x$parameters$subsetAdjust
     )
   )
-  
+
   settings[["parameters"]] <- parameters
-  
+
   .run_group_features_patRoon(settings, engine)
 }
 
@@ -521,7 +508,7 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- 
 
 #' **MassSpecSettings_GroupFeatures_openms**
 #'
-#' @description Settings for grouping features (i.e., chromatographic peaks) in mzML/mzXML files using the 
+#' @description Settings for grouping features (i.e., chromatographic peaks) in mzML/mzXML files using the
 #' \href{https://www.openms.org/}{OpenMS}(\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software
 #' with the algorithm \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/3.0.0/html/TOPP_FeatureLinkerUnlabeled.html}{FeatureLinkerUnlabeled}.
 #' The function uses the package \pkg{patRoon} in the background.
@@ -556,7 +543,6 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- 
 MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFeatures_openms",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(rtalign = FALSE,
                          QT = FALSE,
                          maxAlignRT = 5,
@@ -564,7 +550,6 @@ MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFe
                          maxGroupRT = 5,
                          maxGroupMZ = 0.008,
                          verbose = FALSE) {
-    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GroupFeatures",
@@ -587,7 +572,6 @@ MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFe
       doi = "https://doi.org/10.1038/nmeth.3959"
     ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
@@ -608,16 +592,3 @@ MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFe
 S7::method(run, MassSpecSettings_GroupFeatures_openms) <- function(x, engine = NULL) {
   .run_group_features_patRoon(x, engine)
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

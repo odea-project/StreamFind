@@ -88,7 +88,7 @@ assembly of Non-Target Screening data processing workflows.
 \item \href{#method-MassSpecEngine-has_spectra_peaks}{\code{MassSpecEngine$has_spectra_peaks()}}
 \item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
 \item \href{#method-MassSpecEngine-has_neutralized_spectra}{\code{MassSpecEngine$has_neutralized_spectra()}}
-\item \href{#method-MassSpecEngine-plot_raw_data}{\code{MassSpecEngine$plot_raw_data()}}
+\item \href{#method-MassSpecEngine-plot_spectra_3d}{\code{MassSpecEngine$plot_spectra_3d()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms_baseline}{\code{MassSpecEngine$plot_chromatograms_baseline()}}
@@ -2135,12 +2135,12 @@ Checks if spectra are neutralized (i.e., \emph{m/z} converted to mass), returnin
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_raw_data"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_raw_data}{}}}
-\subsection{Method \code{plot_raw_data()}}{
-Plots raw spectra in 3D for given MS analyses.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_3d"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_3d}{}}}
+\subsection{Method \code{plot_spectra_3d()}}{
+Plots raw spectra in 3D for given MS analyses and targets.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_raw_data(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_3d(
   analyses = NULL,
   levels = NULL,
   mass = NULL,
@@ -4340,18 +4340,32 @@ Checks the correspondence of features within feature groups, returning \code{TRU
 \subsection{Method \code{report()}}{
 Saves the HTML report from the function \link[patRoon]{report} from the package \pkg{patRoon}.
 The interface is exactly the same and the arguments description are taken from the documentation in \pkg{patRoon}.
-Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in \pkg{patRoon}.
+Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in
+\pkg{patRoon}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$report(
   path = paste0(getwd(), "/report"),
   filtered = FALSE,
   settingsFile = system.file("report", "settings.yml", package = "patRoon"),
-  EICParams = patRoon::getDefEICParams(topMost = 1, topMostByRGroup = TRUE),
-  specSimParams = patRoon::getDefSpecSimParams(),
+  eicRtWindow = 30,
+  eicTopMost = 1,
+  eicTopMostByRGroup = TRUE,
+  eicOnlyPresent = TRUE,
+  eicMzExpWindow = 0.001,
+  adductPos = "[M+H]+",
+  adductNeg = "[M-H]-",
+  specSimMethod = "cosine",
+  specSimRemovePrecursor = FALSE,
+  specSimMzWeight = 0,
+  specSimIntWeight = 1,
+  specSimAbsMzDev = 0.005,
+  specSimRelMinIntensity = 0.05,
+  specSimMinPeaks = 1,
+  specSimShift = "none",
+  specSimCombineMethod = "mean",
   clearPath = FALSE,
   openReport = TRUE,
-  parallel = TRUE,
-  overrideSettings = list()
+  parallel = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -4362,25 +4376,68 @@ Therefore, for further information, we recommend to consult directly the functio
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{settingsFile}}{The path to the report settings file used for report
-configuration (see Report settings in \link[patRoon]{report}).}
+\item{\code{settingsFile}}{The path to the report settings file used for report configuration (see Report settings in
+\link[patRoon]{report}).}
 
-\item{\code{EICParams}}{A named list with parameters used for extracted ion
-chromatogram (EIC) creation. See \link[patRoon]{getDefEICParams}.}
+\item{\code{eicRtWindow}}{Retention time (in seconds) that will be subtracted/added to respectively the minimum and
+maximum retention time of the feature. Thus, setting this value to ‘⁠>0⁠’ will 'zoom out' on the retention time axis.}
 
-\item{\code{specSimParams}}{A named list with parameters that influence the
-calculation of MS spectra similarities. See \link[patRoon]{getDefSpecSimParams}.}
+\item{\code{eicTopMost}}{Only create EICs for this number of top most intense features. If NULL then EICs are created
+for all features.}
 
-\item{\code{clearPath}}{If TRUE then the report destination path will be
-(recursively) removed prior to reporting.}
+\item{\code{eicTopMostByRGroup}}{If set to TRUE and topMost is set: only create EICs for the top most features in each
+replicate group. For instance, when topMost=1 and topMostByRGroup=TRUE, then EICs will be plotted for the most
+intense feature of each replicate group.}
 
-\item{\code{openReport}}{If set to TRUE then the output report file will be
-opened with the system browser.}
+\item{\code{eicOnlyPresent}}{If TRUE then EICs are created only for analyses in which a feature was detected. If
+onlyPresent=FALSE then EICs are generated for all analyses. The latter is handy to evaluate if a peak was
+'missed' during feature detection or removed during e.g. filtering.}
+
+\item{\code{eicMzExpWindow}}{If eicOnlyPresent is TRUE, to create EICs for analyses in which no feature was found, the
+m/z value is derived from the min/max values of all features in the feature group. The value of mzExpWindow
+further expands this window.}
+
+\item{\code{adductPos}}{In sets workflows the adduct must be known to calculate the ionized m/z. If a feature is
+completely absent in a particular set then it follows no adduct annotations are available and the value of
+adductPos (positive ionization data) or adductNeg (negative ionization data) will be used instead.}
+
+\item{\code{adductNeg}}{as adductPos.}
+
+\item{\code{specSimMethod}}{The similarity method: either "cosine" or "jaccard".}
+
+\item{\code{specSimRemovePrecursor}}{If TRUE then precursor peaks (i.e. the mass peak corresponding to the feature) are
+removed prior to similarity calculation.}
+
+\item{\code{specSimMzWeight}}{Mass weights used for cosine calculation.}
+
+\item{\code{specSimIntWeight}}{Intensity weights used for cosine calculation.}
+
+\item{\code{specSimAbsMzDev}}{Maximum absolute m/z deviation between mass peaks, used for binning spectra.}
+
+\item{\code{specSimRelMinIntensity}}{The minimum relative intensity for mass peaks (‘⁠0-1⁠’). Peaks with lower intensities
+are not considered for similarity calculation. The relative intensities are called after the precursor peak is
+removed when removePrecursor=TRUE.}
+
+\item{\code{specSimMinPeaks}}{Only consider spectra that have at least this amount of peaks (after the spectrum is
+filtered).}
+
+\item{\code{specSimShift}}{If and how shifting is applied prior to similarity calculation. Valid options are: "none"
+(no shifting), "precursor" (all mass peaks of the second spectrum are shifted by the mass difference between the
+precursors of both spectra) or "both" (the spectra are first binned without shifting, and peaks still unaligned
+are then shifted as is done when shift="precursor").}
+
+\item{\code{specSimCombineMethod}}{Determines how spectral similarities from different sets are combined. Possible
+values are "mean", "min" or "max", which calculates the combined value as the mean, minimum or maximum value,
+respectively. NA values (e.g. if a set does not have peak list data to combine) are removed in advance.}
+
+\item{\code{clearPath}}{If TRUE then the report destination path will be (recursively) removed prior to reporting.}
+
+\item{\code{openReport}}{If set to TRUE then the output report file will be opened with the system browser.}
 
 \item{\code{parallel}}{If set to TRUE then code is executed in parallel.}
 
-\item{\code{overrideSettings}}{A list with settings that override those from
-the report settings file. See \link[patRoon]{report}.}
+\item{\code{overrideSettings}}{A list with settings that override those from the report settings file. See
+\link[patRoon]{report}.}
 }
 \if{html}{\out{</div>}}
 }
