@@ -39,32 +39,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_ms_group_features
-Rcpp::DataFrame rcpp_ms_group_features(Rcpp::DataFrame features, float rt_dev, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_group_features(SEXP featuresSEXP, SEXP rt_devSEXP, SEXP verboseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
-    Rcpp::traits::input_parameter< float >::type rt_dev(rt_devSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_group_features(features, rt_dev, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_groups_correspondence
-bool rcpp_ms_groups_correspondence(Rcpp::DataFrame groups, Rcpp::DataFrame features, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_groups_correspondence(SEXP groupsSEXP, SEXP featuresSEXP, SEXP verboseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type groups(groupsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_groups_correspondence(groups, features, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_parse_ms_analysis
 Rcpp::List rcpp_parse_ms_analysis(std::string file_path);
 RcppExport SEXP _StreamFind_rcpp_parse_ms_analysis(SEXP file_pathSEXP) {
@@ -229,6 +203,32 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_ms_group_features
+Rcpp::DataFrame rcpp_ms_group_features(Rcpp::DataFrame features, float rt_dev, bool verbose);
+RcppExport SEXP _StreamFind_rcpp_ms_group_features(SEXP featuresSEXP, SEXP rt_devSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
+    Rcpp::traits::input_parameter< float >::type rt_dev(rt_devSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_group_features(features, rt_dev, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_ms_groups_correspondence
+bool rcpp_ms_groups_correspondence(Rcpp::DataFrame groups, Rcpp::DataFrame features, bool verbose);
+RcppExport SEXP _StreamFind_rcpp_ms_groups_correspondence(SEXP groupsSEXP, SEXP featuresSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type groups(groupsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_groups_correspondence(groups, features, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_parse_asc_file
 Rcpp::List rcpp_parse_asc_file(std::string file_path);
 RcppExport SEXP _StreamFind_rcpp_parse_asc_file(SEXP file_pathSEXP) {
@@ -277,8 +277,6 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
-    {"_StreamFind_rcpp_ms_group_features", (DL_FUNC) &_StreamFind_rcpp_ms_group_features, 3},
-    {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},
     {"_StreamFind_rcpp_parse_ms_spectra_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_headers, 1},
     {"_StreamFind_rcpp_parse_ms_chromatograms_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers, 1},
@@ -290,6 +288,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_ms_load_features_ms2", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms2, 7},
     {"_StreamFind_rcpp_ms_fill_features", (DL_FUNC) &_StreamFind_rcpp_ms_fill_features, 10},
     {"_StreamFind_rcpp_ms_calculate_features_quality", (DL_FUNC) &_StreamFind_rcpp_ms_calculate_features_quality, 8},
+    {"_StreamFind_rcpp_ms_group_features", (DL_FUNC) &_StreamFind_rcpp_ms_group_features, 3},
+    {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
     {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},
     {"_StreamFind_rcpp_write_asc_file", (DL_FUNC) &_StreamFind_rcpp_write_asc_file, 3},
     {"_StreamFind_test_read_hdf5", (DL_FUNC) &_StreamFind_test_read_hdf5, 1},

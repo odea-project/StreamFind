@@ -35,13 +35,39 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 ms <- MassSpecEngine$new(analyses = ms_files_df)
 ms$run(MassSpecSettings_FindFeatures_openms())
 ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE, excludeAdducts = TRUE))
+ms$run(MassSpecSettings_GroupFeatures_openms())
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(minIntensity = 5000))
+ms$run(
+  MassSpecSettings_FillFeatures_StreamFind(
+    withinReplicate = FALSE, 
+    rtExpand = 2,
+    mzExpand = 0.0005,
+    minTracesIntensity = 1000,
+    minNumberTraces = 6,
+    baseCut = 0.3,
+    minSignalToNoiseRatio = 3,
+    minGaussianFit = 0.2
+  )
+)
+ms$run(
+  MassSpecSettings_CalculateFeaturesQuality_StreamFind(
+    filtered = FALSE,
+    rtExpand = 2,
+    mzExpand = 0.0005,
+    minTracesIntensity = 1000,
+    minNumberTraces = 6,
+    baseCut = 0
+  )
+)
+ms$nts <- ms$nts[, ms$get_groups(mass = dbsus)$group]
 
 
+ms$get_features()
 
-ms$get_features(mass = dbis[7, ])$annotation[[1]]
-
-
-
+clear_cache("all")
+clear_cache("calculate_quality")
+clear_cache("fill_features")
 
 ms$analyses@analyses[[1]]
 
@@ -844,7 +870,6 @@ ms$get_suspects(database = dbsus[2, ], ppm = 15, sec = 30)
 plot_spectra_bpc(ms$analyses, levels = 1, yLab = "Test")
 
 
-_groups(ms$analyses, mass = dbsus[2, ])
 
 
 ms$get_features()

@@ -9,14 +9,6 @@ rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, ve
     .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, presence, verbose)
 }
 
-rcpp_ms_group_features <- function(features, rt_dev = 10, verbose = FALSE) {
-    .Call(`_StreamFind_rcpp_ms_group_features`, features, rt_dev, verbose)
-}
-
-rcpp_ms_groups_correspondence <- function(groups, features, verbose) {
-    .Call(`_StreamFind_rcpp_ms_groups_correspondence`, groups, features, verbose)
-}
-
 rcpp_parse_ms_analysis <- function(file_path) {
     .Call(`_StreamFind_rcpp_parse_ms_analysis`, file_path)
 }
@@ -59,6 +51,14 @@ rcpp_ms_fill_features <- function(analyses, features, withinReplicate = FALSE, r
 
 rcpp_ms_calculate_features_quality <- function(analyses, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0) {
     .Call(`_StreamFind_rcpp_ms_calculate_features_quality`, analyses, features, filtered, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut)
+}
+
+rcpp_ms_group_features <- function(features, rt_dev = 10, verbose = FALSE) {
+    .Call(`_StreamFind_rcpp_ms_group_features`, features, rt_dev, verbose)
+}
+
+rcpp_ms_groups_correspondence <- function(groups, features, verbose) {
+    .Call(`_StreamFind_rcpp_ms_groups_correspondence`, groups, features, verbose)
 }
 
 rcpp_parse_asc_file <- function(file_path) {

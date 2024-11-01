@@ -22,10 +22,7 @@ RUN apt-get update && apt-get install -y \
     libfreetype6-dev \
     libglpk40
 
-# Set CRAN and Bioconductor repositories
-#RUN R -e "options(repos = c(CRAN = 'https://p3m.dev/cran/latest'))"
-
-# Install remotes package and patRoonInst from GitHub
+# Install R packages
 RUN R -e "install.packages('remotes')"
 RUN R -e "install.packages('BiocManager')"
 RUN R -e "BiocManager::install('ropls')"
@@ -55,12 +52,11 @@ RUN R -e "patRoonInst::install()"
 RUN R -e "BiocManager::install('odea-project/StreamFindData', dependencies = TRUE)"
 RUN R -e "BiocManager::install('odea-project/StreamFind', dependencies = TRUE)"
 
+# Added directly to dockerfile to avoid missing file at startup
 # Copy the start.sh script to the container
 #COPY start.sh /start.sh
-
 # Give execute permission to the script
 #RUN chmod +x /start.sh
-
 #ENTRYPOINT ["/start.sh"]
 
 ENTRYPOINT ["bash", "-c", " \
@@ -85,4 +81,3 @@ elif [ \"$option\" == \"3\" ]; then \
 else \
     echo 'Invalid option. Please select 1, 2, or 3.'; \
 fi"]
-
