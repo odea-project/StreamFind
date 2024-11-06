@@ -44,7 +44,8 @@ Imports:
     withr,
     fst,
     zlibbioc,
-    Rhdf5lib
+    Rhdf5lib,
+    reticulate
 Suggests: 
     StreamFindData,
     mzR,
@@ -76,6 +77,12 @@ SystemRequirements: GNU make, C++17
 LinkingTo: Rhdf5lib, Rcpp
 RdMacros: 
     Rdpack
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "orplib")
+    )
+  )
 Collate: 
     'global_import_namespace.R'
     'RcppExports.R'
@@ -86,8 +93,6 @@ Collate:
     'utils_fct_assets.R'
     'fct_clear_cache.R'
     'fct_ms_convert_trim_files.R'
-    'class_MassSpecAnalysis.R'
-    'class_RamanAnalysis.R'
     'class_EngineSaveFile.R'
     'class_ProjectHeaders.R'
     'class_ProcessingSettings.R'
@@ -111,6 +116,7 @@ Collate:
     'class_MassSpecSettings_CalculateSpectraCharges.R'
     'class_MassSpecSettings_ClusterSpectra.R'
     'class_MassSpecSettings_CorrectChromatogramsBaseline.R'
+    'class_MassSpecSettings_CorrectMatrixSuppression.R'
     'class_MassSpecSettings_CorrectSpectraBaseline.R'
     'class_MassSpecSettings_DeconvoluteSpectra.R'
     'class_MassSpecSettings_FillFeatures.R'

@@ -1,9 +1,11 @@
+# MARK: MassSpecAnalyses
 #' @export
 #' @noRd
 MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
   package = "StreamFind", parent = Analyses,
   properties = list(
 
+    # MARK: analyses
     ## __analyses -----
     analyses = S7::new_property(S7::class_list, default = list()),
 
@@ -14,6 +16,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }
     ),
 
+    # MARK: replicates
     ## __replicates -----
     replicates = S7::new_property(S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$replicate, NA_character_),
@@ -41,6 +44,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }
     ),
 
+    # MARK: blanks
     ## __blanks -----
     blanks = S7::new_property(S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$blank, NA_character_),
@@ -70,36 +74,43 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }
     ),
 
+    # MARK: types
     ## __types -----
     types = S7::new_property(S7::class_character, getter = function(self) {
       vapply(self@analyses, function(x) x$type, NA_character_)
     }),
 
+    # MARK: files
     ## __files -----
     files = S7::new_property(S7::class_character, getter = function(self) {
       vapply(self@analyses, function(x) x$file, NA_character_)
     }),
 
+    # MARK: formats
     ## __formats -----
     formats = S7::new_property(S7::class_character, getter = function(self) {
       vapply(self@analyses, function(x) x$format, NA_character_)
     }),
 
+    # MARK: instruments
     ## __instruments -----
     instruments = S7::new_property(S7::class_character, getter = function(self) {
       lapply(self@analyses, function(x) x$instrument)
     }),
 
+    # MARK: software
     ## __software -----
     software = S7::new_property(S7::class_character, getter = function(self) {
       lapply(self@analyses, function(x) x$software)
     }),
 
+    # MARK: spectra_number
     ## __spectra_number -----
     spectra_number = S7::new_property(S7::class_numeric, getter = function(self) {
       vapply(self@analyses, function(x) x$spectra_number, 0)
     }),
 
+    # MARK: spectra_headers
     ## __spectra_headers -----
     spectra_headers = S7::new_property(S7::class_list, getter = function(self) {
       lapply(self@analyses, function(x) {
@@ -110,6 +121,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       })
     }),
 
+    # MARK: spectra_mode
     ## __spectra_mode -----
     spectra_mode = S7::new_property(S7::class_character, getter = function(self) {
       vapply(self@analyses, function(x) {
@@ -125,6 +137,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }, NA_character_)
     }),
 
+    # MARK: spectra_level
     ## __spectra_level -----
     spectra_level = S7::new_property(S7::class_character, getter = function(self) {
       vapply(self@analyses, function(x) {
@@ -137,36 +150,43 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }, NA_character_)
     }),
 
+    # MARK: spectra_lowest_mz
     ## __spectra_lowest_mz -----
     spectra_lowest_mz = S7::new_property(S7::class_numeric, getter = function(self) {
       vapply(self@analyses, function(x) min(x$spectra_headers$lowmz), NA_real_)
     }),
 
+    # MARK: spectra_highest_mz
     ## __spectra_highest_mz -----
     spectra_highest_mz = S7::new_property(S7::class_numeric, getter = function(self) {
       vapply(self@analyses, function(x) max(x$spectra_headers$highmz), NA_real_)
     }),
 
+    # MARK: spectra_lowest_rt
     ## __spectra_lowest_rt -----
     spectra_lowest_rt = S7::new_property(S7::class_numeric, getter = function(self) {
       vapply(self@analyses, function(x) min(x$spectra_headers$rt), NA_real_)
     }),
 
+    # MARK: spectra_highest_rt
     ## __spectra_highest_rt -----
     spectra_highest_rt = S7::new_property(S7::class_numeric, getter = function(self) {
       vapply(self@analyses, function(x) max(x$spectra_headers$rt), NA_real_)
     }),
 
+    # MARK: spectra_lowest_mobility
     ## __spectra_highest_mobility -----
     spectra_highest_mobility = S7::new_property(S7::class_numeric, getter = function(self) {
       vapply(self@analyses, function(x) max(x$spectra_headers$mobility), NA_real_)
     }),
 
+    # MARK: spectra_lowest_mobility
     ## __spectra_lowest_mobility -----
     spectra_lowest_mobility = S7::new_property(S7::class_numeric, getter = function(self) {
       vapply(self@analyses, function(x) min(x$spectra_headers$mobility), NA_real_)
     }),
 
+    # MARK: spectra_polarity
     ## __spectra_polarity -----
     spectra_polarity = S7::new_property(S7::class_character, getter = function(self) {
       vapply(self@analyses, function(x) {
@@ -196,6 +216,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }, NA_character_)
     }),
 
+    # MARK: spectra_tic
     ## __spectra_tic -----
     spectra_tic = S7::new_property(S7::class_numeric, getter = function(self) {
       lapply(self@analyses, function(x) {
@@ -207,6 +228,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       })
     }),
 
+    # MARK: spectra_bpc
     ## __spectra_bpc -----
     spectra_bpc = S7::new_property(S7::class_numeric, getter = function(self) {
       lapply(self@analyses, function(x) {
@@ -218,6 +240,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       })
     }),
 
+    # MARK: __spectra_raw
     ## __spectra_raw -----
     spectra_raw = S7::new_property(S7::class_list, getter = function(self) {
       Spectra(
@@ -234,6 +257,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       )
     }),
 
+    # MARK: chromatograms_number
     ## __chromatograms_number -----
     chromatograms_number = S7::new_property(S7::class_numeric, getter = function(self) {
       vapply(self@analyses, function(x) x$chromatograms_number, 0)
@@ -249,6 +273,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       })
     }),
 
+    ## __chromatograms_raw -----
     ## chromatograms_raw -----
     chromatograms_raw = S7::new_property(S7::class_list, getter = function(self) {
       Chromatograms(
@@ -262,6 +287,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       )
     }),
 
+    # MARK: info
     ## __info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
       if (length(self) > 0) {
@@ -285,6 +311,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }
     }),
 
+    # MARK: has_ion_mobility
     ## __has_ion_mobility -----
     has_ion_mobility = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
@@ -293,6 +320,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       vapply(self@analyses, function(x) any(x$spectra_headers$mobility > 0), FALSE)
     }),
 
+    # MARK: has_loaded_spectra
     ## __has_loaded_spectra -----
     has_loaded_spectra = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
@@ -301,6 +329,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       vapply(self@analyses, function(x) nrow(x$spectra) > 0, FALSE)
     }),
 
+    # MARK: has_loaded_chromatograms
     ## __has_loaded_chromatograms -----
     has_loaded_chromatograms = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
@@ -309,6 +338,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       vapply(self@analyses, function(x) nrow(x$chromatograms) > 0, FALSE)
     }),
 
+    # MARK: has_nts
     ## __has_nts -----
     has_nts = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
@@ -323,6 +353,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       TRUE
     }),
 
+    # MARK: nts
     ## __nts -----
     nts = S7::new_property(S7::class_list,
       getter = function(self) {
@@ -352,6 +383,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }
     ),
 
+    # MARK: has_spectra
     ## __has_spectra -----
     has_spectra = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
@@ -366,6 +398,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       TRUE
     }),
 
+    # MARK: spectra
     ## __spectra -----
     spectra = S7::new_property(S7::class_list,
       getter = function(self) {
@@ -405,6 +438,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }
     ),
 
+    # MARK: has_chromatograms
     ## __has_chromatograms -----
     has_chromatograms = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
@@ -419,6 +453,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       TRUE
     }),
 
+    # MARK: chromatograms
     ## __chromatograms -----
     chromatograms = S7::new_property(S7::class_list,
       getter = function(self) {
@@ -458,18 +493,19 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }
     )
   ),
+
+  # MARK: constructor
+  ## __constructor -----
   constructor = function(files = NULL) {
     analyses <- .get_MassSpecAnalysis_from_files(files)
     S7::new_object(Analyses(), possible_formats = c(".mzML|.mzXML"), analyses = analyses)
   },
+
+  # MARK: validator
+  ## __validator -----
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(identical(self@possible_formats, c(".mzML|.mzXML"))),
-      if (length(self) > 0) checkmate::test_true(identical(names(self@analyses), unname(self@names)))
-    )
-    if (!valid) {
-      return(FALSE)
-    }
+    checkmate::assert_true(identical(self@possible_formats, c(".mzML|.mzXML")))
+    if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(self@names)))
     NULL
   }
 )
@@ -477,12 +513,16 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
 # MARK: Methods
 # Methods -----
 
+# MARK: names
+## __names -----
 #' @export
 #' @noRd
 S7::method(names, MassSpecAnalyses) <- function(x) {
   vapply(x@analyses, function(x) x$name, NA_character_)
 }
 
+# MARK: add
+## __add -----
 #' @export
 #' @noRd
 S7::method(add, MassSpecAnalyses) <- function(x, value) {
@@ -512,6 +552,8 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
   x
 }
 
+# MARK: remove
+## __remove -----
 #' @export
 #' @noRd
 S7::method(remove, MassSpecAnalyses) <- function(x, value) {
@@ -557,6 +599,8 @@ S7::method(`[[<-`, MassSpecAnalyses) <- function(x, i, value) {
   x
 }
 
+# MARK: as.list
+## __as.list -----
 #' @export
 #' @noRd
 S7::method(as.list, MassSpecAnalyses) <- function(x) {
@@ -569,6 +613,8 @@ S7::method(as.list, MassSpecAnalyses) <- function(x) {
   list("analyses" = x@analyses, "results" = x@results)
 }
 
+# MARK: read
+## __read -----
 #' @export
 #' @noRd
 S7::method(read, MassSpecAnalyses) <- function(x, file) {
@@ -591,8 +637,11 @@ S7::method(read, MassSpecAnalyses) <- function(x, file) {
   NULL
 }
 
+# MARK: Get Spectra
 # Get Spectra ------
+
 # MARK: get_spectra_tic
+## __get_spectra_tic -----
 #' @export
 #' @noRd
 S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x, analyses = NULL, levels = c(1, 2), rt = NULL) {
@@ -610,7 +659,20 @@ S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x, analyses = NULL, le
   value
 }
 
+# MARK: get_matrix_suppression
+## __get_matrix_suppression -----
+#' @export
+#' @noRd
+S7::method(get_matrix_suppression, MassSpecAnalyses) <- function(x, rtWindow = 10) {
+  mpList <- .calculate_tic_matrix_suppression(x, rtWindow)
+  if (is.null(mpList)) {
+    return(data.table::data.table())
+  }
+  data.table::rbindlist(mpList, fill = TRUE)
+}
+
 # MARK: get_spectra_bpc
+## __get_spectra_bpc -----
 #' @export
 #' @noRd
 S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x, analyses = NULL, levels = c(1, 2), rt = NULL) {
@@ -629,6 +691,7 @@ S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x, analyses = NULL, le
 }
 
 # MARK: get_spectra
+## __get_spectra -----
 #' @export
 #' @noRd
 S7::method(get_spectra, MassSpecAnalyses) <- function(x,
@@ -888,6 +951,7 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: get_spectra_matrix
+## __get_spectra_matrix -----
 #' @export
 #' @noRd
 S7::method(get_spectra_matrix, MassSpecAnalyses) <- function(x, analyses = NULL) {
@@ -935,6 +999,7 @@ S7::method(get_spectra_matrix, MassSpecAnalyses) <- function(x, analyses = NULL)
 }
 
 # MARK: load_spectra
+## __load_spectra -----
 #' @export
 #' @noRd
 S7::method(load_spectra, MassSpecAnalyses) <- function(x,
@@ -987,6 +1052,7 @@ S7::method(load_spectra, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: get_spectra_eic
+## __get_spectra_eic -----
 #' @export
 #' @noRd
 S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
@@ -1026,6 +1092,8 @@ S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
   eic
 }
 
+# MARK: get_spectra_ms1
+## __get_spectra_ms1 -----
 #' @export
 #' @noRd
 S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
@@ -1105,6 +1173,8 @@ S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
   ms1_df
 }
 
+# MARK: get_spectra_ms2
+## __get_spectra_ms2 -----
 #' @export
 #' @noRd
 S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
@@ -1186,8 +1256,11 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
   ms2_df
 }
 
+# MARK: Plot Spectra
 # Plot Spectra -----
+
 # MARK: plot_spectra
+## __plot_spectra -----
 #' @export
 #' @noRd
 S7::method(plot_spectra, MassSpecAnalyses) <- function(x,
@@ -1279,6 +1352,7 @@ S7::method(plot_spectra, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_spectra_3d
+## __plot_spectra_3d -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_3d, MassSpecAnalyses) <- function(x,
@@ -1326,6 +1400,7 @@ S7::method(plot_spectra_3d, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_spectra_tic
+## __plot_spectra_tic -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
@@ -1361,6 +1436,7 @@ S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_spectra_bpc
+## __plot_spectra_bpc -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_bpc, MassSpecAnalyses) <- function(x,
@@ -1391,7 +1467,41 @@ S7::method(plot_spectra_bpc, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_matrix_suppression
+## __plot_matrix_suppression -----
+#' @export
+#' @noRd
+S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
+                                                                  analyses = NULL,
+                                                                  rtWindow = 10,
+                                                                  xLab = NULL,
+                                                                  yLab = NULL,
+                                                                  title = NULL,
+                                                                  colorBy = "analyses",
+                                                                  legendNames = NULL,
+                                                                  showLegend = TRUE,
+                                                                  xlim = NULL,
+                                                                  ylim = NULL,
+                                                                  cex = 0.6,
+                                                                  interactive = TRUE) {
+  mp <- get_matrix_suppression(x, rtWindow)
+  if (nrow(mp) == 0) {
+    message("\U2717 TIC matrix suppression not found for the analyses!")
+    return(NULL)
+  }
+  if (grepl("replicates", colorBy) && "replicate" %in% colnames(mp)) mp$replicate <- x@replicates[mp$analysis]
+  if (!"id" %in% colnames(mp)) mp$id <- mp$analysis
+  mp$intensity <- mp$mp
+  if (is.null(yLab)) yLab <- "Supression Factor"
+  if (!interactive) {
+    .plot_spectra_eic_static(mp, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+  } else {
+    .plot_spectra_eic_interactive(mp, legendNames, colorBy, title, showLegend, xLab, yLab)
+  }
+}
+
 # MARK: plot_spectra_eic
+## __plot_spectra_eic -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_eic, MassSpecAnalyses) <- function(x,
@@ -1431,6 +1541,7 @@ S7::method(plot_spectra_eic, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_spectra_xic
+## __plot_spectra_xic -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_xic, MassSpecAnalyses) <- function(x,
@@ -1477,6 +1588,7 @@ S7::method(plot_spectra_xic, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_spectra_ms1
+## __plot_spectra_ms1 -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_ms1, MassSpecAnalyses) <- function(x,
@@ -1516,6 +1628,7 @@ S7::method(plot_spectra_ms1, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_spectra_ms2
+## __plot_spectra_ms2 -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
@@ -1555,6 +1668,7 @@ S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_spectra_baseline
+## __plot_spectra_baseline -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_baseline, MassSpecAnalyses) <- function(x,
@@ -1638,6 +1752,7 @@ S7::method(plot_spectra_baseline, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_spectra_charges
+## __plot_spectra_charges -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_charges, MassSpecAnalyses) <- function(x,
@@ -1687,9 +1802,11 @@ S7::method(plot_spectra_charges, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: Chromatograms
 # Chromatograms ------
 
 # MARK: get_chromatograms
+## __get_chromatograms -----
 #' @export
 #' @noRd
 S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
@@ -1828,6 +1945,7 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: load_chromatograms
+## __load_chromatograms -----
 #' @export
 #' @noRd
 S7::method(load_chromatograms, MassSpecAnalyses) <- function(x, analyses = NULL, minIntensity = NULL, chromatograms = NULL) {
@@ -1846,6 +1964,8 @@ S7::method(load_chromatograms, MassSpecAnalyses) <- function(x, analyses = NULL,
   x
 }
 
+# MARK: get_chromatograms_peaks
+## __get_chromatograms_peaks -----
 #' @export
 #' @noRd
 S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = NULL, chromatograms = NULL) {
@@ -1901,6 +2021,7 @@ S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = 
 }
 
 # MARK: plot_chromatograms
+## __plot_chromatograms -----
 #' @export
 #' @noRd
 S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
@@ -1941,6 +2062,7 @@ S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_chromatograms_peaks
+## __plot_chromatograms_peaks -----
 #' @export
 #' @noRd
 S7::method(plot_chromatograms_peaks, MassSpecAnalyses) <- function(x,
@@ -1983,6 +2105,7 @@ S7::method(plot_chromatograms_peaks, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: plot_chromatograms_baseline
+## __plot_chromatograms_baseline -----
 #' @export
 #' @noRd
 S7::method(plot_chromatograms_baseline, MassSpecAnalyses) <- function(x,
@@ -2021,8 +2144,11 @@ S7::method(plot_chromatograms_baseline, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: Get NTS
 # Get NTS ------
 
+# MARK: get_features_count
+## __get_features_count -----
 #' @export
 #' @noRd
 S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL, filtered = FALSE) {
@@ -2044,6 +2170,8 @@ S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL,
   info
 }
 
+# MARK: get_features
+## __get_features -----
 #' @export
 #' @noRd
 S7::method(get_features, MassSpecAnalyses) <- function(x,
@@ -2215,6 +2343,8 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
   fts
 }
 
+# MARK: get_features_eic
+## __get_features_eic -----
 #' @export
 #' @noRd
 S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
@@ -2320,6 +2450,8 @@ S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
   eic
 }
 
+# MARK: get_features_ms1
+## __get_features_ms1 -----
 #' @export
 #' @noRd
 S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
@@ -2405,6 +2537,8 @@ S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
   ms1
 }
 
+# MARK: get_features_ms2
+## __get_features_ms2 -----
 #' @export
 #' @noRd
 S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
@@ -2488,6 +2622,8 @@ S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
   ms2
 }
 
+# MARK: get_groups
+## __get_groups -----
 #' @export
 #' @noRd
 S7::method(get_groups, MassSpecAnalyses) <- function(x,
@@ -2616,6 +2752,8 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: get_groups_ms1
+## __get_groups_ms1 -----
 #' @export
 #' @noRd
 S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
@@ -2728,6 +2866,8 @@ S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
   data.table::copy(ms1_df)
 }
 
+# MARK: get_groups_ms2
+## __get_groups_ms2 -----
 #' @export
 #' @noRd
 S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
@@ -2838,6 +2978,8 @@ S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
   data.table::copy(ms2_df)
 }
 
+# MARK: get_components
+## __get_components -----
 #' @export
 #' @noRd
 S7::method(get_components, MassSpecAnalyses) <- function(x,
@@ -2926,6 +3068,8 @@ S7::method(get_components, MassSpecAnalyses) <- function(x,
   all_fts
 }
 
+# MARK: get_suspects
+## __get_suspects -----
 #' @export
 #' @noRd
 S7::method(get_suspects, MassSpecAnalyses) <- function(x,
@@ -3196,6 +3340,8 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
   suspects
 }
 
+# MARK: get_internal_standards
+## __get_internal_standards -----
 #' @export
 #' @noRd
 S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TRUE) {
@@ -3352,6 +3498,8 @@ S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TR
 
 # Plot NTS -----
 
+# MARK: plot_features_count
+## __plot_features_count -----
 #' @export
 #' @noRd
 S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
@@ -3411,6 +3559,8 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
   )
 }
 
+# MARK: plot_features
+## __plot_features -----
 #' @export
 #' @noRd
 S7::method(plot_features, MassSpecAnalyses) <- function(x,
@@ -3473,6 +3623,8 @@ S7::method(plot_features, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: map_features
+## __map_features -----
 #' @export
 #' @noRd
 S7::method(map_features, MassSpecAnalyses) <- function(x,
@@ -3519,6 +3671,8 @@ S7::method(map_features, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: map_features_intensity
+## __map_features_intensity -----
 #' @export
 #' @noRd
 S7::method(map_features_intensity, MassSpecAnalyses) <- function(x,
@@ -3583,6 +3737,8 @@ S7::method(map_features_intensity, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_features_ms1
+## __plot_features_ms1 -----
 #' @export
 #' @noRd
 S7::method(plot_features_ms1, MassSpecAnalyses) <- function(x,
@@ -3629,6 +3785,8 @@ S7::method(plot_features_ms1, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_features_ms2
+## __plot_features_ms2 -----
 #' @export
 #' @noRd
 S7::method(plot_features_ms2, MassSpecAnalyses) <- function(x,
@@ -3673,6 +3831,8 @@ S7::method(plot_features_ms2, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_groups
+## __plot_groups -----
 #' @export
 #' @noRd
 S7::method(plot_groups, MassSpecAnalyses) <- function(x,
@@ -3722,6 +3882,8 @@ S7::method(plot_groups, MassSpecAnalyses) <- function(x,
   )
 }
 
+# MARK: plot_groups_ms1
+## __plot_groups_ms1 -----
 #' @export
 #' @noRd
 S7::method(plot_groups_ms1, MassSpecAnalyses) <- function(x,
@@ -3777,6 +3939,8 @@ S7::method(plot_groups_ms1, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_groups_ms2
+## __plot_groups_ms2 -----
 #' @export
 #' @noRd
 S7::method(plot_groups_ms2, MassSpecAnalyses) <- function(x,
@@ -3831,6 +3995,8 @@ S7::method(plot_groups_ms2, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_groups_overview
+## __plot_groups_overview -----
 #' @export
 #' @noRd
 S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
@@ -3846,6 +4012,7 @@ S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
                                                                rtExpand = 120,
                                                                mzExpand = 0.005,
                                                                useLoadedData = TRUE,
+                                                               correctSuppression = TRUE,
                                                                filtered = FALSE,
                                                                legendNames = NULL,
                                                                title = NULL,
@@ -3891,9 +4058,11 @@ S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
 
   analyses <- .check_analyses_argument(x, analyses)
 
-  .plot_groups_overview_aux(fts, eic, heights, analyses)
+  .plot_groups_overview_aux(fts, eic, heights, analyses, correctSuppression)
 }
 
+# MARK: plot_groups_profile
+## __plot_groups_profile -----
 #' @export
 #' @noRd
 S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
@@ -3907,6 +4076,7 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
                                                               sec = 60,
                                                               millisec = 5,
                                                               filtered = FALSE,
+                                                              correctSuppression = TRUE,
                                                               normalized = TRUE,
                                                               legendNames = NULL,
                                                               yLab = NULL,
@@ -3921,6 +4091,12 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
   polarities <- x$spectra_polarity
 
   if (!"polarity" %in% colnames(fts)) fts$polarity <- polarities[fts$analysis]
+
+  if (correctSuppression) {
+    if ("suppression_factor" %in% colnames(fts)) {
+      fts$intensity <- fts$intensity * fts$suppression_factor
+    }
+  }
 
   if (normalized && "intensity_rel" %in% colnames(fts)) fts$intensity <- as.numeric(fts$intensity_rel)
 
@@ -4030,6 +4206,8 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
   plot
 }
 
+# MARK: map_components
+## __map_components -----
 #' @export
 #' @noRd
 S7::method(map_components, MassSpecAnalyses) <- function(x,
@@ -4070,6 +4248,8 @@ S7::method(map_components, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_internal_standards
+## __plot_internal_standards -----
 #' @export
 #' @noRd
 S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
@@ -4095,6 +4275,8 @@ S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_suspects
+## __plot_suspects -----
 #' @export
 #' @noRd
 S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
@@ -4206,9 +4388,10 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
 
 
 
-
+# MARK: Utility functions
 # Utility functions -----
 
+# MARK: .get_MassSpecAnalysis_from_files
 #' @noRd
 .get_MassSpecAnalysis_from_files <- function(files = NULL) {
   if (!is.null(files)) {

@@ -1,8 +1,11 @@
+# MARK: MassSpecEngine
 #' **MassSpecEngine** R6 class and methods
 #'
-#' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing
-#' mass spectrometry (MS) data. The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
-#' assembly of Non-Target Screening data processing workflows.
+#' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing mass
+#' spectrometry (MS) data. MS data (i.e., spectra and chromatograms) can be loaded from mzML and mzXML formats.
+#'
+#' @details The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target
+#' Screening (NTS) data processing workflows.
 #'
 #' @template arg-ms-files
 #' @template arg-headers
@@ -67,12 +70,13 @@
 MassSpecEngine <- R6::R6Class("MassSpecEngine",
   inherit = CoreEngine,
 
+  # MARK: active_bindings
   # _ active bindings -----
-
   active = list(
 
+    # MARK: nts
+    ## __ nts -----
     #' @field nts Get/Set for the `NTS` results class.
-    #'
     nts = function(value) {
       if (missing(value)) {
         return(self$results[["nts"]])
@@ -85,8 +89,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
 
+    # MARK: spectra
+    ## __ spectra -----
     #' @field spectra Get/set for the `Spectra` results class.
-    #'
     spectra = function(value) {
       if (missing(value)) {
         return(self$analyses$spectra)
@@ -99,8 +104,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
 
+    # MARK: chromatograms
+    ## __ chromatograms -----
     #' @field chromatograms Get/set for the chromatograms results class.
-    #'
     chromatograms = function(value) {
       if (missing(value)) {
         return(self$analyses$chromatograms)
@@ -114,156 +120,152 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     }
   ),
 
+  # MARK: public fields
   # _ public fields -----
   public = list(
 
+    # MARK: initialize
+    ## __ initialize -----
     #' @description Creates an R6 MassSpecEngine class object.
     #'
-    #' @param file Character of length one with the full path to the `sqlite` save file of the engine.
+    #' @param file Character of length one with the full path to the `sqlite` or 'rds' save file of the engine.
     #' @param headers A `ProjectHeaders` S7 class object.
-    #' @param analyses A `MassSpecAnalyses` S7 class object or a `character vector` with full file paths to ms files or
-    #' a `data.frame` as described in `?MassSpecAnalyses`.
     #' @param workflow A `Workflow` S7 class object.
+    #' @param analyses A `MassSpecAnalyses` S7 class object or a `character vector` with full file paths to mzML/mzXML
+    #' files or a `data.frame` with colnames: "file", "replicate" and "blank". The "replicate" column is used to group
+    #' the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to
+    #' the mzML/mzXML files.
     #'
     #' @return A new MassSpecEngine class object.
     #'
     initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
       super$initialize(file, headers, workflow, analyses)
       invisible(self)
-      # private$.register("created", "MassSpecEngine", headers$name, paste(c(headers$author, headers$path), collapse = ", "))
     },
 
-    ## ___ get -----
-
+    # MARK: get_analysis_names
+    ## __ get_analysis_names -----
     #' @description Gets the analysis replicate names.
-    #'
     get_analysis_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$names[analyses]
     },
 
+    # MARK: get_replicate_names
+    ## __ get_replicate_names -----
     #' @description Gets the analysis replicate names.
-    #'
     get_replicate_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$replicates[analyses]
     },
 
+    # MARK: get_blank_names
+    ## __ get_blank_names -----
     #' @description Gets the analysis blank replicate names.
-    #'
     get_blank_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$blanks[analyses]
     },
 
+    # MARK: get_files
+    ## __ get_files -----
     #' @description Gets the full file paths of each analysis.
-    #'
     get_files = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$files[analyses]
     },
 
+    # MARK: get_formats
+    ## __ get_formats -----
     #' @description Gets the file format of each analysis.'
-    #'
     get_formats = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$formats[analyses]
     },
 
+    # MARK: get_instruments
+    ## __ get_instruments -----
     #' @description Gets the instruments information of each analysis.
-    #'
-    #' @return A list.
-    #'
     get_instruments = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$instruments[analyses]
     },
 
+    # MARK: get_software
+    ## __ get_software -----
     #' @description Gets the software information of each analysis.
-    #'
-    #' @return A list.
-    #'
     get_software = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$software[analyses]
     },
 
+    # MARK: get_spectra_number
+    ## __ get_spectra_number -----
     #' @description Gets the number of spectra in each analysis.
-    #'
-    #' @return A character vector.
-    #'
     get_spectra_number = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$spectra_number[analyses]
     },
 
+    # MARK: get_spectra_mode
+    ## __ get_spectra_mode -----
     #' @description Gets the spectra mode of each analysis (i.e., profile or centroid).
-    #'
-    #' @return A character vector.
-    #'
     get_spectra_mode = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$spectra_mode[analyses]
     },
 
+    # MARK: get_spectra_level
+    ## __ get_spectra_level -----
     #' @description Gets the spectra levels of each analysis.
-    #'
-    #' @return A list for each analysis with an integer vector.
-    #'
     get_spectra_level = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$spectra_level[analyses]
     },
 
+    # MARK: get_spectra_lowest_mz
+    ## __ get_spectra_lowest_mz -----
     #' @description Gets the lower \emph{m/z} value of each analysis.
-    #'
-    #' @return A character vector.
-    #'
     get_spectra_lowest_mz = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$spectra_lowest_mz[analyses]
     },
 
+    # MARK: get_spectra_highest_mz
+    ## __ get_spectra_highest_mz -----
     #' @description Gets the higher \emph{m/z} value of each analysis.
-    #'
-    #' @return A character vector.
-    #'
     get_spectra_highest_mz = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$spectra_highest_mz[analyses]
     },
 
+    # MARK: get_spectra_lowest_rt
+    ## __ get_spectra_lowest_rt -----
     #' @description Gets the start retention time value of each analysis.
-    #'
-    #' @return A character vector.
-    #'
     get_spectra_lowest_rt = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$spectra_lowest_rt[analyses]
     },
 
+    # MARK: get_spectra_highest_rt
+    ## __ get_spectra_highest_rt -----
     #' @description Gets the end retention time value of each analysis.
-    #'
-    #' @return A character vector.
-    #'
     get_spectra_highest_rt = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$spectra_highest_rt[analyses]
     },
 
+    # MARK: get_spectra_polarity
+    ## __ get_spectra_polarity -----
     #' @description Gets the polarity of each analysis.
-    #'
-    #' @return A character vector.
-    #'
     get_spectra_polarity = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$spectra_polarity[analyses]
     },
 
+    # MARK: get_spectra_headers
+    ## __ get_spectra_headers -----
     #' @description Gets the spectra headers data.table of each analysis.
-    #'
-    #' @return A data.table.
-    #'
     get_spectra_headers = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       value <- self$analyses$spectra_headers[analyses]
@@ -271,6 +273,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       value
     },
 
+    # MARK: get_spectra_tic
+    ## __ get_spectra_tic -----
     #' @description Gets the total ion chromatogram (TIC) of each analysis.
     #'
     #' @param rt Numeric (length 2). The retention time range to filter the TIC.
@@ -281,6 +285,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       get_spectra_tic(self$analyses, analyses, levels, rt)
     },
 
+    # MARK: get_spectra_bpc
+    ## __ get_spectra_bpc -----
     #' @description Gets the base peak chromatogram (BPC) of each analysis.
     #'
     #' @param rt Numeric (length 2). The retention time range to filter the BPC.
@@ -291,8 +297,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       get_spectra_bpc(self$analyses, analyses, levels, rt)
     },
 
+    # MARK: get_spectra
+    ## __ get_spectra -----
     #' @description Gets spectra from each analysis.
-    #'
     get_spectra = function(analyses = NULL,
                            levels = NULL,
                            mass = NULL,
@@ -316,14 +323,16 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_spectra_matrix
+    ## __ get_spectra_matrix -----
     #' @description Gets a matrix with spectra from analyses.
-    #'
     get_spectra_matrix = function(analyses = NULL) {
       get_spectra_matrix(self$analyses, analyses)
     },
 
+    # MARK: get_spectra_eic
+    ## __ get_spectra_eic -----
     #' @description Gets spectra extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
-    #'
     get_spectra_eic = function(analyses = NULL,
                                mass = NULL,
                                mz = NULL,
@@ -342,8 +351,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_spectra_ms1
+    ## __ get_spectra_ms1 -----
     #' @description Gets level 1 spectra from the analyses based on targets as a data.frame.
-    #'
     get_spectra_ms1 = function(analyses = NULL,
                                mass = NULL,
                                mz = NULL,
@@ -365,8 +375,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_spectra_ms2
+    ## __ get_spectra_ms2 -----
     #' @description Gets level 2 spectra from the analyses based on targets as a data.frame.
-    #'
     get_spectra_ms2 = function(analyses = NULL,
                                mass = NULL,
                                mz = NULL,
@@ -389,15 +400,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_chromatograms_number
+    ## __ get_chromatograms_number -----
     #' @description Gets the number of chromatograms in each analysis.
-    #'
     get_chromatograms_number = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$chromatograms_number[analyses]
     },
 
+    # MARK: get_chromatograms_headers
+    ## __ get_chromatograms_headers -----
     #' @description Gets the chromatograms headers data.table of each analysis.
-    #'
     get_chromatograms_headers = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
       value <- self$analyses$chromatograms_headers[analyses]
@@ -405,8 +418,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       value
     },
 
+    # MARK: get_chromatograms
+    ## __ get_chromatograms -----
     #' @description Gets chromatograms from each analysis.
-    #'
     get_chromatograms = function(analyses = NULL,
                                  chromatograms = NULL,
                                  minIntensity = NULL,
@@ -415,14 +429,16 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       get_chromatograms(self$analyses, analyses, chromatograms, minIntensity, useRawData, useLoadedData)
     },
 
+    # MARK: get_chromatograms_peaks
+    ## __ get_chromatograms_peaks -----
     #' @description Gets integrated peaks from chromatograms.
-    #'
     get_chromatograms_peaks = function(analyses = NULL, chromatograms = NULL) {
       get_chromatograms_peaks(self$analyses, analyses, chromatograms)
     },
 
+    # MARK: get_features
+    ## __ get_features -----
     #' @description Gets a data.table with all features from NTS results or as selected by the arguments.
-    #'
     get_features = function(analyses = NULL,
                             features = NULL,
                             mass = NULL,
@@ -436,8 +452,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       get_features(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
     },
 
+    # MARK: get_features_eic
+    ## __ get_features_eic -----
     #' @description Gets a data.table with feature EICs following the targets from the arguments.
-    #'
     get_features_eic = function(analyses = NULL,
                                 features = NULL,
                                 mass = NULL,
@@ -458,9 +475,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_features_ms1
+    ## __ get_features_ms1 -----
     #' @description Gets a data.table of averaged MS1 spectrum for features in the analyses or as selected from the
     #' arguments.
-    #'
     get_features_ms1 = function(analyses = NULL,
                                 features = NULL,
                                 mass = NULL,
@@ -484,9 +502,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_features_ms2
+    ## __ get_features_ms2 -----
     #' @description Gets a data.table of averaged MS2 spectrum for features in the analyses or as selected from the
     #' arguments.
-    #'
     get_features_ms2 = function(analyses = NULL,
                                 features = NULL,
                                 mass = NULL,
@@ -509,6 +528,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_groups
+    ## __ get_groups -----
     #' @description Gets a data.table with feature groups from the analyses.
     #'
     #' @param sdValues Logical (length 1). Set to `TRUE` for returning the sd values when averaging the intensity
@@ -536,8 +557,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_groups_ms1
+    ## __ get_groups_ms1 -----
     #' @description Gets a data.table of averaged MS1 spectrum for feature groups in the analyses.
-    #'
     get_groups_ms1 = function(groups = NULL,
                               mass = NULL,
                               mz = NULL,
@@ -565,8 +587,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_groups_ms2
+    ## __ get_groups_ms2 -----
     #' @description Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
-    #'
     get_groups_ms2 = function(groups = NULL,
                               mass = NULL,
                               mz = NULL,
@@ -593,6 +616,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_MSPeakLists
+    ## __ get_MSPeakLists -----
     #' @description Creates S4 class `MSPeakLists`. Note that feature groups are required. The MS and MSMS spectra
     #' of each feature are then average by \pkg{patRoon} to produce the feature group spectra using the parameters
     #' of the function \link[patRoon]{getDefAvgPListParams}.
@@ -708,8 +733,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
     },
 
+    # MARK: get_components
+    ## __ get_components -----
     #' @description Gets feature components (i.e., isotope and adduct related to a main feature) in the analyses.
-    #'
     get_components = function(analyses = NULL,
                               features = NULL,
                               mass = NULL,
@@ -723,6 +749,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       get_components(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
     },
 
+    # MARK: get_suspects
+    ## __ get_suspects -----
     #' @description Gets a data.table of suspects from features according to a defined database and mass (`ppm`)
     #' and time (`sec`) deviations.
     #'
@@ -757,6 +785,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: get_internal_standards
+    ## __ get_internal_standards -----
     #' @description Gets a data.table with internal standards found by the `find_internal_standards` module.
     #'
     #' @param average Logical of length one. When `TRUE` and groups are present, internal standards are averaged per
@@ -766,6 +796,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       get_internal_standards(self$analyses, average)
     },
 
+    # MARK: get_metadata
+    ## __ get_metadata -----
     #' @description Gets metadata from each analysis.
     #'
     #' @return A data.table.
@@ -783,8 +815,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       # metadata
     },
 
-    ## ___ add/remove -----
-
+    # MARK: add_analyses
+    ## __ add_analyses -----
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
     #' @param analyses A MassSpecAnalysis class object or a list with MassSpecAnalysis class objects as
@@ -797,6 +829,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
 
+    # MARK: remove_analyses
+    ## __ remove_analyses -----
     #' @description Removes analyses.
     #'
     #' @return Invisible.
@@ -807,8 +841,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
 
-    ## ___ load -----
-
+    # MARK: load_spectra
+    ## ___ load_spectra -----
     #' @description Loads spectra from analyses.
     #'
     #' @return Invisible.
@@ -835,6 +869,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
 
+    # MARK: load_chromatograms
+    ## ___ load_chromatograms -----
     #' @description Loads all chromatograms from all analyses.
     #'
     #' @return Invisible.
@@ -844,10 +880,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       invisible(self)
     },
 
-    ## ___ has -----
-
+    # MARK: has_nts
+    ## ___ has_nts
     #' @description Checks if there are NTS results, returning `TRUE` or `FALSE`.
-    #'
     has_nts = function() {
       if (is(self$nts, "StreamFind::NTS")) {
         return(TRUE)
@@ -855,8 +890,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_features
+    ## ___ has_features -----
     #' @description Checks if there are features from NTS results, returning `TRUE` or `FALSE`.
-    #'
     has_features = function() {
       if (self$has_nts()) {
         if (self$nts$has_features) {
@@ -866,8 +902,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_groups
+    ## ___ has_groups -----
     #' @description Checks if there are feature groups from NTS results, returning `TRUE` or `FALSE`.
-    #'
     has_groups = function() {
       if (self$has_nts()) {
         if (self$nts$has_groups) {
@@ -877,8 +914,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_MSPeakLists
+    ## ___ has_MSPeakLists -----
     #' @description Checks if there are MSPeakLists for analyses, returning `TRUE` or `FALSE`.
-    #'
     has_MSPeakLists = function(analyses = NULL) {
       if (self$has_nts()) {
         if (length(self$nts$mspl) > 0) {
@@ -888,8 +926,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_formulas
+    ## ___ has_formulas -----
     #' @description Checks if there are formulas assigned to feature groups, returning `TRUE` or `FALSE`.
-    #'
     has_formulas = function() {
       if (self$has_nts()) {
         if (length(self$nts$formulas) > 0) {
@@ -899,8 +938,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_compounds
+    ## ___ has_compounds -----
     #' @description Checks if there are compounds assigned to feature groups, returning `TRUE` or `FALSE`.
-    #'
     has_compounds = function() {
       if (self$has_nts()) {
         if (length(self$nts$compounds) > 0) {
@@ -910,8 +950,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_chromatograms
+    ## ___ has_chromatograms -----
     #' @description Checks if there are chromatograms, returning `TRUE` or `FALSE`.
-    #'
     has_chromatograms = function() {
       if (is(self$chromatograms, "StreamFind::Chromatograms")) {
         return(TRUE)
@@ -919,8 +960,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_chromatograms_peaks
+    ## ___ has_chromatograms_peaks -----
     #' @description Checks if there are integrated peaks from chromatograms, returning `TRUE` or `FALSE`.
-    #'
     has_chromatograms_peaks = function() {
       if (self$has_chromatograms()) {
         if (length(self$chromatograms$peaks) > 0) {
@@ -930,8 +972,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_spectra
+    ## ___ has_spectra -----
     #' @description Checks if there are spectra, returning `TRUE` or `FALSE`.
-    #'
     has_spectra = function() {
       if (is(self$spectra, "StreamFind::Spectra")) {
         return(TRUE)
@@ -939,8 +982,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_spectra_peaks
+    ## ___ has_spectra_peaks -----
     #' @description Checks if there are spectra peaks, returning `TRUE` or `FALSE`.
-    #'
     has_spectra_peaks = function() {
       if (self$has_spectra()) {
         if (length(self$spectra$peaks) > 0) {
@@ -950,8 +994,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_spectra_charges
+    ## ___ has_spectra_charges -----
     #' @description Checks if there are spectra calculated charges, returning `TRUE` or `FALSE`.
-    #'
     has_spectra_charges = function() {
       if (self$has_spectra()) {
         if (length(self$spectra$charges) > 0) {
@@ -961,8 +1006,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
+    # MARK: has_neutralized_spectra
+    ## ___ has_neutralized_spectra -----
     #' @description Checks if spectra are neutralized (i.e., \emph{m/z} converted to mass), returning `TRUE` or `FALSE`.
-    #'
     has_neutralized_spectra = function() {
       if (self$has_spectra()) {
         if (self$spectra$is_neutralized) {
@@ -972,8 +1018,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
-    ## ___ plot -----
-
+    # MARK: plot_spectra_3d
+    ## ___ plot_spectra_3d -----
     #' @description Plots raw spectra in 3D for given MS analyses and targets.
     #'
     #' @param xVal Character length one. Possible values are "mz", "rt" or "mobility".
@@ -1006,6 +1052,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra
+    ## ___ plot_spectra -----
     #' @description Plots spectra given MS analyses.
     #'
     #' @param xVal Character length one. Possible values are "mz", "rt", "mobility" or "mass".
@@ -1046,8 +1094,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_chromatograms
+    ## ___ plot_chromatograms -----
     #' @description Plots chromatograms in the analyses.
-    #'
     plot_chromatograms = function(analyses = NULL,
                                   chromatograms = NULL,
                                   minIntensity = NULL,
@@ -1068,11 +1117,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         title, colorBy, legendNames, showLegend, xlim, ylim, cex, interactive
       )
     },
-
+    
+    # MARK: plot_chromatograms_baseline
+    ## ___ plot_chromatograms_baseline -----
     #' @description Plots chromatograms corrected baseline for given analyses.
-    #'
-    #' @return A plot.
-    #'
     plot_chromatograms_baseline = function(analyses = NULL,
                                            chromatograms = NULL,
                                            xLab = NULL,
@@ -1088,6 +1136,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra_xic
+    ## ___ plot_spectra_xic -----
     #' @description Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
     #'
     #' @param plotTargetMark Logical (length 1), set to \code{TRUE} to plot a target mark.
@@ -1127,8 +1177,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra_eic
+    ## ___ plot_spectra_eic -----
     #' @description Plots spectra extract ion chromatograms (EIC) from the analyses based on targets.
-    #'
     plot_spectra_eic = function(analyses = NULL,
                                 mass = NULL,
                                 mz = NULL,
@@ -1154,6 +1205,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra_tic
+    ## ___ plot_spectra_tic -----
     #' @description Plots the spectra total ion chromatogram (TIC) of each analysis.
     #'
     #' @param downsize An integer of length one to downsize the TIC plot. The default is 1.
@@ -1178,10 +1231,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra_bpc
+    ## ___ plot_spectra_bpc -----
     #' @description Plots the spectra base peak chromatogram (BPC) of each analysis.
-    #'
-    #' @return A plot.
-    #'
     plot_spectra_bpc = function(analyses = NULL,
                                 levels = c(1, 2),
                                 rt = NULL,
@@ -1201,8 +1253,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra_ms2
+    ## ___ plot_spectra_ms2 -----
     #' @description Plots level 2 spectra from the analyses based on targets.
-    #'
     plot_spectra_ms2 = function(analyses = NULL,
                                 mass = NULL,
                                 mz = NULL,
@@ -1228,8 +1281,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra_ms1
+    ## ___ plot_spectra_ms1 -----
     #' @description Plots level 1 spectra from the analyses based on targets.
-    #'
     plot_spectra_ms1 = function(analyses = NULL,
                                 mass = NULL,
                                 mz = NULL,
@@ -1255,8 +1309,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_features
+    ## ___ plot_features -----
     #' @description Plots features from analyses.
-    #'
     plot_features = function(analyses = NULL,
                              features = NULL,
                              mass = NULL,
@@ -1287,8 +1342,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: map_features
+    ## ___ map_features -----
     #' @description Plots a map of the retention time vs \emph{m/z} of features from analyses.
-    #'
     map_features = function(analyses = NULL,
                             features = NULL,
                             mass = NULL,
@@ -1315,8 +1371,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_features_ms1
+    ## ___ plot_features_ms1 -----
     #' @description Plots level 1 spectra from features in the analyses.
-    #'
     plot_features_ms1 = function(analyses = NULL,
                                  features = NULL,
                                  mass = NULL,
@@ -1346,8 +1403,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_features_ms2
+    ## ___ plot_features_ms2 -----
     #' @description Plots level 2 spectra from features in the analyses.
-    #'
     plot_features_ms2 = function(analyses = NULL,
                                  features = NULL,
                                  mass = NULL,
@@ -1376,8 +1434,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_groups
+    ## ___ plot_groups -----
     #' @description Plots feature groups EIC.
-    #'
     plot_groups = function(groups = NULL,
                            mass = NULL,
                            mz = NULL,
@@ -1405,8 +1464,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_groups_ms1
+    ## ___ plot_groups_ms1 -----
     #' @description Plots level 1 spectra from feature groups in the analyses.
-    #'
     plot_groups_ms1 = function(groups = NULL,
                                mass = NULL,
                                mz = NULL,
@@ -1439,8 +1499,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_groups_ms2
+    ## ___ plot_groups_ms2 -----
     #' @description Plots level 1 spectra from feature groups in the analyses.
-    #'
     plot_groups_ms2 = function(groups = NULL,
                                mass = NULL,
                                mz = NULL,
@@ -1472,9 +1533,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_groups_overview
+    ## ___ plot_groups_overview -----
     #' @description Method to give an overview of the EIC, alignment and intensity variance from features within
     #' target feature groups.
     #'
+    #' @param correctSuppression Logical (length 1). When `TRUE` and suppression factor is available 
+    #' the intensities are corrected for suppression.
     #' @param heights A numeric vector of length 3 to control the height of the first, second and third plot, respectively.
     #'
     plot_groups_overview = function(analyses = NULL,
@@ -1489,18 +1554,23 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     rtExpand = 120,
                                     mzExpand = 0.001,
                                     useLoadedData = TRUE,
+                                    correctSuppression = TRUE,
                                     filtered = FALSE,
                                     legendNames = NULL,
                                     title = NULL,
                                     heights = c(0.35, 0.5, 0.15)) {
       plot_groups_overview(
         self$analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand,
-        mzExpand, useLoadedData, filtered, legendNames, title, heights
+        mzExpand, useLoadedData, correctSuppression, filtered, legendNames, title, heights
       )
     },
 
+    # MARK: plot_groups_profile
+    ## ___ plot_groups_profile -----
     #' @description Method to plot the intensity profile of feature groups across the analyses.
     #'
+    #' @param correctSuppression Logical (length 1). When `TRUE` and suppression factor is available 
+    #' the intensities are corrected for suppression.
     #' @param normalized Logical (length 1). When `TRUE` the profile intensities are normalized.
     #'
     plot_groups_profile = function(analyses = NULL,
@@ -1513,18 +1583,20 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    sec = 60,
                                    millisec = 5,
                                    filtered = FALSE,
+                                   correctSuppression = TRUE,
                                    normalized = TRUE,
                                    legendNames = NULL,
                                    yLab = NULL,
                                    title = NULL) {
       plot_groups_profile(
         self$analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-        normalized, legendNames, yLab, title
+        correctSuppression, normalized, legendNames, yLab, title
       )
     },
 
+    # MARK: map_components
+    ## ___ map_components -----
     #' @description Maps feature components in the analyses.
-    #'
     map_components = function(analyses = NULL,
                               features = NULL,
                               mass = NULL,
@@ -1550,6 +1622,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_internal_standards
+    ## ___ plot_internal_standards -----
     #' @description Plots the quality control assessment of the internal standards.
     #'
     #' @param presence Logical (length 1). When `TRUE` the presence of the internal standards is plotted.
@@ -1561,6 +1635,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       plot_internal_standards(self$analyses, analyses)
     },
 
+    # MARK: plot_suspects
+    ## ___ plot_suspects -----
     #' @description Plots suspects.
     #'
     #' @param database A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic
@@ -1598,8 +1674,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_chromatograms_peaks
+    ## ___ plot_chromatograms_peaks -----
     #' @description Plots peaks from chromatograms from analyses.
-    #'
     plot_chromatograms_peaks = function(analyses = NULL,
                                         chromatograms = NULL,
                                         legendNames = NULL,
@@ -1618,8 +1695,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra_charges
+    ## ___ plot_spectra_charges -----
     #' @description Plots charge assignment of deconvoluted spectra from analyses.
-    #'
     plot_spectra_charges = function(analyses = NULL,
                                     legendNames = NULL,
                                     title = NULL,
@@ -1637,8 +1715,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
+    # MARK: plot_spectra_peaks
+    ## ___ plot_spectra_peaks -----
     #' @description Plots peaks from spectra from analyses.
-    #'
     plot_spectra_peaks = function(analyses = NULL,
                                   legendNames = NULL,
                                   title = NULL,
@@ -1709,26 +1788,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
     },
 
-    ## ___ check -----
-
-    #' @description Checks the correspondence of features within feature groups, returning `TRUE` or `FALSE`.
-    #'
-    check_correspondence = function() {
-      valid <- FALSE
-
-      if (all(self$has_features()) & self$has_groups()) {
-        valid <- rcpp_ms_groups_correspondence(
-          groups = self$get_groups(intensities = TRUE, average = FALSE, metadata = TRUE),
-          features = self$get_features(),
-          verbose = TRUE
-        )
-      }
-
-      valid
-    },
-
-    ## ___ report -----
-
+    # MARK: report_nts
+    ## ___ report_nts -----
     #' @description Saves the HTML report from the function \link[patRoon]{report} from the package \pkg{patRoon}.
     #' The interface is exactly the same and the arguments description are taken from the documentation in \pkg{patRoon}.
     #' Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in
@@ -1780,28 +1841,28 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @return An interactive HTML report from the package \pkg{patRoon}.
     #'
-    report = function(path = paste0(getwd(), "/report"),
-                      filtered = FALSE,
-                      settingsFile = system.file("report", "settings.yml", package = "patRoon"),
-                      eicRtWindow = 30,
-                      eicTopMost = 1,
-                      eicTopMostByRGroup = TRUE,
-                      eicOnlyPresent = TRUE,
-                      eicMzExpWindow = 0.001,
-                      adductPos = "[M+H]+",
-                      adductNeg = "[M-H]-",
-                      specSimMethod = "cosine",
-                      specSimRemovePrecursor = FALSE,
-                      specSimMzWeight = 0,
-                      specSimIntWeight = 1,
-                      specSimAbsMzDev = 0.005,
-                      specSimRelMinIntensity = 0.05,
-                      specSimMinPeaks = 1,
-                      specSimShift = "none",
-                      specSimCombineMethod = "mean",
-                      clearPath = FALSE,
-                      openReport = TRUE,
-                      parallel = TRUE) {
+    report_nts = function(path = paste0(getwd(), "/report"),
+                          filtered = FALSE,
+                          settingsFile = system.file("report", "settings.yml", package = "patRoon"),
+                          eicRtWindow = 30,
+                          eicTopMost = 1,
+                          eicTopMostByRGroup = TRUE,
+                          eicOnlyPresent = TRUE,
+                          eicMzExpWindow = 0.001,
+                          adductPos = "[M+H]+",
+                          adductNeg = "[M-H]-",
+                          specSimMethod = "cosine",
+                          specSimRemovePrecursor = FALSE,
+                          specSimMzWeight = 0,
+                          specSimIntWeight = 1,
+                          specSimAbsMzDev = 0.005,
+                          specSimRelMinIntensity = 0.05,
+                          specSimMinPeaks = 1,
+                          specSimShift = "none",
+                          specSimCombineMethod = "mean",
+                          clearPath = FALSE,
+                          openReport = TRUE,
+                          parallel = TRUE) {
       report(
         self$nts, path, filtered, settingsFile, eicRtWindow, eicTopMost, eicTopMostByRGroup, eicOnlyPresent,
         eicMzExpWindow, adductPos, adductNeg, specSimMethod, specSimRemovePrecursor, specSimMzWeight,

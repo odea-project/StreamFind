@@ -1,37 +1,31 @@
+# MARK: CoreEngine
 #' **CoreEngine** R6 class and methods
 #'
-#' @description The `CoreEngine` R6 class is a basic data processor with generic methods for handling data.
+#' @description The `CoreEngine` R6 class is a basic engine with generic methods for handling data. It is the base class
+#' for the other engines and it does not have any specific methods for processing data.
 #'
-#' @template arg-save-format
-#' @template arg-save-name
-#' @template arg-save-path
+#' @template arg-file
 #'
 #' @export
 #'
 CoreEngine <- R6::R6Class("CoreEngine",
 
+  # MARK: private fields
   # _ private fields -----
   private = list(
-
-    ## ___ .headers -----
     .headers = NULL,
-
-    ## ___ .workflow -----
     .workflow = NULL,
-
-    ## ___ .analyses -----
     .analyses = NULL,
-
-    ## ___ .file -----
     .file = NULL,
-
-    ## ___ .history -----
     .history = NULL
   ),
 
+  # MARK: active bindings
   # _ active bindings -----
   active = list(
 
+    # MARK: headers
+    # __headers -----
     #' @field headers `ProjectHeaders` S7 class object.
     headers = function(value) {
       if (missing(value)) {
@@ -45,6 +39,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: workflow
+    # __workflow -----
     #' @field workflow `Workflow` S7 class object.
     workflow = function(value) {
       if (missing(value)) {
@@ -58,6 +54,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: analyses
+    # __analyses -----
     #' @field analyses `Analyses` S7 class object.
     analyses = function(value) {
       if (missing(value)) {
@@ -71,8 +69,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: results
+    # __results -----
     #' @field results List of results in the analyses.
-    #'
     results = function(value) {
       if (missing(value)) {
         return(self$analyses$results)
@@ -94,15 +93,17 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: history
+    # __history -----
     #' @field history Audit trail of changes.
-    #'
     history = function() {
       private$.history
     },
 
-    #' @field file An `EngineSaveFile` S7 class object. When setting the value it can be also a character with an
-    #' `sqlite` or `rds` file path to save the engine.
-    #'
+    # MARK: file
+    # __file -----
+    #' @field file An `EngineSaveFile` S7 class object. When setting the value it
+    #' can also be a character with an `sqlite` or `rds` file path to save the engine.
     file = function(value) {
       if (missing(value)) {
         return(private$.file)
@@ -125,10 +126,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
     }
   ),
 
+  # MARK: public fields/methods
   # _ public fields/methods -----
   public = list(
-    ## ___ create -----
 
+    # MARK: initialize
+    ## __ initialize -----
     #' @description Creates a `CoreEngine` R6 class object.
     #'
     #' @param file Character of length one with the full path to the `sqlite` or `rds` save file of the engine.
@@ -203,10 +206,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
-    ## ___ print -----
-
+    # MARK: print
+    ## __ print -----
     #' @description Prints a summary to the console.
-    #'
     print = function() {
       cat("\n")
       cat(paste(is(self), collapse = "; "))
@@ -223,26 +225,29 @@ CoreEngine <- R6::R6Class("CoreEngine",
       self$print_analyses()
     },
 
+    # MARK: print_headers
+    ## __ print_headers -----
     #' @description Prints the headers.
-    #'
     print_headers = function() {
       show(self$headers)
     },
 
+    # MARK: print_analyses
+    ## __ print_analyses -----
     #' @description Prints the analyses.
-    #'
     print_analyses = function() {
       show(self$analyses)
     },
 
+    # MARK: print_workflow
+    ## __ print_workflow -----
     #' @description Prints the workflow.
-    #'
     print_workflow = function() {
       show(self$workflow)
     },
 
-    ## ___ save/load -----
-
+    # MARK: save
+    ## __ save -----
     #' @description Saves the engine data as an **sqlite** or **rds** file.
     #'
     #' @param file A string with the full file path of the **sqlite** or **rds** file. If \code{NA} (the default) and
@@ -305,6 +310,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: load
+    ## __ load -----
     #' @description Loads the engine data from an **sqlite** or **rds** file.
     #'
     #' @param file A string with the full file path of the **sqlite** or **rds** file containing the engine data saved.
@@ -372,8 +379,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
-    ## ___ add/remove -----
-
+    # MARK: add_analyses
+    ## __ add_analyses -----
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
     #' @param analyses An engine specific analysis object or a list of engine specific analysis objects.
@@ -388,6 +395,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: remove_analyses
+    ## __ remove_analyses -----
     #' @description Removes analyses.
     #'
     #' @param analyses A string or a vector of strings with the name/s or numeric with indices of the analyses to remove.
@@ -400,20 +409,22 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
-    ## ___ has -----
-
+    # MARK: has_settings
+    ## __ has_settings -----
     #' @description Checks if there are processing settings, returning `TRUE` or `FALSE`.
-    #'
     has_settings = function() {
       length(self$workflow) > 0
     },
 
+    # MARK: has_analyses
+    ## __ has_analyses -----
     #' @description Checks if analyses are present, returning `TRUE` or `FALSE`.
-    #'
     has_analyses = function() {
       length(self$analyses) > 0
     },
 
+    # MARK: has_results
+    ## __ has_results -----
     #' @description Checks if results are present, returning `TRUE` or `FALSE`.
     #'
     #' @param names A string or a vector of strings with the name/s of the
@@ -426,8 +437,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       !all(vapply(private$.results[names], is.null, FALSE))
     },
 
-    ## ___ processing -----
-
+    # MARK: run
+    ## __ run -----
     #' @description Runs a processing method according to the provided settings.
     #'
     #' @param settings A `ProcessingSettings` object or a `character` string with the method name of a previously added
@@ -485,6 +496,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: run_workflow
+    ## __ run_workflow -----
     #' @description Runs all processing methods in workflow.
     #'
     #' @return Invisible.
@@ -501,48 +514,32 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
-    ## ___ export -----
-
+    # MARK: export_headers
+    ## __ export_headers -----
     #' @description Exports the headers as \emph{json} (the default) or \emph{rds}.
-    #'
-    export_headers = function(format = "json", name = "headers", path = getwd()) {
-      save(self$headers, format, name, path)
+    export_headers = function(file = "headers.json") {
+      save(self$headers, file)
       invisible(self)
     },
 
+    # MARK: export_workflow
+    ## __ export_workflow -----
     #' @description Exports the workflow as \emph{json} (the default) or \emph{rds}.
-    #'
-    export_workflow = function(format = "json", name = "settings", path = getwd()) {
-      save(self$workflow, format, name, path)
+    export_workflow = function(file = "workflow.json") {
+      save(self$workflow, file)
       invisible(self)
     },
 
+    # MARK: export_analyses
+    ## __ export_analyses -----
     #' @description Exports the analyses as \emph{json} (the default) or \emph{rds}.
-    #'
-    export_analyses = function(format = "json", name = "analyses", path = getwd()) {
-      save(self$analyses, format, name, path)
+    export_analyses = function(file = "analyses.json") {
+      save(self$analyses, file)
       invisible(self)
     },
 
-    #' @description Exports the engine data as as \emph{json} (the default) or \emph{rds}.
-    #'
-    export = function(format = "json", name = "EngineData", path = getwd()) {
-      if (format %in% "json") {
-        list_all <- list(
-          headers = as.list(self$headers),
-          settings = as.list(self$workflow),
-          analyses = as.list(self$analyses),
-          history = as.list(self$history)
-        )
-        js_all <- .convert_to_json(list_all)
-        write(js_all, file = paste0(path, "/", name, ".", "json"))
-      }
-      if (format %in% "rds") saveRDS(self, file = paste0(path, "/", name, ".rds"))
-      invisible(self)
-    },
-
-    ## ___ import -----
-
+    # MARK: import_headers
+    ## __ import_headers -----
     #' @description Imports headers from an \emph{rds} or \emph{json} file.
     #'
     #' @param file A \emph{json} or \emph{rds} file.
@@ -560,6 +557,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: import_workflow
+    ## __ import_workflow -----
     #' @description Imports workflow from an \emph{rds} or \emph{json} file.
     #'
     #' @param file A \emph{json} or \emph{rds} file.
@@ -577,6 +576,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
+    # MARK: import_analyses
+    ## __ import_analyses -----
     #' @description Imports analyses from an \emph{rds} or \emph{json} file.
     #'
     #' @param file A \emph{json} or \emph{rds} file.
@@ -594,12 +595,12 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
-    ## ___ app -----
-
+    # MARK: run_app
+    ## __ run_app -----
     #' @description Runs a Shiny app to explore and manage the engine.
     #'
-    #' @note The engine data is saved in an **rds** file and loaded in the app. If save file is defined in the engine
-    #' it is used, otherwise the save file name is automatically set to the engine class name and the date in the format
+    #' @note The engine data is saved in an **rds** file and loaded in the app. If save file is defined in the engine it
+    #' is used, otherwise the save file name is automatically set to the engine class name and the date in the format
     #' **rds**. Changes made in the app can be saved in the **rds** file and then loaded to continue working on the
     #' engine by scripting.
     #'

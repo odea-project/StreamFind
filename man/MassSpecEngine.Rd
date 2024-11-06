@@ -4,9 +4,12 @@
 \alias{MassSpecEngine}
 \title{\strong{MassSpecEngine} R6 class and methods}
 \description{
-The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing
-mass spectrometry (MS) data. The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
-assembly of Non-Target Screening data processing workflows.
+The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing mass
+spectrometry (MS) data. MS data (i.e., spectra and chromatograms) can be loaded from mzML and mzXML formats.
+}
+\details{
+The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target
+Screening (NTS) data processing workflows.
 }
 \references{
 \insertRef{patroon01}{StreamFind}
@@ -113,15 +116,13 @@ assembly of Non-Target Screening data processing workflows.
 \item \href{#method-MassSpecEngine-plot_chromatograms_peaks}{\code{MassSpecEngine$plot_chromatograms_peaks()}}
 \item \href{#method-MassSpecEngine-plot_spectra_charges}{\code{MassSpecEngine$plot_spectra_charges()}}
 \item \href{#method-MassSpecEngine-plot_spectra_peaks}{\code{MassSpecEngine$plot_spectra_peaks()}}
-\item \href{#method-MassSpecEngine-check_correspondence}{\code{MassSpecEngine$check_correspondence()}}
-\item \href{#method-MassSpecEngine-report}{\code{MassSpecEngine$report()}}
+\item \href{#method-MassSpecEngine-report_nts}{\code{MassSpecEngine$report_nts()}}
 \item \href{#method-MassSpecEngine-clone}{\code{MassSpecEngine$clone()}}
 }
 }
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export'><code>StreamFind::CoreEngine$export()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_analyses'><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_headers'><code>StreamFind::CoreEngine$export_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_workflow'><code>StreamFind::CoreEngine$export_workflow()</code></a></span></li>
@@ -160,14 +161,16 @@ Creates an R6 MassSpecEngine class object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{Character of length one with the full path to the \code{sqlite} save file of the engine.}
+\item{\code{file}}{Character of length one with the full path to the \code{sqlite} or 'rds' save file of the engine.}
 
 \item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
 
 \item{\code{workflow}}{A \code{Workflow} S7 class object.}
 
-\item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file paths to ms files or
-a \code{data.frame} as described in \code{?MassSpecAnalyses}.}
+\item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file paths to mzML/mzXML
+files or a \code{data.frame} with colnames: "file", "replicate" and "blank". The "replicate" column is used to group
+the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to
+the mzML/mzXML files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -276,9 +279,6 @@ Gets the instruments information of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A list.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_software"></a>}}
@@ -295,9 +295,6 @@ Gets the software information of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A list.
 }
 }
 \if{html}{\out{<hr>}}
@@ -316,9 +313,6 @@ Gets the number of spectra in each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_mode"></a>}}
@@ -335,9 +329,6 @@ Gets the spectra mode of each analysis (i.e., profile or centroid).
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -356,9 +347,6 @@ Gets the spectra levels of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A list for each analysis with an integer vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_lowest_mz"></a>}}
@@ -375,9 +363,6 @@ Gets the lower \emph{m/z} value of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -396,9 +381,6 @@ Gets the higher \emph{m/z} value of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_lowest_rt"></a>}}
@@ -415,9 +397,6 @@ Gets the start retention time value of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -436,9 +415,6 @@ Gets the end retention time value of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_polarity"></a>}}
@@ -456,9 +432,6 @@ Gets the polarity of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_headers"></a>}}
@@ -475,9 +448,6 @@ Gets the spectra headers data.table of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2475,9 +2445,6 @@ Mixed use (e.g. \code{analyses+polarities}) is also possible.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A plot.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_xic"></a>}}
@@ -2785,9 +2752,6 @@ the added targets as legend of the plot.}
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -3778,6 +3742,7 @@ target feature groups.
   rtExpand = 120,
   mzExpand = 0.001,
   useLoadedData = TRUE,
+  correctSuppression = TRUE,
   filtered = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -3834,6 +3799,9 @@ right the mass range.}
 
 \item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
+\item{\code{correctSuppression}}{Logical (length 1). When \code{TRUE} and suppression factor is available
+the intensities are corrected for suppression.}
+
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
@@ -3863,6 +3831,7 @@ Method to plot the intensity profile of feature groups across the analyses.
   sec = 60,
   millisec = 5,
   filtered = FALSE,
+  correctSuppression = TRUE,
   normalized = TRUE,
   legendNames = NULL,
   yLab = NULL,
@@ -3912,6 +3881,9 @@ time values (in milliseconds).}
 in milliseconds.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{correctSuppression}}{Logical (length 1). When \code{TRUE} and suppression factor is available
+the intensities are corrected for suppression.}
 
 \item{\code{normalized}}{Logical (length 1). When \code{TRUE} the profile intensities are normalized.}
 
@@ -4325,25 +4297,15 @@ Mixed use (e.g. \code{analyses+polarities}) is also possible.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-check_correspondence"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-check_correspondence}{}}}
-\subsection{Method \code{check_correspondence()}}{
-Checks the correspondence of features within feature groups, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$check_correspondence()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-report"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-report}{}}}
-\subsection{Method \code{report()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-report_nts"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-report_nts}{}}}
+\subsection{Method \code{report_nts()}}{
 Saves the HTML report from the function \link[patRoon]{report} from the package \pkg{patRoon}.
 The interface is exactly the same and the arguments description are taken from the documentation in \pkg{patRoon}.
 Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in
 \pkg{patRoon}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$report(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$report_nts(
   path = paste0(getwd(), "/report"),
   filtered = FALSE,
   settingsFile = system.file("report", "settings.yml", package = "patRoon"),

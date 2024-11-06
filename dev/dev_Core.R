@@ -35,6 +35,7 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 ms <- MassSpecEngine$new(analyses = ms_files_df)
 ms$run(MassSpecSettings_FindFeatures_openms())
 ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE, excludeAdducts = TRUE))
 ms$run(MassSpecSettings_GroupFeatures_openms())
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(minIntensity = 5000))
@@ -61,11 +62,47 @@ ms$run(
   )
 )
 
+run(MassSpecSettings_CorrectMatrixSuppression_TiChri(), ms)
+
+get_features(ms$analyses, mass = dbis$mass[1])
+plot_groups_profile(ms$analyses, mass = dbis, correctSuppression = FALSE)
+
+ms$get_internal_standards(average = TRUE)
+
+
+
+library(reticulate)
+reticulate::virtualenv_starter()
+
+py_eval("1+1")
+
+sif_parser <- import("sif_parser")
+sif_parser$np_open()
+np_open()
+
+
 
 ms$nts <- ms$nts[, ms$get_groups(mass = dbsus)$group]
 
 
-fts <- ms$get_features(filtered = TRUE)
+fts <- ms$nts$feature_list
+
+# add an S3 class to the fts list
+class(fts) <- c("fts", class(fts))
+
+
+fts <- .convert_to_json(fts)
+write(fts, "fts.json")
+
+fts2 <- jsonlite::fromJSON(
+  "fts.json",
+  simplifyVector = TRUE,
+  simplifyDataFrame = FALSE,
+  simplifyMatrix = FALSE,
+  flatten = FALSE
+)
+
+as.data.table(fts2[[1]])
 
 fts[grepl("FL", fts$feature), ]
 

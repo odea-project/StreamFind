@@ -67,6 +67,10 @@ get_internal_standards <- S7::new_generic("get_internal_standards", "x")
 
 #' @export
 #' @noRd
+get_matrix_suppression <- S7::new_generic("get_matrix_suppression", "x")
+
+#' @export
+#' @noRd
 get_model_data <- S7::new_generic("get_model_data", "x")
 
 #' @export
@@ -226,6 +230,10 @@ plot_internal_standards <- S7::new_generic("plot_internal_standards", "x")
 #' @export
 #' @noRd
 plot_loadings <- S7::new_generic("plot_loadings", "x")
+
+#' @export
+#' @noRd
+plot_matrix_suppression <- S7::new_generic("plot_matrix_suppression", "x")
 
 #' @export
 #' @noRd

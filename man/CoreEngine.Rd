@@ -4,13 +4,14 @@
 \alias{CoreEngine}
 \title{\strong{CoreEngine} R6 class and methods}
 \description{
-The \code{CoreEngine} R6 class is a basic data processor with generic methods for handling data.
+The \code{CoreEngine} R6 class is a basic engine with generic methods for handling data. It is the base class
+for the other engines and it does not have any specific methods for processing data.
 }
 \note{
 If there are \code{ProcessingSettings} objects with the same method names it is better to use \code{run_workflow()}.
 
-The engine data is saved in an \strong{rds} file and loaded in the app. If save file is defined in the engine
-it is used, otherwise the save file name is automatically set to the engine class name and the date in the format
+The engine data is saved in an \strong{rds} file and loaded in the app. If save file is defined in the engine it
+is used, otherwise the save file name is automatically set to the engine class name and the date in the format
 \strong{rds}. Changes made in the app can be saved in the \strong{rds} file and then loaded to continue working on the
 engine by scripting.
 }
@@ -27,8 +28,8 @@ engine by scripting.
 
 \item{\code{history}}{Audit trail of changes.}
 
-\item{\code{file}}{An \code{EngineSaveFile} S7 class object. When setting the value it can be also a character with an
-\code{sqlite} or \code{rds} file path to save the engine.}
+\item{\code{file}}{An \code{EngineSaveFile} S7 class object. When setting the value it
+can also be a character with an \code{sqlite} or \code{rds} file path to save the engine.}
 }
 \if{html}{\out{</div>}}
 }
@@ -52,7 +53,6 @@ engine by scripting.
 \item \href{#method-CoreEngine-export_headers}{\code{CoreEngine$export_headers()}}
 \item \href{#method-CoreEngine-export_workflow}{\code{CoreEngine$export_workflow()}}
 \item \href{#method-CoreEngine-export_analyses}{\code{CoreEngine$export_analyses()}}
-\item \href{#method-CoreEngine-export}{\code{CoreEngine$export()}}
 \item \href{#method-CoreEngine-import_headers}{\code{CoreEngine$import_headers()}}
 \item \href{#method-CoreEngine-import_workflow}{\code{CoreEngine$import_workflow()}}
 \item \href{#method-CoreEngine-import_analyses}{\code{CoreEngine$import_analyses()}}
@@ -287,17 +287,13 @@ Invisible.
 \subsection{Method \code{export_headers()}}{
 Exports the headers as \emph{json} (the default) or \emph{rds}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_headers(format = "json", name = "headers", path = getwd())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_headers(file = "headers.json")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
-
-\item{\code{name}}{String with the name of the file to be saved.}
-
-\item{\code{path}}{String with the directory of the file to be saved.}
+\item{\code{file}}{A character vector of length one with full file path.}
 }
 \if{html}{\out{</div>}}
 }
@@ -308,17 +304,13 @@ Exports the headers as \emph{json} (the default) or \emph{rds}.
 \subsection{Method \code{export_workflow()}}{
 Exports the workflow as \emph{json} (the default) or \emph{rds}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_workflow(format = "json", name = "settings", path = getwd())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_workflow(file = "workflow.json")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
-
-\item{\code{name}}{String with the name of the file to be saved.}
-
-\item{\code{path}}{String with the directory of the file to be saved.}
+\item{\code{file}}{A character vector of length one with full file path.}
 }
 \if{html}{\out{</div>}}
 }
@@ -329,38 +321,13 @@ Exports the workflow as \emph{json} (the default) or \emph{rds}.
 \subsection{Method \code{export_analyses()}}{
 Exports the analyses as \emph{json} (the default) or \emph{rds}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_analyses(format = "json", name = "analyses", path = getwd())}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_analyses(file = "analyses.json")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
-
-\item{\code{name}}{String with the name of the file to be saved.}
-
-\item{\code{path}}{String with the directory of the file to be saved.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-export"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-export}{}}}
-\subsection{Method \code{export()}}{
-Exports the engine data as as \emph{json} (the default) or \emph{rds}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export(format = "json", name = "EngineData", path = getwd())}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{format}}{A string. Possible values are \code{json} and \code{rds} for saving as JSON or RDS formats, respectively.}
-
-\item{\code{name}}{String with the name of the file to be saved.}
-
-\item{\code{path}}{String with the directory of the file to be saved.}
+\item{\code{file}}{A character vector of length one with full file path.}
 }
 \if{html}{\out{</div>}}
 }

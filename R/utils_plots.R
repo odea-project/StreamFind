@@ -448,9 +448,9 @@
   eic$loop <- paste0(eic$analysis, eic$id, eic$var)
   loop_key <- unique(eic$loop)
 
-  if (is.numeric(xlim) & length(xlim) == 1) {
+  if (is.numeric(xlim) && length(xlim) == 1) {
     rtr <- c(min(eic$rt) - xlim, max(eic$rt) + xlim)
-  } else if (is.numeric(xlim) & length(xlim) == 2) {
+  } else if (is.numeric(xlim) && length(xlim) == 2) {
     rtr <- xlim
   } else {
     rtr <- c(min(eic$rt), max(eic$rt))
@@ -459,12 +459,12 @@
     }
   }
 
-  if (is.numeric(ylim) & length(ylim) == 1) {
+  if (is.numeric(ylim) && length(ylim) == 1) {
     intr <- c(min(eic$intensity) - ylim, (max(eic$intensity) + ylim))
-  } else if (is.numeric(ylim) & length(ylim) == 2) {
+  } else if (is.numeric(ylim) && length(ylim) == 2) {
     intr <- ylim
   } else {
-    intr <- c(0, max(eic$intensity))
+    intr <- c(min(eic$intensity), max(eic$intensity))
   }
 
   if (is.null(cex) || !is.numeric(cex)) cex <- 0.6
@@ -1482,7 +1482,7 @@
 
 # MARK: .plot_groups_overview_aux
 #' @noRd
-.plot_groups_overview_aux <- function(features, eic, heights, analyses) {
+.plot_groups_overview_aux <- function(features, eic, heights, analyses, correctSuppression) {
   leg <- unique(eic$var)
 
   colors <- .get_colors(leg)
@@ -1585,6 +1585,11 @@
         "</br> dppm: ", round(((ft_nf$mzmax - ft_nf$mzmin) / ft_nf$mz) * 1E6, digits = 1),
         "</br> filled: ", ft_nf$filled,
         "</br> filtered: ", ft_nf$filtered,
+        if ("suppression_factor" %in% colnames(ft_nf)) {
+            paste("</br> suppression factor: ", round(ft_nf$suppression_factor, digits = 2))
+          } else {
+            ""
+          },
         if ("quality" %in% colnames(ft_nf)) {
           q_t <- ft_nf$quality
           q_t <- lapply(q_t, function(x) if (length(x) == 0) list(noise = 0, sn = 0, gauss_f = 0, gauss_a = 0, gauss_u = 0, gauss_s = 0) else x)
@@ -1663,6 +1668,11 @@
           "</br> dppm: ", round(((ft_f$mzmax - ft_f$mzmin) / ft_f$mz) * 1E6, digits = 1),
           "</br> filled: ", ft_f$filled,
           "</br> filtered: ", ft_f$filtered,
+          if ("suppression_factor" %in% colnames(ft_f)) {
+            paste("</br> suppression factor: ", round(ft_f$suppression_factor, digits = 2))
+          } else {
+            ""
+          },
           if ("quality" %in% colnames(ft_f)) {
             q_t <- ft_f$quality
             q_t <- lapply(q_t, function(x) if (length(x) == 0) list(noise = 0, sn = 0, gauss_f = 0, gauss_a = 0, gauss_u = 0, gauss_s = 0) else x)
@@ -1711,6 +1721,12 @@
 
   for (g in leg) {
     df_3 <- features[features$var == g, ]
+
+    if (correctSuppression) {
+      if ("suppression_factor" %in% colnames(df_3)) {
+        df_3$intensity <- df_3$intensity * df_3$suppression_factor
+      }
+    }
 
     if (!all(analyses %in% df_3$analysis)) {
       extra <- data.frame(

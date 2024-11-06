@@ -4,7 +4,40 @@
 # wd <- "E:/iSoft"
 wd <- "C:/Users/apoli/Documents/iSoft"
 
-## Paracetamol ---------
+## python ---------
+
+sif_files <- list.files(
+  paste0(wd, "/Dev_230830_Bevacizumab_Avastin_LotB8703H40_Raman_HRMS/Raman"),
+  pattern = ".sif",
+  full.names = TRUE
+)
+
+
+clear_cache("all")
+raman <- RamanEngine$new(analyses = sif_files[1])
+raman$plot_spectra()
+raman$plot_chromatograms()
+
+library(reticulate)
+
+py_config()
+py_discover_config()
+
+module_orlp <- reticulate::import("orpl")
+
+orlp_file_io <- orlp$file_io
+
+spec <- orlp_file_io$load_sif(sif_files[1])
+
+spec_metadata <- spec$metadata
+
+spec_metadata$exposure_time
+
+reticulate::py_last_error()
+
+spec$metadata
+
+reticulate::py_config()
 
 ### MS -----------------
 
@@ -38,8 +71,9 @@ ms$plot_spectra_tic(colorBy = "replicates", interactive = FALSE, cex = 1)
 
 raman_dir <- paste0(wd, "/Paracetamol/raman")
 raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)
-raman <- RamanEngine$new(raman_files[1:90])
+raman <- RamanEngine$new(analyses = raman_files[1])
 
+raman$spectra$spectra[[1]]$shift
 
 
 
