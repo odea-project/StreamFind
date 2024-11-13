@@ -28,8 +28,12 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
-path <- "C:/Users/apoli/Documents/example_ms_files"
+path <- "E:/example_ms_files"
+#path <- "C:/Users/apoli/Documents/example_ms_files"
 ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
+
+ms <- MassSpecEngine$new(analyses = ms_files_complete[4])
+p3d <- ms$plot_spectra_3d(mass = dbsus[15, ], ppm = 10, sec = 120, colorBy = "analyses+levels")
 
 # NTS workflow -----
 ms <- MassSpecEngine$new(analyses = ms_files_df)
@@ -184,7 +188,7 @@ ms$run(MassSpecSettings_FillFeatures_StreamFind())
 ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5))
 ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
-ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
+ms$nts <- ms$nts[, ms$get_groups(mass = dbsus)$group]
 ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
 ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
 ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))

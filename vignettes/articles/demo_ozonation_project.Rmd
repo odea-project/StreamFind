@@ -200,10 +200,10 @@ show(ffs)
 # Creates a Workflow object with all processing steps for the MS data
 workflow <- StreamFind::Workflow(
   list(
-    
+
     # Find features using the openms algorithm, created above
     ffs,
-    
+
     # Annotation of natural isotopes and adducts
     MassSpecSettings_AnnotateFeatures_StreamFind(
       rtWindowAlignment = 0.3,
@@ -211,13 +211,13 @@ workflow <- StreamFind::Workflow(
       maxCharge = 2,
       maxGaps = 1
     ),
-    
+
     # Excludes annotated isotopes and adducts
     MassSpecSettings_FilterFeatures_StreamFind(
       excludeIsotopes = TRUE,
       excludeAdducts = TRUE
     ),
-    
+
     # Grouping features across analyses
     MassSpecSettings_GroupFeatures_openms(
       rtalign = FALSE,
@@ -228,12 +228,12 @@ workflow <- StreamFind::Workflow(
       maxGroupMZ = 0.008,
       verbose = FALSE
     ),
-    
+
     # Filter feature groups with maximum intensity below 5000 counts
     MassSpecSettings_FilterFeatures_StreamFind(
       minIntensity = 5000
     ),
-    
+
     # Fill features with missing data
     # Reduces false negatives
     MassSpecSettings_FillFeatures_StreamFind(
@@ -246,7 +246,7 @@ workflow <- StreamFind::Workflow(
       minSignalToNoiseRatio = 3,
       minGaussianFit = 0.2
     ),
-    
+
     # Calculate quality metrics for each feature
     MassSpecSettings_CalculateFeaturesQuality_StreamFind(
       filtered = FALSE,
@@ -256,45 +256,45 @@ workflow <- StreamFind::Workflow(
       minNumberTraces = 6,
       baseCut = 0
     ),
-    
+
     # Filter features based on minimum signal-to-noise ratio (s/n)
     # The s/n is calculated using the CalculateFeaturesQuality method
     MassSpecSettings_FilterFeatures_StreamFind(
       minSnRatio = 5
     ),
-    
+
     # Filter features using other parameters via the patRoon package
     MassSpecSettings_FilterFeatures_patRoon(
       maxReplicateIntRSD = 40,
       blankThreshold = 5,
       absMinReplicateAbundance = 3
     ),
-    
+
     # Finds internal standards in the MS data
     # db_is is a data.table with the
-    # name, mass and expected retention time of 
+    # name, mass and expected retention time of
     # spiked internal standards, as shown below
     MassSpecSettings_FindInternalStandards_StreamFind(
       database = db_is,
       ppm = 8,
       sec = 10
     ),
-    
+
     # Loads MS1 for features not filtered
     MassSpecSettings_LoadFeaturesMS1_StreamFind(
       filtered = FALSE
     ),
-    
+
     # Loads MS2 for features not filtered
     MassSpecSettings_LoadFeaturesMS2_StreamFind(
       filtered = FALSE
     ),
-    
+
     # Loads feature extracted ion chromatograms (EIC)
     MassSpecSettings_LoadFeaturesEIC_StreamFind(
       filtered = FALSE
     ),
-    
+
     # Performs suspect screening using the StreamFind algorithm
     # db_with_ms2 is a database with suspect chemical standards
     # includes MS2 data (i.e., fragmentation pattern) from standards

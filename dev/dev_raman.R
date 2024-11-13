@@ -1,8 +1,8 @@
 
 # files <- StreamFindData::get_raman_file_paths()
 
-# wd <- "E:/iSoft"
-wd <- "C:/Users/apoli/Documents/iSoft"
+wd <- "E:/iSoft"
+#wd <- "C:/Users/apoli/Documents/iSoft"
 
 ## python ---------
 
@@ -60,14 +60,6 @@ ms$add_replicate_names(
 )
 
 ms$plot_spectra_tic(colorBy = "replicates", interactive = FALSE, cex = 1)
-
-
-
-
-
-
-
-
 
 raman_dir <- paste0(wd, "/Paracetamol/raman")
 raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)

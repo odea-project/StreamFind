@@ -7,6 +7,9 @@
 The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecting and storing Raman
 spectroscopic data. Raman data can be loaded from .asc and .sif files.
 }
+\references{
+\insertRef{orpl01}{StreamFind}
+}
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{RamanEngine}
 }

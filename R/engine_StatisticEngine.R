@@ -1,7 +1,10 @@
+# MARK: StatisticEngine
 #' **StatisticEngine** R6 class and methods
 #'
 #' @description
-#' The *StatisticEngine* R6 class is a framework for performing statistical analysis on data.
+#' The *StatisticEngine* R6 class is a framework for performing statistical analysis on data. Data can be added as a
+#' character vector with a path to a `csv` file with variable names as first row and analyses names as first column
+#' or a `data.frame` or `matrix` object.
 #'
 #' @template arg-headers
 #' @template arg-settings-and-list
@@ -18,6 +21,7 @@
 StatisticEngine <- R6::R6Class("StatisticEngine",
   inherit = CoreEngine,
 
+  # MARK: private fields
   # _ private fields -----
   private = list(
     .check_list_analyses_data_conformity = function(analyses) {
@@ -37,11 +41,13 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     }
   ),
 
+  # MARK: active bindings
   # _ active bindings -----
   active = list(
 
+    # MARK: data
+    # __ data -----
     #' @field data Data object.
-    #'
     data = function(value) {
       if (missing(value)) {
         return(self$analyses$data)
@@ -50,8 +56,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
+    # MARK: model
+    # __ model -----
     #' @field model Statistic model.
-    #'
     model = function(value) {
       if (missing(value)) {
         return(self$analyses$model)
@@ -60,8 +67,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
+    # MARK: quantification
+    # __ quantification -----
     #' @field quantification Quantification results.
-    #'
     quantification = function(value) {
       if (missing(value)) {
         return(self$analyses$quantification)
@@ -70,8 +78,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
-    #' @field prediction_results Prediction results from model.
-    #'
+    # MARK: prediction_results
+    # __ prediction_results -----
+    #' @field prediction_results Prediction results.
     prediction_results = function() {
       res <- self$get_results("prediction")
       if (length(res) > 0) {
@@ -80,8 +89,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       NULL
     },
 
+    # MARK: classification_results
+    # __ classification_results -----
     #' @field classification_results Classification results.
-    #'
     classification_results = function() {
       res <- self$get_results("classification")
       if (length(res) > 0) {
@@ -91,15 +101,18 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     }
   ),
 
+  # MARK: public fields
   # _ public fields -----
   public = list(
 
+    # MARK: initialize
+    ## ___ initialize -----
     #' @description Creates an R6 class *StatisticEngine*. Child of *CoreEngine* R6 class.
     #'
-    #' @param file Character of length one with the full path to the `sqlite` save file of the engine.
+    #' @param file Character of length one with the full path to the `sqlite`/`rds` save file of the engine.
     #' @param headers A `ProjectHeaders` S7 class object.
-    #' @param analyses A `StatisticAnalyses` S7 class object or a `character vector` with full file paths to `.csv`
-    #' files or a `data.frame` or `matrix` as described in `?StatisticAnalyses`.
+    #' @param analyses A `StatisticAnalyses` S7 class object or a `character vector` with full file path to `.csv`
+    #' file with variable names as first row and analyses names as first column or a `data.frame` or `matrix` object.
     #' @param workflow A `Workflow` S7 class object.
     #'
     initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
@@ -107,32 +120,36 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
-    ## ___ get -----
-
+    # MARK: get_overview
+    ## ___ get_overview -----
     #' @description Gets an overview data.frame of all the analyses.
-    #'
     get_overview = function() {
       self$analyses$info
     },
 
+    # MARK: get_classes
+    ## ___ get_classes -----
     #' @description Gets the class of each analysis.
-    #'
     get_classes = function() {
       self$analyses$classes
     },
 
+    # MARK: get_concentrations
+    ## ___ get_concentrations -----
     #' @description Gets the concentration of each analysis.
-    #'
     get_concentrations = function() {
       self$analyses$concentrations
     },
 
+    # MARK: get_number_variables
+    ## ___ get_number_variables -----
     #' @description Gets the number of variables.
-    #'
     get_number_variables = function() {
       ncol(self$analyses$analyses)
     },
 
+    # MARK: get_model_contributions
+    ## ___ get_model_contributions -----
     #' @description Gets the model contributions.
     #'
     #' @param pcs Integer vector with the principle components.
@@ -162,12 +179,13 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       dt
     },
 
-    ## ___ add/remove -----
-
-    #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
+    # MARK: add_analyses
+    ## ___ add_analyses -----
+    #' @description Adds analyses. Note that when adding new analyses, any existing results are removed. Note that the
+    #' data must have the same number and names of variables (i.e., columns) as the model.
     #'
-    #' @param analyses A *StatisticAnalysis* S3 class object or a list with *StatisticAnalysis* S3 class objects as
-    #' elements (see `?StatisticAnalysis` for more information).
+    #' @param analyses A `character vector` with full file path to `.csv` file with variable names as first row and
+    #' analyses names as first column or a `data.frame` or `matrix` object.
     #'
     #' @return Invisible.
     #'
@@ -176,6 +194,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
+    # MARK: add_classes
+    ## ___ add_classes -----
     #' @description Adds classes to the analyses.
     #'
     #' @param classes A character vector with the classes.
@@ -193,6 +213,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
+    # MARK: add_concentrations
+    ## ___ add_concentrations -----
     #' @description Adds concentrations to the analyses.
     #'
     #' @param concentrations A numeric vector with the concentrations.
@@ -210,6 +232,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
+    # MARK: remove_analyses
+    ## ___ remove_analyses -----
     #' @description Removes analyses.
     #'
     #' @param analyses A character vector with the names or numeric vector with indices of the analyses to remove.
@@ -222,8 +246,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
-    ## ___ processing -----
-
+    # MARK: predict
+    ## ___ predict -----
     #' @description Predicts the data using the model.
     #'
     #' @note Note that the model must be created before prediction and data must have the same number of variables as
@@ -238,6 +262,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
+    # MARK: test
+    ## ___ test -----
     #' @description Tests the model using the data.
     #'
     #' @note Note that the model must be created before testing and data must have the same number of variables as
@@ -252,8 +278,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       invisible(self)
     },
 
-    ## ___ plot -----
-
+    # MARK: plot_data
+    ## ___ plot_data -----
     #' @description Plots the data.
     #'
     #' @param features A numeric vector with the features (columns of data matrix) to plot.
@@ -269,8 +295,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       plot_data(self$analyses, analyses, features, transpose, interactive, xLab, yLab, title)
     },
 
+    # MARK: plot_explained_variance
+    ## ___ plot_explained_variance -----
     #' @description Plots the model explained cumulative variance.
-    #'
     plot_explained_variance = function(interactive = TRUE,
                                        xLab = NULL,
                                        yLab = NULL,
@@ -278,6 +305,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       plot_explained_variance(self$analyses, interactive, xLab, yLab, title)
     },
 
+    # MARK: plot_scores
+    ## ___ plot_scores -----
     #' @description Plots scores of the model.
     #'
     #' @param pcs A numeric vector (length 2) with the principle components to plot.
@@ -293,8 +322,9 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       plot_scores(self$analyses, analyses, interactive, pcs, title, colorGroups, showText, showLegend)
     },
 
+    # MARK: plot_residuals
+    ## ___ plot_residuals -----
     #' @description Plots residuals of the model.
-    #'
     plot_residuals = function(analyses = NULL,
                               interactive = TRUE,
                               xLab = NULL,
@@ -303,6 +333,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       plot_residuals(self$analyses, analyses, interactive, xLab, yLab, title)
     },
 
+    # MARK: plot_loadings
+    ## ___ plot_loadings -----
     #' @description Plots model loadings.
     #'
     #' @param pcs A vector with the principle components to plot.
@@ -317,6 +349,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       plot_loadings(self$analyses, interactive, pcs, colorKey, title, showText, showLegend)
     },
 
+    # MARK: plot_resolved_spectra
+    ## ___ plot_resolved_spectra -----
     #' @description Plots model resolved spectra.
     #'
     #' @param pcs Integer vectors with the principle component to use for categorization.
@@ -331,6 +365,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       plot_resolved_spectra(self$analyses, interactive, pcs, original, title, showText, showLegend)
     },
 
+    # MARK: plot_contributions
+    ## ___ plot_contributions -----
     #' @description Plots model contributions.
     #'
     #' @param pcs Integer vectors with the principle component to use for categorization.
@@ -343,6 +379,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
       plot_contributions(self$analyses, interactive, pcs, title, showText, showLegend)
     },
 
+    # MARK: plot_residual_distance
+    ## ___ plot_residual_distance -----
     #' @description Plots the residual distance of the model.
     #'
     #' @param ... Additional arguments passed to the plotting function.

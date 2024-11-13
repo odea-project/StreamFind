@@ -21,6 +21,8 @@
 #' @template arg-cex
 #' @template arg-showLegend
 #'
+#' @references
+#' \insertRef{orpl01}{StreamFind}
 #'
 #' @export
 #'
