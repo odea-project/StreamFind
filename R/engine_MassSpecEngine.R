@@ -28,6 +28,8 @@
 #' @template arg-ms-useLoadedData
 #' @template arg-ms-mzClust
 #' @template arg-ms-presence
+#' @template arg-ms-rtmin
+#' @template arg-ms-rtmax
 #' @template arg-ms-minIntensity
 #' @template arg-chromatograms
 #' @template arg-ms-features
@@ -135,11 +137,18 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' files or a `data.frame` with colnames: "file", "replicate" and "blank". The "replicate" column is used to group
     #' the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to
     #' the mzML/mzXML files.
+    #' @param centroid Logical (length 1). Set to `TRUE` to centroid data.
+    #' @param levels Numeric vector with the MS levels to consider. Default is `c(1, 2)`.
     #'
     #' @return A new MassSpecEngine class object.
     #'
-    initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
-      super$initialize(file, headers, workflow, analyses)
+    initialize = function(file = NULL,
+                          headers = NULL,
+                          workflow = NULL,
+                          analyses = NULL,
+                          centroid = FALSE,
+                          levels = c(1, 2)) {
+      super$initialize(file, headers, workflow, analyses, centroid, levels)
       invisible(self)
     },
 
@@ -423,10 +432,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets chromatograms from each analysis.
     get_chromatograms = function(analyses = NULL,
                                  chromatograms = NULL,
+                                 rtmin = 0,
+                                 rtmax = 0,
                                  minIntensity = NULL,
                                  useRawData = FALSE,
                                  useLoadedData = TRUE) {
-      get_chromatograms(self$analyses, analyses, chromatograms, minIntensity, useRawData, useLoadedData)
+      get_chromatograms(self$analyses, analyses, chromatograms, rtmin, rtmax, minIntensity, useRawData, useLoadedData)
     },
 
     # MARK: get_chromatograms_peaks
@@ -875,8 +886,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @return Invisible.
     #'
-    load_chromatograms = function(analyses = NULL, minIntensity = NULL, chromatograms = NULL) {
-      self$analyses <- load_chromatograms(self$analyses, analyses, minIntensity, chromatograms)
+    load_chromatograms = function(analyses = NULL, chromatograms = NULL, rtmin = 0, rtmax = 0, minIntensity = NULL) {
+      self$analyses <- load_chromatograms(self$analyses, analyses, chromatograms, rtmin, rtmax, minIntensity)
       invisible(self)
     },
 
@@ -1099,6 +1110,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Plots chromatograms in the analyses.
     plot_chromatograms = function(analyses = NULL,
                                   chromatograms = NULL,
+                                  rtmin = 0,
+                                  rtmax = 0,
                                   minIntensity = NULL,
                                   useRawData = FALSE,
                                   useLoadedData = TRUE,
@@ -1113,7 +1126,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                   cex = 0.6,
                                   interactive = TRUE) {
       plot_chromatograms(
-        self$analyses, analyses, chromatograms, minIntensity, useRawData, useLoadedData, xLab, yLab,
+        self$analyses, analyses, chromatograms, rtmin, rtmax, minIntensity, useRawData, useLoadedData, xLab, yLab,
         title, colorBy, legendNames, showLegend, xlim, ylim, cex, interactive
       )
     },

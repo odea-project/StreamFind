@@ -154,7 +154,9 @@ Creates an R6 MassSpecEngine class object.
   file = NULL,
   headers = NULL,
   workflow = NULL,
-  analyses = NULL
+  analyses = NULL,
+  centroid = FALSE,
+  levels = c(1, 2)
 )}\if{html}{\out{</div>}}
 }
 
@@ -171,6 +173,10 @@ Creates an R6 MassSpecEngine class object.
 files or a \code{data.frame} with colnames: "file", "replicate" and "blank". The "replicate" column is used to group
 the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to
 the mzML/mzXML files.}
+
+\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data.}
+
+\item{\code{levels}}{Numeric vector with the MS levels to consider. Default is \code{c(1, 2)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -890,6 +896,8 @@ Gets chromatograms from each analysis.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms(
   analyses = NULL,
   chromatograms = NULL,
+  rtmin = 0,
+  rtmax = 0,
   minIntensity = NULL,
   useRawData = FALSE,
   useLoadedData = TRUE
@@ -902,6 +910,10 @@ Gets chromatograms from each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{\code{rtmin}}{Numeric (length 1) with the minimum retention time.}
+
+\item{\code{rtmax}}{Numeric (length 1) with the maximum retention time.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
@@ -1957,8 +1969,10 @@ Loads all chromatograms from all analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_chromatograms(
   analyses = NULL,
-  minIntensity = NULL,
-  chromatograms = NULL
+  chromatograms = NULL,
+  rtmin = 0,
+  rtmax = 0,
+  minIntensity = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -1967,9 +1981,13 @@ Loads all chromatograms from all analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
-
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{\code{rtmin}}{Numeric (length 1) with the minimum retention time.}
+
+\item{\code{rtmax}}{Numeric (length 1) with the maximum retention time.}
+
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2348,6 +2366,8 @@ Plots chromatograms in the analyses.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_chromatograms(
   analyses = NULL,
   chromatograms = NULL,
+  rtmin = 0,
+  rtmax = 0,
   minIntensity = NULL,
   useRawData = FALSE,
   useLoadedData = TRUE,
@@ -2370,6 +2390,10 @@ Plots chromatograms in the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{\code{rtmin}}{Numeric (length 1) with the minimum retention time.}
+
+\item{\code{rtmax}}{Numeric (length 1) with the maximum retention time.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 

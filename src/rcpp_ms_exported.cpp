@@ -468,12 +468,12 @@ Rcpp::List rcpp_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx
     for (int j = 0; j < n; j++)
     {
 
-      index_out[trace] = index[i];
-      id_out[trace] = id[i];
-      polarity_out[trace] = polarity[i];
-      pre_mz_out[trace] = pre_mz[i];
-      pre_ce_out[trace] = pre_ce[i];
-      pro_mz_out[trace] = pro_mz[i];
+      index_out[trace] = index[idx[i]];
+      id_out[trace] = id[idx[i]];
+      polarity_out[trace] = polarity[idx[i]];
+      pre_mz_out[trace] = pre_mz[idx[i]];
+      pre_ce_out[trace] = pre_ce[idx[i]];
+      pro_mz_out[trace] = pro_mz[idx[i]];
       rt_out[trace] = rtj[j];
       intensity_out[trace] = intj[j];
 

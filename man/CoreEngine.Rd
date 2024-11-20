@@ -66,7 +66,13 @@ can also be a character with an \code{sqlite} or \code{rds} file path to save th
 \subsection{Method \code{new()}}{
 Creates a \code{CoreEngine} R6 class object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(file = NULL, headers = NULL, workflow = NULL, analyses = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(
+  file = NULL,
+  headers = NULL,
+  workflow = NULL,
+  analyses = NULL,
+  ...
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -79,6 +85,8 @@ Creates a \code{CoreEngine} R6 class object.
 \item{\code{workflow}}{A \code{Workflow} S7 class object.}
 
 \item{\code{analyses}}{An \code{Analyses} S7 class object.}
+
+\item{\code{...}}{Additional arguments.}
 }
 \if{html}{\out{</div>}}
 }

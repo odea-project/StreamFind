@@ -77,10 +77,10 @@ convert_ms_files <- function(files = NULL, outputFormat = "mzML", outputPath = N
   files_check <- lapply(files, function(x, comfor) {
     temp <- comfor[grepl(paste0(".", tools::file_ext(x)), comfor$format, fixed = TRUE), ]
     temp$file <- x
-    return(copy(temp))
+    return(data.table::copy(temp))
   }, comfor = check_compatible_ms_formats_for_conversion())
 
-  files_check <- rbindlist(files_check)
+  files_check <- data.table::rbindlist(files_check)
 
   files_check <- unique(files_check, by = c("format", "file"))
 
@@ -100,7 +100,7 @@ convert_ms_files <- function(files = NULL, outputFormat = "mzML", outputPath = N
     # check if MSConvert is installed and configured
     version <- system("msconvert --help", intern = TRUE)
     if (!(TRUE %in% grepl("ProteoWizard release:", version))) {
-      warning("msConvert from ProteoWizard not found!")
+      warning("msConvert from ProteoWizard not found! Make sure it is installed and added to the system PATH.")
       return()
     }
 
@@ -110,20 +110,26 @@ convert_ms_files <- function(files = NULL, outputFormat = "mzML", outputPath = N
     version <- gsub("\\.", "", version)
 
     lapply(files_ms, function(f) {
-      cmd_tx <- paste0("msconvert ", f)
+      cmd_tx <- paste0("msconvert \"", f, "\"")
 
       if (!is.null(outputPath)) {
-        cmd_tx <- paste0(cmd_tx, " -o ", outputPath)
+        cmd_tx <- paste0(cmd_tx, " -o \"", outputPath, "\"")
       } else {
-        cmd_tx <- paste0(cmd_tx, " -o ", dirname(f))
+        cmd_tx <- paste0(cmd_tx, " -o \"", dirname(f), "\"")
       }
 
       cmd_tx <- paste0(cmd_tx, " --", outputFormat)
 
+      # if (!is.null(optList)) {
+      #   for (i in seq_len(length(optList))) {
+      #     cmd_tx <- paste0(cmd_tx, " --", names(optList[i]))
+      #     cmd_tx <- paste0(cmd_tx, ' "', optList[[i]], '"')
+      #   }
+      # }
+      
       if (!is.null(optList)) {
         for (i in seq_len(length(optList))) {
-          cmd_tx <- paste0(cmd_tx, " --", names(optList[i]))
-          cmd_tx <- paste0(cmd_tx, ' "', optList[[i]], '"')
+          cmd_tx <- paste0(cmd_tx, " --", names(optList[i]), " \"", optList[[i]], "\"")
         }
       }
 

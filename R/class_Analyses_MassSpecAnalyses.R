@@ -73,6 +73,32 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
         self
       }
     ),
+    
+    # MARK: concentrations
+    ## __concentrations -----
+    concentrations = S7::new_property(S7::class_numeric,
+      getter = function(self) vapply(self@analyses, function(x) x$concentration, 0),
+      setter = function(self, value) {
+        if (length(value) != length(self)) {
+          warning("Length of concentrations not conform!")
+          return(self)
+        }
+        if (!is.numeric(value)) {
+          warning("Concentrations must be numeric!")
+          return(self)
+        }
+        for (i in seq_len(length(self))) self@analyses[[i]]$concentration <- value[i]
+        if (self$has_nts) {
+          if (self@results$nts$has_features) {
+            self@results$nts$features@analysisInfo$concentration <- value
+            if (self@results$nts$has_groups) {
+              self@results$nts$features@features@analysisInfo$concentration <- value
+            }
+          }
+        }
+        self
+      }
+    ),
 
     # MARK: types
     ## __types -----
@@ -301,7 +327,8 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
           "type" = vapply(self@analyses, function(x) x$type, ""),
           "polarity" = pols,
           "spectra" = vapply(self@analyses, function(x) round(x$spectra_number, digits = 0), 0),
-          "chromatograms" = vapply(self@analyses, function(x) round(x$chromatograms_number, digits = 0), 0)
+          "chromatograms" = vapply(self@analyses, function(x) round(x$chromatograms_number, digits = 0), 0),
+          "concentration" = vapply(self@analyses, function(x) x$concentration, 0)
         )
 
         row.names(df) <- seq_len(nrow(df))
@@ -496,8 +523,8 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
 
   # MARK: constructor
   ## __constructor -----
-  constructor = function(files = NULL) {
-    analyses <- .get_MassSpecAnalysis_from_files(files)
+  constructor = function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
+    analyses <- .get_MassSpecAnalysis_from_files(files, centroid, levels)
     S7::new_object(Analyses(), possible_formats = c(".mzML|.mzXML"), analyses = analyses)
   },
 
@@ -587,8 +614,8 @@ S7::method(`[<-`, MassSpecAnalyses) <- function(x, i, value) {
 #' @export
 #' @noRd
 S7::method(`[[`, MassSpecAnalyses) <- function(x, i) {
-  x@analyses <- x@analyses[[i]]
-  if (x@has_nts) x@results$nts <- x@results$nts[[i]]
+  x@analyses <- x@analyses[i]
+  if (x@has_nts) x@results$nts <- x@results$nts[i]
   x
 }
 
@@ -1256,6 +1283,52 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
   ms2_df
 }
 
+# MARK: get_spectra_peaks
+## __get_spectra_peaks -----
+#' @export
+#' @noRd
+S7::method(get_spectra_peaks, MassSpecAnalyses) <- function(x, analyses = NULL) {
+  analyses <- .check_analyses_argument(x, analyses)
+  if (is.null(analyses)) {
+    return(data.table::data.table())
+  }
+  
+  if (!x$has_spectra) {
+    return(data.table::data.table())
+  }
+  
+  pks <- x$spectra$peaks
+  if (length(pks) == 0) {
+    return(data.table::data.table())
+  }
+  
+  if (x$spectra$is_averaged) {
+    pks <- data.table::rbindlist(x$spectra$peaks, idcol = "replicate", fill = TRUE)
+  } else {
+    pks <- data.table::rbindlist(x$spectra$peaks, idcol = "analysis", fill = TRUE)
+  }
+  
+  if ("analysis" %in% colnames(pks)) {
+    pks <- pks[pks$analysis %in% analyses, ]
+  } else if ("replicate" %in% colnames(pks)) {
+    rpl <- x$replicates
+    rpl <- rpl[analyses]
+    pks <- pks[pks$replicate %in% unname(rpl)]
+    
+    if (!"analysis" %in% colnames(pks)) {
+      pks$analysis <- pks$replicate
+      data.table::setcolorder(pks, c("analysis", "replicate"))
+    }
+  }
+  
+  if (nrow(pks) == 0) {
+    message("\U2717 Peaks not found for the targets!")
+    return(data.table::data.table())
+  }
+  
+  pks
+}
+
 # MARK: Plot Spectra
 # Plot Spectra -----
 
@@ -1320,7 +1393,7 @@ S7::method(plot_spectra, MassSpecAnalyses) <- function(x,
 
   intensity <- NULL
 
-  spec <- spec[, .(intensity = sum(intensity)), by = c(unique_key)]
+  spec <- spec[, .(intensity = max(intensity)), by = c(unique_key)]
 
   spec <- unique(spec)
 
@@ -1720,7 +1793,7 @@ S7::method(plot_spectra_baseline, MassSpecAnalyses) <- function(x,
   baseline <- NULL
   raw <- NULL
 
-  spec <- spec[, .(intensity = sum(intensity), baseline = sum(baseline), raw = sum(raw)), by = c(unique_key)]
+  spec <- spec[, .(intensity = max(intensity), baseline = max(baseline), raw = max(raw)), by = c(unique_key)]
 
   spec <- unique(spec)
 
@@ -1802,6 +1875,62 @@ S7::method(plot_spectra_charges, MassSpecAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_spectra_peaks
+## __plot_spectra_peaks -----
+#' @export
+#' @noRd
+S7::method(plot_spectra_peaks, MassSpecAnalyses) <- function(x,
+                                                             analyses = NULL,
+                                                             legendNames = NULL,
+                                                             title = NULL,
+                                                             colorBy = "targets",
+                                                             showLegend = TRUE,
+                                                             xlim = NULL,
+                                                             ylim = NULL,
+                                                             cex = 0.6,
+                                                             xLab = NULL,
+                                                             yLab = NULL,
+                                                             interactive = TRUE) {
+  pks <- get_spectra_peaks(x, analyses = analyses)
+  
+  if (nrow(pks) == 0) {
+    message("\U2717 Peaks not found!")
+    return(NULL)
+  }
+  
+  chroms <- get_spectra(x, analyses = analyses, useRawData = FALSE, useLoadedData = TRUE)
+  
+  if (nrow(chroms) == 0) {
+    message("\U2717 Chromatograms not found!")
+    return(NULL)
+  }
+  
+  if ("replicates" %in% colorBy && !"replicate" %in% colnames(pks)) {
+    pks$replicate <- x$replicates[pks$analysis]
+    chroms$replicate <- x$replicates[chroms$analysis]
+  }
+  
+  if ("mass" %in% colnames(chroms)) {
+    chroms$rt <- chroms$mass
+    pks$rt <- pks$mass
+    pks$rtmin <- pks$min
+    pks$rtmax <- pks$max
+    if (is.null(xLab)) xLab <- "Mass / Da"
+  } else if ("mz" %in% colnames(chroms)) {
+    chroms$rt <- chroms$mz
+    pks$rt <- pks$mz
+    pks$rtmin <- pks$min
+    pks$rtmax <- pks$max
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+  }
+  
+  if (!interactive) {
+    .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+  } else {
+    .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+  }
+}
+
 # MARK: Chromatograms
 # Chromatograms ------
 
@@ -1812,6 +1941,8 @@ S7::method(plot_spectra_charges, MassSpecAnalyses) <- function(x,
 S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
                                                             analyses = NULL,
                                                             chromatograms = NULL,
+                                                            rtmin = 0,
+                                                            rtmax = 0,
                                                             minIntensity = NULL,
                                                             useRawData = FALSE,
                                                             useLoadedData = TRUE) {
@@ -1855,6 +1986,10 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
     }
 
     if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
+    
+    if (is.numeric(rtmin) && is.numeric(rtmax)) {
+      if (rtmax > 0) chroms <- chroms[chroms$rt >= rtmin & chroms$rt <= rtmax]
+    }
 
     chroms
 
@@ -1876,6 +2011,10 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
     }
 
     if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
+    
+    if (is.numeric(rtmin) && is.numeric(rtmax)) {
+      if (rtmax > 0) chroms <- chroms[chroms$rt >= rtmin & chroms$rt <= rtmax]
+    }
 
     chroms
 
@@ -1935,6 +2074,10 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
       if (nrow(chroms) > 0) setcolorder(chroms, c("analysis", "replicate"))
 
       if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
+      
+      if (is.numeric(rtmin) && is.numeric(rtmax)) {
+        if (rtmax > 0) chroms <- chroms[chroms$rt >= rtmin & chroms$rt <= rtmax]
+      }
 
       chroms
     } else {
@@ -1948,9 +2091,23 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
 ## __load_chromatograms -----
 #' @export
 #' @noRd
-S7::method(load_chromatograms, MassSpecAnalyses) <- function(x, analyses = NULL, minIntensity = NULL, chromatograms = NULL) {
+S7::method(load_chromatograms, MassSpecAnalyses) <- function(x,
+                                                             analyses = NULL,
+                                                             chromatograms = NULL,
+                                                             rtmin = 0,
+                                                             rtmax = 0, 
+                                                             minIntensity = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
-  chroms <- get_chromatograms(x, analyses, chromatograms, minIntensity, useRawData = TRUE, useLoadedData = TRUE)
+  chroms <- get_chromatograms(
+    x,
+    analyses,
+    chromatograms,
+    rtmin,
+    rtmax,
+    minIntensity,
+    useRawData = TRUE,
+    useLoadedData = TRUE
+  )
   if (nrow(chroms) > 0) {
     split_vector <- chroms$analysis
     chroms$analysis <- NULL
@@ -2027,6 +2184,8 @@ S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = 
 S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
                                                              analyses = NULL,
                                                              chromatograms = NULL,
+                                                             rtmin = 0,
+                                                             rtmax = 0,
                                                              minIntensity = NULL,
                                                              useRawData = FALSE,
                                                              useLoadedData = TRUE,
@@ -2040,7 +2199,7 @@ S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
                                                              ylim = NULL,
                                                              cex = 0.6,
                                                              interactive = TRUE) {
-  chromatograms <- get_chromatograms(x, analyses, chromatograms, minIntensity, useRawData, useLoadedData)
+  chromatograms <- get_chromatograms(x, analyses, chromatograms, rtmin, rtmax, minIntensity, useRawData, useLoadedData)
 
   if (nrow(chromatograms) == 0) {
     message("\U2717 Chromatograms not found for the analyses!")
@@ -2720,7 +2879,7 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
       mzmax <- NULL
       feature <- NULL
       quality <- NULL
-      isotope <- NULL
+      annotation <- NULL
       istd <- NULL
 
       fts_meta <- fts[, .(
@@ -2731,7 +2890,7 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
         presence = round(length(feature) / length(x) * 100, digits = 1),
         maxint = round(max(intensity), digits = 0),
         sn = round(max(vapply(quality, function(z) if (length(z) > 0) z$sn else 0, 0), na.rm = TRUE), digits = 1),
-        iso = min(vapply(annotation, function(z) if (length(z) > 0) z$step else 0, 0)),
+        iso = min(vapply(annotation, function(z) if (length(z) > 0) z$iso_step else 0, 0)),
         istd = paste0(unique(vapply(istd, function(z) if (length(z) > 0) x$name else NA_character_, NA_character_)), collapse = "; "),
         filtered = all(filtered)
       ), by = "group"]
@@ -4393,7 +4552,7 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
 
 # MARK: .get_MassSpecAnalysis_from_files
 #' @noRd
-.get_MassSpecAnalysis_from_files <- function(files = NULL) {
+.get_MassSpecAnalysis_from_files <- function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
   if (!is.null(files)) {
     if (is.data.frame(files)) {
       if (all(c("path", "analysis") %in% colnames(files))) {
@@ -4426,7 +4585,7 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
       blanks <- rep(NA_character_, length(files))
     }
 
-    possible_ms_file_formats <- ".mzML|.mzXML"
+    possible_ms_file_formats <- ".mzML|.mzXML|.d"
 
     valid_files <- vapply(files,
       FUN.VALUE = FALSE,
@@ -4448,6 +4607,67 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
 
     names(replicates) <- as.character(files)
     names(blanks) <- as.character(files)
+
+    if (any(vapply(files, function(x) tools::file_ext(x) == "d", FALSE))) {
+
+      files_to_convert <- files[tools::file_ext(files) == "d"]
+      files_converted <- gsub(".d$", ".mzML", files_to_convert)
+
+      for (i in seq_along(files_converted)) {
+        if (file.exists(files_converted[i])) {
+          if (files_converted[i] %in% files) {
+            files <- files[!files %in% files_to_convert[i]]
+          } else {
+            files[files == files_to_convert[i]] <- files_converted[i]
+          }
+        }
+      }
+      
+      files_to_convert <- files[tools::file_ext(files) == "d"]
+
+      if (length(files_to_convert) > 0) {
+        filter <- ""
+        
+        if (centroid) {
+          filter <- "peakPicking vendor"
+        }
+        
+        if (centroid && is.numeric(levels) && length(levels) > 0) {
+          levels <- paste(levels, collapse = "-")
+          levels <- paste("msLevel=", levels, collapse = "", sep = "")
+          if (filter != "") {
+            filter <- paste(filter, levels, sep = " ")
+          } else {
+            filter <- levels
+          }
+        }
+        
+        optList <- list()
+        if (filter != "") {
+          optList <- list(filter = filter)
+        }
+
+        tryCatch({
+          StreamFind::convert_ms_files(
+            files = files_to_convert,
+            outputFormat = "mzML",
+            outputPath = NULL,
+            optList = optList
+          )
+
+          files <- c(files[!files %in% files_to_convert], files_converted[!files_converted %in% files])
+          exist_files <- vapply(files, function(x) file.exists(x), FALSE)
+          files <- files[exist_files]
+
+        }, error = function(e) {
+          warning("Error converting files!")
+          files <- files[!files %in% files_to_convert]
+        }, warning = function(w) {
+          warning("Warning converting files!")
+          files <- files[!files %in% files_to_convert]
+        })
+      }
+    }
 
     analyses <- lapply(files, function(x) {
       cache <- .load_chache("parsed_ms_analyses", x)
@@ -4479,6 +4699,8 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
         if (!is.na(blk)) ana$blank <- blk
 
         ana$blank <- blk
+        
+        ana$concentration <- suppressWarnings(as.numeric(ana$name))
 
         if (!is.null(cache$hash)) {
           .save_cache("parsed_ms_analyses", ana, cache$hash)

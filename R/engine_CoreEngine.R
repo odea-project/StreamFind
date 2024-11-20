@@ -138,8 +138,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @param headers A `ProjectHeaders` S7 class object.
     #' @param analyses An `Analyses` S7 class object.
     #' @param workflow A `Workflow` S7 class object.
+    #' @param ... Additional arguments.
     #'
-    initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
+    initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL, ...) {
       self$file <- EngineSaveFile()
 
       if (!is.null(file)) {
@@ -193,7 +194,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         if (is(analyses, "StreamFind::Analyses")) {
           self$analyses <- analyses
         } else {
-          analyses <- do.call(analyses_call, list(analyses))
+          analyses <- do.call(analyses_call, c(list(analyses), ...))
           if (is(analyses, "StreamFind::Analyses")) {
             self$analyses <- analyses
           } else {

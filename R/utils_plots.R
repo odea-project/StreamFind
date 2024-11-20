@@ -3503,7 +3503,7 @@
   ids <- unique(peaks$unique_ids)
 
   if (!"raw" %in% colnames(chroms)) chroms$raw <- chroms$intensity
-
+  
   title <- list(
     text = title, x = 0.13, y = 0.98,
     font = list(size = 12, color = "black")
@@ -3537,7 +3537,6 @@
 
   names(showL) <- leg
 
-
   for (t in ids) {
     select_vector <- peaks$unique_ids == t
 
@@ -3570,10 +3569,23 @@
       "</br> peak: ", pk$peak[1],
       "</br> x: ", round(pk$rt[1], digits = 0),
       "</br> dx: ", round(pk$rtmax[1] - pk$rtmin[1], digits = 0),
-      "</br> intensity: ", round(pk$intensity[1], digits = 0)
+      "</br> intensity: ", round(pk$intensity[1], digits = 0),
+      "</br> area: ", round(pk$area[1], digits = 0),
+      if ("calibration" %in% colnames(pk)) {
+        paste0("</br> calibration: ", pk$calibration[1])
+      } else {
+        ""
+      },
+      if ("concentration" %in% colnames(pk)) {
+        paste0("</br> concentration: ", round(pk$concentration[1], digits = 2))
+      } else {
+        ""
+      }
     )
-
-    if (!"baseline" %in% colnames(chrom)) pk_chrom$baseline <- rep(min(pk_chrom$raw), nrow(pk_chrom))
+    
+    pk_chrom_init_raw <- pk_chrom$raw[1]
+    pk_chrom_end_raw <- pk_chrom$raw[nrow(pk_chrom)]
+    pk_chrom$baseline <- seq(pk_chrom_init_raw, pk_chrom_end_raw, length.out = nrow(pk_chrom))
 
     plot <- plot %>% add_trace(
       x = c(pk_chrom$rt, rev(pk_chrom$rt)),
@@ -3705,7 +3717,7 @@
     lt <- unique(spectra$var[select_vector])
     x <- spectra$x[select_vector]
     y <- spectra$intensity[select_vector]
-
+    
     plot <- plot %>% add_trace(
       x = x,
       y = y,

@@ -8,17 +8,21 @@ MassSpecSettings_FilterFeatures_StreamFind(
   minSnRatio = NA_real_,
   excludeIsotopes = FALSE,
   excludeAdducts = FALSE,
-  minIntensity = NA_real_
+  minIntensity = NA_real_,
+  onlyWithMS2 = FALSE
 )
 }
 \arguments{
 \item{minSnRatio}{Numeric (length 1) with the minimum signal-to-noise ratio.}
 
-\item{excludeIsotopes}{Logical (length 1) with \code{TRUE} for filtering annotated isotopes (only prevails the monoisotopic features).}
+\item{excludeIsotopes}{Logical (length 1) with \code{TRUE} for filtering annotated isotopes
+(only prevails the monoisotopic features).}
 
 \item{excludeAdducts}{Logical (length 1) with \code{TRUE} for filtering annotated adducts.}
 
 \item{minIntensity}{Numeric (length 1) with the minimum intensity threshold.}
+
+\item{onlyWithMS2}{Logical (length 1) with \code{TRUE} for filtering features without MS2 spectra.}
 }
 \value{
 A \code{MassSpecSettings_FilterFeatures_StreamFind} object.

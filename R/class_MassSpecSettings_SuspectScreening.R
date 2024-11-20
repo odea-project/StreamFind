@@ -1,5 +1,6 @@
 
 # ______________________________________________________________________________________________________________________
+# MARK: StreamFind
 # StreamFind -----
 # ______________________________________________________________________________________________________________________
 
@@ -203,6 +204,7 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
 }
 
 # ______________________________________________________________________________________________________________________
+# MARK: forident
 # forident -----
 # ______________________________________________________________________________________________________________________
 
@@ -302,14 +304,14 @@ S7::method(run, MassSpecSettings_SuspectScreening_forident) <- function(x, engin
     
     polarities <- unique(engine$get_spectra_polarity())
     
-    if (length(polarities) > 1 & x$parameters$addMS2) {
+    if (length(polarities) > 1 && x$parameters$addMS2) {
       warning("Using ms2 data of feature groups from multiple polarities is not possible! Using features of each analysis instead.")
       
       out_list <- engine$get_features()
       out_list$rt <- out_list$rt / 60
       out_list$label <- paste0(out_list$analysis, "_" , out_list$feature)
     } else {
-      out_list <- engine$get_groups()
+      out_list <- engine$get_groups(metadata = TRUE)
       out_list$rt <- out_list$rt / 60
       out_list$label <- out_list$group
     }
@@ -358,13 +360,27 @@ S7::method(run, MassSpecSettings_SuspectScreening_forident) <- function(x, engin
     
   } else {
     
+    if (nts$has_groups) {
+      ms2 <- engine$get_groups_ms2()
+      ms2 <- split(ms2, ms2$group)
+      out_list$ms2 <- lapply(out_list$group, function(x, ms2) {
+        if (x %in% names(ms2)) {
+          ms2[[x]]
+        } else {
+          NULL
+        }
+      }, ms2 = ms2)
+    }
+    
     if ("ms2" %in% colnames(out_list)) {
       
-      if (!"mz" %in% colnames(out_list)) {
-        warning("m/z values not found in the feature groups data.table but it is required for inclusion of fragments! .txt files not exported.")
-        # return(FALSE)
-      } else {
+      if ("mass" %in% colnames(out_list) && x$parameters$useNeutralMass) {
+        out_list$Mass <- out_list$mass
+      } else if ("mz" %in% colnames(out_list)) {
         out_list$Mass <- out_list$mz
+      } else {
+        warning("Mass data not found!")
+        return(FALSE)
       }
       
       sink(paste0(x$parameters$path,"/", x$parameters$name, ".txt"))
@@ -413,11 +429,11 @@ S7::method(run, MassSpecSettings_SuspectScreening_forident) <- function(x, engin
       return(FALSE)
     }
   }
-  
   TRUE
 }
 
 # ______________________________________________________________________________________________________________________
+# MARK: patRoon
 # patRoon -----
 # ______________________________________________________________________________________________________________________
 

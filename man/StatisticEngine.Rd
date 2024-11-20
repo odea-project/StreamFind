@@ -4,7 +4,9 @@
 \alias{StatisticEngine}
 \title{\strong{StatisticEngine} R6 class and methods}
 \description{
-The \emph{StatisticEngine} R6 class is a framework for performing statistical analysis on data.
+The \emph{StatisticEngine} R6 class is a framework for performing statistical analysis on data. Data can be added as a
+character vector with a path to a \code{csv} file with variable names as first row and analyses names as first column
+or a \code{data.frame} or \code{matrix} object.
 }
 \note{
 Note that the model must be created before prediction and data must have the same number of variables as
@@ -29,7 +31,7 @@ and data row names are used as analyses names.
 
 \item{\code{quantification}}{Quantification results.}
 
-\item{\code{prediction_results}}{Prediction results from model.}
+\item{\code{prediction_results}}{Prediction results.}
 
 \item{\code{classification_results}}{Classification results.}
 }
@@ -102,14 +104,14 @@ Creates an R6 class \emph{StatisticEngine}. Child of \emph{CoreEngine} R6 class.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{Character of length one with the full path to the \code{sqlite} save file of the engine.}
+\item{\code{file}}{Character of length one with the full path to the \code{sqlite}/\code{rds} save file of the engine.}
 
 \item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
 
 \item{\code{workflow}}{A \code{Workflow} S7 class object.}
 
-\item{\code{analyses}}{A \code{StatisticAnalyses} S7 class object or a \verb{character vector} with full file paths to \code{.csv}
-files or a \code{data.frame} or \code{matrix} as described in \code{?StatisticAnalyses}.}
+\item{\code{analyses}}{A \code{StatisticAnalyses} S7 class object or a \verb{character vector} with full file path to \code{.csv}
+file with variable names as first row and analyses names as first column or a \code{data.frame} or \code{matrix} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -175,7 +177,8 @@ Gets the model contributions.
 \if{html}{\out{<a id="method-StatisticEngine-add_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-StatisticEngine-add_analyses}{}}}
 \subsection{Method \code{add_analyses()}}{
-Adds analyses. Note that when adding new analyses, any existing results are removed.
+Adds analyses. Note that when adding new analyses, any existing results are removed. Note that the
+data must have the same number and names of variables (i.e., columns) as the model.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -183,8 +186,8 @@ Adds analyses. Note that when adding new analyses, any existing results are remo
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A \emph{StatisticAnalysis} S3 class object or a list with \emph{StatisticAnalysis} S3 class objects as
-elements (see \code{?StatisticAnalysis} for more information).}
+\item{\code{analyses}}{A \verb{character vector} with full file path to \code{.csv} file with variable names as first row and
+analyses names as first column or a \code{data.frame} or \code{matrix} object.}
 }
 \if{html}{\out{</div>}}
 }

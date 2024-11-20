@@ -102,6 +102,10 @@ get_spectra_ms1 <- S7::new_generic("get_spectra_ms1", "x")
 get_spectra_ms2 <- S7::new_generic("get_spectra_ms2", "x")
 
 #' @export
+#' @noRd
+get_spectra_peaks <- S7::new_generic("get_spectra_peaks", "x")
+
+#' @export
 #'@noRd
 get_spectra_tic <- S7::new_generic("get_spectra_tic", "x")
 
@@ -282,6 +286,10 @@ plot_spectra_ms1 <- S7::new_generic("plot_spectra_ms1", "x")
 #' @export
 #' @noRd
 plot_spectra_ms2 <- S7::new_generic("plot_spectra_ms2", "x")
+
+#' @export
+#' @noRd
+plot_spectra_peaks <- S7::new_generic("plot_spectra_peaks", "x")
 
 #' @export
 #'@noRd

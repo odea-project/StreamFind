@@ -83,6 +83,23 @@ S7::method(run, MassSpecSettings_ClusterSpectra_StreamFind) <- function(x, engin
     return(FALSE)
   }
   
+  cache <- .load_chache("cluster_spectra", spec_list, x)
+  
+  if (!is.null(cache$data)) {
+    spec_list <- cache$data
+    tryCatch(
+      {
+        engine$spectra$spectra <- spec_list
+        message("\U2139 Clustered Spectra loaded from cache!")
+        return(TRUE)
+      },
+      error = function(e) {
+        warning(e)
+        return(FALSE)
+      }
+    )
+  }
+  
   spec_list <- lapply(spec_list, function(z, val, clustVal, presence) {
     
     if (nrow(z) > 0) {
@@ -112,6 +129,11 @@ S7::method(run, MassSpecSettings_ClusterSpectra_StreamFind) <- function(x, engin
     }
     
   }, val = val, clustVal = clustVal, presence = presence)
+  
+  if (!is.null(cache$hash)) {
+    .save_cache("cluster_spectra", spec_list, cache$hash)
+    message("\U1f5ab Clustered Spectra cached!")
+  }
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra clustered!"))

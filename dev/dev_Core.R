@@ -28,12 +28,14 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
-path <- "E:/example_ms_files"
-#path <- "C:/Users/apoli/Documents/example_ms_files"
+#path <- "E:/example_ms_files"
+path <- "C:/Users/apoli/Documents/example_ms_files"
 ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
-ms <- MassSpecEngine$new(analyses = ms_files_complete[4])
-p3d <- ms$plot_spectra_3d(mass = dbsus[15, ], ppm = 10, sec = 120, colorBy = "analyses+levels")
+clear_cache("all")
+ms <- MassSpecEngine$new(analyses = ms_files_complete[c(1, 4)])
+ms$analyses$replicates <- c("centroid", "profile")
+ms$plot_spectra_3d(mass = dbsus[15, ], ppm = 60, sec = 120, colorBy = "replicates")
 
 # NTS workflow -----
 ms <- MassSpecEngine$new(analyses = ms_files_df)
