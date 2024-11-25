@@ -38,3 +38,12 @@ Quantification <- S7::new_class("Quantification", package = "StreamFind", parent
     NULL
   }
 )
+
+#' @export
+#' @noRd
+S7::method(show, Quantification) <- function(x) {
+  cat("Quantification results\n")
+  cat("Compounds: ", paste(x@compounds, collapse = ", "), "\n")
+  cat("Models: ", length(x@models), "\n")
+  cat("Quantities: ", length(x@quantities))
+}

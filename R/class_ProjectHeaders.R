@@ -259,8 +259,6 @@ S7::method(read, ProjectHeaders) <- function(x, file) {
 #' @export
 #' @noRd
 S7::method(show, ProjectHeaders) <- function(x, ...) {
-  cat("\n")
-  cat(" ", class(x)[1], "(", length(x), " elements)", "\n", sep = "")
   names <- names(x)
-  for (n in names) cat("  ", n, ": ", as.character(x[[n]]), "\n", sep = "")
+  for (n in names) cat("\n", n, ": ", as.character(x[[n]]), sep = "")
 }

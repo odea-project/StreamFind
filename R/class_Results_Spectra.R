@@ -71,3 +71,23 @@ Spectra <- S7::new_class("Spectra", package = "StreamFind", parent = Results,
     NULL
   }
 )
+
+#' @export
+#' @noRd
+S7::method(show, Spectra) <- function(x) {
+  if (length(x@spectra) > 0) {
+    cat("Number spectra: ", length(x@spectra), "\n")
+    cat("Averaged: ", x@is_averaged, "\n")
+    cat("Neutralized: ", x@is_neutralized, "\n")
+    if (x@has_peaks) {
+      cat("Number peaks: ", vapply(x@peaks, nrow, 0), "\n")
+    } else {
+      cat("Number peaks: ", 0, "\n")
+    }
+    if (length(x@charges) > 0) {
+      cat("Number charges: ", vapply(x@charges, nrow, 0), "\n")
+    }
+  } else {
+    cat("Number spectra: ", 0, "\n")
+  }
+}

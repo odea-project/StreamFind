@@ -26,10 +26,10 @@ engine by scripting.
 
 \item{\code{results}}{List of results in the analyses.}
 
-\item{\code{history}}{Audit trail of changes.}
-
 \item{\code{file}}{An \code{EngineSaveFile} S7 class object. When setting the value it
 can also be a character with an \code{sqlite} or \code{rds} file path to save the engine.}
+
+\item{\code{audit_trail}}{AuditTrail S7 class object.}
 }
 \if{html}{\out{</div>}}
 }

@@ -17,7 +17,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     .workflow = NULL,
     .analyses = NULL,
     .file = NULL,
-    .history = NULL
+    .audit_trail = NULL
   ),
 
   # MARK: active bindings
@@ -33,6 +33,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       if (is(value, "StreamFind::ProjectHeaders")) {
         private$.headers <- value
+        if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, value)
       } else {
         warning("Invalid headers object! Not added.")
       }
@@ -48,6 +49,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       if (is(value, "StreamFind::Workflow")) {
         private$.workflow <- value
+        if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, value)
       } else {
         warning("Invalid workflow object! Not added.")
       }
@@ -62,7 +64,30 @@ CoreEngine <- R6::R6Class("CoreEngine",
         return(private$.analyses)
       }
       if (is(value, "StreamFind::Analyses")) {
+        names_analyses <- names(private$.analyses)
+        
+        if (length(names_analyses) > 0) {
+          if (!is.null(private$.analyses$results)) {
+            old_results <- private$.analyses$results
+          }
+        }
+        
         private$.analyses <- value
+        if (!is.null(private$.audit_trail)) {
+          if (length(names_analyses) == 0 || !identical(names(private$.analyses), names(value))) {
+            private$.audit_trail <- add(private$.audit_trail, value)
+          }
+          
+          if (length(names(private$.analyses)) > 0) {
+            if (!is.null(private$.analyses$results)) {
+              for (r in names(private$.analyses$results)) {
+                if (!identical(private$.analyses$results[[r]], old_results[[r]])) {
+                  private$.audit_trail <- add(private$.audit_trail, private$.analyses$results[[r]])
+                }
+              }
+            }
+          }
+        }
       } else {
         warning("Invalid analyses object! Not added.")
       }
@@ -93,13 +118,6 @@ CoreEngine <- R6::R6Class("CoreEngine",
       invisible(self)
     },
 
-    # MARK: history
-    # __history -----
-    #' @field history Audit trail of changes.
-    history = function() {
-      private$.history
-    },
-
     # MARK: file
     # __file -----
     #' @field file An `EngineSaveFile` S7 class object. When setting the value it
@@ -110,10 +128,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       if (is(value, "StreamFind::EngineSaveFile")) {
         private$.file <- value
+        if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, value)
       } else if (is.character(value)) {
         tryCatch(
           {
-            private$.file <- EngineSaveFile(file = value)
+            value <- EngineSaveFile(file = value)
+            private$.file <- value
+            if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, value)
           },
           error = function(e) {
             warning(e)
@@ -123,6 +144,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
         warning("Invalid file object! Not added.")
       }
       invisible(self)
+    },
+    
+    # MARK: history
+    # __history -----
+    #' @field audit_trail AuditTrail S7 class object.
+    audit_trail = function() {
+      private$.audit_trail
     }
   ),
 
@@ -141,8 +169,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @param ... Additional arguments.
     #'
     initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL, ...) {
-      self$file <- EngineSaveFile()
-
+      private$.audit_trail <- AuditTrail()
+      
       if (!is.null(file)) {
         tryCatch(
           {
@@ -159,9 +187,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
             warning(w)
           }
         )
+      } else {
+        self$file <- EngineSaveFile()
       }
-
-      self$headers <- ProjectHeaders()
 
       if (!is.null(headers)) {
         if (is(headers, "StreamFind::ProjectHeaders")) {
@@ -169,9 +197,9 @@ CoreEngine <- R6::R6Class("CoreEngine",
         } else {
           warning("Headers not added! Not valid.")
         }
+      } else {
+        self$headers <- ProjectHeaders()
       }
-
-      self$workflow <- Workflow()
 
       if (!is.null(workflow)) {
         if (is(workflow, "StreamFind::Workflow")) {
@@ -179,6 +207,8 @@ CoreEngine <- R6::R6Class("CoreEngine",
         } else {
           warning("Workflow not added! Not valid.")
         }
+      } else {
+        self$workflow <- Workflow()
       }
 
       engine_type <- gsub("Engine", "", is(self))
@@ -194,7 +224,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         if (is(analyses, "StreamFind::Analyses")) {
           self$analyses <- analyses
         } else {
-          analyses <- do.call(analyses_call, c(list(analyses), ...))
+          analyses <- do.call(analyses_call, c(list(analyses), list(...)))
           if (is(analyses, "StreamFind::Analyses")) {
             self$analyses <- analyses
           } else {
@@ -214,15 +244,19 @@ CoreEngine <- R6::R6Class("CoreEngine",
       cat("\n")
       cat(paste(is(self), collapse = "; "))
       cat("\n")
-      cat(
-        "name          ", self$headers$name, "\n",
-        "date          ", as.character(self$headers$date), "\n",
-        "file          ", self$file@path, "\n",
-        sep = ""
-      )
-
+      cat("File: \n")
+      cat(self$file@path)
+      cat("\n")
+      cat("\n")
+      cat("Headers:")
+      self$print_headers()
+      cat("\n")
+      cat("\n")
+      cat("Workflow: \n")
       self$print_workflow()
-
+      cat("\n")
+      cat("\n")
+      cat("Analyses: \n")
       self$print_analyses()
     },
 
@@ -282,7 +316,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           headers = self$headers,
           workflow = self$workflow,
           analyses = self$analyses,
-          history = self$history
+          audit = self$audit_trail
         )
 
         hash <- .make_hash(is(self))
@@ -293,7 +327,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           headers = self$headers,
           workflow = self$workflow,
           analyses = self$analyses,
-          history = self$history
+          audit = self$audit_trail
         )
 
         saveRDS(data, file)
@@ -351,7 +385,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
             private$.headers <- data$headers
             private$.workflow <- data$workflow
             private$.analyses <- data$analyses
-            private$.history <- data$history
+            private$.audit_trail <- data$audit
             message("\U2713 Engine data loaded from ", file, "!")
           } else {
             warning("No data loaded from cache!")
@@ -363,7 +397,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
               private$.headers <- data$headers
               private$.workflow <- data$workflow
               private$.analyses <- data$analyses
-              private$.history <- data$history
+              private$.audit_trail <- data$audit
               message("\U2713 Engine data loaded from ", file, "!")
             } else {
               warning("Engine type not matching with current engine! Not done.")
@@ -493,6 +527,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         } else {
           self$workflow[[length(self$workflow) + 1]] <- settings
         }
+        if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, settings)
       }
       invisible(self)
     },

@@ -45,27 +45,18 @@ Analyses <- S7::new_class("Analyses",
 #' @export
 #' @noRd
 S7::method(show, Analyses) <- function(x, ...) {
-  cat("\n")
-  cat(is(x))
   if (length(x) > 0) {
-    cat("\n")
     overview <- x@info
     row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
     print(overview)
   } else {
-    cat(" empty \n")
+    cat("empty \n")
   }
-  cat("\n")
-  cat("Results")
+  
   if (length(x@results) > 0) {
     cat("\n")
     results_class <- vapply(x@results, is, "")
-    cat(
-      paste0(" ", seq_len(length(results_class)), ": ", results_class),
-      sep = "\n"
-    )
-  } else {
-    cat(" empty \n")
+    cat(paste0("Result ", seq_len(length(results_class)), ": ", results_class), sep = "\n")
   }
 }
 

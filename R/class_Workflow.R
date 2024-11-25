@@ -245,17 +245,14 @@ S7::method(read, Workflow) <- function(x, file) {
 #' @export
 #' @noRd
 S7::method(show, Workflow) <- function(x, ...) {
-  cat("\n")
-  cat("Workflow")
   if (length(x) > 0) {
-    cat("\n")
     names_settings <- vapply(x@settings, function(x) x$method, "")
     algorithms <- vapply(x@settings, function(x) x$algorithm, "")
     cat(
-      paste0(" ", seq_len(length(names_settings)), ": ", names_settings, " (", algorithms, ")"),
+      paste0(seq_len(length(names_settings)), ": ", names_settings, " (", algorithms, ")"),
       sep = "\n"
     )
   } else {
-    cat(" empty \n")
+    cat("empty")
   }
 }

@@ -331,7 +331,11 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
   } else {
     spec <- x$raw_spectra[analyses]
     spec <- rbindlist(spec, idcol = "analysis", fill = TRUE)
-    spec$replicate <- x$replicates[spec$analysis]
+    if (x$spectra$is_averaged) {
+      spec$replicate <- spec$analysis
+    } else {
+      spec$replicate <- x$replicates[spec$analysis]
+    }
   }
 
   if (nrow(spec) == 0) {
@@ -429,11 +433,11 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
   intensity <- NULL
 
   if ("rt" %in% xVal) {
-    spectra <- spectra[, .(intensity = sum(intensity)), by = c("analysis", "rt")]
+    spectra <- spectra[, .(intensity = sum(intensity)), by = c("analysis", "replicate", "rt")]
     if (is.null(xLab)) xLab <- "Retention time / seconds"
     setnames(spectra, "rt", "shift")
   } else if ("shift" %in% xVal) {
-    spectra <- spectra[, .(intensity = mean(intensity)), by = c("analysis", "shift")]
+    spectra <- spectra[, .(intensity = mean(intensity)), by = c("analysis", "replicate", "shift")]
     if (is.null(xLab)) {
       if (interactive) {
         xLab <- "Raman shift / cm<sup>-1</sup>"

@@ -88,3 +88,10 @@ S7::method(`$<-`, EngineSaveFile) <- function(x, i, value) {
   S7::prop(x, i) <- value
   x
 }
+
+#' @export
+#' @noRd
+S7::method(show, EngineSaveFile) <- function(x, i, value) {
+  cat(x$path)
+}
+

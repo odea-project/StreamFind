@@ -99,7 +99,7 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
         if (length(selected) == 0) {
           return()
         }
-        csv <- get_spectra(reactive_analyses(), analyses = selected, raw_spectra = input$summary_plot_raw)
+        csv <- get_spectra(reactive_analyses(), analyses = selected, useRawData = input$summary_plot_raw)
         fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$summary_plot_save)
         if (nrow(fileinfo) > 0) {
           write.csv(csv, fileinfo$datapath, row.names = FALSE)

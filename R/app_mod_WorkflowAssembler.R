@@ -19,7 +19,9 @@
     
     shinydashboard::tabItem(tabName = ns("workflow"), shiny::fluidRow(shiny::uiOutput(ns("workflow_ui")))),
     
-    shinydashboard::tabItem(tabName = ns("results"), shiny::fluidRow(shiny::uiOutput(ns("results_ui"))))
+    shinydashboard::tabItem(tabName = ns("results"), shiny::fluidRow(shiny::uiOutput(ns("results_ui")))),
+    
+    shinydashboard::tabItem(tabName = ns("audit"), shiny::fluidRow(DT::dataTableOutput(ns("audit_ui"))))
   )
 }
 
@@ -42,10 +44,12 @@
     reactive_analyses <- shiny::reactiveVal(NULL)
     reactive_workflow <- shiny::reactiveVal(NULL)
     reactive_results <- shiny::reactiveVal(NULL)
+    reactive_audit <- shiny::reactiveVal(NULL)
     reactive_saved_headers <- shiny::reactiveVal(NULL)
     reactive_saved_analyses <- shiny::reactiveVal(NULL)
     reactive_saved_workflow <- shiny::reactiveVal(NULL)
     reactive_saved_results <- shiny::reactiveVal(NULL)
+    reactive_audit_saved <- shiny::reactiveVal(NULL)
     
     ## obs Engine Save File -----
     shiny::observeEvent(reactive_engine_save_file(), {
@@ -86,10 +90,12 @@
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
         reactive_results(engine$results)
+        reactive_audit(engine$audit_trail)
         reactive_saved_headers(engine$headers)
         reactive_saved_analyses(engine$analyses)
         reactive_saved_workflow(engine$workflow)
         reactive_saved_results(engine$results)
+        reactive_audit_saved(engine$audit_trail)
         reactive_clean_start(FALSE)
       }
     })
@@ -103,7 +109,8 @@
         identical(reactive_headers(), reactive_saved_headers()),
         identical(reactive_analyses(), reactive_saved_analyses()),
         identical(reactive_workflow(), reactive_saved_workflow()),
-        identical(reactive_results(), reactive_saved_results())
+        identical(reactive_results(), reactive_saved_results()),
+        identical(reactive_audit(), reactive_audit_saved())
       )
       if (!equal_history && !has_unsaved_changes) {
         reactive_warnings(.app_util_add_notifications(reactive_warnings(), "unsaved_changes", "Unsaved changes in the engine!"))
@@ -146,10 +153,12 @@
       reactive_analyses(engine$analyses)
       reactive_workflow(engine$workflow)
       reactive_results(engine$results)
+      reactive_audit(engine$audit_trail)
       reactive_saved_headers(engine$headers)
       reactive_saved_analyses(engine$analyses)
       reactive_saved_workflow(engine$workflow)
       reactive_saved_results(engine$results)
+      reactive_audit_saved(engine$audit_trail)
     })
     
     ## event Save Engine File -----
@@ -168,11 +177,13 @@
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
         reactive_results(engine$results)
+        reactive_audit(engine$audit_trail)
         reactive_engine_save_file(engine$file$path)
         reactive_saved_headers(engine$headers)
         reactive_saved_analyses(engine$analyses)
         reactive_saved_workflow(engine$workflow)
         reactive_saved_results(engine$results)
+        reactive_audit_saved(engine$audit_trail)
       }
     })
     
@@ -193,10 +204,12 @@
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
         reactive_results(engine$results)
+        reactive_audit(engine$audit_trail)
         reactive_saved_headers(engine$headers)
         reactive_saved_analyses(engine$analyses)
         reactive_saved_workflow(engine$workflow)
         reactive_saved_results(engine$results)
+        reactive_audit_saved(engine$audit_trail)
       } else {
         engine$load(reactive_engine_save_file())
         reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
@@ -204,10 +217,12 @@
         reactive_analyses(engine$analyses)
         reactive_workflow(engine$workflow)
         reactive_results(engine$results)
+        reactive_audit(engine$audit_trail)
         reactive_saved_headers(engine$headers)
         reactive_saved_analyses(engine$analyses)
         reactive_saved_workflow(engine$workflow)
         reactive_saved_results(engine$results)
+        reactive_audit_saved(engine$audit_trail)
       }
     })
     
@@ -280,11 +295,24 @@
     # _Workflow -----
     output$workflow_ui <- shiny::renderUI({
       engine_type <- reactive_engine_type()
+      
       if (engine_type %in% "CoreEngine") {
         shiny::showNotification("Workflow not implemented for CoreEngine", duration = 5, type = "warning")
         return(htmltools::div(" "))
       }
-      .mod_WorkflowAssembler_workflow_Server("workflow", ns, engine, engine_type, reactive_analyses, reactive_workflow, reactive_saved_workflow, reactive_results, reactive_warnings, reactive_volumes)
+      
+      .mod_WorkflowAssembler_workflow_Server(
+        "workflow", ns,
+        engine, engine_type,
+        reactive_analyses,
+        reactive_workflow,
+        reactive_saved_workflow,
+        reactive_results,
+        reactive_audit,
+        reactive_warnings,
+        reactive_volumes
+      )
+      
       .mod_WorkflowAssembler_workflow_UI("workflow", ns)
     })
     
@@ -300,38 +328,67 @@
       
       if (length(res) > 0) {
         
-        res_class <- vapply(res, is, "")
+        result_methods <- capture.output(.mod_WorkflowAssembler_Result_Server)
         
-        htmltools::div(
-          htmltools::h4("Results"),
-          htmltools::tagList(
-            lapply(seq_len(length(res_class)), function(x) {
-              htmltools::div(paste0(" ", x, ": ", res_class[x]))
-            })
-          )
-        )
+        tab_list <- list()
+        
+        for (i in seq_along(res)) {
+          
+          has_result_method <- any(vapply(result_methods, function(z) grepl(class(res[[1]])[1], z), FALSE))
+          
+          if (has_result_method) {
+            
+            .mod_WorkflowAssembler_Result_Server(res[[i]], paste0("tab_", names(res)[i]), ns, reactive_analyses, reactive_volumes)
+            
+            tab_list[[i]] <- shiny::tabPanel(
+              title = class(res[[i]])[1], 
+              .mod_WorkflowAssembler_Result_UI(res[[i]], paste0("tab_", names(res)[i]), ns)
+            )
+          } else {
+            shiny::showNotification(paste("No results method for", class(res[[i]]), "!"), duration = 5, type = "warning")
+            tab_list[[i]] <- shiny::tabPanel(
+              title = class(res[[i]])[1],
+              htmltools::div(paste0(" ", i, ": ", class(res[[i]])[1]))
+            )
+          }
+        }
+        
+        do.call(shinydashboard::tabBox, c(list(width = 12), tab_list))
+        
       } else {
         htmltools::div(htmltools::h4("No results found!"))
       }
-      
-      # .mod_WorkflowAssembler_Results_Server("results", ns, reactive_results)
-      # .mod_WorkflowAssembler_Results_UI("results", ns)
     })
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # _Audit -----
+    output$audit_ui <- DT::renderDT({
+      audit_trail <- reactive_audit()
+      if (length(audit_trail) > 0) {
+        audit_trail <- as.data.frame(audit_trail)
+        audit_trail$value <- gsub("\n", "<br>", audit_trail$value)
+        DT::datatable(
+          audit_trail,
+          filter = "top",
+          selection = list(mode = "single", selected = 1, target = "row"),
+          options = list(
+            pageLength = 15,
+            columnDefs = list(
+              list(
+                targets = which(names(audit_trail) == "value"),
+                createdCell = DT::JS(
+                  "function(td, cellData, rowData, row, col) {",
+                  "  td.style.fontFamily = 'Courier, monospace';",
+                  "  td.style.whiteSpace = 'pre';",
+                  "}"
+                )
+              )
+            )
+          ),
+          escape = FALSE
+        )
+      } else {
+        DT::datatable(data.table::data.table())
+      }
+    })
   })
 }

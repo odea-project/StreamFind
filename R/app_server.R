@@ -108,7 +108,8 @@ app_server <- function(input, output, session) {
         shinydashboard::menuItem("Analyses", tabName = "WorkflowAssembler-analyses", icon = NULL),
         shinydashboard::menuItem("Explorer", tabName = "WorkflowAssembler-explorer", icon = NULL),
         shinydashboard::menuItem("Workflow", tabName = "WorkflowAssembler-workflow", icon = NULL),
-        shinydashboard::menuItem("Results", tabName = "WorkflowAssembler-results", icon = NULL)
+        shinydashboard::menuItem("Results", tabName = "WorkflowAssembler-results", icon = NULL),
+        shinydashboard::menuItem("Audit Trail", tabName = "WorkflowAssembler-audit", icon = NULL)
       )
     } else {
       shinydashboard::sidebarMenu(shiny::actionButton("restart_app", "Restart", width = "90%"))

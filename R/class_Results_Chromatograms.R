@@ -64,3 +64,22 @@ Chromatograms <- S7::new_class("Chromatograms", package = "StreamFind", parent =
     NULL
   }
 )
+
+#' @export
+#' @noRd
+S7::method(show, Chromatograms) <- function(x) {
+  if (length(x@chromatograms) > 0) {
+    cat("Number chromatograms: ", length(x@chromatograms), "\n")
+    cat("Averaged: ", x@is_averaged, "\n")
+    if (x@has_peaks) {
+      cat("Number peaks: ", vapply(x@peaks, nrow, 0), "\n")
+    } else {
+      cat("Number peaks: ", 0, "\n")
+    }
+    if (length(x@calibration_model) > 0) {
+      cat("Calibration model: ", class(x@calibration_model), "\n")
+    }
+  } else {
+    cat("Number chromatograms: ", 0, "\n")
+  }
+}

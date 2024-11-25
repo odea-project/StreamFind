@@ -4049,8 +4049,6 @@ sc::MS_TARGETS_SPECTRA sc::MS_FILE::get_spectra_targets(const sc::MS_TARGETS &ta
     }
   }
 
-  // make int vector of indexes for sorting the _out vector by mz_out, then rt_out, then mobility_out and then id_out
-
   int number_spectra_targets_out = id_out.size();
 
   std::vector<int> idx_sort(number_spectra_targets_out);

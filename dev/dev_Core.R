@@ -29,16 +29,22 @@ dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
 #path <- "E:/example_ms_files"
-path <- "C:/Users/apoli/Documents/example_ms_files"
+path <- "C:/Users/apoli/Documents/example_files"
 ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
-clear_cache("all")
-ms <- MassSpecEngine$new(analyses = ms_files_complete[c(1, 4)])
-ms$analyses$replicates <- c("centroid", "profile")
-ms$plot_spectra_3d(mass = dbsus[15, ], ppm = 60, sec = 120, colorBy = "replicates")
+# clear_cache("all")
+# ms <- MassSpecEngine$new(analyses = ms_files_complete[c(1, 4)])
+# ms$analyses$replicates <- c("centroid", "profile")
+# ms$plot_spectra_3d(mass = dbsus[15, ], ppm = 60, sec = 120, colorBy = "replicates")
 
 # NTS workflow -----
 ms <- MassSpecEngine$new(analyses = ms_files_df)
+
+show(ms$audit_trail)
+
+as.data.frame(ms$audit_trail)
+
+
 ms$run(MassSpecSettings_FindFeatures_openms())
 ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
 ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
@@ -820,8 +826,15 @@ dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
 ## CoreEngine -----
-core_file = paste0(getwd(), "/core.sqlite")
+core_file = paste0(getwd(), "/core.rds")
+
 core <- CoreEngine$new()
+
+
+show(core$audit_trail)
+
+as.data.frame(core$audit_trail)
+
 core$save(core_file)
 core$load(core_file)
 core <- CoreEngine$new(file = core_file)

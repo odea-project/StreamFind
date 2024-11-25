@@ -81,11 +81,10 @@
       filetypes <- unlist(strsplit(filetypes, "[|]"))
       shinyFiles::shinyFileChoose(input, "add_analyses_button", roots = reactive_volumes(), defaultRoot = "wd", session = session, filetypes = filetypes)
       shinyFiles::shinyFileChoose(input, "upload_analyses_info", roots = reactive_volumes(), defaultRoot = "wd", session = session, filetypes = "csv")
-
       if (length(reactive_analyses()) > 0) {
         htmltools::div(
           style = "margin-bottom: 20px;",
-          shinyFiles::shinyFilesButton(ns(ns2("add_analyses_button")), paste0("Add Analyses (", reactive_analyses()@possible_formats, ")"), paste0("Select Analyses (", reactive_analyses()@possible_formats, ")"), multiple = TRUE, style = "width: 200px;"),
+          shinyFiles::shinyFilesButton(ns(ns2("add_analyses_button")), paste0("Add Analyses (", paste(reactive_analyses()@possible_formats, collapse = "|"), ")"), paste0("Select Analyses (", paste(reactive_analyses()@possible_formats, collapse = "|"), ")"), multiple = TRUE, style = "width: 200px;"),
           # shinyFiles::shinyFilesButton(ns(ns2("upload_analyses_info")), "Upload Analyses (.csv)", "Select Analyses (.csv)", multiple = FALSE, style = "width: 200px;"),
           shiny::actionButton(ns(ns2("remove_selected_analyses")), label = "Delete Selected Analyses", width = 200),
           shiny::actionButton(ns(ns2("remove_all_analyses")), label = "Delete All Analyses", width = 200)
@@ -93,7 +92,7 @@
       } else {
         htmltools::div(
           style = "margin-bottom: 20px;",
-          shinyFiles::shinyFilesButton(ns(ns2("add_analyses_button")), paste0("Add Analyses (", reactive_analyses()@possible_formats, ")"), paste0("Select Analyses (", reactive_analyses()@possible_formats, ")"), multiple = TRUE, style = "width: 200px;")
+          shinyFiles::shinyFilesButton(ns(ns2("add_analyses_button")), paste0("Add Analyses (", paste(reactive_analyses()@possible_formats, collapse = "|"), ")"), paste0("Select Analyses (", paste(reactive_analyses()@possible_formats, collapse = "|"), ")"), multiple = TRUE, style = "width: 200px;")
           # shinyFiles::shinyFilesButton(ns(ns2("upload_analyses_info")), "Upload Analyses (.csv)", "Select Analyses (.csv)", multiple = FALSE, style = "width: 200px;")
         )
       }

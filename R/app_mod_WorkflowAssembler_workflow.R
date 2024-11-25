@@ -99,6 +99,7 @@
                                                    reactive_workflow,
                                                    reactive_saved_workflow,
                                                    reactive_results,
+                                                   reactive_audit,
                                                    reactive_warnings,
                                                    reactive_volumes) {
   shiny::moduleServer(id, function(input, output, session) {
@@ -351,6 +352,7 @@
           reactive_analyses(engine$analyses)
           reactive_workflow(engine$workflow)
           reactive_results(engine$results)
+          reactive_audit(engine$audit_trail)
           shiny::removeModal()
         },
         error = function(e) {
