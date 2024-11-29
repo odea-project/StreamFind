@@ -95,6 +95,14 @@ StatisticModel <- S7::new_class("StatisticModel",
 
 #' @export
 #' @noRd
+S7::method(show, StatisticModel) <- function(x) {
+  cat("Model: ", x@name, "\n")
+  cat("Has test :", x@has_test, "\n")
+  cat("Has prediction :", x@has_prediction)
+}
+
+#' @export
+#' @noRd
 S7::method(plot_explained_variance, StatisticModel) <- function(x,
                                                                 interactive = TRUE,
                                                                 xLab = NULL,

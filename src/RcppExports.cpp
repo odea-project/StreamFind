@@ -10,6 +10,35 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// rcpp_fill_bin_spectra
+std::vector<double> rcpp_fill_bin_spectra(Rcpp::DataFrame spectra, Rcpp::DataFrame bin_mat, Rcpp::List bins, double overlap, std::string summaryFunction);
+RcppExport SEXP _StreamFind_rcpp_fill_bin_spectra(SEXP spectraSEXP, SEXP bin_matSEXP, SEXP binsSEXP, SEXP overlapSEXP, SEXP summaryFunctionSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type bin_mat(bin_matSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type bins(binsSEXP);
+    Rcpp::traits::input_parameter< double >::type overlap(overlapSEXP);
+    Rcpp::traits::input_parameter< std::string >::type summaryFunction(summaryFunctionSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_fill_bin_spectra(spectra, bin_mat, bins, overlap, summaryFunction));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_ms_cluster_spectra
+Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra, double mzClust, double presence, bool verbose);
+RcppExport SEXP _StreamFind_rcpp_ms_cluster_spectra(SEXP spectraSEXP, SEXP mzClustSEXP, SEXP presenceSEXP, SEXP verboseSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
+    Rcpp::traits::input_parameter< double >::type mzClust(mzClustSEXP);
+    Rcpp::traits::input_parameter< double >::type presence(presenceSEXP);
+    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_cluster_spectra(spectra, mzClust, presence, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_parse_ms_analysis
 Rcpp::List rcpp_parse_ms_analysis(std::string file_path);
 RcppExport SEXP _StreamFind_rcpp_parse_ms_analysis(SEXP file_pathSEXP) {
@@ -67,6 +96,21 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type analysis(analysisSEXP);
     Rcpp::traits::input_parameter< std::vector<int> >::type idx(idxSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_parse_ms_chromatograms(analysis, idx));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_ms_annotate_features
+Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list, double rtWindowAlignment, int maxIsotopes, int maxCharge, int maxGaps);
+RcppExport SEXP _StreamFind_rcpp_ms_annotate_features(SEXP feature_listSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP maxGapsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< double >::type rtWindowAlignment(rtWindowAlignmentSEXP);
+    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
+    Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
+    Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotate_features(feature_list, rtWindowAlignment, maxIsotopes, maxCharge, maxGaps));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -159,71 +203,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_fill_bin_spectra
-std::vector<double> rcpp_fill_bin_spectra(Rcpp::DataFrame spectra, Rcpp::DataFrame bin_mat, Rcpp::List bins, double overlap, std::string summaryFunction);
-RcppExport SEXP _StreamFind_rcpp_fill_bin_spectra(SEXP spectraSEXP, SEXP bin_matSEXP, SEXP binsSEXP, SEXP overlapSEXP, SEXP summaryFunctionSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type bin_mat(bin_matSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type bins(binsSEXP);
-    Rcpp::traits::input_parameter< double >::type overlap(overlapSEXP);
-    Rcpp::traits::input_parameter< std::string >::type summaryFunction(summaryFunctionSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_fill_bin_spectra(spectra, bin_mat, bins, overlap, summaryFunction));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_annotate_features
-Rcpp::List rcpp_ms_annotate_features(Rcpp::List features, double rtWindowAlignment, int maxIsotopes, int maxCharge, int maxGaps);
-RcppExport SEXP _StreamFind_rcpp_ms_annotate_features(SEXP featuresSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP maxGapsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type features(featuresSEXP);
-    Rcpp::traits::input_parameter< double >::type rtWindowAlignment(rtWindowAlignmentSEXP);
-    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
-    Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
-    Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotate_features(features, rtWindowAlignment, maxIsotopes, maxCharge, maxGaps));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_annotation_isotopes
-Rcpp::List rcpp_ms_annotation_isotopes(Rcpp::DataFrame features, int maxIsotopes, Rcpp::CharacterVector elements, std::string mode, int maxCharge, double rtWindowAlignment, int maxGaps, double maxCarbons, double maxHetero, double maxHalogens, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_annotation_isotopes(SEXP featuresSEXP, SEXP maxIsotopesSEXP, SEXP elementsSEXP, SEXP modeSEXP, SEXP maxChargeSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxGapsSEXP, SEXP maxCarbonsSEXP, SEXP maxHeteroSEXP, SEXP maxHalogensSEXP, SEXP verboseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
-    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type elements(elementsSEXP);
-    Rcpp::traits::input_parameter< std::string >::type mode(modeSEXP);
-    Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
-    Rcpp::traits::input_parameter< double >::type rtWindowAlignment(rtWindowAlignmentSEXP);
-    Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
-    Rcpp::traits::input_parameter< double >::type maxCarbons(maxCarbonsSEXP);
-    Rcpp::traits::input_parameter< double >::type maxHetero(maxHeteroSEXP);
-    Rcpp::traits::input_parameter< double >::type maxHalogens(maxHalogensSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotation_isotopes(features, maxIsotopes, elements, mode, maxCharge, rtWindowAlignment, maxGaps, maxCarbons, maxHetero, maxHalogens, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_cluster_spectra
-Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra, double mzClust, double presence, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_cluster_spectra(SEXP spectraSEXP, SEXP mzClustSEXP, SEXP presenceSEXP, SEXP verboseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type spectra(spectraSEXP);
-    Rcpp::traits::input_parameter< double >::type mzClust(mzClustSEXP);
-    Rcpp::traits::input_parameter< double >::type presence(presenceSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_cluster_spectra(spectra, mzClust, presence, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_ms_group_features
 Rcpp::DataFrame rcpp_ms_group_features(Rcpp::DataFrame features, float rt_dev, bool verbose);
 RcppExport SEXP _StreamFind_rcpp_ms_group_features(SEXP featuresSEXP, SEXP rt_devSEXP, SEXP verboseSEXP) {
@@ -296,20 +275,19 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
+    {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},
     {"_StreamFind_rcpp_parse_ms_spectra_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_headers, 1},
     {"_StreamFind_rcpp_parse_ms_chromatograms_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers, 1},
     {"_StreamFind_rcpp_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra, 5},
     {"_StreamFind_rcpp_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms, 2},
+    {"_StreamFind_rcpp_ms_annotate_features", (DL_FUNC) &_StreamFind_rcpp_ms_annotate_features, 5},
     {"_StreamFind_rcpp_ms_load_features_eic", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_eic, 6},
     {"_StreamFind_rcpp_ms_load_features_ms1", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms1, 8},
     {"_StreamFind_rcpp_ms_load_features_ms2", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms2, 7},
     {"_StreamFind_rcpp_ms_fill_features", (DL_FUNC) &_StreamFind_rcpp_ms_fill_features, 10},
     {"_StreamFind_rcpp_ms_calculate_features_quality", (DL_FUNC) &_StreamFind_rcpp_ms_calculate_features_quality, 8},
-    {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
-    {"_StreamFind_rcpp_ms_annotate_features", (DL_FUNC) &_StreamFind_rcpp_ms_annotate_features, 5},
-    {"_StreamFind_rcpp_ms_annotation_isotopes", (DL_FUNC) &_StreamFind_rcpp_ms_annotation_isotopes, 11},
-    {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_ms_group_features", (DL_FUNC) &_StreamFind_rcpp_ms_group_features, 3},
     {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
     {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},

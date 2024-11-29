@@ -1,49 +1,48 @@
 #' @export
 #' @noRd
-NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
-  
+NTS <- S7::new_class("NTS",
+  package = "StreamFind", parent = Results,
   properties = list(
-    
+
     ## __features_properties -----
     features_properties = S7::new_property(S7::class_character),
-    
+
     ## __features -----
     features = S7::new_property(S7::as_class(methods::getClassDef("workflowStep", package = "patRoon"))),
-    
+
     ## __filtered -----
     filtered = S7::new_property(S7::class_list, default = list()),
-    
+
     ## __mspl -----
     mspl = S7::new_property(S7::as_class(methods::getClassDef("workflowStep", package = "patRoon"))),
-    
+
     ## __formulas -----
     formulas = S7::new_property(S7::as_class(methods::getClassDef("formulas", package = "patRoon"))),
-    
+
     ## __compounds -----
     compounds = S7::new_property(S7::as_class(methods::getClassDef("compounds", package = "patRoon"))),
-    
+
     ## __analysisInfo -----
     analysisInfo = S7::new_property(S7::class_data.frame, getter = function(self) self@features@analysisInfo),
-    
+
     ## __number_analyses -----
     number_analyses = S7::new_property(S7::class_integer, getter = function(self) length(self@features@analysisInfo$analysis)),
-    
+
     ## __number_features -----
     number_features = S7::new_property(S7::class_integer, getter = function(self) length(self@features)),
-    
+
     ## __feature_list -----
     feature_list = S7::new_property(S7::class_list,
-      
       getter = function(self) {
         if ("featureGroups" %in% is(self@features)) {
           pat <- self@features@features
         } else {
           pat <- self@features
         }
-        
+
         f_list <- pat@features
         filtered_list <- self$filtered
-        
+
         f_list <- Map(
           function(x, y) {
             if (nrow(x) > 0) x <- x[!(x$ID %in% y$ID), ]
@@ -52,7 +51,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
           },
           filtered_list, f_list
         )
-        
+
         f_list <- lapply(f_list, function(x) {
           z <- data.table::copy(x)
           data.table::setnames(z, "ID", "feature", skip_absent = TRUE)
@@ -60,7 +59,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
           data.table::setnames(z, "retmin", "rtmin", skip_absent = TRUE)
           data.table::setnames(z, "retmax", "rtmax", skip_absent = TRUE)
         })
-        
+
         if ("featuresSet" %in% is(pat)) {
           for (x in names(f_list)) {
             adduct_val <- f_list[[x]]$polarity * 1.007276
@@ -69,10 +68,9 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
             f_list[[x]]$mzmax <- f_list[[x]]$mzmax + adduct_val
           }
         }
-        
+
         f_list
       },
-      
       setter = function(self, value) {
         if (!is.list(value)) {
           warning("The argument value must be a list!")
@@ -92,7 +90,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
           data.table::setnames(x, "rtmin", "retmin", skip_absent = TRUE)
           data.table::setnames(x, "rtmax", "retmax", skip_absent = TRUE)
         })
-        
+
         if ("features" %in% is(self$features)) {
           if (identical(patRoon::analyses(self@features), names(value))) {
             if ("featuresSet" %in% is(self$features)) {
@@ -145,25 +143,29 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
         }
       }
     ),
-    
+
     ## __has_features -----
     has_features = S7::new_property(S7::class_logical, getter = function(self) self@number_features > 0),
-    
+
     ## __has_groups -----
     has_groups = S7::new_property(S7::class_logical, getter = function(self) {
       if ("featureGroups" %in% is(self@features)) {
-        if (length(self@features) > 0) return(TRUE)
+        if (length(self@features) > 0) {
+          return(TRUE)
+        }
         return(FALSE)
       }
       FALSE
     }),
-    
+
     ## __group_names -----
     group_names = S7::new_property(S7::class_character, getter = function(self) {
-      if (self@has_groups) return(names(self@features))
+      if (self@has_groups) {
+        return(names(self@features))
+      }
       NA_character_
     }),
-    
+
     ## __has_features_ms1 -----
     has_features_ms1 = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
@@ -177,7 +179,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       }
       FALSE
     }),
-    
+
     ## __has_features_ms2 -----
     has_features_ms2 = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
@@ -191,7 +193,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       }
       FALSE
     }),
-    
+
     ## __has_features_eic -----
     has_features_eic = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
@@ -205,7 +207,7 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       }
       FALSE
     }),
-    
+
     ## __has_features_suspects -----
     has_features_suspects = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
@@ -220,49 +222,49 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       FALSE
     })
   ),
-  
   constructor = function(
-    features = new("featuresOpenMS"),
-    filtered = list(),
-    mspl = new("MSPeakLists", algorithm = NA_character_),
-    formulas = new("formulas", algorithm = NA_character_),
-    compounds = new("compounds", algorithm = NA_character_)) {
-    
+      features = new("featuresOpenMS"),
+      filtered = list(),
+      mspl = new("MSPeakLists", algorithm = NA_character_),
+      formulas = new("formulas", algorithm = NA_character_),
+      compounds = new("compounds", algorithm = NA_character_)) {
     if (!requireNamespace("patRoon", quietly = TRUE)) {
       warning("patRoon package not found! Install it for finding features.")
       return(NULL)
     }
-    
+
     if (!("features" %in% is(features) || "featureGroups" %in% is(features))) {
       warning("The argument features must be of class features or featureGroups from patRoon")
       return(NULL)
     }
-    
+
     if (("featuresSet" %in% is(features) || "featureGroupsSet" %in% is(features))) {
-      mspl = new("MSPeakListsSet", algorithm = NA_character_)
-      formulas = new("formulasSet", algorithm = NA_character_)
-      compounds = new("compoundsSet", algorithm = NA_character_)
+      mspl <- new("MSPeakListsSet", algorithm = NA_character_)
+      formulas <- new("formulasSet", algorithm = NA_character_)
+      compounds <- new("compoundsSet", algorithm = NA_character_)
     }
-    
+
     features_properties <- c(
       "ID", "ret", "mz", "area", "intensity", "retmin", "retmax", "mzmin", "mzmax", "mass", "polarity", "adduct",
-      "filtered", "filled", "quality", "isotope", "istd", "ms1", "ms2", "eic", "suspects"
+      "filtered", "filled", "quality", "annotation", "istd", "ms1", "ms2", "eic", "suspects"
     )
-    
+
     if ("features" %in% is(features)) {
       features@features <- lapply(features@features, function(x) {
-        if (nrow(x) > 0) {
+        n_features <- nrow(x)
+        if (n_features > 0) {
           if (!"polarity" %in% colnames(x)) warning("Polarity column not found in features but required!")
           if (!"mass" %in% colnames(x)) warning("Mass column not found in features but required!")
           if (!"filtered" %in% colnames(x)) x$filtered <- FALSE
+          if (!"filter" %in% colnames(x)) x$filtered <- NA_character_
           if (!"filled" %in% colnames(x)) x$filled <- FALSE
-          if (!"quality" %in% colnames(x)) x$quality <- list(rep(list(), nrow(x)))
-          if (!"isotope" %in% colnames(x)) x$isotope <- list(rep(list(), nrow(x)))
-          if (!"eic" %in% colnames(x)) x$eic <- list(rep(list(), nrow(x)))
-          if (!"ms1" %in% colnames(x)) x$ms1 <- list(rep(list(), nrow(x)))
-          if (!"ms2" %in% colnames(x)) x$ms2 <- list(rep(list(), nrow(x)))
-          if (!"istd" %in% colnames(x)) x$istd <- list(rep(list(), nrow(x)))
-          if (!"suspects" %in% colnames(x)) x$suspects <- list(rep(list(), nrow(x)))
+          if (!"quality" %in% colnames(x)) x$quality <- list(rep(data.table::data.table(), n_features))
+          if (!"annotation" %in% colnames(x)) x$annotation <- list(rep(data.table::data.table(), n_features))
+          if (!"eic" %in% colnames(x)) x$eic <- list(rep(data.table::data.table(), n_features))
+          if (!"ms1" %in% colnames(x)) x$ms1 <- list(rep(data.table::data.table(), n_features))
+          if (!"ms2" %in% colnames(x)) x$ms2 <- list(rep(data.table::data.table(), n_features))
+          if (!"istd" %in% colnames(x)) x$istd <- list(rep(data.table::data.table(), n_features))
+          if (!"suspects" %in% colnames(x)) x$suspects <- list(rep(data.table::data.table(), n_features))
         }
         x
       })
@@ -272,19 +274,20 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
           if (!"polarity" %in% colnames(x)) warning("Polarity column not found in features but required!")
           if (!"mass" %in% colnames(x)) warning("Mass column not found in features but required!")
           if (!"filtered" %in% colnames(x)) x$filtered <- FALSE
+          if (!"filter" %in% colnames(x)) x$filtered <- NA_character_
           if (!"filled" %in% colnames(x)) x$filled <- FALSE
-          if (!"quality" %in% colnames(x)) x$quality <- list(rep(list(), nrow(x)))
-          if (!"isotope" %in% colnames(x)) x$isotope <- list(rep(list(), nrow(x)))
-          if (!"eic" %in% colnames(x)) x$eic <- list(rep(list(), nrow(x)))
-          if (!"ms1" %in% colnames(x)) x$ms1 <- list(rep(list(), nrow(x)))
-          if (!"ms2" %in% colnames(x)) x$ms2 <- list(rep(list(), nrow(x)))
-          if (!"istd" %in% colnames(x)) x$istd <- list(rep(list(), nrow(x)))
-          if (!"suspects" %in% colnames(x)) x$suspects <- list(rep(list(), nrow(x)))
+          if (!"quality" %in% colnames(x)) x$quality <- list(rep(data.table::data.table(), nrow(x)))
+          if (!"annotation" %in% colnames(x)) x$annotation <- list(rep(data.table::data.table(), nrow(x)))
+          if (!"eic" %in% colnames(x)) x$eic <- list(rep(data.table::data.table(), nrow(x)))
+          if (!"ms1" %in% colnames(x)) x$ms1 <- list(rep(data.table::data.table(), nrow(x)))
+          if (!"ms2" %in% colnames(x)) x$ms2 <- list(rep(data.table::data.table(), nrow(x)))
+          if (!"istd" %in% colnames(x)) x$istd <- list(rep(data.table::data.table(), nrow(x)))
+          if (!"suspects" %in% colnames(x)) x$suspects <- list(rep(data.table::data.table(), nrow(x)))
         }
         x
       })
     }
-    
+
     S7::new_object(
       Results(),
       name = "nts",
@@ -298,7 +301,6 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       compounds = compounds
     )
   },
-  
   validator = function(self) {
     valid <- all(
       checkmate::test_true(self@name == "nts"),
@@ -313,7 +315,9 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
       # if (length(self@formulas) > 0) checkmate::test_true(all(patRoon::analyses(self@formulas) %in% patRoon::analyses(self@features))),
       # if (length(self@compounds) > 0) checkmate::test_true(all(names(self@compounds@groupAnnotations) %in% self@group_names))
     )
-    if (!valid) return(FALSE)
+    if (!valid) {
+      return(FALSE)
+    }
     NULL
   }
 )
@@ -321,7 +325,6 @@ NTS <- S7::new_class("NTS", package = "StreamFind", parent = Results,
 #' @export
 #' @noRd
 S7::method(show, NTS) <- function(x) {
-  
   cat("\n")
   cat(is(x))
   cat("\n")
@@ -334,24 +337,24 @@ S7::method(show, NTS) <- function(x) {
   cat("\n")
   print(x@features)
   cat("\n")
-  
+
   cat("\n")
   cat("  Filtered features: ", "\n")
   print(vapply(x@filtered, function(z) nrow(z), 0))
   cat("\n")
-  
+
   if (length(x@mspl) > 0) {
     cat("\n")
     print(x@mspl)
     cat("\n")
   }
-  
+
   if (length(x@formulas) > 0) {
     cat("\n")
     print(x@formulas)
     cat("\n")
   }
-  
+
   if (length(x@compounds) > 0) {
     cat("\n")
     print(x@compounds)
@@ -374,7 +377,7 @@ S7::method(`[`, NTS) <- function(x, i, j) {
     if (length(x@mspl) > 0) x@mspl <- x@mspl[i]
     if (length(x@formulas) > 0) {
       x@formulas <- x@formulas[x$group_names]
-      if ("featureFormulas" %in%  slotNames(x@formulas)) {
+      if ("featureFormulas" %in% slotNames(x@formulas)) {
         x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
       }
     }
@@ -392,7 +395,7 @@ S7::method(`[`, NTS) <- function(x, i, j) {
     if (length(x@mspl) > 0) x@mspl <- x@mspl[i, j]
     if (length(x@formulas) > 0) {
       x@formulas <- x@formulas[j]
-      if ("featureFormulas" %in%  slotNames(x@formulas)) {
+      if ("featureFormulas" %in% slotNames(x@formulas)) {
         x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
       }
     }
@@ -408,7 +411,7 @@ S7::method(`[[`, NTS) <- function(x, i) {
   x@filtered <- x@filtered[[i]]
   if (length(x@mspl) > 0) x@mspl <- x@mspl[[i]]
   if (length(x@formulas) > 0) {
-    if ("featureFormulas" %in%  slotNames(x@formulas)) {
+    if ("featureFormulas" %in% slotNames(x@formulas)) {
       x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
       x@formulas <- x@formulas[x$group_names]
     }
@@ -417,10 +420,84 @@ S7::method(`[[`, NTS) <- function(x, i) {
   return(x)
 }
 
+#' @export
+#' @noRd
+S7::method(report, NTS) <- function(x,
+                                    path = paste0(getwd(), "/report"),
+                                    filtered = FALSE,
+                                    settingsFile = system.file("report", "settings.yml", package = "patRoon"),
+                                    eicRtWindow = 30,
+                                    eicTopMost = 1,
+                                    eicTopMostByRGroup = TRUE,
+                                    eicOnlyPresent = TRUE,
+                                    eicMzExpWindow = 0.001,
+                                    adductPos = "[M+H]+",
+                                    adductNeg = "[M-H]-",
+                                    specSimMethod = "cosine",
+                                    specSimRemovePrecursor = FALSE,
+                                    specSimMzWeight = 0,
+                                    specSimIntWeight = 1,
+                                    specSimAbsMzDev = 0.005,
+                                    specSimRelMinIntensity = 0.05,
+                                    specSimMinPeaks = 1,
+                                    specSimShift = "none",
+                                    specSimCombineMethod = "mean",
+                                    clearPath = FALSE,
+                                    openReport = TRUE,
+                                    parallel = TRUE) {
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found!")
+    return(NULL)
+  }
+
+  if (!x$has_groups) {
+    warning("No feature groups found to report!")
+    return(NULL)
+  }
+
+  patRoon::report(
+    x$features,
+    x$mspl,
+    formulas = x$formulas,
+    compounds = x$compounds,
+    compsCluster = NULL,
+    components = NULL,
+    TPs = NULL,
+    settingsFile = settingsFile,
+    path = path,
+    EICParams = list(
+      rtWindow = eicRtWindow,
+      topMost = eicTopMost,
+      topMostByRGroup = eicTopMostByRGroup,
+      onlyPresent = eicOnlyPresent,
+      mzExpWindow = eicMzExpWindow,
+      setsAdductPos = adductPos,
+      setsAdductNeg = adductNeg
+    ),
+    specSimParams = list(
+      method = specSimMethod,
+      removePrecursor = specSimRemovePrecursor,
+      mzWeight = specSimMzWeight,
+      intWeight = specSimIntWeight,
+      absMzDev = specSimAbsMzDev,
+      relMinIntensity = specSimRelMinIntensity,
+      minPeaks = specSimMinPeaks,
+      shift = specSimShift,
+      setCombineMethod = specSimCombineMethod
+    ),
+    clearPath = clearPath,
+    openReport = openReport,
+    parallel = parallel,
+    overrideSettings = list()
+  )
+
+  message("\U2713 Report generated!")
+}
+
 # Utility functions -----
 
 #' @noRd
-.add_features_column = function(nts = NULL, name = NULL, data = NULL) {
+.add_features_column <- function(nts = NULL, name = NULL, data = NULL) {
   if (!is(nts, "StreamFind::NTS")) {
     warning("NTS object is not of class NTS! Not done.")
     return(nts)

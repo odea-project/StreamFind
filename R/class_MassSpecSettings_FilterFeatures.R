@@ -8,9 +8,11 @@
 #' @description Settings for filtering of features and feature groups.
 #'
 #' @param minSnRatio Numeric (length 1) with the minimum signal-to-noise ratio.
-#' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering annotated isotopes (only prevails the monoisotopic features).
+#' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering annotated isotopes 
+#' (only prevails the monoisotopic features).
 #' @param excludeAdducts Logical (length 1) with `TRUE` for filtering annotated adducts.
 #' @param minIntensity Numeric (length 1) with the minimum intensity threshold.
+#' @param onlyWithMS2 Logical (length 1) with `TRUE` for filtering features without MS2 spectra.
 #'
 #' @return A `MassSpecSettings_FilterFeatures_StreamFind` object.
 #'
@@ -23,7 +25,8 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
   constructor = function(minSnRatio = NA_real_,
                          excludeIsotopes = FALSE,
                          excludeAdducts = FALSE,
-                         minIntensity = NA_real_) {
+                         minIntensity = NA_real_,
+                         onlyWithMS2 = FALSE) {
     
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
@@ -33,7 +36,8 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
         minSnRatio = as.numeric(minSnRatio),
         excludeIsotopes = as.logical(excludeIsotopes),
         excludeAdducts = as.logical(excludeAdducts),
-        minIntensity = as.numeric(minIntensity)
+        minIntensity = as.numeric(minIntensity),
+        onlyWithMS2 = as.logical(onlyWithMS2)
       ),
       number_permitted = Inf,
       version = as.character(packageVersion("StreamFind")),
@@ -53,6 +57,7 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
     checkmate::assert_logical(self@parameters$excludeIsotopes, len = 1)
     checkmate::assert_logical(self@parameters$excludeAdducts, len = 1)
     checkmate::assert_numeric(self@parameters$minIntensity, len = 1)
+    checkmate::assert_logical(self@parameters$onlyWithMS2, len = 1)
     NULL
   }
 )
@@ -91,6 +96,8 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     
     if (engine$nts$has_features && is.logical(value) && length(value) == 1) {
       
+      if (!value) return()
+      
       features <- engine$nts$feature_list
       
       features <- lapply(features, function(x) {
@@ -119,6 +126,8 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   .filter_excludeAdducts = function(value = NULL, engine) {
     
     if (engine$nts$has_features && is.logical(value) && length(value) == 1) {
+      
+      if (!value) return()
       
       features <- engine$nts$feature_list
       
@@ -207,6 +216,37 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
         
         engine$nts$feature_list <- features
       }
+    } else {
+      warning("There are no features in the MassSpecEngine!")
+    }
+  }
+  
+  .filter_onlyWithMS2 <- function(value = NULL, engine) {
+    
+    if (engine$nts$has_features && is.logical(value) && length(value) == 1) {
+      
+      if (!value) return()
+      
+      features <- engine$nts$feature_list
+      
+      features <- lapply(features, function(x) { 
+        if ("ms2" %in% colnames(x)) {
+          sel <- vapply(x$ms2, function(z) {
+            if (length(z) == 0) {
+              TRUE
+            } else if (nrow(z) == 0) {
+              TRUE
+            } else {
+              FALSE
+            }
+          }, FALSE)
+          x$filtered[sel] <- TRUE
+        }
+        x
+      })
+      
+      engine$nts$feature_list <- features
+      
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
@@ -623,6 +663,9 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   #   }
   # }
   
+  # MARK: Switch Loop
+  # __Switch Loop ----
+  
   for (i in seq_len(length(filters))) {
     
     if (is.na(parameters[[filters[i]]]) || length(parameters[[filters[i]]]) == 0) next
@@ -640,7 +683,9 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
            
            excludeIsotopes = .filter_excludeIsotopes(parameters[[filters[i]]], engine),
            
-           excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine)
+           excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine),
+           
+           onlyWithMS2 = .filter_onlyWithMS2(parameters[[filters[i]]], engine)
            
            # rtFilter = private$.filter_rtFilter(parameters[[filters[i]]]),
            

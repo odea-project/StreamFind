@@ -76,8 +76,13 @@ S7::method(run, MassSpecSettings_CorrectSpectraBaseline_baseline_als) <- functio
     return(FALSE)
   }
   
-  baseline_method <- x$parameters$method
-  baseline_args <- x$parameters$args
+  baseline_method <- "als"
+  
+  baseline_args <- list(
+    lambda = x$parameters$lambda,
+    p = x$parameters$p,
+    maxit = x$parameters$maxit
+  )
   
   spec_list <- engine$spectra$spectra
   
@@ -96,7 +101,7 @@ S7::method(run, MassSpecSettings_CorrectSpectraBaseline_baseline_als) <- functio
           z
         })
         
-        x <- rbindlist(temp_x)
+        x <- data.table::rbindlist(temp_x)
         
       } else {
         baseline_data <- .baseline_correction(x$intensity, baseline_method, baseline_args)
@@ -158,15 +163,12 @@ MassSpecSettings_CorrectSpectraBaseline_airpls <- S7::new_class("MassSpecSetting
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_choice(self@engine, "MassSpec"),
-      checkmate::test_choice(self@method, "CorrectSpectraBaseline"),
-      checkmate::test_choice(self@algorithm, "airpls"),
-      checkmate::test_number(self@parameters$lambda),
-      checkmate::test_integer(as.integer(self@parameters$differences)),
-      checkmate::test_integer(as.integer(self@parameters$itermax))
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "CorrectSpectraBaseline")
+    checkmate::assert_choice(self@algorithm, "airpls")
+    checkmate::assert_number(self@parameters$lambda)
+    checkmate::assert_integer(as.integer(self@parameters$differences))
+    checkmate::assert_integer(as.integer(self@parameters$itermax))
     NULL
   }
 )

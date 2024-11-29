@@ -28,12 +28,145 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
-path <- "C:/Users/apoli/Documents/example_ms_files"
+#path <- "E:/example_ms_files"
+path <- "C:/Users/apoli/Documents/example_files"
 ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
-# NTS workflow -----
+# clear_cache("all")
+# ms <- MassSpecEngine$new(analyses = ms_files_complete[c(1, 4)])
+# ms$analyses$replicates <- c("centroid", "profile")
+# ms$plot_spectra_3d(mass = dbsus[15, ], ppm = 60, sec = 120, colorBy = "replicates")
 
-## MS Targets -----
+# NTS workflow -----
+ms <- MassSpecEngine$new(analyses = ms_files_df)
+
+show(ms$audit_trail)
+
+as.data.frame(ms$audit_trail)
+
+
+ms$run(MassSpecSettings_FindFeatures_openms())
+ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE, excludeAdducts = TRUE))
+ms$run(MassSpecSettings_GroupFeatures_openms())
+ms$run(MassSpecSettings_FilterFeatures_StreamFind(minIntensity = 5000))
+ms$run(
+  MassSpecSettings_FillFeatures_StreamFind(
+    withinReplicate = FALSE,
+    rtExpand = 2,
+    mzExpand = 0.0005,
+    minTracesIntensity = 1000,
+    minNumberTraces = 5,
+    baseCut = 0.2,
+    minSignalToNoiseRatio = 3,
+    minGaussianFit = 0.2
+  )
+)
+ms$run(
+  MassSpecSettings_CalculateFeaturesQuality_StreamFind(
+    filtered = FALSE,
+    rtExpand = 2,
+    mzExpand = 0.0005,
+    minTracesIntensity = 1000,
+    minNumberTraces = 6,
+    baseCut = 0
+  )
+)
+
+run(MassSpecSettings_CorrectMatrixSuppression_TiChri(), ms)
+
+get_features(ms$analyses, mass = dbis$mass[1])
+plot_groups_profile(ms$analyses, mass = dbis, correctSuppression = FALSE)
+
+ms$get_internal_standards(average = TRUE)
+
+
+
+library(reticulate)
+reticulate::virtualenv_starter()
+
+py_eval("1+1")
+
+sif_parser <- import("sif_parser")
+sif_parser$np_open()
+np_open()
+
+
+
+ms$nts <- ms$nts[, ms$get_groups(mass = dbsus)$group]
+
+
+fts <- ms$nts$feature_list
+
+# add an S3 class to the fts list
+class(fts) <- c("fts", class(fts))
+
+
+fts <- .convert_to_json(fts)
+write(fts, "fts.json")
+
+fts2 <- jsonlite::fromJSON(
+  "fts.json",
+  simplifyVector = TRUE,
+  simplifyDataFrame = FALSE,
+  simplifyMatrix = FALSE,
+  flatten = FALSE
+)
+
+as.data.table(fts2[[1]])
+
+fts[grepl("FL", fts$feature), ]
+
+clear_cache("all")
+clear_cache("calculate_quality")
+clear_cache("fill_features")
+
+ms$analyses@analyses[[1]]
+
+
+
+
+
+
+
+
+
+
+
+# PatRoon report -----
+ms <- MassSpecEngine$new()
+ms$load("ms.rds")
+ms$run_app()
+
+
+
+ms$get_features()$quality[1]
+ms$get_features()$annotation[1]
+
+
+
+
+
+# ms$run(MassSpecSettings_FindFeatures_openms())
+# ms$run(MassSpecSettings_GroupFeatures_openms())
+# ms$run(MassSpecSettings_FillFeatures_StreamFind())
+# ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+# ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
+# ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
+# ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
+# ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000))
+# ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
+# ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
+# ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
+# ms$run(MassSpecSettings_GenerateFormulas_genform())
+# ms$run(MassSpecSettings_GenerateCompounds_metfrag())
+# ms$save("ms.rds")
+# report(ms$nts)
+
+# MS Targets -----
 
 
 StreamFind::MassSpecTargets(
@@ -63,7 +196,7 @@ ms$run(MassSpecSettings_FillFeatures_StreamFind())
 ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5))
 ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
-ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
+ms$nts <- ms$nts[, ms$get_groups(mass = dbsus)$group]
 ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
 ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
 ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
@@ -259,21 +392,7 @@ map_features_intensity(ms$analyses, interactive = TRUE, colorBy = "replicates")
 
 
 
-ms$run(MassSpecSettings_GroupFeatures_openms())
-ms$run(MassSpecSettings_FillFeatures_StreamFind())
-# ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
-# ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
-# ms$run(MassSpecSettings_CalculateFeaturesQuality_StreamFind(minNumberTraces = 5))
-# ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE))
-# ms$run(MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000))
-# ms$nts <- ms$nts[ , ms$get_groups(mass = dbsus)$group]
-# ms$run(MassSpecSettings_LoadFeaturesMS1_StreamFind(filtered = FALSE))
-# ms$run(MassSpecSettings_LoadFeaturesMS2_StreamFind(filtered = FALSE))
-# ms$run(MassSpecSettings_LoadFeaturesEIC_StreamFind(filtered = FALSE))
-# ms$run(MassSpecSettings_LoadMSPeakLists_StreamFind())
-# ms$run(MassSpecSettings_GenerateFormulas_genform())
-# ms$run(MassSpecSettings_GenerateCompounds_metfrag())
-# ms$run(MassSpecSettings_SuspectScreening_StreamFind(database = dbsus, ppm = 15, sec = 30))
+
 
 
 res <- rcpp_ms_load_features_eic(
@@ -707,8 +826,15 @@ dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
 ## CoreEngine -----
-core_file = paste0(getwd(), "/core.sqlite")
+core_file = paste0(getwd(), "/core.rds")
+
 core <- CoreEngine$new()
+
+
+show(core$audit_trail)
+
+as.data.frame(core$audit_trail)
+
 core$save(core_file)
 core$load(core_file)
 core <- CoreEngine$new(file = core_file)
@@ -804,7 +930,6 @@ ms$get_suspects(database = dbsus[2, ], ppm = 15, sec = 30)
 plot_spectra_bpc(ms$analyses, levels = 1, yLab = "Test")
 
 
-_groups(ms$analyses, mass = dbsus[2, ])
 
 
 ms$get_features()

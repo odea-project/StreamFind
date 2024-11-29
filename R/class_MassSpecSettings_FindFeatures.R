@@ -1,57 +1,55 @@
-
 # ______________________________________________________________________________________________________________________
 # utility functions -----
 # ______________________________________________________________________________________________________________________
 
 #' @noRd
 .run_find_features_patRoon <- function(x, engine = NULL) {
-  
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
-  
+
   if (length(engine$analyses) == 0) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
+
   anaInfo <- data.frame(
     "path" = dirname(engine$analyses$files),
     "analysis" = engine$analyses$names,
     "group" = engine$analyses$replicates,
     "blank" = engine$analyses$blanks
   )
-  
+
   anaInfo$blank[is.na(anaInfo$blank)] <- ""
-  
+
   if (nrow(anaInfo) == 0) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
+
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
     return(FALSE)
   }
-  
+
   algorithm <- x$algorithm
-  
+
   if (grepl("_", algorithm, fixed = FALSE)) algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
-  
+
   if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
     if (!requireNamespace("xcms")) {
       warning("xcms package is not installed!")
       return(FALSE)
     }
   }
-  
+
   parameters <- x$parameters
-  
+
   if (any(grepl("class|Class", names(parameters)))) {
     parameters[["Class"]] <- parameters$class
     parameters[["class"]] <- NULL
-    
+
     parameters <- lapply(parameters, function(z) {
       if (is.list(z) & length(z) > 0) {
         z[[1]]
@@ -59,22 +57,20 @@
         z
       }
     })
-    
+
     if (parameters$Class %in% "CentWaveParam") {
       parameters$roiScales <- as.double()
       parameters$integrate <- as.integer(parameters$integrate)
     }
-    
+
     parameters <- do.call("new", parameters)
-    
   } else if (is.list(parameters)) {
-    
     parameters <- lapply(parameters, function(par) {
       if (is.list(par)) {
         if ("class" %in% names(par)) {
           par[["Class"]] <- par$class
           par[["class"]] <- NULL
-          
+
           par <- lapply(par, function(z) {
             if (is.list(z) & length(z) > 0) {
               z[[1]]
@@ -82,34 +78,34 @@
               z
             }
           })
-          
+
           if (par$Class %in% "CentWaveParam") {
             par$roiScales <- as.double()
             par$integrate <- as.integer(par$integrate)
           }
-          
+
           par <- do.call("new", par)
         }
       }
       par
     })
   }
-  
+
   if (isS4(parameters)) parameters <- list("param" = parameters)
-  
+
   anaInfo$algorithm <- algorithm
-  
+
   ag <- list(analysisInfo = anaInfo, algorithm = algorithm)
-  
+
   pp_fun <- patRoon::findFeatures
-  
+
   if (!"verbose" %in% names(parameters)) parameters[["verbose"]] <- TRUE
-  
+
   pat <- do.call(pp_fun, c(ag, parameters))
-  
+
   for (a in patRoon::analyses(pat)) {
     pol <- engine$get_spectra_polarity(a)
-    
+
     # TODO make case for polarity switching
     if (grepl("postive", pol) && grepl("negative", pol)) {
       warning("Multiple polarities in analyses", i, "! Mass for features could not be estimated.")
@@ -117,28 +113,37 @@
       pat@features[[a]]$mass <- NA_real_
       next
     }
-    
+
     if (grepl("unkown", pol)) {
       warning("Unknown polarity in analyses", i, "! Mass for features could not be estimated.")
       pat@features[[a]]$polarity <- 0
       pat@features[[a]]$mass <- NA_real_
       next
     }
-    
+
     if ("positive" %in% pol) {
       adduct_val <- -1.007276
       pat@features[[a]]$polarity <- 1
       pat@features[[a]]$mass <- pat@features[[a]]$mz + adduct_val
       pat@features[[a]]$adduct <- "[M+H]+"
     }
-    
+
     if ("negative" %in% pol) {
       adduct_val <- 1.007276
       pat@features[[a]]$polarity <- -1
       pat@features[[a]]$mass <- pat@features[[a]]$mz + adduct_val
       pat@features[[a]]$adduct <- "[M-H]-"
     }
-    
+
+    n_features <- nrow(pat@features[[a]])
+    empty_dt_list <- list(rep(data.table::data.table(), n_features))
+
+    pat@features[[a]]$ID <- paste0(
+      "F", seq_len(n_features),
+      "_MZ", round(pat@features[[a]]$mz, digits = 0),
+      "_RT", round(pat@features[[a]]$ret, digits = 0)
+    )
+
     pat@features[[a]]$mz <- round(pat@features[[a]]$mz, 5)
     pat@features[[a]]$mzmin <- round(pat@features[[a]]$mzmin, 5)
     pat@features[[a]]$mzmax <- round(pat@features[[a]]$mzmax, 5)
@@ -148,21 +153,21 @@
     pat@features[[a]]$retmax <- round(pat@features[[a]]$retmax, 2)
     pat@features[[a]]$intensity <- round(pat@features[[a]]$intensity, 2)
     pat@features[[a]]$area <- round(pat@features[[a]]$area, 2)
-    
+
     pat@features[[a]]$filtered <- FALSE
+    pat@features[[a]]$filter <- NA_character_
     pat@features[[a]]$filled <- FALSE
-    pat@features[[a]]$quality <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$isotope <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$annotation <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$eic <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$ms1 <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$ms2 <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$istd <- list(rep(list(), nrow(pat@features[[a]])))
-    pat@features[[a]]$suspects <- list(rep(list(), nrow(pat@features[[a]])))
+    pat@features[[a]]$quality <- empty_dt_list
+    pat@features[[a]]$annotation <- empty_dt_list
+    pat@features[[a]]$eic <- empty_dt_list
+    pat@features[[a]]$ms1 <- empty_dt_list
+    pat@features[[a]]$ms2 <- empty_dt_list
+    pat@features[[a]]$istd <- empty_dt_list
+    pat@features[[a]]$suspects <- empty_dt_list
   }
-  
+
   pols <- engine$get_spectra_polarity()
-  
+
   if (length(unique(pols)) > 1 && !("featuresSet" %in% is(pat))) {
     pat <- patRoon::makeSet(
       pat[pols %in% "negative"],
@@ -172,16 +177,15 @@
     pat@analysisInfo <- pat@analysisInfo[order(pat@analysisInfo$analysis), ]
     pat@features <- pat@features[pat@analysisInfo$analysis]
   }
-  
+
   filtered <- lapply(patRoon::analyses(pat), function(a) pat@features[[a]][0, ])
   names(filtered) <- patRoon::analyses(pat)
-  
+
   nts <- NTS(features = pat, filtered = filtered)
-  
+
   if (is(nts, "StreamFind::NTS")) {
     engine$nts <- nts
     TRUE
-    
   } else {
     FALSE
   }
@@ -195,15 +199,15 @@
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files using the package
 #' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
-#' \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html}{centWave}. The function uses the package 
+#' \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html}{centWave}. The function uses the package
 #' \pkg{patRoon} in the background.
 #'
-#' @param ppm numeric(1) defining the maximal tolerated m/z deviation in consecutive scans in parts per million (ppm) 
+#' @param ppm numeric(1) defining the maximal tolerated m/z deviation in consecutive scans in parts per million (ppm)
 #' for the initial ROI definition.
-#' @param peakwidth numeric(2) with the expected approximate feature width in chromatographic space. Given as a range 
+#' @param peakwidth numeric(2) with the expected approximate feature width in chromatographic space. Given as a range
 #' (min, max) in seconds.
 #' @param snthresh numeric(1) defining the signal to noise ratio cutoff.
-#' @param prefilter numeric(2): c(k, I) specifying the prefilter step for the first analysis step (ROI detection). 
+#' @param prefilter numeric(2): c(k, I) specifying the prefilter step for the first analysis step (ROI detection).
 #' Mass traces are only retained if they contain at least k peaks with intensity >= I.
 #' @param mzCenterFun Name of the function to calculate the m/z center of the
 #' chromatographic peak (feature). Allowed are: "wMean": intensity weighted mean
@@ -255,7 +259,6 @@
 MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_FindFeatures_xcms3_centwave",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(ppm = 12,
                          peakwidth = c(5, 60),
                          snthresh = 15,
@@ -268,7 +271,6 @@ MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_
                          verboseColumns = TRUE,
                          firstBaselineCheck = FALSE,
                          extendLengthMSW = FALSE) {
-    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
@@ -296,7 +298,6 @@ MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_
       doi = "https://doi.org/10.1186/1471-2105-9-504"
     ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
@@ -380,7 +381,6 @@ S7::method(run, MassSpecSettings_FindFeatures_xcms3_centwave) <- function(x, eng
 MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class("MassSpecSettings_FindFeatures_xcms3_matchedfilter",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(binSize = 0.5,
                          impute = "none",
                          baseValue = 0,
@@ -391,7 +391,6 @@ MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class("MassSpecSett
                          steps = 2,
                          mzdiff = 0.5,
                          index = FALSE) {
-    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
@@ -419,7 +418,6 @@ MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class("MassSpecSett
       doi = "https://doi.org/10.1186/1471-2105-9-504"
     ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
@@ -525,7 +523,6 @@ S7::method(run, MassSpecSettings_FindFeatures_xcms3_matchedfilter) <- function(x
 MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeatures_openms",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(noiseThrInt = 1000,
                          chromSNR = 3,
                          chromFWHM = 7,
@@ -548,7 +545,6 @@ MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeat
                          intSearchRTWindow = 3,
                          useFFMIntensities = FALSE,
                          verbose = FALSE) {
-    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
@@ -586,7 +582,6 @@ MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeat
       doi = "https://doi.org/10.1038/nmeth.3959"
     ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
@@ -629,7 +624,7 @@ S7::method(run, MassSpecSettings_FindFeatures_openms) <- function(x, engine = NU
 
 #' **MassSpecSettings_FindFeatures_kpic2**
 #'
-#' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files using the package 
+#' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files using the package
 #' \href{https://github.com/hcji/KPIC2}{KPIC}. The function uses the package \pkg{patRoon} in the background.
 #'
 #' @param level Mass traces are only retained if their maximum values are over `level`.
@@ -658,14 +653,12 @@ S7::method(run, MassSpecSettings_FindFeatures_openms) <- function(x, engine = NU
 MassSpecSettings_FindFeatures_kpic2 <- S7::new_class("MassSpecSettings_FindFeatures_kpic2",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(level = 500,
                          mztol = 0.01,
                          gap = 2,
                          width = 5,
                          min_snr = 4,
                          kmeans = TRUE) {
-    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
@@ -687,7 +680,6 @@ MassSpecSettings_FindFeatures_kpic2 <- S7::new_class("MassSpecSettings_FindFeatu
       doi = "10.1021/acs.analchem.7b01547"
     ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
@@ -715,13 +707,13 @@ S7::method(run, MassSpecSettings_FindFeatures_kpic2) <- function(x, engine = NUL
 
 #' **MassSpecSettings_FindFeatures_qalgorithms**
 #'
-#' @description The qAlgorithms uses a comprehensive peak model developed by 
-#' \href{https://doi.org/10.1021/acs.analchem.4c00494}{Renner et al.} to 
+#' @description The qAlgorithms uses a comprehensive peak model developed by
+#' \href{https://doi.org/10.1021/acs.analchem.4c00494}{Renner et al.} to
 #' identify peaks within LC-MS data. More information can be found in the
-#' GitHub repository of the \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} project. 
-#' The qAlgorithms is best used with profile data but centroid data is also possible. Yet, a mass uncertainty 
+#' GitHub repository of the \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} project.
+#' The qAlgorithms is best used with profile data but centroid data is also possible. Yet, a mass uncertainty
 #' should by supplied in parts per million (ppm) to account for the m/z deviation in centroid data.
-#' 
+#'
 #' @param ppm numeric(1) defining the maximal tolerated m/z deviation in parts per million (ppm) only applicable for
 #' centroid data. For profile data, the ppm value is ignored.
 #'
@@ -730,24 +722,21 @@ S7::method(run, MassSpecSettings_FindFeatures_kpic2) <- function(x, engine = NUL
 MassSpecSettings_FindFeatures_qalgorithms <- S7::new_class("MassSpecSettings_FindFeatures_qalgorithms",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(ppm = 5) {
-   
-   S7::new_object(ProcessingSettings(
-     engine = "MassSpec",
-     method = "FindFeatures",
-     algorithm = "qalgorithms",
-     parameters = list(ppm = ppm),
-     number_permitted = 1,
-     version = as.character(packageVersion("StreamFind")),
-     software = "qAlgorithms",
-     developer = "Gerrit Renner",
-     contact = "gerrit.renner@uni-due.de",
-     link = "https://github.com/odea-project/qAlgorithms",
-     doi = "10.1021/acs.analchem.4c00494"
-   ))
+    S7::new_object(ProcessingSettings(
+      engine = "MassSpec",
+      method = "FindFeatures",
+      algorithm = "qalgorithms",
+      parameters = list(ppm = ppm),
+      number_permitted = 1,
+      version = as.character(packageVersion("StreamFind")),
+      software = "qAlgorithms",
+      developer = "Gerrit Renner",
+      contact = "gerrit.renner@uni-due.de",
+      link = "https://github.com/odea-project/qAlgorithms",
+      doi = "10.1021/acs.analchem.4c00494"
+    ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")

@@ -150,76 +150,76 @@ S7::method(run, MassSpecSettings_CalculateSpectraCharges_StreamFind) <- function
       
       if (nrow(sp2) == 0) return(data.table::data.table())
       
-      # plot_charges_temp <- function(z, sp, sp2, absLowCut, relLowCut, roundVal) {
-      #   
-      #   plot(z$mz, z$intensity, type = 'l', main = "Clusters, overlap window and low intensity threshold (lowCut)")
-      #   
-      #   aboveLowCut <- sp$cluster %in% sp2$cluster
-      #   aboveLowCut <- sp[aboveLowCut, ]
-      #   
-      #   rect(
-      #     aboveLowCut$mzLow,
-      #     aboveLowCut$intLow,
-      #     aboveLowCut$mzHigh,
-      #     aboveLowCut$intHigh,
-      #     border = "lightgreen",
-      #     lty = 2,
-      #     lwd = 0.8,
-      #     angle = 30
-      #   )
-      #   
-      #   belowLowCut <- !sp$cluster %in% sp2$cluster
-      #   belowLowCut <- sp[belowLowCut, ]
-      #   
-      #   rect(
-      #     belowLowCut$mzLow,
-      #     belowLowCut$intLow,
-      #     belowLowCut$mzHigh,
-      #     belowLowCut$intHigh,
-      #     border = "darkred",
-      #     lty = 2,
-      #     lwd = 0.8,
-      #     angle = 30
-      #   )
-      #   
-      #   if (!is.null(absLowCut)) {
-      #     abline(h = absLowCut, col = "darkred")
-      #     
-      #   } else {
-      #     abline(h = sp2$intensity[1] * relLowCut, col = "darkred")
-      #   }
-      #   
-      #   text(
-      #     sp2$mz,
-      #     sp2$intensity,
-      #     labels = seq_len(nrow(sp2)),
-      #     adj = c(0.2, 0),
-      #     col = "darkgreen"
-      #   )
-      #   
-      #   rect(
-      #     sp2$mz - roundVal,
-      #     0,
-      #     sp2$mz + roundVal,
-      #     sp2$intensity,
-      #     border = "darkgreen",
-      #     lty = 1,
-      #     lwd = 1,
-      #     angle = 30
-      #   )
-      #   
-      #   legend(
-      #     x = "topright",
-      #     legend = c("Clusters", "lowCut", "Excluded clusters", "Final clusters & window"),
-      #     col = c("lightgreen", "darkred", "darkred", "darkgreen"),
-      #     lwd = 2,
-      #     lty = c(2, 1, 2, 1),
-      #     cex = 0.7,
-      #     bty = "n"
-      #   )
-      # }
-      # 
-      # if (FALSE) plot_charges_temp(z, sp, sp2, absLowCut, relLowCut, roundVal)
+      plot_charges_temp <- function(z, sp, sp2, absLowCut, relLowCut, roundVal) {
+
+        plot(z$mz, z$intensity, type = 'l', main = "Clusters, overlap window and low intensity threshold (lowCut)")
+
+        aboveLowCut <- sp$cluster %in% sp2$cluster
+        aboveLowCut <- sp[aboveLowCut, ]
+
+        rect(
+          aboveLowCut$mzLow,
+          aboveLowCut$intLow,
+          aboveLowCut$mzHigh,
+          aboveLowCut$intHigh,
+          border = "lightgreen",
+          lty = 2,
+          lwd = 0.8,
+          angle = 30
+        )
+
+        belowLowCut <- !sp$cluster %in% sp2$cluster
+        belowLowCut <- sp[belowLowCut, ]
+
+        rect(
+          belowLowCut$mzLow,
+          belowLowCut$intLow,
+          belowLowCut$mzHigh,
+          belowLowCut$intHigh,
+          border = "darkred",
+          lty = 2,
+          lwd = 0.8,
+          angle = 30
+        )
+
+        if (!is.null(absLowCut)) {
+          abline(h = absLowCut, col = "darkred")
+
+        } else {
+          abline(h = sp2$intensity[1] * relLowCut, col = "darkred")
+        }
+
+        text(
+          sp2$mz,
+          sp2$intensity,
+          labels = seq_len(nrow(sp2)),
+          adj = c(0.2, 0),
+          col = "darkgreen"
+        )
+
+        rect(
+          sp2$mz - roundVal,
+          0,
+          sp2$mz + roundVal,
+          sp2$intensity,
+          border = "darkgreen",
+          lty = 1,
+          lwd = 1,
+          angle = 30
+        )
+
+        legend(
+          x = "topright",
+          legend = c("Clusters", "lowCut", "Excluded clusters", "Final clusters & window"),
+          col = c("lightgreen", "darkred", "darkred", "darkgreen"),
+          lwd = 2,
+          lty = c(2, 1, 2, 1),
+          cex = 0.7,
+          bty = "n"
+        )
+      }
+
+      if (FALSE) plot_charges_temp(z, sp, sp2, absLowCut, relLowCut, roundVal)
       
       res <- z[z$mz == 0, ]
       
@@ -234,9 +234,9 @@ S7::method(run, MassSpecSettings_CalculateSpectraCharges_StreamFind) <- function
       
       res$z <- NA_integer_
       
-      # Based on the relationship m/z_iZ = m/z_{i+1}(Z-1) giving Z = \frac{-m/z_{i+1}}{m/z_i-m/z_{i+1}}
+      # Based on the relationship m/z_i * Z = m/z_{i+1} * (Z-1) giving Z = -m/z_{i+1} / (m/z_i - m/z_{i+1})
       for (i in seq_len(nrow(res))) {
-        res$z[i] <- round((-res$mz[i + 1]) / (res$mz[i] - res$mz[i + 1]), digits = 1)
+        res$z[i] <- (-res$mz[i + 1]) / (res$mz[i] - res$mz[i + 1])
       }
       
       res$z <- round(res$z, digits = 0)
@@ -251,7 +251,12 @@ S7::method(run, MassSpecSettings_CalculateSpectraCharges_StreamFind) <- function
       
       res$mass <- NA_real_
       
-      for (i in seq_len(nrow(res))) res$mass[i] <- res$mz[i] * res$z[i]
+      calculate_mass <- function(mz, z, H = 1.007276) {
+        M <- z * (mz - H)
+        return(M)
+      }
+      
+      for (i in seq_len(nrow(res))) res$mass[i] <- calculate_mass(res$mz[i], res$z[i])
       
       res$outlier <- FALSE
       
@@ -265,32 +270,34 @@ S7::method(run, MassSpecSettings_CalculateSpectraCharges_StreamFind) <- function
         
       }
       
-      mass_vec <- res$mass[!res$outlier]
+      res$outlier[nrow(res)] <- 1 != res$z[nrow(res) - 1] - res$z[nrow(res)]
       
-      res$outlier[!res$outlier] <- mass_vec < (mean(mass_vec) - sd(mass_vec)) | mass_vec > (mean(mass_vec) + sd(mass_vec))
-      
-      # plot_charges_annotated <- function(z, res) {
-      #   plot(z$mz, z$intensity, type = 'l', ylim = c(0, max(z$intensity) * 1.4))
-      #   
-      #   no_outlier <- !res$outlier
-      #   is_outlier <- res$outlier
-      #   
-      #   text(
-      #     x = res$mz[no_outlier], y = res$intensity[no_outlier], adj = c(-0.1, 0.25),
-      #     labels = paste0(round(res$mz[no_outlier], digits = 3), " (+", res$z[no_outlier], ")"),
-      #     vfont = NULL, cex = 0.6, col = "darkgreen", font = NULL, srt = 90
-      #   )
-      #   
-      #   if (any(res$outlier)) {
-      #     text(
-      #       x = res$mz[is_outlier], y = res$intensity[is_outlier], adj = c(-0.1, 0.25),
-      #       labels = paste0(round(res$mz[is_outlier], digits = 3), " (+", res$z[is_outlier], ")"),
-      #       vfont = NULL, cex = 0.6, col = "darkred", font = NULL, srt = 90
-      #     )
-      #   }
-      # }
+      # mass_vec <- res$mass[!res$outlier]
       # 
-      # if (FALSE) plot_charges_annotated(z, res)
+      # res$outlier[!res$outlier] <- mass_vec < (mean(mass_vec) - sd(mass_vec)) | mass_vec > (mean(mass_vec) + sd(mass_vec))
+      
+      plot_charges_annotated <- function(z, res) {
+        plot(z$mz, z$intensity, type = 'l', ylim = c(0, max(z$intensity) * 1.4))
+
+        no_outlier <- !res$outlier
+        is_outlier <- res$outlier
+
+        text(
+          x = res$mz[no_outlier], y = res$intensity[no_outlier], adj = c(-0.1, 0.25),
+          labels = paste0(round(res$mz[no_outlier], digits = 3), " (+", res$z[no_outlier], ")"),
+          vfont = NULL, cex = 0.6, col = "darkgreen", font = NULL, srt = 90
+        )
+
+        if (any(res$outlier)) {
+          text(
+            x = res$mz[is_outlier], y = res$intensity[is_outlier], adj = c(-0.1, 0.25),
+            labels = paste0(round(res$mz[is_outlier], digits = 3), " (+", res$z[is_outlier], ")"),
+            vfont = NULL, cex = 0.6, col = "darkred", font = NULL, srt = 90
+          )
+        }
+      }
+      
+      if (FALSE) plot_charges_annotated(z, res)
       
       res <- res[!res$outlier, ]
       

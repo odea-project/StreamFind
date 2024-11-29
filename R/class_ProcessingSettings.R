@@ -1,7 +1,7 @@
 #' @export
 #' @noRd
-ProcessingSettings <- S7::new_class("ProcessingSettings", package = "StreamFind",
-  
+ProcessingSettings <- S7::new_class("ProcessingSettings",
+  package = "StreamFind",
   properties = list(
     engine = S7::new_property(S7::class_character, default = NA_character_),
     method = S7::new_property(S7::class_character, default = NA_character_),
@@ -18,7 +18,6 @@ ProcessingSettings <- S7::new_class("ProcessingSettings", package = "StreamFind"
       paste0(self@engine, "Settings_", self@method, "_", self@algorithm)
     })
   ),
-  
   validator = function(self) {
     checkmate::assert_character(self@engine, len = 1)
     checkmate::assert_character(self@method, len = 1)
@@ -34,18 +33,8 @@ ProcessingSettings <- S7::new_class("ProcessingSettings", package = "StreamFind"
     if (is.list(self@parameters)) {
       lapply(names(self@parameters), function(x) {
         param <- self@parameters[[x]]
-        if (!(is.data.frame(param) ||
-              is.character(param) ||
-              is.numeric(param) ||
-              is.integer(param) ||
-              is.logical(param) ||
-              is.null(param))) {
-          stop(
-            paste(
-              "Invalid type for parameter ", x, " in ", self$method, "_", self$algorithm, "!",
-              collapse = "", sep = ""
-            )
-          )
+        if (!(is.data.frame(param) || is.character(param) || is.numeric(param) || is.integer(param) || is.logical(param) || is.null(param))) {
+          stop(paste("Invalid type for parameter ", x, " in ", self$method, "_", self$algorithm, "!", collapse = "", sep = ""))
         }
       })
     }
@@ -59,7 +48,9 @@ as.ProcessingSettings <- function(value) {
   if (length(value) == 1 && is.list(value)) value <- value[[1]]
   if (is.list(value)) {
     must_have_elements <- c("engine", "method", "algorithm", "parameters")
-    if (!all(must_have_elements %in% names(value))) return(NULL)
+    if (!all(must_have_elements %in% names(value))) {
+      return(NULL)
+    }
     if (!"version" %in% names(value)) value$version <- NA_character_
     if (is.na(value$version)) value$version <- as.character(packageVersion("StreamFind"))
   }
@@ -81,7 +72,7 @@ S7::method(`$`, ProcessingSettings) <- function(x, i) {
 #' @export
 #' @noRd
 S7::method(`$<-`, ProcessingSettings) <- function(x, i, value) {
-  if (i %in% "parameters")  S7::prop(x, i) <- value
+  if (i %in% "parameters") S7::prop(x, i) <- value
   return(x)
 }
 
@@ -105,9 +96,17 @@ S7::method(as.list, ProcessingSettings) <- function(x) {
 
 #' @export
 #' @noRd
-S7::method(save, ProcessingSettings) <- function(x, format = "json", name = "settings", path = getwd()) {
-  if (format %in% "json") x <- .convert_to_json(as.list(x))
-  .save_data_to_file(x, format, name, path)
+S7::method(save, ProcessingSettings) <- function(x, file = "settings.json") {
+  format <- tools::file_ext(file)
+  if (format %in% "json") {
+    x <- .convert_to_json(as.list(x))
+    write(x, file)
+  } else if (format %in% "rds") {
+    saveRDS(x, file)
+  } else {
+    warning("Invalid format!")
+  }
+  invisible(NULL)
 }
 
 #' @export
@@ -119,7 +118,9 @@ S7::method(read, ProcessingSettings) <- function(x, file) {
     }
   } else if (grepl(".rds", file)) {
     res <- readRDS(file)
-    if (is(res, "StreamFind::ProcessingSettings")) return(res)
+    if (is(res, "StreamFind::ProcessingSettings")) {
+      return(res)
+    }
   }
   NULL
 }
@@ -141,7 +142,7 @@ S7::method(show, ProcessingSettings) <- function(x, ...) {
     " doi          ", x@doi, "\n",
     sep = ""
   )
-  
+
   if (isS4(x@parameters) || length(x@parameters) == 1) {
     if (is.list(x@parameters)) {
       if (isS4(x@parameters[[1]])) {
@@ -151,24 +152,20 @@ S7::method(show, ProcessingSettings) <- function(x, ...) {
         cat("\n")
         cat(" parameters: ", "\n")
         for (i in seq_len(length(x@parameters))) {
-          
           if (is.data.frame(x@parameters[[i]])) {
             cat("  - ", names(x@parameters)[i], " (only head rows)", "\n")
             cat("\n")
             print(head(x@parameters[[i]]), quote = FALSE)
             cat("\n")
-            
           } else if (is.list(x@parameters[[i]])) {
             cat("  - ", names(x@parameters)[i], ": ", "\n")
             for (i2 in seq_len(length(x@parameters[[i]]))) {
               cat("      - ", names(x@parameters[[i]])[i2], x@parameters[[i]][[i2]], "\n")
             }
-            
           } else if ("function" %in% is(x@parameters[[i]])) {
             cat("  - ", names(x@parameters)[i])
             quote(x@parameters[[i]])
             cat("\n")
-            
           } else {
             cat("  - ", names(x@parameters)[i], x@parameters[[i]], "\n")
           }
@@ -178,35 +175,30 @@ S7::method(show, ProcessingSettings) <- function(x, ...) {
       cat("\n")
       print(x@parameters)
     }
-    
   } else {
     cat("\n")
     cat(" parameters: ")
-    
+
     if (length(x@parameters) == 0) {
       cat("empty ", "\n")
-      
     } else {
       cat("\n")
-      
+
       for (i in seq_len(length(x@parameters))) {
         if (is.data.frame(x@parameters[[i]])) {
           cat("  - ", names(x@parameters)[i], " (only head rows)", "\n")
           cat("\n")
           print(head(x@parameters[[i]]), quote = FALSE)
           cat("\n")
-          
         } else if (is.list(x@parameters[[i]])) {
           cat("  - ", names(x@parameters)[i], ": ", "\n")
           for (i2 in seq_len(length(x@parameters[[i]]))) {
             cat("      - ", names(x@parameters[[i]])[i2], x@parameters[[i]][[i2]], "\n")
           }
-          
         } else if ("function" %in% is(x@parameters[[i]])) {
           cat("  - ", names(x@parameters)[i], ":\n")
           print(x@parameters[[i]])
           cat("\n")
-          
         } else {
           cat("  - ", names(x@parameters)[i], x@parameters[[i]], "\n")
         }

@@ -6,7 +6,7 @@ devtools::document()
 devtools::document()
 
 # Installs the package
-devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = TRUE)
+devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = FALSE)
 
 # Builds/Updates the GitHub page
 pkgdown::build_site()

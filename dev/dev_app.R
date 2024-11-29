@@ -7,7 +7,7 @@ all_ms_files <- StreamFindData::get_ms_file_paths()
 mrm_files <- all_ms_files[grepl("mrm", all_ms_files)]
 ms_files <- all_ms_files[grepl("influent|blank", all_ms_files)]
 raman_files <- StreamFindData::get_raman_file_paths()
-dev_file_path <- "C:/Users/apoli/Documents/example_ms_files"
+dev_file_path <- "C:/Users/apoli/Documents/example_files"
 dev_files <- list.files(dev_file_path, pattern = "mzML", full.names = TRUE)[1:3]
 ## settings -------------------------------------------------------------------
 workflow <- StreamFind::Workflow(
@@ -49,5 +49,15 @@ ms$run_app()
 
 # RamanEngine ------------------------------------------------------------------
 raman <- RamanEngine$new(analyses = raman_files)
+raman$analyses$replicates <- c(rep("BVCZ", 11), rep("Blank", 11))
+raman$analyses$blanks <- rep("Blank", 22)
+raman_workflow <- StreamFind::Workflow(
+  list(
+    RamanSettings_AverageSpectra_StreamFind(),
+    RamanSettings_SubtractBlankSpectra_StreamFind()
+  )
+)
+raman$workflow <- raman_workflow
+raman$run_workflow()
 raman$save(paste0(getwd(), "/raman.rds"))
 raman$run_app()

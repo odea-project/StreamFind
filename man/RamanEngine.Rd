@@ -4,7 +4,11 @@
 \alias{RamanEngine}
 \title{\strong{RamanEngine} R6 class and methods}
 \description{
-The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecting and storing Raman spectroscopic data.
+The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecting and storing Raman
+spectroscopic data. Raman data can be loaded from .asc and .sif files.
+}
+\references{
+\insertRef{orpl01}{StreamFind}
 }
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{RamanEngine}
@@ -31,6 +35,8 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \item \href{#method-RamanEngine-get_spectra_matrix}{\code{RamanEngine$get_spectra_matrix()}}
 \item \href{#method-RamanEngine-add_analyses}{\code{RamanEngine$add_analyses()}}
 \item \href{#method-RamanEngine-remove_analyses}{\code{RamanEngine$remove_analyses()}}
+\item \href{#method-RamanEngine-add_replicate_names}{\code{RamanEngine$add_replicate_names()}}
+\item \href{#method-RamanEngine-add_blank_names}{\code{RamanEngine$add_blank_names()}}
 \item \href{#method-RamanEngine-has_spectra}{\code{RamanEngine$has_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra}{\code{RamanEngine$plot_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra_baseline}{\code{RamanEngine$plot_spectra_baseline()}}
@@ -43,7 +49,6 @@ The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecti
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export'><code>StreamFind::CoreEngine$export()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_analyses'><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_headers'><code>StreamFind::CoreEngine$export_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_workflow'><code>StreamFind::CoreEngine$export_workflow()</code></a></span></li>
@@ -83,8 +88,10 @@ Creates an R6 class \emph{RamanEngine}. Child of \emph{CoreEngine} R6 class.
 
 \item{\code{workflow}}{A \code{Workflow} S7 class object.}
 
-\item{\code{analyses}}{A \code{RamanAnalyses} S7 class object or a \verb{character vector} with full file paths to raman files or
-a \code{data.frame} as described in \code{?RamanAnalyses}.}
+\item{\code{analyses}}{A \code{RamanAnalyses} S7 class object or a \verb{character vector} with full file paths to .asc and/or
+.sif raman files or a \code{data.frame} with colnames \code{file}, \code{replicate} and \code{blank}. The "replicate" column is used
+to group the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full
+path to .asc and/or .sif files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -255,6 +262,41 @@ Removes analyses.
 }
 \subsection{Returns}{
 Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-add_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-add_replicate_names}{}}}
+\subsection{Method \code{add_replicate_names()}}{
+Adds replicate names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$add_replicate_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-add_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-add_blank_names}{}}}
+\subsection{Method \code{add_blank_names()}}{
+Adds blank names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$add_blank_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses and
+must be one of replicate names.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

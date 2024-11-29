@@ -1,4 +1,3 @@
-
 # ______________________________________________________________________________________________________________________
 # StreamFind -----
 # ______________________________________________________________________________________________________________________
@@ -6,7 +5,7 @@
 #' **MassSpecSettings_FillFeatures_StreamFind**
 #'
 #' @description Settings for filling missing values in features.
-#' 
+#'
 #' @param withinReplicate Logical of length one to fill within replicates not global.
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
@@ -23,16 +22,14 @@
 MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_FillFeatures_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(withinReplicate = TRUE,
                          rtExpand = 0,
                          mzExpand = 0,
                          minTracesIntensity = 1000,
                          minNumberTraces = 5,
-                         baseCut  = 0.3,
+                         baseCut = 0.3,
                          minSignalToNoiseRatio = 3,
                          minGaussianFit = 0.2) {
-    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FillFeatures",
@@ -56,7 +53,6 @@ MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fill
       doi = NA_character_
     ))
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FillFeatures")
@@ -76,43 +72,42 @@ MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fill
 #' @export
 #' @noRd
 S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine = NULL) {
-  
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
-  
+
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
+
   if (!engine$has_nts()) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }
-  
+
   nts <- engine$nts
-  
+
   if (!nts@has_groups) {
     warning("NTS object does not have feature groups! Not done.")
     return(FALSE)
   }
-  
+
   cache <- .load_chache("fill_features", nts$features, x)
-  
+
   if (!is.null(cache$data)) {
     message("\U2139 Filled features loaded from cache!")
     nts$features <- cache$data
     engine$nts <- nts
     return(TRUE)
   }
-  
+
   parameters <- x$parameters
-  
+
   analyses_list <- engine$analyses$analyses
   fts <- engine$get_features()
-  
+
   res <- rcpp_ms_fill_features(
     analyses_list,
     fts,
@@ -125,20 +120,20 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     parameters$minSignalToNoiseRatio,
     parameters$minGaussianFit
   )
-  
+
   res <- lapply(res, function(z) {
     temp <- data.table::rbindlist(z, fill = TRUE)
     if (nrow(temp) > 0) temp <- temp[!duplicated(temp$group), ]
     temp
   })
-  
+
   res <- data.table::rbindlist(res, fill = TRUE)
-  
+
   fg <- nts$features
   fg_groups <- fg@groups
   fg_index <- fg@ftindex
   fg_analyses <- names(fg@features@features)
-  
+
   all_fts <- data.table::rbindlist(list(fts, res), fill = TRUE)
   data.table::setnames(all_fts, "feature", "ID", skip_absent = TRUE)
   data.table::setnames(all_fts, "rt", "ret", skip_absent = TRUE)
@@ -149,7 +144,7 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   all_fts$analysis <- NULL
   all_fts$replicate <- NULL
   all_fts <- split(all_fts, all_fts_analysis)
-  
+
   # neutralize mz values when featureGroups is a set
   if ("featureGroupsSet" %in% is(fg)) {
     if (identical(patRoon::analyses(fg), names(all_fts))) {
@@ -165,25 +160,25 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
       }
     }
   }
-  
+
   message("\U2699 Adding filled features to groups")
-  
+
   for (i in seq_len(nrow(res))) {
     ana_idx <- which(fg_analyses == res$analysis[i])
     gr <- res$group[i]
     fg_groups[ana_idx, gr] <- res$intensity[i]
     fg_index[ana_idx, gr] <- which(all_fts[[fg_analyses[ana_idx]]]$group %in% gr)
   }
-  
+
   fg@groups <- fg_groups
   fg@ftindex <- fg_index
   fg@features@features <- all_fts[names(fg@features@features)]
-  
+
   if (!is.null(cache$hash)) {
     .save_cache("fill_features", fg, cache$hash)
     message("\U1f5ab Filled features cached!")
   }
-  
+
   nts$features <- fg
   engine$nts <- nts
   TRUE

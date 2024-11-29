@@ -1,86 +1,64 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-
-# StreamFind (R package)
-
+<style>
+  p {
+    text-align: justify;
+  }
+</style>
 <!-- badges: start -->
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-<p align="center" width="100%">
-<img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
-</p>
+<!-- <p align="center" width="100%">
+  <img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
+</p> -->
 
-The StreamFind is developed within the project [“Flexible data analysis
-and workflow designer to identify chemicals in the water
-cycle”](https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html),
-which is funded by the [Bundesministerium für Bildung und Forschung
+<img src="man/figures/logos.png" alt="Logo" width="100%" style="display: block; margin: auto;" />
+
+StreamFind R package is developed within the project [“Flexible data
+analysis and workflow designer to identify chemicals in the water
+cycle”](https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html)
+funded by the [German Federal Ministry of Education and Research
 (BMBF)](https://www.bmbf.de). The development is carried out by the
 [Institut für Umwelt & Energie, Technik & Analytik e. V.
 (IUTA)](https://www.iuta.de), the [Forschungszentrum Informatik
-(FZI)](https://www.fzi.de/) and supporting partners. The goal of the
-StreamFind is to develop and assemble data processing workflows for
-different types of analytical data (e.g., mass spectrometry and
-spectroscopy) and to apply the workflows in different fields (e.g.,
-environmental and quality studies of the water cycle). StreamFind aims
-to stimulate the use of advanced data analysis (e.g., non-target
+(FZI)](https://www.fzi.de/) and supporting partners. StreamFind is
+intended to be a platform for assembling processing workflows for
+different types of data (e.g. mass spectrometry and spectroscopy) with
+applications in different fields (e.g. environmental and quality studies
+of the water cycle and quality control of pharmaceuticals). StreamFind
+aims to stimulate the use of advanced data analysis (e.g. non-target
 screening, statistical analysis, etc.) in routine studies, to promote
-standardization of data structure and processing, and to facilitate
+standardisation of data structure and processing, and to facilitate
 retrospective data evaluation. The StreamFind platform is aimed at
-scientists, but also at technicians, due to its comprehensive
-documentation, its well categorized set of integrated modular functions
-and its embedded graphical user interface.  
-<br> The StreamFind development is ongoing, please [contact
-us](mailto:cunha@iuta.de) for questions or collaboration.
+scientists, but also at technicians due to its comprehensive
+documentation, its well categorised set of integrated modular functions
+and its embedded graphical user interface.
 
-<img src="man/figures/logo_group.png" width="100%" style="display: block; margin: auto;" />
+The StreamFind development is ongoing, please [contact
+us](mailto:cunha@iuta.de) for questions or collaboration.
 
 ## Installation
 
 Pre-requisites for the StreamFind are the
 [R](https://cran.r-project.org/) software and the
 [RTools](https://cran.r-project.org/bin/windows/Rtools/) (only
-applicable for Windows users). RTools is needed for compiling the C++
-code used in the StreamFind R package. Assuming that R and RTools are
-installed, the StreamFind R package can be installed from the GitHub
-repository via the [BiocManager](https://www.bioconductor.org/install/).
+applicable for Windows users). RTools is needed for compiling C++ code
+used in the StreamFind R package. StreamFind also uses python scripts
+for some of its functionalities, so it is recommended to have the latest
+[python](https://www.python.org/downloads/) installed and added to the
+environmental variables for Windows users. Assuming that R, RTools and
+python are installed, the StreamFind R package can be installed from the
+GitHub repository via the
+[BiocManager](https://www.bioconductor.org/install/).
 
 ``` r
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
-BiocManager::install("odea-project/StreamFind", dependencies = TRUE)
+BiocManager::install("odea-project/StreamFind")
 ```
-
-## Docker Setup
-
-Build the Docker Image
-
-``` r
-docker build -t my-r-app .
-```
-Start the Container
-
-``` r
-docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app
-```
-Once the container is up, you'll be prompted to select the service you want to run:
-
-Option 1: Run Shiny App
-Starts the Shiny application, accessible at http://localhost:3838.
-
-Option 2: Run RStudio Server
-Starts the RStudio Server, accessible at http://localhost:8787.
-
-Default credentials:
-
-Username: rstudio
-
-Password: rstudio
-
-Option 3: Run Both Shiny App and RStudio Server
-
 
 ## Other dependencies
 
@@ -91,7 +69,9 @@ mass spectrometry the StreamFind uses the
 dependencies. Installation instructions for patRoon and its dependencies
 can be found
 [here](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites).
-Consult the documentation for dependencies of other data types.
+When a dependency is not installed, a warning message will be displayed
+when necessary with instructions. Consult the documentation for
+dependencies of other data types.
 
 ## Suplementary data
 
@@ -105,6 +85,30 @@ if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 BiocManager::install("odea-project/StreamFindData")
 ```
+
+## Docker Setup
+
+The StreamFind can also be used via the
+[Docker](https://www.docker.com/products/docker-desktop/) container. The
+Docker container is a pre-configured environment with all the necessary
+dependencies installed. The Docker container can be built and started
+with the following commands.
+
+Build the Docker container:  
+`docker build -t my-r-app .`
+
+Start the Docker container:  
+`docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app`
+
+Once the container is up, you’ll be prompted to select the service you
+want to run:
+
+- *Option 1:* Starts the Shiny application, accessible at
+  <http://localhost:3838>.
+- *Option 2:* Starts the RStudio Server, accessible at
+  <http://localhost:8787>
+  - Default Username is rstudio and Password is rstudio
+- *Option 3:* Starts both the Shiny App and RStudio Server
 
 ## Documentation
 
@@ -317,6 +321,18 @@ Strategies Beyond in Silico Fragmentation.” *Journal of Cheminformatics*
 
 </div>
 
+<div id="ref-orpl01" class="csl-entry">
+
+Sheehy, Guillaume, Fabien Picot, Frédérick Dallaire, Katherine Ember,
+Tien Nguyen, Kevin Petrecca, Dominique Trudel, and Frédéric Leblond.
+2023. “<span class="nocase">Open-sourced Raman spectroscopy data
+processing package implementing a baseline removal algorithm validated
+from multiple datasets acquired in human tissue and biofluids</span>.”
+*Journal of Biomedical Optics* 28 (2): 025002.
+<https://doi.org/10.1117/1.JBO.28.2.025002>.
+
+</div>
+
 <div id="ref-xcms01" class="csl-entry">
 
 Smith, C.A., Want, E.J., O’Maille, G., Abagyan,R., Siuzdak, and G. 2006.
@@ -331,6 +347,15 @@ Chemistry* 78: 779–87.
 Tautenhahn, Ralf, Christoph Boettcher, and Steffen Neumann. 2008.
 “Highly Sensitive Feature Detection for High Resolution LC/MS.” *BMC
 Bioinformatics* 9: 504.
+
+</div>
+
+<div id="ref-tisler01" class="csl-entry">
+
+Tisler, Selina, David I. Pattison, and Jan H. Christensen. 2021.
+“Correction of Matrix Effects for Reliable Non-Target Screening
+LC–ESI–MS Analysis of Wastewater.” *Analytical Chemistry* 93 (24):
+8432–41. <https://doi.org/10.1021/acs.analchem.1c00357>.
 
 </div>
 

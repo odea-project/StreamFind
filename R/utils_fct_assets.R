@@ -45,9 +45,9 @@
       next
     }
     
-    if (left_size < right_size) left_window <- c(left_window, rep(0, right_size - left_size))
+    if (left_size < right_size) left_window <- c(left_window, rep(mean(left_window), right_size - left_size))
     
-    if (right_size < left_size) right_window <- c(right_window, rep(0, left_size - right_size))
+    if (right_size < left_size) right_window <- c(right_window, rep(mean(right_window), left_size - right_size))
     
     output[z] <- mean(c(left_window, vec[z], right_window))
   }
@@ -130,9 +130,9 @@
       
       if (pk_closeby) {
         
-        pk_i <- vec[xVec == pks$xVal[i]]
+        pk_i <- mean(vec[xVec == pks$xVal[i]])
         
-        pk_next <- vec[xVec == pks$xVal[i + 1]]
+        pk_next <- mean(vec[xVec == pks$xVal[i + 1]])
         
         if (pk_i < pk_next) {
           
@@ -240,7 +240,7 @@
     xVec[xVec > (pks$xVal[i] - quarter_pk) & xVec < (pks$xVal[i] + quarter_pk) & vec == pks$intensity[i]]
   }, 0)
   
-  pks$idx <- vapply(pks$index, function(i) which(xVec %in% pks$xVal[i]), 0)
+  pks$idx <- vapply(pks$index, function(i) which(xVec %in% pks$xVal[i])[1], 0)
   
   .trapezoidal_integration <- function(x, y) sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)
   
@@ -248,8 +248,10 @@
     peak_mask <- (xVec >= peak_start) & (xVec <= peak_end)
     peak_xVec <- xVec[peak_mask]
     peak_intensity <- vec[peak_mask]
-    base <- min(peak_intensity)
-    peak_intensity <- peak_intensity - base
+    base_int <- peak_intensity[1]
+    base_end <- peak_intensity[length(peak_intensity)]
+    base_vec <- seq(base_int, base_end, length.out = length(peak_intensity))
+    peak_intensity <- peak_intensity - base_vec
     peak_intensity[peak_intensity < 0] <- 0
     return(.trapezoidal_integration(peak_xVec, peak_intensity))
   }
@@ -263,17 +265,24 @@
     
     base_left <- c((min(base) - 2):(min(base) + 1))
     base_left <- vec[base_left[base_left > 0]]
-    base_left <- base_left[base_left > 0]
-    if (length(base_left) == 0) base_left <- 0
+    base_left <- base_left[!is.na(base_left)]
     base_left <- max(base_left)
     
     base_right <- c((max(base) - 1):(max(base) + 2))
     base_right <- vec[base_right[base_right > 0]]
-    base_right <- base_right[base_right > 0]
-    if (length(base_right) == 0) base_right <- 0
+    base_right <- base_right[!is.na(base_right)]
     base_right <- max(base_right)
     
-    round(pks$intensity[i] / max(c(base_left, base_right)), digits = 1)
+    base_val <- max(c(base_left, base_right))
+    
+    if (base_val == 0) base_val <- pks$intensity[i] * 0.01
+    
+    if (base_val < 0) {
+      base_val <- base_val * -1
+      round((pks$intensity[i] + (base_val * -1)) / base_val, digits = 1)
+    } else {
+      round(pks$intensity[i] / base_val, digits = 1)
+    }
   })
   
   pks$sn <- sn_vals
@@ -282,7 +291,7 @@
   
   if (is.numeric(minPeakHeight)) pks <- pks[pks$intensity >= minPeakHeight, ]
   
-  pks$index <- seq_len(nrow(pks))
+  pks$peak <- seq_len(nrow(pks))
   
   if (plotLevel > 0) {
     
@@ -314,6 +323,8 @@
       )
     }
   }
+  
+  pks$index <- NULL
   
   pks
 }

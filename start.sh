@@ -9,7 +9,7 @@ read -p "Enter the number: " option
 
 if [ "$option" == "1" ]; then
     echo "Starting Shiny App..."
-    R -e "shiny::runApp('/app/dev/dev_app.R', port=3838, host='0.0.0.0')"
+    R -e "StreamFind::run_app(options = list(port=3838, host='0.0.0.0'))"
 elif [ "$option" == "2" ]; then
     echo "Starting RStudio Server..."
     rstudio-server start
@@ -18,7 +18,7 @@ elif [ "$option" == "2" ]; then
 elif [ "$option" == "3" ]; then
     echo "Starting both Shiny App and RStudio Server..."
     rstudio-server start &
-    R -e "shiny::runApp('/app/dev/dev_app.R', port=3838, host='0.0.0.0')" &
+    R -e "StreamFind::run_app(options = list(port=3838, host='0.0.0.0'))" &
     wait # Ensures that both processes are properly handled
 else
     echo "Invalid option. Please select 1, 2, or 3."

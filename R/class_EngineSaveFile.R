@@ -67,7 +67,7 @@ EngineSaveFile <- S7::new_class("EngineSaveFile", package = "StreamFind",
     }
     
     if (!is.na(self$engine)) {
-      if (!self$engine %in% .get_available_engines()) {
+      if (!self$engine %in% c("CoreEngine", .get_available_engines())) {
         warning("Saved engine name is not available!")
         return(FALSE)
       }
@@ -88,3 +88,10 @@ S7::method(`$<-`, EngineSaveFile) <- function(x, i, value) {
   S7::prop(x, i) <- value
   x
 }
+
+#' @export
+#' @noRd
+S7::method(show, EngineSaveFile) <- function(x, i, value) {
+  cat(x$path)
+}
+

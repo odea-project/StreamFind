@@ -111,12 +111,18 @@ S7::method(run, MassSpecSettings_DeconvoluteSpectra_StreamFind) <- function(x, e
       
       prfl <- z[sel, ]
       
-      prfl$mz <- prfl$mz * y$z[j]
+      prfl$mz <- y$z[j] * (prfl$mz - 1.007276)
       
       prfl
     })
     
     profiles <- profiles[vapply(profiles, function(j) nrow(j) > 0, FALSE)]
+    
+    max_int <- vapply(profiles, function(j) max(j$intensity), 0)
+
+    idx <- order(max_int, decreasing = TRUE)[1:min(5, length(max_int))]
+
+    profiles <- profiles[idx]
     
     profiles_dt <- rbindlist(profiles)
     
@@ -124,7 +130,7 @@ S7::method(run, MassSpecSettings_DeconvoluteSpectra_StreamFind) <- function(x, e
     
     profiles_dt$analysis <- ""
     
-    av_profile <- rcpp_ms_cluster_spectra(profiles_dt, mzClust = clustVal, presence = 0)[[1]]
+    av_profile <- rcpp_ms_cluster_spectra(profiles_dt, mzClust = clustVal, presence = 0.1)[[1]]
     
     av_profile <- as.data.table(av_profile)
     

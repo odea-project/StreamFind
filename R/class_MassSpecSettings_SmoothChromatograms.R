@@ -64,7 +64,9 @@ S7::method(run, MassSpecSettings_SmoothChromatograms_movingaverage) <- function(
   
   windowSize <- x$parameters$windowSize
   
-  chrom_list <- engine$chromatograms$chromatograms
+  chrom_obj <- engine$chromatograms
+  
+  chrom_list <- chrom_obj$chromatograms
   
   chrom_list <- lapply(chrom_list, function(x, windowSize) {
     
@@ -89,7 +91,10 @@ S7::method(run, MassSpecSettings_SmoothChromatograms_movingaverage) <- function(
     
   }, windowSize = windowSize)
   
-  engine$chromatograms$chromatograms <- chrom_list
+  chrom_obj$chromatograms <- chrom_list
+  
+  engine$chromatograms <- chrom_obj
+  
   message(paste0("\U2713 ", "Chromatograms smoothed!"))
   TRUE
 }
@@ -175,7 +180,9 @@ S7::method(run, MassSpecSettings_SmoothChromatograms_savgol) <- function(x, engi
   forder <- x$parameters$forder
   dorder <- x$parameters$dorder
   
-  chrom_list <- engine$chromatograms$chromatograms
+  chrom_obj <- engine$chromatograms
+  
+  chrom_list <- chrom_obj$chromatograms
   
   chrom_list <- lapply(chrom_list, function(x, fl, forder, dorder) {
     
@@ -199,8 +206,11 @@ S7::method(run, MassSpecSettings_SmoothChromatograms_savgol) <- function(x, engi
     x
     
   }, fl = fl, forder = forder, dorder = dorder)
+
+  chrom_obj$chromatograms <- chrom_list
   
-  engine$chromatograms$chromatograms <- chrom_list
+  engine$chromatograms <- chrom_obj
+  
   message(paste0("\U2713 ", "Chromatograms smoothed!"))
   TRUE
 }

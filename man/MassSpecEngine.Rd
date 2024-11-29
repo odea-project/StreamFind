@@ -4,9 +4,15 @@
 \alias{MassSpecEngine}
 \title{\strong{MassSpecEngine} R6 class and methods}
 \description{
-The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing
-mass spectrometry (MS) data. The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
-assembly of Non-Target Screening data processing workflows.
+The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing mass
+spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection)
+can be loaded from mzML and mzXML formats. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
+is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor
+formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
+}
+\details{
+The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target
+Screening (NTS) data processing workflows.
 }
 \references{
 \insertRef{patroon01}{StreamFind}
@@ -14,6 +20,10 @@ assembly of Non-Target Screening data processing workflows.
 \insertRef{patroon02}{StreamFind}
 
 \insertRef{pugixml01}{StreamFind}
+
+\insertRef{proteo01}{StreamFind}
+
+\insertRef{proteo02}{StreamFind}
 }
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{MassSpecEngine}
@@ -74,6 +84,8 @@ assembly of Non-Target Screening data processing workflows.
 \item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
 \item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
 \item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
+\item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
+\item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
 \item \href{#method-MassSpecEngine-has_nts}{\code{MassSpecEngine$has_nts()}}
@@ -88,7 +100,7 @@ assembly of Non-Target Screening data processing workflows.
 \item \href{#method-MassSpecEngine-has_spectra_peaks}{\code{MassSpecEngine$has_spectra_peaks()}}
 \item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
 \item \href{#method-MassSpecEngine-has_neutralized_spectra}{\code{MassSpecEngine$has_neutralized_spectra()}}
-\item \href{#method-MassSpecEngine-plot_raw_data}{\code{MassSpecEngine$plot_raw_data()}}
+\item \href{#method-MassSpecEngine-plot_spectra_3d}{\code{MassSpecEngine$plot_spectra_3d()}}
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms_baseline}{\code{MassSpecEngine$plot_chromatograms_baseline()}}
@@ -113,15 +125,13 @@ assembly of Non-Target Screening data processing workflows.
 \item \href{#method-MassSpecEngine-plot_chromatograms_peaks}{\code{MassSpecEngine$plot_chromatograms_peaks()}}
 \item \href{#method-MassSpecEngine-plot_spectra_charges}{\code{MassSpecEngine$plot_spectra_charges()}}
 \item \href{#method-MassSpecEngine-plot_spectra_peaks}{\code{MassSpecEngine$plot_spectra_peaks()}}
-\item \href{#method-MassSpecEngine-check_correspondence}{\code{MassSpecEngine$check_correspondence()}}
-\item \href{#method-MassSpecEngine-report}{\code{MassSpecEngine$report()}}
+\item \href{#method-MassSpecEngine-report_nts}{\code{MassSpecEngine$report_nts()}}
 \item \href{#method-MassSpecEngine-clone}{\code{MassSpecEngine$clone()}}
 }
 }
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export'><code>StreamFind::CoreEngine$export()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_analyses'><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_headers'><code>StreamFind::CoreEngine$export_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_workflow'><code>StreamFind::CoreEngine$export_workflow()</code></a></span></li>
@@ -153,21 +163,34 @@ Creates an R6 MassSpecEngine class object.
   file = NULL,
   headers = NULL,
   workflow = NULL,
-  analyses = NULL
+  analyses = NULL,
+  centroid = FALSE,
+  levels = c(1, 2)
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{Character of length one with the full path to the \code{sqlite} save file of the engine.}
+\item{\code{file}}{Character of length one with the full path to the \code{sqlite} or 'rds' save file of the engine.}
 
-\item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
+\item{\code{headers}}{A named list with headers or a \code{ProjectHeaders} object. Each list element must have length one. There
+is no type restrictions except for name (must be type character), author (must be type character character) and date
+(must be class POSIXct or class POSIXt).}
 
-\item{\code{workflow}}{A \code{Workflow} S7 class object.}
+\item{\code{workflow}}{A \code{Workflow} S7 class object or a list of \code{ProcessingSettings} S7 class objects.}
 
-\item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file paths to ms files or
-a \code{data.frame} as described in \code{?MassSpecAnalyses}.}
+\item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file paths to mzML/mzXML
+files or a \code{data.frame} with \code{colnames}: "file", "replicate" and "blank". The "replicate" column is used to group
+the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to
+the mzML/mzXML files. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
+is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load
+vendor formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under
+Windows OS.}
+
+\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
+
+\item{\code{levels}}{Numeric vector with the MS levels to consider when centroiding data. Default is \code{c(1, 2)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -276,9 +299,6 @@ Gets the instruments information of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A list.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_software"></a>}}
@@ -295,9 +315,6 @@ Gets the software information of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A list.
 }
 }
 \if{html}{\out{<hr>}}
@@ -316,9 +333,6 @@ Gets the number of spectra in each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_mode"></a>}}
@@ -335,9 +349,6 @@ Gets the spectra mode of each analysis (i.e., profile or centroid).
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -356,9 +367,6 @@ Gets the spectra levels of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A list for each analysis with an integer vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_lowest_mz"></a>}}
@@ -375,9 +383,6 @@ Gets the lower \emph{m/z} value of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -396,9 +401,6 @@ Gets the higher \emph{m/z} value of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_lowest_rt"></a>}}
@@ -415,9 +417,6 @@ Gets the start retention time value of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A character vector.
 }
 }
 \if{html}{\out{<hr>}}
@@ -436,9 +435,6 @@ Gets the end retention time value of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_polarity"></a>}}
@@ -456,9 +452,6 @@ Gets the polarity of each analysis.
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_headers"></a>}}
@@ -475,9 +468,6 @@ Gets the spectra headers data.table of each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
 }
 }
 \if{html}{\out{<hr>}}
@@ -920,6 +910,8 @@ Gets chromatograms from each analysis.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_chromatograms(
   analyses = NULL,
   chromatograms = NULL,
+  rtmin = 0,
+  rtmax = 0,
   minIntensity = NULL,
   useRawData = FALSE,
   useLoadedData = TRUE
@@ -932,6 +924,10 @@ Gets chromatograms from each analysis.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{\code{rtmin}}{Numeric (length 1) with the minimum retention time.}
+
+\item{\code{rtmax}}{Numeric (length 1) with the maximum retention time.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
@@ -1891,6 +1887,41 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_replicate_names}{}}}
+\subsection{Method \code{add_replicate_names()}}{
+Adds replicate names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_replicate_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_blank_names}{}}}
+\subsection{Method \code{add_blank_names()}}{
+Adds blank names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_blank_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses and
+must be one of replicate names.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-load_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-load_spectra}{}}}
 \subsection{Method \code{load_spectra()}}{
@@ -1987,8 +2018,10 @@ Loads all chromatograms from all analyses.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_chromatograms(
   analyses = NULL,
-  minIntensity = NULL,
-  chromatograms = NULL
+  chromatograms = NULL,
+  rtmin = 0,
+  rtmax = 0,
+  minIntensity = NULL
 )}\if{html}{\out{</div>}}
 }
 
@@ -1997,9 +2030,13 @@ Loads all chromatograms from all analyses.
 \describe{
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
-
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{\code{rtmin}}{Numeric (length 1) with the minimum retention time.}
+
+\item{\code{rtmax}}{Numeric (length 1) with the maximum retention time.}
+
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2135,12 +2172,12 @@ Checks if spectra are neutralized (i.e., \emph{m/z} converted to mass), returnin
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_raw_data"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_raw_data}{}}}
-\subsection{Method \code{plot_raw_data()}}{
-Plots raw spectra in 3D for given MS analyses.
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_3d"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_3d}{}}}
+\subsection{Method \code{plot_spectra_3d()}}{
+Plots raw spectra in 3D for given MS analyses and targets.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_raw_data(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_3d(
   analyses = NULL,
   levels = NULL,
   mass = NULL,
@@ -2378,6 +2415,8 @@ Plots chromatograms in the analyses.
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_chromatograms(
   analyses = NULL,
   chromatograms = NULL,
+  rtmin = 0,
+  rtmax = 0,
   minIntensity = NULL,
   useRawData = FALSE,
   useLoadedData = TRUE,
@@ -2400,6 +2439,10 @@ Plots chromatograms in the analyses.
 \item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{\code{rtmin}}{Numeric (length 1) with the minimum retention time.}
+
+\item{\code{rtmax}}{Numeric (length 1) with the maximum retention time.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
@@ -2474,9 +2517,6 @@ Mixed use (e.g. \code{analyses+polarities}) is also possible.}
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -2785,9 +2825,6 @@ the added targets as legend of the plot.}
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A plot.
 }
 }
 \if{html}{\out{<hr>}}
@@ -3778,6 +3815,7 @@ target feature groups.
   rtExpand = 120,
   mzExpand = 0.001,
   useLoadedData = TRUE,
+  correctSuppression = TRUE,
   filtered = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -3834,6 +3872,9 @@ right the mass range.}
 
 \item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
 
+\item{\code{correctSuppression}}{Logical (length 1). When \code{TRUE} and suppression factor is available
+the intensities are corrected for suppression.}
+
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
@@ -3863,6 +3904,7 @@ Method to plot the intensity profile of feature groups across the analyses.
   sec = 60,
   millisec = 5,
   filtered = FALSE,
+  correctSuppression = TRUE,
   normalized = TRUE,
   legendNames = NULL,
   yLab = NULL,
@@ -3912,6 +3954,9 @@ time values (in milliseconds).}
 in milliseconds.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{correctSuppression}}{Logical (length 1). When \code{TRUE} and suppression factor is available
+the intensities are corrected for suppression.}
 
 \item{\code{normalized}}{Logical (length 1). When \code{TRUE} the profile intensities are normalized.}
 
@@ -4325,33 +4370,37 @@ Mixed use (e.g. \code{analyses+polarities}) is also possible.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-check_correspondence"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-check_correspondence}{}}}
-\subsection{Method \code{check_correspondence()}}{
-Checks the correspondence of features within feature groups, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$check_correspondence()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-report"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-report}{}}}
-\subsection{Method \code{report()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-report_nts"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-report_nts}{}}}
+\subsection{Method \code{report_nts()}}{
 Saves the HTML report from the function \link[patRoon]{report} from the package \pkg{patRoon}.
 The interface is exactly the same and the arguments description are taken from the documentation in \pkg{patRoon}.
-Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in \pkg{patRoon}.
+Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in
+\pkg{patRoon}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$report(
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$report_nts(
   path = paste0(getwd(), "/report"),
   filtered = FALSE,
   settingsFile = system.file("report", "settings.yml", package = "patRoon"),
-  EICParams = patRoon::getDefEICParams(topMost = 1, topMostByRGroup = TRUE),
-  specSimParams = patRoon::getDefSpecSimParams(),
+  eicRtWindow = 30,
+  eicTopMost = 1,
+  eicTopMostByRGroup = TRUE,
+  eicOnlyPresent = TRUE,
+  eicMzExpWindow = 0.001,
+  adductPos = "[M+H]+",
+  adductNeg = "[M-H]-",
+  specSimMethod = "cosine",
+  specSimRemovePrecursor = FALSE,
+  specSimMzWeight = 0,
+  specSimIntWeight = 1,
+  specSimAbsMzDev = 0.005,
+  specSimRelMinIntensity = 0.05,
+  specSimMinPeaks = 1,
+  specSimShift = "none",
+  specSimCombineMethod = "mean",
   clearPath = FALSE,
   openReport = TRUE,
-  parallel = TRUE,
-  overrideSettings = list()
+  parallel = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -4362,25 +4411,68 @@ Therefore, for further information, we recommend to consult directly the functio
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{settingsFile}}{The path to the report settings file used for report
-configuration (see Report settings in \link[patRoon]{report}).}
+\item{\code{settingsFile}}{The path to the report settings file used for report configuration (see Report settings in
+\link[patRoon]{report}).}
 
-\item{\code{EICParams}}{A named list with parameters used for extracted ion
-chromatogram (EIC) creation. See \link[patRoon]{getDefEICParams}.}
+\item{\code{eicRtWindow}}{Retention time (in seconds) that will be subtracted/added to respectively the minimum and
+maximum retention time of the feature. Thus, setting this value to ‘⁠>0⁠’ will 'zoom out' on the retention time axis.}
 
-\item{\code{specSimParams}}{A named list with parameters that influence the
-calculation of MS spectra similarities. See \link[patRoon]{getDefSpecSimParams}.}
+\item{\code{eicTopMost}}{Only create EICs for this number of top most intense features. If NULL then EICs are created
+for all features.}
 
-\item{\code{clearPath}}{If TRUE then the report destination path will be
-(recursively) removed prior to reporting.}
+\item{\code{eicTopMostByRGroup}}{If set to TRUE and topMost is set: only create EICs for the top most features in each
+replicate group. For instance, when topMost=1 and topMostByRGroup=TRUE, then EICs will be plotted for the most
+intense feature of each replicate group.}
 
-\item{\code{openReport}}{If set to TRUE then the output report file will be
-opened with the system browser.}
+\item{\code{eicOnlyPresent}}{If TRUE then EICs are created only for analyses in which a feature was detected. If
+onlyPresent=FALSE then EICs are generated for all analyses. The latter is handy to evaluate if a peak was
+'missed' during feature detection or removed during e.g. filtering.}
+
+\item{\code{eicMzExpWindow}}{If eicOnlyPresent is TRUE, to create EICs for analyses in which no feature was found, the
+m/z value is derived from the min/max values of all features in the feature group. The value of mzExpWindow
+further expands this window.}
+
+\item{\code{adductPos}}{In sets workflows the adduct must be known to calculate the ionized m/z. If a feature is
+completely absent in a particular set then it follows no adduct annotations are available and the value of
+adductPos (positive ionization data) or adductNeg (negative ionization data) will be used instead.}
+
+\item{\code{adductNeg}}{as adductPos.}
+
+\item{\code{specSimMethod}}{The similarity method: either "cosine" or "jaccard".}
+
+\item{\code{specSimRemovePrecursor}}{If TRUE then precursor peaks (i.e. the mass peak corresponding to the feature) are
+removed prior to similarity calculation.}
+
+\item{\code{specSimMzWeight}}{Mass weights used for cosine calculation.}
+
+\item{\code{specSimIntWeight}}{Intensity weights used for cosine calculation.}
+
+\item{\code{specSimAbsMzDev}}{Maximum absolute m/z deviation between mass peaks, used for binning spectra.}
+
+\item{\code{specSimRelMinIntensity}}{The minimum relative intensity for mass peaks (‘⁠0-1⁠’). Peaks with lower intensities
+are not considered for similarity calculation. The relative intensities are called after the precursor peak is
+removed when removePrecursor=TRUE.}
+
+\item{\code{specSimMinPeaks}}{Only consider spectra that have at least this amount of peaks (after the spectrum is
+filtered).}
+
+\item{\code{specSimShift}}{If and how shifting is applied prior to similarity calculation. Valid options are: "none"
+(no shifting), "precursor" (all mass peaks of the second spectrum are shifted by the mass difference between the
+precursors of both spectra) or "both" (the spectra are first binned without shifting, and peaks still unaligned
+are then shifted as is done when shift="precursor").}
+
+\item{\code{specSimCombineMethod}}{Determines how spectral similarities from different sets are combined. Possible
+values are "mean", "min" or "max", which calculates the combined value as the mean, minimum or maximum value,
+respectively. NA values (e.g. if a set does not have peak list data to combine) are removed in advance.}
+
+\item{\code{clearPath}}{If TRUE then the report destination path will be (recursively) removed prior to reporting.}
+
+\item{\code{openReport}}{If set to TRUE then the output report file will be opened with the system browser.}
 
 \item{\code{parallel}}{If set to TRUE then code is executed in parallel.}
 
-\item{\code{overrideSettings}}{A list with settings that override those from
-the report settings file. See \link[patRoon]{report}.}
+\item{\code{overrideSettings}}{A list with settings that override those from the report settings file. See
+\link[patRoon]{report}.}
 }
 \if{html}{\out{</div>}}
 }

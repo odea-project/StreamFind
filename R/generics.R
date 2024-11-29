@@ -67,6 +67,10 @@ get_internal_standards <- S7::new_generic("get_internal_standards", "x")
 
 #' @export
 #' @noRd
+get_matrix_suppression <- S7::new_generic("get_matrix_suppression", "x")
+
+#' @export
+#' @noRd
 get_model_data <- S7::new_generic("get_model_data", "x")
 
 #' @export
@@ -96,6 +100,10 @@ get_spectra_ms1 <- S7::new_generic("get_spectra_ms1", "x")
 #' @export
 #' @noRd
 get_spectra_ms2 <- S7::new_generic("get_spectra_ms2", "x")
+
+#' @export
+#' @noRd
+get_spectra_peaks <- S7::new_generic("get_spectra_peaks", "x")
 
 #' @export
 #'@noRd
@@ -229,6 +237,10 @@ plot_loadings <- S7::new_generic("plot_loadings", "x")
 
 #' @export
 #' @noRd
+plot_matrix_suppression <- S7::new_generic("plot_matrix_suppression", "x")
+
+#' @export
+#' @noRd
 plot_residuals <- S7::new_generic("plot_residuals", "x")
 
 #' @export
@@ -246,6 +258,10 @@ plot_scores <- S7::new_generic("plot_scores", "x")
 #' @export
 #' @noRd
 plot_spectra <- S7::new_generic("plot_spectra", "x")
+
+#' @export
+#' @noRd
+plot_spectra_3d <- S7::new_generic("plot_spectra_3d", "x")
 
 #' @export
 #' @noRd
@@ -270,6 +286,10 @@ plot_spectra_ms1 <- S7::new_generic("plot_spectra_ms1", "x")
 #' @export
 #' @noRd
 plot_spectra_ms2 <- S7::new_generic("plot_spectra_ms2", "x")
+
+#' @export
+#' @noRd
+plot_spectra_peaks <- S7::new_generic("plot_spectra_peaks", "x")
 
 #' @export
 #'@noRd
@@ -298,6 +318,10 @@ read <- S7::new_generic("read", "x")
 #' @export
 #'@noRd
 remove <- S7::new_generic("remove", "x")
+
+#' @export
+#'@noRd
+report <- S7::new_generic("report", "x")
 
 #' @export
 #' @noRd
@@ -338,4 +362,11 @@ test <- S7::new_generic("test", "x")
 
 #' @noRd
 .mod_WorkflowAssembler_Explorer_Server <- S7::new_generic(".mod_WorkflowAssembler_Explorer_Server", "x")
+
+#' @noRd
+.mod_WorkflowAssembler_Result_UI <- S7::new_generic(".mod_WorkflowAssembler_Result_UI", "x")
+
+#' @noRd
+.mod_WorkflowAssembler_Result_Server <- S7::new_generic(".mod_WorkflowAssembler_Result_Server", "x")
+
 

@@ -20,10 +20,10 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/app_guide.html">StreamFind App Guide</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Comparison of Different Bovine Serum Albumin Products</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_paracetamol_fusion.html">Detection of Quality Deviations in Paracetamol Products</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_paracetamol_quantification_mcrals.html">Quantification of Active Product Ingredient in a Pharmaceutical</a></li>
+    <li><a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Purity Evaluation of Bovine Serum Albumin Products</a></li>
+    <li><a class="dropdown-item" href="../articles/demo_nts.html">Non-target Screening (NTS) Wastewater Treatment Evaluation</a></li>
+    <li><a class="dropdown-item" href="../articles/demo_paracetamol_fusion.html">Detect Pharmaceutical Quality Deviations with MS, Raman and Statistics</a></li>
+    <li><a class="dropdown-item" href="../articles/demo_paracetamol_quantification_mcrals.html">Pharmaceutical API Quantification with Raman and MCR</a></li>
     <li><a class="dropdown-item" href="../articles/developer_guide.html">StreamFind Developer Guide</a></li>
     <li><a class="dropdown-item" href="../articles/general_guide.html">StreamFind General Introduction</a></li>
   </ul></li>
@@ -53,7 +53,8 @@
 <span>  minSnRatio <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
 <span>  excludeIsotopes <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  excludeAdducts <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  minIntensity <span class="op">=</span> <span class="cn">NA_real_</span></span>
+<span>  minIntensity <span class="op">=</span> <span class="cn">NA_real_</span>,</span>
+<span>  onlyWithMS2 <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -66,7 +67,8 @@
 
 
 <dt id="arg-excludeisotopes">excludeIsotopes<a class="anchor" aria-label="anchor" href="#arg-excludeisotopes"></a></dt>
-<dd><p>Logical (length 1) with <code>TRUE</code> for filtering annotated isotopes (only prevails the monoisotopic features).</p></dd>
+<dd><p>Logical (length 1) with <code>TRUE</code> for filtering annotated isotopes
+(only prevails the monoisotopic features).</p></dd>
 
 
 <dt id="arg-excludeadducts">excludeAdducts<a class="anchor" aria-label="anchor" href="#arg-excludeadducts"></a></dt>
@@ -75,6 +77,10 @@
 
 <dt id="arg-minintensity">minIntensity<a class="anchor" aria-label="anchor" href="#arg-minintensity"></a></dt>
 <dd><p>Numeric (length 1) with the minimum intensity threshold.</p></dd>
+
+
+<dt id="arg-onlywithms-">onlyWithMS2<a class="anchor" aria-label="anchor" href="#arg-onlywithms-"></a></dt>
+<dd><p>Logical (length 1) with <code>TRUE</code> for filtering features without MS2 spectra.</p></dd>
 
 </dl></div>
     <div class="section level2">

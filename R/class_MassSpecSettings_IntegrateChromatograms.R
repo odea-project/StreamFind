@@ -126,8 +126,6 @@ S7::method(run, MassSpecSettings_IntegrateChromatograms_StreamFind) <- function(
       
       pks$pro_mz <- unique(z$pro_mz)
       
-      setnames(pks, "index", "peak")
-      
       pks$index <- unique(z$index)
       
       setcolorder(pks, c("index", "id", "peak", "polarity", "pre_ce", "pre_mz", "pro_mz"))

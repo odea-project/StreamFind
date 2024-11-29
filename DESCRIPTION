@@ -44,7 +44,8 @@ Imports:
     withr,
     fst,
     zlibbioc,
-    Rhdf5lib
+    Rhdf5lib,
+    reticulate
 Suggests: 
     StreamFindData,
     mzR,
@@ -76,6 +77,12 @@ SystemRequirements: GNU make, C++17
 LinkingTo: Rhdf5lib, Rcpp
 RdMacros: 
     Rdpack
+Config/reticulate:
+  list(
+    packages = list(
+      list(package = "orplib")
+    )
+  )
 Collate: 
     'global_import_namespace.R'
     'RcppExports.R'
@@ -86,8 +93,7 @@ Collate:
     'utils_fct_assets.R'
     'fct_clear_cache.R'
     'fct_ms_convert_trim_files.R'
-    'class_MassSpecAnalysis.R'
-    'class_RamanAnalysis.R'
+    'class_AuditTrail.R'
     'class_EngineSaveFile.R'
     'class_ProjectHeaders.R'
     'class_ProcessingSettings.R'
@@ -111,16 +117,21 @@ Collate:
     'class_MassSpecSettings_CalculateSpectraCharges.R'
     'class_MassSpecSettings_ClusterSpectra.R'
     'class_MassSpecSettings_CorrectChromatogramsBaseline.R'
+    'class_MassSpecSettings_CorrectMatrixSuppression.R'
     'class_MassSpecSettings_CorrectSpectraBaseline.R'
     'class_MassSpecSettings_DeconvoluteSpectra.R'
     'class_MassSpecSettings_FillFeatures.R'
     'class_MassSpecSettings_FilterFeatures.R'
     'class_MassSpecSettings_FindFeatures.R'
     'class_MassSpecSettings_FindInternalStandards.R'
+    'class_MassSpecSettings_FindSpectraMaxima.R'
     'class_MassSpecSettings_GenerateCompounds.R'
     'class_MassSpecSettings_GenerateFormulas.R'
     'class_MassSpecSettings_GroupFeatures.R'
     'class_MassSpecSettings_IntegrateChromatograms.R'
+    'class_MassSpecSettings_IntegrateSpectra.R'
+    'class_MassSpecSettings_LoadChromatograms.R'
+    'class_MassSpecSettings_QuantifyChromatographicPeaks.R'
     'class_MassSpecSettings_LoadFeaturesMS1_MS2_EIC.R'
     'class_MassSpecSettings_LoadMSPeakLists.R'
     'class_MassSpecSettings_LoadSpectra.R'
@@ -147,6 +158,7 @@ Collate:
     'engine_StatisticEngine.R'
     'app_config.R'
     'app_utils.R'
+    'app_mod_WorkflowAssembler_Result_Spectra.R'
     'app_mod_WorkflowAssembler_workflow.R'
     'app_mod_WorkflowAssembler_Analyses.R'
     'app_mod_WorkflowAssembler_Explorer_MassSpec.R'

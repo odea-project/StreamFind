@@ -29,3 +29,9 @@ DataFrame <- S7::new_class("DataFrame", package = "StreamFind", parent = Results
     NULL
   }
 )
+
+#' @export
+#' @noRd
+S7::method(show, DataFrame) <- function(x) {
+  cat("DataFrame with ", nrow(x@data), " rows and ", ncol(x@data), " columns")
+}

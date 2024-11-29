@@ -23,6 +23,7 @@
 #' @return A ProjectHeaders S7 class object.
 #'
 #' @export
+#' @noRd
 ProjectHeaders <- S7::new_class("ProjectHeaders", package = "StreamFind",
   
   properties = list(
@@ -229,9 +230,17 @@ S7::method(as.list, ProjectHeaders) <- function(x) {
 
 #' @export
 #' @noRd
-S7::method(save, ProjectHeaders) <- function(x, format = "json", name = "settings", path = getwd()) {
-  if (format %in% "json") x <- .convert_to_json(as.list(x))
-  .save_data_to_file(x, format, name, path)
+S7::method(save, ProjectHeaders) <- function(x, file = "headers.json") {
+  format <- tools::file_ext(file)
+  if (format %in% "json") {
+    x <- .convert_to_json(as.list(x))
+    write(x, file)
+  } else if (format %in% "rds") {
+    saveRDS(x, file)
+  } else {
+    warning("Invalid format!")
+  }
+  invisible(NULL)
 }
 
 #' @export
@@ -251,8 +260,9 @@ S7::method(read, ProjectHeaders) <- function(x, file) {
 #' @export
 #' @noRd
 S7::method(show, ProjectHeaders) <- function(x, ...) {
-  cat("\n")
-  cat(" ", class(x)[1], "(", length(x), " elements)", "\n", sep = "")
   names <- names(x)
-  for (n in names) cat("  ", n, ": ", as.character(x[[n]]), "\n", sep = "")
+  str <- c("")
+  for (n in names) str <- c(str, paste(n, ": ", as.character(x[[n]]), sep = ""))
+  str <- str[-1]
+  cat(str, sep = "\n")
 }
