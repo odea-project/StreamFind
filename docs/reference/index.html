@@ -20,10 +20,10 @@
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/app_guide.html">StreamFind App Guide</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Comparison of Different Bovine Serum Albumin Products</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_paracetamol_fusion.html">Detection of Quality Deviations in Paracetamol Products</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_paracetamol_quantification_mcrals.html">Quantification of Active Product Ingredient in a Pharmaceutical</a></li>
+    <li><a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Purity Evaluation of Bovine Serum Albumin Products</a></li>
+    <li><a class="dropdown-item" href="../articles/demo_nts.html">Non-target Screening (NTS) Wastewater Treatment Evaluation</a></li>
+    <li><a class="dropdown-item" href="../articles/demo_paracetamol_fusion.html">Detect Pharmaceutical Quality Deviations with MS, Raman and Statistics</a></li>
+    <li><a class="dropdown-item" href="../articles/demo_paracetamol_quantification_mcrals.html">Pharmaceutical API Quantification with Raman and MCR</a></li>
     <li><a class="dropdown-item" href="../articles/developer_guide.html">StreamFind Developer Guide</a></li>
     <li><a class="dropdown-item" href="../articles/general_guide.html">StreamFind General Introduction</a></li>
   </ul></li>
@@ -76,23 +76,6 @@
 
         </dt>
         <dd><strong>StatisticEngine</strong> R6 class and methods</dd>
-      </dl></div><div class="section level2">
-      <h2 id="project-headers">Project Headers<a class="anchor" aria-label="anchor" href="#project-headers"></a></h2>
-
-      <div class="section-desc"><p>The <em>ProjectHeaders</em> S7 class is used to manage and store project headers (i.e. metadata) in the processing engines.</p></div>
-
-
-    </div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="ProjectHeaders.html">ProjectHeaders()</a></code>
-
-        </dt>
-        <dd><strong>ProjectHeaders</strong> S7 class constructor, slots and methods</dd>
       </dl></div><div class="section level2">
       <h2 id="processing-settings">Processing settings<a class="anchor" aria-label="anchor" href="#processing-settings"></a></h2>
 
@@ -158,6 +141,12 @@
 
         </dt>
         <dd><strong>MassSpecSettings_CorrectChromatogramsBaseline_baseline_als</strong></dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecSettings_CorrectMatrixSuppression_TiChri.html">MassSpecSettings_CorrectMatrixSuppression_TiChri()</a></code>
+
+        </dt>
+        <dd><strong>MassSpecSettings_CorrectMatrixSuppression_TiChri</strong></dd>
       </dl><dl><dt>
 
           <code><a href="MassSpecSettings_CorrectSpectraBaseline_airpls.html">MassSpecSettings_CorrectSpectraBaseline_airpls()</a></code>
@@ -226,6 +215,12 @@
         <dd><strong>MassSpecSettings_FindInternalStandards_StreamFind</strong></dd>
       </dl><dl><dt>
 
+          <code><a href="MassSpecSettings_FindSpectraMaxima_StreamFind.html">MassSpecSettings_FindSpectraMaxima_StreamFind()</a></code>
+
+        </dt>
+        <dd><strong>MassSpecSettings_FindSpectraMaxima_StreamFind</strong></dd>
+      </dl><dl><dt>
+
           <code><a href="MassSpecSettings_GenerateCompounds_metfrag.html">MassSpecSettings_GenerateCompounds_metfrag()</a></code>
 
         </dt>
@@ -260,6 +255,18 @@
 
         </dt>
         <dd><strong>MassSpecSettings_IntegrateChromatograms_StreamFind</strong></dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecSettings_IntegrateSpectra_StreamFind.html">MassSpecSettings_IntegrateSpectra_StreamFind()</a></code>
+
+        </dt>
+        <dd><strong>MassSpecSettings_IntegrateSpectra_StreamFind</strong></dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecSettings_LoadChromatograms_StreamFind.html">MassSpecSettings_LoadChromatograms_StreamFind()</a></code>
+
+        </dt>
+        <dd><strong>MassSpecSettings_LoadChromatograms_StreamFind</strong></dd>
       </dl><dl><dt>
 
           <code><a href="MassSpecSettings_LoadFeaturesEIC_StreamFind.html">MassSpecSettings_LoadFeaturesEIC_StreamFind()</a></code>
@@ -326,6 +333,12 @@
 
         </dt>
         <dd><strong>MassSpecSettings_NormalizeSpectra_snv</strong></dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecSettings_QuantifyChromatographicPeaks_StreamFind.html">MassSpecSettings_QuantifyChromatographicPeaks_StreamFind()</a></code>
+
+        </dt>
+        <dd><strong>MassSpecSettings_QuantifyChromatographicPeaks_StreamFind</strong></dd>
       </dl><dl><dt>
 
           <code><a href="MassSpecSettings_SmoothChromatograms_movingaverage.html">MassSpecSettings_SmoothChromatograms_movingaverage()</a></code>

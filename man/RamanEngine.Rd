@@ -35,6 +35,8 @@ spectroscopic data. Raman data can be loaded from .asc and .sif files.
 \item \href{#method-RamanEngine-get_spectra_matrix}{\code{RamanEngine$get_spectra_matrix()}}
 \item \href{#method-RamanEngine-add_analyses}{\code{RamanEngine$add_analyses()}}
 \item \href{#method-RamanEngine-remove_analyses}{\code{RamanEngine$remove_analyses()}}
+\item \href{#method-RamanEngine-add_replicate_names}{\code{RamanEngine$add_replicate_names()}}
+\item \href{#method-RamanEngine-add_blank_names}{\code{RamanEngine$add_blank_names()}}
 \item \href{#method-RamanEngine-has_spectra}{\code{RamanEngine$has_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra}{\code{RamanEngine$plot_spectra()}}
 \item \href{#method-RamanEngine-plot_spectra_baseline}{\code{RamanEngine$plot_spectra_baseline()}}
@@ -260,6 +262,41 @@ Removes analyses.
 }
 \subsection{Returns}{
 Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-add_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-add_replicate_names}{}}}
+\subsection{Method \code{add_replicate_names()}}{
+Adds replicate names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$add_replicate_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-RamanEngine-add_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-RamanEngine-add_blank_names}{}}}
+\subsection{Method \code{add_blank_names()}}{
+Adds blank names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$add_blank_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses and
+must be one of replicate names.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

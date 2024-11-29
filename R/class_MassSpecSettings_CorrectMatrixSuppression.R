@@ -71,17 +71,21 @@
 
 #' **MassSpecSettings_CorrectMatrixSuppression_TiChri**
 #'
-#' @description Settings for correcting matrix suppression based on the TiChri algorithm from
-#' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm calculates the matrix profile
-#' for the total ion chromatogram (TIC) and corrects the matrix suppression for features. Internal standards can be assigned
-#' to improve the correction The `suppression_factor` is added to the feature list and can be used to correct the features intensity.
+#' @description Settings for correcting matrix suppression based on the TiChri algorithm from 
+#' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm calculates the 
+#' matrix profile for the total ion chromatogram (TIC) and corrects the matrix suppression for features. Internal 
+#' standards can be assigned to improve the correction. The `suppression_factor` is added to the feature list and can 
+#' be used to correct the features intensity. The argument/parameter `correctSuppression` is available in plotting 
+#' and processing methods and when `TRUE`, the suppression factor is used to correct the feature intensity for better 
+#' comparison across analyses with different matrix suppression.
 #'
 #' @param mpRtWindow Numeric of length one with the retention time window (in seconds) for calculating the matrix profile.
 #' @param istdAssignment Character of length one with the assignment method for internal standards. Possible values are
 #' `"nearest"`, `"range"`, and `"none"`. Default is `"nearest"`. Setting `"nearest"` assigns the nearest `istdN` internal
 #' standard/s, `"range"` assigns internal standard/s within the `istdRtWindow` window, and `"none"` does not assign internal
-#' standards. If internal standards are assigned, the `tichri` value is calculated for each internal standard and used to correct
-#' the matrix suppression for the features. If no internal standards are assigned, the correction is based only on the TIC matrix profile.
+#' standards. If internal standards are assigned, the `tichri` value is calculated for each internal standard and used 
+#' to correct the matrix suppression for the features. If no internal standards are assigned, the correction is based 
+#' only on the TIC matrix profile, which is less accurate.
 #' @param istdRtWindow Numeric of length one with the retention time window (in seconds) for assigning internal standards.
 #' Default is `5`.
 #' @param istdN Integer of length one with the number of internal standards to assign. Default is `2`.

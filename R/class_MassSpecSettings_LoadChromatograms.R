@@ -78,18 +78,21 @@ S7::method(run, MassSpecSettings_LoadChromatograms_StreamFind) <- function(x, en
   
   parameters <- x@parameters
   
-  tryCatch({
-    engine$load_chromatograms(
-      chromatograms = parameters$chromatograms,
-      rtmin = parameters$rtmin,
-      rtmax = parameters$rtmax,
-      minIntensity = parameters$minIntensity
-    )
-    
+  analyses <- engine$analyses
+  
+  analyses <- StreamFind::load_chromatograms(
+    analyses,
+    chromatograms = parameters$chromatograms,
+    rtmin = parameters$rtmin,
+    rtmax = parameters$rtmax,
+    minIntensity = parameters$minIntensity
+  )
+  
+  if (analyses$has_chromatograms) {
+    engine$analyses <- analyses
     message(paste0("\U2713 ", "Chromatograms loaded!"))
     TRUE
-  }, error = function(e) {
-    warning("Error loading chromatograms! Not done.")
-    return(FALSE)
-  })
+  } else {
+    FALSE
+  }
 }

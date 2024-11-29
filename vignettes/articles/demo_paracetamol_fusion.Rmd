@@ -1,5 +1,5 @@
 ---
-title: 'Detection of Quality Deviations in Paracetamol Products'
+title: 'Detect Pharmaceutical Quality Deviations with MS, Raman and Statistics'
 subtitle: |
   | Fusion of Mass Spectrometry and Raman Spectroscopy Data
   | <br>
@@ -15,7 +15,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Detection of Quality Deviations in Paracetamol Products}
+  %\VignetteIndexEntry{'Detect Pharmaceutical Quality Deviations with MS, Raman and Statistics'}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -31,28 +31,35 @@ library(data.table)
 library(StreamFind)
 
 knitr::opts_chunk$set(
-  echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "markup", comment = ""
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  fig.width = 9,
+  results = "markup",
+  comment = ""
 )
 
-#main_dir <- "E:/iSoft/Paracetamol" # StreamFind Workstation
+options(
+  DT.options = list(
+    dom = "lfrtip",
+    autoWidth = TRUE,
+    pageLength = 10,
+    lengthMenu = c(10, 20, 50, 75, 100),
+    initComplete = htmlwidgets::JS(
+      "function(settings, json) {",
+      "$(this.api().table().body()).css({'font-size': '12px'});",
+      "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+      "}"
+    )
+  )
+)
 
-main_dir <- "C:/Users/apoli/Documents/iSoft/Paracetamol" # Ricardo laptop
-
-ms_dir <- paste0(main_dir, "/ms/mzml")
-
-ms_dir_extra <- paste0(main_dir, "/ms/extra/mzml")
-
-ms_files <- list.files(ms_dir, pattern = ".mzML", full.names = TRUE)
-
-ms_files_extra <- list.files(ms_dir_extra, pattern = ".mzML", full.names = TRUE)
-
+main_dir <- "C:/Users/apoli/Documents/example_files/isoft/Paracetamol_subset" # Ricardo laptop
+ms_dir <- paste0(main_dir, "/ms")
+ms_files <- list.files(ms_dir, pattern = ".mzML$", full.names = TRUE)
 raman_dir <- paste0(main_dir, "/raman")
-
-raman_dir_extra <- paste0(main_dir, "/raman/extra")
-
-raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)
-
-raman_files_extra <- list.files(raman_dir_extra, pattern = ".asc", full.names = TRUE)
+raman_files <- list.files(raman_dir, pattern = ".asc$", full.names = TRUE)
 ```
 
 <style>
@@ -71,96 +78,71 @@ pre code {
 
 ***
 
-This article demonstrates how StreamFind can be used to assess quality deviations of Fizamol paracetamol products using 
-Mass Spectrometry (MS) combined with Raman Spectroscopy data. Each product was measured with MS and Raman. The data is 
-pre-processed and fused to be used in unsupervised and supervised statistical analysis. Finally, the quality of the 
-products is evaluated based on the statistical analysis. The quantity of paracetamol in the products is also estimated 
-via statistic analysis.
+This article demonstrates how StreamFind, using mass spectrometry (MS) combined with Raman spectroscopy data, can be used to assess quality variation in the pharmaceutical Fizamol, which contains paracetamol as the active ingredient (API). Each product sample was measured by both MS and Raman spectroscopy. The data are pre-processed and fused to be used in unsupervised and supervised statistical analysis for quality assessment.
 
 # Pre-processing
 
-The data is pre-processed using StreamFind's built-in data dedicated engines for MS and Raman data. Pre-processing 
-workflows for each data type are executed before data fusion to improve statistic analysis.
+Data is pre-processed using StreamFind's built-in data-specific engines for MS and Raman data. Pre-processing workflows for each data type are performed prior to data fusion to improve statistical analysis.
 
 ## MS
 
 ```{r ms-setup, include=FALSE}
-ms <- MassSpecEngine$new(analyses = c(ms_files, ms_files_extra[c(5:40, 49:60)]), headers = list(name = "BSA Quality Evaluation Project"))
+ms <- MassSpecEngine$new(analyses = ms_files)
 
 ms$analyses$replicates <- c(
-  rep("fiz_a1", 3),
-  rep("fiz_a2", 3),
-  rep("fiz_a3", 3),
-  rep("fiz_b1", 3),
-  rep("fiz_b2", 3),
-  rep("fiz_b3", 3),
-  rep("fiz_c1", 3),
-  rep("fiz_c2", 3),
-  rep("fiz_c3", 3),
-  rep("fiz_caff1", 3),
-  rep("fiz_caff2", 3),
-  rep("fiz_caff3", 3),
-  rep("fiz_ass1", 3),
-  rep("fiz_ass2", 3),
-  rep("fiz_ass3", 3),
-  rep("fiz_d1", 3),
-  rep("fiz_d2", 3),
-  rep("fiz_d3", 3),
-  rep("fiz_acid1", 3),
-  rep("fiz_acid2", 3),
-  rep("fiz_acid3", 3),
-  rep("ass_n_1", 3),
-  rep("ass_n_2", 3),
-  rep("ass_n_3", 3),
-  rep("ass_1", 3),
-  rep("ass_2", 3),
-  rep("ass_3", 3),
-  rep("caff_1", 3),
-  rep("caff_2", 3),
-  rep("caff_3", 3),
-  rep("par_1", 3),
-  rep("par_2", 3),
-  rep("par_3", 3),
-  rep("blank", 23),
-  rep("fiz_e01", 3),
-  rep("fiz_e02", 3),
-  rep("fiz_e03", 3),
-  rep("fiz_e04", 3),
-  rep("fiz_e05", 3),
-  rep("fiz_e06", 3),
-  rep("fiz_e07", 3),
-  rep("fiz_e08", 3),
-  rep("fiz_e09", 3),
-  rep("fiz_e10", 3),
-  rep("fiz_e11", 3),
-  rep("fiz_e12", 3),
-  rep("blank_e", 12)
+  rep("blank_01", 4),
+  rep("fiz_01", 3),
+  rep("fiz_02", 3),
+  rep("fiz_03", 3),
+  rep("fiz_04", 3),
+  rep("fiz_05", 3),
+  rep("fiz_06", 3),
+  rep("blank_02", 8),
+  rep("fiz_07", 3),
+  rep("fiz_08", 3),
+  rep("fiz_09", 3),
+  rep("fiz_10", 3),
+  rep("fiz_11", 3),
+  rep("fiz_12", 3),
+  rep("fiz_13", 3),
+  rep("fiz_14", 3),
+  rep("fiz_15", 3),
+  rep("fiz_acid_1", 3),
+  rep("fiz_acid_2", 3),
+  rep("fiz_acid_3", 3),
+  rep("fiz_ass_1", 3),
+  rep("fiz_ass_2", 3),
+  rep("fiz_ass_3", 3),
+  rep("fiz_caff_1", 3),
+  rep("fiz_caff_2", 3),
+  rep("fiz_caff_3", 3),
+  rep("fiz_old_1", 3),
+  rep("fiz_old_2", 3),
+  rep("fiz_old_3", 3)
 )
 
-ms$analyses <- ms$analyses[c(1:63, 73:99, 118:121, 123:158, 161:170)]
-
-ms$analyses$blanks <- c(rep("blank", 94), rep("blank_e", 140 - 94))
-
-ms$load_spectra()
+ms$analyses$blanks <- c(
+  rep("blank_01", 4 + 9 + 9),
+  rep("blank_02", 8 + 9 + 9 + 9),
+  rep("blank_01", 9 + 9 + 9 + 9)
+)
 ```
 
 ```{r ms-overview, echo=FALSE}
 ov <- ms$analyses$info[, 1:3]
-data.table::setorder(ov, replicate)
+
 ov$description <- c(
-  rep("Aspirin standard", 9),
-  rep("Reference background", 4),
-  rep("Reference background", 10),
-  rep("Caffeine standard", 9),
+  rep("Reference background 1", 4),
+  rep("Paracetamol product", 9),
+  rep("Paracetamol product", 9),
+  rep("Reference background 2", 8),
+  rep("Paracetamol product", 9),
+  rep("Paracetamol product", 9),
   rep("Paracetamol product", 9),
   rep("Paracetamol with acetic acid", 9),
   rep("Paracetamol with aspirin", 9),
-  rep("Paracetamol product", 9),
-  rep("Paracetamol product", 9),
   rep("Paracetamol with caffeine", 9),
-  rep("Paracetamol product", 9),
-  rep("Paracetamol product", 36),
-  rep("Paracetamol standard", 9)
+  rep("Paracetamol stored", 9)
 )
 
 kable(ov, caption = "Overview of MS analyses and respective analysis replicate groups and blanks.") %>%
@@ -171,14 +153,13 @@ scroll_box(width = "100%", height = "400px")
 <br>
 
 ```{r ms-workflow}
-ms_workflow <- StreamFind::Workflow(
-  list(
-    MassSpecSettings_BinSpectra_StreamFind(binNames = c("rt", "mz"), binValues = c(5, 2), refBinAnalysis = 1),
-    MassSpecSettings_NormalizeSpectra_minmax(),
-    MassSpecSettings_AverageSpectra_StreamFind(),
-    MassSpecSettings_SubtractBlankSpectra_StreamFind(negativeToZero = TRUE),
-    MassSpecSettings_NormalizeSpectra_blockweight()
-  )
+ms_workflow <- list(
+  MassSpecSettings_LoadSpectra_StreamFind(levels = 1, mzmax = 300, rtmax = 120),
+  MassSpecSettings_BinSpectra_StreamFind(binNames = c("rt", "mz"), binValues = c(5, 2), refBinAnalysis = 1),
+  MassSpecSettings_NormalizeSpectra_minmax(),
+  MassSpecSettings_AverageSpectra_StreamFind(),
+  MassSpecSettings_SubtractBlankSpectra_StreamFind(negativeToZero = TRUE),
+  MassSpecSettings_NormalizeSpectra_blockweight()
 )
 
 ms$workflow <- ms_workflow
@@ -197,87 +178,63 @@ ms$plot_spectra()
 ## Raman
 
 ```{r raman-setup, include=FALSE}
-raman <- RamanEngine$new(analyses = c(raman_files, raman_files_extra))
+raman <- RamanEngine$new(analyses = raman_files)
 
 raman$analyses$replicates <- c(
-  rep("ass_1", 3),
-  rep("ass_2", 3),
-  rep("ass_3", 3),
-  rep("caff_1", 3),
-  rep("caff_2", 3),
-  rep("caff_3", 3),
-  rep("blank", 9),
-  rep("fiz_c1", 3),
-  rep("fiz_c2", 3),
-  rep("fiz_c3", 3),
-  rep("fiz_ass_n_1", 3),
-  rep("fiz_ass_n_2", 3),
-  rep("fiz_ass_n_3", 3),
-  rep("fiz_ass1", 3),
-  rep("fiz_ass2", 3),
-  rep("fiz_ass3", 3),
-  rep("fiz_caff1", 3),
-  rep("fiz_caff2", 3),
-  rep("fiz_caff3", 3),
-  rep("fiz_a1", 3),
-  rep("fiz_a2", 3),
-  rep("fiz_a3", 3),
-  rep("fiz_d1", 3),
-  rep("fiz_d2", 3),
-  rep("fiz_d3", 3),
-  rep("fiz_b1", 3),
-  rep("fiz_b2", 3),
-  rep("fiz_b3", 3),
-  rep("background", 4),
-  rep("blank_e", 9),
-  rep("fiz_acid1", 3),
-  rep("fiz_acid2", 3),
-  rep("fiz_acid3", 3),
-  rep("fiz_e01", 3),
-  rep("fiz_e02", 3),
-  rep("fiz_e03", 3),
-  rep("fiz_e04", 3),
-  rep("fiz_e05", 3),
-  rep("fiz_e06", 3),
-  rep("fiz_e07", 3),
-  rep("fiz_e08", 3),
-  rep("fiz_e09", 3),
-  rep("fiz_e10", 3),
-  rep("fiz_e11", 3),
-  rep("fiz_e12", 3),
-  rep("par_1", 3),
-  rep("par_odd", 3),
-  rep("par_3", 3),
-  rep("par_2", 3),
-  rep("cali_150_mgml", 9),
-  rep("cali_010_mgml", 9),
-  rep("cali_025_mgml", 9),
-  rep("cali_050_mgml", 9),
-  rep("cali_075_mgml", 9),
-  rep("background", 4)
+  rep("blank_01", 9),
+  rep("fiz_01", 3),
+  rep("fiz_02", 3),
+  rep("fiz_03", 3),
+  rep("fiz_04", 3),
+  rep("fiz_05", 3),
+  rep("fiz_06", 3),
+  rep("blank_02", 9),
+  rep("fiz_07", 3),
+  rep("fiz_08", 3),
+  rep("fiz_09", 3),
+  rep("fiz_10", 3),
+  rep("fiz_11", 3),
+  rep("fiz_12", 3),
+  rep("fiz_13", 3),
+  rep("fiz_14", 3),
+  rep("fiz_15", 3),
+  rep("fiz_acid_1", 3),
+  rep("fiz_acid_2", 3),
+  rep("fiz_acid_3", 3),
+  rep("fiz_ass_1", 3),
+  rep("fiz_ass_2", 3),
+  rep("fiz_ass_3", 3),
+  rep("fiz_caff_1", 3),
+  rep("fiz_caff_2", 3),
+  rep("fiz_caff_3", 3),
+  rep("fiz_old_1", 3),
+  rep("fiz_old_2", 3),
+  rep("fiz_old_3", 3)
 )
 
-raman$analyses <- raman$analyses[c(1:36, 46:90, 95:151, 155:160)]
-raman$analyses$blanks <- c(rep("blank", 81), rep("blank_e", 9), rep("blank", 9), rep("blank_e", 36), rep("blank", 9))
+
+raman$analyses$blanks <- c(
+  rep("blank_01", 9 + 9 + 9),
+  rep("blank_02", 9 + 9 + 9 + 9),
+  rep("blank_01", 9 + 9 + 9 + 9)
+)
 ```
 
 ```{r raman-overview, echo=FALSE}
 raman_ov <- raman$get_overview()[, 1:3]
-data.table::setorder(raman_ov, replicate)
+
 raman_ov$description <- c(
-  rep("Aspirin standard", 9),
-  rep("Reference background", 9),
-  rep("Reference background", 9),
-  rep("Caffeine standard", 9),
+  rep("Reference background 1", 9),
+  rep("Paracetamol product", 9),
+  rep("Paracetamol product", 9),
+  rep("Reference background 2", 9),
+  rep("Paracetamol product", 9),
+  rep("Paracetamol product", 9),
   rep("Paracetamol product", 9),
   rep("Paracetamol with acetic acid", 9),
   rep("Paracetamol with aspirin", 9),
-  rep("Paracetamol product", 9),
-  rep("Paracetamol product", 9),
   rep("Paracetamol with caffeine", 9),
-  rep("Paracetamol product", 9),
-  rep("Paracetamol product", 36),
-  rep("Paracetamol standard", 9)
+  rep("Paracetamol stored", 9)
 )
 
 kable(raman_ov, caption = "Overview of MS analyses and respective analysis replicate groups and blanks.") %>%
@@ -286,17 +243,15 @@ scroll_box(width = "100%", height = "400px")
 ```
 
 ```{r raman-workflow}
-raman_workflow <- StreamFind::Workflow(
-  list(
-    RamanSettings_AverageSpectra_StreamFind(),
-    RamanSettings_SubtractBlankSpectra_StreamFind(),
-    RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-    RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -100, shiftmax = 350),
-    RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 1800, shiftmax = 2500),
-    RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30),
-    RamanSettings_NormalizeSpectra_minmax(),
-    RamanSettings_NormalizeSpectra_blockweight()
-  )
+raman_workflow <- list(
+  RamanSettings_AverageSpectra_StreamFind(),
+  RamanSettings_SubtractBlankSpectra_StreamFind(),
+  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
+  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -100, shiftmax = 350),
+  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 1800, shiftmax = 2500),
+  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30),
+  RamanSettings_NormalizeSpectra_minmax(),
+  RamanSettings_NormalizeSpectra_blockweight()
 )
 
 raman$workflow <- raman_workflow
@@ -314,7 +269,7 @@ raman$plot_spectra()
 
 # Fusion
 
-The statistical analysis is performed on the fused data for combining orthogonal information in MS and Raman data.
+Statistical analysis is performed on the merged data for combination of orthogonal information in MS and Raman data.
 
 ```{r fusion}
 ms_spec_mat <- ms$get_spectra_matrix()
@@ -329,14 +284,10 @@ str(fused_mat)
 
 ## Unsupervised
 
-Principle Components Analysis (PCA) can be used for unsupervised evaluation, meaning that we assume that the main 
-(or train) set of analyses are of good quality and we test new analyses to evaluate the proximity to the main set. 
-One could say that it is a supervised approach but in the sense that we assume the quality of the main set. Yet, we are 
-not classifying the possible deviation of the new analyses which would be a clear supervised approach, as we show in 
-the next sub chapter.
+Principle Components Analysis (PCA) can be used for unsupervised evaluation, that is, we assume that the main (or training) set of analyses is of good quality and we test new analyses to evaluate their closeness to the main set. You could say it is a supervised approach, but in the sense that we assume the quality of the main set. However, we do not classify the possible deviation of the new analyses, which would be a clearly supervised approach, as we show in the next subchapter.
 
 ```{r sets-show}
-main_set_idx <- c(1:3, 4:5)
+main_set_idx <- c(1:10)
 
 main_set <- fused_mat[main_set_idx, ]
 rownames(main_set)
@@ -359,20 +310,27 @@ plot(stat$model, showText = TRUE)
 
 ## Supervised (classification)
 
-The k-nearest neighbors (KNN) can be used for classification of analyses based on pre-classified training analyses.
+K-Nearest Neighbors (KNN) can be used to classify analyses based on pre-classified training analyses.
 
 ```{r sets-show-knn}
-train_set <- fused_mat[unique(c(grep("1", rownames(fused_mat)), grep("2", rownames(fused_mat)))), ]
+train_idx <- unique(c(grep("1", rownames(fused_mat)), grep("2", rownames(fused_mat))))
+
+train_set <- fused_mat[train_idx, ]
 train_set <- train_set[order(rownames(train_set)), ]
 rownames(train_set)
 
-test_set <- fused_mat[unique(grep("3|4|5|6|7|8|9", rownames(fused_mat))), ]
+test_set <- fused_mat[-train_idx, ]
 rownames(test_set)
 ```
 
 ```{r knn-classes}
-labels <- c(rep("ass", 2), rep("caff", 2), rep("fiz", 2), rep("fiz_acid", 2), rep("fiz_ass", 2),
-  rep("fiz", 2), rep("fiz", 2), rep("fiz_caff", 2), rep("fiz", 7), rep("par", 2))
+labels <- c(
+  rep("fiz", 8),
+  rep("fiz_acid", 2),
+  rep("fiz_ass", 2),
+  rep("fiz_caff", 2),
+  rep("fiz_old", 2)
+)
 ```
 
 ```{r knn-engine}

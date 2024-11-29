@@ -4,8 +4,8 @@
 \alias{CoreEngine}
 \title{\strong{CoreEngine} R6 class and methods}
 \description{
-The \code{CoreEngine} R6 class is a basic engine with generic methods for handling data. It is the base class
-for the other engines and it does not have any specific methods for processing data.
+The \code{CoreEngine} R6 class is used internally for harmonizing the different data specific engines. Users
+should not use this class directly.
 }
 \note{
 If there are \code{ProcessingSettings} objects with the same method names it is better to use \code{run_workflow()}.
@@ -80,13 +80,16 @@ Creates a \code{CoreEngine} R6 class object.
 \describe{
 \item{\code{file}}{Character of length one with the full path to the \code{sqlite} or \code{rds} save file of the engine.}
 
-\item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
+\item{\code{headers}}{A named list with headers or a \code{ProjectHeaders} object. Each list element must have length one. There
+is no type restrictions except for name (must be type character), author (must be type character character) and date
+(must be class POSIXct or class POSIXt).}
 
-\item{\code{workflow}}{A \code{Workflow} S7 class object.}
+\item{\code{workflow}}{A \code{Workflow} S7 class object or a list of \code{ProcessingSettings} S7 class objects.}
 
-\item{\code{analyses}}{An \code{Analyses} S7 class object.}
+\item{\code{analyses}}{An \code{Analyses} child class or a data specific analyses input.
+See each data specific engine for details.}
 
-\item{\code{...}}{Additional arguments.}
+\item{\code{...}}{Additional data specific engine arguments.}
 }
 \if{html}{\out{</div>}}
 }
@@ -185,7 +188,8 @@ Adds analyses. Note that when adding new analyses, any existing results are remo
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{An engine specific analysis object or a list of engine specific analysis objects.}
+\item{\code{analyses}}{An engine specific analysis object or a list of engine specific analysis input. See each data
+specific engine for details.}
 }
 \if{html}{\out{</div>}}
 }

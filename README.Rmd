@@ -28,7 +28,7 @@ knitr::opts_chunk$set(
   <img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
 </p> -->
 
-```{r, echo=FALSE, out.width = '100%', fig.align='center'}
+```{r, echo=FALSE, out.width = '100%', fig.align='center', fig.alt="Logo"}
 knitr::include_graphics("man/figures/logos.png")
 ```
 

@@ -1,13 +1,14 @@
 # MARK: CoreEngine
 #' **CoreEngine** R6 class and methods
 #'
-#' @description The `CoreEngine` R6 class is a basic engine with generic methods for handling data. It is the base class
-#' for the other engines and it does not have any specific methods for processing data.
-#'
+#' @description The `CoreEngine` R6 class is used internally for harmonizing the different data specific engines. Users
+#' should not use this class directly.
+#'  
+#' @template arg-headers
+#' @template arg-workflow
 #' @template arg-file
 #'
 #' @export
-#'
 CoreEngine <- R6::R6Class("CoreEngine",
 
   # MARK: private fields
@@ -34,6 +35,19 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (is(value, "StreamFind::ProjectHeaders")) {
         private$.headers <- value
         if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, value)
+      } else if (is(value, "list")) {
+        tryCatch(
+          {
+            private$.headers <- StreamFind::ProjectHeaders(value)
+            if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, private$.headers)
+          },
+          error = function(e) {
+            warning(e)
+          },
+          warning = function(w) {
+            warning(w)
+          }
+        )
       } else {
         warning("Invalid headers object! Not added.")
       }
@@ -50,6 +64,19 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (is(value, "StreamFind::Workflow")) {
         private$.workflow <- value
         if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, value)
+      } else if (is(value, "list")) {
+        tryCatch(
+          {
+            private$.workflow <- StreamFind::Workflow(value)
+            if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, private$.workflow)
+          },
+          error = function(e) {
+            warning(e)
+          },
+          warning = function(w) {
+            warning(w)
+          }
+        )
       } else {
         warning("Invalid workflow object! Not added.")
       }
@@ -93,7 +120,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-
+    
     # MARK: results
     # __results -----
     #' @field results List of results in the analyses.
@@ -117,7 +144,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-
+    
     # MARK: file
     # __file -----
     #' @field file An `EngineSaveFile` S7 class object. When setting the value it
@@ -132,7 +159,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       } else if (is.character(value)) {
         tryCatch(
           {
-            value <- EngineSaveFile(file = value)
+            value <- StreamFind::EngineSaveFile(file = value)
             private$.file <- value
             if (!is.null(private$.audit_trail)) private$.audit_trail <- add(private$.audit_trail, value)
           },
@@ -153,23 +180,22 @@ CoreEngine <- R6::R6Class("CoreEngine",
       private$.audit_trail
     }
   ),
-
+  
   # MARK: public fields/methods
   # _ public fields/methods -----
   public = list(
-
+    
     # MARK: initialize
     ## __ initialize -----
     #' @description Creates a `CoreEngine` R6 class object.
     #'
     #' @param file Character of length one with the full path to the `sqlite` or `rds` save file of the engine.
-    #' @param headers A `ProjectHeaders` S7 class object.
-    #' @param analyses An `Analyses` S7 class object.
-    #' @param workflow A `Workflow` S7 class object.
-    #' @param ... Additional arguments.
+    #' @param analyses An `Analyses` child class or a data specific analyses input.
+    #' See each data specific engine for details.
+    #' @param ... Additional data specific engine arguments.
     #'
     initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL, ...) {
-      private$.audit_trail <- AuditTrail()
+      private$.audit_trail <- StreamFind::AuditTrail()
       
       if (!is.null(file)) {
         tryCatch(
@@ -188,55 +214,85 @@ CoreEngine <- R6::R6Class("CoreEngine",
           }
         )
       } else {
-        self$file <- EngineSaveFile()
+        self$file <- StreamFind::EngineSaveFile()
       }
-
+      
       if (!is.null(headers)) {
         if (is(headers, "StreamFind::ProjectHeaders")) {
           self$headers <- headers
-        } else {
-          warning("Headers not added! Not valid.")
+        } else  if (is(headers, "list")) {
+          tryCatch(
+            {
+              self$headers <- StreamFind::ProjectHeaders(headers)
+            },
+            error = function(e) {
+              warning(e)
+            },
+            warning = function(w) {
+              warning(w)
+            }
+          )
         }
       } else {
         self$headers <- ProjectHeaders()
       }
-
+      
       if (!is.null(workflow)) {
         if (is(workflow, "StreamFind::Workflow")) {
           self$workflow <- workflow
-        } else {
-          warning("Workflow not added! Not valid.")
+        } else if (is(workflow, "list")) {
+          tryCatch(
+            {
+              self$workflow <- StreamFind::Workflow(workflow)
+            },
+            error = function(e) {
+              warning(e)
+            },
+            warning = function(w) {
+              warning(w)
+            }
+          )
         }
       } else {
-        self$workflow <- Workflow()
+        self$workflow <- StreamFind::Workflow()
       }
-
+      
       engine_type <- gsub("Engine", "", is(self))
-
+      
       if (engine_type == "Core") {
-        private$.analyses <- Analyses()
+        private$.analyses <- StreamFind::Analyses()
       } else {
         analyses_call <- paste0(engine_type, "Analyses")
         private$.analyses <- do.call(analyses_call, list())
       }
-
+      
       if (!is.null(analyses)) {
         if (is(analyses, "StreamFind::Analyses")) {
           self$analyses <- analyses
         } else {
-          analyses <- do.call(analyses_call, c(list(analyses), list(...)))
-          if (is(analyses, "StreamFind::Analyses")) {
-            self$analyses <- analyses
-          } else {
-            warning("Analyses not added! Not valid.")
-          }
+          tryCatch(
+            {
+              analyses <- do.call(analyses_call, c(list(analyses), list(...)))
+              if (is(analyses, "StreamFind::Analyses")) {
+                self$analyses <- analyses
+              } else {
+                warning("Analyses not added! Not valid.")
+              }
+            },
+            error = function(e) {
+              warning(e)
+            },
+            warning = function(w) {
+              warning(w)
+            }
+          )
         }
       }
-
+      
       message("\U2713 Engine created!")
       invisible(self)
     },
-
+    
     # MARK: print
     ## __ print -----
     #' @description Prints a summary to the console.
@@ -259,28 +315,28 @@ CoreEngine <- R6::R6Class("CoreEngine",
       cat("Analyses: \n")
       self$print_analyses()
     },
-
+    
     # MARK: print_headers
     ## __ print_headers -----
     #' @description Prints the headers.
     print_headers = function() {
-      show(self$headers)
+      StreamFind::show(self$headers)
     },
-
+    
     # MARK: print_analyses
     ## __ print_analyses -----
     #' @description Prints the analyses.
     print_analyses = function() {
-      show(self$analyses)
+      StreamFind::show(self$analyses)
     },
-
+    
     # MARK: print_workflow
     ## __ print_workflow -----
     #' @description Prints the workflow.
     print_workflow = function() {
-      show(self$workflow)
+      StreamFind::show(self$workflow)
     },
-
+    
     # MARK: save
     ## __ save -----
     #' @description Saves the engine data as an **sqlite** or **rds** file.
@@ -297,7 +353,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (!self$file$path %in% file) {
         tryCatch(
           {
-            self$file <- EngineSaveFile(file = file)
+            self$file <- StreamFind::EngineSaveFile(file = file)
           },
           error = function(e) {
             warning(e)
@@ -309,7 +365,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           }
         )
       }
-
+      
       if (self$file$format %in% "sqlite") {
         data <- list(
           engine = is(self),
@@ -318,7 +374,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           analyses = self$analyses,
           audit = self$audit_trail
         )
-
+        
         hash <- .make_hash(is(self))
         .save_cache(is(self), data, hash, file)
       } else if (self$file$format %in% "rds") {
@@ -329,22 +385,22 @@ CoreEngine <- R6::R6Class("CoreEngine",
           analyses = self$analyses,
           audit = self$audit_trail
         )
-
+        
         saveRDS(data, file)
       } else {
         warning("File format not valid!")
         return(invisible(self))
       }
-
+      
       if (file.exists(file)) {
         message("\U2713 Engine data saved in ", file, "!")
       } else {
         warning("Data not saved!")
       }
-
+      
       invisible(self)
     },
-
+    
     # MARK: load
     ## __ load -----
     #' @description Loads the engine data from an **sqlite** or **rds** file.
@@ -355,16 +411,16 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     load = function(file = NA_character_) {
       if (is.na(file)) file <- self$file$path
-
+      
       if (!file.exists(file)) {
         warning("File does not exist!")
         return(invisible(self))
       }
-
+      
       if (!self$file$path %in% file) {
         tryCatch(
           {
-            self$file <- EngineSaveFile(file = file)
+            self$file <- StreamFind::EngineSaveFile(file = file)
           },
           error = function(e) {
             warning("File not valid! Not loaded.")
@@ -376,7 +432,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
           }
         )
       }
-
+      
       if (is(self) == self$file$engine) {
         if (self$file$format %in% "sqlite") {
           hash <- .make_hash(is(self))
@@ -413,12 +469,13 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-
+    
     # MARK: add_analyses
     ## __ add_analyses -----
     #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
     #'
-    #' @param analyses An engine specific analysis object or a list of engine specific analysis objects.
+    #' @param analyses An engine specific analysis object or a list of engine specific analysis input. See each data
+    #' specific engine for details.
     #'
     #' @details By adding analyses to the engine the results are removed as data reprocessing must be done. The
     #' analyses object can be a specific engine analysis object or a file path to a engine specific format.
@@ -426,10 +483,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #' @return Invisible.
     #'
     add_analyses = function(analyses = NULL) {
-      self$analyses <- add(self$analyses, analyses)
+      self$analyses <- StreamFind::add(self$analyses, analyses)
       invisible(self)
     },
-
+    
     # MARK: remove_analyses
     ## __ remove_analyses -----
     #' @description Removes analyses.
@@ -440,24 +497,24 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     remove_analyses = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
-      self$analyses <- remove(self$analyses, analyses)
+      self$analyses <- StreamFind::remove(self$analyses, analyses)
       invisible(self)
     },
-
+    
     # MARK: has_settings
     ## __ has_settings -----
     #' @description Checks if there are processing settings, returning `TRUE` or `FALSE`.
     has_settings = function() {
       length(self$workflow) > 0
     },
-
+    
     # MARK: has_analyses
     ## __ has_analyses -----
     #' @description Checks if analyses are present, returning `TRUE` or `FALSE`.
     has_analyses = function() {
       length(self$analyses) > 0
     },
-
+    
     # MARK: has_results
     ## __ has_results -----
     #' @description Checks if results are present, returning `TRUE` or `FALSE`.
@@ -471,7 +528,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       if (is.null(names)) names <- names(self$results)
       !all(vapply(private$.results[names], is.null, FALSE))
     },
-
+    
     # MARK: run
     ## __ run -----
     #' @description Runs a processing method according to the provided settings.
@@ -512,10 +569,10 @@ CoreEngine <- R6::R6Class("CoreEngine",
         warning(paste0(call, " not available!"))
         return(invisible(self))
       }
-
+      
       message("\U2699 Running ", settings$method, " using ", settings$algorithm)
-      processed <- run(settings, self)
-
+      processed <- StreamFind::run(settings, self)
+      
       if (processed) {
         if (settings$method %in% self$workflow@methods) {
           if (settings$number_permitted > 1) {
@@ -531,7 +588,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-
+    
     # MARK: run_workflow
     ## __ run_workflow -----
     #' @description Runs all processing methods in workflow.
@@ -541,7 +598,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
     run_workflow = function() {
       if (self$has_settings()) {
         settings_list <- self$workflow@settings
-        self$workflow <- Workflow()
+        self$workflow <- StreamFind::Workflow()
         if (self$has_results()) self$analyses$results <- list()
         lapply(settings_list, function(x) self$run(x))
       } else {
@@ -549,31 +606,31 @@ CoreEngine <- R6::R6Class("CoreEngine",
       }
       invisible(self)
     },
-
+    
     # MARK: export_headers
     ## __ export_headers -----
     #' @description Exports the headers as \emph{json} (the default) or \emph{rds}.
     export_headers = function(file = "headers.json") {
-      save(self$headers, file)
+      StreamFind::save(self$headers, file)
       invisible(self)
     },
-
+    
     # MARK: export_workflow
     ## __ export_workflow -----
     #' @description Exports the workflow as \emph{json} (the default) or \emph{rds}.
     export_workflow = function(file = "workflow.json") {
-      save(self$workflow, file)
+      StreamFind::save(self$workflow, file)
       invisible(self)
     },
-
+    
     # MARK: export_analyses
     ## __ export_analyses -----
     #' @description Exports the analyses as \emph{json} (the default) or \emph{rds}.
     export_analyses = function(file = "analyses.json") {
-      save(self$analyses, file)
+      StreamFind::save(self$analyses, file)
       invisible(self)
     },
-
+    
     # MARK: import_headers
     ## __ import_headers -----
     #' @description Imports headers from an \emph{rds} or \emph{json} file.
@@ -584,15 +641,15 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     import_headers = function(file = NA_character_) {
       if (file.exists(file)) {
-        headers <- ProjectHeaders()
-        headers <- read(headers, file)
+        headers <- StreamFind::ProjectHeaders()
+        headers <- StreamFind::read(headers, file)
         self$headers <- headers
       } else {
         warning("File not found in given path!")
       }
       invisible(self)
     },
-
+    
     # MARK: import_workflow
     ## __ import_workflow -----
     #' @description Imports workflow from an \emph{rds} or \emph{json} file.
@@ -603,15 +660,15 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     import_workflow = function(file = NA_character_) {
       if (file.exists(file)) {
-        workflow <- Workflow()
-        workflow <- read(workflow, file)
+        workflow <- StreamFind::Workflow()
+        workflow <- StreamFind::read(workflow, file)
         self$workflow <- workflow
       } else {
         warning("File not found in given path!")
       }
       invisible(self)
     },
-
+    
     # MARK: import_analyses
     ## __ import_analyses -----
     #' @description Imports analyses from an \emph{rds} or \emph{json} file.
@@ -622,15 +679,15 @@ CoreEngine <- R6::R6Class("CoreEngine",
     #'
     import_analyses = function(file = NA_character_) {
       if (file.exists(file)) {
-        analyses <- Analyses()
-        analyses <- read(analyses, file)
+        analyses <- StreamFind::Analyses()
+        analyses <- StreamFind::read(analyses, file)
         self$analyses <- analyses
       } else {
         warning("File not found in given path!")
       }
       invisible(self)
     },
-
+    
     # MARK: run_app
     ## __ run_app -----
     #' @description Runs a Shiny app to explore and manage the engine.
@@ -675,7 +732,7 @@ CoreEngine <- R6::R6Class("CoreEngine",
         return(invisible(self))
       }
 
-      run_app(file = file, engine_type = engine_type)
+      StreamFind::run_app(file = file, engine_type = engine_type)
     }
   )
 )

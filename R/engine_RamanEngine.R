@@ -156,6 +156,29 @@ RamanEngine <- R6::R6Class("RamanEngine",
       self$analyses <- remove(self$analyses, analyses)
       invisible(self)
     },
+    
+    # MARK: add_replicate_names
+    ## __ add_replicate_names -----
+    #' @description Adds replicate names to the analysis.
+    #' 
+    #' @param value Character vector with the replicate names. Must have the same length as the number of analyses.
+    #' 
+    add_replicate_names = function(value) {
+      self$analyses$replicates <- value
+      invisible(self)
+    },
+    
+    # MARK: add_blank_names
+    ## __ add_blank_names -----
+    #' @description Adds blank names to the analysis.
+    #' 
+    #' @param value Character vector with the replicate names. Must have the same length as the number of analyses and
+    #' must be one of replicate names.
+    #' 
+    add_blank_names = function(value) {
+      self$analyses$blanks <- value
+      invisible(self)
+    },
 
     # MARK: has_spectra
     ## ___ has_spectra -----

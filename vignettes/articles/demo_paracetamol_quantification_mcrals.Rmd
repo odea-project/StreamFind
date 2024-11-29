@@ -1,5 +1,5 @@
 ---
-title: 'Quantification of Active Product Ingredient in a Pharmaceutical'
+title: 'Pharmaceutical API Quantification with Raman and MCR'
 subtitle: |
   | Raman Spectroscopy Data and Multivariate Curve Resolution with Alternating Least Squares (MCR-ALS)
   | <br>
@@ -15,7 +15,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{Quantification of Active Product Ingredient in a Pharmaceutical}
+  %\VignetteIndexEntry{Pharmaceutical API Quantification with Raman and MCR}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -30,19 +30,18 @@ library(plotly)
 library(data.table)
 library(StreamFind)
 
-knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE, fig.align = "center", fig.width = 9, results = "markup", comment = "")
+knitr::opts_chunk$set(
+  echo = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  fig.width = 9,
+  results = "markup",
+  comment = ""
+)
 
-#main_dir <- "E:/iSoft/Paracetamol" # StreamFind Workstation
-main_dir <- "C:/Users/apoli/Documents/iSoft/Paracetamol" # Ricardo laptop
-raman_dir <- paste0(main_dir, "/raman")
-raman_dir_extra <- paste0(main_dir, "/raman/extra")
-raman_files <- list.files(raman_dir, pattern = ".asc", full.names = TRUE)
-raman_files_extra <- list.files(raman_dir_extra, pattern = ".asc", full.names = TRUE)
-raman_files <- c(raman_files, raman_files_extra)
-names(raman_files) <- basename(raman_files)
-raman_files <- raman_files[sort(basename(raman_files))]
-#data.frame("file" = basename(raman_files), "path" = raman_files, row.names = NULL)
-raman_files <- raman_files[c(19:27, 28:36, 73:81, 155:157, 161:205)]
+raman_dir <- "C:/Users/apoli/Documents/example_files/isoft/Paracetamol_raman_quantification"
+raman_files <- list.files(raman_dir, pattern = ".asc$", full.names = TRUE)
 ```
 
 <style>
@@ -76,6 +75,7 @@ raman$analyses$replicates <- c(
   rep("fiz_a", 9),
   rep("fiz_b", 9),
   rep("par", 3),
+  rep("cali_100_mgml", 9),
   rep("cali_150_mgml", 9),
   rep("cali_010_mgml", 9),
   rep("cali_025_mgml", 9),
@@ -93,7 +93,7 @@ raman$analyses$blanks <- c(rep("blank", length(raman$analyses)))
 ```{r raman-overview, echo=FALSE}
 ov_quant <- raman$get_overview()[, 1:3]
 data.table::setorder(ov_quant, replicate)
-ov_quant$concentration <- as.numeric(c(rep(0, 9), sub(".*?(\\d+).*", "\\1", ov_quant$replicate[10:54]), rep(0, nrow(ov_quant) - 54))) / 10
+ov_quant$concentration <- as.numeric(c(rep(0, 9), sub(".*?(\\d+).*", "\\1", ov_quant$replicate[10:63]), rep(0, nrow(ov_quant) - 63))) / 10
 ov_quant$concentration[ov_quant$replicate %in% c("par", "fiz_a", "fiz_b")] <- NA_real_
 kable(ov_quant, caption = "Overview of Raman analyses and respective analysis replicate groups and blanks.") %>%
   kable_styling(font_size = 12, bootstrap_options = c("striped", "hover", "condensed", "responsive"), fixed_thead = TRUE) %>%
@@ -123,24 +123,22 @@ within engine, as shown below.
 ```{r raman-conc-workflow}
 # Creates the workflow for Raman data
 # with an ordered list of processing settings
-raman_workflow <- StreamFind::Workflow(
-  list(
-    RamanSettings_AverageSpectra_StreamFind(),
-    RamanSettings_SubtractBlankSpectra_StreamFind(),
-    RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-    RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -100, shiftmax = 350),
-    RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 1800, shiftmax = 2500),
-    RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30)
-  )
+raman_workflow <- list(
+  RamanSettings_AverageSpectra_StreamFind(),
+  RamanSettings_SubtractBlankSpectra_StreamFind(),
+  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
+  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -100, shiftmax = 350),
+  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 1800, shiftmax = 2500),
+  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30)
 )
 
-show(raman_workflow)
-```
-
-```{r raman-conc-run-workflow}
 # Adds the workflow to the engine
 raman$workflow <- raman_workflow
 
+raman$print_workflow()
+```
+
+```{r raman-conc-run-workflow}
 # Runs the workflow
 raman$run_workflow()
 ```
@@ -181,7 +179,7 @@ plot(stat$model)
 # Concentrations with NA for unknown values
 stat$run(
   StatisticSettings_Quantify_mcrals(
-    concentrations = c(1, 2.5, 5.0, 7.5, 15.0, NA_real_, NA_real_, NA_real_)
+    concentrations = c(1, 2.5, 5.0, 7.5, 10, 15.0, NA_real_, NA_real_, NA_real_)
   )
 )
 ```

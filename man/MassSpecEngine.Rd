@@ -5,7 +5,10 @@
 \title{\strong{MassSpecEngine} R6 class and methods}
 \description{
 The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing mass
-spectrometry (MS) data. MS data (i.e., spectra and chromatograms) can be loaded from mzML and mzXML formats.
+spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection)
+can be loaded from mzML and mzXML formats. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
+is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor
+formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
 }
 \details{
 The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target
@@ -17,6 +20,10 @@ Screening (NTS) data processing workflows.
 \insertRef{patroon02}{StreamFind}
 
 \insertRef{pugixml01}{StreamFind}
+
+\insertRef{proteo01}{StreamFind}
+
+\insertRef{proteo02}{StreamFind}
 }
 \section{Super class}{
 \code{\link[StreamFind:CoreEngine]{StreamFind::CoreEngine}} -> \code{MassSpecEngine}
@@ -77,6 +84,8 @@ Screening (NTS) data processing workflows.
 \item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
 \item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
 \item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
+\item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
+\item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
 \item \href{#method-MassSpecEngine-has_nts}{\code{MassSpecEngine$has_nts()}}
@@ -165,18 +174,23 @@ Creates an R6 MassSpecEngine class object.
 \describe{
 \item{\code{file}}{Character of length one with the full path to the \code{sqlite} or 'rds' save file of the engine.}
 
-\item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
+\item{\code{headers}}{A named list with headers or a \code{ProjectHeaders} object. Each list element must have length one. There
+is no type restrictions except for name (must be type character), author (must be type character character) and date
+(must be class POSIXct or class POSIXt).}
 
-\item{\code{workflow}}{A \code{Workflow} S7 class object.}
+\item{\code{workflow}}{A \code{Workflow} S7 class object or a list of \code{ProcessingSettings} S7 class objects.}
 
 \item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file paths to mzML/mzXML
-files or a \code{data.frame} with colnames: "file", "replicate" and "blank". The "replicate" column is used to group
+files or a \code{data.frame} with \code{colnames}: "file", "replicate" and "blank". The "replicate" column is used to group
 the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to
-the mzML/mzXML files.}
+the mzML/mzXML files. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
+is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load
+vendor formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under
+Windows OS.}
 
-\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data.}
+\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
 
-\item{\code{levels}}{Numeric vector with the MS levels to consider. Default is \code{c(1, 2)}.}
+\item{\code{levels}}{Numeric vector with the MS levels to consider when centroiding data. Default is \code{c(1, 2)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1870,6 +1884,41 @@ Removes analyses.
 }
 \subsection{Returns}{
 Invisible.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_replicate_names}{}}}
+\subsection{Method \code{add_replicate_names()}}{
+Adds replicate names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_replicate_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_blank_names}{}}}
+\subsection{Method \code{add_blank_names()}}{
+Adds blank names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_blank_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses and
+must be one of replicate names.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

@@ -14,11 +14,11 @@ reference:
     - RamanEngine
     - StatisticEngine
 
-- title: Project Headers
-  desc: >
-    The _ProjectHeaders_ S7 class is used to manage and store project headers (i.e. metadata) in the processing engines.
-  contents:
-    - ProjectHeaders
+# - title: Project Headers
+#   desc: >
+#     The _ProjectHeaders_ S7 class is used to manage and store project headers (i.e. metadata) in the processing engines.
+#   contents:
+#     - ProjectHeaders
 
 - title: Processing settings
   desc: >

@@ -23,6 +23,7 @@
 #' @return A ProjectHeaders S7 class object.
 #'
 #' @export
+#' @noRd
 ProjectHeaders <- S7::new_class("ProjectHeaders", package = "StreamFind",
   
   properties = list(
@@ -260,5 +261,8 @@ S7::method(read, ProjectHeaders) <- function(x, file) {
 #' @noRd
 S7::method(show, ProjectHeaders) <- function(x, ...) {
   names <- names(x)
-  for (n in names) cat("\n", n, ": ", as.character(x[[n]]), sep = "")
+  str <- c("")
+  for (n in names) str <- c(str, paste(n, ": ", as.character(x[[n]]), sep = ""))
+  str <- str[-1]
+  cat(str, sep = "\n")
 }

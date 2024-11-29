@@ -1,23 +1,5 @@
-#' **AuditTrail** S7 class constructor, slots and methods
-#'
-#' @description Creates an AuditTrail S7 class object.
-#'
-#' @param engine_type A character with the engine type.
-#' 
-#' @slot entries `List` of entries with the audit trail information.
-#' @slot length Dynamic `Numeric` returning the number of headers.
-#' 
-#' @section Methods:
-#' \itemize{
-#'  \item `$` retrieves the entries.  
-#'  \item `add` adds an entry to the audit trail.  
-#'  \item `length` returns the number of headers.  
-#'  \item `show` prints the headers.  
-#' }
-#' 
-#' @return A AuditTrail S7 class object.
-#'
 #' @export
+#' @noRd
 AuditTrail <- S7::new_class("AuditTrail", package = "StreamFind",
   
   properties = list(
@@ -27,7 +9,7 @@ AuditTrail <- S7::new_class("AuditTrail", package = "StreamFind",
     length = S7::new_property(class = S7::class_numeric, getter = function(self) length(self@entries), default = 0)
   ),
   
-  constructor = function(engine_type = NA_character_) {
+  constructor = function() {
     S7::new_object(S7::S7_object(), entries = list())
   },
   
@@ -85,20 +67,6 @@ S7::method(add, AuditTrail) <- function(x, value) {
   entries_list[[as.character(time_stamp)]] <- entry
   x@entries <- entries_list
   x
-}
-
-#' @export
-#' @noRd
-S7::method(`$<-`, AuditTrail) <- function(x, i, value) {
-  entries_list <- x@entries
-  if (missing(i)) return(entries_list)
-  if (is.character(i)) {
-    entries_list[[i]] <- value
-    x@entries <- entries_list
-    return(x)
-  } else {
-    stop("Invalid entries setter type")
-  }
 }
 
 #' @export

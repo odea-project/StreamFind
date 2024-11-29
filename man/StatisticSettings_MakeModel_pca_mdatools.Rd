@@ -5,6 +5,8 @@
 \title{\strong{StatisticSettings_MakeModel_pca_mdatools}}
 \usage{
 StatisticSettings_MakeModel_pca_mdatools(
+  center = FALSE,
+  scale = FALSE,
   ncomp = NULL,
   exclrows = NULL,
   exclcols = NULL,
@@ -18,6 +20,10 @@ StatisticSettings_MakeModel_pca_mdatools(
 )
 }
 \arguments{
+\item{center}{Logical (length 1) indicating if the data should be centered.}
+
+\item{scale}{Logical (length 1) indicating if the data should be scaled.}
+
 \item{ncomp}{Integer (length 1) with the number of components to be calculated.}
 
 \item{exclrows}{Integer vector with the row indices to be excluded.}
