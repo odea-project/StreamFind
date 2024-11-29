@@ -270,12 +270,11 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSetti
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
     checkmate::assert_choice(self@algorithm, "xcms3_peakdensity")
-    checkmate::assert_logical(self@parameters$rtalign, len = 1)
-    checkmate::assert_numeric(self@parameters$groupParam$bw, len = 1)
-    checkmate::assert_numeric(self@parameters$groupParam$minFraction, len = 1)
-    checkmate::assert_numeric(self@parameters$groupParam$minSamples, len = 1)
-    checkmate::assert_numeric(self@parameters$groupParam$binSize, len = 1)
-    checkmate::assert_numeric(self@parameters$groupParam$maxFeatures, len = 1)
+    checkmate::assert_numeric(self@parameters$bw, len = 1)
+    checkmate::assert_numeric(self@parameters$minFraction, len = 1)
+    checkmate::assert_numeric(self@parameters$minSamples, len = 1)
+    checkmate::assert_numeric(self@parameters$binSize, len = 1)
+    checkmate::assert_numeric(self@parameters$maxFeatures, len = 1)
     NULL
   }
 )

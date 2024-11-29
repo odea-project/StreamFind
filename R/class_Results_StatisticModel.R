@@ -459,11 +459,20 @@ S7::method(plot_scores, PCA) <- function(x,
         warning("The color groups must have the same length as the number of analyses in the scores! Not done.")
         return(NULL)
       }
-
       colorGroups <- gsub(" ", "_", colorGroups)
-      scores$var_name <- as.character(colorGroups)
-      cl <- .get_colors(unique(colorGroups))
-      text <- paste0(rownames(dt), "\n", scores$var_name)
+      
+      if (all(names(colorGroups) %in% scores$analysis)) {
+        scores$var_name <- colorGroups[scores$analysis]
+        scores$var_name <- factor(scores$var_name, levels = unique(scores$var_name))
+      } else {
+        scores$var_name <- as.character(colorGroups)
+        scores$var_name <- factor(scores$var_name, levels = unique(scores$var_name))
+      }
+      
+      cl <- .get_colors(unique(scores$var_name))
+      text <- paste0(scores$analysis, "\n", scores$var_name)
+      names(text) <- scores$var_name
+      
     } else {
       if (grepl("analyses", colorBy)) {
         scores$var_name <- paste0(scores$analysis, " - ", scores$result)
@@ -473,13 +482,12 @@ S7::method(plot_scores, PCA) <- function(x,
 
       cl <- .get_colors(unique(scores$var_name))
       text <- paste0(scores$analysis, "\n", scores$result)
+      names(text) <- scores$var_name
     }
-
-    scores <- scores[order(scores$var_name), ]
 
     if (ncol(scores) == 2) {
       x_val <- seq_len(nrow(scores))
-      y_val <- scores[[1]]
+      y_val <- as.numeric(scores[[1]])
       xLab <- "Analysis Index"
       if (!is.null(var)) {
         yLab <- paste0("PC", pcs, " (", round(var[pcs, 1], digits = 0), "%)")
@@ -487,8 +495,8 @@ S7::method(plot_scores, PCA) <- function(x,
         yLab <- paste0("PC", pcs)
       }
     } else {
-      x_val <- scores[[pcs[1]]]
-      y_val <- scores[[pcs[2]]]
+      x_val <- as.numeric(scores[[pcs[1]]])
+      y_val <- as.numeric(scores[[pcs[2]]])
 
       if (!is.null(var)) {
         xLab <- paste0("PC", pcs[1], " (", round(var[pcs[1], 1], digits = 0), "%)")
@@ -500,19 +508,22 @@ S7::method(plot_scores, PCA) <- function(x,
     }
 
     if (!showText) text <- NULL
-
-    fig <- plot_ly()
-
-    fig <- fig %>% add_trace(
-      x = x_val,
-      y = y_val,
+    
+    scores$x_val <- x_val
+    scores$y_val <- y_val
+    scores$text <- text
+    
+    fig <- plot_ly(
+      data = scores,
+      x = ~x_val,
+      y = ~y_val,
       type = "scatter",
       mode = "markers+text",
-      name = scores$var_name,
-      legendgroup = scores$var_name,
-      marker = list(size = 10, color = cl[scores$var_name]),
-      text = text,
-      textfont = list(size = 14, color = cl[scores$var_name]),
+      color = ~var_name,
+      colors = cl,
+      marker = list(size = 10),
+      text = scores$text,
+      textfont = list(size = 14),
       textposition = "top",
       showlegend = showLegend
     )

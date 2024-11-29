@@ -4708,8 +4708,14 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
 
         ana$blank <- blk
         
-        ana$concentration <- suppressWarnings(as.numeric(ana$name))
-
+        concentration <- suppressWarnings(as.numeric(ana$name))
+        
+        if (is.na(concentration)) {
+          ana$concentration <- NA_real_
+        } else {
+          ana$concentration <- concentration
+        }
+        
         if (!is.null(cache$hash)) {
           .save_cache("parsed_ms_analyses", ana, cache$hash)
           message("\U1f5ab Parsed analysis cached!")
