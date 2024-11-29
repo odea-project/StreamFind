@@ -299,10 +299,10 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       })
     }),
 
+    # MARK: chromatograms_raw
     ## __chromatograms_raw -----
-    ## chromatograms_raw -----
     chromatograms_raw = S7::new_property(S7::class_list, getter = function(self) {
-      Chromatograms(
+      StreamFind::Chromatograms(
         lapply(self@analyses, function(x) {
           if (nrow(x$chromatograms) > 0) {
             x$chromatograms
@@ -488,7 +488,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
           return(self@results[["chromatograms"]])
         }
         if (any(self$chromatograms_number > 0)) {
-          return(StreamFind::Chromatograms(self$chromatograms_raw))
+          return(self$chromatograms_raw)
         }
         NULL
       },
@@ -525,13 +525,13 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
   ## __constructor -----
   constructor = function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
     analyses <- .get_MassSpecAnalysis_from_files(files, centroid, levels)
-    S7::new_object(Analyses(), possible_formats = c(".mzML|.mzXML"), analyses = analyses)
+    S7::new_object(Analyses(), possible_formats = c("mzML|mzXML"), analyses = analyses)
   },
 
   # MARK: validator
   ## __validator -----
   validator = function(self) {
-    checkmate::assert_true(identical(self@possible_formats, c(".mzML|.mzXML")))
+    checkmate::assert_true(identical(self@possible_formats, c("mzML|mzXML")))
     if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(self@names)))
     NULL
   }
@@ -1996,7 +1996,7 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
     # __________________________________________________________________
     # Extracts loaded chromatograms
     # __________________________________________________________________
-  } else if (any(x$has_loaded_chromatograms[analyses]) && useLoadedData) {
+  } else if (any(x$has_loaded_chromatograms[analyses]) && useLoadedData && !useRawData) {
     chroms <- lapply(x$analyses[analyses], function(z) z$chromatograms)
     chroms <- rbindlist(chroms, idcol = "analysis", fill = TRUE)
 
@@ -2028,7 +2028,7 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
       }
 
       idx <- z$chromatograms_headers$index
-
+      
       if (is.numeric(chromatograms)) {
         idx <- idx[chromatograms + 1]
       } else if (is.character(chromatograms)) {
@@ -2036,10 +2036,10 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
         which_chroms <- cid %in% chromatograms
         idx <- idx[which_chroms]
       } else if (!is.null(chromatograms)) {
-        return(data.table())
+        return(data.table::data.table())
       }
 
-      cache <- .load_chache("parsed_ms_chromatograms", z$file, idx)
+      cache <- StreamFind:::.load_chache("parsed_ms_chromatograms", z$file, idx)
 
       if (!is.null(cache$data)) {
         message("\U2139 Chromatograms loaded from cache!")
@@ -2049,11 +2049,12 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
       message("\U2699 Parsing chromatograms from ", basename(z$file), "...", appendLF = FALSE)
 
       chrom <- rcpp_parse_ms_chromatograms(z, idx)
-
+      
       message(" Done!")
 
       if (nrow(chrom) == 0) {
-        return(data.frame())
+        warning("Parsing chromatograms failed!")
+        return(data.table::data.table())
       }
 
       if (!"analysis" %in% colnames(chrom)) chrom$analysis <- z$name
@@ -2061,7 +2062,7 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
       if (!"replicate" %in% colnames(chrom)) chrom$replicate <- z$replicate
 
       if (!is.null(cache$hash)) {
-        .save_cache("parsed_ms_chromatograms", chrom, cache$hash)
+        StreamFind:::.save_cache("parsed_ms_chromatograms", chrom, cache$hash)
         message("\U1f5ab Parsed chromatograms cached!")
       }
 
@@ -2069,7 +2070,7 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
     }, chromatograms = chromatograms)
 
     if (length(chroms_list) == length(analyses)) {
-      chroms <- rbindlist(chroms_list, fill = TRUE)
+      chroms <- data.table::rbindlist(chroms_list, fill = TRUE)
 
       if (nrow(chroms) > 0) setcolorder(chroms, c("analysis", "replicate"))
 
@@ -2106,7 +2107,7 @@ S7::method(load_chromatograms, MassSpecAnalyses) <- function(x,
     rtmax,
     minIntensity,
     useRawData = TRUE,
-    useLoadedData = TRUE
+    useLoadedData = FALSE
   )
   if (nrow(chroms) > 0) {
     split_vector <- chroms$analysis
@@ -2118,7 +2119,7 @@ S7::method(load_chromatograms, MassSpecAnalyses) <- function(x,
   } else {
     warning("Not done! Chromatograms not found.")
   }
-  x
+  return(x)
 }
 
 # MARK: get_chromatograms_peaks
@@ -2199,7 +2200,14 @@ S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
                                                              ylim = NULL,
                                                              cex = 0.6,
                                                              interactive = TRUE) {
-  chromatograms <- get_chromatograms(x, analyses, chromatograms, rtmin, rtmax, minIntensity, useRawData, useLoadedData)
+  chromatograms <- StreamFind::get_chromatograms(
+    x, analyses,
+    chromatograms,
+    rtmin, rtmax,
+    minIntensity,
+    useRawData,
+    useLoadedData
+  )
 
   if (nrow(chromatograms) == 0) {
     message("\U2717 Chromatograms not found for the analyses!")
@@ -4585,7 +4593,7 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
       blanks <- rep(NA_character_, length(files))
     }
 
-    possible_ms_file_formats <- ".mzML|.mzXML|.d"
+    possible_ms_file_formats <- ".mzML$|.mzXML$|.d$"
 
     valid_files <- vapply(files,
       FUN.VALUE = FALSE,

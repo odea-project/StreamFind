@@ -28,11 +28,13 @@ The goal of StreamFind is to boost competences of researchers and graduate stude
 
 # Examples
 
--   [Evaluation of wastewater ozonation with mass spectrometry](https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html)
+-   [Non-target Screening (NTS) Wastewater Treatment Evaluation](https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html)
 
--   [Comparison of different bovine serum albumin products](https://odea-project.github.io/StreamFind/articles/demo_ms_raman_fusion_bsa.html)
+-   [Purity Evaluation of Bovine Serum Albumin Products](https://odea-project.github.io/StreamFind/articles/demo_ms_raman_fusion_bsa.html)
 
--   [Detection of quality deviations in paracetamol products](https://odea-project.github.io/StreamFind/articles/demo_paracetamol.html)
+-   [Detect Pharmaceutical Quality Deviations with MS, Raman and Statistics](https://odea-project.github.io/StreamFind/articles/demo_paracetamol.html)
+
+- [Pharmaceutical API Quantification with Raman and MCR](https://odea-project.github.io/StreamFind/articles/demo_paracetamol_quantification.html)
 
 # Development
 

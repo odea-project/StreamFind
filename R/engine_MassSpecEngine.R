@@ -2,13 +2,16 @@
 #' **MassSpecEngine** R6 class and methods
 #'
 #' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing mass
-#' spectrometry (MS) data. MS data (i.e., spectra and chromatograms) can be loaded from mzML and mzXML formats.
+#' spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection)
+#' can be loaded from mzML and mzXML formats. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
+#' is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor 
+#' formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS. 
 #'
 #' @details The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target
 #' Screening (NTS) data processing workflows.
 #'
-#' @template arg-ms-files
 #' @template arg-headers
+#' @template arg-workflow
 #' @template arg-results
 #' @template arg-analyses
 #' @template arg-ms-levels
@@ -66,6 +69,10 @@
 #' \insertRef{patroon02}{StreamFind}
 #'
 #' \insertRef{pugixml01}{StreamFind}
+#' 
+#' \insertRef{proteo01}{StreamFind}
+#' 
+#' \insertRef{proteo02}{StreamFind}
 #'
 #' @export
 #'
@@ -131,14 +138,15 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Creates an R6 MassSpecEngine class object.
     #'
     #' @param file Character of length one with the full path to the `sqlite` or 'rds' save file of the engine.
-    #' @param headers A `ProjectHeaders` S7 class object.
-    #' @param workflow A `Workflow` S7 class object.
     #' @param analyses A `MassSpecAnalyses` S7 class object or a `character vector` with full file paths to mzML/mzXML
-    #' files or a `data.frame` with colnames: "file", "replicate" and "blank". The "replicate" column is used to group
+    #' files or a `data.frame` with `colnames`: "file", "replicate" and "blank". The "replicate" column is used to group
     #' the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to
-    #' the mzML/mzXML files.
-    #' @param centroid Logical (length 1). Set to `TRUE` to centroid data.
-    #' @param levels Numeric vector with the MS levels to consider. Default is `c(1, 2)`.
+    #' the mzML/mzXML files. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
+    #' is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load 
+    #' vendor formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under 
+    #' Windows OS.
+    #' @param centroid Logical (length 1). Set to `TRUE` to centroid data when converting from vendor formats to mzML.
+    #' @param levels Numeric vector with the MS levels to consider when centroiding data. Default is `c(1, 2)`.
     #'
     #' @return A new MassSpecEngine class object.
     #'
@@ -291,7 +299,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @return A data.table with the TIC chromatogram.
     #'
     get_spectra_tic = function(analyses = NULL, levels = c(1, 2), rt = NULL) {
-      get_spectra_tic(self$analyses, analyses, levels, rt)
+      StreamFind::get_spectra_tic(self$analyses, analyses, levels, rt)
     },
 
     # MARK: get_spectra_bpc
@@ -303,7 +311,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @return A character vector.
     #'
     get_spectra_bpc = function(analyses = NULL, levels = c(1, 2), rt = NULL) {
-      get_spectra_bpc(self$analyses, analyses, levels, rt)
+      StreamFind::get_spectra_bpc(self$analyses, analyses, levels, rt)
     },
 
     # MARK: get_spectra
@@ -325,20 +333,20 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            minIntensityMS2 = 0,
                            useRawData = TRUE,
                            useLoadedData = TRUE) {
-      get_spectra(
+      StreamFind::get_spectra(
         self$analyses,
         analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id, allTraces,
         isolationWindow, minIntensityMS1, minIntensityMS2, useRawData, useLoadedData
       )
     },
-
+    
     # MARK: get_spectra_matrix
     ## __ get_spectra_matrix -----
     #' @description Gets a matrix with spectra from analyses.
     get_spectra_matrix = function(analyses = NULL) {
-      get_spectra_matrix(self$analyses, analyses)
+      StreamFind::get_spectra_matrix(self$analyses, analyses)
     },
-
+    
     # MARK: get_spectra_eic
     ## __ get_spectra_eic -----
     #' @description Gets spectra extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
@@ -353,13 +361,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                id = NULL,
                                useRawData = TRUE,
                                useLoadedData = FALSE) {
-      get_spectra_eic(
+      StreamFind::get_spectra_eic(
         self$analyses,
         analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
         useRawData, useLoadedData
       )
     },
-
+    
     # MARK: get_spectra_ms1
     ## __ get_spectra_ms1 -----
     #' @description Gets level 1 spectra from the analyses based on targets as a data.frame.
@@ -377,13 +385,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                minIntensity = 1000,
                                useRawData = TRUE,
                                useLoadedData = FALSE) {
-      get_spectra_ms1(
+      StreamFind::get_spectra_ms1(
         self$analyses,
         analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
         mzClust, presence, minIntensity, useRawData, useLoadedData
       )
     },
-
+    
     # MARK: get_spectra_ms2
     ## __ get_spectra_ms2 -----
     #' @description Gets level 2 spectra from the analyses based on targets as a data.frame.
@@ -402,13 +410,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                minIntensity = 0,
                                useRawData = TRUE,
                                useLoadedData = FALSE) {
-      get_spectra_ms2(
+      StreamFind::get_spectra_ms2(
         self$analyses,
         analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
         isolationWindow, mzClust, presence, minIntensity, useRawData, useLoadedData
       )
     },
-
+    
     # MARK: get_chromatograms_number
     ## __ get_chromatograms_number -----
     #' @description Gets the number of chromatograms in each analysis.
@@ -416,7 +424,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       analyses <- .check_analyses_argument(self$analyses, analyses)
       self$analyses$chromatograms_number[analyses]
     },
-
+    
     # MARK: get_chromatograms_headers
     ## __ get_chromatograms_headers -----
     #' @description Gets the chromatograms headers data.table of each analysis.
@@ -426,7 +434,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       value <- rbindlist(value, idcol = "analysis", fill = TRUE)
       value
     },
-
+    
     # MARK: get_chromatograms
     ## __ get_chromatograms -----
     #' @description Gets chromatograms from each analysis.
@@ -437,16 +445,16 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  minIntensity = NULL,
                                  useRawData = FALSE,
                                  useLoadedData = TRUE) {
-      get_chromatograms(self$analyses, analyses, chromatograms, rtmin, rtmax, minIntensity, useRawData, useLoadedData)
+      StreamFind::get_chromatograms(self$analyses, analyses, chromatograms, rtmin, rtmax, minIntensity, useRawData, useLoadedData)
     },
-
+    
     # MARK: get_chromatograms_peaks
     ## __ get_chromatograms_peaks -----
     #' @description Gets integrated peaks from chromatograms.
     get_chromatograms_peaks = function(analyses = NULL, chromatograms = NULL) {
-      get_chromatograms_peaks(self$analyses, analyses, chromatograms)
+      StreamFind::get_chromatograms_peaks(self$analyses, analyses, chromatograms)
     },
-
+    
     # MARK: get_features
     ## __ get_features -----
     #' @description Gets a data.table with all features from NTS results or as selected by the arguments.
@@ -460,9 +468,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             sec = 60,
                             millisec = 5,
                             filtered = FALSE) {
-      get_features(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+      StreamFind::get_features(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
     },
-
+    
     # MARK: get_features_eic
     ## __ get_features_eic -----
     #' @description Gets a data.table with feature EICs following the targets from the arguments.
@@ -479,13 +487,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 mzExpand = NULL,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      get_features_eic(
+      StreamFind::get_features_eic(
         self$analyses,
         analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
         rtExpand, mzExpand, filtered, useLoadedData
       )
     },
-
+    
     # MARK: get_features_ms1
     ## __ get_features_ms1 -----
     #' @description Gets a data.table of averaged MS1 spectrum for features in the analyses or as selected from the
@@ -506,13 +514,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 minIntensity = 1000,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      get_features_ms1(
+      StreamFind::get_features_ms1(
         self$analyses,
         analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
         rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData
       )
     },
-
+    
     # MARK: get_features_ms2
     ## __ get_features_ms2 -----
     #' @description Gets a data.table of averaged MS2 spectrum for features in the analyses or as selected from the
@@ -532,13 +540,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 minIntensity = 0,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      get_features_ms2(
+      StreamFind::get_features_ms2(
         self$analyses, analyses,
         features, mass, mz, rt, mobility, ppm, sec, millisec,
         isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData
       )
     },
-
+    
     # MARK: get_groups
     ## __ get_groups -----
     #' @description Gets a data.table with feature groups from the analyses.
@@ -561,13 +569,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                           average = FALSE,
                           sdValues = FALSE,
                           metadata = FALSE) {
-      get_groups(
+      StreamFind::get_groups(
         self$analyses,
         groups, mass, mz, rt, mobility, ppm, sec, millisec,
         filtered, intensities, average, sdValues, metadata
       )
     },
-
+    
     # MARK: get_groups_ms1
     ## __ get_groups_ms1 -----
     #' @description Gets a data.table of averaged MS1 spectrum for feature groups in the analyses.
@@ -590,14 +598,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               minIntensity = 1000,
                               groupBy = "groups",
                               filtered = FALSE) {
-      get_groups_ms1(
+      StreamFind::get_groups_ms1(
         self$analyses,
         groups, mass, mz, rt, mobility, ppm, sec, millisec,
         rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
         useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
       )
     },
-
+    
     # MARK: get_groups_ms2
     ## __ get_groups_ms2 -----
     #' @description Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
@@ -619,14 +627,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               minIntensity = 100,
                               groupBy = "groups",
                               filtered = FALSE) {
-      get_groups_ms2(
+      StreamFind::get_groups_ms2(
         self$analyses,
         groups, mass, mz, rt, mobility, ppm, sec, millisec,
         isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
         useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
       )
     },
-
+    
     # MARK: get_MSPeakLists
     ## __ get_MSPeakLists -----
     #' @description Creates S4 class `MSPeakLists`. Note that feature groups are required. The MS and MSMS spectra
@@ -757,7 +765,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               sec = 60,
                               millisec = 5,
                               filtered = FALSE) {
-      get_components(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+      StreamFind::get_components(self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
     },
 
     # MARK: get_suspects
@@ -789,7 +797,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             minIntensity = 0,
                             filtered = FALSE,
                             onGroups = TRUE) {
-      get_suspects(
+      StreamFind::get_suspects(
         self$analyses,
         analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
         ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, onGroups
@@ -804,7 +812,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' analysis replicate group.
     #'
     get_internal_standards = function(average = TRUE) {
-      get_internal_standards(self$analyses, average)
+      StreamFind::get_internal_standards(self$analyses, average)
     },
 
     # MARK: get_metadata
@@ -851,6 +859,29 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       self$analyses <- remove(self$analyses, analyses)
       invisible(self)
     },
+    
+    # MARK: add_replicate_names
+    ## __ add_replicate_names -----
+    #' @description Adds replicate names to the analysis.
+    #' 
+    #' @param value Character vector with the replicate names. Must have the same length as the number of analyses.
+    #' 
+    add_replicate_names = function(value) {
+      self$analyses$replicates <- value
+      invisible(self)
+    },
+    
+    # MARK: add_blank_names
+    ## __ add_blank_names -----
+    #' @description Adds blank names to the analysis.
+    #' 
+    #' @param value Character vector with the replicate names. Must have the same length as the number of analyses and
+    #' must be one of replicate names.
+    #' 
+    add_blank_names = function(value) {
+      self$analyses$blanks <- value
+      invisible(self)
+    },
 
     # MARK: load_spectra
     ## ___ load_spectra -----
@@ -872,9 +903,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             isolationWindow = 1.3,
                             minIntensityMS1 = 0,
                             minIntensityMS2 = 0) {
-      self$analyses <- load_spectra(
+      self$analyses <- StreamFind::load_spectra(
         self$analyses,
-        analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+        analyses,
+        levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
         allTraces, isolationWindow, minIntensityMS1, minIntensityMS2
       )
       invisible(self)
@@ -886,8 +918,19 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @return Invisible.
     #'
-    load_chromatograms = function(analyses = NULL, chromatograms = NULL, rtmin = 0, rtmax = 0, minIntensity = NULL) {
-      self$analyses <- load_chromatograms(self$analyses, analyses, chromatograms, rtmin, rtmax, minIntensity)
+    load_chromatograms = function(analyses = NULL,
+                                  chromatograms = NULL,
+                                  rtmin = 0,
+                                  rtmax = 0,
+                                  minIntensity = NULL) {
+      self$analyses <- StreamFind::load_chromatograms(
+        self$analyses,
+        analyses,
+        chromatograms,
+        rtmin,
+        rtmax,
+        minIntensity
+      )
       invisible(self)
     },
 
@@ -1058,7 +1101,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                xLab = NULL,
                                yLab = NULL,
                                zLab = NULL) {
-      plot_spectra_3d(self$analyses, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+      StreamFind::plot_spectra_3d(self$analyses, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
         allTraces, isolationWindow, minIntensityMS1, minIntensityMS2, legendNames, colorBy, xVal, yVal, xLab, yLab, zLab
       )
     },
@@ -1097,7 +1140,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             cex = 0.6,
                             showLegend = TRUE,
                             interactive = TRUE) {
-      plot_spectra(
+      StreamFind::plot_spectra(
         self$analyses,
         analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
         allTraces, isolationWindow, minIntensityMS1, minIntensityMS2, useRawData, useLoadedData,
@@ -1125,9 +1168,21 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                   ylim = NULL,
                                   cex = 0.6,
                                   interactive = TRUE) {
-      plot_chromatograms(
-        self$analyses, analyses, chromatograms, rtmin, rtmax, minIntensity, useRawData, useLoadedData, xLab, yLab,
-        title, colorBy, legendNames, showLegend, xlim, ylim, cex, interactive
+      StreamFind::plot_chromatograms(
+        self$analyses,
+        analyses,
+        chromatograms,
+        rtmin, rtmax,
+        minIntensity,
+        useRawData,
+        useLoadedData,
+        xLab, yLab,
+        title, colorBy,
+        legendNames,
+        showLegend,
+        xlim, ylim,
+        cex,
+        interactive
       )
     },
     
@@ -1143,7 +1198,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                            showLegend = TRUE,
                                            colorBy = "analyses",
                                            interactive = TRUE) {
-      plot_chromatograms_baseline(
+      StreamFind::plot_chromatograms_baseline(
         self$analyses, analyses, chromatograms, xLab, yLab, title, cex, showLegend, colorBy,
         interactive
       )
@@ -1184,7 +1239,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 ppmMark = 5,
                                 secMark = 10,
                                 numberRows = 1) {
-      plot_spectra_xic(
+      StreamFind::plot_spectra_xic(
         self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
         legendNames, plotTargetMark, targetsMark, ppmMark, secMark, numberRows
       )
@@ -1212,7 +1267,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 ylim = NULL,
                                 cex = 0.6,
                                 interactive = TRUE) {
-      plot_spectra_eic(
+      StreamFind::plot_spectra_eic(
         self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, legendNames, xLab,
         yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive
       )
@@ -1238,7 +1293,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 cex = 0.6,
                                 downsize = 1,
                                 interactive = TRUE) {
-      plot_spectra_tic(
+      StreamFind::plot_spectra_tic(
         self$analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames, showLegend, xlim,
         ylim, cex, downsize, interactive
       )
@@ -1260,7 +1315,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 ylim = NULL,
                                 cex = 0.6,
                                 interactive = TRUE) {
-      plot_spectra_bpc(
+      StreamFind::plot_spectra_bpc(
         self$analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames, showLegend, xlim,
         ylim, cex, interactive
       )
@@ -1288,7 +1343,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 title = NULL,
                                 colorBy = "targets",
                                 interactive = TRUE) {
-      ms2 <- plot_spectra_ms2(
+      StreamFind::plot_spectra_ms2(
         self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, isolationWindow,
         mzClust, presence, minIntensity, legendNames, xLab, yLab, title, colorBy, interactive
       )
@@ -1316,7 +1371,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 colorBy = "targets",
                                 showText = FALSE,
                                 interactive = TRUE) {
-      ms1 <- plot_spectra_ms1(
+      StreamFind::plot_spectra_ms1(
         self$analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust,
         presence, minIntensity, legendNames, xLab, yLab, title, colorBy, showText, interactive
       )
@@ -1348,7 +1403,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              ylim = NULL,
                              cex = 0.6,
                              interactive = TRUE) {
-      plot_features(
+      StreamFind::plot_features(
         self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand,
         useLoadedData, filtered, legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex,
         interactive
@@ -1378,7 +1433,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             ylim = 0.05,
                             cex = 0.6,
                             interactive = TRUE) {
-      map_features(
+      StreamFind::map_features(
         self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
         legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive
       )
@@ -1409,7 +1464,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  title = NULL,
                                  colorBy = "targets",
                                  interactive = TRUE) {
-      plot_features_ms1(
+      StreamFind::plot_features_ms1(
         self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow,
         mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab,
         title, colorBy, interactive
@@ -1440,7 +1495,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  title = NULL,
                                  colorBy = "targets",
                                  interactive = TRUE) {
-      plot_features_ms2(
+      StreamFind::plot_features_ms2(
         self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
         mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab, title,
         colorBy, interactive
@@ -1471,7 +1526,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            ylim = NULL,
                            cex = 0.6,
                            interactive = TRUE) {
-      plot_groups(
+      StreamFind::plot_groups(
         self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand, filtered,
         legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive
       )
@@ -1505,7 +1560,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                title = NULL,
                                colorBy = "targets",
                                interactive = TRUE) {
-      plot_groups_ms1(
+      StreamFind::plot_groups_ms1(
         self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow,
         mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence,
         minIntensity, groupBy, filtered, legendNames, xLab, yLab, title, colorBy, interactive
@@ -1539,7 +1594,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                title = NULL,
                                colorBy = "targets",
                                interactive = TRUE) {
-      plot_groups_ms2(
+      StreamFind::plot_groups_ms2(
         self$analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
         mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence,
         minIntensity, groupBy, filtered, legendNames, xLab, yLab, title, colorBy, interactive
@@ -1572,7 +1627,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     legendNames = NULL,
                                     title = NULL,
                                     heights = c(0.35, 0.5, 0.15)) {
-      plot_groups_overview(
+      StreamFind::plot_groups_overview(
         self$analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand,
         mzExpand, useLoadedData, correctSuppression, filtered, legendNames, title, heights
       )
@@ -1601,7 +1656,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    legendNames = NULL,
                                    yLab = NULL,
                                    title = NULL) {
-      plot_groups_profile(
+      StreamFind::plot_groups_profile(
         self$analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
         correctSuppression, normalized, legendNames, yLab, title
       )
@@ -1629,7 +1684,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               title = NULL,
                               colorBy = "targets",
                               interactive = TRUE) {
-      map_components(
+      StreamFind::map_components(
         self$analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered, xlim,
         ylim, showLegend, legendNames, xLab, yLab, title, colorBy, interactive
       )
@@ -1645,7 +1700,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @param widths Logical (length 1). When `TRUE` the widths of the internal standards is plotted.
     #'
     plot_internal_standards = function(analyses = NULL, presence = TRUE, recovery = TRUE, deviations = TRUE, widths = TRUE) {
-      plot_internal_standards(self$analyses, analyses)
+      StreamFind::plot_internal_standards(self$analyses, analyses)
     },
 
     # MARK: plot_suspects
@@ -1680,7 +1735,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              useLoadedData = TRUE,
                              colorBy = "targets",
                              interactive = TRUE) {
-      plot_suspects(
+      StreamFind::plot_suspects(
         self$analyses, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec, ppmMS2,
         minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, rtExpand, mzExpand,
         useLoadedData, colorBy, interactive
@@ -1702,7 +1757,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                         xLab = NULL,
                                         yLab = NULL,
                                         interactive = TRUE) {
-      plot_chromatograms_peaks(
+      StreamFind::plot_chromatograms_peaks(
         self$analyses, analyses, chromatograms, legendNames, title, colorBy, showLegend, xlim,
         ylim, cex, xLab, yLab, interactive
       )
@@ -1722,7 +1777,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     xLab = NULL,
                                     yLab = NULL,
                                     interactive = TRUE) {
-      plot_spectra_charges(
+      StreamFind::plot_spectra_charges(
         self$analyses, analyses, legendNames, title, colorBy, showLegend, xlim, ylim, cex, xLab,
         yLab, interactive
       )
@@ -1876,7 +1931,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                           clearPath = FALSE,
                           openReport = TRUE,
                           parallel = TRUE) {
-      report(
+      StreamFind::report(
         self$nts, path, filtered, settingsFile, eicRtWindow, eicTopMost, eicTopMostByRGroup, eicOnlyPresent,
         eicMzExpWindow, adductPos, adductNeg, specSimMethod, specSimRemovePrecursor, specSimMzWeight,
         specSimIntWeight, specSimAbsMzDev, specSimRelMinIntensity, specSimMinPeaks, specSimShift,

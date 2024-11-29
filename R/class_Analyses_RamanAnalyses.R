@@ -156,13 +156,13 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
   ## __constructor -----
   constructor = function(files = NULL) {
     analyses <- .get_RamanAnalysis_from_files(files)
-    S7::new_object(Analyses(), possible_formats = c(".asc", ".sif"), analyses = analyses)
+    S7::new_object(Analyses(), possible_formats = c("asc", "sif"), analyses = analyses)
   },
 
   # MARK: validator
   ## __validator -----
   validator = function(self) {
-    checkmate::assert_true(identical(self@possible_formats, c(".asc", ".sif")))
+    checkmate::assert_true(identical(self@possible_formats, c("asc", "sif")))
     if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(self@names)))
     NULL
   }
@@ -185,7 +185,7 @@ S7::method(names, RamanAnalyses) <- function(x) {
 #' @noRd
 S7::method(add, RamanAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    if (all(grepl(x@possible_formats, value))) {
+    if (all(vapply(value, function(z) tools::file_ext(z) %in% x@possible_formats, FALSE))) {
       value <- .get_RamanAnalysis_from_files(value)
     } else {
       warning("File/s not valid!")

@@ -37,10 +37,10 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="articles/app_guide.html">StreamFind App Guide</a></li>
-    <li><a class="dropdown-item" href="articles/demo_ms_raman_fusion_bsa.html">Comparison of Different Bovine Serum Albumin Products</a></li>
-    <li><a class="dropdown-item" href="articles/demo_ozonation_project.html">Evaluation of Wastewater Ozonation with Mass Spectrometry</a></li>
-    <li><a class="dropdown-item" href="articles/demo_paracetamol_fusion.html">Detection of Quality Deviations in Paracetamol Products</a></li>
-    <li><a class="dropdown-item" href="articles/demo_paracetamol_quantification_mcrals.html">Quantification of Active Product Ingredient in a Pharmaceutical</a></li>
+    <li><a class="dropdown-item" href="articles/demo_ms_raman_fusion_bsa.html">Purity Evaluation of Bovine Serum Albumin Products</a></li>
+    <li><a class="dropdown-item" href="articles/demo_nts.html">Non-target Screening (NTS) Wastewater Treatment Evaluation</a></li>
+    <li><a class="dropdown-item" href="articles/demo_paracetamol_fusion.html">Detect Pharmaceutical Quality Deviations with MS, Raman and Statistics</a></li>
+    <li><a class="dropdown-item" href="articles/demo_paracetamol_quantification_mcrals.html">Pharmaceutical API Quantification with Raman and MCR</a></li>
     <li><a class="dropdown-item" href="articles/developer_guide.html">StreamFind Developer Guide</a></li>
     <li><a class="dropdown-item" href="articles/general_guide.html">StreamFind General Introduction</a></li>
   </ul>
@@ -58,52 +58,55 @@
   </div>
 </nav><div class="container template-home">
 <div class="row">
-  <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="streamfind-r-package">StreamFind (R package)<a class="anchor" aria-label="anchor" href="#streamfind-r-package"></a>
-</h1></div>
-<!-- badges: start -->
-
-<p align="center" width="100%">
-<img width="60%" src="reference/figures/logo_StreamFind.png" alt="Logo"></p>
-<p>The StreamFind is developed within the project <a href="https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html" class="external-link">“Flexible data analysis and workflow designer to identify chemicals in the water cycle”</a>, which is funded by the <a href="https://www.bmbf.de" class="external-link">Bundesministerium für Bildung und Forschung (BMBF)</a>. The development is carried out by the <a href="https://www.iuta.de" class="external-link">Institut für Umwelt &amp; Energie, Technik &amp; Analytik e. V. (IUTA)</a>, the <a href="https://www.fzi.de/" class="external-link">Forschungszentrum Informatik (FZI)</a> and supporting partners. The goal of the StreamFind is to develop and assemble data processing workflows for different types of analytical data (e.g., mass spectrometry and spectroscopy) and to apply the workflows in different fields (e.g., environmental and quality studies of the water cycle). StreamFind aims to stimulate the use of advanced data analysis (e.g., non-target screening, statistical analysis, etc.) in routine studies, to promote standardization of data structure and processing, and to facilitate retrospective data evaluation. The StreamFind platform is aimed at scientists, but also at technicians, due to its comprehensive documentation, its well categorized set of integrated modular functions and its embedded graphical user interface.<br><br> The StreamFind development is ongoing, please <a href="mailto:cunha@iuta.de">contact us</a> for questions or collaboration.</p>
-<p><img src="reference/figures/logo_group.png" width="100%" style="display: block; margin: auto;"></p>
+  <main id="main" class="col-md-9">
+<!-- <p align="center" width="100%">
+  <img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
+</p> -->
+<p><img src="reference/figures/logos.png" alt="Logo" width="100%" style="display: block; margin: auto;"></p>
+<p>StreamFind R package is developed within the project <a href="https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html" class="external-link">“Flexible data analysis and workflow designer to identify chemicals in the water cycle”</a> funded by the <a href="https://www.bmbf.de" class="external-link">German Federal Ministry of Education and Research (BMBF)</a>. The development is carried out by the <a href="https://www.iuta.de" class="external-link">Institut für Umwelt &amp; Energie, Technik &amp; Analytik e. V. (IUTA)</a>, the <a href="https://www.fzi.de/" class="external-link">Forschungszentrum Informatik (FZI)</a> and supporting partners. StreamFind is intended to be a platform for assembling processing workflows for different types of data (e.g. mass spectrometry and spectroscopy) with applications in different fields (e.g. environmental and quality studies of the water cycle and quality control of pharmaceuticals). StreamFind aims to stimulate the use of advanced data analysis (e.g. non-target screening, statistical analysis, etc.) in routine studies, to promote standardisation of data structure and processing, and to facilitate retrospective data evaluation. The StreamFind platform is aimed at scientists, but also at technicians due to its comprehensive documentation, its well categorised set of integrated modular functions and its embedded graphical user interface.</p>
+<p>The StreamFind development is ongoing, please <a href="mailto:cunha@iuta.de">contact us</a> for questions or collaboration.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Pre-requisites for the StreamFind are the <a href="https://cran.r-project.org/" class="external-link">R</a> software and the <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">RTools</a> (only applicable for Windows users). RTools is needed for compiling the C++ code used in the StreamFind R package. Assuming that R and RTools are installed, the StreamFind R package can be installed from the GitHub repository via the <a href="https://www.bioconductor.org/install/" class="external-link">BiocManager</a>.</p>
+<p>Pre-requisites for the StreamFind are the <a href="https://cran.r-project.org/" class="external-link">R</a> software and the <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">RTools</a> (only applicable for Windows users). RTools is needed for compiling C++ code used in the StreamFind R package. StreamFind also uses python scripts for some of its functionalities, so it is recommended to have the latest <a href="https://www.python.org/downloads/" class="external-link">python</a> installed and added to the environmental variables for Windows users. Assuming that R, RTools and python are installed, the StreamFind R package can be installed from the GitHub repository via the <a href="https://www.bioconductor.org/install/" class="external-link">BiocManager</a>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
-<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"odea-project/StreamFind"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="docker-setup">Docker Setup<a class="anchor" aria-label="anchor" href="#docker-setup"></a>
-</h2>
-<p>Build the Docker Image</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>docker build <span class="sc">-</span>t my<span class="sc">-</span>r<span class="sc">-</span>app .</span></code></pre></div>
-<p>Start the Container</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>docker run <span class="sc">-</span>it <span class="sc">-</span>p <span class="dv">3838</span><span class="sc">:</span><span class="dv">3838</span> <span class="sc">-</span>p <span class="dv">8787</span><span class="sc">:</span><span class="dv">8787</span> <span class="sc">-</span>v <span class="sc">$</span>(pwd)<span class="sc">:</span><span class="er">/</span>app my<span class="sc">-</span>r<span class="sc">-</span>app</span></code></pre></div>
-<p>Once the container is up, you’ll be prompted to select the service you want to run:</p>
-<p>Option 1: Run Shiny App Starts the Shiny application, accessible at <a href="http://localhost:3838" class="external-link uri">http://localhost:3838</a>.</p>
-<p>Option 2: Run RStudio Server Starts the RStudio Server, accessible at <a href="http://localhost:8787" class="external-link uri">http://localhost:8787</a>.</p>
-<p>Default credentials:</p>
-<p>Username: rstudio</p>
-<p>Password: rstudio</p>
-<p>Option 3: Run Both Shiny App and RStudio Server</p>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"odea-project/StreamFind"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="other-dependencies">Other dependencies<a class="anchor" aria-label="anchor" href="#other-dependencies"></a>
 </h2>
-<p>The StreamFind depends on other open source software to process different analytical data. For instance, for non-target screening using mass spectrometry the StreamFind uses the <a href="https://github.com/rickhelmus/patRoon" class="external-link">patRoon</a> R package and its own dependencies. Installation instructions for patRoon and its dependencies can be found <a href="https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites" class="external-link">here</a>. Consult the documentation for dependencies of other data types.</p>
+<p>The StreamFind depends on other open source software to process different analytical data. For instance, for non-target screening using mass spectrometry the StreamFind uses the <a href="https://github.com/rickhelmus/patRoon" class="external-link">patRoon</a> R package and its own dependencies. Installation instructions for patRoon and its dependencies can be found <a href="https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites" class="external-link">here</a>. When a dependency is not installed, a warning message will be displayed when necessary with instructions. Consult the documentation for dependencies of other data types.</p>
 </div>
 <div class="section level2">
 <h2 id="suplementary-data">Suplementary data<a class="anchor" aria-label="anchor" href="#suplementary-data"></a>
 </h2>
 <p>The supplementary <a href="https://github.com/odea-project/StreamFindData" class="external-link">StreamFindData</a> R package holds the data used in examples and other documentation assets of the StreamFind and can also be installed from the GitHub repository.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"odea-project/StreamFindData"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="docker-setup">Docker Setup<a class="anchor" aria-label="anchor" href="#docker-setup"></a>
+</h2>
+<p>The StreamFind can also be used via the <a href="https://www.docker.com/products/docker-desktop/" class="external-link">Docker</a> container. The Docker container is a pre-configured environment with all the necessary dependencies installed. The Docker container can be built and started with the following commands.</p>
+<p>Build the Docker container:<br><code>docker build -t my-r-app .</code></p>
+<p>Start the Docker container:<br><code>docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app</code></p>
+<p>Once the container is up, you’ll be prompted to select the service you want to run:</p>
+<ul>
+<li>
+<em>Option 1:</em> Starts the Shiny application, accessible at <a href="http://localhost:3838" class="external-link uri">http://localhost:3838</a>.</li>
+<li>
+<em>Option 2:</em> Starts the RStudio Server, accessible at <a href="http://localhost:8787" class="external-link uri">http://localhost:8787</a>
+<ul>
+<li>Default Username is rstudio and Password is rstudio</li>
+</ul>
+</li>
+<li>
+<em>Option 3:</em> Starts both the Shiny App and RStudio Server</li>
+</ul>
 </div>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
@@ -178,11 +181,17 @@ Ruttkies, Christoph, Emma L Schymanski, Nadine Strehmel, Juliane Hollender, Stef
 <div id="ref-metfrag01" class="csl-entry">
 Ruttkies, Christoph, Emma L Schymanski, Sebastian Wolf, Juliane Hollender, and Steffen Neumann. 2016. “MetFrag Relaunched: Incorporating Strategies Beyond in Silico Fragmentation.” <em>Journal of Cheminformatics</em> 8 (1): 1–16.
 </div>
+<div id="ref-orpl01" class="csl-entry">
+Sheehy, Guillaume, Fabien Picot, Frédérick Dallaire, Katherine Ember, Tien Nguyen, Kevin Petrecca, Dominique Trudel, and Frédéric Leblond. 2023. “<span class="nocase">Open-sourced Raman spectroscopy data processing package implementing a baseline removal algorithm validated from multiple datasets acquired in human tissue and biofluids</span>.” <em>Journal of Biomedical Optics</em> 28 (2): 025002. <a href="https://doi.org/10.1117/1.JBO.28.2.025002" class="external-link uri">https://doi.org/10.1117/1.JBO.28.2.025002</a>.
+</div>
 <div id="ref-xcms01" class="csl-entry">
 Smith, C.A., Want, E.J., O’Maille, G., Abagyan,R., Siuzdak, and G. 2006. “XCMS: Processing Mass Spectrometry Data for Metabolite Profiling Using Nonlinear Peak Alignment, Matching and Identification.” <em>Analytical Chemistry</em> 78: 779–87.
 </div>
 <div id="ref-xcms02" class="csl-entry">
 Tautenhahn, Ralf, Christoph Boettcher, and Steffen Neumann. 2008. “Highly Sensitive Feature Detection for High Resolution LC/MS.” <em>BMC Bioinformatics</em> 9: 504.
+</div>
+<div id="ref-tisler01" class="csl-entry">
+Tisler, Selina, David I. Pattison, and Jan H. Christensen. 2021. “Correction of Matrix Effects for Reliable Non-Target Screening LC–ESI–MS Analysis of Wastewater.” <em>Analytical Chemistry</em> 93 (24): 8432–41. <a href="https://doi.org/10.1021/acs.analchem.1c00357" class="external-link uri">https://doi.org/10.1021/acs.analchem.1c00357</a>.
 </div>
 <div id="ref-class01" class="csl-entry">
 Venables, W. N., and B. D. Ripley. 2002. <em>Modern Applied Statistics with s</em>. Fourth. New York: Springer. <a href="https://www.stats.ox.ac.uk/pub/MASS4/" class="external-link uri">https://www.stats.ox.ac.uk/pub/MASS4/</a>.
@@ -198,7 +207,7 @@ Zhang, Zhi-Min, Shan Chen, and Yi-Zeng Liang. 2010. “Baseline Correction Using
 </div>
 </div>
 </div>
-</div>
+
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">

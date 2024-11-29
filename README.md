@@ -15,7 +15,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
   <img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
 </p> -->
 
-<img src="man/figures/logos.png" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/logos.png" alt="Logo" width="100%" style="display: block; margin: auto;" />
 
 StreamFind R package is developed within the project [“Flexible data
 analysis and workflow designer to identify chemicals in the water
@@ -130,7 +130,8 @@ research that StreamFind uses relies on other contributions. Therefore,
 we recommend to search within each citation for other contributions.  
 <br>
 
-<div id="refs" class="references csl-bib-body hanging-indent">
+<div id="refs" class="references csl-bib-body hanging-indent"
+entry-spacing="0">
 
 <div id="ref-xcms03" class="csl-entry">
 

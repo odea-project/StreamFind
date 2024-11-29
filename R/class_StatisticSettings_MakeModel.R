@@ -7,6 +7,8 @@
 #'
 #' @description Makes a Principle Component Analysis (PCA) model based on the R package \pkg{mdatools}.
 #' 
+#' @param center Logical (length 1) indicating if the data should be centered.
+#' @param scale Logical (length 1) indicating if the data should be scaled.
 #' @param ncomp Integer (length 1) with the number of components to be calculated.
 #' @param exclrows Integer vector with the row indices to be excluded.
 #' @param exclcols Integer vector with the column indices to be excluded.
@@ -31,7 +33,9 @@ StatisticSettings_MakeModel_pca_mdatools <- S7::new_class("StatisticSettings_Mak
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(ncomp = NULL,
+  constructor = function(center = FALSE,
+                         scale = FALSE,
+                         ncomp = NULL,
                          exclrows = NULL,
                          exclcols = NULL,
                          x.test = NULL,
@@ -47,6 +51,8 @@ StatisticSettings_MakeModel_pca_mdatools <- S7::new_class("StatisticSettings_Mak
       method = "MakeModel",
       algorithm = "pca_mdatools",
       parameters = list(
+        center = center,
+        scale = scale,
         ncomp = ncomp,
         exclrows = exclrows,
         exclcols = exclcols,
@@ -72,6 +78,8 @@ StatisticSettings_MakeModel_pca_mdatools <- S7::new_class("StatisticSettings_Mak
     checkmate::assert_choice(self@engine, "Statistic")
     checkmate::assert_choice(self@method, "MakeModel")
     checkmate::assert_choice(self@algorithm, "pca_mdatools")
+    checkmate::assert_logical(self@parameters$center, len = 1)
+    checkmate::assert_logical(self@parameters$scale, len = 1)
     checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
     checkmate::assert_number(self@parameters$exclrows, null.ok = TRUE)
     checkmate::assert_number(self@parameters$exclcols, null.ok = TRUE)
@@ -109,8 +117,8 @@ S7::method(run, StatisticSettings_MakeModel_pca_mdatools) <- function(x, engine 
   
   ncomp = x$parameters$ncomp
   if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
-  center <- FALSE
-  scale <- FALSE
+  center <- x$parameters$center
+  scale <- x$parameters$scale
   exclrows <- x$parameters$exclrows
   exclcols <- x$parameters$exclcols
   x.test <- x$parameters$x.test
@@ -122,8 +130,19 @@ S7::method(run, StatisticSettings_MakeModel_pca_mdatools) <- function(x, engine 
   info <- x$parameters$info
   
   m <- mdatools::pca(
-    x = mat, ncomp = ncomp, center = center, scale = scale, exclrows = exclrows, exclcols = exclcols, x.test = x.test, 
-    method = method, rand = rand, lim.type = lim.type, alpha = alpha, gamma = gamma, info = info
+    x = mat,
+    ncomp = ncomp,
+    center = center,
+    scale = scale,
+    exclrows = exclrows,
+    exclcols = exclcols,
+    x.test = x.test, 
+    method = method,
+    rand = rand,
+    lim.type = lim.type,
+    alpha = alpha,
+    gamma = gamma,
+    info = info
   )
   
   engine$model <- StreamFind::PCA(model = m)
