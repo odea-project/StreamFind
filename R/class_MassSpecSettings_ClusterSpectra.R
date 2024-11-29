@@ -26,6 +26,7 @@ MassSpecSettings_ClusterSpectra_StreamFind <- S7::new_class("MassSpecSettings_Cl
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "ClusterSpectra",
+      required = "LoadSpectra",
       algorithm = "StreamFind",
       parameters = list(
         val = as.character(val),

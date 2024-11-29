@@ -25,6 +25,7 @@ MassSpecSettings_QuantifyChromatographicPeaks_StreamFind <- S7::new_class("MassS
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "QuantifyChromatographicPeaks",
+      required = c("LoadChromstograms", "IntegrateChromatograms"),
       algorithm = "StreamFind",
       parameters = list(
         calibration = as.numeric(calibration),

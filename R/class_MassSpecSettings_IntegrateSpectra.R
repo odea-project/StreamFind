@@ -35,6 +35,7 @@ MassSpecSettings_IntegrateSpectra_StreamFind <- S7::new_class("MassSpecSettings_
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "IntegrateSpectra",
+      required = "LoadSpectra",
       algorithm = "StreamFind",
       parameters = list(
         merge = merge,

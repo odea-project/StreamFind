@@ -23,6 +23,7 @@ MassSpecSettings_SmoothSpectra_movingaverage <- S7::new_class("MassSpecSettings_
       engine = "MassSpec",
       method = "SmoothSpectra",
       algorithm = "movingaverage",
+      required = "LoadSpectra",
       parameters = list(windowSize = windowSize),
       number_permitted = Inf,
       version = as.character(packageVersion("StreamFind")),
@@ -119,6 +120,7 @@ MassSpecSettings_SmoothSpectra_savgol <- S7::new_class("MassSpecSettings_SmoothS
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "SmoothSpectra",
+      required = "LoadSpectra",
       algorithm = "savgol",
       parameters = list(
         fl = fl,

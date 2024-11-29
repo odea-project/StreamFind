@@ -22,6 +22,7 @@ MassSpecSettings_SmoothChromatograms_movingaverage <- S7::new_class("MassSpecSet
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "SmoothChromatograms",
+      required = "LoadChromstograms",
       algorithm = "movingaverage",
       parameters = list(windowSize = windowSize),
       number_permitted = Inf,
@@ -124,6 +125,7 @@ MassSpecSettings_SmoothChromatograms_savgol <- S7::new_class("MassSpecSettings_S
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "SmoothChromatograms",
+      required = "LoadChromstograms",
       algorithm = "savgol",
       parameters = list(
         fl = fl,

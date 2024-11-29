@@ -25,6 +25,7 @@ RamanSettings_CorrectSpectraBaseline_baseline_als <- S7::new_class("RamanSetting
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "CorrectSpectraBaseline",
+      required = NA_character_,
       algorithm = "baseline_als",
       parameters = list(
         lambda = lambda,
@@ -150,6 +151,7 @@ RamanSettings_CorrectSpectraBaseline_airpls <- S7::new_class("RamanSettings_Corr
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "CorrectSpectraBaseline",
+      required = NA_character_,
       algorithm = "airpls",
       parameters = list(lambda = lambda, differences = differences, itermax = itermax),
       number_permitted = Inf,

@@ -27,6 +27,7 @@ MassSpecSettings_CalculateSpectraCharges_StreamFind <- S7::new_class("MassSpecSe
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CalculateSpectraCharges",
+      required = "LoadSpectra",
       algorithm = "StreamFind",
       parameters = list(
         roundVal = as.numeric(roundVal),

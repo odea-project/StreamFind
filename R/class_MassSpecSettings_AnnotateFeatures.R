@@ -34,6 +34,7 @@ MassSpecSettings_AnnotateFeatures_StreamFind <- S7::new_class("MassSpecSettings_
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "AnnotateFeatures",
+      required = "FindFeatures",
       algorithm = "StreamFind",
       parameters = list(
         maxIsotopes = as.integer(maxIsotopes),

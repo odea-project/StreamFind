@@ -7,7 +7,7 @@
 \usage{
 MassSpecSettings_CorrectMatrixSuppression_TiChri(
   mpRtWindow = 10,
-  istdAssignment = c("nearest"),
+  istdAssignment = "none",
   istdRtWindow = 5,
   istdN = 2
 )

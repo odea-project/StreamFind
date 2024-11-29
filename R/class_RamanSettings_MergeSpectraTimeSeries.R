@@ -19,6 +19,7 @@ RamanSettings_MergeSpectraTimeSeries_StreamFind <- S7::new_class("RamanSettings_
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "MergeSpectraTimeSeries",
+      required = NA_character_,
       algorithm = "StreamFind",
       parameters = list(preCut = preCut),
       number_permitted = Inf,

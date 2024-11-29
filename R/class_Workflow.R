@@ -42,19 +42,44 @@ Workflow <- S7::new_class("Workflow",
     if (is.list(settings)) {
       settings <- lapply(settings, function(x) {
         if (is.list(x) && !is(x, "ProcessingSettings")) {
-          x <- as.ProcessingSettings(x)
+          tryCatch({
+            x <- as.ProcessingSettings(x)
+          }, error = function(e) {
+            warning("Error converting to ProcessingSettings object!")
+            x <- NULL
+          })
         }
         x
       })
     } else {
       settings <- settings@settings
     }
-
+    
     if (length(settings) > 0) {
       w_names <- vapply(settings, function(z) paste0(z$method, "_", z$algorithm), NA_character_)
       w_idx <- seq_along(w_names)
       w_names <- paste0(w_idx, "_", w_names)
       names(settings) <- w_names
+      
+      engine <- vapply(settings, function(z) z$engine, NA_character_)[1]
+      possible_methods <- .get_available_methods(engine)
+      workflow_methods <- NA_character_
+      for (i in names(settings)) {
+        
+        if (!settings[[i]]$method %in% possible_methods) {
+          warning("Method ", settings[[i]]$method, " not available for the engine ", engine, "Engine!")
+          settings[[i]] <- NULL
+          next
+        }
+        
+        ri <- settings[[i]]$required
+        if (!all(ri %in% workflow_methods)) {
+          warning("Required methods not present! Please include first: \n", paste(ri, collapse = "\n"))
+          settings[[i]] <- NULL
+          next
+        }
+        workflow_methods <- c(workflow_methods, settings[[i]]$method)
+      }
     }
 
     S7::new_object(S7::S7_object(), settings = settings)
@@ -138,12 +163,32 @@ S7::method(`[`, Workflow) <- function(x, i) {
 S7::method(`[<-`, Workflow) <- function(x, i, value) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@settings[i] <- value
-
+    
     if (length(x$settings) > 0) {
       w_names <- vapply(x$settings, function(z) paste0(z$method, "_", z$algorithm), NA_character_)
       w_idx <- seq_along(w_names)
       w_names <- paste0(w_idx, "_", w_names)
       names(x@settings) <- w_names
+      
+      engine <- vapply(x@settings, function(z) z$engine, NA_character_)[1]
+      possible_methods <- .get_available_methods(engine)
+      workflow_methods <- NA_character_
+      for (i in names(x@settings)) {
+        
+        if (!x@settings[[i]]$method %in% possible_methods) {
+          warning("Method ", x@settings[[i]]$method, " not available for the engine ", engine, "Engine!")
+          x@settings[[i]] <- NULL
+          next
+        }
+        
+        ri <- x@settings[[i]]$required
+        if (!all(ri %in% workflow_methods)) {
+          warning("Required methods not present! Please include first: \n", paste(ri, collapse = "\n"))
+          x@settings[[i]] <- NULL
+          next
+        }
+        workflow_methods <- c(workflow_methods, x@settings[[i]]$method)
+      }
     }
 
     x
@@ -173,6 +218,26 @@ S7::method(`[[<-`, Workflow) <- function(x, i, value) {
       w_idx <- seq_along(w_names)
       w_names <- paste0(w_idx, "_", w_names)
       names(x@settings) <- w_names
+      
+      engine <- vapply(x@settings, function(z) z$engine, NA_character_)[1]
+      possible_methods <- .get_available_methods(engine)
+      workflow_methods <- NA_character_
+      for (i in names(x@settings)) {
+        
+        if (!x@settings[[i]]$method %in% possible_methods) {
+          warning("Method ", x@settings[[i]]$method, " not available for the engine ", engine, "Engine!")
+          x@settings[[i]] <- NULL
+          next
+        }
+        
+        ri <- x@settings[[i]]$required
+        if (!all(ri %in% workflow_methods)) {
+          warning("Required methods not present! Please include first: \n", paste(ri, collapse = "\n"))
+          x@settings[[i]] <- NULL
+          next
+        }
+        workflow_methods <- c(workflow_methods, x@settings[[i]]$method)
+      }
     }
 
     x
@@ -200,6 +265,7 @@ S7::method(save, Workflow) <- function(x, file = "workflow.rds") {
         list(
           engine = s@engine,
           method = s@method,
+          required = s@required,
           algorithm = s@algorithm,
           parameters = s@parameters,
           number_permitted = s@number_permitted,

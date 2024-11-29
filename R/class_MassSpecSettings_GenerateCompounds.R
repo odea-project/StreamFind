@@ -74,6 +74,7 @@ MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class("MassSpecSettings_Ge
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GenerateCompounds",
+      required = c("FindFeatures", "GroupFeatures", "Load_MSPeakLists"),
       algorithm = "metfrag",
       parameters = list(
         method = as.character(method),

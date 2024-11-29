@@ -27,6 +27,7 @@ MassSpecSettings_CorrectChromatogramsBaseline_baseline_als <- S7::new_class("Mas
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CorrectChromatogramsBaseline",
+      required = "LoadChromatograms",
       algorithm = "baseline_als",
       parameters = list(
         lambda = as.numeric(lambda),
@@ -154,6 +155,7 @@ MassSpecSettings_CorrectChromatogramsBaseline_airpls <- S7::new_class("MassSpecS
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CorrectChromatogramsBaseline",
+      required = "LoadChromatograms",
       algorithm = "airpls",
       parameters = list(
         lambda = as.numeric(lambda),

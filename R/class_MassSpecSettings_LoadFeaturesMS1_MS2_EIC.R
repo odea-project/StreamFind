@@ -32,6 +32,7 @@ MassSpecSettings_LoadFeaturesMS1_StreamFind <- S7::new_class("MassSpecSettings_L
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "LoadFeaturesMS1",
+      required = "FindFeatures",
       algorithm = "StreamFind",
       parameters = list(
         "rtWindow" = rtWindow,
@@ -165,6 +166,7 @@ MassSpecSettings_LoadFeaturesMS2_StreamFind <- S7::new_class("MassSpecSettings_L
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "LoadFeaturesMS2",
+      required = "FindFeatures",
       algorithm = "StreamFind",
       parameters = list(
         "isolationWindow" = isolationWindow,
@@ -290,6 +292,7 @@ MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class("MassSpecSettings_L
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "LoadFeaturesEIC",
+      required = "FindFeatures",
       algorithm = "StreamFind",
       parameters = list(
         "filtered" = filtered,

@@ -35,6 +35,7 @@ MassSpecSettings_IntegrateChromatograms_StreamFind <- S7::new_class("MassSpecSet
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "IntegrateChromatograms",
+      required = "LoadChromatograms",
       algorithm = "StreamFind",
       parameters = list(
         merge = merge,

@@ -274,6 +274,7 @@ MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
+      required = NA_character_,
       algorithm = "xcms3_centwave",
       parameters = list(
         ppm = as.numeric(ppm),
@@ -394,6 +395,7 @@ MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class("MassSpecSett
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
+      required = NA_character_,
       algorithm = "xcms3_matchedfilter",
       parameters = list(
         class = as.character("MatchedFilterParam"),
@@ -548,6 +550,7 @@ MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeat
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
+      required = NA_character_,
       algorithm = "openms",
       parameters = list(
         noiseThrInt = noiseThrInt,
@@ -662,6 +665,7 @@ MassSpecSettings_FindFeatures_kpic2 <- S7::new_class("MassSpecSettings_FindFeatu
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
+      required = NA_character_,
       algorithm = "kpic2",
       parameters = list(
         kmeans = kmeans,
@@ -726,6 +730,7 @@ MassSpecSettings_FindFeatures_qalgorithms <- S7::new_class("MassSpecSettings_Fin
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindFeatures",
+      required = NA_character_,
       algorithm = "qalgorithms",
       parameters = list(ppm = ppm),
       number_permitted = 1,

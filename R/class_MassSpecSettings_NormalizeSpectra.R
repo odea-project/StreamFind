@@ -20,6 +20,7 @@ MassSpecSettings_NormalizeSpectra_minmax <- S7::new_class("MassSpecSettings_Norm
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "NormalizeSpectra",
+      required = "LoadSpectra",
       algorithm = "minmax",
       parameters = list(),
       number_permitted = Inf,
@@ -116,6 +117,7 @@ MassSpecSettings_NormalizeSpectra_snv <- S7::new_class("MassSpecSettings_Normali
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "NormalizeSpectra",
+      required = "LoadSpectra",
       algorithm = "snv",
       parameters = list(liftTozero = liftTozero),
       number_permitted = Inf,
@@ -219,6 +221,7 @@ MassSpecSettings_NormalizeSpectra_scale <- S7::new_class("MassSpecSettings_Norma
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "NormalizeSpectra",
+      required = "LoadSpectra",
       algorithm = "scale",
       parameters = list(),
       number_permitted = Inf,
@@ -313,6 +316,7 @@ MassSpecSettings_NormalizeSpectra_blockweight <- S7::new_class("MassSpecSettings
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "NormalizeSpectra",
+      required = "LoadSpectra",
       algorithm = "blockweight",
       parameters = list(),
       number_permitted = Inf,
@@ -403,6 +407,7 @@ MassSpecSettings_NormalizeSpectra_meancenter <- S7::new_class("MassSpecSettings_
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "NormalizeSpectra",
+      required = "LoadSpectra",
       algorithm = "meancenter",
       parameters = list(),
       number_permitted = Inf,

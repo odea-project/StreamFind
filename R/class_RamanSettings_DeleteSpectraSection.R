@@ -28,6 +28,7 @@ RamanSettings_DeleteSpectraSection_StreamFind <- S7::new_class("RamanSettings_De
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "DeleteSpectraSection",
+      required = NA_character_,
       algorithm = "StreamFind",
       parameters = list(
         shiftmin = shiftmin,

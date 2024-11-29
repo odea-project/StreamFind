@@ -74,6 +74,7 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GenerateFormulas",
+      required = c("FindFeatures", "GroupFeatures", "Load_MSPeakLists"),
       algorithm = "genform",
       parameters = list(
         relMzDev = as.numeric(relMzDev),

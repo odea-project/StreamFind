@@ -22,6 +22,7 @@ MassSpecSettings_AverageSpectra_StreamFind <- S7::new_class("MassSpecSettings_Av
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "AverageSpectra",
+      required = "LoadSpectra",
       algorithm = "StreamFind",
       parameters = list(
         collapseTime = as.logical(collapseTime)

@@ -63,6 +63,7 @@ MassSpecSettings_LoadMSPeakLists_patRoon <- S7::new_class("MassSpecSettings_Load
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "LoadMSPeakLists",
+      required = c("FindFeatures", "GroupFeatures"),
       algorithm = "patRoon",
       parameters = list(
         maxMSRtWindow = maxMSRtWindow,
@@ -208,6 +209,7 @@ MassSpecSettings_LoadMSPeakLists_StreamFind <- S7::new_class("MassSpecSettings_L
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "LoadMSPeakLists",
+      required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
       algorithm = "StreamFind",
       parameters = list(
         clusterMzWindow = clusterMzWindow,

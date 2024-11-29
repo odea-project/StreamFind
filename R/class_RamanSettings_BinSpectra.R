@@ -32,6 +32,7 @@ RamanSettings_BinSpectra_StreamFind <- S7::new_class("RamanSettings_BinSpectra_S
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "BinSpectra",
+      required = NA_character_,
       algorithm = "StreamFind",
       parameters = list(
         binNames = binNames,

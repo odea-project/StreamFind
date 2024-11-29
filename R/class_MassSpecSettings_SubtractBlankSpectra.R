@@ -22,6 +22,7 @@ MassSpecSettings_SubtractBlankSpectra_StreamFind <- S7::new_class("MassSpecSetti
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "SubtractBlankSpectra",
+      required = "LoadSpectra",
       algorithm = "StreamFind",
       parameters = list(negativeToZero = negativeToZero),
       number_permitted = 1,

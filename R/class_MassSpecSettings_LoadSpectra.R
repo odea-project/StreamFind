@@ -36,6 +36,7 @@ MassSpecSettings_LoadSpectra_StreamFind <- S7::new_class("MassSpecSettings_LoadS
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "LoadSpectra",
+      required = NA_character_,
       algorithm = "StreamFind",
       parameters = list(
         levels = levels,

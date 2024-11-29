@@ -32,6 +32,7 @@ MassSpecSettings_BinSpectra_StreamFind <- S7::new_class("MassSpecSettings_BinSpe
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "BinSpectra",
+      required = "LoadSpectra",
       algorithm = "StreamFind",
       parameters = list(
         binNames = as.character(binNames),

@@ -15,6 +15,14 @@
   return(ls(envir = StreamFind_env, pattern = paste0("^", engine_settings_key)))
 }
 
+#' @noRd
+.get_available_methods <- function(engine = NA_character_) {
+  settings <- .get_available_settings(engine)
+  settings <- gsub(paste0(engine, "Settings_"), "", settings)
+  settings <- gsub("_.*", "", settings)
+  return(unique(settings))
+}
+
 #' .trim_vector
 #'
 #' @description Asset function for fast trimming of a vector based on a list of ranges.

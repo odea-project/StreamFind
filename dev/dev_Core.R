@@ -45,6 +45,16 @@ show(ms$audit_trail)
 as.data.frame(ms$audit_trail)
 
 
+afs <- MassSpecSettings_AnnotateFeatures_StreamFind()
+
+save(afs, "afs.json")
+
+cms <- MassSpecSettings_CorrectMatrixSuppression_TiChri()
+
+save(cms, "cms.json")
+
+?MassSpecSettings_CorrectMatrixSuppression_TiChri
+
 ms$run(MassSpecSettings_FindFeatures_openms())
 ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
 ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))

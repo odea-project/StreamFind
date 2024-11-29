@@ -28,6 +28,7 @@ MassSpecSettings_LoadChromatograms_StreamFind <- S7::new_class("MassSpecSettings
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "LoadChromatograms",
+      required = NA_character_,
       algorithm = "StreamFind",
       parameters = list(
         chromatograms = chromatograms,

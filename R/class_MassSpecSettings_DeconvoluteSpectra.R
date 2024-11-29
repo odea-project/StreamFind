@@ -23,6 +23,7 @@ MassSpecSettings_DeconvoluteSpectra_StreamFind <- S7::new_class("MassSpecSetting
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "DeconvoluteSpectra",
+      required = c("LoadSpectra", "CalculateSpectraCharges"),
       algorithm = "StreamFind",
       parameters = list(
         clustVal = as.numeric(clustVal),

@@ -101,12 +101,20 @@ MassSpecSettings_CorrectMatrixSuppression_TiChri <- S7::new_class("MassSpecSetti
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(mpRtWindow = 10,
-                         istdAssignment = c("nearest"),
+                         istdAssignment = "none",
                          istdRtWindow = 5,
                          istdN = 2) {
+    
+    required <- c("FindFeatures", "GroupFeatures")
+    
+    if (!istdAssignment %in% "none") {
+      required <- c(required, "FindInternalStandards")
+    }
+    
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CorrectMatrixSuppression",
+      required = required,
       algorithm = "TiChri",
       parameters = list(
         "mpRtWindow" = as.numeric(mpRtWindow),
@@ -127,7 +135,6 @@ MassSpecSettings_CorrectMatrixSuppression_TiChri <- S7::new_class("MassSpecSetti
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "CorrectMatrixSuppression")
     checkmate::assert_choice(self@algorithm, "TiChri")
-    checkmate::assert_logical(self@parameters$filtered, max.len = 1)
     checkmate::assert_numeric(self@parameters$mpRtWindow, lower = 0)
     checkmate::assert_choice(self@parameters$istdAssignment, c("nearest", "range", "none"))
     checkmate::assert_numeric(self@parameters$istdRtWindow, lower = 0)

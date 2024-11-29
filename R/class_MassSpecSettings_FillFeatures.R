@@ -33,6 +33,7 @@ MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fill
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FillFeatures",
+      required = c("FindFeatures", "GroupFeatures"),
       algorithm = "StreamFind",
       parameters = list(
         withinReplicate = as.logical(withinReplicate),

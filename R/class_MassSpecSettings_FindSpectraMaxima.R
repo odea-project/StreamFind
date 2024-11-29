@@ -24,6 +24,7 @@ MassSpecSettings_FindSpectraMaxima_StreamFind <- S7::new_class("MassSpecSettings
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindSpectraMaxima",
+      required = "LoadSpectra",
       algorithm = "StreamFind",
       parameters = list(
         minWidth = as.numeric(minWidth),

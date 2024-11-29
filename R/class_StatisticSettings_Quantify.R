@@ -25,6 +25,7 @@ StatisticSettings_Quantify_mcrals <- S7::new_class("StatisticSettings_Quantify_m
     S7::new_object(ProcessingSettings(
       engine = "Statistic",
       method = "Quantify",
+      required = "MakeModel",
       algorithm = "mcrals",
       parameters = list(concentrations = concentrations),
       number_permitted = 1,

@@ -5,6 +5,7 @@ ProcessingSettings <- S7::new_class("ProcessingSettings",
   properties = list(
     engine = S7::new_property(S7::class_character, default = NA_character_),
     method = S7::new_property(S7::class_character, default = NA_character_),
+    required = S7::new_property(S7::class_character, default = NA_character_),
     algorithm = S7::new_property(S7::class_character, default = NA_character_),
     parameters = S7::new_property(S7::class_list, default = list()),
     number_permitted = S7::new_property(S7::class_numeric, default = NA_real_),
@@ -21,6 +22,8 @@ ProcessingSettings <- S7::new_class("ProcessingSettings",
   validator = function(self) {
     checkmate::assert_character(self@engine, len = 1)
     checkmate::assert_character(self@method, len = 1)
+    checkmate::assert_character(self@required)
+    checkmate::assert_true(all(self@required %in% c(.get_available_methods(self@engine), NA_character_)))
     checkmate::assert_character(self@algorithm, len = 1)
     checkmate::assert_list(self@parameters)
     checkmate::assert_numeric(self@number_permitted, len = 1)
@@ -133,6 +136,7 @@ S7::method(show, ProcessingSettings) <- function(x, ...) {
   cat(
     " engine       ", x@engine, "\n",
     " method       ", x@method, "\n",
+    " required     ", paste(x@required, collapse = "; "), "\n",
     " algorithm    ", x@algorithm, "\n",
     " version      ", x@version, "\n",
     " software     ", x@software, "\n",

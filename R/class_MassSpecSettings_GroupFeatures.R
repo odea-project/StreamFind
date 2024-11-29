@@ -249,6 +249,7 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSetti
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GroupFeatures",
+      required = "FindFeatures",
       algorithm = "xcms3_peakdensity",
       parameters = list(
         bw = bw,
@@ -403,6 +404,7 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GroupFeatures",
+      required = "FindFeatures",
       algorithm = "xcms3_peakdensity_peakgroups",
       parameters = list(
         bw = bw,
@@ -552,6 +554,7 @@ MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFe
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GroupFeatures",
+      required = "FindFeatures",
       algorithm = "openms",
       parameters = list(
         rtalign = rtalign,

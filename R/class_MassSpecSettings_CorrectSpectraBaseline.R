@@ -25,6 +25,7 @@ MassSpecSettings_CorrectSpectraBaseline_baseline_als <- S7::new_class("MassSpecS
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CorrectSpectraBaseline",
+      required = "LoadSpectra",
       algorithm = "baseline_als",
       parameters = list(
         lambda = lambda,
@@ -150,6 +151,7 @@ MassSpecSettings_CorrectSpectraBaseline_airpls <- S7::new_class("MassSpecSetting
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CorrectSpectraBaseline",
+      required = "LoadSpectra",
       algorithm = "airpls",
       parameters = list(lambda = lambda, differences = differences, itermax = itermax),
       number_permitted = Inf,

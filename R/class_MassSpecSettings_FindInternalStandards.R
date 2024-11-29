@@ -32,6 +32,7 @@ MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSett
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FindInternalStandards",
+      required = "FindFeatures",
       algorithm = "StreamFind",
       parameters = list(
         database = data.table::as.data.table(database),

@@ -29,6 +29,7 @@ MassSpecSettings_CalculateFeaturesQuality_StreamFind <- S7::new_class("MassSpecS
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "CalculateFeaturesQuality",
+      required = "FindFeatures",
       algorithm = "StreamFind",
       parameters = list(
         "filtered" = as.logical(filtered),

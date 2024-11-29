@@ -31,6 +31,7 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FilterFeatures",
+      required = "FindFeatures",
       algorithm = "StreamFind",
       parameters = list(
         minSnRatio = as.numeric(minSnRatio),
@@ -799,6 +800,7 @@ MassSpecSettings_FilterFeatures_patRoon <- S7::new_class("MassSpecSettings_Filte
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "FilterFeatures",
+      required = "FindFeatures",
       algorithm = "patRoon",
       parameters = list(
         "absMinIntensity" = as.numeric(absMinIntensity),

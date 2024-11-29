@@ -22,6 +22,7 @@ RamanSettings_AverageSpectra_StreamFind <- S7::new_class("RamanSettings_AverageS
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "AverageSpectra",
+      required = NA_character_,
       algorithm = "StreamFind",
       parameters = list(collapseTime = collapseTime),
       number_permitted = 1,
