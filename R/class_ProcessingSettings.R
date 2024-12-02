@@ -85,6 +85,7 @@ S7::method(as.list, ProcessingSettings) <- function(x) {
   list(
     engine = x@engine,
     method = x@method,
+    required = x@required,
     algorithm = x@algorithm,
     parameters = x@parameters,
     number_permitted = x@number_permitted,
