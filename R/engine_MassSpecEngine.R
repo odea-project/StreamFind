@@ -165,7 +165,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets the analysis replicate names.
     get_analysis_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$analyses, analyses)
-      self$analyses$names[analyses]
+      names(self$analyses)[analyses]
     },
 
     # MARK: get_replicate_names

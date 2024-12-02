@@ -9,21 +9,6 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     ## __analyses -----
     analyses = S7::new_property(S7::class_data.frame, default = data.frame()),
 
-    # MARK: names
-    ## __names -----
-    names = S7::new_property(S7::class_character,
-      getter = function(self) {
-        out <- rownames(self$analyses)
-        if (is(self$results[["model"]], "StreamFind::StatisticModel")) {
-          has_test <- !is.null(self$results[["model"]]$model$res$test)
-          has_prediction <- !is.null(self$results[["model"]]$model$res$prediction)
-          if (has_test) out <- c(out, rownames(self$results[["model"]]$model$res$test$data))
-          if (has_prediction) out <- c(out, rownames(self$results[["model"]]$model$res$prediction$data))
-        }
-        out
-      }
-    ),
-
     # MARK: type
     ## __type -----
     type = S7::new_property(S7::class_character, getter = function(self) {
@@ -34,7 +19,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
         if (has_test) out <- c(out, rep("test", nrow(self$results[["model"]]$model$res$test$data)))
         if (has_prediction) out <- c(out, rep("prediction", nrow(self$results[["model"]]$model$res$prediction$data)))
       }
-      names(out) <- self$names
+      names(out) <- names(self)
       out
     }),
 
@@ -50,7 +35,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     ## __info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
       if (length(self) > 0) {
-        analyses_names <- self$names
+        analyses_names <- names(self)
         df <- data.frame(
           "analysis" = analyses_names,
           "type" = self@type,
@@ -282,7 +267,14 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
 ## __names -----
 #' @noRd
 S7::method(names, StatisticAnalyses) <- function(x) {
-  x@names
+  out <- rownames(x$analyses)
+  if (is(x$results[["model"]], "StreamFind::StatisticModel")) {
+    has_test <- !is.null(x$results[["model"]]$model$res$test)
+    has_prediction <- !is.null(x$results[["model"]]$model$res$prediction)
+    if (has_test) out <- c(out, rownames(x$results[["model"]]$model$res$test$data))
+    if (has_prediction) out <- c(out, rownames(x$results[["model"]]$model$res$prediction$data))
+  }
+  out
 }
 
 # MARK: length
@@ -336,7 +328,7 @@ S7::method(add, StatisticAnalyses) <- function(x, value) {
 #' @noRd
 S7::method(remove, StatisticAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    if (value %in% x@names) {
+    if (value %in% names(x)) {
       x@analyses <- x@analyses[-which(rownames(x@analyses) == value), ]
       x@results <- list()
     }
@@ -549,8 +541,8 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
   }
 
   if (x$has_model) {
-    new_analyses_names <- paste0(x$type, "_", x$names)
-    names(new_analyses_names) <- x$names
+    new_analyses_names <- paste0(x$type, "_", names(x))
+    names(new_analyses_names) <- names(x)
     rownames(mat) <- new_analyses_names[rownames(mat)]
   }
 

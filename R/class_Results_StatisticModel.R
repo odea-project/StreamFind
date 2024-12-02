@@ -291,39 +291,39 @@ S7::method(get_model_data, PCA) <- function(x) {
     test_scores$analysis <- rownames(test_scores)
     test_scores$result <- "test"
     test_scores <- data.table::as.data.table(test_scores)
-    var_scores <- rbind(var_scores, test_scores)
+    var_scores <- data.table::rbindlist(list(var_scores, test_scores), fill = TRUE)
 
     test_expvar <- as.data.frame(test$expvar)
     colnames(test_expvar) <- "expvar"
     test_expvar$pc <- rownames(test_expvar)
     test_expvar$result <- "test"
     test_expvar <- data.table::as.data.table(test_expvar)
-    var_expvar <- rbind(var_expvar, test_expvar)
+    var_expvar <- data.table::rbindlist(list(var_expvar, test_expvar), fill = TRUE)
 
     test_expcumvar <- as.data.frame(test$cumexpvar)
     colnames(test_expcumvar) <- "expvar"
     test_expcumvar$pc <- rownames(test_expcumvar)
     test_expcumvar$result <- "test"
     test_expcumvar <- data.table::as.data.table(test_expcumvar)
-    var_expcumvar <- rbind(var_expcumvar, test_expcumvar)
+    var_expcumvar <- data.table::rbindlist(list(var_expcumvar, test_expcumvar), fill = TRUE)
 
     test_residuals <- as.data.frame(test$residuals)
     test_residuals$analysis <- rownames(test_residuals)
     test_residuals$result <- "test"
     test_residuals <- data.table::as.data.table(test_residuals)
-    var_residuals <- rbind(var_residuals, test_residuals)
+    var_residuals <- data.table::rbindlist(list(var_residuals, test_residuals), fill = TRUE)
 
     test_T2 <- as.data.frame(test$T2)
     test_T2$analysis <- rownames(test_T2)
     test_T2$result <- "test"
     test_T2 <- data.table::as.data.table(test_T2)
-    var_T2 <- rbind(var_T2, test_T2)
+    var_T2 <- data.table::rbindlist(list(var_T2, test_T2), fill = TRUE)
 
     test_Q <- as.data.frame(test$Q)
     test_Q$analysis <- rownames(test_Q)
     test_Q$result <- "test"
     test_Q <- data.table::as.data.table(test_Q)
-    var_Q <- rbind(var_Q, test_Q)
+    var_Q <- data.table::rbindlist(list(var_Q, test_Q), fill = TRUE)
   }
 
   prediction <- x$model$res$prediction
@@ -332,39 +332,39 @@ S7::method(get_model_data, PCA) <- function(x) {
     prediction_scores$analysis <- rownames(prediction_scores)
     prediction_scores$result <- "prediction"
     prediction_scores <- data.table::as.data.table(prediction_scores)
-    var_scores <- rbind(var_scores, prediction_scores)
+    var_scores <- data.table::rbindlist(list(var_scores, prediction_scores), fill = TRUE)
 
     prediction_expvar <- as.data.frame(prediction$expvar)
     colnames(prediction_expvar) <- "expvar"
     prediction_expvar$pc <- rownames(prediction_expvar)
     prediction_expvar$result <- "prediction"
     prediction_expvar <- data.table::as.data.table(prediction_expvar)
-    var_expvar <- rbind(var_expvar, prediction_expvar)
+    var_expvar <- data.table::rbindlist(list(var_expvar, prediction_expvar), fill = TRUE)
 
     prediction_expcumvar <- as.data.frame(prediction$cumexpvar)
     colnames(prediction_expcumvar) <- "expvar"
     prediction_expcumvar$pc <- rownames(prediction_expcumvar)
     prediction_expcumvar$result <- "prediction"
     prediction_expcumvar <- data.table::as.data.table(prediction_expcumvar)
-    var_expcumvar <- rbind(var_expcumvar, prediction_expcumvar)
+    var_expcumvar <- data.table::rbindlist(list(var_expcumvar, prediction_expcumvar), fill = TRUE)
 
     prediction_residuals <- as.data.frame(prediction$residuals)
     prediction_residuals$analysis <- rownames(prediction_residuals)
     prediction_residuals$result <- "prediction"
     prediction_residuals <- data.table::as.data.table(prediction_residuals)
-    var_residuals <- rbind(var_residuals, prediction_residuals)
+    var_residuals <- data.table::rbindlist(list(var_residuals, prediction_residuals), fill = TRUE)
 
     prediction_T2 <- as.data.frame(prediction$T2)
     prediction_T2$analysis <- rownames(prediction_T2)
     prediction_T2$result <- "prediction"
     prediction_T2 <- data.table::as.data.table(prediction_T2)
-    var_T2 <- rbind(var_T2, prediction_T2)
+    var_T2 <- data.table::rbindlist(list(var_T2, prediction_T2), fill = TRUE)
 
     prediction_Q <- as.data.frame(prediction$Q)
     prediction_Q$analysis <- rownames(prediction_Q)
     prediction_Q$result <- "prediction"
     prediction_Q <- data.table::as.data.table(prediction_Q)
-    var_Q <- rbind(var_Q, prediction_Q)
+    var_Q <- data.table::rbindlist(list(var_Q, prediction_Q), fill = TRUE)
   }
 
   loadings <- as.data.frame(x$model$loadings)
@@ -1053,7 +1053,7 @@ S7::method(get_model_data, MCRALS) <- function(x) {
     prediction_contributions$result <- "prediction"
     prediction_contributions$analysis <- rownames(prediction$rescont)
     prediction_contributions <- data.table::as.data.table(prediction_contributions)
-    contributions <- rbind(contributions, prediction_contributions)
+    contributions <- data.table::rbindlist(list(contributions, prediction_contributions), fill = TRUE)
   }
   
   test <- model$res$test
@@ -1062,7 +1062,7 @@ S7::method(get_model_data, MCRALS) <- function(x) {
     test_contributions$result <- "test"
     test_contributions$analysis <- rownames(test$rescont)
     test_contributions <- data.table::as.data.table(test_contributions)
-    contributions <- rbind(contributions, test_contributions)
+    contributions <- data.table::rbindlist(list(contributions, test_contributions), fill = TRUE)
   }
 
   list(
@@ -1358,7 +1358,7 @@ S7::method(get_model_data, MCRPURE) <- function(x) {
     prediction_contributions$result <- "prediction"
     prediction_contributions$analysis <- rownames(prediction$rescont)
     prediction_contributions <- data.table::as.data.table(prediction_contributions)
-    contributions <- rbind(contributions, prediction_contributions)
+    contributions <- data.table::rbindlist(list(contributions, prediction_contributions), fill = TRUE)
   }
   
   test <- model$res$test
@@ -1367,7 +1367,7 @@ S7::method(get_model_data, MCRPURE) <- function(x) {
     test_contributions$result <- "test"
     test_contributions$analysis <- rownames(test$rescont)
     test_contributions <- data.table::as.data.table(test_contributions)
-    contributions <- rbind(contributions, test_contributions)
+    contributions <- data.table::rbindlist(list(contributions, test_contributions), fill = TRUE)
   }
   
   list(

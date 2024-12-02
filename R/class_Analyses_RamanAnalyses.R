@@ -9,12 +9,6 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
     ## __analyses -----
     analyses = S7::new_property(S7::class_list, default = list()),
 
-    # MARK: names
-    ## __names -----
-    names = S7::new_property(S7::class_character, getter = function(self) {
-      vapply(self@analyses, function(x) x$name, NA_character_)
-    }),
-
     # MARK: replicates
     ## __replicates -----
     replicates = S7::new_property(S7::class_character,
@@ -163,7 +157,7 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
   ## __validator -----
   validator = function(self) {
     checkmate::assert_true(identical(self@possible_formats, c("asc", "sif")))
-    if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(self@names)))
+    if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(names(self))))
     NULL
   }
 )
@@ -197,7 +191,7 @@ S7::method(add, RamanAnalyses) <- function(x, value) {
     warning("Analysis/s not valid!")
     return(x)
   }
-  if (any(vapply(value, function(a) a$name %in% x@names, FALSE))) {
+  if (any(vapply(value, function(a) a$name %in% names(x), FALSE))) {
     warning("Analysis names already exist!")
     return(x)
   }
@@ -220,7 +214,7 @@ S7::method(add, RamanAnalyses) <- function(x, value) {
 #' @noRd
 S7::method(remove, RamanAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    x$analyses <- x$analyses[!x$names %in% value]
+    x$analyses <- x$analyses[!names(x) %in% value]
     x@analyses <- x@analyses[order(names(x@analyses))]
   } else if (is.numeric(value)) {
     x@analyses <- x@analyses[-value]
@@ -229,7 +223,7 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
   if (!is.null(x@results[["spectra"]])) {
     spectra_names <- names(x@results$spectra)
     if (!x@results$spectra$is_averaged) {
-      x@results$spectra <- x@results$spectra[x$names %in% spectra_names]
+      x@results$spectra <- x@results$spectra[names(x) %in% spectra_names]
       x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     } else {
       x@results$spectra <- x@results$spectra[x$replicates %in% spectra_names]
@@ -248,7 +242,7 @@ S7::method(`[`, RamanAnalyses) <- function(x, i) {
   if (!is.null(x$results$spectra)) {
     spectra_names <- names(x@results$spectra$spectra)
     if (!x@results$spectra$is_averaged) {
-      x@results$spectra <- x@results$spectra[x$names %in% spectra_names]
+      x@results$spectra <- x@results$spectra[names(x) %in% spectra_names]
       x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     } else {
       x@results$spectra <- x@results$spectra[x$replicates %in% spectra_names]
@@ -276,7 +270,7 @@ S7::method(`[[`, RamanAnalyses) <- function(x, i) {
   if (x@has_processed_spectra) {
     spectra_names <- names(x@results$spectra)
     if (!x@results$spectra$is_averaged) {
-      x@results$spectra <- x@results$spectra[x$names %in% spectra_names]
+      x@results$spectra <- x@results$spectra[names(x) %in% spectra_names]
       x@results$spectra <- x@results$spectra[order(names(x@results$spectra))]
     } else {
       x@results$spectra <- x@results$spectra[x$replicates %in% spectra_names]

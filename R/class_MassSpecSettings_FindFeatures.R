@@ -16,7 +16,7 @@
 
   anaInfo <- data.frame(
     "path" = dirname(engine$analyses$files),
-    "analysis" = engine$analyses$names,
+    "analysis" = names(engine$analyses),
     "group" = engine$analyses$replicates,
     "blank" = engine$analyses$blanks
   )

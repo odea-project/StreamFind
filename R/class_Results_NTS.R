@@ -3,46 +3,76 @@
 NTS <- S7::new_class("NTS",
   package = "StreamFind", parent = Results,
   properties = list(
-
+    
+    # MARK: features_properties
     ## __features_properties -----
     features_properties = S7::new_property(S7::class_character),
-
+    
+    # MARK: features
     ## __features -----
-    features = S7::new_property(S7::as_class(methods::getClassDef("workflowStep", package = "patRoon"))),
-
+    features = S7::new_property(S7::class_list, default = list()),
+    
+    # MARK: number_features
+    ## __number_features -----
+    number_features = S7::new_property(S7::class_integer,
+      getter = function(self) {
+        if (length(self@features) > 0) {
+          length(self@features)
+        } else {
+          0
+        }
+      }
+    ),
+    
+    # MARK: has_features
+    ## __has_features -----
+    has_features = S7::new_property(S7::class_logical, getter = function(self) self@number_features > 0),
+    
+    # MARK: has_groups
+    ## __has_groups -----
+    has_groups = S7::new_property(S7::class_logical,
+      getter = function(self) {
+        if (self@has_features) {
+          if ("featureGroups" %in% is(self@features)) {
+            if (length(self@features) > 0) {
+              return(TRUE)
+            }
+            return(FALSE)
+          }
+        }
+        FALSE
+      }
+    ),
+    
+    # MARK: group_names
+    ## __group_names -----
+    group_names = S7::new_property(S7::class_character, getter = function(self) {
+      if (self@has_groups) {
+        return(names(self@features[[1]]))
+      }
+      NA_character_
+    }),
+    
+    # MARK: filtered
     ## __filtered -----
     filtered = S7::new_property(S7::class_list, default = list()),
-
-    ## __mspl -----
-    mspl = S7::new_property(S7::as_class(methods::getClassDef("workflowStep", package = "patRoon"))),
-
-    ## __formulas -----
-    formulas = S7::new_property(S7::as_class(methods::getClassDef("formulas", package = "patRoon"))),
-
-    ## __compounds -----
-    compounds = S7::new_property(S7::as_class(methods::getClassDef("compounds", package = "patRoon"))),
-
-    ## __analysisInfo -----
-    analysisInfo = S7::new_property(S7::class_data.frame, getter = function(self) self@features@analysisInfo),
-
-    ## __number_analyses -----
-    number_analyses = S7::new_property(S7::class_integer, getter = function(self) length(self@features@analysisInfo$analysis)),
-
-    ## __number_features -----
-    number_features = S7::new_property(S7::class_integer, getter = function(self) length(self@features)),
-
+    
+    # MARK: feature_list
     ## __feature_list -----
     feature_list = S7::new_property(S7::class_list,
       getter = function(self) {
-        if ("featureGroups" %in% is(self@features)) {
-          pat <- self@features@features
+        if (!self@has_features) return(self@features)
+        
+        if ("featureGroups" %in% is(self@features[[1]])) {
+          pat <- self@features@features[[1]]
         } else {
-          pat <- self@features
+          pat <- self@features[[1]]
         }
-
+        
         f_list <- pat@features
+        
         filtered_list <- self$filtered
-
+        
         f_list <- Map(
           function(x, y) {
             if (nrow(x) > 0) x <- x[!(x$ID %in% y$ID), ]
@@ -51,7 +81,7 @@ NTS <- S7::new_class("NTS",
           },
           filtered_list, f_list
         )
-
+        
         f_list <- lapply(f_list, function(x) {
           z <- data.table::copy(x)
           data.table::setnames(z, "ID", "feature", skip_absent = TRUE)
@@ -59,7 +89,7 @@ NTS <- S7::new_class("NTS",
           data.table::setnames(z, "retmin", "rtmin", skip_absent = TRUE)
           data.table::setnames(z, "retmax", "rtmax", skip_absent = TRUE)
         })
-
+        
         if ("featuresSet" %in% is(pat)) {
           for (x in names(f_list)) {
             adduct_val <- f_list[[x]]$polarity * 1.007276
@@ -68,12 +98,17 @@ NTS <- S7::new_class("NTS",
             f_list[[x]]$mzmax <- f_list[[x]]$mzmax + adduct_val
           }
         }
-
+        
         f_list
       },
+      
       setter = function(self, value) {
         if (!is.list(value)) {
           warning("The argument value must be a list!")
+          return(self)
+        }
+        if (!self@has_features) {
+          warning("No features object found! Not done.")
           return(self)
         }
         if (length(value) != self@number_analyses) {
@@ -90,10 +125,10 @@ NTS <- S7::new_class("NTS",
           data.table::setnames(x, "rtmin", "retmin", skip_absent = TRUE)
           data.table::setnames(x, "rtmax", "retmax", skip_absent = TRUE)
         })
-
-        if ("features" %in% is(self$features)) {
-          if (identical(patRoon::analyses(self@features), names(value))) {
-            if ("featuresSet" %in% is(self$features)) {
+        
+        if ("features" %in% is(self$features[[1]])) {
+          if (identical(patRoon::analyses(self@features[[1]]), names(value))) {
+            if ("featuresSet" %in% is(self$features[[1]])) {
               for (x in names(value)) {
                 adduct_val <- value[[x]]$polarity * -1.007276
                 value[[x]]$mz <- value[[x]]$mz + adduct_val
@@ -101,17 +136,17 @@ NTS <- S7::new_class("NTS",
                 value[[x]]$mzmax <- value[[x]]$mzmax + adduct_val
               }
             }
-            self@features@features <- lapply(value, function(x) x[!x$filtered, ])
+            self@features[[1]]@features <- lapply(value, function(x) x[!x$filtered, ])
             self@filtered <- lapply(value, function(x) x[x$filtered, ])
             self
           } else {
             warning("Feature list names not matching analysis names! Not done.")
             return(self)
           }
-        } else if ("featureGroups" %in% is(self$features)) {
-          if (identical(patRoon::analyses(self@features), names(value))) {
+        } else if ("featureGroups" %in% is(self$features[[1]])) {
+          if (identical(patRoon::analyses(self@features[[1]]), names(value))) {
             if (all(vapply(value, function(x) "group" %in% colnames(x), FALSE))) {
-              if ("featureGroupsSet" %in% is(self$features)) {
+              if ("featureGroupsSet" %in% is(self$features[[1]])) {
                 for (x in names(value)) {
                   adduct_val <- value[[x]]$polarity * -1.007276
                   value[[x]]$mz <- value[[x]]$mz + adduct_val
@@ -126,7 +161,7 @@ NTS <- S7::new_class("NTS",
                 fg <- fg[, fg_left]
                 self@features <- fg
               }
-              self@features@features@features <- lapply(value, function(x) x[!x$filtered, ])
+              self@features[[1]]@features@features <- lapply(value, function(x) x[!x$filtered, ])
               self@filtered <- lapply(value, function(x) x[x$filtered, ])
               self
             } else {
@@ -143,29 +178,38 @@ NTS <- S7::new_class("NTS",
         }
       }
     ),
-
-    ## __has_features -----
-    has_features = S7::new_property(S7::class_logical, getter = function(self) self@number_features > 0),
-
-    ## __has_groups -----
-    has_groups = S7::new_property(S7::class_logical, getter = function(self) {
-      if ("featureGroups" %in% is(self@features)) {
-        if (length(self@features) > 0) {
-          return(TRUE)
-        }
-        return(FALSE)
+    
+    # MARK: mspl
+    ## __mspl -----
+    mspl = S7::new_property(S7::class_list, default = list()),
+    
+    # MARK: formulas
+    ## __formulas -----
+    formulas = S7::new_property(S7::class_list, default = list()),
+    
+    # MARK: compounds
+    ## __compounds -----
+    compounds = S7::new_property(S7::class_list, default = list()),
+    
+    # MARK: analysisInfo
+    ## __analysisInfo -----
+    analysisInfo = S7::new_property(S7::class_data.frame,
+      getter = function(self) {
+        if (self@has_features) return(self@features@analysisInfo)
+        data.table::data.table()
       }
-      FALSE
-    }),
-
-    ## __group_names -----
-    group_names = S7::new_property(S7::class_character, getter = function(self) {
-      if (self@has_groups) {
-        return(names(self@features))
+    ),
+    
+    # MARK: number_analyses
+    ## __number_analyses -----
+    number_analyses = S7::new_property(S7::class_integer,
+      getter = function(self) {
+        if (self@has_features) length(self@features[[1]]@analysisInfo$analysis)
+        0
       }
-      NA_character_
-    }),
-
+    ),
+    
+    # MARK: has_features_ms1
     ## __has_features_ms1 -----
     has_features_ms1 = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
@@ -179,7 +223,8 @@ NTS <- S7::new_class("NTS",
       }
       FALSE
     }),
-
+    
+    # MARK: has_features_ms2
     ## __has_features_ms2 -----
     has_features_ms2 = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
@@ -193,7 +238,8 @@ NTS <- S7::new_class("NTS",
       }
       FALSE
     }),
-
+    
+    # MARK: has_features_eic
     ## __has_features_eic -----
     has_features_eic = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
@@ -207,7 +253,8 @@ NTS <- S7::new_class("NTS",
       }
       FALSE
     }),
-
+    
+    # MARK: has_features_suspects
     ## __has_features_suspects -----
     has_features_suspects = S7::new_property(S7::class_logical, getter = function(self) {
       if (self@number_features > 0) {
@@ -223,25 +270,31 @@ NTS <- S7::new_class("NTS",
     })
   ),
   constructor = function(
-      features = new("featuresOpenMS"),
-      filtered = list(),
-      mspl = new("MSPeakLists", algorithm = NA_character_),
-      formulas = new("formulas", algorithm = NA_character_),
-      compounds = new("compounds", algorithm = NA_character_)) {
-    if (!requireNamespace("patRoon", quietly = TRUE)) {
-      warning("patRoon package not found! Install it for finding features.")
-      return(NULL)
+    features = list(),
+    filtered = list(),
+    mspl = list(),
+    formulas = list(),
+    compounds = list()) {
+    
+    if (!is.list(features)) {
+      if (!("features" %in% is(features) || "featureGroups" %in% is(features))) {
+        warning("The argument features must be of class features or featureGroups from patRoon")
+        features <- list()
+      }
+    } else {
+      warning("Empty NTS object created!")
+      features <- list()
     }
-
-    if (!("features" %in% is(features) || "featureGroups" %in% is(features))) {
-      warning("The argument features must be of class features or featureGroups from patRoon")
-      return(NULL)
-    }
-
-    if (("featuresSet" %in% is(features) || "featureGroupsSet" %in% is(features))) {
-      mspl <- new("MSPeakListsSet", algorithm = NA_character_)
-      formulas <- new("formulasSet", algorithm = NA_character_)
-      compounds <- new("compoundsSet", algorithm = NA_character_)
+    
+    if (length(features) > 0) {
+      mspl <- list(new("MSPeakLists", algorithm = NA_character_))
+      formulas <- list(new("formulas", algorithm = NA_character_))
+      compounds <- list(new("compounds", algorithm = NA_character_))
+      if (("featuresSet" %in% is(features) || "featureGroupsSet" %in% is(features))) {
+        mspl <- new("MSPeakListsSet", algorithm = NA_character_)
+        formulas <- new("formulasSet", algorithm = NA_character_)
+        compounds <- new("compoundsSet", algorithm = NA_character_)
+      }
     }
 
     features_properties <- c(
@@ -268,6 +321,9 @@ NTS <- S7::new_class("NTS",
         }
         x
       })
+      
+      features <- list(features)
+      
     } else if ("featureGroups" %in% is(features)) {
       features@features@features <- lapply(features@features@features, function(x) {
         if (nrow(x) > 0) {
@@ -286,6 +342,8 @@ NTS <- S7::new_class("NTS",
         }
         x
       })
+      
+      features <- list(features)
     }
 
     S7::new_object(
@@ -302,21 +360,15 @@ NTS <- S7::new_class("NTS",
     )
   },
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(self@name == "nts"),
-      checkmate::test_true(self@software == "patRoon"),
-      checkmate::test_character(self@version, len = 1),
-      checkmate::test_true(("features" %in% is(self@features)) || ("featureGroups" %in% is(self@features))),
-      checkmate::test_list(self@filtered),
-      checkmate::test_true("MSPeakLists" %in% is(self@mspl)),
-      checkmate::test_true("formulas" %in% is(self@formulas)),
-      checkmate::test_true("compounds" %in% is(self@compounds))
-      # if (length(self@mspl) > 0) checkmate::test_true(all(patRoon::analyses(self@mspl) %in% patRoon::analyses(self@features))),
-      # if (length(self@formulas) > 0) checkmate::test_true(all(patRoon::analyses(self@formulas) %in% patRoon::analyses(self@features))),
-      # if (length(self@compounds) > 0) checkmate::test_true(all(names(self@compounds@groupAnnotations) %in% self@group_names))
-    )
-    if (!valid) {
-      return(FALSE)
+    checkmate::assert_true(self@name == "nts")
+    checkmate::assert_true(self@software == "patRoon")
+    checkmate::assert_character(self@version, len = 1)
+    if (length(self@features) > 0) {
+      checkmate::assert_true(("features" %in% is(self@features[[1]])) || ("featureGroups" %in% is(self@features[[1]])))
+      checkmate::assert_list(self@filtered)
+      checkmate::assert_true("MSPeakLists" %in% is(self@mspl[[1]]))
+      checkmate::assert_true("formulas" %in% is(self@formulas[[1]]))
+      checkmate::assert_true("compounds" %in% is(self@compounds[[1]])) 
     }
     NULL
   }
@@ -334,31 +386,29 @@ S7::method(show, NTS) <- function(x) {
   } else {
     cat("  Number of features: ", x@number_features, "\n")
   }
-  cat("\n")
-  print(x@features)
-  cat("\n")
-
-  cat("\n")
-  cat("  Filtered features: ", "\n")
-  print(vapply(x@filtered, function(z) nrow(z), 0))
-  cat("\n")
-
-  if (length(x@mspl) > 0) {
+  if (x$has_features) {
     cat("\n")
-    print(x@mspl)
+    print(x@features[[1]])
     cat("\n")
-  }
-
-  if (length(x@formulas) > 0) {
     cat("\n")
-    print(x@formulas)
+    cat("  Filtered features: ", "\n")
+    print(vapply(x@filtered, function(z) nrow(z), 0))
     cat("\n")
-  }
-
-  if (length(x@compounds) > 0) {
-    cat("\n")
-    print(x@compounds)
-    cat("\n")
+    if (length(x@mspl[[1]]) > 0) {
+      cat("\n")
+      print(x@mspl[[1]])
+      cat("\n")
+    }
+    if (length(x@formulas[[1]]) > 0) {
+      cat("\n")
+      print(x@formulas[[1]])
+      cat("\n")
+    }
+    if (length(x@compounds[[1]]) > 0) {
+      cat("\n")
+      print(x@compounds[[1]])
+      cat("\n")
+    }
   }
 }
 
@@ -371,35 +421,41 @@ S7::method(print, NTS) <- function(x, ...) {
 #' @export
 #' @noRd
 S7::method(`[`, NTS) <- function(x, i, j) {
+  
+  if (!x$has_features) {
+    warning("No features found to subset!")
+    return(x)
+  }
+  
   if (missing(j)) {
-    x@features <- x@features[i]
+    x@features[[1]] <- x@features[[1]][i]
     x@filtered <- x@filtered[i]
-    if (length(x@mspl) > 0) x@mspl <- x@mspl[i]
-    if (length(x@formulas) > 0) {
-      x@formulas <- x@formulas[x$group_names]
-      if ("featureFormulas" %in% slotNames(x@formulas)) {
-        x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
+    if (length(x@mspl[[1]]) > 0) x@mspl[[1]] <- x@mspl[[1]][i]
+    if (length(x@formulas[[1]]) > 0) {
+      x@formulas[[1]] <- x@formulas[[1]][x$group_names]
+      if ("featureFormulas" %in% slotNames(x@formulas[[1]])) {
+        x@formulas[[1]]@featureFormulas <- x@formulas[[1]]@featureFormulas[i]
       }
     }
-    if (length(x@compounds) > 0) x@compounds <- x@compounds[x$group_names]
+    if (length(x@compounds[[1]]) > 0) x@compounds[[1]] <- x@compounds[[1]][x$group_names]
     return(x)
   } else if (missing(i)) {
-    x@features <- x@features[, j]
-    if (length(x@mspl) > 0) x@mspl <- x@mspl[, j]
-    if (length(x@formulas) > 0) x@formulas <- x@formulas[j]
-    if (length(x@compounds) > 0) x@compounds <- x@compounds[j]
+    x@features[[1]] <- x@features[[1]][, j]
+    if (length(x@mspl[[1]]) > 0) x@mspl[[1]] <- x@mspl[[1]][, j]
+    if (length(x@formulas[[1]]) > 0) x@formulas[[1]] <- x@formulas[[1]][j]
+    if (length(x@compounds[[1]]) > 0) x@compounds[[1]] <- x@compounds[[1]][j]
     return(x)
   } else {
-    x@features <- x@features[i, j]
+    x@features[[1]] <- x@features[[1]][i, j]
     x@filtered <- x@filtered[i]
-    if (length(x@mspl) > 0) x@mspl <- x@mspl[i, j]
-    if (length(x@formulas) > 0) {
-      x@formulas <- x@formulas[j]
-      if ("featureFormulas" %in% slotNames(x@formulas)) {
-        x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
+    if (length(x@mspl[[1]]) > 0) x@mspl <- x@mspl[i, j]
+    if (length(x@formulas[[1]]) > 0) {
+      x@formulas <- x@formulas[[1]][j]
+      if ("featureFormulas" %in% slotNames(x@formulas[[1]])) {
+        x@formulas[[1]]@featureFormulas <- x@formulas[[1]]@featureFormulas[i]
       }
     }
-    if (length(x@compounds) > 0) x@compounds <- x@compounds[j]
+    if (length(x@compounds[[1]]) > 0) x@compounds[[1]] <- x@compounds[[1]][j]
     return(x)
   }
 }
@@ -407,16 +463,16 @@ S7::method(`[`, NTS) <- function(x, i, j) {
 #' @export
 #' @noRd
 S7::method(`[[`, NTS) <- function(x, i) {
-  x@features <- x@features[[i]]
+  x@features[[1]] <- x@features[[1]][[i]]
   x@filtered <- x@filtered[[i]]
-  if (length(x@mspl) > 0) x@mspl <- x@mspl[[i]]
-  if (length(x@formulas) > 0) {
-    if ("featureFormulas" %in% slotNames(x@formulas)) {
-      x@formulas@featureFormulas <- x@formulas@featureFormulas[i]
-      x@formulas <- x@formulas[x$group_names]
+  if (length(x@mspl[[1]]) > 0) x@mspl[[1]] <- x@mspl[[1]][[i]]
+  if (length(x@formulas[[1]]) > 0) {
+    if ("featureFormulas" %in% slotNames(x@formulas[[1]])) {
+      x@formulas[[1]]@featureFormulas <- x@formulas[[1]]@featureFormulas[i]
+      x@formulas[[1]] <- x@formulas[[1]][x$group_names]
     }
   }
-  if (length(x@compounds) > 0) x@compounds <- x@compounds[x$group_names]
+  if (length(x@compounds[[1]]) > 0) x@compounds[[1]] <- x@compounds[[1]][x$group_names]
   return(x)
 }
 
@@ -456,10 +512,10 @@ S7::method(report, NTS) <- function(x,
   }
 
   patRoon::report(
-    x$features,
-    x$mspl,
-    formulas = x$formulas,
-    compounds = x$compounds,
+    x$features[[1]],
+    x$mspl[[1]],
+    formulas = x$formulas[[1]],
+    compounds = x$compounds[[1]],
     compsCluster = NULL,
     components = NULL,
     TPs = NULL,

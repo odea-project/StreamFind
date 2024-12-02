@@ -3,20 +3,22 @@
 Workflow <- S7::new_class("Workflow",
   package = "StreamFind",
   properties = list(
+    
+    # MARK: settings
+    ## __settings ----
     settings = S7::new_property(S7::class_list, default = list()),
+    
+    # MARK: methods
+    ## __methods ----
     methods = S7::new_property(S7::class_character,
       getter = function(self) {
         vapply(self@settings, function(x) paste0(x$engine, "Settings_", x$method, "_", x$algorithm), NA_character_)
       },
       default = NA_character_
     ),
-    names = S7::new_property(S7::class_character,
-      getter = function(self) {
-        names(self@settings)
-      },
-      default = NA_character_
-    ),
-    length = S7::new_property(S7::class_numeric, getter = function(self) length(self@settings), default = 0),
+    
+    # MARK: length
+    ## __length ----
     overview = S7::new_property(S7::class_data.frame, getter = function(self) {
       if (length(self) > 0) {
         data.frame(
@@ -36,6 +38,9 @@ Workflow <- S7::new_class("Workflow",
       }
     })
   ),
+  
+  # MARK: constructor
+  ## __constructor ----
   constructor = function(settings = list()) {
     if (!(is.list(settings) || is(settings, "StreamFind::Workflow"))) stop("settings must be a list!")
 
@@ -84,6 +89,9 @@ Workflow <- S7::new_class("Workflow",
 
     S7::new_object(S7::S7_object(), settings = settings)
   },
+  
+  # MARK: validator
+  ## __validator ----
   validator = function(self) {
     valid <- TRUE
 
@@ -139,7 +147,7 @@ S7::method(length, Workflow) <- function(x) {
 #' @export
 #' @noRd
 S7::method(names, Workflow) <- function(x) {
-  x@names
+  names(x@settings)
 }
 
 #' @export
@@ -257,7 +265,7 @@ S7::method(as.list, Workflow) <- function(x) {
 #' @export
 #' @noRd
 S7::method(save, Workflow) <- function(x, file = "workflow.rds") {
-  if (x@length > 0) {
+  if (length(x) > 0) {
     format <- tools::file_ext(file)
 
     if (format %in% "json") {
@@ -277,7 +285,7 @@ S7::method(save, Workflow) <- function(x, file = "workflow.rds") {
           doi = s@doi
         )
       })
-      names(settings) <- x@names
+      names(settings) <- names(x)
       settings <- .convert_to_json(settings)
       write(settings, file)
     } else if (format %in% "rds") {

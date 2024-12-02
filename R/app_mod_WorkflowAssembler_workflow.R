@@ -186,7 +186,7 @@
     output$workflow_settings <- shiny::renderUI({
       rw <- reactive_workflow()
 
-      labels <- lapply(rw@names, function(i) {
+      labels <- lapply(names(rw), function(i) {
         htmltools::tagList(
           htmltools::div(
             class = "workflow-item",
@@ -198,7 +198,7 @@
       })
 
       ## obs Edit Workflow Method -----
-      lapply(rw@names, function(i) {
+      lapply(names(rw), function(i) {
         shiny::observeEvent(input[[paste0("workflow_edit_", i)]],
           {
             reactive_selected_method(i)
@@ -208,7 +208,7 @@
       })
 
       # obs Delete Workflow Method -----
-      lapply(rw@names, function(i) {
+      lapply(names(rw), function(i) {
         shiny::observeEvent(input[[paste0("workflow_del_", i)]],
           {
             rw <- reactive_workflow()
@@ -389,7 +389,7 @@
       shiny::req(reactive_selected_method())
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
-      shiny::req(selected_method %in% rw@names)
+      shiny::req(selected_method %in% names(rw))
       short_selected_method <- gsub("\\d+_", "", selected_method)
       idx_selected_method <- gsub("\\D", "", selected_method)
       method_name <- processing_methods[short_selected_method]
@@ -559,7 +559,7 @@
       shiny::req(reactive_selected_method())
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
-      shiny::req(selected_method %in% rw@names)
+      shiny::req(selected_method %in% names(rw))
       short_selected_method <- gsub("\\d+_", "", selected_method)
       idx_selected_method <- gsub("\\D", "", selected_method)
       method_name <- processing_methods[short_selected_method]
@@ -596,7 +596,7 @@
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
 
-      shiny::req(selected_method %in% rw@names)
+      shiny::req(selected_method %in% names(rw))
       settings <- rw[[selected_method]]
       param_names <- names(settings$parameters)
 
@@ -647,7 +647,7 @@
     shiny::observeEvent(input$reset_method, {
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
-      shiny::req(selected_method %in% rw@names)
+      shiny::req(selected_method %in% names(rw))
       short_selected_method <- gsub("\\d+_", "", selected_method)
       method_name <- processing_methods[short_selected_method]
       settings <- do.call(method_name, list())

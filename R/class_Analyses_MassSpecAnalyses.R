@@ -9,13 +9,6 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
     ## __analyses -----
     analyses = S7::new_property(S7::class_list, default = list()),
 
-    ## __names -----
-    names = S7::new_property(S7::class_character,
-      getter = function(self) {
-        vapply(self@analyses, function(x) x$name, NA_character_)
-      }
-    ),
-
     # MARK: replicates
     ## __replicates -----
     replicates = S7::new_property(S7::class_character,
@@ -532,7 +525,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
   ## __validator -----
   validator = function(self) {
     checkmate::assert_true(identical(self@possible_formats, c("mzML|mzXML")))
-    if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(self@names)))
+    if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(names(self))))
     NULL
   }
 )
@@ -565,7 +558,7 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
     warning("Analysis/s not valid!")
     return(x)
   }
-  if (any(vapply(value, function(a) a$name %in% x@names, FALSE))) {
+  if (any(vapply(value, function(a) a$name %in% names(x), FALSE))) {
     warning("Analysis names already exist!")
     return(x)
   }
@@ -585,9 +578,9 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
 #' @noRd
 S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    x$analyses <- x$analyses[!x$names %in% value]
+    x$analyses <- x$analyses[!names(x) %in% value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_nts) x@results$nts <- x@results$nts[!x$names %in% value]
+    if (x@has_nts) x@results$nts <- x@results$nts[!names(x) %in% value]
   } else if (is.numeric(value)) {
     x@analyses <- x@analyses[-value]
     x@analyses <- x@analyses[order(names(x@analyses))]
@@ -4438,7 +4431,7 @@ S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
   } else {
     istd <- get_internal_standards(x, average = FALSE)
     istd <- istd[istd$analysis %in% analyses, ]
-    .plot_internal_standards_qc_interactive(istd, x$names[analyses], presence, recovery, deviations, widths)
+    .plot_internal_standards_qc_interactive(istd, names(x)[analyses], presence, recovery, deviations, widths)
   }
 }
 

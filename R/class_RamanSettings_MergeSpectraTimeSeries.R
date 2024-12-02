@@ -145,7 +145,7 @@ S7::method(run, RamanSettings_MergeSpectraTimeSeries_StreamFind) <- function(x, 
 
   if (!is.null(unified)) {
     if (all(vapply(unified, function(x) is(x), NA_character_) %in% "RamanAnalysis")) {
-      to_remove <- engine$analyses$names[engine$analyses$replicates %in% names(unified)]
+      to_remove <- names(engine$analyses)[engine$analyses$replicates %in% names(unified)]
       suppressMessages(engine$remove_analyses(to_remove))
       engine$add_analyses(unified)
       TRUE

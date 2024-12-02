@@ -107,7 +107,7 @@ S7::method(run, RamanSettings_BinSpectra_StreamFind) <- function(x, engine = NUL
   
   if (!is.null(refBinAnalysis)) {
     if (is.numeric(refBinAnalysis) && length(refBinAnalysis) == 1) {
-      refBinAnalysis <- engine$analyses$names[refBinAnalysis]
+      refBinAnalysis <- names(engine$analyses)[refBinAnalysis]
     }
     
     if (!is.character(refBinAnalysis)) {

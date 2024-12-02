@@ -107,7 +107,7 @@ S7::method(run, MassSpecSettings_BinSpectra_StreamFind) <- function(x, engine = 
   
   if (!is.na(refBinAnalysis)) {
     if (is.integer(refBinAnalysis) && length(refBinAnalysis) == 1) {
-      refBinAnalysis <- engine$analyses$names[refBinAnalysis]
+      refBinAnalysis <- names(engine$analyses)[refBinAnalysis]
     }
     
     if (!is.character(refBinAnalysis)) {

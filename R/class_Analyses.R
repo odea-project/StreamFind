@@ -15,9 +15,9 @@ Analyses <- S7::new_class("Analyses",
 
     # ___ info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
-      if (self@length > 0) {
+      if (length(self) > 0) {
         df <- data.table::data.table(
-          "analysis" = self@names,
+          "analysis" = names(self),
           "class" = vapply(self@analyses, function(x) class(x)[1], "")
         )
         row.names(df) <- seq_len(nrow(df))

@@ -1019,7 +1019,6 @@ w <- w[[-1]]
 show(w)
 save(w)
 read(Workflow(), "workflow.json")
-w$length
 
 
 show(Analyses(df))
@@ -1029,8 +1028,6 @@ rownames(df) <- c("test1", "test2")
 
 a <- StatisticAnalyses(analyses = df)
 show(a)
-a@names
-a@length
 
 
 

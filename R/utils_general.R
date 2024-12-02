@@ -323,10 +323,10 @@
 #' @noRd
 .check_analyses_argument <- function(obj, value) {
   if (is.null(value)) {
-    obj@names
+    names(obj)
   } else {
-    analyses <- obj@names[value]
-    if (!all(analyses %in% obj@names)) {
+    analyses <- names(obj)[value]
+    if (!all(analyses %in% names(obj))) {
       warning("Defined analyses not found!")
       NULL
     } else {

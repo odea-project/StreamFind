@@ -27,12 +27,7 @@
 ProjectHeaders <- S7::new_class("ProjectHeaders", package = "StreamFind",
   
   properties = list(
-    
-    headers = S7::new_property(class = S7::class_list, default = list()),
-    
-    names = S7::new_property(class = S7::class_character, getter = function(self) names(self@headers), default = character(0)),
-    
-    length = S7::new_property(class = S7::class_numeric, getter = function(self) length(self@headers), default = 0)
+    headers = S7::new_property(class = S7::class_list, default = list())
   ),
   
   constructor = function(...) {
