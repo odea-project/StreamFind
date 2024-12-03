@@ -83,7 +83,7 @@ S7::method(run, MassSpecSettings_AnnotateFeatures_StreamFind) <- function(x, eng
 
   nts <- engine$nts
 
-  if (nts@number_features == 0) {
+  if (!nts@has_features) {
     warning("NTS object is empty! Not done.")
     return(FALSE)
   }

@@ -106,16 +106,18 @@
   for (a in patRoon::analyses(pat)) {
     pol <- engine$get_spectra_polarity(a)
 
-    # TODO make case for polarity switching
     if (grepl("postive", pol) && grepl("negative", pol)) {
-      warning("Multiple polarities in analyses", i, "! Mass for features could not be estimated.")
+      warning(
+        "Multiple polarities in analysis ", a,
+        " not supported by patRoon! Mass for features could not be estimated."
+      )
       pat@features[[a]]$polarity <- 0
       pat@features[[a]]$mass <- NA_real_
       next
     }
 
     if (grepl("unkown", pol)) {
-      warning("Unknown polarity in analyses", i, "! Mass for features could not be estimated.")
+      warning("Unknown polarity in analyses", a, "! Mass for features could not be estimated.")
       pat@features[[a]]$polarity <- 0
       pat@features[[a]]$mass <- NA_real_
       next
@@ -157,6 +159,7 @@
     pat@features[[a]]$filtered <- FALSE
     pat@features[[a]]$filter <- NA_character_
     pat@features[[a]]$filled <- FALSE
+    pat@features[[a]]$group <- NA_character_
     pat@features[[a]]$quality <- empty_dt_list
     pat@features[[a]]$annotation <- empty_dt_list
     pat@features[[a]]$eic <- empty_dt_list
@@ -164,24 +167,32 @@
     pat@features[[a]]$ms2 <- empty_dt_list
     pat@features[[a]]$istd <- empty_dt_list
     pat@features[[a]]$suspects <- empty_dt_list
+    pat@features[[a]]$formulas <- empty_dt_list
+    pat@features[[a]]$compounds <- empty_dt_list
   }
 
-  pols <- engine$get_spectra_polarity()
+  feature_list <- pat@features
 
-  if (length(unique(pols)) > 1 && !("featuresSet" %in% is(pat))) {
-    pat <- patRoon::makeSet(
-      pat[pols %in% "negative"],
-      pat[pols %in% "positive"],
-      adducts = list("[M-H]-", "[M+H]+")
-    )
-    pat@analysisInfo <- pat@analysisInfo[order(pat@analysisInfo$analysis), ]
-    pat@features <- pat@features[pat@analysisInfo$analysis]
-  }
+  feature_list <- lapply(feature_list, function(z) {
+    data.table::setnames(z, "ID", "feature", skip_absent = TRUE)
+    data.table::setnames(z, "ret", "rt", skip_absent = TRUE)
+    data.table::setnames(z, "retmin", "rtmin", skip_absent = TRUE)
+    data.table::setnames(z, "retmax", "rtmax", skip_absent = TRUE)
+  })
 
-  filtered <- lapply(patRoon::analyses(pat), function(a) pat@features[[a]][0, ])
-  names(filtered) <- patRoon::analyses(pat)
+  names(feature_list) <- patRoon::analyses(pat)
 
-  nts <- NTS(features = pat, filtered = filtered)
+  analyses_info <- data.frame(
+    "analysis" = names(engine$analyses),
+    "replicate" = engine$analyses$replicates,
+    "blank" = engine$analyses$blanks,
+    "polarity" = engine$get_spectra_polarity(),
+    "file" = engine$analyses$files
+  )
+
+  feature_list <- feature_list[analyses_info$analysis]
+
+  nts <- NTS(analyses_info, feature_list)
 
   if (is(nts, "StreamFind::NTS")) {
     engine$nts <- nts

@@ -95,11 +95,11 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     return(FALSE)
   }
 
-  cache <- .load_chache("fill_features", nts$features, x)
+  cache <- .load_chache("fill_features", nts$feature_list, x)
 
   if (!is.null(cache$data)) {
     message("\U2139 Filled features loaded from cache!")
-    nts$features <- cache$data
+    nts$feature_list <- cache$data
     engine$nts <- nts
     return(TRUE)
   }
@@ -130,57 +130,19 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
 
   res <- data.table::rbindlist(res, fill = TRUE)
 
-  fg <- nts$features
-  fg_groups <- fg@groups
-  fg_index <- fg@ftindex
-  fg_analyses <- names(fg@features@features)
-
   all_fts <- data.table::rbindlist(list(fts, res), fill = TRUE)
-  data.table::setnames(all_fts, "feature", "ID", skip_absent = TRUE)
-  data.table::setnames(all_fts, "rt", "ret", skip_absent = TRUE)
-  data.table::setnames(all_fts, "rtmin", "retmin", skip_absent = TRUE)
-  data.table::setnames(all_fts, "rtmax", "retmax", skip_absent = TRUE)
   all_fts$filled[is.na(all_fts$filled)] <- FALSE
   all_fts_analysis <- all_fts$analysis
   all_fts$analysis <- NULL
   all_fts$replicate <- NULL
   all_fts <- split(all_fts, all_fts_analysis)
 
-  # neutralize mz values when featureGroups is a set
-  if ("featureGroupsSet" %in% is(fg)) {
-    if (identical(patRoon::analyses(fg), names(all_fts))) {
-      for (a in names(all_fts)) {
-        sel <- fg@analysisInfo$analysis %in% a
-        pol <- fg@analysisInfo$set[sel]
-        if ("positive" %in% pol) adduct_val <- -1.007276
-        if ("negative" %in% pol) adduct_val <- 1.007276
-        sel_to_change <- round(all_fts[[a]]$mz, 0) != round(all_fts[[a]]$mass, 0)
-        all_fts[[a]]$mz[sel_to_change] <- all_fts[[a]]$mz + adduct_val
-        all_fts[[a]]$mzmin[sel_to_change] <- all_fts[[a]]$mzmin + adduct_val
-        all_fts[[a]]$mzmax[sel_to_change] <- all_fts[[a]]$mzmax + adduct_val
-      }
-    }
-  }
-
-  message("\U2699 Adding filled features to groups")
-
-  for (i in seq_len(nrow(res))) {
-    ana_idx <- which(fg_analyses == res$analysis[i])
-    gr <- res$group[i]
-    fg_groups[ana_idx, gr] <- res$intensity[i]
-    fg_index[ana_idx, gr] <- which(all_fts[[fg_analyses[ana_idx]]]$group %in% gr)
-  }
-
-  fg@groups <- fg_groups
-  fg@ftindex <- fg_index
-  fg@features@features <- all_fts[names(fg@features@features)]
-
   if (!is.null(cache$hash)) {
-    .save_cache("fill_features", fg, cache$hash)
+    .save_cache("fill_features", all_fts, cache$hash)
     message("\U1f5ab Filled features cached!")
   }
 
-  nts$features <- fg
+  nts$feature_list <- all_fts
   engine$nts <- nts
   TRUE
 }

@@ -79,6 +79,10 @@ get_model_prediction <- S7::new_generic("get_model_prediction", "x")
 
 #' @export
 #' @noRd
+get_patRoon_features <- S7::new_generic("get_patRoon_features", "x")
+
+#' @export
+#' @noRd
 get_spectra <- S7::new_generic("get_spectra", "x")
 
 #' @export

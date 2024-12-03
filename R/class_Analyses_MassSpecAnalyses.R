@@ -386,7 +386,7 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
         if (is(value, "StreamFind::NTS")) {
           if (value@number_analyses > 0) {
             analyses_names <- unname(names(self))
-            value_analyses_names <- sort(value@features@analysisInfo$analysis)
+            value_analyses_names <- sort(value@analyses_info$analysis)
             if (identical(analyses_names, value_analyses_names)) {
               self@results[["nts"]] <- value
             } else {
@@ -3553,7 +3553,7 @@ S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TR
         istd$iso_c <- NA_real_
       }
 
-      if (x$nts$has_groups & average) {
+      if (x$nts$has_groups && average) {
         rpl <- x$replicates
 
         istd$replicate <- rpl[istd$analysis]

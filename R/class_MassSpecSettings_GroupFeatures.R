@@ -21,16 +21,12 @@
 
   nts <- engine$nts
 
-  if (nts@number_features == 0) {
+  if (!nts@has_features) {
     warning("NTS object is empty! Not done.")
     return(FALSE)
   }
 
-  if ("featureGroups" %in% is(nts@features)) {
-    pat_features <- nts@features@features
-  } else {
-    pat_features <- nts@features
-  }
+  pat_features <- get_patRoon_features(nts, filtered = FALSE, featureGroups = FALSE)
 
   algorithm <- x$algorithm
 
@@ -121,7 +117,20 @@
 
   pat <- do.call(patRoon::groupFeatures, c(ag, parameters))
 
-  nts <- NTS(features = pat, filtered = nts@filtered)
+  pat_fl <- pat@features@features
+
+  pat_fl <- pat_fl[nts@analyses_info$analysis]
+
+  fl <- nts@feature_list
+
+  fl <- Map(function(x, y) {
+    x$group[x$feature %in% y$ID] <- y$group
+    x
+  }, fl, pat_fl)
+
+  names(fl) <- nts@analyses_info$analysis
+
+  nts@feature_list <- fl
 
   if (is(nts, "StreamFind::NTS")) {
     engine$nts <- nts
