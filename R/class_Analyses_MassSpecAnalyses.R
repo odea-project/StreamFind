@@ -2313,20 +2313,22 @@ S7::method(plot_chromatograms_baseline, MassSpecAnalyses) <- function(x,
 #' @noRd
 S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL, filtered = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
-  info <- x$info
-  info <- info[info$analysis %in% analyses, ]
-
+  info <- data.table::data.table()
   if (x$has_nts) {
-    if (x@results$nts$has_features) {
-      if (x@results$nts$has_groups) {
-        info$features <- vapply(x@results$nts$features@features@features[analyses], function(x) nrow(x), 0)
-      } else {
-        info$features <- vapply(x@results$nts$features@features[analyses], function(x) nrow(x), 0)
+    if (x$nts$has_features) {
+      info <- data.table::data.table(
+        "analysis" = x@nts@analyses_info$analysis,
+        "features" = x@nts@number_features,
+        "filtered" = x@nts@number_filtered_features,
+        "groups" = x@nts@number_groups
+      )
+      if (filtered) {
+        info$features <- info$filtered + info$features
       }
-      if (filtered) info$features <- info$features + vapply(x@results$nts$filtered[analyses], function(x) nrow(x), 0)
+      info$replicate <- x$replicates[info$analysis]
+      info <- info[info$analysis %in% analyses, ]
     }
   }
-
   info
 }
 
@@ -3678,8 +3680,7 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
   info <- info[, .(
     features = round(mean(features), digits = 0),
     features_sd = round(sd(features), digits = 0),
-    n_analysis = length(features),
-    polarity = unique(polarity)
+    n_analysis = length(features)
   ), by = c("analysis")]
 
   info$features_sd[is.na(info$features_sd)] <- 0
@@ -3689,7 +3690,6 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
   info$hover_text <- paste(
     info$analysis, "<br>",
     "N.: ", info$n_analysis, "<br>",
-    "Polarity: ", info$polarity, "<br>",
     "Features: ", info$features, " (SD: ", info$features_sd, ")"
   )
 

@@ -1626,6 +1626,8 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       out_targets["ms2"] = empty_list;
       out_targets["istd"] = empty_list;
       out_targets["suspects"] = empty_list;
+      out_targets["formulas"] = empty_list;
+      out_targets["compounds"] = empty_list;
       out_targets["group"] = ana_targets_groups[j][i];
       out_targets.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 

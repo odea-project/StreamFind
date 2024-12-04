@@ -5,6 +5,12 @@
 \title{\strong{MassSpecSettings_GenerateFormulas_genform}}
 \usage{
 MassSpecSettings_GenerateFormulas_genform(
+  MSPeakListsClusterMzWindow = 0.005,
+  MSPeakListsTopMost = 100,
+  MSPeakListsMinIntensityPre = 50,
+  MSPeakListsMinIntensityPost = 50,
+  MSPeakListsAvgFun = "mean",
+  MSPeakListsMethod = "distance",
   relMzDev = 5,
   elements = "CHNOP",
   hetero = TRUE,
@@ -26,6 +32,27 @@ MassSpecSettings_GenerateFormulas_genform(
 )
 }
 \arguments{
+\item{MSPeakListsClusterMzWindow}{m/z window (in Da) used for clustering m/z values when spectra are averaged.
+For method="hclust" this corresponds to the cluster height, while for method="distance" this value is used to find
+nearby masses (+/- window). Too small windows will prevent clustering m/z values (thus erroneously treating equal
+masses along spectra as different), whereas too big windows may cluster unrelated m/z values from different or even
+the same spectrum together.}
+
+\item{MSPeakListsTopMost}{Only retain this maximum number of MS peaks when generating averaged spectra. Lowering
+this number may exclude more irrelevant (noisy) MS peaks and decrease processing time, whereas higher values may
+avoid excluding lower intense MS peaks that may still be of interest.}
+
+\item{MSPeakListsMinIntensityPre}{MS peaks with intensities below this value will be removed (applied prior to
+selection by \code{topMost}) before averaging.}
+
+\item{MSPeakListsMinIntensityPost}{MS peaks with intensities below this value will be removed after averaging.}
+
+\item{MSPeakListsAvgFun}{Character with the function name that is used to calculate average m/z values.}
+
+\item{MSPeakListsMethod}{Method used for producing averaged MS spectra. Valid values are "hclust", used for
+hierarchical clustering (using the fastcluster package), and "distance", to use the between peak distance.
+The latter method may reduces processing time and memory requirements, at the potential cost of reduced accuracy.}
+
 \item{relMzDev}{Numeric (length 1) with the relative mass deviation, in ppm.}
 
 \item{elements}{Character vector with the elements to use for formulae annotation. Always try to work with a minimal

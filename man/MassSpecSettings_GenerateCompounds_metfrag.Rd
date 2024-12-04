@@ -5,6 +5,12 @@
 \title{\strong{MassSpecSettings_GenerateCompounds_metfrag}}
 \usage{
 MassSpecSettings_GenerateCompounds_metfrag(
+  MSPeakListsClusterMzWindow = 0.005,
+  MSPeakListsTopMost = 100,
+  MSPeakListsMinIntensityPre = 50,
+  MSPeakListsMinIntensityPost = 50,
+  MSPeakListsAvgFun = "mean",
+  MSPeakListsMethod = "distance",
   method = "CL",
   timeout = 300,
   timeoutRetries = 5,
@@ -25,6 +31,27 @@ MassSpecSettings_GenerateCompounds_metfrag(
 )
 }
 \arguments{
+\item{MSPeakListsClusterMzWindow}{m/z window (in Da) used for clustering m/z values when spectra are averaged.
+For method="hclust" this corresponds to the cluster height, while for method="distance" this value is used to find
+nearby masses (+/- window). Too small windows will prevent clustering m/z values (thus erroneously treating equal
+masses along spectra as different), whereas too big windows may cluster unrelated m/z values from different or even
+the same spectrum together.}
+
+\item{MSPeakListsTopMost}{Only retain this maximum number of MS peaks when generating averaged spectra. Lowering
+this number may exclude more irrelevant (noisy) MS peaks and decrease processing time, whereas higher values may
+avoid excluding lower intense MS peaks that may still be of interest.}
+
+\item{MSPeakListsMinIntensityPre}{MS peaks with intensities below this value will be removed (applied prior to
+selection by \code{topMost}) before averaging.}
+
+\item{MSPeakListsMinIntensityPost}{MS peaks with intensities below this value will be removed after averaging.}
+
+\item{MSPeakListsAvgFun}{Character with the function name that is used to calculate average m/z values.}
+
+\item{MSPeakListsMethod}{Method used for producing averaged MS spectra. Valid values are "hclust", used for
+hierarchical clustering (using the fastcluster package), and "distance", to use the between peak distance.
+The latter method may reduces processing time and memory requirements, at the potential cost of reduced accuracy.}
+
 \item{method}{Character (length 1) with the method to be used for MetFrag execution: "CL" for MetFragCL and "R" for MetFragR.}
 
 \item{timeout}{Numeric (length 1) with the maximum time (in seconds) before a MetFrag query for a feature group is stopped.}

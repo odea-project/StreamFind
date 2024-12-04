@@ -7,7 +7,22 @@
 #' @description Settings for generating formulas using the algorithm \href{https://sourceforge.net/projects/genform/}{GenForm}.
 #' The algorithm is used via the function \link[patRoon]{generateFormulas} from the package \pkg{patRoon}. Therefore,
 #' it is highly recommended to check the original documentation of the function in \pkg{patRoon} for more details.
-#'
+#' 
+#' @param MSPeakListsClusterMzWindow m/z window (in Da) used for clustering m/z values when spectra are averaged.
+#' For method="hclust" this corresponds to the cluster height, while for method="distance" this value is used to find
+#' nearby masses (+/- window). Too small windows will prevent clustering m/z values (thus erroneously treating equal 
+#' masses along spectra as different), whereas too big windows may cluster unrelated m/z values from different or even
+#' the same spectrum together.
+#' @param MSPeakListsTopMost Only retain this maximum number of MS peaks when generating averaged spectra. Lowering
+#' this number may exclude more irrelevant (noisy) MS peaks and decrease processing time, whereas higher values may
+#' avoid excluding lower intense MS peaks that may still be of interest.
+#' @param MSPeakListsMinIntensityPre MS peaks with intensities below this value will be removed (applied prior to
+#' selection by `topMost`) before averaging.
+#' @param MSPeakListsMinIntensityPost MS peaks with intensities below this value will be removed after averaging.
+#' @param MSPeakListsAvgFun Character with the function name that is used to calculate average m/z values.
+#' @param MSPeakListsMethod Method used for producing averaged MS spectra. Valid values are "hclust", used for
+#' hierarchical clustering (using the fastcluster package), and "distance", to use the between peak distance.
+#' The latter method may reduces processing time and memory requirements, at the potential cost of reduced accuracy.
 #' @param relMzDev Numeric (length 1) with the relative mass deviation, in ppm.
 #' @param elements Character vector with the elements to use for formulae annotation. Always try to work with a minimal
 #' set by excluding elements you don't expect.
@@ -53,7 +68,13 @@
 MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_GenerateFormulas_genform",
   parent = ProcessingSettings,
   package = "StreamFind",
-  constructor = function(relMzDev = 5,
+  constructor = function(MSPeakListsClusterMzWindow = 0.005,
+                         MSPeakListsTopMost = 100,
+                         MSPeakListsMinIntensityPre = 50,
+                         MSPeakListsMinIntensityPost = 50,
+                         MSPeakListsAvgFun = "mean",
+                         MSPeakListsMethod = "distance",
+                         relMzDev = 5,
                          elements = "CHNOP",
                          hetero = TRUE,
                          oc = FALSE,
@@ -77,6 +98,12 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
       required = c("FindFeatures", "GroupFeatures", "Load_MSPeakLists"),
       algorithm = "genform",
       parameters = list(
+        MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
+        MSPeakListsTopMost = MSPeakListsTopMost,
+        MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
+        MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
+        MSPeakListsAvgFun = MSPeakListsAvgFun,
+        MSPeakListsMethod = MSPeakListaMethod,
         relMzDev = as.numeric(relMzDev),
         elements = as.character(elements),
         hetero = as.logical(hetero),
@@ -109,6 +136,12 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "GenerateFormulas")
     checkmate::assert_choice(self@algorithm, "genform")
+    checkmate::assert_numeric(self@parameters$MSPeakListsClusterMzWindow, len = 1)
+    checkmate::assert_numeric(self@parameters$MSPeakListsTopMost, len = 1)
+    checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPre, len = 1)
+    checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPost, len = 1)
+    checkmate::assert_character(self@parameters$MSPeakListsAvgFun)
+    checkmate::assert_choice(self@parameters$MSPeakListsMethod, c("hclust", "distance"))
     checkmate::assert_number(self@parameters$relMzDev)
     checkmate::assert_character(self@parameters$elements, min.len = 1)
     checkmate::assert_logical(self@parameters$hetero, len = 1)
@@ -167,9 +200,21 @@ S7::method(run, MassSpecSettings_GenerateFormulas_genform) <- function(x, engine
 
   algorithm <- x$algorithm
 
-  fg <- nts$features
+  fg <- get_patRoon_features(
+    nts,
+    filtered = FALSE,
+    featureGroups = TRUE
+  )
 
-  mspl <- nts$mspl
+  mspl <- get_patRoon_MSPeakLists(
+    nts,
+    MSPeakListsClusterMzWindow,
+    MSPeakListsTopMost,
+    MSPeakListsMinIntensityPre,
+    MSPeakListsMinIntensityPost,
+    MSPeakListsAvgFun,
+    MSPeakListsMethod,
+  )
 
   if (length(mspl) == 0) {
     warning("MSPeakLists empty! Use the load_MSPeakLists to load MS1 and MS2 data. Not done.")

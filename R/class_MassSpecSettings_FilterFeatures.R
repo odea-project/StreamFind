@@ -891,26 +891,37 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
 
   if ("features" %in% is(pat$data)) parameters <- parameters[names(parameters) %in% possible_only_in_features]
 
-  parameters <- lapply(parameters, function(z) if (all(is.na(z)) || length(z) == 0) {
-    return(NULL)
-  } else {
-    z
+  parameters <- lapply(parameters, function(z) {
+    if (all(is.na(z)) || length(z) == 0) {
+      return(NULL)
+    } else {
+      z
+    }
   })
 
   filter_fun <- patRoon::filter
 
   pat <- do.call(filter_fun, c(list("obj" = pat), parameters))
 
-  pat_features <- pat$features
-  if ("features" %in% is(pat$data)) {
-    pat_features <- pat_features$features
+  pat_features <- pat@features
+  if ("features" %in% is(pat_features)) {
+    pat_features <- pat_features@features
   }
 
   feature_list <- nts$feature_list
 
   feature_list <- Map(function(x, y) {
-    x$filtered[!x$feature %in% y$ID] <- TRUE
-    x$filter[!x$feature %in% y$ID] <- "patRoon"
+    if (nrow(y) == 0) {
+      if (nrow(x) > 0) {
+        x$filtered <- TRUE
+        x$filter <- "patRoon"
+      }
+    } else {
+      if (nrow(x) > 0) {
+        x$filtered[!x$feature %in% y$ID] <- TRUE
+        x$filter[!x$feature %in% y$ID] <- "patRoon"
+      }
+    }
     x
   }, feature_list, pat_features)
 
