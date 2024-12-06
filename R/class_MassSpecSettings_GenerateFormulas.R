@@ -95,7 +95,7 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
     S7::new_object(ProcessingSettings(
       engine = "MassSpec",
       method = "GenerateFormulas",
-      required = c("FindFeatures", "GroupFeatures", "Load_MSPeakLists"),
+      required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
       algorithm = "genform",
       parameters = list(
         MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
@@ -103,7 +103,7 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
         MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
         MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
         MSPeakListsAvgFun = MSPeakListsAvgFun,
-        MSPeakListsMethod = MSPeakListaMethod,
+        MSPeakListsMethod = MSPeakListsMethod,
         relMzDev = as.numeric(relMzDev),
         elements = as.character(elements),
         hetero = as.logical(hetero),
@@ -197,15 +197,15 @@ S7::method(run, MassSpecSettings_GenerateFormulas_genform) <- function(x, engine
     }
     z
   })
-
+  
   algorithm <- x$algorithm
-
+  
   fg <- get_patRoon_features(
     nts,
     filtered = FALSE,
     featureGroups = TRUE
   )
-
+  
   mspl <- get_patRoon_MSPeakLists(
     nts,
     MSPeakListsClusterMzWindow,

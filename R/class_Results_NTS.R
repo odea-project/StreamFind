@@ -29,7 +29,10 @@ NTS <- S7::new_class("NTS",
     number_features = S7::new_property(S7::class_integer,
       getter = function(self) {
         if (length(self@feature_list) > 0) {
-          vapply(self@feature_list, function(x) nrow(x[!x$filtered]), 0)
+          vapply(self@feature_list, function(x) {
+            if (nrow(x) == 0) return(0)
+            nrow(x[!x$filtered, ])
+          }, 0)
         } else {
           0
         }
@@ -42,7 +45,8 @@ NTS <- S7::new_class("NTS",
 
     # MARK: has_filtered_features
     ## __has_filtered_features -----
-    has_filtered_features = S7::new_property(S7::class_logical,
+    has_filtered_features = S7::new_property(
+      S7::class_logical,
       getter = function(self) {
         if (self@has_features) {
           any(vapply(self@feature_list, function(x) any(x$filtered), FALSE))
@@ -54,49 +58,54 @@ NTS <- S7::new_class("NTS",
 
     # MARK: number_filtered_features
     ## __number_filtered_features -----
-    number_filtered_features = S7::new_property(S7::class_integer,
-                                                getter = function(self) {
-                                                  if (self@has_features) {
-                                                    vapply(self@feature_list, function(x) sum(x$filtered), 0)
-                                                  } else {
-                                                    0
-                                                  }
-                                                }
+    number_filtered_features = S7::new_property(
+      S7::class_integer,
+      getter = function(self) {
+        if (self@has_features) {
+          vapply(self@feature_list, function(x) sum(x$filtered), 0)
+        } else {
+          0
+        }
+      }
     ),
     
     # MARK: has_groups
     ## __has_groups -----
-    has_groups = S7::new_property(S7::class_logical,
-                                  getter = function(self) {
-                                    if (self@has_features) {
-                                      any(vapply(self@feature_list, function(x) FALSE %in% is.na(x$group), FALSE))
-                                    } else {
-                                      FALSE
-                                    }
-                                  }
+    has_groups = S7::new_property(
+      S7::class_logical,
+      getter = function(self) {
+        if (self@has_features) {
+          any(vapply(self@feature_list, function(x) any(!is.na(x$group)), FALSE))
+        } else {
+          FALSE
+        }
+      }
     ),
     
     # MARK: number_groups
     ## __number_groups -----
     number_groups = S7::new_property(S7::class_integer,
-                                     getter = function(self) {
-                                       if (self@has_groups) {
-                                         vapply(self@feature_list, function(x) length(x$group[!x$filtered & !is.na(x$group)]), 0)
-                                       } else {
-                                         0
-                                       }
-                                     }
+      getter = function(self) {
+        if (self@has_groups) {
+          vapply(self@feature_list, function(x) {
+            if (nrow(x) == 0) return(0)
+            length(x$group[!x$filtered & !is.na(x$group)])
+          }, 0)
+        } else {
+          0
+        }
+      }
     ),
     
     # MARK: group_names
     ## __group_names -----
     group_names = S7::new_property(S7::class_character,
-                                   getter = function(self) {
-                                     if (self@has_groups) {
-                                       return(unique(vapply(self@feature_list, function(x) unique(x$group), NA_character_)))
-                                     }
-                                     NA_character_
-                                   }
+      getter = function(self) {
+        if (self@has_groups) {
+          return(unique(unlist(lapply(self@feature_list, function(x) ifelse(nrow(x) > 0, unique(x$group), 0)))))
+        }
+        NA_character_
+      }
     ),
     
     # MARK: has_features_ms1
@@ -285,14 +294,6 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
   
   feature_list <- x$feature_list
   
-  pols <- x$analyses_info$polarity
-  
-  make_set <- FALSE
-  
-  if (length(unique(pols)) > 1) {
-    make_set <- TRUE
-  }
-  
   feature_list <- lapply(feature_list, function(z) {
     if (!filtered) z <- z[!z$filtered, ]
     data.table::setnames(z, "feature", "ID", skip_absent = TRUE)
@@ -302,12 +303,23 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
     z
   })
   
+  feature_list <- feature_list[vapply(feature_list, nrow, 0) > 0]
+  
   ana_info <- x$analyses_info
+  ana_info <- ana_info[ana_info$analysis %in% names(feature_list), ]
+  pols <- x$analyses_info$polarity
   ana_info$path <- dirname(ana_info$file)
   data.table::setnames(ana_info, "replicate", "group", skip_absent = TRUE)
   data.table::setcolorder(ana_info, c("path", "analysis", "group", "blank", "polarity"))
   
+  make_set <- FALSE
+  
+  if (length(unique(pols)) > 1) {
+    make_set <- TRUE
+  }
+  
   if (x$has_groups && featureGroups) {
+    
     feature_list <- lapply(feature_list, function(z) {
       z <- z[!is.na(z$group), ]
       z$index <- seq_len(nrow(z))
@@ -316,53 +328,41 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
     
     pat <- new("featuresOpenMS", features = feature_list, analysisInfo = ana_info)
     
-    if (make_set) {
-      pat <- patRoon::makeSet(pat[pols %in% "negative"], pat[pols %in% "positive"], adducts = list("[M-H]-", "[M+H]+"))
-      pat@analysisInfo <- pat@analysisInfo[order(pat@analysisInfo$analysis), ]
-      pat@features <- pat@features[pat@analysisInfo$analysis]
-    }
-    
     pat@features <- lapply(pat@features, function(z) {
       if ("name" %in% colnames(z)) z$name <- NULL
       if ("index" %in% colnames(z)) z$index <- NULL
       z
     })
     
-    n_analyses <- nrow(ana_info)
+    if (make_set) {
+      pat_set <- patRoon::makeSet(
+        pat[pols %in% "negative"],
+        pat[pols %in% "positive"],
+        adducts = list("[M-H]-", "[M+H]+")
+      )
+    }
     
     fts <- data.table::rbindlist(feature_list, idcol = "analysis")
     
     groups <- fts[, .(intensity = intensity), by = c("group", "analysis")]
     groups <- data.table::dcast(groups, analysis ~ group, value.var = "intensity", fill = 0)
-    row_names <- groups$analysis
+    if (make_set) {
+      groups <- groups[match(pat_set@analysisInfo$analysis, groups$analysis), ]
+    } else {
+      groups <- groups[match(pat@analysisInfo$analysis, groups$analysis), ]
+    }
     groups$analysis <- NULL
-    rownames(groups) <- row_names
     
-    ftindex <- fts[, .(index = index), by = c("analysis", "group")]
+    ftindex <- fts[, .(index = index), by = c("group", "analysis")]
     ftindex <- data.table::dcast(ftindex, analysis ~ group, value.var = "index", fill = 0)
-    row_names <- ftindex$analysis
+    if (make_set) {
+      ftindex <- ftindex[match(pat_set@analysisInfo$analysis, ftindex$analysis), ]
+    } else {
+      ftindex <- ftindex[match(pat@analysisInfo$analysis, ftindex$analysis), ]
+    }
     ftindex$analysis <- NULL
-    rownames(ftindex) <- row_names
     
-    # if (nrow(groups) != n_analyses) {
-    #   groups <- data.table::rbindlist(
-    #     list(
-    #       groups,
-    #       data.table::data.table(analysis = setdiff(ana_info$analysis, row_names))
-    #     ),
-    #     fill = TRUE
-    #   )
-    
-    #   ftindex <- data.table::rbindlist(
-    #     list(
-    #       ftindex,
-    #       data.table::data.table(analysis = setdiff(ana_info$analysis, row_names))
-    #     ),
-    #     fill = TRUE
-    #   )
-    # }
-    
-    groups_info <- fts[, .(mass = round(mean(mass), digits = 4), ret = round(mean(ret), digits = 0)), by = "group"]
+    groups_info <- fts[, .(mass = round(mean(mass), digits = 4), ret = round(mean(ret), digits = 0)), by = c("group")]
     groups_info_rows <- groups_info$group
     groups_info[["group"]] <- NULL
     groups_info <- as.data.frame(groups_info)
@@ -373,29 +373,31 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
     data.table::setcolorder(ftindex, groups_info_rows)
     
     if (make_set) {
-      polarity <- c("[M+H]+", "[M-H]-", "[M]")
-      names(polarity) <- c("1", "-1", "0")
-      polarity_set <- c("positive", "negative", "not defined")
-      names(polarity_set) <- c("1", "-1", "0")
-      neutralMasses <- groups_info$mzs
-      names(neutralMasses) <- rownames(groups_info)
-      annotations_entry <- data.table::rbindlist(pat@features)
-      annotations_entry$neutralMass <- neutralMasses[annotations_entry$group]
-      polarity_column <- as.character(annotations_entry$polarity)
-      annotations_entry$adduct <- polarity[polarity_column]
-      annotations_entry$set <- polarity_set[polarity_column]
-      cols_to_keep <- c("set", "group", "adduct", "neutralMass")
-      annotations_entry <- annotations_entry[, cols_to_keep, with = FALSE]
-      
-      pat <- new("featureGroupsSet",
-                 groups = groups,
-                 analysisInfo = pat@analysisInfo,
-                 groupInfo = groups_info,
-                 features = pat,
-                 ftindex = ftindex,
-                 annotations = annotations_entry,
-                 algorithm = "openms-set"
+      fg <- new(
+        "featureGroupsOpenMS",
+        groups = groups,
+        analysisInfo = pat_set@analysisInfo,
+        groupInfo = groups_info,
+        features = pat_set,
+        ftindex = ftindex
       )
+      
+      fg_set <- patRoon::featureGroupsSet(
+        groupAlgo = "openms",
+        groupArgs = list(),
+        groupVerbose = FALSE,
+        groups = patRoon::groupTable(fg),
+        groupInfo = patRoon::groupInfo(fg),
+        analysisInfo = patRoon::analysisInfo(fg),
+        features = patRoon::getFeatures(fg),
+        ftindex = patRoon::groupFeatIndex(fg),
+        algorithm = "openms-set"
+      )
+      
+      fg_set@annotations <- patRoon:::getAnnotationsFromSetFeatures(fg_set)
+
+      return(fg_set)
+      
     } else {
       if (unique(pols) %in% "positive") {
         groups_info$mzs <- groups_info$mzs + 1.007276
@@ -405,20 +407,30 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
         stop("Polarity should be defined as positive or negative!")
       }
       
-      pat <- new("featureGroupsOpenMS",
-                 groups = groups,
-                 analysisInfo = pat@analysisInfo,
-                 groupInfo = groups_info,
-                 features = pat,
-                 ftindex = ftindex
+      fg <- new(
+        "featureGroupsOpenMS",
+        groups = groups,
+        analysisInfo = pat@analysisInfo,
+        groupInfo = groups_info,
+        features = pat,
+        ftindex = ftindex,
+        groupAlgo = "openms"
       )
+      
+      return(fg)
     }
   } else {
     pat <- new("featuresOpenMS", features = feature_list, analysisInfo = ana_info)
     
     if (make_set) {
-      pat <- patRoon::makeSet(pat[pols %in% "negative"], pat[pols %in% "positive"], adducts = list("[M-H]-", "[M+H]+"))
+      pat <- patRoon::makeSet(
+        pat[pols %in% "negative"],
+        pat[pols %in% "positive"],
+        adducts = list("[M-H]-", "[M+H]+")
+      )
+      
       pat@analysisInfo <- pat@analysisInfo[order(pat@analysisInfo$analysis), ]
+      
       pat@features <- pat@features[pat@analysisInfo$analysis]
     }
     
@@ -427,9 +439,9 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
       if ("index" %in% colnames(z)) z$index <- NULL
       z
     })
+    
+    return(pat)
   }
-  
-  pat
 }
 
 # MARK: get_patRoon_MSPeakLists
@@ -464,7 +476,7 @@ S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
   
   parameters$avgFun <- get(parameters$avgFun)
   
-  mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(engine, parameters)
+  mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(x, parameters)
   
   mspl
 }

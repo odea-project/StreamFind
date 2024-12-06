@@ -313,7 +313,7 @@ S7::method(run, MassSpecSettings_CorrectMatrixSuppression_TiChri) <- function(x,
         return(ft_sup_factor)
       } else {
         rt_range <- c(ft$rt - parameters$istdRtWindow, ft$rt + parameters$istdRtWindow)
-        sel_is <- which(istd$rt >= ret_range[1] & istd$rt <= rt_range[2])
+        sel_is <- which(istd$rt >= rt_range[1] & istd$rt <= rt_range[2])
         valid_istd <- istd[sel_is, ]
 
         # first part of eq. 7 from 10.1021/acs.analchem.1c00357

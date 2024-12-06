@@ -31,6 +31,10 @@ get_components <- S7::new_generic("get_components", "x")
 
 #' @export
 #' @noRd
+get_compounds <- S7::new_generic("get_compounds", "x")
+
+#' @export
+#' @noRd
 get_features <- S7::new_generic("get_features", "x")
 
 #' @export
@@ -48,6 +52,10 @@ get_features_ms1 <- S7::new_generic("get_features_ms1", "x")
 #' @export
 #' @noRd
 get_features_ms2 <- S7::new_generic("get_features_ms2", "x")
+
+#' @export
+#' @noRd
+get_formulas <- S7::new_generic("get_formulas", "x")
 
 #' @export
 #' @noRd

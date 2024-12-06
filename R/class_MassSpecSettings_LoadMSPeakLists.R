@@ -278,7 +278,7 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
   
   parameters$avgFun <- get(parameters$avgFun)
   
-  mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(engine, parameters)
+  mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(nts, parameters)
   
   nts$mspl <- mspl
   engine$nts <- nts
@@ -287,7 +287,7 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
 }
 
 #' @noRd
-.convert_ms1_ms2_columns_to_MSPeakLists <- function(engine, parameters) {
+.convert_ms1_ms2_columns_to_MSPeakLists <- function(nts, parameters) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
@@ -322,7 +322,7 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
     out
   }
   
-  feature_list <- engine$nts$feature_list
+  feature_list <- nts$feature_list
   
   plist <- lapply(feature_list, function(x, correct_spectrum) {
     
@@ -373,11 +373,11 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
     
   }, correct_spectrum = correct_spectrum)
   
-  names(plist) <- engine$get_analysis_names()
+  names(plist) <- nts$analyses_info$analysis
   
   plist <- plist[vapply(plist, function(x) length(x) > 0, FALSE)]
   
-  run_list <- lapply(engine$get_analysis_names(), function(x) engine$get_spectra_headers(x))
+  run_list <- lapply(nts$analyses_info$file, function(z) rcpp_parse_ms_spectra_headers(z))
   
   mlist <- Map(function(x, y) {
     
@@ -425,14 +425,12 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
     
   }, feature_list, run_list)
   
-  names(mlist) <- engine$get_analysis_names()
-  
+  names(mlist) <- nts$analyses_info$analysis
   mlist <- mlist[vapply(mlist, function(x) length(x) > 0, FALSE)]
+  mlist <- mlist[names(plist)]
   
-  groups <- lapply(feature_list, function(x) x$group[!x$filtered])
-  
+  groups <- lapply(feature_list[names(plist)], function(x) x$group[!x$filtered])
   groups <- unique(unlist(groups))
-  
   groups <- groups[!is.na(groups)]
   
   pat_param <- list(
@@ -446,53 +444,63 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_StreamFind) <- function(x, engi
     "retainPrecursorMSMS" = TRUE
   )
   
-  pol <- engine$get_spectra_polarity()[names(plist)]
+  ana_info <- nts$analyses_info[nts$analyses_info$analysis %in% names(plist), ]
+  pol <- ana_info$polarity
+  ana_info$path <- dirname(ana_info$file)
+  data.table::setnames(ana_info, "replicate", "group", skip_absent = TRUE)
+  ana_info$set <- ana_info$polarity
+  ana_info$polarity <- NULL
+  data.table::setcolorder(ana_info, c("path", "analysis", "group", "blank", "set"))
   
   if (length(unique(pol)) > 1) {
     
     plist_pos <- plist[pol %in% "positive"]
-    
     mlist_pos <- mlist[pol %in% "positive"]
-    
     groups_pos <- unique(unlist(lapply(plist_pos, function(x) names(x))))
     
-    pl_pos <- new("MSPeakLists",
-                  peakLists = plist_pos,
-                  metadata = mlist_pos,
-                  avgPeakListArgs = pat_param,
-                  origFGNames = groups_pos,
-                  algorithm = "mzr"
+    pl_pos <- new(
+      "MSPeakLists",
+      peakLists = plist_pos,
+      metadata = mlist_pos,
+      avgPeakListArgs = pat_param,
+      origFGNames = groups_pos,
+      algorithm = "mzr"
     )
     
     plist_neg <- plist[pol %in% "negative"]
     mlist_neg <- mlist[pol %in% "negative"]
     groups_neg <- unique(unlist(lapply(plist_neg, function(x) names(x))))
     
-    pl_neg <- new("MSPeakLists",
-                  peakLists = plist_neg,
-                  metadata = mlist_neg,
-                  avgPeakListArgs = pat_param,
-                  origFGNames = groups_neg,
-                  algorithm = "mzr"
+    pl_neg <- new(
+      "MSPeakLists",
+      peakLists = plist_neg,
+      metadata = mlist_neg,
+      avgPeakListArgs = pat_param,
+      origFGNames = groups_neg,
+      algorithm = "mzr"
     )
     
-    plfinal <- new("MSPeakListsSet",
-                   analysisInfo = engine$nts$analysisInfo,
-                   peakLists = plist,
-                   metadata = mlist,
-                   avgPeakListArgs = pat_param,
-                   origFGNames = unique(groups),
-                   algorithm = "mzr-set",
-                   setObjects = list("positive" = pl_pos, "negative" = pl_neg)
+    plistComb <- Reduce(modifyList, lapply(list("positive" = pl_pos, "negative" = pl_neg), patRoon::peakLists))
+    
+    plfinal <- new(
+      "MSPeakListsSet",
+      analysisInfo = ana_info,
+      peakLists = plist,
+      metadata = mlist,
+      avgPeakListArgs = pat_param,
+      origFGNames = unique(groups),
+      algorithm = "mzr-set",
+      setObjects = list("positive" = pl_pos, "negative" = pl_neg)
     )
     
   } else {
-    plfinal <- new("MSPeakLists",
-                   peakLists = plist,
-                   metadata = mlist,
-                   avgPeakListArgs = pat_param,
-                   origFGNames = groups,
-                   algorithm = "mzr"
+    plfinal <- new(
+      "MSPeakLists",
+      peakLists = plist,
+      metadata = mlist,
+      avgPeakListArgs = pat_param,
+      origFGNames = groups,
+      algorithm = "mzr"
     )
   }
   

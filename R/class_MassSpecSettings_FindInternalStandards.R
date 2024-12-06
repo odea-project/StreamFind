@@ -193,12 +193,9 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
         duplicated_isdt <- unique(temp$name[duplicated(temp$name)])
         for (d in duplicated_isdt) {
           temp2 <- temp[temp$name == d, ]
-          percent_mass_error <- temp2$error_mass / temp2$mass
-          percent_rt_error <- temp2$error_rt / temp2$rt
-          if (max(percent_mass_error) > max(percent_rt_error)) {
-            temp2 <- temp2[which(percent_mass_error == min(percent_mass_error)), ]
-          } else {
-            temp2 <- temp2[which(percent_rt_error == min(percent_rt_error)), ]
+          temp2 <- temp2[which(abs(temp2$error_mass) == min(abs(temp2$error_mass))), ]
+          if (nrow(temp2) > 1) {
+            temp2 <- temp2[which(abs(temp2$error_rt) == min(abs(temp2$error_rt))), ]
           }
           internal_standards <- internal_standards[
             !(internal_standards$feature == temp2$feature & internal_standards$analysis == a), ]

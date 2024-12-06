@@ -67,99 +67,99 @@
 #' @export
 #'
 MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class("MassSpecSettings_GenerateCompounds_metfrag",
-                                                            parent = ProcessingSettings,
-                                                            package = "StreamFind",
-                                                            constructor = function(MSPeakListsClusterMzWindow = 0.005,
-                                                                                   MSPeakListsTopMost = 100,
-                                                                                   MSPeakListsMinIntensityPre = 50,
-                                                                                   MSPeakListsMinIntensityPost = 50,
-                                                                                   MSPeakListsAvgFun = "mean",
-                                                                                   MSPeakListsMethod = "distance",
-                                                                                   method = "CL",
-                                                                                   timeout = 300,
-                                                                                   timeoutRetries = 5,
-                                                                                   errorRetries = 5,
-                                                                                   topMost = 5,
-                                                                                   dbRelMzDev = 8,
-                                                                                   fragRelMzDev = 10,
-                                                                                   fragAbsMzDev = 0.005,
-                                                                                   adduct = character(),
-                                                                                   database = "comptox",
-                                                                                   extendedPubChem = "auto",
-                                                                                   chemSpiderToken = "",
-                                                                                   scoreTypes = patRoon::compoundScorings("metfrag", "comptox", onlyDefault = TRUE)$name,
-                                                                                   scoreWeights = 1,
-                                                                                   preProcessingFilters = c("UnconnectedCompoundFilter", "IsotopeFilter"),
-                                                                                   postProcessingFilters = c("InChIKeyFilter"),
-                                                                                   maxCandidatesToStop = 100) {
-                                                              S7::new_object(ProcessingSettings(
-                                                                engine = "MassSpec",
-                                                                method = "GenerateCompounds",
-                                                                required = c("FindFeatures", "GroupFeatures", "Load_MSPeakLists"),
-                                                                algorithm = "metfrag",
-                                                                parameters = list(
-                                                                  MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
-                                                                  MSPeakListsTopMost = MSPeakListsTopMost,
-                                                                  MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
-                                                                  MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
-                                                                  MSPeakListsAvgFun = MSPeakListsAvgFun,
-                                                                  MSPeakListsMethod = MSPeakListaMethod,
-                                                                  method = as.character(method),
-                                                                  timeout = as.numeric(timeout),
-                                                                  timeoutRetries = as.integer(timeoutRetries),
-                                                                  errorRetries = as.integer(errorRetries),
-                                                                  topMost = as.integer(topMost),
-                                                                  dbRelMzDev = as.numeric(dbRelMzDev),
-                                                                  fragRelMzDev = as.numeric(fragRelMzDev),
-                                                                  fragAbsMzDev = as.numeric(fragAbsMzDev),
-                                                                  adduct = as.character(adduct),
-                                                                  database = as.character(database),
-                                                                  extendedPubChem = as.character(extendedPubChem),
-                                                                  chemSpiderToken = as.character(chemSpiderToken),
-                                                                  scoreTypes = as.character(scoreTypes),
-                                                                  scoreWeights = as.numeric(scoreWeights),
-                                                                  preProcessingFilters = as.character(preProcessingFilters),
-                                                                  postProcessingFilters = as.character(postProcessingFilters),
-                                                                  maxCandidatesToStop = as.integer(maxCandidatesToStop)
-                                                                ),
-                                                                number_permitted = 1,
-                                                                version = as.character(packageVersion("StreamFind")),
-                                                                software = "MetFrag",
-                                                                developer = "Christoph Ruttkies and Emma L. Schymanski",
-                                                                contact = "cruttkie@ipb-halle.de",
-                                                                link = "https://ipb-halle.github.io/MetFrag/",
-                                                                doi = "https://doi.org/10.1186/s13321-016-0115-9"
-                                                              ))
-                                                            },
-                                                            validator = function(self) {
-                                                              checkmate::assert_choice(self@engine, "MassSpec")
-                                                              checkmate::assert_choice(self@method, "GenerateCompounds")
-                                                              checkmate::assert_choice(self@algorithm, "metfrag")
-                                                              checkmate::assert_numeric(self@parameters$MSPeakListsClusterMzWindow, len = 1)
-                                                              checkmate::assert_numeric(self@parameters$MSPeakListsTopMost, len = 1)
-                                                              checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPre, len = 1)
-                                                              checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPost, len = 1)
-                                                              checkmate::assert_character(self@parameters$MSPeakListsAvgFun)
-                                                              checkmate::assert_choice(self@parameters$MSPeakListsMethod, c("hclust", "distance"))
-                                                              checkmate::assert_choice(self@parameters$method, c("CL", "R"))
-                                                              checkmate::assert_number(self@parameters$timeout)
-                                                              checkmate::assert_number(self@parameters$timeoutRetries)
-                                                              checkmate::assert_number(self@parameters$errorRetries)
-                                                              checkmate::assert_number(self@parameters$topMost)
-                                                              checkmate::assert_number(self@parameters$dbRelMzDev)
-                                                              checkmate::assert_number(self@parameters$fragRelMzDev)
-                                                              checkmate::assert_number(self@parameters$fragAbsMzDev)
-                                                              checkmate::assert_character(self@parameters$adduct, null.ok = TRUE)
-                                                              checkmate::assert_choice(self@parameters$database, c("pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv", "csv"))
-                                                              checkmate::assert_choice(self@parameters$extendedPubChem, c("auto", TRUE, FALSE))
-                                                              checkmate::assert_character(self@parameters$chemSpiderToken)
-                                                              checkmate::assert_character(self@parameters$scoreTypes, min.len = 1)
-                                                              checkmate::assert_numeric(self@parameters$scoreWeights, min.len = 1)
-                                                              checkmate::assert_character(self@parameters$preProcessingFilters, min.len = 1)
-                                                              checkmate::assert_character(self@parameters$postProcessingFilters, min.len = 1)
-                                                              checkmate::assert_number(self@parameters$maxCandidatesToStop)
-                                                              NULL
-                                                            }
+  parent = ProcessingSettings,
+  package = "StreamFind",
+  constructor = function(MSPeakListsClusterMzWindow = 0.005,
+                         MSPeakListsTopMost = 100,
+                         MSPeakListsMinIntensityPre = 50,
+                         MSPeakListsMinIntensityPost = 50,
+                         MSPeakListsAvgFun = "mean",
+                         MSPeakListsMethod = "distance",
+                         method = "CL",
+                         timeout = 300,
+                         timeoutRetries = 5,
+                         errorRetries = 5,
+                         topMost = 5,
+                         dbRelMzDev = 8,
+                         fragRelMzDev = 10,
+                         fragAbsMzDev = 0.005,
+                         adduct = character(),
+                         database = "comptox",
+                         extendedPubChem = FALSE,
+                         chemSpiderToken = "",
+                         scoreTypes = patRoon::compoundScorings("metfrag", "comptox", onlyDefault = TRUE)$name,
+                         scoreWeights = 1,
+                         preProcessingFilters = c("UnconnectedCompoundFilter", "IsotopeFilter"),
+                         postProcessingFilters = c("InChIKeyFilter"),
+                         maxCandidatesToStop = 100) {
+    S7::new_object(ProcessingSettings(
+      engine = "MassSpec",
+      method = "GenerateCompounds",
+      required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
+      algorithm = "metfrag",
+      parameters = list(
+        MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
+        MSPeakListsTopMost = MSPeakListsTopMost,
+        MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
+        MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
+        MSPeakListsAvgFun = MSPeakListsAvgFun,
+        MSPeakListsMethod = MSPeakListsMethod,
+        method = as.character(method),
+        timeout = as.numeric(timeout),
+        timeoutRetries = as.numeric(timeoutRetries),
+        errorRetries = as.numeric(errorRetries),
+        topMost = as.numeric(topMost),
+        dbRelMzDev = as.numeric(dbRelMzDev),
+        fragRelMzDev = as.numeric(fragRelMzDev),
+        fragAbsMzDev = as.numeric(fragAbsMzDev),
+        adduct = as.character(adduct),
+        database = as.character(database),
+        extendedPubChem = as.character(extendedPubChem),
+        chemSpiderToken = as.character(chemSpiderToken),
+        scoreTypes = as.character(scoreTypes),
+        scoreWeights = as.numeric(scoreWeights),
+        preProcessingFilters = as.character(preProcessingFilters),
+        postProcessingFilters = as.character(postProcessingFilters),
+        maxCandidatesToStop = as.numeric(maxCandidatesToStop)
+      ),
+      number_permitted = 1,
+      version = as.character(packageVersion("StreamFind")),
+      software = "MetFrag",
+      developer = "Christoph Ruttkies and Emma L. Schymanski",
+      contact = "cruttkie@ipb-halle.de",
+      link = "https://ipb-halle.github.io/MetFrag/",
+      doi = "https://doi.org/10.1186/s13321-016-0115-9"
+    ))
+  },
+  validator = function(self) {
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "GenerateCompounds")
+    checkmate::assert_choice(self@algorithm, "metfrag")
+    checkmate::assert_numeric(self@parameters$MSPeakListsClusterMzWindow, len = 1)
+    checkmate::assert_numeric(self@parameters$MSPeakListsTopMost, len = 1)
+    checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPre, len = 1)
+    checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPost, len = 1)
+    checkmate::assert_character(self@parameters$MSPeakListsAvgFun)
+    checkmate::assert_choice(self@parameters$MSPeakListsMethod, c("hclust", "distance"))
+    checkmate::assert_choice(self@parameters$method, c("CL", "R"))
+    checkmate::assert_number(self@parameters$timeout)
+    checkmate::assertCount(self@parameters$timeoutRetries)
+    checkmate::assertCount(self@parameters$errorRetries)
+    checkmate::assert_number(self@parameters$topMost)
+    checkmate::assert_number(self@parameters$dbRelMzDev)
+    checkmate::assert_number(self@parameters$fragRelMzDev)
+    checkmate::assert_number(self@parameters$fragAbsMzDev)
+    checkmate::assert_character(self@parameters$adduct, null.ok = TRUE)
+    checkmate::assert_choice(self@parameters$database, c("pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv", "csv"))
+    checkmate::assert_choice(self@parameters$extendedPubChem, c("auto", TRUE, FALSE))
+    checkmate::assert_character(self@parameters$chemSpiderToken)
+    checkmate::assert_character(self@parameters$scoreTypes, min.len = 1)
+    checkmate::assert_numeric(self@parameters$scoreWeights, min.len = 1)
+    checkmate::assert_character(self@parameters$preProcessingFilters, min.len = 1)
+    checkmate::assert_character(self@parameters$postProcessingFilters, min.len = 1)
+    checkmate::assertCount(self@parameters$maxCandidatesToStop)
+    NULL
+  }
 )
 
 #' @export
@@ -189,18 +189,38 @@ S7::method(run, MassSpecSettings_GenerateCompounds_metfrag) <- function(x, engin
   
   parameters <- x$parameters
   
+  cache <- .load_chache("generate_compounds", nts, x)
+  
+  if (!is.null(cache$data)) {
+    feature_list <- cache$data
+    tryCatch(
+      {
+        engine$nts$feature_list <- feature_list
+        message("Compounds already generated and added to the feature list!")
+        return(TRUE)
+      },
+      error = function(e) {
+        warning(e)
+      }
+    )
+  }
+  
   algorithm <- x$algorithm
   
-  fg <- get_patRoon_features(nts$features, filtered = FALSE, featureGroups = TRUE)
+  fg <- get_patRoon_features(
+    nts,
+    filtered = FALSE,
+    featureGroups = TRUE
+  )
   
   mspl <- get_patRoon_MSPeakLists(
     nts,
-    MSPeakListsClusterMzWindow,
-    MSPeakListsTopMost,
-    MSPeakListsMinIntensityPre,
-    MSPeakListsMinIntensityPost,
-    MSPeakListsAvgFun,
-    MSPeakListsMethod,
+    parameters$MSPeakListsClusterMzWindow,
+    parameters$MSPeakListsTopMost,
+    parameters$MSPeakListsMinIntensityPre,
+    parameters$MSPeakListsMinIntensityPost,
+    parameters$MSPeakListsAvgFun,
+    parameters$MSPeakListsMethod
   )
   
   if (length(mspl) == 0) {
@@ -208,19 +228,28 @@ S7::method(run, MassSpecSettings_GenerateCompounds_metfrag) <- function(x, engin
     return(FALSE)
   }
   
+  fg <- fg[names(mspl@peakLists), ]
+  
+  parameters <- c(parameters, list(identifiers = NULL,extraOpts = NULL))
+  
   if ("featureGroupsSet" %in% is(fg)) {
     parameters$adduct <- NULL
+    parameters <- c(parameters, list(
+      setThreshold = 0,
+      setThresholdAnn = 0,
+      setAvgSpecificScores = FALSE
+    ))
   } else {
     pol <- unique(unname(engine$get_spectra_polarity()))
-    
     if ("positive" %in% pol) parameters$adduct <- "[M+H]+"
-    
     if ("negative" %in% pol) parameters$adduct <- "[M-H]-"
   }
   
   ag <- list(fGroups = fg, MSPeakLists = mspl, algorithm = algorithm)
   
   pp_fun <- patRoon::generateCompounds
+  
+  parameters <- parameters[!grepl("MSPeakLists", names(parameters))]
   
   compounds <- do.call(pp_fun, c(ag, parameters))
   
@@ -231,30 +260,58 @@ S7::method(run, MassSpecSettings_GenerateCompounds_metfrag) <- function(x, engin
   
   feature_list <- nts$feature_list
   
-  compound_list <- compounds@groupAnnotations
-  
-  compounds_col <- lapply(names(feature_list), function(x, feature_list, compound_list) {
-    fts <- feature_list[[x]]
-    
-    if (nrow(fts) > 0) {
-      res <- lapply(fts$group, function(z, compound_list) {
-        if (!is.na(z)) {
-          return(compound_list[[z]])
+  if ("featureGroupsSet" %in% is(fg)) {
+    feature_list <- lapply(feature_list, function(z, compounds) {
+      pos_set <- compounds@setObjects[["positive"]]
+      neg_set <- compounds@setObjects[["negative"]]
+      if (nrow(z) > 0) {
+        for (g in seq_len(nrow(z))) {
+          grp <- z$group[g]
+          if (!is.na(grp)) {
+            if (z$polarity[g] == 1) {
+              temp <- pos_set@groupAnnotations[[grp]]
+              if (length(temp) > 0) {
+                z$compounds[[g]] <- temp
+              }
+            } else if (z$polarity[g] == -1) {
+              temp <- compounds@setObjects[["negative"]]@groupAnnotations[[grp]]
+              if (length(temp) > 0) {
+                z$compounds[[g]] <- temp
+              }
+            }
+          }
         }
-        list(NULL)
-      }, compound_list = compound_list)
-      return(res)
-    }
-    rep(list(NULL), nrow(feature_list[[x]]))
-  }, feature_list = feature_list, compound_list = compound_list)
+      }
+      z
+    }, compounds = compounds)
+    
+  } else {
+    feature_list <- lapply(feature_list, function(z, compounds) {
+      if (nrow(z) > 0) {
+        for (g in seq_len(nrow(z))) {
+          grp <- z$group[g]
+          if (!is.na(grp)) {
+            temp <- compounds@groupAnnotations[[grp]]
+            if (length(temp) > 0) {
+              z$compounds[[g]] <- temp
+            }
+          }
+        }
+      }
+      z
+    }, compounds = compounds)
+  }
   
-  nts <- .add_features_column(nts, "compounds", compounds_col)
+  if (!is.null(cache$hash)) {
+    .save_cache("generate_compounds", feature_list, cache$hash)
+    message("\U1f5ab Generated compounds cached!")
+  }
   
-  nts$compounds <- compounds
+  nts@feature_list <- feature_list
   
   engine$nts <- nts
   
-  message(paste0("\U2713 ", length(compounds), " compounds generated and added!"))
+  message(paste0("\U2713 ", length(compounds), " compounds generated and added to the feature list!"))
   
   TRUE
 }
