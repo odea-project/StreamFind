@@ -15,32 +15,32 @@
 #'
 #' @export
 #'
-MassSpecSettings_ClusterSpectra_StreamFind <- S7::new_class("MassSpecSettings_ClusterSpectra_StreamFind",
+MassSpecSettings_ClusterSpectra_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_ClusterSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(val = "mz",
-                         clustVal = 0.001,
-                         presence = 0.1) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "ClusterSpectra",
-      required = "LoadSpectra",
-      algorithm = "StreamFind",
-      parameters = list(
-        val = as.character(val),
-        clustVal = as.numeric(clustVal),
-        presence = as.numeric(presence)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+  constructor = function(val = "mz", clustVal = 0.001, presence = 0.1) {
+    S7::new_object(
+      StreamFind::ProcessingSettings(
+        engine = "MassSpec",
+        method = "ClusterSpectra",
+        required = "LoadSpectra",
+        algorithm = "StreamFind",
+        parameters = list(
+          val = as.character(val),
+          clustVal = as.numeric(clustVal),
+          presence = as.numeric(presence)
+        ),
+        number_permitted = 1,
+        version = as.character(utils::packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
