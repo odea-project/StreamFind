@@ -55,7 +55,7 @@ options(
   )
 )
 
-main_dir <- "C:/Users/apoli/Documents/example_files/isoft/Paracetamol_subset" # Ricardo laptop
+main_dir <- "C:/Users/thiss/Documents/Paracetamol_subset" # Ricardo laptop
 ms_dir <- paste0(main_dir, "/ms")
 ms_files <- list.files(ms_dir, pattern = ".mzML$", full.names = TRUE)
 raman_dir <- paste0(main_dir, "/raman")
@@ -287,7 +287,7 @@ str(fused_mat)
 Principle Components Analysis (PCA) can be used for unsupervised evaluation, that is, we assume that the main (or training) set of analyses is of good quality and we test new analyses to evaluate their closeness to the main set. You could say it is a supervised approach, but in the sense that we assume the quality of the main set. However, we do not classify the possible deviation of the new analyses, which would be a clearly supervised approach, as we show in the next subchapter.
 
 ```{r sets-show}
-main_set_idx <- c(1:10)
+main_set_idx <- c(c(1:9), 13, 15)
 
 main_set <- fused_mat[main_set_idx, ]
 rownames(main_set)
@@ -313,7 +313,7 @@ plot(stat$model, showText = TRUE)
 K-Nearest Neighbors (KNN) can be used to classify analyses based on pre-classified training analyses.
 
 ```{r sets-show-knn}
-train_idx <- grep("_1|_2|_01|_04|_06|_10", rownames(fused_mat))
+train_idx <- grep("_1|_2|_01|_06|_07|_10", rownames(fused_mat))
 
 train_set <- fused_mat[train_idx, ]
 train_set <- train_set[order(rownames(train_set)), ]
@@ -354,7 +354,7 @@ str(ms_spec_mat)
 ## Unsupervised
 
 ```{r sets-show}
-main_set_idx <- c(1:10)
+main_set_idx <- c(c(1:9), 13, 15)
 ms_main_set <- ms_spec_mat[main_set_idx, ]
 rownames(ms_main_set)
 ms_test_set <- ms_spec_mat[-main_set_idx, ]
@@ -377,7 +377,7 @@ plot(ms_stat$model, showText = TRUE)
 K-Nearest Neighbors (KNN) can be used to classify analyses based on pre-classified training analyses.
 
 ```{r sets-show-knn}
-train_idx <- grep("_1|_2|_01|_04|_06|_10", rownames(ms_spec_mat))
+train_idx <- grep("_1|_2|_01|_06|_07|_10", rownames(ms_spec_mat))
 
 ms_train_set <- ms_spec_mat[train_idx, ]
 ms_train_set <- ms_train_set[order(rownames(train_set)), ]
@@ -418,7 +418,7 @@ str(raman_spec_mat)
 ## Unsupervised
 
 ```{r sets-show}
-main_set_idx <- c(1:10)
+main_set_idx <- c(c(1:9), 13, 15)
 raman_main_set <- raman_spec_mat[main_set_idx, ]
 rownames(raman_main_set)
 raman_test_set <- raman_spec_mat[-main_set_idx, ]
@@ -441,7 +441,7 @@ plot(raman_stat$model, showText = TRUE)
 K-Nearest Neighbors (KNN) can be used to classify analyses based on pre-classified training analyses.
 
 ```{r sets-show-knn}
-train_idx <- grep("_1|_2|_01|_04|_06|_10", rownames(raman_spec_mat))
+train_idx <- grep("_1|_2|_01|_06|_07|_10", rownames(raman_spec_mat))
 
 raman_train_set <- raman_spec_mat[train_idx, ]
 raman_train_set <- raman_train_set[order(rownames(train_set)), ]
@@ -468,3 +468,8 @@ raman_stat2$run(StatisticSettings_MakeModel_knn(k = 3))
 raman_stat2$predict(raman_test_set)
 raman_stat2$model$prediction$results
 ```
+
+```{r}
+
+```
+

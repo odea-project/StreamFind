@@ -462,6 +462,99 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
   }
 }
 
+# MARK: plot_spectra_3d
+## __plot_spectra_3d -----
+#' @export
+#' @noRd
+S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
+                                                       analyses = NULL,
+                                                       rt = NULL,
+                                                       shift = NULL,
+                                                       minIntensity = 0,
+                                                       useRawData = FALSE,
+                                                       legendNames = TRUE,
+                                                       colorBy = "analyses",
+                                                       xVal = "shift",
+                                                       yVal = "rt",
+                                                       xLab = NULL,
+                                                       yLab = NULL,
+                                                       zLab = NULL) {
+  
+  spectra <- get_spectra(x, analyses, rt, shift, minIntensity, useRawData)
+  
+  if (nrow(spectra) == 0) {
+    message("\U2717 Traces not found for the targets!")
+    return(NULL)
+  }
+  
+  checkmate::assert_choice(xVal, c("shift", "rt"))
+  checkmate::assert_choice(yVal, c("shift", "rt"))
+  
+  if (any(duplicated(c(xVal, yVal)))) {
+    stop("Duplicated x and y values are not possible!")
+  }
+  
+  xlab <- switch(
+    xVal,
+    "shift" = "cm<sup>-1</sup>",
+    "rt" = "Retention time / seconds",
+  )
+  
+  ylab <- switch(
+    yVal,
+    "shift" = "cm<sup>-1</sup>",
+    "rt" = "Retention time / seconds",
+  )
+  
+  zlab <- "Intensity / counts"
+  
+  if (!is.null(xLab)) xlab <- xLab
+  if (!is.null(yLab)) ylab <- yLab
+  if (!is.null(zLab)) zlab <- zLab
+  
+  spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames)
+  
+  spectra$shiftrt <- paste(
+    spectra$id,
+    spectra$rt,
+    spectra$shift,
+    sep = ""
+  )
+  # 
+  # spec_temp <- spectra
+  # 
+  # spec_temp$intensity <- 0
+  # 
+  # spectra <- rbind(spectra, spec_temp)
+  
+  spectra[["x"]] <- spectra[[xVal[1]]]
+  
+  spectra[["y"]] <- spectra[[yVal[1]]]
+  
+  colors_var <- .get_colors(unique(spectra$var))
+  
+  hover_text <- paste0(
+    "<br>id: ", spectra$id,
+    "<br>analysis: ", spectra$analysis,
+    "<br>replicate: ", spectra$replicate,
+    "<br>shift: ", spectra$shift,
+    "<br>rt: ", spectra$rt,
+    "<br>intensity: ", spectra$intensity
+  )
+  
+  fig <- plotly::plot_ly(spectra, x = ~x, y = ~y, z = ~intensity) %>%
+    group_by(spectra$shiftrt) %>%
+    plotly::add_markers(color = ~var, colors = colors_var, hoverinfo = "text", text = hover_text)
+  
+  fig <- fig %>% plotly::layout(scene = list(
+    xaxis = list(title = xlab),
+    yaxis = list(title = ylab),
+    zaxis = list(title = zlab)
+  ))
+  
+  fig
+}
+
 # MARK: plot_spectra_baseline
 ## __plot_spectra_baseline -----
 #' @noRd

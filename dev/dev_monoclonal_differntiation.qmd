@@ -1,0 +1,260 @@
+---
+title: "Short Report on Mass Spectrometry"
+author: "Ricardo Cunha"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+toc: true
+format:
+  html:
+    grid:
+      sidebar-width: 300px
+      body-width: 1200px
+      margin-width: 300px
+      gutter-width: 1.5rem
+    other-links:
+      - text: StreamFind
+        href: https://odea-project.github.io/StreamFind/
+        icon: github
+    html-math-method: katex
+    theme: journal
+    code-tools: true
+    anchor-sections: true
+    code-fold: true
+    code-overflow: scroll
+    code-line-numbers: false
+    code-copy: true
+    cap-location: top
+    self-contained: true
+    embed-resources: true
+    toc: true
+    toc-location: left
+execute:
+  warning: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| include: false
+
+options(DT.options = list(
+  dom = "lfrtip",
+  autoWidth = TRUE,
+  pageLength = 10,
+  lengthMenu = c(10, 20, 50, 75, 100),
+  initComplete = htmlwidgets::JS(
+    "function(settings, json) {",
+    "$(this.api().table().body()).css({'font-size': '12px'});",
+    "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+    "}"
+  )
+))
+```
+
+```{r}
+#| include: false
+
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(DT)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(StreamFind)
+```
+
+```{r}
+#| include: false
+
+path <- "C:/Users/thiss/Documents/Anal_Bioanal_Chem_StreamFind_OnlineRaman"
+avastin_files <- paste0(path, "/Bevacizumab_Avastin_LotB8703H40")
+zirabev_files <- paste0(path, "/Bevacizumab_Zirabev_LotFR7476")
+avastin_files_ms <- list.files(avastin_files, pattern = ".d$", full.names = TRUE)
+avastin_files_rs <- list.files(avastin_files, pattern = ".sif$", full.names = TRUE)
+zirabev_files_ms <- list.files(zirabev_files, pattern = ".d$", full.names = TRUE)
+zirabev_files_rs <- list.files(zirabev_files, pattern = ".sif$", full.names = TRUE)
+```
+
+# MS
+
+```{r}
+ms <- MassSpecEngine$new(
+  analyses = c(avastin_files_ms, zirabev_files_ms),
+  centroid = TRUE
+)
+
+ms$add_replicate_names(c("avastin", "zirabev"))
+```
+
+```{r}
+DT::datatable(ms$analyses$info)
+```
+
+```{r}
+ms$plot_spectra_tic(colorBy = "replicates")
+```
+
+# Raman
+
+```{r}
+rs <- RamanEngine$new(
+  analyses = c(avastin_files_rs, zirabev_files_rs)
+)
+
+rs$add_replicate_names(c("avastin", "zirabev"))
+```
+
+```{r}
+DT::datatable(rs$analyses$info)
+```
+
+```{r}
+rs$plot_chromatograms(colorBy = "replicates")
+```
+
+
+```{r}
+plot_spectra_3d(rs$analyses, rt = c(300, 400), shift = c(400, 500))
+```
+
+
+```{r}
+rs$run(
+  RamanSettings_BinSpectra_StreamFind(
+    binNames = "rt",
+    binValues = 42,
+    byUnit = FALSE
+  )
+)
+```
+
+```{r}
+rs$plot_chromatograms()
+```
+
+```{r}
+rs$run(
+  RamanSettings_SubtractSpectraSection_StreamFind(
+    sectionVal = "rt",
+    sectionWindow = c(0, 400)
+  )
+)
+```
+
+```{r}
+rs$plot_chromatograms()
+```
+
+```{r}
+rs$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 0,
+    rtmax = 406
+  )
+)
+
+rs$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 421,
+    rtmax = 2000
+  )
+)
+```
+
+```{r}
+rs$plot_chromatograms()
+```
+
+```{r raman-workflow}
+rs_workflow <- list(
+  RamanSettings_BinSpectra_StreamFind(
+    binNames = "rt",
+    binValues = 21,
+    byUnit = FALSE
+  ),
+
+  RamanSettings_SubtractSpectraSection_StreamFind(
+    sectionVal = "rt",
+    sectionWindow = c(0, 400)
+  ),
+
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    shiftmin = -100,
+    shiftmax = 315
+  ),
+
+  RamanSettings_SmoothSpectra_savgol(
+    fl = 11,
+    forder = 2,
+    dorder = 0
+  ),
+
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    shiftmin = 315,
+    shiftmax = 330
+  ),
+
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    shiftmin = 2300,
+    shiftmax = 2600
+  ),
+
+  RamanSettings_CorrectSpectraBaseline_baseline_als(
+    lambda = 3,
+    p = 0.015,
+    maxit = 10
+  ),
+
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 0,
+    rtmax = 420
+  ),
+
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 430,
+    rtmax = 900
+  ),
+
+  RamanSettings_AverageSpectra_StreamFind(),
+
+  RamanSettings_NormalizeSpectra_minmax(),
+
+  RamanSettings_NormalizeSpectra_blockweight()
+)
+
+rs$workflow <- rs_workflow
+
+rs$print_workflow()
+```
+
+```{r raman-what does sectionWindow mean?}
+rs_workflow <- list(
+  RamanSettings_BinSpectra_StreamFind(
+    binNames = "rt",
+    binValues = 21,
+    byUnit = FALSE
+  ),
+
+  RamanSettings_SubtractSpectraSection_StreamFind(
+    sectionVal = "rt",
+    sectionWindow = c(0, 200)
+  ))
+
+rs$workflow <- rs_workflow
+
+rs$plot_spectra()
+
+```
+  
+```{r raman-workflow-run}
+rs$run_workflow()
+```
+
+```{r raman-plot_spectra-baseline, fig.cap="Baseline correction for each spectra."}
+rs$plot_spectra_baseline()
+```
+
+```{r raman-plot_spectra, fig.cap="Processed Raman spectra for each BSA product."}
+rs$plot_spectra()
+```
+
