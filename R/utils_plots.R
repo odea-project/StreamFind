@@ -3583,6 +3583,10 @@
       }
     )
     
+    if (nrow(pk_chrom) == 0) {
+      browser()
+    }
+    
     pk_chrom_init_raw <- pk_chrom$raw[1]
     pk_chrom_end_raw <- pk_chrom$raw[nrow(pk_chrom)]
     pk_chrom$baseline <- seq(pk_chrom_init_raw, pk_chrom_end_raw, length.out = nrow(pk_chrom))

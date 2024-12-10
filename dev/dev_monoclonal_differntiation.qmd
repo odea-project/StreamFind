@@ -1,5 +1,5 @@
 ---
-title: "Short Report on Mass Spectrometry"
+title: "Evaluation of monoclonal antibodies"
 author: "Ricardo Cunha"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 toc: true
@@ -66,7 +66,8 @@ library(StreamFind)
 ```{r}
 #| include: false
 
-path <- "C:/Users/thiss/Documents/Anal_Bioanal_Chem_StreamFind_OnlineRaman"
+# path <- "C:/Users/thiss/Documents/Anal_Bioanal_Chem_StreamFind_OnlineRaman"
+path <- "I:/Anal_Bioanal_Chem_StreamFind_OnlineRaman"
 avastin_files <- paste0(path, "/Bevacizumab_Avastin_LotB8703H40")
 zirabev_files <- paste0(path, "/Bevacizumab_Zirabev_LotFR7476")
 avastin_files_ms <- list.files(avastin_files, pattern = ".d$", full.names = TRUE)
@@ -109,53 +110,138 @@ DT::datatable(rs$analyses$info)
 ```
 
 ```{r}
-rs$plot_chromatograms(colorBy = "replicates")
-```
-
-
-```{r}
-plot_spectra_3d(rs$analyses, rt = c(300, 400), shift = c(400, 500))
-```
-
-
-```{r}
 rs$run(
   RamanSettings_BinSpectra_StreamFind(
     binNames = "rt",
-    binValues = 42,
+    binValues = 30,
     byUnit = FALSE
   )
 )
 ```
 
 ```{r}
-rs$plot_chromatograms()
-```
-
-```{r}
 rs$run(
   RamanSettings_SubtractSpectraSection_StreamFind(
     sectionVal = "rt",
-    sectionWindow = c(0, 400)
+    sectionWindow = c(10, 200)
   )
 )
-```
-
-```{r}
-rs$plot_chromatograms()
 ```
 
 ```{r}
 rs$run(
   RamanSettings_DeleteSpectraSection_StreamFind(
     rtmin = 0,
-    rtmax = 406
+    rtmax = 20
+  )
+)
+```
+
+```{r}
+rs$run(
+  RamanSettings_FindChromatogramsMaxima_StreamFind(
+    minWidth = 10,
+    maxWidth = 15,
+    minHeight = 50000
+  )
+)
+
+pks <- rs$analyses$spectra$chrom_peaks
+pks[[1]] <- pks[[1]][-1, ]
+pks[[2]] <- pks[[2]][-1, ]
+rs$analyses$spectra$chrom_peaks <- pks
+# plot_chromatograms_peaks(rs$analyses, colorBy = "replicates")
+```
+
+```{r}
+rs$run(
+  RamanSettings_FilterSpectra_StreamFind(
+    onlyChromPeaksSpectra = TRUE
+  )
+)
+```
+
+```{r}
+rs$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    shiftmin = -100,
+    shiftmax = 500
   )
 )
 
 rs$run(
   RamanSettings_DeleteSpectraSection_StreamFind(
-    rtmin = 421,
+    shiftmin = 2000,
+    shiftmax = 3000
+  )
+)
+```
+
+```{r}
+rs$run(
+  RamanSettings_CorrectSpectraBaseline_baseline_als(
+    lambda = 3,
+    p = 0.015,
+    maxit = 10
+  )
+)
+```
+
+```{r}
+rs$run(
+  RamanSettings_AverageSpectra_StreamFind(
+    by = "replicates+chrom_peaks",
+    weightedAveraged = FALSE
+  )
+)
+```
+
+```{r}
+rs$get_spectra()
+rs$plot_spectra(colorBy = "replicates+targets")
+```
+
+
+
+
+
+
+```{r}
+plot_spectra_3d(rs$analyses, colorBy = "replicates+targets")
+```
+
+```{r}
+plot_spectra_3d(rs$analyses)
+```
+
+```{r}
+rs$plot_spectra(rt = c(620, 640), shift = c(400, 1800))
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+rs$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 0,
+    rtmax = 401
+  )
+)
+
+rs$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 427,
     rtmax = 2000
   )
 )

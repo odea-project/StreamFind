@@ -100,7 +100,7 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
           return(FALSE)
         }
       } else {
-        if (!is(self@results[["spectra"]], "StreamFind::Spectra")) {
+        if (!is(self@results[["spectra"]], "StreamFind::RamanSpectra")) {
           return(FALSE)
         }
       }
@@ -114,10 +114,10 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
         if (!is.null(self@results[["spectra"]])) {
           return(self@results[["spectra"]])
         }
-        StreamFind::Spectra(self$raw_spectra)
+        StreamFind::RamanSpectra(self$raw_spectra)
       },
       setter = function(self, value) {
-        if (is(value, "StreamFind::Spectra")) {
+        if (is(value, "StreamFind::RamanSpectra")) {
           if (!value$is_averaged) {
             analyses_names <- unname(names(self))
             value_analyses_names <- names(value$spectra)
@@ -138,7 +138,7 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
             warning("Spectra results object is not well defined! Not done.")
           }
         } else {
-          warning("Value must be an Spectra results object! Not done.")
+          warning("Value must be an RamanSpectra results object! Not done.")
         }
         self
         self
@@ -427,11 +427,15 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
   intensity <- NULL
 
   if ("rt" %in% xVal) {
-    spectra <- spectra[, .(intensity = sum(intensity)), by = c("analysis", "replicate", "rt")]
+    groupCols <- c("analysis", "replicate", "rt")
+    if ("id" %in% colnames(spectra)) groupCols <- c("id", groupCols)
+    spectra <- spectra[, .(intensity = sum(intensity)), by = groupCols]
     if (is.null(xLab)) xLab <- "Retention time / seconds"
     setnames(spectra, "rt", "shift")
   } else if ("shift" %in% xVal) {
-    spectra <- spectra[, .(intensity = mean(intensity)), by = c("analysis", "replicate", "shift")]
+    groupCols <- c("analysis", "replicate", "shift")
+    if ("id" %in% colnames(spectra)) groupCols <- c("id", groupCols)
+    spectra <- spectra[, .(intensity = mean(intensity)), by = groupCols]
     if (is.null(xLab)) {
       if (interactive) {
         xLab <- "Raman shift / cm<sup>-1</sup>"
@@ -496,14 +500,14 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
   
   xlab <- switch(
     xVal,
-    "shift" = "cm<sup>-1</sup>",
-    "rt" = "Retention time / seconds",
+    "shift" = "Shift / cm<sup>-1</sup>",
+    "rt" = "Elution time / seconds",
   )
   
   ylab <- switch(
     yVal,
-    "shift" = "cm<sup>-1</sup>",
-    "rt" = "Retention time / seconds",
+    "shift" = "Shift / cm<sup>-1</sup>",
+    "rt" = "Elution time / seconds",
   )
   
   zlab <- "Intensity / counts"
@@ -511,6 +515,32 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
   if (!is.null(xLab)) xlab <- xLab
   if (!is.null(yLab)) ylab <- yLab
   if (!is.null(zLab)) zlab <- zLab
+  
+  if (grepl("chrom_peaks", colorBy, fixed = FALSE)) {
+    if (!x$spectra$has_chrom_peaks) {
+      warning("No chromatographic peaks available!")
+      return(NULL)
+    } else {
+      chrom_peaks <- x$spectra$chrom_peaks
+      chrom_peaks <- Map(function(z, y) {
+        z$analysis <- y
+        z
+      }, chrom_peaks, names(chrom_peaks))
+      if (length(chrom_peaks) > 0) {
+        chrom_spectra <- lapply(chrom_peaks, function(z, spectra) {
+          temp <- spectra[spectra$analysis %in% z$analysis, ]
+          temp$id <- NA_character_
+          for (i in seq_len(nrow(z))) {
+            temp$id[temp$rt >= z$rtmin[i] & temp$rt <= z$rtmax[i]] <- paste0(z$peak[i], "_", z$rt[i])
+          }
+          temp <- temp[!is.na(temp$id), ]
+          temp
+        }, spectra = spectra)
+        spectra <- data.table::rbindlist(chrom_spectra)
+        colorBy <- gsub("chrom_peaks", "targets", colorBy)
+      }
+    }
+  }
   
   spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames)
   
@@ -520,12 +550,6 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
     spectra$shift,
     sep = ""
   )
-  # 
-  # spec_temp <- spectra
-  # 
-  # spec_temp$intensity <- 0
-  # 
-  # spectra <- rbind(spectra, spec_temp)
   
   spectra[["x"]] <- spectra[[xVal[1]]]
   
@@ -543,8 +567,14 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
   )
   
   fig <- plotly::plot_ly(spectra, x = ~x, y = ~y, z = ~intensity) %>%
-    group_by(spectra$shiftrt) %>%
-    plotly::add_markers(color = ~var, colors = colors_var, hoverinfo = "text", text = hover_text)
+    group_by(spectra$rt) %>%
+      plotly::add_lines(
+        color = ~var,
+        colors = colors_var,
+        hoverinfo = "text",
+        text = hover_text,
+        line = list(width = 4)
+      )
   
   fig <- fig %>% plotly::layout(scene = list(
     xaxis = list(title = xlab),
@@ -655,6 +685,114 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
   } else {
     warning("Column rt not found in spectra data.table!")
     NULL
+  }
+}
+
+# MARK: get_chromatograms_peaks
+## __get_chromatograms_peaks -----
+#' @export
+#' @noRd
+S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x, analyses = NULL, rt = NULL) {
+  analyses <- .check_analyses_argument(x, analyses)
+  if (is.null(analyses)) {
+    return(data.table::data.table())
+  }
+  
+  if (!x$has_spectra) {
+    return(data.table::data.table())
+  }
+  
+  pks <- x$spectra$chrom_peaks
+  if (length(pks) == 0) {
+    return(data.table::data.table())
+  }
+  
+  if (x$spectra$is_averaged) {
+    pks <- data.table::rbindlist(x$spectra$chrom_peaks, idcol = "replicate", fill = TRUE)
+  } else {
+    pks <- data.table::rbindlist(x$spectra$chrom_peaks, idcol = "analysis", fill = TRUE)
+  }
+  
+  if ("analysis" %in% colnames(pks)) {
+    pks <- pks[pks$analysis %in% analyses, ]
+  } else if ("replicate" %in% colnames(pks)) {
+    rpl <- x$replicates
+    rpl <- rpl[analyses]
+    pks <- pks[pks$replicate %in% unname(rpl)]
+    
+    if (!"analysis" %in% colnames(pks)) {
+      pks$analysis <- pks$replicate
+      data.table::setcolorder(pks, c("analysis", "replicate"))
+    }
+  }
+  
+  if (is.numeric(rt)) {
+    pks <- pks[pks$rt >= rt[1] & pks$rt <= rt[2], ]
+  }
+  
+  if (nrow(pks) == 0) {
+    message("\U2717 Peaks not found for the targets!")
+    return(data.table::data.table())
+  }
+  
+  pks
+}
+
+# MARK: plot_chromatograms_peaks
+## __plot_chromatograms_peaks -----
+#' @export
+#' @noRd
+S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
+                                                                analyses = NULL,
+                                                                rt = NULL,
+                                                                title = NULL,
+                                                                legendNames = TRUE,
+                                                                colorBy = "targets",
+                                                                showLegend = TRUE,
+                                                                xlim = NULL,
+                                                                ylim = NULL,
+                                                                cex = 0.6,
+                                                                xLab = NULL,
+                                                                yLab = NULL,
+                                                                interactive = TRUE) {
+  pks <- get_chromatograms_peaks(x, analyses = analyses, rt = rt)
+  
+  if (nrow(pks) == 0) {
+    message("\U2717 Peaks not found!")
+    return(NULL)
+  }
+  
+  spectra <- get_spectra(x, analyses = analyses, useRawData = FALSE)
+  
+  if ("rt" %in% colnames(spectra)) {
+    intensity <- NULL
+    spectra[["shift"]] <- NULL
+    spectra <- spectra[, .(intensity = sum(intensity)), by = c("analysis", "rt")]
+    spectra <- unique(spectra)
+    if (is.null(xLab)) xLab <- "Retention time / seconds"
+    spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
+  } else {
+    warning("Column rt not found in spectra data.table!")
+    NULL
+  }
+  
+  if (nrow(spectra) == 0) {
+    message("\U2717 Chromatograms not found!")
+    return(NULL)
+  }
+  
+  if ("replicates" %in% colorBy && !"replicate" %in% colnames(pks)) {
+    pks$replicate <- x$replicates[pks$analysis]
+    spectra$replicate <- x$replicates[spectra$analysis]
+  }
+  
+  pks$id <- pks$analysis
+  spectra$id <- spectra$analysis
+  
+  if (!interactive) {
+    .plot_chrom_peaks_static(spectra, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+  } else {
+    .plot_chrom_peaks_interactive(spectra, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
   }
 }
 

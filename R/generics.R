@@ -55,6 +55,10 @@ get_features_ms2 <- S7::new_generic("get_features_ms2", "x")
 
 #' @export
 #' @noRd
+get_fold_change <- S7::new_generic("get_fold_change", "x")
+
+#' @export
+#' @noRd
 get_formulas <- S7::new_generic("get_formulas", "x")
 
 #' @export
@@ -222,6 +226,10 @@ plot_features_ms1 <- S7::new_generic("plot_features_ms1", "x")
 #' @export
 #' @noRd
 plot_features_ms2 <- S7::new_generic("plot_features_ms2", "x")
+
+#' @export
+#' @noRd
+plot_fold_change <- S7::new_generic("plot_fold_change", "x")
 
 #' @export
 #' @noRd

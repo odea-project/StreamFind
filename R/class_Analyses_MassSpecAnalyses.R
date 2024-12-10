@@ -2554,7 +2554,11 @@ S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
     
     fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
   } else {
-    sel <- vapply(fts$eic, function(z) is.data.frame(z), TRUE)
+    sel <- vapply(fts$eic, function(z) {
+      if (length(z) == 0) return(FALSE)
+      if (is.data.frame(z)) if (nrow(z) == 0) return(FALSE)
+      TRUE
+    }, TRUE)
     fts_without_eic <- fts[!sel, ]
     fts_with_eic <- fts[sel, ]
     
@@ -2801,7 +2805,8 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
                                                      intensities = TRUE,
                                                      average = FALSE,
                                                      sdValues = FALSE,
-                                                     metadata = FALSE) {
+                                                     metadata = FALSE,
+                                                     correctSuppression = FALSE) {
   if (!x$has_nts) {
     return(data.table::data.table())
   }
@@ -2810,12 +2815,19 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
     return(data.table::data.table())
   }
   
-  fts <- get_features(x,
-                      analyses = NULL,
-                      features = groups,
-                      mass, mz, rt, mobility, ppm, sec, millisec,
-                      filtered = filtered
+  fts <- get_features(
+    x,
+    analyses = NULL,
+    features = groups,
+    mass, mz, rt, mobility, ppm, sec, millisec,
+    filtered = filtered
   )
+  
+  if (correctSuppression) {
+    if ("suppression_factor" %in% colnames(fts)) {
+      fts$intensity <- fts$intensity * fts$suppression_factor
+    }
+  }
   
   if (nrow(fts) > 0) {
     g_ids <- unique(fts$group)
@@ -3740,6 +3752,153 @@ S7::method(get_compounds, MassSpecAnalyses) <- function(x,
   compounds
 }
 
+# MARK: get_fold_change
+## __get_fold_change -----
+#' @export
+#' @noRd
+S7::method(get_fold_change, MassSpecAnalyses) <- function(x,
+                                                          replicatesIn = NULL,
+                                                          replicatesOut = NULL,
+                                                          groups = NULL,
+                                                          mass = NULL,
+                                                          mz = NULL,
+                                                          rt = NULL,
+                                                          mobility = NULL,
+                                                          ppm = 4,
+                                                          sec = 10,
+                                                          millisec = 5,
+                                                          filtered = FALSE,
+                                                          constantThreshold = 0.5,
+                                                          eliminationThreshold = 0.2,
+                                                          correctSuppression = FALSE,
+                                                          fillZerosWithLowerLimit = FALSE,
+                                                          lowerLimit = NA_real_) {
+  if (!x$has_nts) {
+    warning("\U2717 NTS resuts not found!")
+    return(NULL)
+  }
+  
+  if (!x$nts$has_groups) {
+    warning("\U2717 Feature groups not found!")
+    return(NULL)
+  }
+  
+  rpls <- x$replicates
+  
+  if (is.numeric(replicatesIn)) replicatesIn <- unique(rpls[replicatesIn])
+  if (is.numeric(replicatesOut)) replicatesOut <- unique(rpls[replicatesOut])
+  
+  if (any(is.na(replicatesIn)) || any(is.na(replicatesOut))) {
+    message("\U2717 Replicates not found!")
+    return(NULL)
+  }
+  
+  if (length(replicatesIn) == 1 && length(replicatesOut) > 1) {
+    replicatesIn <- rep(replicatesIn, length(replicatesOut))
+  }
+  
+  groups_dt <- get_groups(
+    x,
+    groups,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    filtered,
+    intensities = TRUE,
+    average = FALSE,
+    sdValues = FALSE,
+    metadata = FALSE,
+    correctSuppression
+  )
+  
+  if (nrow(groups_dt) == 0) {
+    message("\U2717 Feature groups not found for the targets!")
+    return(NULL)
+  }
+  
+  comb <- data.table::data.table()
+  
+  for (rep in seq_len(length(replicatesOut))) {
+    out_temp <- names(x)[x$replicates %in% replicatesOut[rep]]
+    in_temp <- names(x)[x$replicates %in% replicatesIn[rep]]
+    comb_temp <- expand.grid(
+      analysisIn = in_temp,
+      analysisOut = out_temp,
+      replicateIn = replicatesIn[rep],
+      replicateOut = replicatesOut[rep]
+    )
+    comb <- data.table::rbindlist(list(comb, comb_temp), fill = TRUE)
+  }
+  
+  fc <- lapply(seq_len(nrow(comb)), function(z, comb, groups_dt, fillZerosWithLowerLimit) {
+    anaIn <- comb$analysisIn[z]
+    anaOut <- comb$analysisOut[z]
+    vecOut <- groups_dt[, colnames(groups_dt) %in% anaOut, with = FALSE][[1]]
+    vecIn <- groups_dt[, colnames(groups_dt) %in% anaIn, with = FALSE][[1]]
+    
+    if (fillZerosWithLowerLimit) {
+      if (is.na(lowerLimit)) {
+        vecOut[vecOut == 0] <- min(vecOut[vecOut > 0])
+        vecIn[vecIn == 0] <- min(vecIn[vecIn > 0])
+      } else {
+        vecOut[vecOut == 0] <- lowerLimit
+        vecIn[vecIn == 0] <- lowerLimit
+      }
+    }
+    
+    fc_vec <- vecOut / vecIn
+    res <- data.table::data.table(group = groups_dt$group, fc = fc_vec)
+    res$analysis_in <- anaIn
+    res$analysis_out <- anaOut
+    res$replicate_in <- comb$replicateIn[z]
+    res$replicate_out <- comb$replicateOut[z]
+    res$combination <- z
+    res
+  }, comb = comb, groups_dt = groups_dt, fillZerosWithLowerLimit = fillZerosWithLowerLimit)
+  
+  fc <- data.table::rbindlist(fc)
+  
+  sel_nan <- is.nan(fc$fc)
+  
+  fc <- fc[!sel_nan, ]
+  
+  # fc_av <- fc[, .(fc = mean(fc, na.rm = TRUE)), by = c("combination", "group")]
+  
+  fc_category <- list(
+    "Elimination" = c(0, eliminationThreshold),
+    "Decrease" = c(eliminationThreshold, constantThreshold),
+    "Constant" = c(constantThreshold, 1 / constantThreshold),
+    "Increase" = c(1 / constantThreshold, 1 / eliminationThreshold),
+    "Formation" = c(1 / eliminationThreshold, Inf)
+  )
+  
+  fc_boundaries <- c(
+    paste0("(", 0, "-", eliminationThreshold, ")"),
+    paste0("(", eliminationThreshold, "-", constantThreshold, ")"),
+    paste0("(", constantThreshold, "-", 1 / constantThreshold, ")"),
+    paste0("(", 1 / constantThreshold, "-", 1 / eliminationThreshold, ")"),
+    paste0("(", 1 / eliminationThreshold, "-Inf)")
+  )
+  
+  names(fc_boundaries) <- names(fc_category)
+  
+  for (i in seq_along(fc_category)) {
+    fc$category[fc$fc >= fc_category[[i]][1] & fc$fc < fc_category[[i]][2]] <- names(fc_category)[i]
+  }
+  
+  sel_na_category <- is.na(fc$category)
+  
+  fc <- fc[!sel_na_category, ]
+  fc$category <- factor(fc$category, levels = names(fc_category))
+  fc$bondaries <- paste(fc$category, fc_boundaries[fc$category], sep = "\n")
+  fc$bondaries <- factor(fc$bondaries, levels = paste(names(fc_category), fc_boundaries, sep = "\n"))
+  fc
+}
+
 # Plot NTS -----
 
 # MARK: plot_features_count
@@ -4105,21 +4264,22 @@ S7::method(plot_groups, MassSpecAnalyses) <- function(x,
     if (is.null(legendNames)) legendNames <- TRUE
   }
   
-  plot_features(x,
-                features = fts,
-                rtExpand = rtExpand,
-                mzExpand = mzExpand,
-                filtered = filtered,
-                legendNames = legendNames,
-                xLab = xLab,
-                yLab = yLab,
-                title = title,
-                colorBy = colorBy,
-                showLegend = showLegend,
-                xlim = xlim,
-                ylim = ylim,
-                cex = cex,
-                interactive = interactive
+  plot_features(
+    x,
+    features = fts,
+    rtExpand = rtExpand,
+    mzExpand = mzExpand,
+    filtered = filtered,
+    legendNames = legendNames,
+    xLab = xLab,
+    yLab = yLab,
+    title = title,
+    colorBy = colorBy,
+    showLegend = showLegend,
+    xlim = xlim,
+    ylim = ylim,
+    cex = cex,
+    interactive = interactive
   )
 }
 
@@ -4265,9 +4425,10 @@ S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
     return(NULL)
   }
   
-  eic <- get_features_eic(x,
-                          analyses = unique(fts$analysis), features = fts,
-                          rtExpand = rtExpand, mzExpand = mzExpand, filtered = filtered, useLoadedData = useLoadedData
+  eic <- get_features_eic(
+    x,
+    analyses = unique(fts$analysis), features = fts,
+    rtExpand = rtExpand, mzExpand = mzExpand, filtered = filtered, useLoadedData = useLoadedData
   )
   
   intensity <- NULL
@@ -4616,6 +4777,128 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
     .plot_suspects_static(suspects, eic)
   } else {
     .plot_suspects_interactive(suspects, eic, heights = c(0.5, 0.5))
+  }
+}
+
+# MARK: plot_fold_change
+## __plot_fold_change -----
+#' @export
+#' @noRd
+S7::method(plot_fold_change, MassSpecAnalyses) <- function(x,
+                                                           replicatesIn = NULL,
+                                                           replicatesOut = NULL,
+                                                           groups = NULL,
+                                                           mass = NULL,
+                                                           mz = NULL,
+                                                           rt = NULL,
+                                                           mobility = NULL,
+                                                           ppm = 4,
+                                                           sec = 10,
+                                                           millisec = 5,
+                                                           filtered = FALSE,
+                                                           constantThreshold = 0.5,
+                                                           eliminationThreshold = 0.2,
+                                                           correctSuppression = FALSE,
+                                                           fillZerosWithLowerLimit = FALSE,
+                                                           lowerLimit = NA_real_,
+                                                           yLab = NULL,
+                                                           title = NULL,
+                                                           interactive = TRUE) {
+  
+  fc <- get_fold_change(
+    x,
+    replicatesIn,
+    replicatesOut,
+    groups,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    filtered,
+    constantThreshold,
+    eliminationThreshold,
+    correctSuppression,
+    fillZerosWithLowerLimit,
+    lowerLimit
+  )
+  
+  if (is.null(fc)) {
+    return(NULL)
+  }
+  
+  if (nrow(fc) == 0) {
+    return(NULL)
+  }
+  
+  fc_summary_count <- fc[, .(count = .N), by = c("combination", "bondaries", "replicate_out")]
+  
+  if (is.null(yLab)) {
+    yLab <- "Number of feature groups (out / in)"
+  }
+  
+  if (!interactive) {
+    
+    fc_summary_count$bondaries <- paste(
+      fc_summary_count$replicate_out,
+      fc_summary_count$bondaries,
+      sep = "\n"
+    )
+    
+    fc_summary_count$bondaries <- factor(
+      fc_summary_count$bondaries,
+      levels = unique(fc_summary_count$bondaries)
+    )
+    
+    fc_levels <- fc_summary_count[, .(replicate_out, bondaries)]
+    fc_levels <- unique(fc_levels)
+    
+    colours <- .get_colors(unique(fc_levels$replicate_out))
+    colours_key <- colours[fc_levels$replicate_out]
+    
+    graphics::boxplot(
+      fc_summary_count$count ~ fc_summary_count$bondaries,
+      data = fc_summary_count,
+      col = paste0(colours_key, "50"),
+      border = colours_key,
+      main = title,
+      xlab = NULL,
+      ylab = yLab,
+      outline = TRUE,
+      ylim = c(0, max(fc_summary_count$count) + 1)
+    )
+    # outliers <- graphics::boxplot(
+    #   fc_summary_count$count ~ fc_summary_count$bondaries,
+    #   data = fc_summary_count,
+    #   plot = FALSE
+    # )
+    # if (length(outliers$out) > 0) {
+    #   points(outliers$group, outliers$out, col = "red", pch = 4)
+    # }
+    legend(
+      "topright",
+      legend = names(colours),
+      fill = colours
+    )
+    
+  } else {
+    fig <- plotly::plot_ly(
+      data = fc_summary_count,
+      x = ~bondaries,
+      y = ~count,
+      color = ~replicate_out,
+      colors = .get_colors(unique(fc_summary_count$replicate_out)),
+      type = "box",
+      jitter = 0.03
+    )
+    fig <- fig %>% plotly::layout(
+      title = title,
+      xaxis = list(title = ""),
+      yaxis = list(title = yLab, range = c(0, max(fc_summary_count$count) + 1))
+    )
+    fig
   }
 }
 

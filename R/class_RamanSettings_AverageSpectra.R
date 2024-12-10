@@ -7,24 +7,30 @@
 #'
 #' @description Averages spectra based on analysis replicate groups.
 #' 
-#' @param collapseTime Logical (length 1). When `TRUE` the spectra are averaged, reducing the time variable.
+#' @param by Character (length 1) with the grouping variable for averaging. Possible variables are `replicates`, 
+#' `chrom_peaks`, `rt`, `replicates+chrom_peaks`, `replicates+rt`, `chrom_peaks+rt`, `replicates+chrom_peaks+rt`.
+#' @param weightedAveraged Logical (length 1) for weighted averaging.
 #'
 #' @return A RamanSettings_AverageSpectra_StreamFind object.
 #'
 #' @export
 #'
-RamanSettings_AverageSpectra_StreamFind <- S7::new_class("RamanSettings_AverageSpectra_StreamFind",
+RamanSettings_AverageSpectra_StreamFind <- S7::new_class(
+  "RamanSettings_AverageSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(collapseTime = FALSE) {
+  constructor = function(by = "replicates", weightedAveraged = TRUE) {
     
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "AverageSpectra",
       required = NA_character_,
       algorithm = "StreamFind",
-      parameters = list(collapseTime = collapseTime),
+      parameters = list(
+        by = by,
+        weightedAveraged = weightedAveraged
+      ),
       number_permitted = 1,
       version = as.character(packageVersion("StreamFind")),
       software = "StreamFind",
@@ -39,7 +45,19 @@ RamanSettings_AverageSpectra_StreamFind <- S7::new_class("RamanSettings_AverageS
     checkmate::assert_choice(self@engine, "Raman")
     checkmate::assert_choice(self@method, "AverageSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
-    checkmate::assert_logical(self@parameters$collapseTime, max.len = 1)
+    checkmate::assert_choice(
+      self@parameters$by,
+      c(
+        "replicates",
+        "chrom_peaks",
+        "rt",
+        "replicates+chrom_peaks",
+        "replicates+rt",
+        "chrom_peaks+rt",
+        "replicates+chrom_peaks+rt"
+      )
+    )
+    checkmate::assert_logical(self@parameters$weightedAveraged, max.len = 1)
     NULL
   }
 )
@@ -68,80 +86,76 @@ S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine =
     return(FALSE)
   }
   
-  spec_list <- engine$spectra$spectra
+  spectra_list <- engine$spectra$spectra
   
-  spec <- data.table::rbindlist(spec_list, idcol = "analysis", fill = TRUE)
+  spectra <- data.table::rbindlist(spectra_list, idcol = "analysis", fill = TRUE)
   
-  collapseTime <- x$parameters$collapseTime
-  
-  if ("analysis" %in% colnames(spec)) {
-    . <- NULL
-    baseline <- NULL
-    
-    rpl <- engine$analyses$replicates
-    spec$replicate <- rpl[spec$analysis]
-    spec$analysis <- NULL
-    rpl <- unique(rpl)
-    
-    spec_list <- split(spec, spec$replicate)
-    for (r in rpl) if (!r %in% names(spec_list)) spec_list[[r]] <- data.table::data.table()
-    spec_list <- spec_list[rpl]
-    
-    av_list <- lapply(spec_list, function(z) {
-      if (nrow(z) == 0) return(z)
-      intensity <- NULL
-      rt = NULL
-      groupCols <- "replicate"
-      
-      if ("shift" %in% colnames(z)) groupCols <- c("shift", groupCols)
-      
-      if ("rt" %in% colnames(z) && !collapseTime) groupCols <- c("rt", groupCols)
-      
-      if ("mz" %in% colnames(z)) groupCols <- c("mz", groupCols)
-      
-      if ("mass" %in% colnames(z)) groupCols <- c("mass", groupCols)
-      
-      if ("bins" %in% colnames(z)) groupCols <- c("bins", groupCols)
-      
-      if (collapseTime && "rt" %in% colnames(z)) {
-        
-        if ("raw" %in% colnames(z) && !"baseline" %in% colnames(z)) {
-          z <- z[, c("rt", "intensity", "raw") := .(mean(rt), mean(intensity), mean(raw)), by = groupCols]
-          
-        } else if ("raw" %in% colnames(z) && "baseline" %in% colnames(z)) {
-          z <- z[, c("rt", "intensity", "raw", "baseline") := .(mean(rt), mean(intensity), mean(raw), mean(baseline)), by = groupCols]
-          
-        } else {
-          z <- z[, c("rt", "intensity") := .(mean(rt), mean(intensity)), by = groupCols]
-        }
-        
-        z <- z[, c("intensity", "rt") := .(mean(intensity), mean(rt)), by = groupCols]
-        
-      } else {
-        
-        if ("raw" %in% colnames(z) && !"baseline" %in% colnames(z)) {
-          z <- z[, c("intensity", "raw") := .(mean(rt), mean(intensity), mean(raw)), by = groupCols]
-          
-        } else if ("raw" %in% colnames(z) && "baseline" %in% colnames(z)) {
-          z <- z[, c("intensity", "raw", "baseline") := .(mean(intensity), mean(raw), mean(baseline)), by = groupCols]
-          
-        } else {
-          z <- z[, c("intensity") := .(mean(intensity)), by = groupCols]
-        }
-      }
-      
-      z <- unique(z)
-      z$replicate <- NULL
-      z
-    })
-    
-    spectra <- engine$spectra
-    spectra$is_averaged <- TRUE
-    spectra$spectra <- av_list
-    engine$spectra <- spectra
-    message(paste0("\U2713 ", "Averaged spectra!"))
-    invisible(TRUE)
+  if (engine$spectra$is_averaged) {
+    spectra$replicate <- spectra$analysis
   } else {
-    FALSE
+    rpl <- engine$analyses$replicates
+    spectra$replicate <- rpl[spectra$analysis]
   }
+  
+  groupCols <- "shift"
+  
+  if (grepl("replicates", x$parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
+  if (grepl("chrom_peaks", x$parameters$by, fixed = FALSE)) groupCols <- c("chrom_peaks", groupCols)
+  if (grepl("rt", x$parameters$by, fixed = FALSE)) groupCols <- c("rt", groupCols)
+  
+  if ("chrom_peaks" %in% groupCols) {
+    if (engine$spectra$has_chrom_peaks) {
+      if (!"id" %in% colnames(spectra)) {
+        warning("Filter spectra to keep only from chromatographic peaks using RamanSettings_FilterSpectra_StreamFind! Not done.")
+        return(FALSE)
+      }
+      groupCols <- c("id", groupCols)
+      groupCols <- groupCols[!groupCols %in% "chrom_peaks"]
+    } else {
+      warning("No chromatographic peaks found! Not done.")
+      return(FALSE)
+    }
+  }
+  
+  if ("replicate" %in% groupCols) {
+    spectra$analysis <- NULL
+  } else {
+    groupCols <- c("analysis", groupCols)
+  }
+  
+  if ("id" %in% colnames(spectra) && !"id" %in% groupCols) {
+    spectra$id <- NULL
+  }
+  
+  if (x$parameters$weightedAveraged) {
+    grouped_spectra <- spectra[, lapply(.SD, weighted.mean, w = intensity), by = groupCols]
+    
+    if (!"rt" %in% groupCols) {
+      grouped_spectra$rt <- NULL
+      rt <- spectra[, .(rt = mean(rt)), by = groupCols]
+      grouped_spectra <- merge(grouped_spectra, rt, by = groupCols)
+    }
+    
+  } else {
+    grouped_spectra <- spectra[, lapply(.SD, mean), by = groupCols]
+  }
+  
+  if ("replicate" %in% groupCols) {
+    setorder(grouped_spectra, shift, replicate)
+    split_str <- grouped_spectra$replicate
+    grouped_spectra$replicate <- NULL
+    grouped_spectra_list <- split(grouped_spectra, split_str)
+  } else {
+    setorder(grouped_spectra, shift, analysis)
+    split_str <- grouped_spectra$analysis
+    grouped_spectra$analysis <- NULL
+    grouped_spectra_list <- split(grouped_spectra, split_str)
+  }
+  
+  spectra <- engine$spectra
+  spectra$spectra <- grouped_spectra_list
+  spectra$is_averaged <- TRUE
+  engine$spectra <- spectra
+  message(paste0("\U2713 ", "Averaged spectra!"))
+  invisible(TRUE)
 }
