@@ -114,12 +114,12 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
   
   nts <- engine$nts
   
-  if (nts@number_features == 0) {
+  if (!nts@has_features) {
     warning("NTS object is empty! Not done.")
     return(FALSE)
   }
 
-  cache <- .load_chache("suspect_screening", nts$features, x)
+  cache <- .load_chache("suspect_screening", nts$feature_list, x)
   
   if (!is.null(cache$data)) {
     tryCatch({
@@ -173,17 +173,17 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
             if (nrow(sus_temp) > 0) {
               sus_temp
             } else {
-              list()
+              data.table::data.table()
             }
           } else {
-            list()
+            data.table::data.table()
           }
         }, suspects = suspects, suspect_cols = suspect_cols)
         
         suspects_l
         
       } else {
-        lapply(fts$feature, function(x) list())
+        lapply(fts$feature, function(x) data.table::data.table())
       }
     }, features = features, suspect_features_l = suspect_features_l, suspect_cols = suspect_cols)
     

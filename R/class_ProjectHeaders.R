@@ -2,11 +2,12 @@
 #'
 #' @description Creates a ProjectHeaders S7 class object.
 #'
-#' @param ... Arguments to be added as headers. Note that all given arguments must be of length one. The name of the 
-#' argument becomes the name of the header entry. Alternatively, a single list argument with the headers (all length 
-#' one) can be given. If an argument or element name is given, it must be type character. If an argument or element 
-#' date is given, it must be class `POSIXct` or `POSIXt`. If given date is character, conversion to class `POSIXct` 
-#' or `POSIXt` is attempted.
+#' @param ... Arguments to be added as headers. Note that all given arguments must be of length
+#' one. The name of the argument becomes the name of the header entry. Alternatively, a single
+#' list argument with the headers (all length one) can be given. If an argument or element name
+#' is given, it must be type character. If an argument or element date is given, it must be class
+#' `POSIXct` or `POSIXt`. If given date is character, conversion to class `POSIXct` or `POSIXt`
+#' is attempted.
 #' 
 #' @slot headers `List` of headers.
 #' @slot names Dynamic `Character` returning the header names.
@@ -14,7 +15,8 @@
 #' 
 #' @section Methods:
 #' \itemize{
-#'  \item `[`, `[[`, `$`, `[<-`, `[[<-`, `$<-` are implemented to get and set the elements from the headers list.  
+#'  \item `[`, `[[`, `$`, `[<-`, `[[<-`, `$<-` are implemented to get and set the elements from
+#'  the headers list.  
 #'  \item `length` returns the number of headers.  
 #'  \item `names` returns the header names.  
 #'  \item `show` prints the headers.  
@@ -24,8 +26,9 @@
 #'
 #' @export
 #' @noRd
-ProjectHeaders <- S7::new_class("ProjectHeaders", package = "StreamFind",
-  
+ProjectHeaders <- S7::new_class(
+  name = "ProjectHeaders",
+  package = "StreamFind",
   properties = list(
     headers = S7::new_property(class = S7::class_list, default = list())
   ),
@@ -67,7 +70,11 @@ ProjectHeaders <- S7::new_class("ProjectHeaders", package = "StreamFind",
     if (is.list(self@headers)) {
       valid <- TRUE
       
-      if (any(sapply(self@headers[!names(self@headers) %in% "date"], function(x) !(is.character(x) || is.numeric(x)) || length(x) != 1))) {
+      invalid_headers <- sapply(self@headers[!names(self@headers) %in% "date"], function(x) {
+        !(is.character(x) || is.numeric(x)) || length(x) != 1
+      })
+      
+      if (any(invalid_headers)) {
         warning("All headers must be of type character or numeric and of length 1!")
         valid <- FALSE
       }

@@ -1,12 +1,7 @@
-
-# ______________________________________________________________________________________________________________________
-# baseline -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_CorrectChromatogramsBaseline_baseline_als**
 #'
-#' @description Performs baseline correction to chromatograms using the Asymmetric Least Squares (ALS) algorithm from the 
-#' \pkg{baseline} package.
+#' @description Performs baseline correction to chromatograms using the Asymmetric Least Squares
+#' (ALS) algorithm from the \pkg{baseline} package.
 #' 
 #' @param lambda Numeric (length 1) with the 2nd derivative constraint.
 #' @param p Numeric (length 1) with the weighting of positive residuals.
@@ -16,32 +11,34 @@
 #'
 #' @export
 #'
-MassSpecSettings_CorrectChromatogramsBaseline_baseline_als <- S7::new_class("MassSpecSettings_CorrectChromatogramsBaseline_baseline_als",
+MassSpecSettings_CorrectChromatogramsBaseline_baseline_als <- S7::new_class(
+  name = "MassSpecSettings_CorrectChromatogramsBaseline_baseline_als",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(lambda = 5,
                          p = 0.05,
                          maxit = 10) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "CorrectChromatogramsBaseline",
-      required = "LoadChromatograms",
-      algorithm = "baseline_als",
-      parameters = list(
-        lambda = as.numeric(lambda),
-        p = as.numeric(p),
-        maxit = as.numeric(maxit)
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "baseline",
-      developer = "Kristian Hovde Liland",
-      contact = "kristian.liland@nmbu.no",
-      link = "https://github.com/khliland/baseline/",
-      doi = "10.1366/000370210792434350"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "CorrectChromatogramsBaseline",
+        required = "LoadChromatograms",
+        algorithm = "baseline_als",
+        parameters = list(
+          lambda = as.numeric(lambda),
+          p = as.numeric(p),
+          maxit = as.numeric(maxit)
+        ),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "baseline",
+        developer = "Kristian Hovde Liland",
+        contact = "kristian.liland@nmbu.no",
+        link = "https://github.com/khliland/baseline/",
+        doi = "10.1366/000370210792434350"
+      )
+    )
   },
   
   validator = function(self) {
@@ -123,16 +120,13 @@ S7::method(run, MassSpecSettings_CorrectChromatogramsBaseline_baseline_als) <- f
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# airpls -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_CorrectChromatogramsBaseline_airpls**
 #'
-#' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS) 
-#' based on the algorithm from Zhi-Min Zhang.
+#' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least
+#' Squares (airPLS) based on the algorithm from Zhi-Min Zhang.
 #' 
-#' @param lambda Numeric (length 1) with the smoothing intensity. the higher the `lambda` the higher the smoothing.
+#' @param lambda Numeric (length 1) with the smoothing intensity. the higher the `lambda` the
+#' higher the smoothing.
 #' @param differences Integer (length 1) indicating the order of the difference of penalties
 #' @param itermax Integer (length 1) with the maximum number of iterations.
 #'
@@ -144,32 +138,34 @@ S7::method(run, MassSpecSettings_CorrectChromatogramsBaseline_baseline_als) <- f
 #'
 #' @export
 #'
-MassSpecSettings_CorrectChromatogramsBaseline_airpls <- S7::new_class("MassSpecSettings_CorrectChromatogramsBaseline_airpls",
+MassSpecSettings_CorrectChromatogramsBaseline_airpls <- S7::new_class(
+  name = "MassSpecSettings_CorrectChromatogramsBaseline_airpls",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(lambda = 10,
                          differences = 1,
                          itermax = 20) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "CorrectChromatogramsBaseline",
-      required = "LoadChromatograms",
-      algorithm = "airpls",
-      parameters = list(
-        lambda = as.numeric(lambda),
-        differences = as.numeric(differences),
-        itermax = as.numeric(itermax)
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "airPLS",
-      developer = "Zhi-Min Zhang",
-      contact = "zmzhang@csu.edu.cn",
-      link = "https://github.com/zmzhang/airPLS",
-      doi = "10.1039/b922045c"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "CorrectChromatogramsBaseline",
+        required = "LoadChromatograms",
+        algorithm = "airpls",
+        parameters = list(
+          lambda = as.numeric(lambda),
+          differences = as.numeric(differences),
+          itermax = as.numeric(itermax)
+        ),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "airPLS",
+        developer = "Zhi-Min Zhang",
+        contact = "zmzhang@csu.edu.cn",
+        link = "https://github.com/zmzhang/airPLS",
+        doi = "10.1039/b922045c"
+      )
+    )
   },
   
   validator = function(self) {

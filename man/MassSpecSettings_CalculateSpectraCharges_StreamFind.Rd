@@ -8,20 +8,27 @@
 MassSpecSettings_CalculateSpectraCharges_StreamFind(
   roundVal = 35,
   relLowCut = 0.2,
-  absLowCut = 300
+  absLowCut = 300,
+  onlyMaxScan = FALSE,
+  top = 5
 )
 }
 \arguments{
-\item{roundVal}{Numeric (length 1) with the rounding value for the m/z values before applying charge clustering.}
+\item{roundVal}{Numeric (length 1) with the rounding value for the m/z values before applying
+charge clustering.}
 
 \item{relLowCut}{Numeric (length 1) with the relative low cut for the charge clustering.}
 
 \item{absLowCut}{Numeric (length 1) with the absolute low cut for the charge clustering.}
+
+\item{onlyMaxScan}{Logical (length 1) to consider only the scan with the highest intensity.}
+
+\item{top}{Numeric (length 1) with the number of top charges to be considered.}
 }
 \value{
 A MassSpecSettings_CalculateSpectraCharges_StreamFind object.
 }
 \description{
-Calculates spectral charges from multi-charged compounds (e.g. proteins and monoclonal antibodies) for
-mass deconvolution.
+Calculates spectral charges from multi-charged compounds (e.g. proteins and
+monoclonal antibodies) for mass deconvolution.
 }

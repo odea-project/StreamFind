@@ -1,6 +1,7 @@
 #' @export
 #' @noRd
-ProcessingSettings <- S7::new_class("ProcessingSettings",
+ProcessingSettings <- S7::new_class(
+  name = "ProcessingSettings",
   package = "StreamFind",
   properties = list(
     engine = S7::new_property(S7::class_character, default = NA_character_),
@@ -23,7 +24,9 @@ ProcessingSettings <- S7::new_class("ProcessingSettings",
     checkmate::assert_character(self@engine, len = 1)
     checkmate::assert_character(self@method, len = 1)
     checkmate::assert_character(self@required)
-    checkmate::assert_true(all(self@required %in% c(.get_available_methods(self@engine), NA_character_)))
+    checkmate::assert_true(
+      all(self@required %in% c(.get_available_methods(self@engine), NA_character_))
+    )
     checkmate::assert_character(self@algorithm, len = 1)
     checkmate::assert_list(self@parameters)
     checkmate::assert_numeric(self@number_permitted, len = 1)
@@ -36,8 +39,16 @@ ProcessingSettings <- S7::new_class("ProcessingSettings",
     if (is.list(self@parameters)) {
       lapply(names(self@parameters), function(x) {
         param <- self@parameters[[x]]
-        if (!(is.data.frame(param) || is.character(param) || is.numeric(param) || is.integer(param) || is.logical(param) || is.null(param))) {
-          stop(paste("Invalid type for parameter ", x, " in ", self$method, "_", self$algorithm, "!", collapse = "", sep = ""))
+        invalid_param <- is.data.frame(param) || is.character(param) || is.numeric(param)
+        invalid_param <- invalid_param || is.integer(param) || is.logical(param) || is.null(param)
+        invalid_param <- !invalid_param
+        if (invalid_param) {
+          stop(
+            paste(
+              "Invalid type for parameter ", x, " in ", self$method,
+              "_", self$algorithm, "!", collapse = "", sep = ""
+            )
+          )
         }
       })
     }
@@ -147,7 +158,6 @@ S7::method(show, ProcessingSettings) <- function(x, ...) {
     " doi          ", x@doi, "\n",
     sep = ""
   )
-
   if (isS4(x@parameters) || length(x@parameters) == 1) {
     if (is.list(x@parameters)) {
       if (isS4(x@parameters[[1]])) {
@@ -183,12 +193,10 @@ S7::method(show, ProcessingSettings) <- function(x, ...) {
   } else {
     cat("\n")
     cat(" parameters: ")
-
     if (length(x@parameters) == 0) {
       cat("empty ", "\n")
     } else {
       cat("\n")
-
       for (i in seq_len(length(x@parameters))) {
         if (is.data.frame(x@parameters[[i]])) {
           cat("  - ", names(x@parameters)[i], " (only head rows)", "\n")

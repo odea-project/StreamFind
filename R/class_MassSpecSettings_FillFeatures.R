@@ -19,7 +19,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_FillFeatures_StreamFind",
+MassSpecSettings_FillFeatures_StreamFind <- S7::new_class(
+  "MassSpecSettings_FillFeatures_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(withinReplicate = TRUE,
@@ -30,29 +31,31 @@ MassSpecSettings_FillFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fill
                          baseCut = 0.3,
                          minSignalToNoiseRatio = 3,
                          minGaussianFit = 0.2) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FillFeatures",
-      required = c("FindFeatures", "GroupFeatures"),
-      algorithm = "StreamFind",
-      parameters = list(
-        withinReplicate = as.logical(withinReplicate),
-        rtExpand = as.numeric(rtExpand),
-        mzExpand = as.numeric(mzExpand),
-        minTracesIntensity = as.numeric(minTracesIntensity),
-        minNumberTraces = as.numeric(minNumberTraces),
-        baseCut = as.numeric(baseCut),
-        minSignalToNoiseRatio = as.numeric(minSignalToNoiseRatio),
-        minGaussianFit = as.numeric(minGaussianFit)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FillFeatures",
+        required = c("FindFeatures", "GroupFeatures"),
+        algorithm = "StreamFind",
+        parameters = list(
+          withinReplicate = as.logical(withinReplicate),
+          rtExpand = as.numeric(rtExpand),
+          mzExpand = as.numeric(mzExpand),
+          minTracesIntensity = as.numeric(minTracesIntensity),
+          minNumberTraces = as.numeric(minNumberTraces),
+          baseCut = as.numeric(baseCut),
+          minSignalToNoiseRatio = as.numeric(minSignalToNoiseRatio),
+          minGaussianFit = as.numeric(minGaussianFit)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -105,13 +108,18 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   }
 
   parameters <- x$parameters
-
   analyses_list <- engine$analyses$analyses
-  fts <- engine$get_features()
-
+  feature_list <- engine$nts$feature_list
+  feature_list <- data.table::rbindlist(feature_list, idcol = "analysis", fill = TRUE)
+  rpls <- engine$analyses$replicates
+  feature_list$replicate <- rpls[feature_list$analysis]
+  feature_list_nf <- data.table::copy(feature_list)
+  feature_list_nf <- feature_list_nf[!is.na(feature_list_nf$group), ]
+  feature_list_nf <- feature_list_nf[!feature_list_nf$filtered, ]
+  
   res <- rcpp_ms_fill_features(
     analyses_list,
-    fts,
+    feature_list_nf,
     parameters$withinReplicate,
     parameters$rtExpand,
     parameters$mzExpand,
@@ -130,18 +138,18 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
 
   res <- data.table::rbindlist(res, fill = TRUE)
 
-  all_fts <- data.table::rbindlist(list(fts, res), fill = TRUE)
+  all_fts <- data.table::rbindlist(list(feature_list, res), fill = TRUE)
   all_fts$filled[is.na(all_fts$filled)] <- FALSE
   all_fts_analysis <- all_fts$analysis
   all_fts$analysis <- NULL
   all_fts$replicate <- NULL
   all_fts <- split(all_fts, all_fts_analysis)
-
+  
   if (!is.null(cache$hash)) {
     .save_cache("fill_features", all_fts, cache$hash)
     message("\U1f5ab Filled features cached!")
   }
-
+  
   nts$feature_list <- all_fts
   engine$nts <- nts
   TRUE

@@ -1,44 +1,50 @@
 #' @export
 #' @noRd
-Analyses <- S7::new_class("Analyses",
+Analyses <- S7::new_class(
+  name = "Analyses",
   package = "StreamFind",
   properties = list(
 
-    # ___ possible_formats -----
+    # possible_formats -----
     possible_formats = S7::new_property(S7::class_character, default = NA_character_),
 
-    # ___ analyses -----
+    # analyses -----
     analyses = S7::new_property(S7::class_list, default = list()),
 
-    # ___ results -----
+    # results -----
     results = S7::new_property(S7::class_list, default = list()),
 
-    # ___ info -----
-    info = S7::new_property(S7::class_data.frame, getter = function(self) {
-      if (length(self) > 0) {
-        df <- data.table::data.table(
-          "analysis" = names(self),
-          "class" = vapply(self@analyses, function(x) class(x)[1], "")
-        )
-        row.names(df) <- seq_len(nrow(df))
-        df
-      } else {
-        data.frame()
+    # info -----
+    info = S7::new_property(
+      S7::class_data.frame,
+      getter = function(self) {
+        if (length(self) > 0) {
+          df <- data.table::data.table(
+            "analysis" = names(self),
+            "class" = vapply(self@analyses, function(x) class(x)[1], "")
+          )
+          row.names(df) <- seq_len(nrow(df))
+          df
+        } else {
+          data.frame()
+        }
       }
-    }, default = data.frame())
+    )
   ),
   constructor = function(analyses = list(), results = list()) {
-    S7::new_object(S7::S7_object(), possible_formats = NA_character_, analyses = analyses, results = results)
+    S7::new_object(
+      S7::S7_object(),
+      possible_formats = NA_character_,
+      analyses = analyses,
+      results = results
+    )
   },
   validator = function(self) {
-    valid <- all(
-      checkmate::test_character(self@possible_formats),
-      checkmate::test_list(self@analyses) || checkmate::test_data_frame(self@analyses),
-      checkmate::test_list(self@results)
+    checkmate::assert_character(self@possible_formats)
+    checkmate::assert_true(
+      checkmate::test_list(self@analyses) || checkmate::test_data_frame(self@analyses)
     )
-    if (!valid) {
-      return(FALSE)
-    }
+    checkmate::assert_list(self@results)
     NULL
   }
 )

@@ -1,26 +1,15 @@
 #' @export
 #' @noRd
-Chromatograms <- S7::new_class("Chromatograms", package = "StreamFind", parent = Results,
+Chromatograms <- S7::new_class(
+  name = "Chromatograms",
+  package = "StreamFind",
+  parent = Results,
   
   properties = list(
-    # MARK: chromatograms
-    ## __chromatograms -----
     chromatograms = S7::new_property(S7::class_list, default = list()),
-    
-    # MARK: averaged
-    ## __averaged -----
     is_averaged = S7::new_property(S7::class_logical, default = FALSE),
-    
-    # MARK: peaks
-    ## __peaks -----
     peaks = S7::new_property(S7::class_list, default = list()),
-    
-    # MARK: has_peaks
-    ## __has_peaks -----
     has_peaks = S7::new_property(S7::class_logical, getter = function(self) length(self@peaks) > 0),
-    
-    # MARK: calibration_model
-    ## __calibration_model -----
     calibration_model = S7::new_property(S7::class_list, default = list())
   ),
   

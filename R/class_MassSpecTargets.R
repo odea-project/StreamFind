@@ -1,11 +1,10 @@
 #' @export
 #' @noRd
-MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
-
+MassSpecTargets <- S7::new_class(
+  name = "MassSpecTargets",
+  package = "StreamFind",
   properties = list(
-   
     targets = S7::new_property(S7::class_data.frame, default = data.frame())
-   
   ),
   
   constructor = function(
@@ -32,7 +31,10 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
     targets <- NULL
     
     if (is.data.frame(mass)) {
-      checkmate::assert_true(cols_mass %in% colnames(mass) || all(cols_mass_ranges %in% colnames(mass)))
+      checkmate::assert_true(
+        cols_mass %in% colnames(mass) ||
+        all(cols_mass_ranges %in% colnames(mass))
+      )
       targets <- mass
       
     } else if (!is.null(mass)) {
@@ -46,7 +48,11 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
     }
     
     if (is.data.frame(mz)) {
-      checkmate::assert_true(cols_mz %in% colnames(mz) || all(cols_mz_ranges %in% colnames(mz)) || cols_mass %in% colnames(mz))
+      checkmate::assert_true(
+        cols_mz %in% colnames(mz) ||
+        all(cols_mz_ranges %in% colnames(mz)) ||
+        cols_mass %in% colnames(mz)
+      )
       targets <- mz
       
     } else if (!is.null(mz)) {
@@ -60,7 +66,10 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
     }
     
     if (is.data.frame(rt)) {
-      checkmate::assert_true(cols_rt %in% colnames(rt) || all(cols_rt_ranges %in% colnames(mz)))
+      checkmate::assert_true(
+        cols_rt %in% colnames(rt) ||
+        all(cols_rt_ranges %in% colnames(mz))
+      )
       
       if (is.null(targets)) {
         targets <- rt
@@ -91,7 +100,10 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
     }
     
     if (is.data.frame(mobility)) {
-      checkmate::assert_true(cols_mobility %in% colnames(mobility) || all(cols_mobility_ranges %in% colnames(mobility)))
+      checkmate::assert_true(
+        cols_mobility %in% colnames(mobility) ||
+        all(cols_mobility_ranges %in% colnames(mobility))
+      )
       
       if (is.null(targets)) {
         targets <- mobility
@@ -155,16 +167,16 @@ MassSpecTargets <- S7::new_class("MassSpecTargets", package = "StreamFind",
         
       } else if (!"polarity" %in% colnames(targets)) {
         
-        if (!is.null(polarities) && !is.null(analyses)) {
+        if (!is.null(polarities) && "analysis" %in% colnames(targets)) {
+          targets$polarity <- polarities[targets$analysis]
+        
+        } else if (!is.null(polarities) && !is.null(analyses)) {
           targets <- lapply(analyses, function(x, t) {
             t$analysis <- x
             t$polarity <- polarities[x]
             t
           }, t = targets)
           targets <- data.table::rbindlist(targets)
-        
-        } else if (!is.null(polarities) && "analysis" %in% colnames(targets)) {
-          targets$polarity <- polarities[targets$analysis]
 
         } else if (!is.null(polarities) && length(polarities) == nrow(targets)) {
           targets$polarity <- polarities

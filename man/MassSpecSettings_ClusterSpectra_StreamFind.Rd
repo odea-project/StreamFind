@@ -15,7 +15,8 @@ MassSpecSettings_ClusterSpectra_StreamFind(
 
 \item{clustVal}{Numeric (length 1) with the clustering value.}
 
-\item{presence}{Numeric (length 1) with the minimum presence of traces in a cluster to be considered.}
+\item{presence}{Numeric (length 1) with the minimum presence of traces in a cluster to be
+considered.}
 }
 \value{
 A MassSpecSettings_ClusterSpectra_StreamFind object.

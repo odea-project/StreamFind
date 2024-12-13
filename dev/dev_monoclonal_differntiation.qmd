@@ -139,7 +139,7 @@ rs$run(
 
 ```{r}
 rs$run(
-  RamanSettings_FindChromatogramsMaxima_StreamFind(
+  RamanSettings_FindChromPeaks_LocalMaxima(
     minWidth = 10,
     maxWidth = 15,
     minHeight = 50000

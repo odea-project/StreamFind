@@ -219,7 +219,7 @@ workflow <- list(
 
   # Filter feature groups with maximum intensity below 5000 counts
   MassSpecSettings_FilterFeatures_StreamFind(
-    minIntensity = 5000
+    minIntensity = 3000
   ),
 
   # Fill features with missing data
@@ -266,6 +266,15 @@ workflow <- list(
     database = db_is,
     ppm = 8,
     sec = 10
+  ),
+  
+  # Corrects matrix suppression using the TiChri method from
+  # 10.1021/acs.analchem.1c00357 to better compare influent and effluent
+  MassSpecSettings_CorrectMatrixSuppression_TiChri(
+    mpRtWindow = 10,
+    istdAssignment = "range",
+    istdRtWindow = 50,
+    istdN = 2
   ),
 
   # Loads MS1 for features not filtered
@@ -358,7 +367,7 @@ The *FilterFeatures* method was applied to filter features according to defined 
 ms$get_groups(mass = db, ppm = 5, sec = 10, average = TRUE, filtered = TRUE)
 ```
 
-## Internal Stanards
+## Internal Standards
 
 The method *FindInternalStandards* was applied for tagging spiked internal standards and the results can be obtained with the dedicated method `MassSpecEngine$get_internal_standards()` or plotted as a quality overview using the method `MassSpecEngine$plot_internal_standards()`, as shown below. The plot gives an overview of the mass, retention time and intensity variance of the internal standards across the analyses in the project.
 
@@ -386,11 +395,15 @@ The method *AnnotateFeatures* was applied to annotate the natural isotopes and a
 
 ```{r show-components}
 # Components of Diclofenac and Candesartan in analysis 11
-ms$get_components(
+components_example <- ms$get_components(
   analyses = 11,
   mass = db[db$name %in% c("Diclofenac", "Candesartan"), ],
-  ppm = 5, sec = 10
+  ppm = 5, sec = 10,
+  filtered = TRUE
 )
+
+# Subset of the components data.table
+components_example[, c(2:6, 8, 30:34)]
 ```
 
 The components (i.e., isotopes and adducts) can also be visualized with the method `MassSpecEngine$map_components()`, as shown below for the internal standards added to analysis 11. Note that again the `filtered` argument was set to `TRUE` to return also filtered features, as the internal standards were likely excluded by blank subtraction.
@@ -417,27 +430,53 @@ ms$get_suspects()
 ms$plot_suspects(colorBy = "targets+replicates")
 ```
 
-# Methods from patRoon
+## Methods from patRoon
 
-The NTS object holds the original objects from the [patRoon](https://github.com/rickhelmus/patRoon) package, which can be accessed directly. For instance, the S4 class `features` or `featureGroups` objects are can be accessed via the *NTS* object with `ms$nts$features`. The `patRoon` package provides a set of functions for the native objects and can be applied the `ms$nts$features` object, as shown below. See more information in the [patRoon reference documentation](https://rickhelmus.github.io/patRoon/reference/index.html).
+The NTS object holds methods to obtain original objects from the [patRoon](https://github.com/rickhelmus/patRoon) package. For instance, the S4 class `features` or `featureGroups` objects can be obtained via the `get_patRoon_features` method of the *NTS* results. The `patRoon` package provides a comprehensive set of functions, as shown below. See more information in the [patRoon reference documentation](https://rickhelmus.github.io/patRoon/reference/index.html).
 
 ```{r pat-features}
 # Native patRoon object
-ms$nts$features
+fGroups <- get_patRoon_features(ms$nts, filtered = FALSE, featureGroups = TRUE)
+
+fGroups
 ```
 
 ```{r pat-plot, fig.alt="UpSet plot of features"}
 # Using the native patRoon's plotUpSet method
-patRoon::plotUpSet(ms$nts$features)
+patRoon::plotUpSet(fGroups)
+```
+
+## Fold-change analysis
+
+The method `get_fold_change()` and correspondent `plot_fold_change()` can be used to calculate and plot the fold-change between influent and effluent samples. The method calculates the fold-change for each feature group and replicates, as shown below. The plot shows the fold-change for each feature group across the replicates. The fold-change is calculated according to [Bader et al. (2017)](https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037), leveraging the replicates variance to increase the significance of the fold-change. Formation is not in the plot as no new features were detected in the effluent of the wastewater ozonation treatment step.
+
+```{r plot-fold-change}
+ms$plot_fold_change(
+  replicatesIn = c("influent_neg", "influent_pos"),
+  replicatesOut = c("effluent_neg", "effluent_pos"),
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctSuppression = TRUE,
+  fillZerosWithLowerLimit = FALSE, # set to TRUE for filling zeros with lower limit argument
+  lowerLimit = 200
+)
+```
+
+Alternatively, the `plotVolcano` from [patRoon](https://github.com/rickhelmus/patRoon) can be used to plot fold-change. For more information check the [patRoon reference documentation](https://rickhelmus.github.io/patRoon/reference/index.html). Note that the function `patRoon::getFCParams` is used to define the parameters for the fold-change calculation. Below we use the default argument values, only the in and out replicate names are set.
+
+```{r}
+patRoon::plotVolcano(
+  fGroups, # obtained above with get_patRoon_features
+  patRoon::getFCParams(c("influent_pos", "effluent_pos"))
+)
 ```
 
 # More to come
 
-Future integration:
+Future assets/functionalities:
 
-- Correcting matrix for better comparison between influent and effluent
 - Annotation of in-source fragments
 - Screening of transformation products using the *biotransformer* tool via patRoon
-- Fold-change and other statistic analysis for inter-sample correlation
 
 ***

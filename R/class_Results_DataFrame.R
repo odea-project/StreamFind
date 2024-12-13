@@ -1,9 +1,11 @@
 #' @export
 #' @noRd
-DataFrame <- S7::new_class("DataFrame", package = "StreamFind", parent = Results,
+DataFrame <- S7::new_class(
+  name = "DataFrame",
+  package = "StreamFind",
+  parent = Results,
   
   properties = list(
-    ## __spectra -----
     data = S7::new_property(S7::class_data.frame, default = data.frame())
   ),
   
@@ -20,13 +22,9 @@ DataFrame <- S7::new_class("DataFrame", package = "StreamFind", parent = Results
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(self@name == "DataFrame"),
-      checkmate::test_true(self@software == "StreamFind"),
-      checkmate::test_data_frame(self@data)
-    )
-    if (!valid) return(FALSE)
-    NULL
+    checkmate::assert_true(self@name == "DataFrame")
+    checkmate::assert_true(self@software == "StreamFind")
+    checkmate::assert_data_frame(self@data)
   }
 )
 

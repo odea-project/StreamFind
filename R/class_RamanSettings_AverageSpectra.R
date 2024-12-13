@@ -5,7 +5,7 @@
 
 #' **RamanSettings_AverageSpectra_StreamFind**
 #'
-#' @description Averages spectra based on analysis replicate groups.
+#' @description Averages spectra based on variables.
 #' 
 #' @param by Character (length 1) with the grouping variable for averaging. Possible variables are `replicates`, 
 #' `chrom_peaks`, `rt`, `replicates+chrom_peaks`, `replicates+rt`, `chrom_peaks+rt`, `replicates+chrom_peaks+rt`.
@@ -128,6 +128,7 @@ S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine =
   }
   
   if (x$parameters$weightedAveraged) {
+    intensity <- NULL
     grouped_spectra <- spectra[, lapply(.SD, weighted.mean, w = intensity), by = groupCols]
     
     if (!"rt" %in% groupCols) {

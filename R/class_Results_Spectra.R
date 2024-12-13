@@ -1,23 +1,14 @@
 #' @export
 #' @noRd
-Spectra <- S7::new_class("Spectra", package = "StreamFind", parent = Results,
+Spectra <- S7::new_class(
+  name = "Spectra",
+  package = "StreamFind",
+  parent = Results,
   
   properties = list(
-    
-    # MARK: Spectra
-    ## __spectra -----
     spectra = S7::new_property(S7::class_list, default = list()),
-    
-    # MARK: is_averaged
-    ## __is_averaged -----
     is_averaged = S7::new_property(S7::class_logical, default = FALSE),
-    
-    # MARK: Peaks
-    ## __peaks -----
     peaks = S7::new_property(S7::class_list, default = list()),
-    
-    # MARK: has_peaks
-    ## __has_peaks -----
     has_peaks = S7::new_property(S7::class_logical, getter = function(self) length(self@peaks) > 0)
   ),
   

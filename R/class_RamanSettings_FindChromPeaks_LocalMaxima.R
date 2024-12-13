@@ -3,20 +3,20 @@
 # StreamFind -----
 # ______________________________________________________________________________________________________________________
 
-#' **RamanSettings_FindChromatogramsMaxima_StreamFind**
+#' **RamanSettings_FindChromPeaks_LocalMaxima**
 #'
-#' @description Finds peak maxima in chromatographic dimension of multiple Raman spectra.
+#' @description Finds peak maxima in the chromatographic dimension of multiple Raman spectra.
 #' 
 #' @param minWidth Numeric (length 1) with the minimum width of a peak.
 #' @param maxWidth Numeric (length 1) with the maximum width of a peak.
 #' @param minHeight Numeric (length 1) with the minimum height of a peak.
 #'
-#' @return A RamanSettings_FindChromatogramsMaxima_StreamFind object.
+#' @return A RamanSettings_FindChromPeaks_LocalMaxima object.
 #'
 #' @export
 #'
-RamanSettings_FindChromatogramsMaxima_StreamFind <- S7::new_class(
-  "RamanSettings_FindChromatogramsMaxima_StreamFind",
+RamanSettings_FindChromPeaks_LocalMaxima <- S7::new_class(
+  "RamanSettings_FindChromPeaks_LocalMaxima",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -24,9 +24,9 @@ RamanSettings_FindChromatogramsMaxima_StreamFind <- S7::new_class(
     
     S7::new_object(ProcessingSettings(
       engine = "Raman",
-      method = "FindChromatogramsMaxima",
+      method = "FindChromPeaks",
       required = NA_character_,
-      algorithm = "StreamFind",
+      algorithm = "LocalMaxima",
       parameters = list(
         minWidth = as.numeric(minWidth),
         maxWidth = as.numeric(maxWidth),
@@ -44,8 +44,8 @@ RamanSettings_FindChromatogramsMaxima_StreamFind <- S7::new_class(
   
   validator = function(self) {
     checkmate::assert_choice(self@engine, "Raman")
-    checkmate::assert_choice(self@method, "FindChromatogramsMaxima")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@method, "FindChromPeaks")
+    checkmate::assert_choice(self@algorithm, "LocalMaxima")
     checkmate::assert_number(self@parameters$minWidth)
     checkmate::assert_number(self@parameters$maxWidth)
     checkmate::assert_number(self@parameters$minHeight)
@@ -55,7 +55,7 @@ RamanSettings_FindChromatogramsMaxima_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, RamanSettings_FindChromatogramsMaxima_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, RamanSettings_FindChromPeaks_LocalMaxima) <- function(x, engine = NULL) {
   
   if (!is(engine, "RamanEngine")) {
     warning("Engine is not a RamanEngine object!")

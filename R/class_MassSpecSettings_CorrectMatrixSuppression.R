@@ -97,7 +97,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_CorrectMatrixSuppression_TiChri <- S7::new_class("MassSpecSettings_CorrectMatrixSuppression_TiChri",
+MassSpecSettings_CorrectMatrixSuppression_TiChri <- S7::new_class(
+  "MassSpecSettings_CorrectMatrixSuppression_TiChri",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(mpRtWindow = 10,

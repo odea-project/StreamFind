@@ -3558,7 +3558,7 @@
       name = lt,
       legendgroup = lt,
       showlegend = showL[lt],
-      hovertemplate = paste("<br>rt: %{x}<br>", "int: %{y}")
+      hovertemplate = paste("<br>rt: %{x}<br>", "intensity: %{y}")
     )
 
     if (nrow(pk_chrom) >= 1) showL[lt] <- FALSE
@@ -3567,10 +3567,10 @@
       "</br> analysis: ", pk$analysis[1],
       "</br> id: ", pk$id[1],
       "</br> peak: ", pk$peak[1],
-      "</br> x: ", round(pk$rt[1], digits = 0),
-      "</br> dx: ", round(pk$rtmax[1] - pk$rtmin[1], digits = 0),
-      "</br> intensity: ", round(pk$intensity[1], digits = 0),
-      "</br> area: ", round(pk$area[1], digits = 0),
+      "</br>   rt: ", round(pk$rt[1], digits = 0),
+      "</br>   width: ", round(pk$rtmax[1] - pk$rtmin[1], digits = 0),
+      "</br>   intensity: ", round(pk$intensity[1], digits = 0),
+      "</br>   area: ", round(pk$area[1], digits = 0),
       if ("calibration" %in% colnames(pk)) {
         paste0("</br> calibration: ", pk$calibration[1])
       } else {
@@ -3583,28 +3583,25 @@
       }
     )
     
-    if (nrow(pk_chrom) == 0) {
-      browser()
+    if (nrow(pk_chrom) > 0) {
+      pk_chrom_init_raw <- pk_chrom$raw[1]
+      pk_chrom_end_raw <- pk_chrom$raw[nrow(pk_chrom)]
+      pk_chrom$baseline <- seq(pk_chrom_init_raw, pk_chrom_end_raw, length.out = nrow(pk_chrom))
+      
+      plot <- plot %>% add_trace(
+        x = c(pk_chrom$rt, rev(pk_chrom$rt)),
+        y = c(pk_chrom$raw, rev(pk_chrom$baseline)),
+        type = "scatter", mode = "lines+markers",
+        line = list(width = 0.6, color = unname(cl[lt])),
+        fill = "tozeroy", connectgaps = TRUE,
+        fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
+        marker = list(size = 3, color = unname(cl[lt])),
+        name = lt,
+        legendgroup = lt,
+        showlegend = FALSE,
+        hovertemplate = paste0(hT, paste("<br>rt: %{x}<br>", "intensity: %{y}"))
+      )
     }
-    
-    pk_chrom_init_raw <- pk_chrom$raw[1]
-    pk_chrom_end_raw <- pk_chrom$raw[nrow(pk_chrom)]
-    pk_chrom$baseline <- seq(pk_chrom_init_raw, pk_chrom_end_raw, length.out = nrow(pk_chrom))
-
-    plot <- plot %>% add_trace(
-      x = c(pk_chrom$rt, rev(pk_chrom$rt)),
-      y = c(pk_chrom$raw, rev(pk_chrom$baseline)),
-      type = "scatter", mode = "lines+markers",
-      line = list(width = 0.6, color = unname(cl[lt])),
-      fill = "tozeroy", connectgaps = TRUE,
-      fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
-      marker = list(size = 3, color = unname(cl[lt])),
-      name = lt,
-      legendgroup = lt,
-      showlegend = FALSE,
-      hoverinfo = "text",
-      text = hT
-    )
   }
 
   if (showLegend) {

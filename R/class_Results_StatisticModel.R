@@ -1,14 +1,17 @@
-# StatisticModel -----
-
 #' @export
 #' @noRd
-StatisticModel <- S7::new_class("StatisticModel",
-  package = "StreamFind", parent = Results,
+StatisticModel <- S7::new_class(
+  name = "StatisticModel",
+  package = "StreamFind",
+  parent = Results,
   properties = list(
-
-    ## __has_model -----
-    has_model = S7::new_property(S7::class_list,
-      default = list(),
+    
+    # model -----
+    model = S7::new_property(S7::class_list, default = list()),
+    
+    # has_model -----
+    has_model = S7::new_property(
+      S7::class_list,
       getter = function(self) {
         if (length(self$model) == 0) {
           return(FALSE)
@@ -17,12 +20,9 @@ StatisticModel <- S7::new_class("StatisticModel",
       }
     ),
 
-    ## __model -----
-    model = S7::new_property(S7::class_list, default = list()),
-
-    ## __has_test -----
-    has_test = S7::new_property(S7::class_list,
-      default = list(),
+    # has_test -----
+    has_test = S7::new_property(
+      S7::class_list,
       getter = function(self) {
         if (length(self$model$res$test) == 0) {
           return(FALSE)
@@ -31,9 +31,9 @@ StatisticModel <- S7::new_class("StatisticModel",
       }
     ),
 
-    ## __test -----
-    test = S7::new_property(S7::class_list,
-      default = list(),
+    # test -----
+    test = S7::new_property(
+      S7::class_list,
       getter = function(self) {
         if (length(self$model$res$test) == 0) {
           return(NULL)
@@ -46,9 +46,9 @@ StatisticModel <- S7::new_class("StatisticModel",
       }
     ),
 
-    ## __has_prediction -----
-    has_prediction = S7::new_property(S7::class_list,
-      default = list(),
+    # has_prediction -----
+    has_prediction = S7::new_property(
+      S7::class_list,
       getter = function(self) {
         if (length(self$model$res$prediction) == 0) {
           return(FALSE)
@@ -57,9 +57,9 @@ StatisticModel <- S7::new_class("StatisticModel",
       }
     ),
 
-    ## __prediction -----
-    prediction = S7::new_property(S7::class_list,
-      default = list(),
+    # prediction -----
+    prediction = S7::new_property(
+      S7::class_list,
       getter = function(self) {
         if (length(self$model$res$prediction) == 0) {
           return(NULL)
@@ -72,6 +72,7 @@ StatisticModel <- S7::new_class("StatisticModel",
       }
     )
   ),
+  
   constructor = function(model = list()) {
     S7::new_object(
       Results(),
@@ -81,14 +82,10 @@ StatisticModel <- S7::new_class("StatisticModel",
       model = model
     )
   },
+  
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(self@software == "StreamFind"),
-      checkmate::test_list(self@model)
-    )
-    if (!valid) {
-      return(FALSE)
-    }
+    checkmate::assert_true(self@software == "StreamFind")
+    checkmate::assert_list(self@model)
     NULL
   }
 )
@@ -146,8 +143,21 @@ S7::method(plot_explained_variance, StatisticModel) <- function(x,
       showlegend = showLegend
     )
 
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"), dtick = 1)
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"), range = c(0, 120))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black"),
+      dtick = 1
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(0, 120)
+    )
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -203,8 +213,21 @@ S7::method(plot_cumulative_explained_variance, StatisticModel) <- function(x,
       showlegend = showLegend
     )
 
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"), dtick = 1)
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"), range = c(0, 120))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black"),
+      dtick = 1
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(0, 120)
+    )
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -212,12 +235,14 @@ S7::method(plot_cumulative_explained_variance, StatisticModel) <- function(x,
   }
 }
 
+# MARK: PCA
 # PCA -----
-
 #' @export
 #' @noRd
-PCA <- S7::new_class("PCA",
-  package = "StreamFind", parent = StatisticModel,
+PCA <- S7::new_class(
+  name = "PCA",
+  package = "StreamFind",
+  parent = StatisticModel,
   constructor = function(model = list()) {
     S7::new_object(
       StatisticModel(),
@@ -228,13 +253,8 @@ PCA <- S7::new_class("PCA",
     )
   },
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(self@name == "PCA"),
-      checkmate::test_true(self@software == "StreamFind")
-    )
-    if (!valid) {
-      return(FALSE)
-    }
+    checkmate::assert_true(self@name == "PCA")
+    checkmate::assert_true(self@software == "StreamFind")
     NULL
   }
 )
@@ -434,7 +454,10 @@ S7::method(plot_scores, PCA) <- function(x,
   }
 
   if (any(pcs < 1) || any(pcs > ncol(scores) - 1)) {
-    warning("The principle components must be in the range of the number of components in the model! Not done.")
+    warning(
+      "The principle components must be in the range ",
+      "of the number of components in the model! Not done."
+    )
     return(NULL)
   }
 
@@ -456,7 +479,10 @@ S7::method(plot_scores, PCA) <- function(x,
   } else {
     if (!is.null(colorGroups)) {
       if (length(colorGroups) != nrow(scores)) {
-        warning("The color groups must have the same length as the number of analyses in the scores! Not done.")
+        warning(
+          "The color groups must have the same length ",
+          "as the number of analyses in the scores! Not done."
+        )
         return(NULL)
       }
       colorGroups <- gsub(" ", "_", colorGroups)
@@ -528,8 +554,19 @@ S7::method(plot_scores, PCA) <- function(x,
       showlegend = showLegend
     )
 
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -567,7 +604,10 @@ S7::method(plot_loadings, PCA) <- function(x,
   }
 
   if (any(pcs < 1) || any(pcs > ncol(dt) - 1)) {
-    warning("The principle components must be in the range of the number of components in the model! Not done.")
+    warning(
+      "The principle components must be in the range of ",
+      "the number of components in the model! Not done."
+    )
     return(NULL)
   }
 
@@ -588,7 +628,10 @@ S7::method(plot_loadings, PCA) <- function(x,
   } else {
     if (!is.null(colorKey)) {
       if (length(colorKey) != nrow(dt)) {
-        warning("The color key must have the same length as the number of variables in the loadings! Not done.")
+        warning(
+          "The color key must have the same length as the ",
+          "number of variables in the loadings! Not done."
+        )
         return(NULL)
       }
 
@@ -639,8 +682,19 @@ S7::method(plot_loadings, PCA) <- function(x,
       showlegend = showLegend
     )
 
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -690,7 +744,10 @@ S7::method(plot_residuals, PCA) <- function(x,
   } else {
     if (!is.null(colorGroups)) {
       if (length(colorGroups) != nrow(dt)) {
-        warning("The color groups must have the same length as the number of analyses in the scores! Not done.")
+        warning(
+          "The color groups must have the same length as ",
+          "the number of analyses in the scores! Not done."
+        )
         return(NULL)
       }
 
@@ -724,8 +781,19 @@ S7::method(plot_residuals, PCA) <- function(x,
       )
     }
 
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = plotly::toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis <- list(
+      linecolor = plotly::toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -788,7 +856,10 @@ S7::method(plot_residual_distance, PCA) <- function(x, ...) {
     }
 
     if (pc < 1 || pc > model$ncomp) {
-      warning("The principle component must be in the range of the number of components in the model! Not done.")
+      warning(
+        "The principle component must be in the range of ",
+        "the number of components in the model! Not done."
+      )
       return(NULL)
     }
   } else {
@@ -808,9 +879,13 @@ S7::method(plot_residual_distance, PCA) <- function(x, ...) {
 
   T2lim <- model$T2lim
 
-  lim_data <- mdatools::ldecomp.getLimitsCoordinates(Qlim, T2lim, ncomp = pc, norm = TRUE, log = FALSE)
+  lim_data <- mdatools::ldecomp.getLimitsCoordinates(
+    Qlim, T2lim, ncomp = pc, norm = TRUE, log = FALSE
+  )
 
-  plot_data <- lapply(res, function(z) mdatools::plotResiduals(z, ncomp = pc, norm = TRUE, log = FALSE, show.plot = FALSE))
+  plot_data <- lapply(res, function(z) {
+    mdatools::plotResiduals(z, ncomp = pc, norm = TRUE, log = FALSE, show.plot = FALSE)
+  })
 
   cat <- lapply(res, function(z) z$categories)
 
@@ -879,8 +954,19 @@ S7::method(plot_residual_distance, PCA) <- function(x, ...) {
     showlegend = showLegend
   )
 
-  xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = "Score distance (h/h0)", titlefont = list(size = 12, color = "black"))
-  yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = "Orthogonal distance (q/q0)", titlefont = list(size = 12, color = "black"))
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2,
+    title = "Score distance (h/h0)",
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2,
+    title = "Orthogonal distance (q/q0)",
+    titlefont = list(size = 12, color = "black")
+  )
 
   fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -953,7 +1039,14 @@ S7::method(plot, PCA) <- function(x, ...) {
       )
     )
 
-    fig <- plotly::subplot(plotList, nrows = 2, margin = 0.07, titleY = TRUE, titleX = TRUE, which_layout = "merge")
+    fig <- plotly::subplot(
+      plotList,
+      nrows = 2,
+      margin = 0.07,
+      titleY = TRUE,
+      titleX = TRUE,
+      which_layout = "merge"
+    )
 
     fig <- fig %>% plotly::layout(annotations = annotations)
 
@@ -961,12 +1054,14 @@ S7::method(plot, PCA) <- function(x, ...) {
   }
 }
 
+# MARK: MRCALS
 # MCRALS -----
-
 #' @export
 #' @noRd
-MCRALS <- S7::new_class("MCRALS",
-  package = "StreamFind", parent = StatisticModel,
+MCRALS <- S7::new_class(
+  name = "MCRALS",
+  package = "StreamFind",
+  parent = StatisticModel,
   constructor = function(model = list()) {
     S7::new_object(
       StatisticModel(),
@@ -977,14 +1072,8 @@ MCRALS <- S7::new_class("MCRALS",
     )
   },
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(self@name == "MCRALS"),
-      checkmate::test_true(self@software == "StreamFind")
-    )
-    if (!valid) {
-      return(FALSE)
-    }
-    NULL
+    checkmate::assert_true(self@name == "MCRALS")
+    checkmate::assert_true(self@software == "StreamFind")
   }
 )
 
@@ -1039,7 +1128,9 @@ S7::method(get_model_data, MCRALS) <- function(x) {
   resolved <- as.data.frame(model$resspec)
   resolved$result <- "model"
   resolved$feature <- as.numeric(attr(model$resspec, "features"))
-  if (any(is.na(resolved$feature))) resolved$feature <- seq_len(length(attr(model$resspec, "features")))
+  if (any(is.na(resolved$feature))) {
+    resolved$feature <- seq_len(length(attr(model$resspec, "features")))
+  }
   resolved <- data.table::as.data.table(resolved)
 
   contributions <- as.data.frame(model$rescont)
@@ -1053,7 +1144,10 @@ S7::method(get_model_data, MCRALS) <- function(x) {
     prediction_contributions$result <- "prediction"
     prediction_contributions$analysis <- rownames(prediction$rescont)
     prediction_contributions <- data.table::as.data.table(prediction_contributions)
-    contributions <- data.table::rbindlist(list(contributions, prediction_contributions), fill = TRUE)
+    contributions <- data.table::rbindlist(
+      list(contributions, prediction_contributions),
+      fill = TRUE
+    )
   }
   
   test <- model$res$test
@@ -1130,8 +1224,19 @@ S7::method(plot_resolved_spectra, MCRALS) <- function(x,
       )
     }
 
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -1192,8 +1297,18 @@ S7::method(plot_contributions, MCRALS) <- function(x,
       )
     }
     
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2, title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
     
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
     
@@ -1267,7 +1382,14 @@ S7::method(plot, MCRALS) <- function(x, ...) {
       )
     )
     
-    fig <- plotly::subplot(plotList, nrows = 2, margin = 0.07, titleY = TRUE, titleX = TRUE, which_layout = "merge")
+    fig <- plotly::subplot(
+      plotList,
+      nrows = 2,
+      margin = 0.07,
+      titleY = TRUE,
+      titleX = TRUE,
+      which_layout = "merge"
+    )
     
     fig <- fig %>% plotly::layout(annotations = annotations)
     
@@ -1275,12 +1397,14 @@ S7::method(plot, MCRALS) <- function(x, ...) {
   }
 }
 
+# MARK: MCRPURE
 # MCRPURE -----
-
 #' @export
 #' @noRd
-MCRPURE <- S7::new_class("MCRPURE",
-  package = "StreamFind", parent = StatisticModel,
+MCRPURE <- S7::new_class(
+  name = "MCRPURE",
+  package = "StreamFind",
+  parent = StatisticModel,
   properties = list(),
   constructor = function(model = list()) {
     S7::new_object(
@@ -1292,14 +1416,8 @@ MCRPURE <- S7::new_class("MCRPURE",
     )
   },
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(self@name == "MCRPURE"),
-      checkmate::test_true(self@software == "StreamFind")
-    )
-    if (!valid) {
-      return(FALSE)
-    }
-    NULL
+    checkmate::assert_true(self@name == "MCRPURE")
+    checkmate::assert_true(self@software == "StreamFind")
   }
 )
 
@@ -1337,7 +1455,9 @@ S7::method(get_model_data, MCRPURE) <- function(x) {
   resolved <- as.data.frame(model$resspec)
   resolved$result <- "model"
   suppressWarnings(resolved$feature <- as.numeric(attr(model$resspec, "features")))
-  if (any(is.na(resolved$feature))) resolved$feature <- seq_len(length(attr(model$resspec, "features")))
+  if (any(is.na(resolved$feature))) {
+    resolved$feature <- seq_len(length(attr(model$resspec, "features")))
+  }
   resolved <- data.table::as.data.table(resolved)
   
   contributions <- as.data.frame(model$rescont)
@@ -1358,7 +1478,10 @@ S7::method(get_model_data, MCRPURE) <- function(x) {
     prediction_contributions$result <- "prediction"
     prediction_contributions$analysis <- rownames(prediction$rescont)
     prediction_contributions <- data.table::as.data.table(prediction_contributions)
-    contributions <- data.table::rbindlist(list(contributions, prediction_contributions), fill = TRUE)
+    contributions <- data.table::rbindlist(
+      list(contributions, prediction_contributions),
+      fill = TRUE
+    )
   }
   
   test <- model$res$test
@@ -1458,8 +1581,19 @@ S7::method(plot_resolved_spectra, MCRPURE) <- function(x,
       )
     }
     
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
     
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
     
@@ -1520,8 +1654,19 @@ S7::method(plot_contributions, MCRPURE) <- function(x,
       )
     }
     
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
     
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
     
@@ -1595,7 +1740,14 @@ S7::method(plot, MCRPURE) <- function(x, ...) {
       )
     )
     
-    fig <- plotly::subplot(plotList, nrows = 2, margin = 0.07, titleY = TRUE, titleX = TRUE, which_layout = "merge")
+    fig <- plotly::subplot(
+      plotList,
+      nrows = 2,
+      margin = 0.07,
+      titleY = TRUE,
+      titleX = TRUE,
+      which_layout = "merge"
+    )
     
     fig <- fig %>% plotly::layout(annotations = annotations)
     
@@ -1603,12 +1755,14 @@ S7::method(plot, MCRPURE) <- function(x, ...) {
   }
 }
 
+# MARK KNN
 # KNN -----
-
 #' @export
 #' @noRd
-KNN <- S7::new_class("KNN",
-  package = "StreamFind", parent = StatisticModel,
+KNN <- S7::new_class(
+  name = "KNN",
+  package = "StreamFind",
+  parent = StatisticModel,
   properties = list(),
   constructor = function(model = list()) {
     S7::new_object(
@@ -1620,13 +1774,8 @@ KNN <- S7::new_class("KNN",
     )
   },
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(self@name == "KNN"),
-      checkmate::test_true(self@software == "StreamFind")
-    )
-    if (!valid) {
-      return(FALSE)
-    }
+    checkmate::assert_true(self@name == "KNN")
+    checkmate::assert_true(self@software == "StreamFind")
     NULL
   }
 )

@@ -1,14 +1,12 @@
 #' @export
 #' @noRd
 RamanSpectra <- S7::new_class(
-  "RamanSpectra",
+  name = "RamanSpectra",
   package = "StreamFind",
   parent = Spectra,
   
   properties = list(
     
-    # MARK: has_chromatograms
-    ## __has_chromatograms -----
     has_chromatograms = S7::new_property(
       S7::class_logical,
       getter = function(self) {
@@ -18,13 +16,12 @@ RamanSpectra <- S7::new_class(
       }
     ),
     
-    # MARK: chrom_peaks
-    ## __chrom_peaks -----
     chrom_peaks = S7::new_property(S7::class_list, default = list()),
     
-    # MARK: has_chrom_peaks
-    ## __has_chrom_peaks -----
-    has_chrom_peaks = S7::new_property(S7::class_logical, getter = function(self) length(self@chrom_peaks) > 0)
+    has_chrom_peaks = S7::new_property(
+      S7::class_logical,
+      getter = function(self) length(self@chrom_peaks) > 0
+    )
   ),
   
   constructor = function(spectra = list(),

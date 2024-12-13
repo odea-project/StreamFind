@@ -16,7 +16,8 @@
 #'
 #' @export
 #'
-RamanSettings_DeleteSpectraSection_StreamFind <- S7::new_class("RamanSettings_DeleteSpectraSection_StreamFind",
+RamanSettings_DeleteSpectraSection_StreamFind <- S7::new_class(
+  "RamanSettings_DeleteSpectraSection_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -24,7 +25,6 @@ RamanSettings_DeleteSpectraSection_StreamFind <- S7::new_class("RamanSettings_De
                          shiftmax = NULL,
                          rtmin = NULL,
                          rtmax = NULL) {
-    
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "DeleteSpectraSection",

@@ -1,12 +1,10 @@
 #' @export
 #' @noRd
-AuditTrail <- S7::new_class("AuditTrail", package = "StreamFind",
-  
+AuditTrail <- S7::new_class(
+  name = "AuditTrail",
+  package = "StreamFind",
   properties = list(
-    
-    entries = S7::new_property(class = S7::class_list, default = list()),
-    
-    length = S7::new_property(class = S7::class_numeric, getter = function(self) length(self@entries), default = 0)
+    entries = S7::new_property(class = S7::class_list, default = list())
   ),
   
   constructor = function() {
@@ -14,6 +12,7 @@ AuditTrail <- S7::new_class("AuditTrail", package = "StreamFind",
   },
   
   validator = function(self) {
+    checkmate::assert_list(self@entries)
     NULL
   }
 )
@@ -39,9 +38,7 @@ S7::method(`$`, AuditTrail) <- function(x, i) {
 #' @export
 #' @noRd
 S7::method(add, AuditTrail) <- function(x, value) {
-  
   time_stamp <- Sys.time()
-  
   value_classes <- class(value)
   
   if (length(value_classes) > 1) {

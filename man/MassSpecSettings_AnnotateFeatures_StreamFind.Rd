@@ -12,12 +12,13 @@ MassSpecSettings_AnnotateFeatures_StreamFind(
 )
 }
 \arguments{
-\item{rtWindowAlignment}{Numeric (length 1) with the proportion of the monoisotopic feature time window to be used
-for retrieving isotopic candidates.}
+\item{rtWindowAlignment}{Numeric (length 1) with the proportion of the monoisotopic feature time
+window to be used for retrieving isotopic candidates.}
 
 \item{maxIsotopes}{Numeric (length 1) with the maximum number of isotopic steps.}
 
-\item{maxCharge}{Numeric (length 1) with the maximum charge that ions can be ionized to find isotopes.}
+\item{maxCharge}{Numeric (length 1) with the maximum charge that ions can be ionized to find
+isotopes.}
 
 \item{maxGaps}{Numeric (length 1) with the maximum of allowed gaps in isotopic chains.}
 }
@@ -25,13 +26,15 @@ for retrieving isotopic candidates.}
 A \code{MassSpecSettings_AnnotateFeatures_StreamFind} object.
 }
 \description{
-Settings for annotation of isotopic and adduct features. The method uses the \code{maxIsotopes} to define the
-maximum length of the isotopic chain. The list of candidate features is build with the \code{rtWindowAlignment} and the
-maximum mass increment to match the maximum chain length. Then, the mass difference  of the natural isotopes and a
-given monoisotopic ion (i.e., feature) are targeted. Each candidate is then evaluated according to the mass error and
-the expected relative intensity. Adducts are annotated by the mass difference of the monoisotopic ion and the adduct
-ion. Elements considered for annotation of isotopes are C, H, N, O, S, Cl, Br and Si, which are the most relevent for
-organic molecules. The adducts considered are Na+, K+, NH4+, CH3OH+, DMSO+, CH3CN+ for positive ionization and
-Cl-,Br-, -2H+Na, -2H+K, CHO2- and CH3COO- for negative ionization. In-source fragments are not yet annotated in the
-current version but planned.
+Settings for annotation of isotopic and adduct features. The method uses the
+\code{maxIsotopes} to define the maximum length of the isotopic chain. The list of candidate features
+is build with the \code{rtWindowAlignment} and the maximum mass increment to match the maximum chain
+length. Then, the mass difference  of the natural isotopes and a given monoisotopic ion (i.e.,
+feature) are targeted. Each candidate is then evaluated according to the mass error and the
+expected relative intensity. Adducts are annotated by the mass difference of the monoisotopic
+ion and the adduct ion. Elements considered for annotation of isotopes are C, H, N, O, S, Cl, Br
+and Si, which are the most relevent for organic molecules. The adducts considered are Na+, K+,
+NH4+, CH3OH+, DMSO+, CH3CN+ for positive ionization and Cl-,Br-, -2H+Na, -2H+K, CHO2- and
+CH3COO- for negative ionization. In-source fragments are not yet annotated in the current
+version but planned.
 }

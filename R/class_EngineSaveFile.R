@@ -3,13 +3,18 @@
 EngineSaveFile <- S7::new_class(
   name = "EngineSaveFile",
   package = "StreamFind",
-  
   properties = list(
     path = S7::new_property(S7::class_character, default = NA_character_),
     
-    name = S7::new_property(S7::class_character, getter = function(self) basename(self@path), default = NA_character_),
+    name = S7::new_property(
+      S7::class_character,
+      getter = function(self) basename(self@path)
+    ),
     
-    dir = S7::new_property(S7::class_character, getter = function(self) dirname(self@path), default = NA_character_),
+    dir = S7::new_property(
+      S7::class_character,
+      getter = function(self) dirname(self@path)
+    ),
     
     format = S7::new_property(
       S7::class_character,

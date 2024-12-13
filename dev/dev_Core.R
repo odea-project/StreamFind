@@ -40,23 +40,20 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 # NTS workflow -----
 ms <- MassSpecEngine$new(analyses = ms_files_df)
 
-show(ms$audit_trail)
-
-as.data.frame(ms$audit_trail)
-
-
-afs <- MassSpecSettings_AnnotateFeatures_StreamFind()
-
-save(afs, "afs.json")
-
-cms <- MassSpecSettings_CorrectMatrixSuppression_TiChri()
-
-save(cms, "cms.json")
-
-?MassSpecSettings_CorrectMatrixSuppression_TiChri
+# show(ms$audit_trail)
+# as.data.frame(ms$audit_trail)
+# afs <- MassSpecSettings_AnnotateFeatures_StreamFind()
+# save(afs, "afs.json")
+# cms <- MassSpecSettings_CorrectMatrixSuppression_TiChri()
+# save(cms, "cms.json")
+# ?MassSpecSettings_CorrectMatrixSuppression_TiChri
 
 ms$run(MassSpecSettings_FindFeatures_openms())
 ms$run(MassSpecSettings_AnnotateFeatures_StreamFind())
+
+ms$info_cache_categories()
+
+
 ms$run(MassSpecSettings_FindInternalStandards_StreamFind(database = dbis, ppm = 8, sec = 10))
 ms$run(MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE, excludeAdducts = TRUE))
 ms$run(MassSpecSettings_GroupFeatures_openms())

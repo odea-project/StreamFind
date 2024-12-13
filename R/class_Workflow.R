@@ -1,48 +1,56 @@
 #' @export
 #' @noRd
-Workflow <- S7::new_class("Workflow",
+Workflow <- S7::new_class(
+  name = "Workflow",
   package = "StreamFind",
   properties = list(
     
     # MARK: settings
-    ## __settings ----
+    # settings ----
     settings = S7::new_property(S7::class_list, default = list()),
     
     # MARK: methods
-    ## __methods ----
-    methods = S7::new_property(S7::class_character,
+    # methods ----
+    methods = S7::new_property(
+      S7::class_character,
       getter = function(self) {
-        vapply(self@settings, function(x) paste0(x$engine, "Settings_", x$method, "_", x$algorithm), NA_character_)
-      },
-      default = NA_character_
+        if (length(self) == 0) return(character())
+        vapply(self@settings, function(x) {
+          paste0(x$engine, "Settings_", x$method, "_", x$algorithm)
+        }, NA_character_)
+      }
     ),
     
-    # MARK: length
-    ## __length ----
-    overview = S7::new_property(S7::class_data.frame, getter = function(self) {
-      if (length(self) > 0) {
-        data.frame(
-          index = seq_along(self@settings),
-          method = vapply(self@settings, function(x) x$method, NA_character_),
-          algorithm = vapply(self@settings, function(x) x$algorithm, NA_character_),
-          number_permitted = vapply(self@settings, function(x) x$number_permitted, NA_real_),
-          version = vapply(self@settings, function(x) x$version, NA_character_),
-          software = vapply(self@settings, function(x) x$software, NA_character_),
-          developer = vapply(self@settings, function(x) x$developer, NA_character_),
-          contact = vapply(self@settings, function(x) x$contact, NA_character_),
-          link = vapply(self@settings, function(x) x$link, NA_character_),
-          doi = vapply(self@settings, function(x) x$doi, NA_character_)
-        )
-      } else {
-        data.frame()
+    # MARK: overview
+    # overview ----
+    overview = S7::new_property(
+      S7::class_data.frame,
+      getter = function(self) {
+        if (length(self) > 0) {
+          data.frame(
+            index = seq_along(self@settings),
+            method = vapply(self@settings, function(x) x$method, NA_character_),
+            algorithm = vapply(self@settings, function(x) x$algorithm, NA_character_),
+            number_permitted = vapply(self@settings, function(x) x$number_permitted, NA_real_),
+            version = vapply(self@settings, function(x) x$version, NA_character_),
+            software = vapply(self@settings, function(x) x$software, NA_character_),
+            developer = vapply(self@settings, function(x) x$developer, NA_character_),
+            contact = vapply(self@settings, function(x) x$contact, NA_character_),
+            link = vapply(self@settings, function(x) x$link, NA_character_),
+            doi = vapply(self@settings, function(x) x$doi, NA_character_)
+          )
+        } else {
+          data.frame()
+        }
       }
-    })
+    )
   ),
   
   # MARK: constructor
-  ## __constructor ----
   constructor = function(settings = list()) {
-    if (!(is.list(settings) || is(settings, "StreamFind::Workflow"))) stop("settings must be a list!")
+    if (!(is.list(settings) || is(settings, "StreamFind::Workflow"))) {
+      stop("settings must be a list!")
+    }
 
     if (is.list(settings)) {
       settings <- lapply(settings, function(x) {
@@ -72,67 +80,53 @@ Workflow <- S7::new_class("Workflow",
       for (i in names(settings)) {
         
         if (!settings[[i]]$method %in% possible_methods) {
-          warning("Method ", settings[[i]]$method, " not available for the engine ", engine, "Engine!")
+          warning(
+            "Method ", settings[[i]]$method, " not available for the engine ", engine, "Engine!"
+          )
           settings[[i]] <- NULL
           next
         }
         
         ri <- settings[[i]]$required
         if (!all(ri %in% workflow_methods)) {
-          warning("Required methods not present! Please include first: \n", paste(ri, collapse = "\n"))
+          warning(
+            "Required methods not present! Please include first: \n", paste(ri, collapse = "\n")
+          )
           settings[[i]] <- NULL
           next
         }
         workflow_methods <- c(workflow_methods, settings[[i]]$method)
       }
     }
-
     S7::new_object(S7::S7_object(), settings = settings)
   },
   
   # MARK: validator
-  ## __validator ----
   validator = function(self) {
-    valid <- TRUE
-
-    if (!is.list(self@settings)) {
-      warning("settings must be a list!")
-      valid <- FALSE
-    }
-
-    if (length(self@settings) > 0) {
-      if (!all(vapply(self@settings, function(x) is(x, "StreamFind::ProcessingSettings"), FALSE))) {
-        warning("All settings must be a ProcessingSettings object!")
-        valid <- FALSE
+    checkmate::assert_list(self@settings)
+    if (length(self) > 0) {
+      for (i in seq_len(length(self))) {
+        checkmate::assert_true(is(self@settings[[i]], "StreamFind::ProcessingSettings"))
       }
-
+      
       engine <- unique(vapply(self@settings, function(x) x$engine, NA_character_))
-
-      if (length(unique(engine)) > 1) {
-        warning("All settings must have the same engine!")
-        valid <- FALSE
+      if (length(engine) > 1) {
+        stop("All settings must have the same engine!")
       }
-
+      
       methods <- self@methods
-
       available_methods <- .get_available_settings(engine)
       if (!all(methods %in% available_methods)) {
-        warning("All methods must be available for the engine!")
-        valid <- FALSE
+        stop("All methods must be available for the engine!")
       }
-
+      
       permitted <- vapply(self@settings, function(x) x$number_permitted, NA_real_)
-
       if (any(permitted == 1)) {
         unique_methods <- unique(methods[permitted == 1])
         if (length(unique_methods) != length(methods[permitted == 1])) {
-          warning("All settings with number_permitted == 1 must be unique!")
-          valid <- FALSE
+          stop("All settings with number_permitted == 1 must be unique!")
         }
       }
-    }
-    if (!valid) {
-      return(FALSE)
     }
     NULL
   }
@@ -184,21 +178,24 @@ S7::method(`[<-`, Workflow) <- function(x, i, value) {
       for (i in names(x@settings)) {
         
         if (!x@settings[[i]]$method %in% possible_methods) {
-          warning("Method ", x@settings[[i]]$method, " not available for the engine ", engine, "Engine!")
+          warning(
+            "Method ", x@settings[[i]]$method, " not available for the engine ", engine, "Engine!"
+          )
           x@settings[[i]] <- NULL
           next
         }
         
         ri <- x@settings[[i]]$required
         if (!all(ri %in% workflow_methods)) {
-          warning("Required methods not present! Please include first: \n", paste(ri, collapse = "\n"))
+          warning(
+            "Required methods not present! Please include first: \n", paste(ri, collapse = "\n")
+          )
           x@settings[[i]] <- NULL
           next
         }
         workflow_methods <- c(workflow_methods, x@settings[[i]]$method)
       }
     }
-
     x
   } else {
     stop("Index must be numeric, logical or character!")
@@ -233,21 +230,24 @@ S7::method(`[[<-`, Workflow) <- function(x, i, value) {
       for (i in names(x@settings)) {
         
         if (!x@settings[[i]]$method %in% possible_methods) {
-          warning("Method ", x@settings[[i]]$method, " not available for the engine ", engine, "Engine!")
+          warning(
+            "Method ", x@settings[[i]]$method, " not available for the engine ", engine, "Engine!"
+          )
           x@settings[[i]] <- NULL
           next
         }
         
         ri <- x@settings[[i]]$required
         if (!all(ri %in% workflow_methods)) {
-          warning("Required methods not present! Please include first: \n", paste(ri, collapse = "\n"))
+          warning(
+            "Required methods not present! Please include first: \n", paste(ri, collapse = "\n")
+          )
           x@settings[[i]] <- NULL
           next
         }
         workflow_methods <- c(workflow_methods, x@settings[[i]]$method)
       }
     }
-
     x
   } else {
     stop("Index must be numeric, logical or character!")
@@ -267,7 +267,6 @@ S7::method(as.list, Workflow) <- function(x) {
 S7::method(save, Workflow) <- function(x, file = "workflow.rds") {
   if (length(x) > 0) {
     format <- tools::file_ext(file)
-
     if (format %in% "json") {
       settings <- lapply(x@settings, function(s) {
         list(

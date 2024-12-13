@@ -2,7 +2,8 @@
 #'
 #' @description Clears cached data using the approach as in the patRoon package.
 #' 
-#' @param what A character string specifying the cache to remove. If NULL, a list of available caches is shown.
+#' @param what A character string specifying the cache to remove. If NULL, a list of available
+#' caches is shown.
 #' @param file A character string specifying the cache file to use. Default is "cache.sqlite".
 #' 
 #' @references

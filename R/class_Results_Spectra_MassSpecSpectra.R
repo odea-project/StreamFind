@@ -1,15 +1,12 @@
 #' @export
 #' @noRd
-MassSpecSpectra <- S7::new_class("MassSpecSpectra", package = "StreamFind", parent = Spectra,
+MassSpecSpectra <- S7::new_class(
+  name = "MassSpecSpectra",
+  package = "StreamFind",
+  parent = Spectra,
   
   properties = list(
-    
-    # MARK: is_neutralized
-    ## __is_neutralized -----
     is_neutralized = S7::new_property(S7::class_logical, default = FALSE),
-    
-    # MARK: Charges
-    ## __charges -----
     charges = S7::new_property(S7::class_list, default = list())
   ),
   

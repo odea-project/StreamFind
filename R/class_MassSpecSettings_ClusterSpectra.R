@@ -1,15 +1,11 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_ClusterSpectra_StreamFind**
 #'
 #' @description Clusters spectra based on a variable (i.e. column name).
 #' 
 #' @param val Character (length 1) with the variable to be used for clustering.
 #' @param clustVal Numeric (length 1) with the clustering value.
-#' @param presence Numeric (length 1) with the minimum presence of traces in a cluster to be considered.
+#' @param presence Numeric (length 1) with the minimum presence of traces in a cluster to be
+#' considered.
 #'
 #' @return A MassSpecSettings_ClusterSpectra_StreamFind object.
 #'
@@ -79,26 +75,17 @@ S7::method(run, MassSpecSettings_ClusterSpectra_StreamFind) <- function(x, engin
   clustVal <- x$parameters$clustVal
   presence <- x$parameters$presence
   
-  if (!all(vapply(spec_list, function(x) val %in% colnames(x), FALSE))) {
+  has_val <- all(vapply(spec_list, function(x) {
+    if (nrow(x) > 0) {
+      val %in% colnames(x)
+    } else {
+      TRUE
+    }
+  }, FALSE))
+  
+  if (!has_val) {
     warning("Val not found in spectra data.tables! Not done.")
     return(FALSE)
-  }
-  
-  cache <- .load_chache("cluster_spectra", spec_list, x)
-  
-  if (!is.null(cache$data)) {
-    spec_list <- cache$data
-    tryCatch(
-      {
-        engine$spectra$spectra <- spec_list
-        message("\U2139 Clustered Spectra loaded from cache!")
-        return(TRUE)
-      },
-      error = function(e) {
-        warning(e)
-        return(FALSE)
-      }
-    )
   }
   
   spec_list <- lapply(spec_list, function(z, val, clustVal, presence) {
@@ -130,11 +117,6 @@ S7::method(run, MassSpecSettings_ClusterSpectra_StreamFind) <- function(x, engin
     }
     
   }, val = val, clustVal = clustVal, presence = presence)
-  
-  if (!is.null(cache$hash)) {
-    .save_cache("cluster_spectra", spec_list, cache$hash)
-    message("\U1f5ab Clustered Spectra cached!")
-  }
   
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra clustered!"))

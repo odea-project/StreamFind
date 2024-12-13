@@ -17,7 +17,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_FilterFeatures_StreamFind",
+MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class(
+  "MassSpecSettings_FilterFeatures_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(minSnRatio = NA_real_,
@@ -25,26 +26,28 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class("MassSpecSettings_Fi
                          excludeAdducts = FALSE,
                          minIntensity = NA_real_,
                          onlyWithMS2 = FALSE) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FilterFeatures",
-      required = "FindFeatures",
-      algorithm = "StreamFind",
-      parameters = list(
-        minSnRatio = as.numeric(minSnRatio),
-        excludeIsotopes = as.logical(excludeIsotopes),
-        excludeAdducts = as.logical(excludeAdducts),
-        minIntensity = as.numeric(minIntensity),
-        onlyWithMS2 = as.logical(onlyWithMS2)
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FilterFeatures",
+        required = "FindFeatures",
+        algorithm = "StreamFind",
+        parameters = list(
+          minSnRatio = as.numeric(minSnRatio),
+          excludeIsotopes = as.logical(excludeIsotopes),
+          excludeAdducts = as.logical(excludeAdducts),
+          minIntensity = as.numeric(minIntensity),
+          onlyWithMS2 = as.logical(onlyWithMS2)
+        ),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -83,9 +86,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   }
 
   parameters <- x$parameters
-
   filters <- names(parameters)
-
   n_features <- sum(vapply(engine$nts$feature_list, function(x) sum(!x$filtered), 0))
 
   .filter_excludeIsotopes <- function(value = NULL, engine) {
@@ -93,19 +94,18 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
       if (!value) {
         return()
       }
-
+      
       features <- engine$nts$feature_list
 
       features <- lapply(features, function(x) {
         if ("annotation" %in% colnames(x)) {
           iso <- vapply(x$annotation, function(z) {
-            if (length(z) == 0) {
-              NA_integer_
+            if (nrow(z) == 0) {
+              0
             } else {
               z[["iso_step"]]
             }
-          }, NA_integer_)
-          iso[is.na(iso)] <- 0
+          }, 0)
           sel <- iso > 0
           x$filtered[sel] <- TRUE
           x$filter[sel] <- "excludeIsotopes"
@@ -130,13 +130,12 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
       features <- lapply(features, function(x) {
         if ("annotation" %in% colnames(x)) {
           res <- vapply(x$annotation, function(z) {
-            if (length(z) == 0) {
-              NA_character_
+            if (nrow(z) == 0) {
+              ""
             } else {
               z[["adduct_cat"]]
             }
-          }, NA_character_)
-          res[is.na(res)] <- ""
+          }, "")
           sel <- res != ""
           x$filtered[sel] <- TRUE
           x$filter[sel] <- "excludeAdducts"
@@ -152,32 +151,48 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
 
   .filter_minSnRatio <- function(value = 3, engine) {
     if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
-      features <- engine$nts$feature_list
-
-      features <- lapply(features, function(x) {
-        if ("quality" %in% colnames(x)) {
-          qlt <- vapply(x$quality, function(z) {
-            if (length(z) == 0) {
-              NA_real_
-            } else {
-              z[["sn"]]
-            }
-          }, NA_real_)
-          qlt[is.na(qlt)] <- 0
-          sel <- qlt <= value
-          x$filtered[sel] <- TRUE
-          x$filter[sel] <- "minSnRatio"
+      if (engine$nts@has_groups) {
+        rpl <- unique(engine$analyses$replicates)
+        groups <- engine$get_groups(filtered = FALSE, intensities = FALSE, average = TRUE, metadata = TRUE)
+        if (any(!is.na(groups$sn))) {
+          groups_sel <- groups$sn < value
+          groups <- groups$group[groups_sel]
+          feature_list <- engine$nts$feature_list
+          feature_list <- lapply(feature_list, function(x, groups) {
+            sel <- x$group %in% groups
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- "minSnRatio"
+            x
+          }, groups = groups)
+          engine$nts$feature_list <- feature_list
+        } else {
+          warning("There are no signal-to-noise ratio values in features!")
         }
-
-        x
-      })
-
-      engine$nts$feature_list <- features
+      } else {
+        features <- engine$nts$feature_list
+        features <- lapply(features, function(x) {
+          if ("quality" %in% colnames(x)) {
+            qlt <- vapply(x$quality, function(z) {
+              if (length(z) == 0) {
+                NA_real_
+              } else {
+                z[["sn"]]
+              }
+            }, NA_real_)
+            qlt[is.na(qlt)] <- 0
+            sel <- qlt <= value
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- "minSnRatio"
+          }
+          x
+        })
+        engine$nts$feature_list <- features
+      }
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
   }
-
+  
   .filter_minIntensity <- function(value = 1000, engine) {
     if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
       if (engine$nts@has_groups) {
@@ -213,9 +228,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
       if (!value) {
         return()
       }
-      
       features <- engine$nts$feature_list
-      
       features <- lapply(features, function(x) {
         if ("ms2" %in% colnames(x)) {
           sel <- vapply(x$ms2, function(z) {
@@ -232,7 +245,6 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
         }
         x
       })
-      
       engine$nts$feature_list <- features
     } else {
       warning("There are no features in the MassSpecEngine!")
@@ -742,124 +754,127 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
 #'
 #' @export
 #'
-MassSpecSettings_FilterFeatures_patRoon <- S7::new_class("MassSpecSettings_FilterFeatures_patRoon",
-                                                         parent = ProcessingSettings,
-                                                         package = "StreamFind",
-                                                         constructor = function(absMinIntensity = NA_real_,
-                                                                                relMinIntensity = NA_real_,
-                                                                                preAbsMinIntensity = NA_real_,
-                                                                                preRelMinIntensity = NA_real_,
-                                                                                absMinAnalyses = NA_real_,
-                                                                                relMinAnalyses = NA_real_,
-                                                                                absMinReplicates = NA_real_,
-                                                                                relMinReplicates = NA_real_,
-                                                                                absMinFeatures = NA_real_,
-                                                                                relMinFeatures = NA_real_,
-                                                                                absMinReplicateAbundance = NA_real_,
-                                                                                relMinReplicateAbundance = NA_real_,
-                                                                                absMinConc = NA_real_,
-                                                                                relMinConc = NA_real_,
-                                                                                absMaxTox = NA_real_,
-                                                                                relMaxTox = NA_real_,
-                                                                                absMinConcTox = NA_real_,
-                                                                                relMinConcTox = NA_real_,
-                                                                                maxReplicateIntRSD = NA_real_,
-                                                                                blankThreshold = NA_real_,
-                                                                                retentionRange = NA_real_,
-                                                                                mzRange = NA_real_,
-                                                                                mzDefectRange = NA_real_,
-                                                                                chromWidthRange = NA_real_,
-                                                                                featQualityRange = NA_real_,
-                                                                                groupQualityRange = NA_real_,
-                                                                                rGroups = NA_real_,
-                                                                                removeBlanks = FALSE,
-                                                                                removeISTDs = FALSE,
-                                                                                removeNA = FALSE,
-                                                                                negate = FALSE) {
-                                                           S7::new_object(ProcessingSettings(
-                                                             engine = "MassSpec",
-                                                             method = "FilterFeatures",
-                                                             required = "FindFeatures",
-                                                             algorithm = "patRoon",
-                                                             parameters = list(
-                                                               "absMinIntensity" = as.numeric(absMinIntensity),
-                                                               "relMinIntensity" = as.numeric(relMinIntensity),
-                                                               "preAbsMinIntensity" = as.numeric(preAbsMinIntensity),
-                                                               "preRelMinIntensity" = as.numeric(preRelMinIntensity),
-                                                               "absMinAnalyses" = as.numeric(absMinAnalyses),
-                                                               "relMinAnalyses" = as.numeric(relMinAnalyses),
-                                                               "absMinReplicates" = as.numeric(absMinReplicates),
-                                                               "relMinReplicates" = as.numeric(relMinReplicates),
-                                                               "absMinFeatures" = as.numeric(absMinFeatures),
-                                                               "relMinFeatures" = as.numeric(relMinFeatures),
-                                                               "absMinReplicateAbundance" = as.numeric(absMinReplicateAbundance),
-                                                               "relMinReplicateAbundance" = as.numeric(relMinReplicateAbundance),
-                                                               "absMinConc" = as.numeric(absMinConc),
-                                                               "relMinConc" = as.numeric(relMinConc),
-                                                               "absMaxTox" = as.numeric(absMaxTox),
-                                                               "relMaxTox" = as.numeric(relMaxTox),
-                                                               "absMinConcTox" = as.numeric(absMinConcTox),
-                                                               "relMinConcTox" = as.numeric(relMinConcTox),
-                                                               "maxReplicateIntRSD" = as.numeric(maxReplicateIntRSD),
-                                                               "blankThreshold" = as.numeric(blankThreshold),
-                                                               "retentionRange" = as.numeric(retentionRange),
-                                                               "mzRange" = as.numeric(mzRange),
-                                                               "mzDefectRange" = as.numeric(mzDefectRange),
-                                                               "chromWidthRange" = as.numeric(chromWidthRange),
-                                                               "featQualityRange" = as.numeric(featQualityRange),
-                                                               "groupQualityRange" = as.numeric(groupQualityRange),
-                                                               "rGroups" = as.character(rGroups),
-                                                               "removeBlanks" = as.logical(removeBlanks),
-                                                               "removeISTDs" = as.logical(removeISTDs),
-                                                               "removeNA" = as.logical(removeNA),
-                                                               "negate" = as.logical(negate)
-                                                             ),
-                                                             number_permitted = Inf,
-                                                             version = as.character(packageVersion("StreamFind")),
-                                                             software = "patRoon",
-                                                             developer = "Rick Helmus",
-                                                             contact = "r.helmus@uva.nl",
-                                                             link = "https://github.com/rickhelmus/patRoon",
-                                                             doi = "10.21105/joss.04029"
-                                                           ))
-                                                         },
-                                                         validator = function(self) {
-                                                           checkmate::assert_choice(self@engine, "MassSpec")
-                                                           checkmate::assert_choice(self@method, "FilterFeatures")
-                                                           checkmate::assert_choice(self@algorithm, "patRoon")
-                                                           checkmate::assert_numeric(self@parameters$absMinIntensity)
-                                                           checkmate::assert_numeric(self@parameters$relMinIntensity)
-                                                           checkmate::assert_numeric(self@parameters$preAbsMinIntensity)
-                                                           checkmate::assert_numeric(self@parameters$preRelMinIntensity)
-                                                           checkmate::assert_numeric(self@parameters$absMinAnalyses)
-                                                           checkmate::assert_numeric(self@parameters$relMinAnalyses)
-                                                           checkmate::assert_numeric(self@parameters$absMinReplicates)
-                                                           checkmate::assert_numeric(self@parameters$relMinReplicates)
-                                                           checkmate::assert_numeric(self@parameters$absMinFeatures)
-                                                           checkmate::assert_numeric(self@parameters$relMinFeatures)
-                                                           checkmate::assert_numeric(self@parameters$absMinReplicateAbundance)
-                                                           checkmate::assert_numeric(self@parameters$relMinReplicateAbundance)
-                                                           checkmate::assert_numeric(self@parameters$absMinConc)
-                                                           checkmate::assert_numeric(self@parameters$relMinConc)
-                                                           checkmate::assert_numeric(self@parameters$absMaxTox)
-                                                           checkmate::assert_numeric(self@parameters$relMaxTox)
-                                                           checkmate::assert_numeric(self@parameters$absMinConcTox)
-                                                           checkmate::assert_numeric(self@parameters$relMinConcTox)
-                                                           checkmate::assert_numeric(self@parameters$maxReplicateIntRSD)
-                                                           checkmate::assert_numeric(self@parameters$blankThreshold)
-                                                           checkmate::assert_numeric(self@parameters$retentionRange)
-                                                           checkmate::assert_numeric(self@parameters$mzRange)
-                                                           checkmate::assert_numeric(self@parameters$mzDefectRange)
-                                                           checkmate::assert_numeric(self@parameters$chromWidthRange)
-                                                           checkmate::assert_numeric(self@parameters$featQualityRange)
-                                                           checkmate::assert_numeric(self@parameters$groupQualityRange)
-                                                           checkmate::assert_character(self@parameters$rGroups)
-                                                           checkmate::assert_logical(self@parameters$removeBlanks)
-                                                           checkmate::assert_logical(self@parameters$removeISTDs)
-                                                           checkmate::assert_logical(self@parameters$removeNA)
-                                                           checkmate::assert_logical(self@parameters$negate)
-                                                           NULL
-                                                         }
+MassSpecSettings_FilterFeatures_patRoon <- S7::new_class(
+  "MassSpecSettings_FilterFeatures_patRoon",
+  parent = ProcessingSettings,
+  package = "StreamFind",
+  constructor = function(absMinIntensity = NA_real_,
+                         relMinIntensity = NA_real_,
+                         preAbsMinIntensity = NA_real_,
+                         preRelMinIntensity = NA_real_,
+                         absMinAnalyses = NA_real_,
+                         relMinAnalyses = NA_real_,
+                         absMinReplicates = NA_real_,
+                         relMinReplicates = NA_real_,
+                         absMinFeatures = NA_real_,
+                         relMinFeatures = NA_real_,
+                         absMinReplicateAbundance = NA_real_,
+                         relMinReplicateAbundance = NA_real_,
+                         absMinConc = NA_real_,
+                         relMinConc = NA_real_,
+                         absMaxTox = NA_real_,
+                         relMaxTox = NA_real_,
+                         absMinConcTox = NA_real_,
+                         relMinConcTox = NA_real_,
+                         maxReplicateIntRSD = NA_real_,
+                         blankThreshold = NA_real_,
+                         retentionRange = NA_real_,
+                         mzRange = NA_real_,
+                         mzDefectRange = NA_real_,
+                         chromWidthRange = NA_real_,
+                         featQualityRange = NA_real_,
+                         groupQualityRange = NA_real_,
+                         rGroups = NA_real_,
+                         removeBlanks = FALSE,
+                         removeISTDs = FALSE,
+                         removeNA = FALSE,
+                         negate = FALSE) {
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FilterFeatures",
+        required = "FindFeatures",
+        algorithm = "patRoon",
+        parameters = list(
+          "absMinIntensity" = as.numeric(absMinIntensity),
+          "relMinIntensity" = as.numeric(relMinIntensity),
+          "preAbsMinIntensity" = as.numeric(preAbsMinIntensity),
+          "preRelMinIntensity" = as.numeric(preRelMinIntensity),
+          "absMinAnalyses" = as.numeric(absMinAnalyses),
+          "relMinAnalyses" = as.numeric(relMinAnalyses),
+          "absMinReplicates" = as.numeric(absMinReplicates),
+          "relMinReplicates" = as.numeric(relMinReplicates),
+          "absMinFeatures" = as.numeric(absMinFeatures),
+          "relMinFeatures" = as.numeric(relMinFeatures),
+          "absMinReplicateAbundance" = as.numeric(absMinReplicateAbundance),
+          "relMinReplicateAbundance" = as.numeric(relMinReplicateAbundance),
+          "absMinConc" = as.numeric(absMinConc),
+          "relMinConc" = as.numeric(relMinConc),
+          "absMaxTox" = as.numeric(absMaxTox),
+          "relMaxTox" = as.numeric(relMaxTox),
+          "absMinConcTox" = as.numeric(absMinConcTox),
+          "relMinConcTox" = as.numeric(relMinConcTox),
+          "maxReplicateIntRSD" = as.numeric(maxReplicateIntRSD),
+          "blankThreshold" = as.numeric(blankThreshold),
+          "retentionRange" = as.numeric(retentionRange),
+          "mzRange" = as.numeric(mzRange),
+          "mzDefectRange" = as.numeric(mzDefectRange),
+          "chromWidthRange" = as.numeric(chromWidthRange),
+          "featQualityRange" = as.numeric(featQualityRange),
+          "groupQualityRange" = as.numeric(groupQualityRange),
+          "rGroups" = as.character(rGroups),
+          "removeBlanks" = as.logical(removeBlanks),
+          "removeISTDs" = as.logical(removeISTDs),
+          "removeNA" = as.logical(removeNA),
+          "negate" = as.logical(negate)
+        ),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "patRoon",
+        developer = "Rick Helmus",
+        contact = "r.helmus@uva.nl",
+        link = "https://github.com/rickhelmus/patRoon",
+        doi = "10.21105/joss.04029"
+      )
+    )
+  },
+  validator = function(self) {
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "FilterFeatures")
+    checkmate::assert_choice(self@algorithm, "patRoon")
+    checkmate::assert_numeric(self@parameters$absMinIntensity)
+    checkmate::assert_numeric(self@parameters$relMinIntensity)
+    checkmate::assert_numeric(self@parameters$preAbsMinIntensity)
+    checkmate::assert_numeric(self@parameters$preRelMinIntensity)
+    checkmate::assert_numeric(self@parameters$absMinAnalyses)
+    checkmate::assert_numeric(self@parameters$relMinAnalyses)
+    checkmate::assert_numeric(self@parameters$absMinReplicates)
+    checkmate::assert_numeric(self@parameters$relMinReplicates)
+    checkmate::assert_numeric(self@parameters$absMinFeatures)
+    checkmate::assert_numeric(self@parameters$relMinFeatures)
+    checkmate::assert_numeric(self@parameters$absMinReplicateAbundance)
+    checkmate::assert_numeric(self@parameters$relMinReplicateAbundance)
+    checkmate::assert_numeric(self@parameters$absMinConc)
+    checkmate::assert_numeric(self@parameters$relMinConc)
+    checkmate::assert_numeric(self@parameters$absMaxTox)
+    checkmate::assert_numeric(self@parameters$relMaxTox)
+    checkmate::assert_numeric(self@parameters$absMinConcTox)
+    checkmate::assert_numeric(self@parameters$relMinConcTox)
+    checkmate::assert_numeric(self@parameters$maxReplicateIntRSD)
+    checkmate::assert_numeric(self@parameters$blankThreshold)
+    checkmate::assert_numeric(self@parameters$retentionRange)
+    checkmate::assert_numeric(self@parameters$mzRange)
+    checkmate::assert_numeric(self@parameters$mzDefectRange)
+    checkmate::assert_numeric(self@parameters$chromWidthRange)
+    checkmate::assert_numeric(self@parameters$featQualityRange)
+    checkmate::assert_numeric(self@parameters$groupQualityRange)
+    checkmate::assert_character(self@parameters$rGroups)
+    checkmate::assert_logical(self@parameters$removeBlanks)
+    checkmate::assert_logical(self@parameters$removeISTDs)
+    checkmate::assert_logical(self@parameters$removeNA)
+    checkmate::assert_logical(self@parameters$negate)
+    NULL
+  }
 )
 
 #' @export
@@ -883,8 +898,6 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
   if (engine$nts$has_features) {
     nts <- engine$nts
     pat <- get_patRoon_features(nts, featureGroups = TRUE)
-    
-    
   } else {
     warning("No features found! Not done.")
     return(FALSE)
@@ -925,13 +938,13 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
   feature_list <- Map(function(x, y) {
     if (nrow(y) == 0) {
       if (nrow(x) > 0) {
-        x$filtered <- TRUE
-        x$filter <- "patRoon"
+        x$filtered[!x$filtered] <- TRUE
+        x$filter[!x$filtered] <- "patRoon"
       }
     } else {
       if (nrow(x) > 0) {
-        x$filtered[!x$feature %in% y$ID] <- TRUE
-        x$filter[!x$feature %in% y$ID] <- "patRoon"
+        x$filtered[!x$filtered & !x$feature %in% y$ID] <- TRUE
+        x$filter[!x$filtered & !x$feature %in% y$ID] <- "patRoon"
       }
     }
     x

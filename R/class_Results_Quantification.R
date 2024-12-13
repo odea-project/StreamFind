@@ -1,17 +1,14 @@
 #' @export
 #' @noRd
-Quantification <- S7::new_class("Quantification", package = "StreamFind", parent = Results,
+Quantification <- S7::new_class(
+  name = "Quantification",
+  package = "StreamFind",
+  parent = Results,
   
   properties = list(
-    ## __compound -----
     compounds = S7::new_property(S7::class_character, default = character()),
-    
-    ## __model -----
     models = S7::new_property(S7::class_list, default = list()),
-    
-    ## __quantity -----
     quantities = S7::new_property(S7::class_list, default = list())
-    
   ),
   
   constructor = function(compounds = character(), models = list(), quantities = list()) {
@@ -27,14 +24,11 @@ Quantification <- S7::new_class("Quantification", package = "StreamFind", parent
   },
   
   validator = function(self) {
-    valid <- all(
-      checkmate::test_true(self@name == "Quantification"),
-      checkmate::test_true(self@software == "StreamFind"),
-      checkmate::test_character(self@compounds),
-      checkmate::test_list(self@models),
-      checkmate::test_list(self@quantities)
-    )
-    if (!valid) return(FALSE)
+    checkmate::assert_true(self@name == "Quantification")
+    checkmate::assert_true(self@software == "StreamFind")
+    checkmate::assert_character(self@compounds)
+    checkmate::assert_list(self@models)
+    checkmate::assert_list(self@quantities)
     NULL
   }
 )

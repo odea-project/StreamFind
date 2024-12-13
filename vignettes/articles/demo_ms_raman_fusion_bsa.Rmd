@@ -102,7 +102,7 @@ ms
 ms$plot_spectra_tic(colorBy = "replicates")
 ```
 
-The data processing workflow is based on applied processing methods within the engine. As pre-processing, the following steps are applied:
+As pre-processing, the following steps are applied:
 
 1. Find the retention time elution of BSA based on the total ion chromatogram (TIC) of each analysis; 
 2. Find the mass-to-charge (*m/z*) range of BSA for deconvolution of charges; 
@@ -119,37 +119,33 @@ ms$analyses$has_chromatograms
 ```{r smooth-chroms}
 # Smoothing of the TIC chromatogram for improving peak finding
 ms$run(MassSpecSettings_SmoothChromatograms_movingaverage(windowSize = 5))
-ms$analyses$has_chromatograms
 ```
 
 ```{r plot-chroms, fig.cap="Smoothed TICs for each analysis replicate."}
-ms$plot_chromatograms(colorBy = "replicates")
+ms$plot_chromatograms(colorBy = "replicates+targets")
 ```
 
-```{r integrate-chroms}
-# Settings for integration of the TIC
-ps_ic <- MassSpecSettings_IntegrateChromatograms_StreamFind(
-  merge = TRUE,
-  closeByThreshold = 5,
-  minPeakHeight = 3E6,
-  minPeakDistance = 3,
-  minPeakWidth = 20,
-  maxPeakWidth = 200,
-  minSN = 5
+```{r localmaxima-chroms}
+
+# Settings for finding the local maxima in the loaded TIC chromatograms
+ps_maxima <- MassSpecSettings_FindChromPeaks_LocalMaxima(
+  minWidth = 3,
+  maxWidth = 5,
+  minHeight = 30E6
 )
 
-show(ps_ic)
+show(ps_maxima)
 ```
 
-```{r run-integrate-chroms}
-ms$run(ps_ic)
+```{r run-localmaxima-chroms}
+ms$run(ps_maxima)
 ```
 
 ```{r plot-chrom-peaks,fig.cap="TIC with integrated peaks."}
-ms$plot_chromatograms_peaks(colorBy = "replicates")
+ms$plot_chromatograms_peaks(colorBy = "replicates+targets")
 ```
 
-The average retention time of the main peak was `r mean(data.table::rbindlist(ms$chromatograms$peaks)$rt)` seconds with a standard deviation of `r sd(data.table::rbindlist(ms$chromatograms$peaks)$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges.
+The average retention time of the peaks was `r mean(data.table::rbindlist(ms$chromatograms$peaks)$rt)` seconds with a standard deviation of `r sd(data.table::rbindlist(ms$chromatograms$peaks)$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges. The *m/z* range needs to be defined once and is equal to all other analyses if the compound of interest is BSA. As for the retention time, shifts might occur due to the chromatographic separation.
 
 ```{r rt-av}
 # Average retention time of the main peak
@@ -169,61 +165,73 @@ ms$plot_spectra_ms1(
 )
 ```
 
-According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingSettings* for deconvolution, as shown below. The workflow is an ordered list of *ProcessingSettings* objects for each workflow step, which is added to the engine. The exact parameters for each method can be optimized individually by calling the specific method directly. Once the settings are added, the workflow can be inspected with the `print_workflow()` method.
+According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingSettings* for deconvolution, as shown below. The retention time dimensions for extraction of spectra is based on the local peak maxima shown above.
 
 ```{r workflow-ms}
-ms_workflow <- list(
 
-  MassSpecSettings_LoadSpectra_StreamFind(
+# Extracts the spectra for the defined *m/z* range and local peak maxima
+ms$run(
+  MassSpecSettings_LoadSpectra_chrompeaks(
     mzmin = 1200,
     mzmax = 2000,
-    rtmin = rt_av - 1,
-    rtmax = rt_av + 1,
-    levels = 1
-  ),
+    levels = 1,
+    minIntensity = 100
+  )
+)
 
-  MassSpecSettings_ClusterSpectra_StreamFind(
-    val = "mz",
-    clustVal = 0.005,
-    presence = 0.1
-  ),
-
+# Calculates the charges for the extracted spectra
+ms$run(
   MassSpecSettings_CalculateSpectraCharges_StreamFind(
     roundVal = 15,
     relLowCut = 0.2,
-    absLowCut = 8000
-  ),
-
-  MassSpecSettings_DeconvoluteSpectra_StreamFind(),
-
-  MassSpecSettings_SmoothSpectra_movingaverage(
-    windowSize = 15
-  ),
-
-  MassSpecSettings_BinSpectra_StreamFind(
-    binNames = c("rt", "mass"),
-    binValues = c(5, 50),
-    byUnit = TRUE,
-    refBinAnalysis = 1
-  ),
-
-  MassSpecSettings_AverageSpectra_StreamFind(),
-
-  MassSpecSettings_NormalizeSpectra_minmax(),
-
-  MassSpecSettings_NormalizeSpectra_blockweight()
+    absLowCut = 10000,
+    onlyMaxScan = FALSE,
+    top = 5
+  )
 )
 
-# Replaces the settings added to integrate the TIC chromatograms
-ms$workflow <- ms_workflow
+# Deconvolutes the charges for the extracted spectra
+ms$run(MassSpecSettings_DeconvoluteSpectra_StreamFind())
+
+ms$run(
+  MassSpecSettings_SmoothSpectra_movingaverage(
+    windowSize = 15
+  )
+)
+
+# The binning is applied to ensure that all spectra have the same dimensions
+# (i.e., mass-time and intensity pair)
+ms$run(
+   MassSpecSettings_BinSpectra_StreamFind(
+    binNames = c("rt", "mass"),
+    binValues = c(5, 20),
+    byUnit = TRUE,
+    refBinAnalysis = 1
+  )
+)
+
+ms$run(
+  MassSpecSettings_AverageSpectra_StreamFind(
+    by = "replicates",
+    weightedAveraged = FALSE
+  )
+)
+
+ms$run(MassSpecSettings_NormalizeSpectra_minmax())
+  
+ms$run(MassSpecSettings_NormalizeSpectra_blockweight())
 
 ms$print_workflow()
 ```
 
-The `run_workflow()` method is called to run the data processing.
+The `print_workflow()` method can be used to inspect the workflow settings.
 
-```{r run-ms-workflow}
-ms$run_workflow()
+```{r print-ms-workflow}
+ms$print_workflow()
+```
+
+```{r plot-charges, fig.cap="Charges for the extracted spectra."}
+plot_spectra_charges(ms$analyses, colorBy = "analyses")
 ```
 
 ```{r plot_spectra,fig.cap="Deconvoluted and pre-processed spectra for each analysis."}
@@ -250,11 +258,14 @@ corr_spectra_4$rt <- corr_spectra_4$rt - 68.545
 corr_spectra_4 <- corr_spectra_4[corr_spectra_4$rt > 0, ]
 corr_spectra[[4]] <- corr_spectra_4
 corr_spectra <- lapply(corr_spectra, function(x) x[x$rt < 800, ])
-raman$spectra <- StreamFind::Spectra(spectra = corr_spectra)
+raman$spectra <- StreamFind::RamanSpectra(spectra = corr_spectra)
 ```
 
 ```{r raman-plot-chroms, fig.cap="Time series chromatogram for each BSA product. Each data point is a Raman spectrum at a specific retention time."}
-raman$plot_chromatograms(yLab = "Abbundance sum for each spectrum", colorBy = "analyses")
+raman$plot_chromatograms(
+  yLab = "Abbundance sum for each spectrum",
+  colorBy = "analyses"
+)
 ```
 
 ```{r raman-plot_spectra-raw, fig.cap="Raw averaged Raman spectra for each BSA product between 430 and 440 seconds."}
@@ -313,7 +324,10 @@ raman_workflow <- list(
     rtmax = 900
   ),
 
-  RamanSettings_AverageSpectra_StreamFind(),
+  RamanSettings_AverageSpectra_StreamFind(
+    by = "replicates",
+    weightedAveraged = FALSE
+  ),
 
   RamanSettings_NormalizeSpectra_minmax(),
 

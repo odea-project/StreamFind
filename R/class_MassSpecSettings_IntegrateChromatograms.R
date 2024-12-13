@@ -20,7 +20,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_IntegrateChromatograms_StreamFind <- S7::new_class("MassSpecSettings_IntegrateChromatograms_StreamFind",
+MassSpecSettings_IntegrateChromatograms_StreamFind <- S7::new_class(
+  "MassSpecSettings_IntegrateChromatograms_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -32,28 +33,30 @@ MassSpecSettings_IntegrateChromatograms_StreamFind <- S7::new_class("MassSpecSet
                          maxPeakWidth = 120,
                          minSN = 10) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "IntegrateChromatograms",
-      required = "LoadChromatograms",
-      algorithm = "StreamFind",
-      parameters = list(
-        merge = merge,
-        closeByThreshold = closeByThreshold,
-        minPeakHeight = minPeakHeight,
-        minPeakDistance = minPeakDistance,
-        minPeakWidth = minPeakWidth,
-        maxPeakWidth = maxPeakWidth,
-        minSN = minSN
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "IntegrateChromatograms",
+        required = "LoadChromatograms",
+        algorithm = "StreamFind",
+        parameters = list(
+          merge = merge,
+          closeByThreshold = closeByThreshold,
+          minPeakHeight = minPeakHeight,
+          minPeakDistance = minPeakDistance,
+          minPeakWidth = minPeakWidth,
+          maxPeakWidth = maxPeakWidth,
+          minSN = minSN
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {

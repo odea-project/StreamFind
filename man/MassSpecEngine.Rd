@@ -81,6 +81,7 @@ Screening (NTS) data processing workflows.
 \item \href{#method-MassSpecEngine-get_components}{\code{MassSpecEngine$get_components()}}
 \item \href{#method-MassSpecEngine-get_suspects}{\code{MassSpecEngine$get_suspects()}}
 \item \href{#method-MassSpecEngine-get_internal_standards}{\code{MassSpecEngine$get_internal_standards()}}
+\item \href{#method-MassSpecEngine-get_fold_change}{\code{MassSpecEngine$get_fold_change()}}
 \item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
 \item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
 \item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
@@ -122,6 +123,7 @@ Screening (NTS) data processing workflows.
 \item \href{#method-MassSpecEngine-map_components}{\code{MassSpecEngine$map_components()}}
 \item \href{#method-MassSpecEngine-plot_internal_standards}{\code{MassSpecEngine$plot_internal_standards()}}
 \item \href{#method-MassSpecEngine-plot_suspects}{\code{MassSpecEngine$plot_suspects()}}
+\item \href{#method-MassSpecEngine-plot_fold_change}{\code{MassSpecEngine$plot_fold_change()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms_peaks}{\code{MassSpecEngine$plot_chromatograms_peaks()}}
 \item \href{#method-MassSpecEngine-plot_spectra_charges}{\code{MassSpecEngine$plot_spectra_charges()}}
 \item \href{#method-MassSpecEngine-plot_spectra_peaks}{\code{MassSpecEngine$plot_spectra_peaks()}}
@@ -132,6 +134,7 @@ Screening (NTS) data processing workflows.
 \if{html}{\out{
 <details><summary>Inherited methods</summary>
 <ul>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="clear_cache"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-clear_cache'><code>StreamFind::CoreEngine$clear_cache()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_analyses'><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_headers'><code>StreamFind::CoreEngine$export_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_workflow'><code>StreamFind::CoreEngine$export_workflow()</code></a></span></li>
@@ -141,6 +144,8 @@ Screening (NTS) data processing workflows.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_workflow'><code>StreamFind::CoreEngine$import_workflow()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="info_cache_categories"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-info_cache_categories'><code>StreamFind::CoreEngine$info_cache_categories()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="info_cache_file_size"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-info_cache_file_size'><code>StreamFind::CoreEngine$info_cache_file_size()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="load"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-load'><code>StreamFind::CoreEngine$load()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
@@ -1821,6 +1826,91 @@ Gets a data.table with internal standards found by the \code{find_internal_stand
 \describe{
 \item{\code{average}}{Logical of length one. When \code{TRUE} and groups are present, internal standards are averaged per
 analysis replicate group.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_fold_change"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_fold_change}{}}}
+\subsection{Method \code{get_fold_change()}}{
+Gets a data.table with fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_fold_change(
+  replicatesIn = NULL,
+  replicatesOut = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctSuppression = FALSE,
+  fillZerosWithLowerLimit = FALSE,
+  lowerLimit = NA_real_
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{replicatesIn}}{Character vector with the names of the replicates to be considered as the denominator.}
+
+\item{\code{replicatesOut}}{Character vector with the names of the replicates to be considered as the numerator.}
+
+\item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{constantThreshold}}{Numeric of length one. The threshold to consider a feature as constant.}
+
+\item{\code{eliminationThreshold}}{Numeric of length one. The threshold to consider a feature as eliminated.}
+
+\item{\code{correctSuppression}}{Logical of length one. When \code{TRUE} the suppression factor (when available) is used to
+correct the intensity before fold-change analysis.}
+
+\item{\code{fillZerosWithLowerLimit}}{Logical of length one. When \code{TRUE} the zero values are filled with the lower limit.}
+
+\item{\code{lowerLimit}}{Numeric of length one. The lower limit to fill the zero values.}
 }
 \if{html}{\out{</div>}}
 }
@@ -4212,6 +4302,100 @@ The \code{ppm} and \code{sec} which indicate the mass (im ppm) and time (in seco
 screening.
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_fold_change"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_fold_change}{}}}
+\subsection{Method \code{plot_fold_change()}}{
+Plots the fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_fold_change(
+  replicatesIn = NULL,
+  replicatesOut = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctSuppression = FALSE,
+  fillZerosWithLowerLimit = FALSE,
+  lowerLimit = NA_real_,
+  yLab = NULL,
+  title = NULL,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{replicatesIn}}{Character vector with the names of the replicates to be considered as the denominator.}
+
+\item{\code{replicatesOut}}{Character vector with the names of the replicates to be considered as the numerator.}
+
+\item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{\code{constantThreshold}}{Numeric of length one. The threshold to consider a feature as constant.}
+
+\item{\code{eliminationThreshold}}{Numeric of length one. The threshold to consider a feature as eliminated.}
+
+\item{\code{correctSuppression}}{Logical of length one. When \code{TRUE} the suppression factor (when available) is used to
+correct the intensity before fold-change analysis.}
+
+\item{\code{fillZerosWithLowerLimit}}{Logical of length one. When \code{TRUE} the zero values are filled with the lower limit.}
+
+\item{\code{lowerLimit}}{Numeric of length one. The lower limit to fill the zero values.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_chromatograms_peaks"></a>}}

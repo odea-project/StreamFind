@@ -13,26 +13,28 @@
 #'
 #' @export
 #'
-MassSpecSettings_SmoothChromatograms_movingaverage <- S7::new_class("MassSpecSettings_SmoothChromatograms_movingaverage",
+MassSpecSettings_SmoothChromatograms_movingaverage <- S7::new_class(
+  "MassSpecSettings_SmoothChromatograms_movingaverage",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(windowSize = 5) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "SmoothChromatograms",
-      required = "LoadChromstograms",
-      algorithm = "movingaverage",
-      parameters = list(windowSize = windowSize),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "SmoothChromatograms",
+        required = "LoadChromatograms",
+        algorithm = "movingaverage",
+        parameters = list(windowSize = windowSize),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -116,30 +118,32 @@ S7::method(run, MassSpecSettings_SmoothChromatograms_movingaverage) <- function(
 #'
 #' @export
 #'
-MassSpecSettings_SmoothChromatograms_savgol <- S7::new_class("MassSpecSettings_SmoothChromatograms_savgol",
+MassSpecSettings_SmoothChromatograms_savgol <- S7::new_class(
+  "MassSpecSettings_SmoothChromatograms_savgol",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(fl = 11, forder = 4, dorder = 0) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "SmoothChromatograms",
-      required = "LoadChromstograms",
-      algorithm = "savgol",
-      parameters = list(
-        fl = fl,
-        forder = forder,
-        dorder = dorder
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "pracma",
-      developer = "Hans W. Borchers",
-      contact = NA_character_,
-      link = "https://cran.r-project.org/web/packages/pracma/index.html",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "SmoothChromatograms",
+        required = "LoadChromatograms",
+        algorithm = "savgol",
+        parameters = list(
+          fl = fl,
+          forder = forder,
+          dorder = dorder
+        ),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "pracma",
+        developer = "Hans W. Borchers",
+        contact = NA_character_,
+        link = "https://cran.r-project.org/web/packages/pracma/index.html",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {

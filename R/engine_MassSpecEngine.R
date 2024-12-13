@@ -5,7 +5,7 @@
 #' spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection)
 #' can be loaded from mzML and mzXML formats. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
 #' is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor 
-#' formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS. 
+#' formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
 #'
 #' @details The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target
 #' Screening (NTS) data processing workflows.
@@ -105,7 +105,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (missing(value)) {
         return(self$analyses$spectra)
       }
-      if (is(value, "StreamFind::Spectra")) {
+      if (is(value, "StreamFind::MassSpecSpectra")) {
         self$analyses$spectra <- value
       } else {
         warning("Value must be a Spectra object! Not done.")
@@ -813,6 +813,43 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     get_internal_standards = function(average = TRUE) {
       StreamFind::get_internal_standards(self$analyses, average)
+    },
+    
+    # MARK: get_fold_change
+    ## __ get_fold_change -----
+    #' @description Gets a data.table with fold-change analysis between the `replicatesIn` and `replicatesOut`.
+    #' 
+    #' @param replicatesIn Character vector with the names of the replicates to be considered as the denominator.
+    #' @param replicatesOut Character vector with the names of the replicates to be considered as the numerator.
+    #' @param constantThreshold Numeric of length one. The threshold to consider a feature as constant.
+    #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as eliminated.
+    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when available) is used to 
+    #' correct the intensity before fold-change analysis.
+    #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled with the lower limit.
+    #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
+    #' 
+    get_fold_change = function(replicatesIn = NULL,
+                               replicatesOut = NULL,
+                               groups = NULL,
+                               mass = NULL,
+                               mz = NULL,
+                               rt = NULL,
+                               mobility = NULL,
+                               ppm = 4,
+                               sec = 10,
+                               millisec = 5,
+                               filtered = FALSE,
+                               constantThreshold = 0.5,
+                               eliminationThreshold = 0.2,
+                               correctSuppression = FALSE,
+                               fillZerosWithLowerLimit = FALSE,
+                               lowerLimit = NA_real_) {
+      StreamFind::get_fold_change(
+        self$analyses,
+        replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+        filtered, constantThreshold, eliminationThreshold, correctSuppression,
+        fillZerosWithLowerLimit, lowerLimit
+      )
     },
 
     # MARK: get_metadata
@@ -1739,6 +1776,46 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         self$analyses, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec, ppmMS2,
         minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, rtExpand, mzExpand,
         useLoadedData, colorBy, interactive
+      )
+    },
+    
+    # MARK: plot_fold_change
+    ## ___ plot_fold_change -----
+    #' @description Plots the fold-change analysis between the `replicatesIn` and `replicatesOut`.
+    #' 
+    #' @param replicatesIn Character vector with the names of the replicates to be considered as the denominator.
+    #' @param replicatesOut Character vector with the names of the replicates to be considered as the numerator.
+    #' @param constantThreshold Numeric of length one. The threshold to consider a feature as constant.
+    #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as eliminated.
+    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when available) is used to 
+    #' correct the intensity before fold-change analysis.
+    #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled with the lower limit.
+    #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
+    #' 
+    plot_fold_change = function(replicatesIn = NULL,
+                               replicatesOut = NULL,
+                               groups = NULL,
+                               mass = NULL,
+                               mz = NULL,
+                               rt = NULL,
+                               mobility = NULL,
+                               ppm = 4,
+                               sec = 10,
+                               millisec = 5,
+                               filtered = FALSE,
+                               constantThreshold = 0.5,
+                               eliminationThreshold = 0.2,
+                               correctSuppression = FALSE,
+                               fillZerosWithLowerLimit = FALSE,
+                               lowerLimit = NA_real_,
+                               yLab = NULL,
+                               title = NULL,
+                               interactive = TRUE) {
+      StreamFind::plot_fold_change(
+        self$analyses,
+        replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+        filtered, constantThreshold, eliminationThreshold, correctSuppression,
+        fillZerosWithLowerLimit, lowerLimit, yLab, title, interactive
       )
     },
 
