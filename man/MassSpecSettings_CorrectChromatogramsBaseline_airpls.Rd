@@ -12,7 +12,8 @@ MassSpecSettings_CorrectChromatogramsBaseline_airpls(
 )
 }
 \arguments{
-\item{lambda}{Numeric (length 1) with the smoothing intensity. the higher the \code{lambda} the higher the smoothing.}
+\item{lambda}{Numeric (length 1) with the smoothing intensity. the higher the \code{lambda} the
+higher the smoothing.}
 
 \item{differences}{Integer (length 1) indicating the order of the difference of penalties}
 
@@ -22,8 +23,8 @@ MassSpecSettings_CorrectChromatogramsBaseline_airpls(
 A MassSpecSettings_CorrectChromatogramsBaseline_airpls object.
 }
 \description{
-Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS)
-based on the algorithm from Zhi-Min Zhang.
+Performs baseline correction using adaptive iteratively reweighted Penalized Least
+Squares (airPLS) based on the algorithm from Zhi-Min Zhang.
 }
 \references{
 \insertRef{airpls01}{StreamFind}
