@@ -1,15 +1,19 @@
 #' @noRd
 .mod_WorkflowAssembler_ProjectHeaders_UI <- function(id, ns) {
   ns2 <- shiny::NS(id)
-
   shiny::column(
-    12,
-    shinydashboard::box(title = "Headers", width = 12, solidHeader = TRUE, shiny::uiOutput(ns(ns2("headers_list")))),
+    width = 12,
+    shinydashboard::box(
+      title = "Headers",
+      width = 12,
+      solidHeader = TRUE,
+      shiny::uiOutput(ns(ns2("headers_list")))
+    ),
     shiny::column(
-      12,
+      width = 12,
       shiny::fluidRow(
         shiny::column(
-          12,
+          width = 12,
           htmltools::div(
             style = "display: flex; align-items: center; justify-content: space-between;",
             htmltools::tags$b(style = "width: 110px; margin-bottom: 15px;", "Header name: "),
@@ -17,7 +21,7 @@
           )
         ),
         shiny::column(
-          12,
+          width = 12,
           htmltools::div(
             style = "display: flex; align-items: center; justify-content: space-between;",
             htmltools::tags$b(style = "width: 110px; margin-bottom: 15px;", "Header value: "),
@@ -32,12 +36,15 @@
 }
 
 #' @noRd
-.mod_WorkflowAssembler_ProjectHeaders_Server <- function(id, ns, reactive_headers) {
+.mod_WorkflowAssembler_ProjectHeaders_Server <- function(id,
+                                                         ns,
+                                                         reactive_headers,
+                                                         reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
-
     mandatory_header_names <- c("name", "author", "file", "date")
-
+    
+    # out headers list -----
     output$headers_list <- shiny::renderUI({
       headers <- reactive_headers()
       lapply(names(headers), function(name) {
@@ -45,7 +52,8 @@
           htmltools::div(htmltools::tags$b(name), ": ", headers[[name]], htmltools::br())
         } else {
           button_id <- paste0("button_header_del_", name)
-          shiny::observeEvent(input[[button_id]],
+          shiny::observeEvent(
+            input[[button_id]],
             {
               headers <- reactive_headers()
               headers[[name]] <- NULL
@@ -54,13 +62,19 @@
             ignoreInit = TRUE
           )
           htmltools::div(
-            shiny::actionButton(ns(ns2(button_id)), label = NULL, icon = shiny::icon("trash"), width = "40px"),
+            shiny::actionButton(
+              ns(ns2(button_id)),
+              label = NULL,
+              icon = shiny::icon("trash"),
+              width = "40px"
+            ),
             htmltools::tags$b(name), ": ", headers[[name]], htmltools::br()
           )
         }
       })
     })
-
+    
+    # obs add header button -----
     shiny::observeEvent(input$add_header_button, {
       if (input$new_header_name != "" && input$new_header_value != "") {
         headers <- reactive_headers()

@@ -35,12 +35,12 @@ db <- StreamFindData::get_ms_tof_spiked_chemicals()
 
 ## run_app() function ---------------------------------------------------------
 
-run_app()
+# run_app()
 
 # CoreEngine -------------------------------------------------------------------
-core <- CoreEngine$new()
-core$save(paste0(getwd(), "/core.rds"))
-core$run_app()
+# core <- CoreEngine$new()
+# core$save(paste0(getwd(), "/core.rds"))
+# core$run_app()
 
 # MassSpecEngine ---------------------------------------------------------------
 ms <- MassSpecEngine$new(analyses = dev_files, workflow = workflow)

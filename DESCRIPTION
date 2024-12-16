@@ -93,6 +93,7 @@ Collate:
     'utils_fct_assets.R'
     'fct_clear_cache.R'
     'fct_ms_convert_trim_files.R'
+    'class_AppConfig.R'
     'class_AuditTrail.R'
     'class_EngineSaveFile.R'
     'class_ProjectHeaders.R'

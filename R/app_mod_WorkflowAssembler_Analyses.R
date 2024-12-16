@@ -4,7 +4,9 @@
   shiny::column(
     12,
     shinydashboard::box(
-      title = "Analyses", width = 12, solidHeader = TRUE,
+      title = "Analyses",
+      width = 12,
+      solidHeader = TRUE,
       shiny::column(width = 12, shiny::uiOutput(ns(ns2("analyses_overview_buttons")))),
       shiny::uiOutput(ns(ns2("notes_analyses"))),
       shiny::column(12, DT::dataTableOutput(ns(ns2("AnalysesTable"))))
@@ -13,14 +15,21 @@
 }
 
 #' @noRd
-.mod_WorkflowAssembler_Analyses_Server <- function(id, ns, reactive_analyses, reactive_warnings, reactive_volumes) {
+.mod_WorkflowAssembler_Analyses_Server <- function(id,
+                                                   ns,
+                                                   reactive_analyses,
+                                                   reactive_warnings,
+                                                   reactive_volumes,
+                                                   reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
 
     .wrap_analyses_ui_in_divs <- function(elements) {
       lapply(elements, function(x) {
         htmltools::div(
-          style = sprintf("min-width: %dpx; height: %dpx; display: flex; align-items: center;", 40, 40),
+          style = sprintf(
+            "min-width: %dpx; height: %dpx; display: flex; align-items: center;", 40, 40
+          ),
           x
         )
       })
@@ -48,7 +57,10 @@
           mode = "multiple",
           selected = NULL,
           target = "cell",
-          selectable = matrix(c(seq_len(nrow(analyses_info)), rep(1, nrow(analyses_info))), ncol = 2)
+          selectable = matrix(
+            c(seq_len(nrow(analyses_info)), rep(1, nrow(analyses_info))),
+            ncol = 2
+          )
         ),
         editable = edits,
         extensions = c("Scroller", "Buttons"),
@@ -70,7 +82,11 @@
       analyses_info <- DT::editData(analyses@info, input$AnalysesTable_cell_edit)
       analyses$replicates <- analyses_info$replicate
       if (any(!(analyses_info$blank %in% analyses_info$replicate))) {
-        shiny::showNotification("Blanks must be in the replicate column!", duration = 10, type = "warning")
+        shiny::showNotification(
+          "Blanks must be in the replicate column!",
+          duration = 10,
+          type = "warning"
+        )
       } else {
         analyses$blanks <- analyses_info$blank
       }
@@ -103,20 +119,44 @@
           style = "margin-bottom: 20px;",
           shinyFiles::shinyFilesButton(
             ns(ns2("add_analyses_button")),
-            paste0("Add Analyses (", paste(reactive_analyses()@possible_formats, collapse = "|"), ")"),
-            paste0("Select Analyses (", paste(reactive_analyses()@possible_formats, collapse = "|"), ")"),
+            paste0(
+              "Add Analyses (",
+              paste(reactive_analyses()@possible_formats, collapse = "|"),
+              ")"
+            ),
+            paste0(
+              "Select Analyses (",
+              paste(reactive_analyses()@possible_formats, collapse = "|"),
+              ")"
+            ),
             multiple = TRUE, style = "width: 200px;"
           ),
-          shiny::actionButton(ns(ns2("remove_selected_analyses")), label = "Delete Selected Analyses", width = 200),
-          shiny::actionButton(ns(ns2("remove_all_analyses")), label = "Delete All Analyses", width = 200)
+          shiny::actionButton(
+            ns(ns2("remove_selected_analyses")),
+            label = "Delete Selected Analyses",
+            width = 200
+          ),
+          shiny::actionButton(
+            ns(ns2("remove_all_analyses")),
+            label = "Delete All Analyses",
+            width = 200
+          )
         )
       } else {
         htmltools::div(
           style = "margin-bottom: 20px;",
           shinyFiles::shinyFilesButton(
             ns(ns2("add_analyses_button")),
-            paste0("Add Analyses (", paste(reactive_analyses()@possible_formats, collapse = "|"), ")"),
-            paste0("Select Analyses (", paste(reactive_analyses()@possible_formats, collapse = "|"), ")"),
+            paste0(
+              "Add Analyses (",
+              paste(reactive_analyses()@possible_formats, collapse = "|"),
+              ")"
+            ),
+            paste0(
+              "Select Analyses (",
+              paste(reactive_analyses()@possible_formats, collapse = "|"),
+              ")"
+            ),
             multiple = TRUE,
             style = "width: 200px;"
           )

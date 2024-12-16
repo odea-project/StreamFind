@@ -54,7 +54,7 @@ Workflow <- S7::new_class(
 
     if (is.list(settings)) {
       settings <- lapply(settings, function(x) {
-        if (is.list(x) && !is(x, "ProcessingSettings")) {
+        if (is.list(x) && !is(x, "StreamFind::ProcessingSettings")) {
           tryCatch({
             x <- as.ProcessingSettings(x)
           }, error = function(e) {
@@ -104,10 +104,10 @@ Workflow <- S7::new_class(
   # MARK: validator
   validator = function(self) {
     checkmate::assert_list(self@settings)
-    if (length(self) > 0) {
-      for (i in seq_len(length(self))) {
-        checkmate::assert_true(is(self@settings[[i]], "StreamFind::ProcessingSettings"))
-      }
+    if (length(self@settings) > 0) {
+      lapply(self@settings, function(x) {
+        checkmate::assert_true(is(x, "StreamFind::ProcessingSettings"))
+      })
       
       engine <- unique(vapply(self@settings, function(x) x$engine, NA_character_))
       if (length(engine) > 1) {

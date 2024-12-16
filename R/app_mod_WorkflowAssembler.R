@@ -1,35 +1,53 @@
 #' @noRd
 .mod_WorkflowAssembler_UI <- function(id) {
   ns <- shiny::NS(id)
-  
   shinydashboard::tabItems(
-    
     shinydashboard::tabItem(tabName = ns("project"),
       shiny::fluidRow(
         shiny::uiOutput(ns("wdir")),
-        shiny::column(12, shiny::uiOutput(ns("save_engine")), shiny::uiOutput(ns("reset_engine"))),
+        shiny::column(
+          width = 12,
+          shiny::uiOutput(ns("save_engine")), shiny::uiOutput(ns("reset_engine"))
+        ),
         shiny::uiOutput(ns("engine_save_file_ui")),
         shiny::fluidRow(shiny::uiOutput(ns("headers_ui")))
       )
     ),
-    
-    shinydashboard::tabItem(tabName = ns("analyses"), shiny::fluidRow(shiny::uiOutput(ns("analyses_ui")))),
-    
-    shinydashboard::tabItem(tabName = ns("explorer"), shiny::fluidRow(shiny::uiOutput(ns("explorer_ui")))),
-    
-    shinydashboard::tabItem(tabName = ns("workflow"), shiny::fluidRow(shiny::uiOutput(ns("workflow_ui")))),
-    
-    shinydashboard::tabItem(tabName = ns("results"), shiny::fluidRow(shiny::uiOutput(ns("results_ui")))),
-    
-    shinydashboard::tabItem(tabName = ns("audit"), shiny::fluidRow(DT::dataTableOutput(ns("audit_ui"))))
+    shinydashboard::tabItem(
+      tabName = ns("analyses"),
+      shiny::fluidRow(shiny::uiOutput(ns("analyses_ui")))
+    ),
+    shinydashboard::tabItem(
+      tabName = ns("explorer"),
+      shiny::fluidRow(shiny::uiOutput(ns("explorer_ui")))
+    ),
+    shinydashboard::tabItem(
+      tabName = ns("workflow"),
+      shiny::fluidRow(shiny::uiOutput(ns("workflow_ui")))
+    ),
+    shinydashboard::tabItem(
+      tabName = ns("results"),
+      shiny::fluidRow(shiny::uiOutput(ns("results_ui")))
+    ),
+    shinydashboard::tabItem(
+      tabName = ns("audit"),
+      shiny::fluidRow(DT::dataTableOutput(ns("audit_ui")))
+    ),
+    shinydashboard::tabItem(
+      tabName = ns("config"),
+      shiny::fluidRow(DT::dataTableOutput(ns("config_ui")))
+    )
   )
 }
 
 #' @noRd
-.mod_WorkflowAssembler_Server <- function(id, reactive_clean_start, reactive_engine_type, reactive_engine_save_file, reactive_warnings) {
+.mod_WorkflowAssembler_Server <- function(id,
+                                          reactive_clean_start,
+                                          reactive_engine_type,
+                                          reactive_engine_save_file,
+                                          reactive_warnings) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
     # _Global Constants/Mutable -----
     pkg_resources <- system.file(package = "StreamFind", dir = "extdata")
     mandatory_header_names <- c("name", "author", "file", "date")
@@ -113,7 +131,12 @@
         identical(reactive_audit(), reactive_audit_saved())
       )
       if (!equal_history && !has_unsaved_changes) {
-        reactive_warnings(.app_util_add_notifications(reactive_warnings(), "unsaved_changes", "Unsaved changes in the engine!"))
+        reactive_warnings(
+          .app_util_add_notifications(
+            reactive_warnings(),
+            "unsaved_changes",
+            "Unsaved changes in the engine!")
+          )
       }
       if (equal_history) {
         reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
@@ -123,7 +146,13 @@
     ## out Save engine -----
     output$save_engine <- shiny::renderUI({
       if ("unsaved_changes" %in% names(reactive_warnings())) {
-        shinyFiles::shinyFileSave(input, "save_engine_button_file", roots = reactive_volumes(), defaultRoot = "wd", session = session)
+        shinyFiles::shinyFileSave(
+          input,
+          "save_engine_button_file",
+          roots = reactive_volumes(),
+          defaultRoot = "wd",
+          session = session
+        )
         filename <- reactive_engine_save_file()
         if (is.na(filename)) filename <- reactive_engine_type()
         
@@ -164,7 +193,10 @@
     ## event Save Engine File -----
     shiny::observeEvent(input$save_engine_button_file, {
       shiny::req(input$save_engine_button_file)
-      file_info <- shinyFiles::parseSavePath(roots = reactive_volumes(), input$save_engine_button_file)
+      file_info <- shinyFiles::parseSavePath(
+        roots = reactive_volumes(),
+        input$save_engine_button_file
+      )
       if (nrow(file_info) > 0) {
         file_path <- file_info$datapath
         engine$headers <- reactive_headers()
@@ -191,7 +223,12 @@
     output$reset_engine <- shiny::renderUI({
       if ("unsaved_changes" %in% names(reactive_warnings())) {
         htmltools::div(style = "margin-bottom: 20px;",
-          shiny::actionButton(ns("reset_engine_button"), label = "Discard Changes", width = 200, class = "btn-danger")
+          shiny::actionButton(
+            ns("reset_engine_button"),
+            label = "Discard Changes",
+            width = 200,
+            class = "btn-danger"
+          )
         )
       }
     })
@@ -230,9 +267,24 @@
     
     ## out Working Directory -----
     output$wdir <- shiny::renderUI({
-      shinyFiles::shinyDirChoose(input, "set_wdir_button", roots = reactive_volumes(), defaultRoot = "wd", session = session)
-      shinydashboard::box(width = 12, title = "Working Directory", solidHeader = TRUE,
-        shinyFiles::shinyDirButton(ns("set_wdir_button"), "Change Working Directory", "Select Working Directory", "wd", style = "width: 200px;"),
+      shinyFiles::shinyDirChoose(
+        input,
+        "set_wdir_button",
+        roots = reactive_volumes(),
+        defaultRoot = "wd",
+        session = session
+      )
+      shinydashboard::box(
+        width = 12,
+        title = "Working Directory",
+        solidHeader = TRUE,
+        shinyFiles::shinyDirButton(
+          ns("set_wdir_button"),
+          "Change Working Directory",
+          "Select Working Directory",
+          "wd",
+          style = "width: 200px;"
+        ),
         htmltools::HTML(paste("  ", reactive_wdir()))
       )
     })
@@ -260,33 +312,55 @@
     
     ## module Headers -----
     output$headers_ui <- shiny::renderUI({
-      .mod_WorkflowAssembler_ProjectHeaders_Server("headers", ns, reactive_headers)
+      .mod_WorkflowAssembler_ProjectHeaders_Server("headers", ns, reactive_headers, reactive_config)
       .mod_WorkflowAssembler_ProjectHeaders_UI("headers", ns)
     })
     
     ## _Analyses -----
     output$analyses_ui <- shiny::renderUI({
       if (reactive_engine_type() %in% "CoreEngine") {
-        shiny::showNotification("Analyses not implemented for CoreEngine", duration = 5, type = "warning")
+        shiny::showNotification(
+          "Analyses not implemented for CoreEngine",
+          duration = 5,
+          type = "warning"
+        )
         return(htmltools::div(" "))
       }
-      .mod_WorkflowAssembler_Analyses_Server("analyses", ns, reactive_analyses, reactive_warnings, reactive_volumes)
+      .mod_WorkflowAssembler_Analyses_Server(
+        "analyses",
+        ns,
+        reactive_analyses,
+        reactive_warnings,
+        reactive_volumes,
+        reactive_config
+      )
       .mod_WorkflowAssembler_Analyses_UI("analyses", ns)
     })
     
     # _Explorer -----
     output$explorer_ui <- shiny::renderUI({
-      
       if (is.null(analyses_class_dummy)) {
         shiny::showNotification("No analyses class defined!", duration = 5, type = "warning")
         return(htmltools::div(" "))
       }
       
       tryCatch({
-        .mod_WorkflowAssembler_Explorer_Server(analyses_class_dummy, "summary", ns, reactive_analyses, reactive_volumes)
+        .mod_WorkflowAssembler_Explorer_Server(
+          analyses_class_dummy,
+          "summary",
+          ns,
+          reactive_analyses,
+          reactive_volumes,
+          reactive_config
+        )
         .mod_WorkflowAssembler_Explorer_UI(analyses_class_dummy, "summary", ns)
       }, error = function(e) {
-        msg <- paste("Explorer not rendering for class ", class(analyses_class_dummy)[1], ":", conditionMessage(e), collapse = "")
+        msg <- paste(
+          "Explorer not rendering for class ",
+          class(analyses_class_dummy)[1], ":",
+          conditionMessage(e),
+          collapse = ""
+        )
         shiny::showNotification(msg, duration = 10, type = "error")
         shiny::div(style = "color: red;", msg)
       })
@@ -295,9 +369,12 @@
     # _Workflow -----
     output$workflow_ui <- shiny::renderUI({
       engine_type <- reactive_engine_type()
-      
       if (engine_type %in% "CoreEngine") {
-        shiny::showNotification("Workflow not implemented for CoreEngine", duration = 5, type = "warning")
+        shiny::showNotification(
+          "Workflow not implemented for CoreEngine",
+          duration = 5,
+          type = "warning"
+        )
         return(htmltools::div(" "))
       }
       
@@ -310,7 +387,8 @@
         reactive_results,
         reactive_audit,
         reactive_warnings,
-        reactive_volumes
+        reactive_volumes,
+        reactive_config
       )
       
       .mod_WorkflowAssembler_workflow_UI("workflow", ns)
@@ -318,43 +396,52 @@
     
     # _Results -----
     output$results_ui <- shiny::renderUI({
-      
       if (reactive_engine_type() %in% "CoreEngine") {
-        shiny::showNotification("Results not implemented for CoreEngine", duration = 5, type = "warning")
+        shiny::showNotification(
+          "Results not implemented for CoreEngine",
+          duration = 5,
+          type = "warning"
+        )
         return(htmltools::div(" "))
       }
-      
       res <- reactive_results()
       
       if (length(res) > 0) {
-        
         result_methods <- capture.output(.mod_WorkflowAssembler_Result_Server)
-        
         tab_list <- list()
-        
         for (i in seq_along(res)) {
           
-          has_result_method <- any(vapply(result_methods, function(z) grepl(class(res[[1]])[1], z), FALSE))
+          has_result_method <- any(
+            vapply(result_methods, function(z) grepl(class(res[[1]])[1], z), FALSE)
+          )
           
           if (has_result_method) {
             
-            .mod_WorkflowAssembler_Result_Server(res[[i]], paste0("tab_", names(res)[i]), ns, reactive_analyses, reactive_volumes)
+            .mod_WorkflowAssembler_Result_Server(
+              res[[i]], paste0("tab_", names(res)[i]),
+              ns,
+              reactive_analyses,
+              reactive_volumes,
+              reactive_config
+            )
             
             tab_list[[i]] <- shiny::tabPanel(
-              title = class(res[[i]])[1], 
+              title = class(res[[i]])[1],
               .mod_WorkflowAssembler_Result_UI(res[[i]], paste0("tab_", names(res)[i]), ns)
             )
           } else {
-            shiny::showNotification(paste("No results method for", class(res[[i]]), "!"), duration = 5, type = "warning")
+            shiny::showNotification(
+              paste("No results method for", class(res[[i]]), "!"),
+              duration = 5,
+              type = "warning"
+            )
             tab_list[[i]] <- shiny::tabPanel(
               title = class(res[[i]])[1],
               htmltools::div(paste0(" ", i, ": ", class(res[[i]])[1]))
             )
           }
         }
-        
         do.call(shinydashboard::tabBox, c(list(width = 12), tab_list))
-        
       } else {
         htmltools::div(htmltools::h4("No results found!"))
       }
@@ -389,6 +476,51 @@
       } else {
         DT::datatable(data.table::data.table())
       }
+    })
+    
+    
+    reactive_config <- shiny::reactiveVal(AppConfig())
+    # TODO update configuration based on the golem-config.yml?
+    reactive_config_change_trigger <- shiny::reactiveVal(0)
+    
+    # _Config -----
+    output$config_ui <- DT::renderDT({
+      config <- reactive_config()
+      modified_variable_trigger <- reactive_config_change_trigger()
+      DT::datatable(
+        config@config_frame,
+        filter = "top",
+        selection = list(mode = "single", selected = 1, target = "row"),
+        options = list(pageLength = 15),
+        escape = FALSE,
+        editable = list(target = "cell", columns = c("value"))
+      )
+    })
+    
+    # event Config Table Editing -----
+    shiny::observeEvent(input$config_ui_cell_edit, {
+      info <- input$config_ui_cell_edit
+      info_index <- info$row
+      info_value <- info$value
+      config <- reactive_config()
+      name_value <- config@parameters[[info_index]]@name
+      tryCatch(
+        {
+          config_call <- names(config@parameters[info_index])[1]
+          config@parameters[[config_call]] <- do.call(config_call, list(info_value))
+          reactive_config(config)
+        },
+        error = function(e) {
+          msg <- paste("Error in modifying ", name_value, ":", conditionMessage(e))
+          shiny::showNotification(msg, duration = 10, type = "error")
+          reactive_config_change_trigger(reactive_config_change_trigger() + 1)
+        },
+        warning = function(w) {
+          msg <- paste("Warning in modifying ", name_value, ":", conditionMessage(w))
+          shiny::showNotification(msg, duration = 10, type = "warning")
+          reactive_config_change_trigger(reactive_config_change_trigger() + 1)
+        }
+      )
     })
   })
 }

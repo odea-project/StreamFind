@@ -32,7 +32,8 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
                                                                                  id,
                                                                                  ns,
                                                                                  reactive_analyses,
-                                                                                 reactive_volumes) {
+                                                                                 reactive_volumes,
+                                                                                 reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     has_spectra <- shiny::reactiveVal(FALSE)
@@ -305,9 +306,17 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
           return()
         }
         if (input$summary_plot_type %in% "TIC") {
-          csv <- get_spectra_tic(reactive_analyses(), analyses = selected, level = input$summary_plot_level)
+          csv <- get_spectra_tic(
+            reactive_analyses(),
+            analyses = selected,
+            level = input$summary_plot_level
+          )
         } else if (input$summary_plot_type %in% "BPC") {
-          csv <- get_spectra_bpc(reactive_analyses(), analyses = selected, level = input$summary_plot_level)
+          csv <- get_spectra_bpc(
+            reactive_analyses(),
+            analyses = selected,
+            level = input$summary_plot_level
+          )
         }
         fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$summary_plot_save)
         if (nrow(fileinfo) > 0) {
@@ -523,7 +532,9 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
           htmltools::div(htmltools::br()),
           htmltools::div(style = "margin-left: 20px;", shiny::uiOutput(ns(ns2("eics_targets")))),
           htmltools::div(htmltools::br()),
-          shinycssloaders::withSpinner(plotly::plotlyOutput(ns(ns2("eics_plotly")), height = "500px"), color = "black"),
+          shinycssloaders::withSpinner(
+            plotly::plotlyOutput(ns(ns2("eics_plotly")), height = "500px"), color = "black"
+          ),
           htmltools::div(htmltools::br()),
           shiny::column(12, shiny::uiOutput(ns(ns2("eics_plot_controls")))),
           htmltools::div(style = "margin-bottom: 20px;")
