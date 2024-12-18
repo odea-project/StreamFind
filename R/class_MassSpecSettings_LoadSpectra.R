@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_LoadSpectra_StreamFind**
 #'
 #' @description .
@@ -21,7 +16,7 @@
 #' @export
 #'
 MassSpecSettings_LoadSpectra_StreamFind <- S7::new_class(
-  "MassSpecSettings_LoadSpectra_StreamFind",
+  name = "MassSpecSettings_LoadSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -122,10 +117,6 @@ S7::method(run, MassSpecSettings_LoadSpectra_StreamFind) <- function(x, engine =
   })
 }
 
-# ______________________________________________________________________________________________________________________
-# chrompeaks -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_LoadSpectra_chrompeaks**
 #'
 #' @description Loads spectra based on retention time dimensions of chromatographic peaks.
@@ -140,7 +131,7 @@ S7::method(run, MassSpecSettings_LoadSpectra_StreamFind) <- function(x, engine =
 #' @export
 #'
 MassSpecSettings_LoadSpectra_chrompeaks <- S7::new_class(
-  "MassSpecSettings_LoadSpectra_chrompeaks",
+  name = "MassSpecSettings_LoadSpectra_chrompeaks",
   parent = ProcessingSettings,
   package = "chrompeaks",
   

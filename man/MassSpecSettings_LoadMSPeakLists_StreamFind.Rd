@@ -45,5 +45,6 @@ at the potential cost of reduced accuracy.}
 A \code{MassSpecSettings_LoadMSPeakLists_StreamFind} object.
 }
 \description{
-Settings for converting loaded MS2 and MS1 spectra into a \code{MSPeakLists} object from patRoon.
+Settings for converting loaded MS2 and MS1 spectra into a \code{MSPeakLists} object from
+patRoon.
 }

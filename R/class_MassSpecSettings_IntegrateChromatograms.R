@@ -1,11 +1,7 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_IntegrateChromatograms_StreamFind**
 #'
-#' @description Integrates chromatograms using the function `findpeaks` from the package \pkg{pracma} with natively 
+#' @description Integrates chromatograms using the function `findpeaks` from the package
+#' \pkg{pracma} with natively 
 #' added peak exclusion and evaluation steps.
 #' 
 #' @param merge Logical (length 1) indicating if the nearby peaks should be merged.
@@ -21,7 +17,7 @@
 #' @export
 #'
 MassSpecSettings_IntegrateChromatograms_StreamFind <- S7::new_class(
-  "MassSpecSettings_IntegrateChromatograms_StreamFind",
+  name = "MassSpecSettings_IntegrateChromatograms_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   

@@ -12,7 +12,8 @@ MassSpecSettings_LoadChromatograms_StreamFind(
 )
 }
 \arguments{
-\item{chromatograms}{A numeric or character vector with the chromatogram indices or names to be used, respectively.}
+\item{chromatograms}{A numeric or character vector with the chromatogram indices or names to be
+used, respectively.}
 
 \item{rtmin}{A numeric vector with the minimum retention time values to be used.}
 
@@ -24,5 +25,5 @@ MassSpecSettings_LoadChromatograms_StreamFind(
 A \code{MassSpecSettings_LoadChromatograms_StreamFind} object.
 }
 \description{
-.
+Loads chromatograms from mass spectrometry analyses.
 }

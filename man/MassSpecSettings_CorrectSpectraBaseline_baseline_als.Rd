@@ -21,6 +21,6 @@ MassSpecSettings_CorrectSpectraBaseline_baseline_als(
 A MassSpecSettings_CorrectSpectraBaseline_baseline_als object.
 }
 \description{
-Performs baseline correction to spectra using the Asymmetric Least Squares (ALS) algorithm from the
-\pkg{baseline} package.
+Performs baseline correction to spectra using the Asymmetric Least Squares (ALS)
+algorithm from the \pkg{baseline} package.
 }

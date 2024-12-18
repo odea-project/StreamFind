@@ -21,7 +21,8 @@ retention time range.}
 \item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{minIntensity}{Numeric of length one with the minimum intensity of traces to extract for EIC.}
+\item{minIntensity}{Numeric of length one with the minimum intensity of traces to extract for
+EIC.}
 }
 \value{
 A \code{MassSpecSettings_LoadFeaturesEIC_StreamFind} object.

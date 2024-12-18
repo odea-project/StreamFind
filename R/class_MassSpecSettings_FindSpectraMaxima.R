@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FindSpectraMaxima_StreamFind**
 #'
 #' @description Finds maximum peaks in continuous spectra.
@@ -15,30 +10,33 @@
 #'
 #' @export
 #'
-MassSpecSettings_FindSpectraMaxima_StreamFind <- S7::new_class("MassSpecSettings_FindSpectraMaxima_StreamFind",
+MassSpecSettings_FindSpectraMaxima_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_FindSpectraMaxima_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(minWidth = 0, maxWidth = 0, minHeight = 0) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FindSpectraMaxima",
-      required = "LoadSpectra",
-      algorithm = "StreamFind",
-      parameters = list(
-        minWidth = as.numeric(minWidth),
-        maxWidth = as.numeric(maxWidth),
-        minHeight = as.numeric(minHeight)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FindSpectraMaxima",
+        required = "LoadSpectra",
+        algorithm = "StreamFind",
+        parameters = list(
+          minWidth = as.numeric(minWidth),
+          maxWidth = as.numeric(maxWidth),
+          minHeight = as.numeric(minHeight)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {

@@ -1,12 +1,9 @@
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FindInternalStandards_StreamFind**
 #'
 #' @description Settings for finding internal standards using a data.frame.
 #'
-#' @param database A data.table with at least the columns name, mass, and rt indicating the name, neutral monoisotopic
+#' @param database A data.table with at least the columns name, mass, and rt indicating the name,
+#' neutral monoisotopic
 #' mass and retention time of the internal standards, respectively.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
@@ -15,7 +12,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSettings_FindInternalStandards_StreamFind",
+MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_FindInternalStandards_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(database = data.table::data.table(
@@ -26,24 +24,26 @@ MassSpecSettings_FindInternalStandards_StreamFind <- S7::new_class("MassSpecSett
                          ),
                          ppm = 5,
                          sec = 10) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FindInternalStandards",
-      required = "FindFeatures",
-      algorithm = "StreamFind",
-      parameters = list(
-        database = data.table::as.data.table(database),
-        ppm = as.numeric(ppm),
-        sec = as.numeric(sec)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FindInternalStandards",
+        required = "FindFeatures",
+        algorithm = "StreamFind",
+        parameters = list(
+          database = data.table::as.data.table(database),
+          ppm = as.numeric(ppm),
+          sec = as.numeric(sec)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -86,28 +86,6 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
     return(FALSE)
   }
 
-  cache <- .load_chache("find_internal_standards", nts$feature_list, x)
-
-  if (!is.null(cache$data)) {
-    tryCatch(
-      {
-        features <- nts$feature_list
-        features <- Map(function(x, y) {
-          x[["istd"]] <- y
-          x
-        }, features, cache$data)
-        nts$feature_list <- features
-        engine$nts <- nts
-        message("\U2139 Internal standards annotation loaded from cache!")
-        return(TRUE)
-      },
-      error = function(e) {
-        warning(e)
-        return(FALSE)
-      }
-    )
-  }
-
   database <- x$parameters$database
 
   database <- data.table::as.data.table(database)
@@ -134,7 +112,10 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
     intensity <- database$intensity
     names(intensity) <- database$name
 
-    internal_standards$rec <- round((internal_standards$intensity / intensity[internal_standards$istd_name]) * 100, digits = 1)
+    internal_standards$rec <- round(
+      (internal_standards$intensity / intensity[internal_standards$istd_name]) * 100,
+      digits = 1
+    )
   } else if ("area" %in% colnames(database)) {
     area <- database$area
     names(area) <- database$name
@@ -193,12 +174,19 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
         duplicated_isdt <- unique(temp$name[duplicated(temp$name)])
         for (d in duplicated_isdt) {
           temp2 <- temp[temp$name == d, ]
-          temp2 <- temp2[which(abs(temp2$error_mass) == min(abs(temp2$error_mass))), ]
+          if (any(!is.na(temp2$group))) {
+            temp2 <- temp2[!is.na(temp2$group), ]
+          }
+          if (nrow(temp2) > 1) {
+            temp2 <- temp2[which(abs(temp2$error_mass) == min(abs(temp2$error_mass))), ]
+          }
           if (nrow(temp2) > 1) {
             temp2 <- temp2[which(abs(temp2$error_rt) == min(abs(temp2$error_rt))), ]
           }
+          fts_rem <- temp[temp$name %in% d & !temp$feature %in% temp2$feature, ]
           internal_standards <- internal_standards[
-            !(internal_standards$feature == temp2$feature & internal_standards$analysis == a), ]
+            !(internal_standards$feature == fts_rem$feature & internal_standards$analysis == a),
+          ]
         }
       }
     }
@@ -238,11 +226,6 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
 
     names(istd_col) <- names(features)
 
-    if (!is.null(cache$hash)) {
-      .save_cache("find_internal_standards", istd_col, cache$hash)
-      message("\U1f5ab Internal standards annotation cached!")
-    }
-
     features <- Map(function(x, y) {
       x[["istd"]] <- y
       x
@@ -252,8 +235,11 @@ S7::method(run, MassSpecSettings_FindInternalStandards_StreamFind) <- function(x
 
     engine$nts <- nts
 
-    message("\U2713 ", length(unique(internal_standards$name)), " internal standards found and tagged!")
-
+    message(
+      "\U2713 ",
+      length(unique(internal_standards$name)),
+      " internal standards found and tagged!"
+    )
     TRUE
   } else {
     FALSE

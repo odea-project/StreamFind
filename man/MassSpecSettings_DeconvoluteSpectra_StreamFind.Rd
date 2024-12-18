@@ -9,11 +9,13 @@ MassSpecSettings_DeconvoluteSpectra_StreamFind(clustVal = 0.1, window = 20)
 \arguments{
 \item{clustVal}{Numeric (length 1) with the clustering value for the charge deconvolution.}
 
-\item{window}{Optional numeric (length 1) with the window in \emph{m/z} for collecting traces of a given charge.}
+\item{window}{Optional numeric (length 1) with the window in \emph{m/z} for collecting traces of
+a given charge.}
 }
 \value{
 A MassSpecSettings_DeconvoluteSpectra_StreamFind object.
 }
 \description{
-Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after assignment of charges.
+Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after
+assignment of charges.
 }

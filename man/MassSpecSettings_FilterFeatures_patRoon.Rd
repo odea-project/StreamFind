@@ -43,21 +43,28 @@ MassSpecSettings_FilterFeatures_patRoon(
 
 \item{relMinIntensity}{Numeric length one. Minimum relative intensity for a feature.}
 
-\item{preAbsMinIntensity}{Numeric length one. Minimum absolute intensity for a feature before grouping.}
+\item{preAbsMinIntensity}{Numeric length one. Minimum absolute intensity for a feature before
+grouping.}
 
-\item{preRelMinIntensity}{Numeric length one. Minimum relative intensity for a feature before grouping.}
+\item{preRelMinIntensity}{Numeric length one. Minimum relative intensity for a feature before
+grouping.}
 
-\item{absMinAnalyses}{Numeric length one. Minimum number of analyses a feature must be present in.}
+\item{absMinAnalyses}{Numeric length one. Minimum number of analyses a feature must be present
+in.}
 
-\item{relMinAnalyses}{Numeric length one. Minimum relative number of analyses a feature must be present in.}
+\item{relMinAnalyses}{Numeric length one. Minimum relative number of analyses a feature must be
+present in.}
 
-\item{absMinReplicates}{Numeric length one. Minimum number of replicates a feature must be present in.}
+\item{absMinReplicates}{Numeric length one. Minimum number of replicates a feature must be
+present in.}
 
-\item{relMinReplicates}{Numeric length one. Minimum relative number of replicates a feature must be present in.}
+\item{relMinReplicates}{Numeric length one. Minimum relative number of replicates a feature must
+be present in.}
 
 \item{absMinFeatures}{Numeric length one. Minimum number of features a feature group must contain.}
 
-\item{relMinFeatures}{Numeric length one. Minimum relative number of features a feature group must contain.}
+\item{relMinFeatures}{Numeric length one. Minimum relative number of features a feature group
+must contain.}
 
 \item{absMinReplicateAbundance}{Numeric length one. Minimum absolute abundance of a replicate.}
 
@@ -71,13 +78,17 @@ MassSpecSettings_FilterFeatures_patRoon(
 
 \item{relMaxTox}{Numeric length one. Maximum relative toxicity of a feature.}
 
-\item{absMinConcTox}{Numeric length one. Minimum absolute concentration of a feature to be considered toxic.}
+\item{absMinConcTox}{Numeric length one. Minimum absolute concentration of a feature to be
+considered toxic.}
 
-\item{relMinConcTox}{Numeric length one. Minimum relative concentration of a feature to be considered toxic.}
+\item{relMinConcTox}{Numeric length one. Minimum relative concentration of a feature to be
+considered toxic.}
 
-\item{maxReplicateIntRSD}{Numeric length one. Maximum relative standard deviation of intensities within a replicate.}
+\item{maxReplicateIntRSD}{Numeric length one. Maximum relative standard deviation of intensities
+within a replicate.}
 
-\item{blankThreshold}{Numeric length one. Maximum intensity of a feature to be considered a blank.}
+\item{blankThreshold}{Numeric length one. Maximum intensity of a feature to be considered a
+blank.}
 
 \item{retentionRange}{Numeric length two. Retention time range (in seconds) for a feature.}
 
@@ -85,7 +96,8 @@ MassSpecSettings_FilterFeatures_patRoon(
 
 \item{mzDefectRange}{Numeric length two. m/z defect range (in Da) for a feature.}
 
-\item{chromWidthRange}{Numeric length two. Chromatographic width range (in seconds) for a feature.}
+\item{chromWidthRange}{Numeric length two. Chromatographic width range (in seconds) for a
+feature.}
 
 \item{featQualityRange}{Numeric length two. Feature quality range for a feature.}
 
@@ -102,11 +114,11 @@ MassSpecSettings_FilterFeatures_patRoon(
 \item{negate}{Logical length one. Negate the filter.}
 }
 \value{
-A ProcessingSettings S3 class object with subclass MassSpecSettings_FilterFeatures_patRoon.
+A MassSpecSettings_FilterFeatures_patRoon object.
 }
 \description{
-Settings for filtering of features and feature groups. A full description of the filtering parameters is
-in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
+Settings for filtering of features and feature groups. A full description of the
+filtering parameters is in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
 }
 \details{
 Note that when filters are applied to features or feature groups

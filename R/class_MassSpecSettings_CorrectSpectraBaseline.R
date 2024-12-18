@@ -1,12 +1,7 @@
-
-# ______________________________________________________________________________________________________________________
-# baseline -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_CorrectSpectraBaseline_baseline_als**
 #'
-#' @description Performs baseline correction to spectra using the Asymmetric Least Squares (ALS) algorithm from the 
-#' \pkg{baseline} package.
+#' @description Performs baseline correction to spectra using the Asymmetric Least Squares (ALS) 
+#' algorithm from the \pkg{baseline} package.
 #' 
 #' @param lambda Numeric (length 1) with the 2nd derivative constraint.
 #' @param p Numeric (length 1) with the weighting of positive residuals.
@@ -16,7 +11,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_CorrectSpectraBaseline_baseline_als <- S7::new_class("MassSpecSettings_CorrectSpectraBaseline_baseline_als",
+MassSpecSettings_CorrectSpectraBaseline_baseline_als <- S7::new_class(
+  name = "MassSpecSettings_CorrectSpectraBaseline_baseline_als",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -121,16 +117,13 @@ S7::method(run, MassSpecSettings_CorrectSpectraBaseline_baseline_als) <- functio
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# airpls -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_CorrectSpectraBaseline_airpls**
 #'
-#' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS) 
-#' based on the algorithm from Zhi-Min Zhang.
+#' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least
+#' Squares (airPLS) based on the algorithm from Zhi-Min Zhang.
 #' 
-#' @param lambda Numeric (length 1) with the smoothing intensity. the higher the `lambda` the higher the smoothing.
+#' @param lambda Numeric (length 1) with the smoothing intensity. the higher the `lambda` the higher
+#' the smoothing.
 #' @param differences Integer (length 1) indicating the order of the difference of penalties
 #' @param itermax Integer (length 1) with the maximum number of iterations.
 #'
@@ -142,26 +135,28 @@ S7::method(run, MassSpecSettings_CorrectSpectraBaseline_baseline_als) <- functio
 #'
 #' @export
 #'
-MassSpecSettings_CorrectSpectraBaseline_airpls <- S7::new_class("MassSpecSettings_CorrectSpectraBaseline_airpls",
+MassSpecSettings_CorrectSpectraBaseline_airpls <- S7::new_class(
+  name = "MassSpecSettings_CorrectSpectraBaseline_airpls",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(lambda = 10, differences = 1, itermax = 20) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "CorrectSpectraBaseline",
-      required = "LoadSpectra",
-      algorithm = "airpls",
-      parameters = list(lambda = lambda, differences = differences, itermax = itermax),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "airPLS",
-      developer = "Zhi-Min Zhang",
-      contact = "zmzhang@csu.edu.cn",
-      link = "https://github.com/zmzhang/airPLS",
-      doi = "10.1039/b922045c"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "CorrectSpectraBaseline",
+        required = "LoadSpectra",
+        algorithm = "airpls",
+        parameters = list(lambda = lambda, differences = differences, itermax = itermax),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "airPLS",
+        developer = "Zhi-Min Zhang",
+        contact = "zmzhang@csu.edu.cn",
+        link = "https://github.com/zmzhang/airPLS",
+        doi = "10.1039/b922045c"
+      )
+    )
   },
   
   validator = function(self) {

@@ -4,15 +4,17 @@
 \alias{MassSpecEngine}
 \title{\strong{MassSpecEngine} R6 class and methods}
 \description{
-The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing mass
-spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection)
-can be loaded from mzML and mzXML formats. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
-is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor
-formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
+The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
+storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
+chromatograms produced by UV detection) can be loaded from mzML and mzXML formats. If
+\code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and
+found via CLI (i.e., must be added to the environmental variables), the engine can also load
+vendor formats by direct conversion to mzML. Note that conversion of vendor formats is only
+possible under Windows OS.
 }
 \details{
-The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target
-Screening (NTS) data processing workflows.
+The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
+assembly of Non-Target Screening (NTS) data processing workflows.
 }
 \references{
 \insertRef{patroon01}{StreamFind}
@@ -1305,7 +1307,8 @@ Gets a data.table with feature groups from the analyses.
   intensities = TRUE,
   average = FALSE,
   sdValues = FALSE,
-  metadata = FALSE
+  metadata = FALSE,
+  correctSuppression = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -1355,11 +1358,16 @@ in milliseconds.}
 \item{\code{average}}{Logical (length 1). When \code{TRUE}, feature intensities from each group are averaged and returned for
 each analysis replicate group.}
 
-\item{\code{sdValues}}{Logical (length 1). Set to \code{TRUE} for returning the sd values when averaging the intensity
-within analysis replicates.}
+\item{\code{sdValues}}{Logical (length 1). Set to \code{TRUE} for returning the sd values when averaging
+the intensity within analysis replicates.}
 
-\item{\code{metadata}}{Logical (length 1). Set to \code{TRUE} for returning extra metadata from feature groups
-(e.g., presence in each analysis replicate and mass and time widths).}
+\item{\code{metadata}}{Logical (length 1). Set to \code{TRUE} for returning extra metadata from feature
+groups (e.g., presence in each analysis replicate and mass and time widths).}
+
+\item{\code{correctSuppression}}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
+suppression before applying intensity based filters. Note that suppression factor as obtained by
+the processing method \code{CorrectMatrixSuppression} must be present. When not available the
+correction is ignored even if set to \code{TRUE}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -4045,8 +4053,10 @@ in milliseconds.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{correctSuppression}}{Logical (length 1). When \code{TRUE} and suppression factor is available
-the intensities are corrected for suppression.}
+\item{\code{correctSuppression}}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
+suppression before applying intensity based filters. Note that suppression factor as obtained by
+the processing method \code{CorrectMatrixSuppression} must be present. When not available the
+correction is ignored even if set to \code{TRUE}.}
 
 \item{\code{normalized}}{Logical (length 1). When \code{TRUE} the profile intensities are normalized.}
 

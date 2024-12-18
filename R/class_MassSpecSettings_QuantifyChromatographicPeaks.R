@@ -1,45 +1,44 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_QuantifyChromatographicPeaks_StreamFind**
 #'
 #' @description Quantifies chromatographic peaks based on a calibration model.
 #' 
-#' @param calibration Numeric with the calibration/concentration values for each analysis. When concentration is not 
-#' know use NA_real_.
+#' @param calibration Numeric with the calibration/concentration values for each analysis. When
+#' concentration is not know use NA_real_.
 #' @param value Character with the value to quantify. Possible values are *intensity* or *area*.
-#' @param model Character with the model to use for calibration. Possible values are *linear*, *quadratic*, or *cubic*.
+#' @param model Character with the model to use for calibration. Possible values are *linear*,
+#' *quadratic*, or *cubic*.
 #'
 #' @return A MassSpecSettings_QuantifyChromatographicPeaks_StreamFind object.
 #'
 #' @export
 #'
-MassSpecSettings_QuantifyChromatographicPeaks_StreamFind <- S7::new_class("MassSpecSettings_QuantifyChromatographicPeaks_StreamFind",
+MassSpecSettings_QuantifyChromatographicPeaks_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_QuantifyChromatographicPeaks_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(calibration = 0, value = "area", model = "linear") {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "QuantifyChromatographicPeaks",
-      required = c("LoadChromstograms", "IntegrateChromatograms"),
-      algorithm = "StreamFind",
-      parameters = list(
-        calibration = as.numeric(calibration),
-        value = as.character(value),
-        model = "linear"
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "QuantifyChromatographicPeaks",
+        required = c("LoadChromstograms", "IntegrateChromatograms"),
+        algorithm = "StreamFind",
+        parameters = list(
+          calibration = as.numeric(calibration),
+          value = as.character(value),
+          model = "linear"
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {

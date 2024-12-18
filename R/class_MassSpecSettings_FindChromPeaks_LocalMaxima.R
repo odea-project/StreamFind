@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FindChromPeaks_LocalMaxima**
 #'
 #' @description Finds peak maxima in chromatograms.
@@ -16,7 +11,7 @@
 #' @export
 #'
 MassSpecSettings_FindChromPeaks_LocalMaxima <- S7::new_class(
-  "MassSpecSettings_FindChromPeaks_LocalMaxima",
+  name = "MassSpecSettings_FindChromPeaks_LocalMaxima",
   parent = ProcessingSettings,
   package = "StreamFind",
   

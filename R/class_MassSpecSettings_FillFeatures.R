@@ -1,7 +1,3 @@
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FillFeatures_StreamFind**
 #'
 #' @description Settings for filling missing values in features.
@@ -9,18 +5,21 @@
 #' @param withinReplicate Logical of length one to fill within replicates not global.
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
-#' @param minIntenisty Numeric of length one with the minimum intensity to collect spectra data for extracted ion chromatograms.
+#' @param minIntenisty Numeric of length one with the minimum intensity to collect spectra data for
+#' extracted ion chromatograms.
 #' @param baseCut Numeric of length one with the base cut for building Gaussian model.
-#' @param minNumberTraces Integer of length one with the minimum number of traces to consider a feature.
-#' @param minSignalToNoiseRatio Numeric of length one with the minimum signal to noise ratio to consider a feature.
+#' @param minNumberTraces Integer of length one with the minimum number of traces to consider a
+#' feature.
+#' @param minSignalToNoiseRatio Numeric of length one with the minimum signal to noise ratio to
+#' consider a feature.
 #' @param minGaussianFit Numeric of length one with the minimum Gaussian fit to consider a feature.
 #'
-#' @return A ProcessingSettings S3 class object with subclass MassSpecSettings_FillFeatures_StreamFind.
+#' @return A MassSpecSettings_FillFeatures_StreamFind class object.
 #'
 #' @export
 #'
 MassSpecSettings_FillFeatures_StreamFind <- S7::new_class(
-  "MassSpecSettings_FillFeatures_StreamFind",
+  name = "MassSpecSettings_FillFeatures_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(withinReplicate = TRUE,
@@ -98,15 +97,6 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     return(FALSE)
   }
 
-  cache <- .load_chache("fill_features", nts$feature_list, x)
-
-  if (!is.null(cache$data)) {
-    message("\U2139 Filled features loaded from cache!")
-    nts$feature_list <- cache$data
-    engine$nts <- nts
-    return(TRUE)
-  }
-
   parameters <- x$parameters
   analyses_list <- engine$analyses$analyses
   feature_list <- engine$nts$feature_list
@@ -114,8 +104,7 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   rpls <- engine$analyses$replicates
   feature_list$replicate <- rpls[feature_list$analysis]
   feature_list_nf <- data.table::copy(feature_list)
-  feature_list_nf <- feature_list_nf[!is.na(feature_list_nf$group), ]
-  feature_list_nf <- feature_list_nf[!feature_list_nf$filtered, ]
+  feature_list_nf$group[is.na(feature_list_nf$group)] <- ""
   
   res <- rcpp_ms_fill_features(
     analyses_list,
@@ -145,10 +134,20 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
   all_fts$replicate <- NULL
   all_fts <- split(all_fts, all_fts_analysis)
   
-  if (!is.null(cache$hash)) {
-    .save_cache("fill_features", all_fts, cache$hash)
-    message("\U1f5ab Filled features cached!")
-  }
+  all_fts <- lapply(all_fts, function(z) {
+    duplos <- unique(z$feature[duplicated(z$feature)])
+    if (length(duplos) > 0) {
+      for (duplo in duplos) {
+        temp <- z[z$feature == duplo, ]
+        grp <- temp$group[!is.na(temp$group)]
+        if (length(grp) > 0) {
+          z$group[z$feature == duplo] <- grp[1]
+          z <- z[!(z$feature == duplo && z$adduct == "" && z$mass == 0), ]
+        }
+      }
+    }
+    z
+  })
   
   nts$feature_list <- all_fts
   engine$nts <- nts

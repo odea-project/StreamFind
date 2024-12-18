@@ -12,7 +12,8 @@ MassSpecSettings_FindInternalStandards_StreamFind(
 )
 }
 \arguments{
-\item{database}{A data.table with at least the columns name, mass, and rt indicating the name, neutral monoisotopic
+\item{database}{A data.table with at least the columns name, mass, and rt indicating the name,
+neutral monoisotopic
 mass and retention time of the internal standards, respectively.}
 
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}

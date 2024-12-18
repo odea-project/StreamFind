@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# LoadFeaturesMS1_StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_LoadFeaturesMS1_StreamFind**
 #'
 #' @description Settings for loading MS1 spectra for features.
@@ -18,7 +13,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_LoadFeaturesMS1_StreamFind <- S7::new_class("MassSpecSettings_LoadFeaturesMS1_StreamFind",
+MassSpecSettings_LoadFeaturesMS1_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_LoadFeaturesMS1_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -29,27 +25,29 @@ MassSpecSettings_LoadFeaturesMS1_StreamFind <- S7::new_class("MassSpecSettings_L
                          minIntensity = 250,
                          filtered = FALSE) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "LoadFeaturesMS1",
-      required = "FindFeatures",
-      algorithm = "StreamFind",
-      parameters = list(
-        "rtWindow" = rtWindow,
-        "mzWindow" = mzWindow,
-        "mzClust" = mzClust,
-        "presence" = presence,
-        "minIntensity" = minIntensity,
-        "filtered" = filtered
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "LoadFeaturesMS1",
+        required = "FindFeatures",
+        algorithm = "StreamFind",
+        parameters = list(
+          "rtWindow" = rtWindow,
+          "mzWindow" = mzWindow,
+          "mzClust" = mzClust,
+          "presence" = presence,
+          "minIntensity" = minIntensity,
+          "filtered" = filtered
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -95,20 +93,6 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
   
   parameters <- x$parameters
   
-  cache <- .load_chache("load_features_ms1", feature_list, x)
-  
-  if (!is.null(cache$data)) {
-    feature_list <- cache$data
-    tryCatch({
-      engine$nts$feature_list <- feature_list
-      message("\U2139 Features MS1 loaded from cache!")
-      return(TRUE)
-    }, error = function(e) {
-      warning(e)
-      return(FALSE)
-    })
-  }
-  
   feature_list <- rcpp_ms_load_features_ms1(
     analyses = engine$analyses$analyses,
     features = feature_list,
@@ -120,11 +104,6 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
     presence = parameters$presence
   )
   
-  if (!is.null(cache$hash)) {
-    .save_cache("load_features_ms1", feature_list, cache$hash)
-    message("\U1f5ab Features MS1 spectra saved to cache!")
-  }
-  
   tryCatch({
     engine$nts$feature_list <- feature_list
     message("\U2713 MS1 added to features!")
@@ -134,10 +113,6 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
     return(FALSE)
   })
 }
-
-# ______________________________________________________________________________________________________________________
-# LoadFeaturesMS2_StreamFind -----
-# ______________________________________________________________________________________________________________________
 
 #' **MassSpecSettings_LoadFeaturesMS2_StreamFind**
 #'
@@ -153,7 +128,8 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS1_StreamFind) <- function(x, engi
 #'
 #' @export
 #'
-MassSpecSettings_LoadFeaturesMS2_StreamFind <- S7::new_class("MassSpecSettings_LoadFeaturesMS2_StreamFind",
+MassSpecSettings_LoadFeaturesMS2_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_LoadFeaturesMS2_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -163,26 +139,28 @@ MassSpecSettings_LoadFeaturesMS2_StreamFind <- S7::new_class("MassSpecSettings_L
                          minIntensity = 10,
                          filtered = FALSE) {
    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "LoadFeaturesMS2",
-      required = "FindFeatures",
-      algorithm = "StreamFind",
-      parameters = list(
-        "isolationWindow" = isolationWindow,
-        "mzClust" = mzClust,
-        "presence" = presence,
-        "minIntensity" = minIntensity,
-        "filtered" = filtered
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "LoadFeaturesMS2",
+        required = "FindFeatures",
+        algorithm = "StreamFind",
+        parameters = list(
+          "isolationWindow" = isolationWindow,
+          "mzClust" = mzClust,
+          "presence" = presence,
+          "minIntensity" = minIntensity,
+          "filtered" = filtered
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -227,20 +205,6 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
   
   parameters <- x$parameters
   
-  cache <- .load_chache("load_features_ms2", feature_list, x)
-  
-  if (!is.null(cache$data)) {
-    feature_list <- cache$data
-    tryCatch({
-      engine$nts$feature_list <- feature_list
-      message("\U2139 Features MS2 loaded from cache!")
-      return(TRUE)
-    }, error = function(e) {
-      warning(e)
-      return(FALSE)
-    })
-  }
-  
   feature_list <- rcpp_ms_load_features_ms2(
     analyses = engine$analyses$analyses,
     features = feature_list,
@@ -250,11 +214,6 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
     mzClust = parameters$mzClust,
     presence = parameters$presence
   )
-  
-  if (!is.null(cache$hash)) {
-    .save_cache("load_features_ms2", feature_list, cache$hash)
-    message("\U1f5ab Features MS2 spectra saved to cache!")
-  }
   
   tryCatch({
     engine$nts$feature_list <- feature_list
@@ -266,10 +225,6 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
   })
 }
 
-# ______________________________________________________________________________________________________________________
-# LoadFeaturesEIC_StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_LoadFeaturesEIC_StreamFind**
 #'
 #' @description Settings for loading spectra EIC for feature groups.
@@ -277,37 +232,41 @@ S7::method(run, MassSpecSettings_LoadFeaturesMS2_StreamFind) <- function(x, engi
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
 #' @template arg-ms-filtered
-#' @param minIntensity Numeric of length one with the minimum intensity of traces to extract for EIC.
+#' @param minIntensity Numeric of length one with the minimum intensity of traces to extract for
+#' EIC.
 #'
 #' @return A `MassSpecSettings_LoadFeaturesEIC_StreamFind` object.
 #'
 #' @export
 #'
-MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class("MassSpecSettings_LoadFeaturesEIC_StreamFind",
+MassSpecSettings_LoadFeaturesEIC_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_LoadFeaturesEIC_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(filtered = FALSE, rtExpand = 120, mzExpand = 0, minIntensity = 0) {
    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "LoadFeaturesEIC",
-      required = "FindFeatures",
-      algorithm = "StreamFind",
-      parameters = list(
-        "filtered" = filtered,
-        "rtExpand" = rtExpand,
-        "mzExpand" = mzExpand,
-        "minIntensity" = minIntensity
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "LoadFeaturesEIC",
+        required = "FindFeatures",
+        algorithm = "StreamFind",
+        parameters = list(
+          "filtered" = filtered,
+          "rtExpand" = rtExpand,
+          "mzExpand" = mzExpand,
+          "minIntensity" = minIntensity
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -357,20 +316,6 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
     
   parameters <- x$parameters
   
-  cache <- .load_chache("load_features_eic", feature_list, x)
-  
-  if (!is.null(cache$data)) {
-    feature_list <- cache$data
-    tryCatch({
-      engine$nts$feature_list <- feature_list
-      message("\U2139 Features EIC loaded from cache!")
-      return(TRUE)
-    }, error = function(e) {
-      warning(e)
-      return(FALSE)
-    })
-  }
-  
   feature_list <- rcpp_ms_load_features_eic(
     engine$analyses$analyses,
     feature_list,
@@ -379,11 +324,6 @@ S7::method(run, MassSpecSettings_LoadFeaturesEIC_StreamFind) <- function(x, engi
     parameters$mzExpand,
     parameters$minIntensity
   )
-  
-  if (!is.null(cache$hash)) {
-    .save_cache("load_features_eic", feature_list, cache$hash)
-    message("\U1f5ab Features EIC spectra saved to cache!")
-  }
   
   tryCatch({
     engine$nts$feature_list <- feature_list

@@ -1,7 +1,3 @@
-# ______________________________________________________________________________________________________________________
-# utility functions -----
-# ______________________________________________________________________________________________________________________
-
 #' @noRd
 .run_group_features_patRoon <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
@@ -210,10 +206,6 @@
 #   NULL
 # }
 
-# ______________________________________________________________________________________________________________________
-# xcms3_peakdensity -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_GroupFeatures_xcms3_peakdensity**
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks) across mzML/mzXML files using the package
@@ -247,7 +239,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSettings_GroupFeatures_xcms3_peakdensity",
+MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class(
+  name = "MassSpecSettings_GroupFeatures_xcms3_peakdensity",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(bw = 5,
@@ -255,26 +248,28 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity <- S7::new_class("MassSpecSetti
                          minSamples = 1,
                          binSize = 0.008,
                          maxFeatures = 100) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "GroupFeatures",
-      required = "FindFeatures",
-      algorithm = "xcms3_peakdensity",
-      parameters = list(
-        bw = bw,
-        minFraction = minFraction,
-        minSamples = minSamples,
-        binSize = binSize,
-        maxFeatures = maxFeatures
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "xcms",
-      developer = "Colin Smith, Johannes Rainer",
-      contact = "siuzdak@scripps.edu",
-      link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
-      doi = "https://doi.org/10.1021/ac051437y"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "GroupFeatures",
+        required = "FindFeatures",
+        algorithm = "xcms3_peakdensity",
+        parameters = list(
+          bw = bw,
+          minFraction = minFraction,
+          minSamples = minSamples,
+          binSize = binSize,
+          maxFeatures = maxFeatures
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "xcms",
+        developer = "Colin Smith, Johannes Rainer",
+        contact = "siuzdak@scripps.edu",
+        link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
+        doi = "https://doi.org/10.1021/ac051437y"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -313,10 +308,6 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x,
 
   .run_group_features_patRoon(settings, engine)
 }
-
-# ______________________________________________________________________________________________________________________
-# xcms3_peakdensity_peakgroups -----
-# ______________________________________________________________________________________________________________________
 
 #' **MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups**
 #'
@@ -374,7 +365,8 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x,
 #' samples should be adjusted. Supported options are "previous" and "average"
 #' (default). See description above for more information.
 #'
-#' @details See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
+#' @details See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for
+#' more information and requirements.
 #'
 #' @return A `MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups` object.
 #'
@@ -391,7 +383,8 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity) <- function(x,
 #'
 #' @export
 #'
-MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups",
+MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class(
+  name = "MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(bw = 5,
@@ -410,37 +403,39 @@ MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class("Ma
                          family = "gaussian",
                          subset = integer(),
                          subsetAdjust = "average") {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "GroupFeatures",
-      required = "FindFeatures",
-      algorithm = "xcms3_peakdensity_peakgroups",
-      parameters = list(
-        bw = bw,
-        minFraction = minFraction,
-        minSamples = minSamples,
-        binSize = binSize,
-        pre_bw = pre_bw,
-        pre_minFraction = pre_minFraction,
-        pre_minSamples = pre_minSamples,
-        pre_binSize = pre_binSize,
-        maxFeatures = maxFeatures,
-        rtAlignMinFraction = rtAlignMinFraction,
-        extraPeaks = extraPeaks,
-        smooth = smooth,
-        span = span,
-        family = family,
-        subset = subset,
-        subsetAdjust = subsetAdjust
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "xcms",
-      developer = "Colin Smith, Johannes Rainer",
-      contact = "siuzdak@scripps.edu",
-      link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
-      doi = "https://doi.org/10.1021/ac051437y"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "GroupFeatures",
+        required = "FindFeatures",
+        algorithm = "xcms3_peakdensity_peakgroups",
+        parameters = list(
+          bw = bw,
+          minFraction = minFraction,
+          minSamples = minSamples,
+          binSize = binSize,
+          pre_bw = pre_bw,
+          pre_minFraction = pre_minFraction,
+          pre_minSamples = pre_minSamples,
+          pre_binSize = pre_binSize,
+          maxFeatures = maxFeatures,
+          rtAlignMinFraction = rtAlignMinFraction,
+          extraPeaks = extraPeaks,
+          smooth = smooth,
+          span = span,
+          family = family,
+          subset = subset,
+          subsetAdjust = subsetAdjust
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "xcms",
+        developer = "Colin Smith, Johannes Rainer",
+        contact = "siuzdak@scripps.edu",
+        link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
+        doi = "https://doi.org/10.1021/ac051437y"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -472,7 +467,6 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- 
   settings <- list()
 
   settings[["algorithm"]] <- x$algorithm
-
 
   parameters <- list(
     "rtalign" = TRUE,
@@ -512,10 +506,6 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- 
   .run_group_features_patRoon(settings, engine)
 }
 
-# ______________________________________________________________________________________________________________________
-# openms -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_GroupFeatures_openms**
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks) in mzML/mzXML files using the
@@ -537,7 +527,8 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- 
 #' @param verbose Logical of length one. When TRUE adds processing information
 #' to the console.
 #'
-#' @details See the \link[patRoon]{groupFeaturesOpenMS} function from the \pkg{patRoon} package for more information and requirements.
+#' @details See the \link[patRoon]{groupFeaturesOpenMS} function from the \pkg{patRoon} package for
+#' more information and requirements.
 #'
 #' @return A `MassSpecSettings_GroupFeatures_openms` object.
 #'
@@ -550,7 +541,8 @@ S7::method(run, MassSpecSettings_GroupFeatures_xcms3_peakdensity_peakgroups) <- 
 #'
 #' @export
 #'
-MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFeatures_openms",
+MassSpecSettings_GroupFeatures_openms <- S7::new_class(
+  name = "MassSpecSettings_GroupFeatures_openms",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(rtalign = FALSE,
@@ -560,28 +552,30 @@ MassSpecSettings_GroupFeatures_openms <- S7::new_class("MassSpecSettings_GroupFe
                          maxGroupRT = 5,
                          maxGroupMZ = 0.008,
                          verbose = FALSE) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "GroupFeatures",
-      required = "FindFeatures",
-      algorithm = "openms",
-      parameters = list(
-        rtalign = rtalign,
-        QT = QT,
-        maxAlignRT = maxAlignRT,
-        maxAlignMZ = maxAlignMZ,
-        maxGroupRT = maxGroupRT,
-        maxGroupMZ = maxGroupMZ,
-        verbose = verbose
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "openms",
-      developer = "Oliver Kohlbacher",
-      contact = "oliver.kohlbacher@uni-tuebingen.de",
-      link = "https://openms.de/",
-      doi = "https://doi.org/10.1038/nmeth.3959"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "GroupFeatures",
+        required = "FindFeatures",
+        algorithm = "openms",
+        parameters = list(
+          rtalign = rtalign,
+          QT = QT,
+          maxAlignRT = maxAlignRT,
+          maxAlignMZ = maxAlignMZ,
+          maxGroupRT = maxGroupRT,
+          maxGroupMZ = maxGroupMZ,
+          verbose = verbose
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "openms",
+        developer = "Oliver Kohlbacher",
+        contact = "oliver.kohlbacher@uni-tuebingen.de",
+        link = "https://openms.de/",
+        doi = "https://doi.org/10.1038/nmeth.3959"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")

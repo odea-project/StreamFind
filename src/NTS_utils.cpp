@@ -224,10 +224,28 @@ Rcpp::List nts::calculate_gaussian_fit(const std::string &ft,
 
   size_t max_position = nts::find_max_index(intensity);
   const float max_intensity = intensity[max_position];
-
-  const size_t min_position = nts::find_min_index(intensity);
-  noise = intensity[min_position];
-  sn = max_intensity / noise;
+  
+  const std::vector<float> left_intensity = std::vector<float>(intensity.begin(), intensity.begin() + max_position);
+  const size_t min_left_position = nts::find_min_index(left_intensity);
+  const float noise_left = left_intensity[min_left_position];
+  const float sn_left = max_intensity / noise_left;
+  
+  const std::vector<float> right_intensity = std::vector<float>(intensity.begin() + max_position, intensity.end());
+  const size_t min_right_position = nts::find_min_index(right_intensity);
+  const float noise_right = right_intensity[min_right_position];
+  const float sn_right = max_intensity / noise_right;
+  
+  if (sn_left > sn_right)
+  {
+    noise = noise_right;
+    sn = sn_right;
+  }
+  else
+  {
+    noise = noise_left;
+    sn = sn_left;
+  }
+  
   noise = round(noise);
   sn = round(sn * 10) / 10;
   quality["noise"] = noise;

@@ -9,9 +9,11 @@ MassSpecSettings_SmoothSpectra_savgol(fl = 11, forder = 4, dorder = 0)
 \arguments{
 \item{fl}{Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.}
 
-\item{forder}{Numeric (length 1) with the order of the filter (2 = quadratic filter, 4 = quartic).}
+\item{forder}{Numeric (length 1) with the order of the filter
+(2 = quadratic filter, 4 = quartic).}
 
-\item{dorder}{Numeric (length 1) with the order of the derivative (0 = smoothing, 1 = first derivative, etc.).}
+\item{dorder}{Numeric (length 1) with the order of the derivative
+(0 = smoothing, 1 = first derivative, etc.).}
 }
 \value{
 A MassSpecSettings_SmoothSpectra_savgol object.

@@ -33,6 +33,6 @@ MassSpecSettings_IntegrateSpectra_StreamFind(
 A MassSpecSettings_IntegrateSpectra_StreamFind object.
 }
 \description{
-Integrates Spectra using the function \code{findpeaks} from the package \pkg{pracma} with natively
-added peak exclusion and evaluation steps.
+Integrates Spectra using the function \code{findpeaks} from the package \pkg{pracma}
+with natively added peak exclusion and evaluation steps.
 }

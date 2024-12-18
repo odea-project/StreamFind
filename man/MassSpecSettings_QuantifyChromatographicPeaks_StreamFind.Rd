@@ -12,12 +12,13 @@ MassSpecSettings_QuantifyChromatographicPeaks_StreamFind(
 )
 }
 \arguments{
-\item{calibration}{Numeric with the calibration/concentration values for each analysis. When concentration is not
-know use NA_real_.}
+\item{calibration}{Numeric with the calibration/concentration values for each analysis. When
+concentration is not know use NA_real_.}
 
 \item{value}{Character with the value to quantify. Possible values are \emph{intensity} or \emph{area}.}
 
-\item{model}{Character with the model to use for calibration. Possible values are \emph{linear}, \emph{quadratic}, or \emph{cubic}.}
+\item{model}{Character with the model to use for calibration. Possible values are \emph{linear},
+\emph{quadratic}, or \emph{cubic}.}
 }
 \value{
 A MassSpecSettings_QuantifyChromatographicPeaks_StreamFind object.

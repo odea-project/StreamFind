@@ -1,12 +1,7 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_IntegrateSpectra_StreamFind**
 #'
-#' @description Integrates Spectra using the function `findpeaks` from the package \pkg{pracma} with natively 
-#' added peak exclusion and evaluation steps.
+#' @description Integrates Spectra using the function `findpeaks` from the package \pkg{pracma}
+#' with natively added peak exclusion and evaluation steps.
 #' 
 #' @param merge Logical (length 1) indicating if the nearby peaks should be merged.
 #' @param closeByThreshold Numeric (length 1) with the maximum distance between peaks to be merged.
@@ -20,7 +15,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_IntegrateSpectra_StreamFind <- S7::new_class("MassSpecSettings_IntegrateSpectra_StreamFind",
+MassSpecSettings_IntegrateSpectra_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_IntegrateSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -32,28 +28,30 @@ MassSpecSettings_IntegrateSpectra_StreamFind <- S7::new_class("MassSpecSettings_
                          maxPeakWidth = 120,
                          minSN = 10) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "IntegrateSpectra",
-      required = "LoadSpectra",
-      algorithm = "StreamFind",
-      parameters = list(
-        merge = merge,
-        closeByThreshold = closeByThreshold,
-        minPeakHeight = minPeakHeight,
-        minPeakDistance = minPeakDistance,
-        minPeakWidth = minPeakWidth,
-        maxPeakWidth = maxPeakWidth,
-        minSN = minSN
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "IntegrateSpectra",
+        required = "LoadSpectra",
+        algorithm = "StreamFind",
+        parameters = list(
+          merge = merge,
+          closeByThreshold = closeByThreshold,
+          minPeakHeight = minPeakHeight,
+          minPeakDistance = minPeakDistance,
+          minPeakWidth = minPeakWidth,
+          maxPeakWidth = maxPeakWidth,
+          minSN = minSN
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {

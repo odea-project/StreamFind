@@ -1,7 +1,3 @@
-# ______________________________________________________________________________________________________________________
-# genform -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_GenerateFormulas_genform**
 #'
 #' @description Settings for generating formulas using the algorithm \href{https://sourceforge.net/projects/genform/}{GenForm}.
@@ -65,7 +61,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_GenerateFormulas_genform",
+MassSpecSettings_GenerateFormulas_genform <- S7::new_class(
+  name = "MassSpecSettings_GenerateFormulas_genform",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(MSPeakListsClusterMzWindow = 0.005,
@@ -92,45 +89,47 @@ MassSpecSettings_GenerateFormulas_genform <- S7::new_class("MassSpecSettings_Gen
                          timeout = 120,
                          topMost = 50,
                          batchSize = 8) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "GenerateFormulas",
-      required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
-      algorithm = "genform",
-      parameters = list(
-        MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
-        MSPeakListsTopMost = MSPeakListsTopMost,
-        MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
-        MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
-        MSPeakListsAvgFun = MSPeakListsAvgFun,
-        MSPeakListsMethod = MSPeakListsMethod,
-        relMzDev = as.numeric(relMzDev),
-        elements = as.character(elements),
-        hetero = as.logical(hetero),
-        oc = as.logical(oc),
-        thrMS = as.numeric(thrMS),
-        thrMSMS = as.numeric(thrMSMS),
-        thrComb = as.numeric(thrComb),
-        maxCandidates = as.numeric(maxCandidates),
-        extraOpts = as.character(extraOpts),
-        calculateFeatures = as.logical(calculateFeatures),
-        featThreshold = as.numeric(featThreshold),
-        featThresholdAnn = as.numeric(featThresholdAnn),
-        absAlignMzDev = as.numeric(absAlignMzDev),
-        MSMode = as.character(MSMode),
-        isolatePrec = as.logical(isolatePrec),
-        timeout = as.numeric(timeout),
-        topMost = as.integer(topMost),
-        batchSize = as.integer(batchSize)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "GenForm",
-      developer = "Markus Meringer",
-      contact = "Markus.Meringer@Uni-Bayreuth.De",
-      link = "https://sourceforge.net/projects/genform/",
-      doi = "MATCH Commun. Math. Comput. Chem 65.2 (2011): 259-290."
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "GenerateFormulas",
+        required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
+        algorithm = "genform",
+        parameters = list(
+          MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
+          MSPeakListsTopMost = MSPeakListsTopMost,
+          MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
+          MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
+          MSPeakListsAvgFun = MSPeakListsAvgFun,
+          MSPeakListsMethod = MSPeakListsMethod,
+          relMzDev = as.numeric(relMzDev),
+          elements = as.character(elements),
+          hetero = as.logical(hetero),
+          oc = as.logical(oc),
+          thrMS = as.numeric(thrMS),
+          thrMSMS = as.numeric(thrMSMS),
+          thrComb = as.numeric(thrComb),
+          maxCandidates = as.numeric(maxCandidates),
+          extraOpts = as.character(extraOpts),
+          calculateFeatures = as.logical(calculateFeatures),
+          featThreshold = as.numeric(featThreshold),
+          featThresholdAnn = as.numeric(featThresholdAnn),
+          absAlignMzDev = as.numeric(absAlignMzDev),
+          MSMode = as.character(MSMode),
+          isolatePrec = as.logical(isolatePrec),
+          timeout = as.numeric(timeout),
+          topMost = as.integer(topMost),
+          batchSize = as.integer(batchSize)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "GenForm",
+        developer = "Markus Meringer",
+        contact = "Markus.Meringer@Uni-Bayreuth.De",
+        link = "https://sourceforge.net/projects/genform/",
+        doi = "MATCH Commun. Math. Comput. Chem 65.2 (2011): 259-290."
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")

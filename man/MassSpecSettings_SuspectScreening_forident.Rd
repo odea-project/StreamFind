@@ -31,7 +31,8 @@ to be saved in the \code{path}.}
 A \code{MassSpecSettings_SuspectScreening_forident} object.
 }
 \description{
-Settings for performing suspect screening using the \href{https://water.for-ident.org/}{FOR-IDENT} platform.
+Settings for performing suspect screening using the
+\href{https://water.for-ident.org/}{FOR-IDENT} platform.
 }
 \note{
 After processing, a .txt file as defined by name and path is created with the

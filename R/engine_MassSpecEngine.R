@@ -1,14 +1,16 @@
 # MARK: MassSpecEngine
 #' **MassSpecEngine** R6 class and methods
 #'
-#' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and storing mass
-#' spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection)
-#' can be loaded from mzML and mzXML formats. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
-#' is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor 
-#' formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
+#' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
+#' storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
+#' chromatograms produced by UV detection) can be loaded from mzML and mzXML formats. If
+#' `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and
+#' found via CLI (i.e., must be added to the environmental variables), the engine can also load
+#' vendor formats by direct conversion to mzML. Note that conversion of vendor formats is only
+#' possible under Windows OS.
 #'
-#' @details The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target
-#' Screening (NTS) data processing workflows.
+#' @details The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
+#' assembly of Non-Target Screening (NTS) data processing workflows.
 #'
 #' @template arg-headers
 #' @template arg-workflow
@@ -62,6 +64,7 @@
 #' @template arg-xlim-ylim
 #' @template arg-showText
 #' @template arg-settings
+#' @template arg-ms-correctSuppression
 #'
 #' @references
 #' \insertRef{patroon01}{StreamFind}
@@ -551,10 +554,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     ## __ get_groups -----
     #' @description Gets a data.table with feature groups from the analyses.
     #'
-    #' @param sdValues Logical (length 1). Set to `TRUE` for returning the sd values when averaging the intensity
-    #' within analysis replicates.
-    #' @param metadata Logical (length 1). Set to `TRUE` for returning extra metadata from feature groups
-    #' (e.g., presence in each analysis replicate and mass and time widths).
+    #' @param sdValues Logical (length 1). Set to `TRUE` for returning the sd values when averaging
+    #' the intensity within analysis replicates.
+    #' @param metadata Logical (length 1). Set to `TRUE` for returning extra metadata from feature
+    #' groups (e.g., presence in each analysis replicate and mass and time widths).
     #'
     get_groups = function(groups = NULL,
                           mass = NULL,
@@ -568,11 +571,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                           intensities = TRUE,
                           average = FALSE,
                           sdValues = FALSE,
-                          metadata = FALSE) {
+                          metadata = FALSE,
+                          correctSuppression = FALSE) {
       StreamFind::get_groups(
         self$analyses,
         groups, mass, mz, rt, mobility, ppm, sec, millisec,
-        filtered, intensities, average, sdValues, metadata
+        filtered, intensities, average, sdValues, metadata,
+        correctSuppression
       )
     },
     
@@ -1674,8 +1679,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     ## ___ plot_groups_profile -----
     #' @description Method to plot the intensity profile of feature groups across the analyses.
     #'
-    #' @param correctSuppression Logical (length 1). When `TRUE` and suppression factor is available 
-    #' the intensities are corrected for suppression.
     #' @param normalized Logical (length 1). When `TRUE` the profile intensities are normalized.
     #'
     plot_groups_profile = function(analyses = NULL,

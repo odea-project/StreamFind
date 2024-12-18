@@ -1,7 +1,3 @@
-# ______________________________________________________________________________________________________________________
-# metfrag -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_GenerateCompounds_metfrag**
 #'
 #' @description Settings for generating compounds using \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}.
@@ -66,7 +62,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class("MassSpecSettings_GenerateCompounds_metfrag",
+MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class(
+  name = "MassSpecSettings_GenerateCompounds_metfrag",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(MSPeakListsClusterMzWindow = 0.005,
@@ -87,49 +84,55 @@ MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class("MassSpecSettings_Ge
                          database = "comptox",
                          extendedPubChem = FALSE,
                          chemSpiderToken = "",
-                         scoreTypes = patRoon::compoundScorings("metfrag", "comptox", onlyDefault = TRUE)$name,
+                         scoreTypes = patRoon::compoundScorings(
+                           "metfrag",
+                           "comptox",
+                           onlyDefault = TRUE
+                         )$name,
                          scoreWeights = 1,
                          preProcessingFilters = c("UnconnectedCompoundFilter", "IsotopeFilter"),
                          postProcessingFilters = c("InChIKeyFilter"),
                          maxCandidatesToStop = 100) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "GenerateCompounds",
-      required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
-      algorithm = "metfrag",
-      parameters = list(
-        MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
-        MSPeakListsTopMost = MSPeakListsTopMost,
-        MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
-        MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
-        MSPeakListsAvgFun = MSPeakListsAvgFun,
-        MSPeakListsMethod = MSPeakListsMethod,
-        method = as.character(method),
-        timeout = as.numeric(timeout),
-        timeoutRetries = as.numeric(timeoutRetries),
-        errorRetries = as.numeric(errorRetries),
-        topMost = as.numeric(topMost),
-        dbRelMzDev = as.numeric(dbRelMzDev),
-        fragRelMzDev = as.numeric(fragRelMzDev),
-        fragAbsMzDev = as.numeric(fragAbsMzDev),
-        adduct = as.character(adduct),
-        database = as.character(database),
-        extendedPubChem = as.character(extendedPubChem),
-        chemSpiderToken = as.character(chemSpiderToken),
-        scoreTypes = as.character(scoreTypes),
-        scoreWeights = as.numeric(scoreWeights),
-        preProcessingFilters = as.character(preProcessingFilters),
-        postProcessingFilters = as.character(postProcessingFilters),
-        maxCandidatesToStop = as.numeric(maxCandidatesToStop)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "MetFrag",
-      developer = "Christoph Ruttkies and Emma L. Schymanski",
-      contact = "cruttkie@ipb-halle.de",
-      link = "https://ipb-halle.github.io/MetFrag/",
-      doi = "https://doi.org/10.1186/s13321-016-0115-9"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "GenerateCompounds",
+        required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
+        algorithm = "metfrag",
+        parameters = list(
+          MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
+          MSPeakListsTopMost = MSPeakListsTopMost,
+          MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
+          MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
+          MSPeakListsAvgFun = MSPeakListsAvgFun,
+          MSPeakListsMethod = MSPeakListsMethod,
+          method = as.character(method),
+          timeout = as.numeric(timeout),
+          timeoutRetries = as.numeric(timeoutRetries),
+          errorRetries = as.numeric(errorRetries),
+          topMost = as.numeric(topMost),
+          dbRelMzDev = as.numeric(dbRelMzDev),
+          fragRelMzDev = as.numeric(fragRelMzDev),
+          fragAbsMzDev = as.numeric(fragAbsMzDev),
+          adduct = as.character(adduct),
+          database = as.character(database),
+          extendedPubChem = as.character(extendedPubChem),
+          chemSpiderToken = as.character(chemSpiderToken),
+          scoreTypes = as.character(scoreTypes),
+          scoreWeights = as.numeric(scoreWeights),
+          preProcessingFilters = as.character(preProcessingFilters),
+          postProcessingFilters = as.character(postProcessingFilters),
+          maxCandidatesToStop = as.numeric(maxCandidatesToStop)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "MetFrag",
+        developer = "Christoph Ruttkies and Emma L. Schymanski",
+        contact = "cruttkie@ipb-halle.de",
+        link = "https://ipb-halle.github.io/MetFrag/",
+        doi = "https://doi.org/10.1186/s13321-016-0115-9"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -150,7 +153,10 @@ MassSpecSettings_GenerateCompounds_metfrag <- S7::new_class("MassSpecSettings_Ge
     checkmate::assert_number(self@parameters$fragRelMzDev)
     checkmate::assert_number(self@parameters$fragAbsMzDev)
     checkmate::assert_character(self@parameters$adduct, null.ok = TRUE)
-    checkmate::assert_choice(self@parameters$database, c("pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv", "csv"))
+    checkmate::assert_choice(
+      self@parameters$database,
+      c("pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv", "csv")
+    )
     checkmate::assert_choice(self@parameters$extendedPubChem, c("auto", TRUE, FALSE))
     checkmate::assert_character(self@parameters$chemSpiderToken)
     checkmate::assert_character(self@parameters$scoreTypes, min.len = 1)
@@ -311,7 +317,9 @@ S7::method(run, MassSpecSettings_GenerateCompounds_metfrag) <- function(x, engin
   
   engine$nts <- nts
   
-  message(paste0("\U2713 ", length(compounds), " compounds generated and added to the feature list!"))
+  message(
+    paste0("\U2713 ", length(compounds), " compounds generated and added to the feature list!")
+  )
   
   TRUE
 }

@@ -1,42 +1,41 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_DeconvoluteSpectra_StreamFind**
 #'
-#' @description Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after assignment of charges.
+#' @description Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after
+#' assignment of charges.
 #' 
 #' @param clustVal Numeric (length 1) with the clustering value for the charge deconvolution.
-#' @param window Optional numeric (length 1) with the window in \emph{m/z} for collecting traces of a given charge.
+#' @param window Optional numeric (length 1) with the window in \emph{m/z} for collecting traces of
+#' a given charge.
 #'
 #' @return A MassSpecSettings_DeconvoluteSpectra_StreamFind object.
 #'
 #' @export
 #'
-MassSpecSettings_DeconvoluteSpectra_StreamFind <- S7::new_class("MassSpecSettings_DeconvoluteSpectra_StreamFind",
+MassSpecSettings_DeconvoluteSpectra_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_DeconvoluteSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(clustVal = 0.1, window = 20) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "DeconvoluteSpectra",
-      required = c("LoadSpectra", "CalculateSpectraCharges"),
-      algorithm = "StreamFind",
-      parameters = list(
-        clustVal = as.numeric(clustVal),
-        window = as.numeric(window)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "DeconvoluteSpectra",
+        required = c("LoadSpectra", "CalculateSpectraCharges"),
+        algorithm = "StreamFind",
+        parameters = list(
+          clustVal = as.numeric(clustVal),
+          window = as.numeric(window)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -139,7 +138,9 @@ S7::method(run, MassSpecSettings_DeconvoluteSpectra_StreamFind) <- function(x, e
     
     setnames(av_profile, "mz", "mass")
     
-    if (FALSE) plot(av_profile$mass, av_profile$intensity, type = 'l', main = paste0("Merged spectra"))
+    if (FALSE) {
+      plot(av_profile$mass, av_profile$intensity, type = 'l', main = paste0("Merged spectra"))
+    }
     
     av_profile
     

@@ -33,6 +33,7 @@ MassSpecSettings_IntegrateChromatograms_StreamFind(
 A MassSpecSettings_IntegrateChromatograms_StreamFind object.
 }
 \description{
-Integrates chromatograms using the function \code{findpeaks} from the package \pkg{pracma} with natively
+Integrates chromatograms using the function \code{findpeaks} from the package
+\pkg{pracma} with natively
 added peak exclusion and evaluation steps.
 }

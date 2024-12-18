@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# minmax -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_NormalizeSpectra_minmax**
 #'
 #' @description Normalizes spectra using the min-max algorithm.
@@ -11,26 +6,29 @@
 #'
 #' @export
 #'
-MassSpecSettings_NormalizeSpectra_minmax <- S7::new_class("MassSpecSettings_NormalizeSpectra_minmax",
+MassSpecSettings_NormalizeSpectra_minmax <- S7::new_class(
+  name = "MassSpecSettings_NormalizeSpectra_minmax",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function() {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "NormalizeSpectra",
-      required = "LoadSpectra",
-      algorithm = "minmax",
-      parameters = list(),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "NormalizeSpectra",
+        required = "LoadSpectra",
+        algorithm = "minmax",
+        parameters = list(),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -94,10 +92,6 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_minmax) <- function(x, engine 
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# snv -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_NormalizeSpectra_snv**
 #'
 #' @description Normalizes spectra using the Standard Normal Variate (SNV) algorithm.
@@ -108,26 +102,29 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_minmax) <- function(x, engine 
 #'
 #' @export
 #'
-MassSpecSettings_NormalizeSpectra_snv <- S7::new_class("MassSpecSettings_NormalizeSpectra_snv",
+MassSpecSettings_NormalizeSpectra_snv <- S7::new_class(
+  name = "MassSpecSettings_NormalizeSpectra_snv",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(liftTozero = FALSE) {
   
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "NormalizeSpectra",
-      required = "LoadSpectra",
-      algorithm = "snv",
-      parameters = list(liftTozero = liftTozero),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = NA_character_,
-      developer = "J\u00FCrgen Schram",
-      contact = "schram@hsnr.de",
-      link = NA_character_,
-      doi = "10.1016/j.trac.2018.12.004"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "NormalizeSpectra",
+        required = "LoadSpectra",
+        algorithm = "snv",
+        parameters = list(liftTozero = liftTozero),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = NA_character_,
+        developer = "J\u00FCrgen Schram",
+        contact = "schram@hsnr.de",
+        link = NA_character_,
+        doi = "10.1016/j.trac.2018.12.004"
+      )
+    )
   },
   
   validator = function(self) {
@@ -200,10 +197,6 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_snv) <- function(x, engine = N
   
 }
 
-# ______________________________________________________________________________________________________________________
-# scale -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_NormalizeSpectra_scale**
 #'
 #' @description Normalizes spectra using scaling based on the standard deviation.
@@ -212,26 +205,29 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_snv) <- function(x, engine = N
 #'
 #' @export
 #'
-MassSpecSettings_NormalizeSpectra_scale <- S7::new_class("MassSpecSettings_NormalizeSpectra_scale",
+MassSpecSettings_NormalizeSpectra_scale <- S7::new_class(
+  name = "MassSpecSettings_NormalizeSpectra_scale",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function() {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "NormalizeSpectra",
-      required = "LoadSpectra",
-      algorithm = "scale",
-      parameters = list(),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "NormalizeSpectra",
+        required = "LoadSpectra",
+        algorithm = "scale",
+        parameters = list(),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -295,10 +291,6 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_scale) <- function(x, engine =
   
 }
 
-# ______________________________________________________________________________________________________________________
-# blockweight -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_NormalizeSpectra_blockweight**
 #'
 #' @description Normalizes spectra using block weighting for downstream data evaluation.
@@ -307,26 +299,29 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_scale) <- function(x, engine =
 #'
 #' @export
 #'
-MassSpecSettings_NormalizeSpectra_blockweight <- S7::new_class("MassSpecSettings_NormalizeSpectra_blockweight",
+MassSpecSettings_NormalizeSpectra_blockweight <- S7::new_class(
+  name = "MassSpecSettings_NormalizeSpectra_blockweight",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function() {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "NormalizeSpectra",
-      required = "LoadSpectra",
-      algorithm = "blockweight",
-      parameters = list(),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "NormalizeSpectra",
+        required = "LoadSpectra",
+        algorithm = "blockweight",
+        parameters = list(),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -386,10 +381,6 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_blockweight) <- function(x, en
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# meancenter -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_NormalizeSpectra_meancenter**
 #'
 #' @description Normalizes spectra using mean centering.
@@ -398,26 +389,29 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_blockweight) <- function(x, en
 #'
 #' @export
 #'
-MassSpecSettings_NormalizeSpectra_meancenter <- S7::new_class("MassSpecSettings_NormalizeSpectra_meancenter",
+MassSpecSettings_NormalizeSpectra_meancenter <- S7::new_class(
+  name = "MassSpecSettings_NormalizeSpectra_meancenter",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function() {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "NormalizeSpectra",
-      required = "LoadSpectra",
-      algorithm = "meancenter",
-      parameters = list(),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "NormalizeSpectra",
+        required = "LoadSpectra",
+        algorithm = "meancenter",
+        parameters = list(),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -477,6 +471,4 @@ S7::method(run, MassSpecSettings_NormalizeSpectra_meancenter) <- function(x, eng
   engine$spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra normalized!"))
   TRUE
-  
-  
 }

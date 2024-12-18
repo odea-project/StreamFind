@@ -12,11 +12,13 @@ MassSpecSettings_SuspectScreening_patRoon(
 )
 }
 \arguments{
-\item{suspects}{A data.frame with suspect information. See section Suspect list format in \link[patRoon]{screenSuspects} for more information.}
+\item{suspects}{A data.frame with suspect information. See section Suspect list format in
+\link[patRoon]{screenSuspects} for more information.}
 
-\item{rtWindow}{The retention time window (in seconds) that will be used for matching a suspect (+/- feature data).}
+\item{rtWindow}{The retention time window (in seconds) that will be used for matching a
+suspect (+/- feature data).}
 
-\item{mzWindow}{The m/z window that will be used for matching a suspect (+/- feature data)..}
+\item{mzWindow}{The m/z window that will be used for matching a suspect (+/- feature data).}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 }
@@ -24,7 +26,8 @@ MassSpecSettings_SuspectScreening_patRoon(
 A \code{MassSpecSettings_SuspectScreening_patRoon} object.
 }
 \description{
-Settings for performing suspect screening using the function \link[patRoon]{screenSuspects} from the patRoon R package.
+Settings for performing suspect screening using the function
+\link[patRoon]{screenSuspects} from the patRoon R package.
 }
 \references{
 \insertRef{patroon01}{StreamFind}

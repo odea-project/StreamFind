@@ -45,7 +45,8 @@ with the algorithm \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/D
 The function uses the package \pkg{patRoon} in the background.
 }
 \details{
-See the \link[patRoon]{groupFeaturesOpenMS} function from the \pkg{patRoon} package for more information and requirements.
+See the \link[patRoon]{groupFeaturesOpenMS} function from the \pkg{patRoon} package for
+more information and requirements.
 }
 \references{
 \insertRef{patroon01}{StreamFind}

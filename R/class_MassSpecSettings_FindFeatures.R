@@ -1,7 +1,3 @@
-# ______________________________________________________________________________________________________________________
-# utility functions -----
-# ______________________________________________________________________________________________________________________
-
 #' @noRd
 .run_find_features_patRoon <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
@@ -36,15 +32,18 @@
   algorithm <- x$algorithm
 
   if (grepl("_", algorithm, fixed = FALSE)) algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
-
+  
+  parameters <- x$parameters
+  
   if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
     if (!requireNamespace("xcms")) {
       warning("xcms package is not installed!")
       return(FALSE)
     }
+    if (x@method %in% "FindFeatures") {
+      parameters <- do.call(xcms::CentWaveParam, x$parameters)
+    }
   }
-
-  parameters <- x$parameters
 
   if (any(grepl("class|Class", names(parameters)))) {
     parameters[["Class"]] <- parameters$class
@@ -202,10 +201,6 @@
   }
 }
 
-# ______________________________________________________________________________________________________________________
-# xcms_centwave -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FindFeatures_xcms3_centwave**
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files using the package
@@ -250,7 +245,8 @@
 #' passed to convolve rather than the default "reflect" method.
 #' See https://github.com/sneumann/xcms/issues/445 for more information.
 #'
-#' @details See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
+#' @details See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for
+#' more information and requirements.
 #'
 #' @return A `MassSpecSettings_FindFeatures_xcms3_centwave` object.
 #'
@@ -267,7 +263,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_FindFeatures_xcms3_centwave",
+MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class(
+  name = "MassSpecSettings_FindFeatures_xcms3_centwave",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(ppm = 12,
@@ -282,33 +279,35 @@ MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_
                          verboseColumns = TRUE,
                          firstBaselineCheck = FALSE,
                          extendLengthMSW = FALSE) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FindFeatures",
-      required = NA_character_,
-      algorithm = "xcms3_centwave",
-      parameters = list(
-        ppm = as.numeric(ppm),
-        peakwidth = as.numeric(peakwidth),
-        snthresh = as.numeric(snthresh),
-        prefilter = as.numeric(prefilter),
-        mzCenterFun = as.character(mzCenterFun),
-        integrate = as.numeric(integrate),
-        mzdiff = as.numeric(mzdiff),
-        fitgauss = as.logical(fitgauss),
-        noise = as.numeric(noise),
-        verboseColumns = as.logical(verboseColumns),
-        firstBaselineCheck = as.logical(firstBaselineCheck),
-        extendLengthMSW = as.logical(extendLengthMSW)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "xcms",
-      developer = "Ralf Tautenhahn, Johannes Rainer",
-      contact = "rtautenh@ipb-halle.de",
-      link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
-      doi = "https://doi.org/10.1186/1471-2105-9-504"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FindFeatures",
+        required = NA_character_,
+        algorithm = "xcms3_centwave",
+        parameters = list(
+          ppm = as.numeric(ppm),
+          peakwidth = as.numeric(peakwidth),
+          snthresh = as.numeric(snthresh),
+          prefilter = as.numeric(prefilter),
+          mzCenterFun = as.character(mzCenterFun),
+          integrate = as.numeric(integrate),
+          mzdiff = as.numeric(mzdiff),
+          fitgauss = as.logical(fitgauss),
+          noise = as.numeric(noise),
+          verboseColumns = as.logical(verboseColumns),
+          firstBaselineCheck = as.logical(firstBaselineCheck),
+          extendLengthMSW = as.logical(extendLengthMSW)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "xcms",
+        developer = "Ralf Tautenhahn, Johannes Rainer",
+        contact = "rtautenh@ipb-halle.de",
+        link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
+        doi = "https://doi.org/10.1186/1471-2105-9-504"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -319,7 +318,7 @@ MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_
     checkmate::assert_numeric(self@parameters$snthresh, len = 1)
     checkmate::assert_numeric(self@parameters$prefilter, len = 2)
     checkmate::assert_choice(self@parameters$mzCenterFun, c("wMean", "mean", "apex", "wMeanApex3", "meanApex3"))
-    checkmate::assert_integer(self@parameters$integrate, len = 1)
+    checkmate::assert_numeric(self@parameters$integrate, len = 1)
     checkmate::assert_numeric(self@parameters$mzdiff, len = 1)
     checkmate::assert_logical(self@parameters$fitgauss, len = 1)
     checkmate::assert_numeric(self@parameters$noise, len = 1)
@@ -335,10 +334,6 @@ MassSpecSettings_FindFeatures_xcms3_centwave <- S7::new_class("MassSpecSettings_
 S7::method(run, MassSpecSettings_FindFeatures_xcms3_centwave) <- function(x, engine = NULL) {
   .run_find_features_patRoon(x, engine)
 }
-
-# ______________________________________________________________________________________________________________________
-# xcms3_matchedfilter -----
-# ______________________________________________________________________________________________________________________
 
 #' **MassSpecSettings_FindFeatures_xcms3_matchedfilter**
 #'
@@ -390,7 +385,8 @@ S7::method(run, MassSpecSettings_FindFeatures_xcms3_centwave) <- function(x, eng
 #'
 #' @export
 #'
-MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class("MassSpecSettings_FindFeatures_xcms3_matchedfilter",
+MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class(
+  name = "MassSpecSettings_FindFeatures_xcms3_matchedfilter",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(binSize = 0.5,
@@ -403,33 +399,35 @@ MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class("MassSpecSett
                          steps = 2,
                          mzdiff = 0.5,
                          index = FALSE) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FindFeatures",
-      required = NA_character_,
-      algorithm = "xcms3_matchedfilter",
-      parameters = list(
-        class = as.character("MatchedFilterParam"),
-        binSize = as.numeric(binSize),
-        impute = as.character(impute),
-        baseValue = as.numeric(baseValue),
-        distance = as.numeric(distance),
-        fwhm = as.numeric(fwhm),
-        sigma = as.numeric(fwhm / 2.3548),
-        max = as.numeric(max),
-        snthresh = as.numeric(snthresh),
-        steps = as.numeric(steps),
-        mzdiff = as.numeric(mzdiff),
-        index = as.logical(index)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "xcms",
-      developer = "Ralf Tautenhahn, Johannes Rainer",
-      contact = "rtautenh@ipb-halle.de",
-      link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
-      doi = "https://doi.org/10.1186/1471-2105-9-504"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FindFeatures",
+        required = NA_character_,
+        algorithm = "xcms3_matchedfilter",
+        parameters = list(
+          class = as.character("MatchedFilterParam"),
+          binSize = as.numeric(binSize),
+          impute = as.character(impute),
+          baseValue = as.numeric(baseValue),
+          distance = as.numeric(distance),
+          fwhm = as.numeric(fwhm),
+          sigma = as.numeric(fwhm / 2.3548),
+          max = as.numeric(max),
+          snthresh = as.numeric(snthresh),
+          steps = as.numeric(steps),
+          mzdiff = as.numeric(mzdiff),
+          index = as.logical(index)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "xcms",
+        developer = "Ralf Tautenhahn, Johannes Rainer",
+        contact = "rtautenh@ipb-halle.de",
+        link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
+        doi = "https://doi.org/10.1186/1471-2105-9-504"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -454,10 +452,6 @@ MassSpecSettings_FindFeatures_xcms3_matchedfilter <- S7::new_class("MassSpecSett
 S7::method(run, MassSpecSettings_FindFeatures_xcms3_matchedfilter) <- function(x, engine = NULL) {
   .run_find_features_patRoon(x, engine)
 }
-
-# ______________________________________________________________________________________________________________________
-# openms -----
-# ______________________________________________________________________________________________________________________
 
 #' **MassSpecSettings_FindFeatures_openms**
 #'
@@ -533,7 +527,8 @@ S7::method(run, MassSpecSettings_FindFeatures_xcms3_matchedfilter) <- function(x
 #'
 #' @export
 #'
-MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeatures_openms",
+MassSpecSettings_FindFeatures_openms <- S7::new_class(
+  name = "MassSpecSettings_FindFeatures_openms",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(noiseThrInt = 1000,
@@ -558,43 +553,45 @@ MassSpecSettings_FindFeatures_openms <- S7::new_class("MassSpecSettings_FindFeat
                          intSearchRTWindow = 3,
                          useFFMIntensities = FALSE,
                          verbose = FALSE) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FindFeatures",
-      required = NA_character_,
-      algorithm = "openms",
-      parameters = list(
-        noiseThrInt = noiseThrInt,
-        chromSNR = chromSNR,
-        chromFWHM = chromFWHM,
-        mzPPM = mzPPM,
-        reEstimateMTSD = reEstimateMTSD,
-        traceTermCriterion = traceTermCriterion,
-        traceTermOutliers = traceTermOutliers,
-        minSampleRate = minSampleRate,
-        minTraceLength = minTraceLength,
-        maxTraceLength = maxTraceLength,
-        widthFiltering = widthFiltering,
-        minFWHM = minFWHM,
-        maxFWHM = maxFWHM,
-        traceSNRFiltering = traceSNRFiltering,
-        localRTRange = localRTRange,
-        localMZRange = localMZRange,
-        isotopeFilteringModel = isotopeFilteringModel,
-        MZScoring13C = MZScoring13C,
-        useSmoothedInts = useSmoothedInts,
-        intSearchRTWindow = intSearchRTWindow,
-        useFFMIntensities = useFFMIntensities,
-        verbose = verbose
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "openms",
-      developer = "Oliver Kohlbacher",
-      contact = "oliver.kohlbacher@uni-tuebingen.de",
-      link = "https://openms.de/",
-      doi = "https://doi.org/10.1038/nmeth.3959"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FindFeatures",
+        required = NA_character_,
+        algorithm = "openms",
+        parameters = list(
+          noiseThrInt = noiseThrInt,
+          chromSNR = chromSNR,
+          chromFWHM = chromFWHM,
+          mzPPM = mzPPM,
+          reEstimateMTSD = reEstimateMTSD,
+          traceTermCriterion = traceTermCriterion,
+          traceTermOutliers = traceTermOutliers,
+          minSampleRate = minSampleRate,
+          minTraceLength = minTraceLength,
+          maxTraceLength = maxTraceLength,
+          widthFiltering = widthFiltering,
+          minFWHM = minFWHM,
+          maxFWHM = maxFWHM,
+          traceSNRFiltering = traceSNRFiltering,
+          localRTRange = localRTRange,
+          localMZRange = localMZRange,
+          isotopeFilteringModel = isotopeFilteringModel,
+          MZScoring13C = MZScoring13C,
+          useSmoothedInts = useSmoothedInts,
+          intSearchRTWindow = intSearchRTWindow,
+          useFFMIntensities = useFFMIntensities,
+          verbose = verbose
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "openms",
+        developer = "Oliver Kohlbacher",
+        contact = "oliver.kohlbacher@uni-tuebingen.de",
+        link = "https://openms.de/",
+        doi = "https://doi.org/10.1038/nmeth.3959"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -632,10 +629,6 @@ S7::method(run, MassSpecSettings_FindFeatures_openms) <- function(x, engine = NU
   .run_find_features_patRoon(x, engine)
 }
 
-# ______________________________________________________________________________________________________________________
-# kpic2 -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FindFeatures_kpic2**
 #'
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files using the package
@@ -664,7 +657,8 @@ S7::method(run, MassSpecSettings_FindFeatures_openms) <- function(x, engine = NU
 #'
 #' @export
 #'
-MassSpecSettings_FindFeatures_kpic2 <- S7::new_class("MassSpecSettings_FindFeatures_kpic2",
+MassSpecSettings_FindFeatures_kpic2 <- S7::new_class(
+  name = "MassSpecSettings_FindFeatures_kpic2",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(level = 500,
@@ -673,27 +667,29 @@ MassSpecSettings_FindFeatures_kpic2 <- S7::new_class("MassSpecSettings_FindFeatu
                          width = 5,
                          min_snr = 4,
                          kmeans = TRUE) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FindFeatures",
-      required = NA_character_,
-      algorithm = "kpic2",
-      parameters = list(
-        kmeans = kmeans,
-        level = level,
-        mztol = mztol,
-        gap = gap,
-        width = width,
-        min_snr = min_snr
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "kpic2",
-      developer = "Hongchao Ji",
-      contact = "ji.hongchao@foxmail.com",
-      link = NA_character_,
-      doi = "10.1021/acs.analchem.7b01547"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FindFeatures",
+        required = NA_character_,
+        algorithm = "kpic2",
+        parameters = list(
+          kmeans = kmeans,
+          level = level,
+          mztol = mztol,
+          gap = gap,
+          width = width,
+          min_snr = min_snr
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "kpic2",
+        developer = "Hongchao Ji",
+        contact = "ji.hongchao@foxmail.com",
+        link = NA_character_,
+        doi = "10.1021/acs.analchem.7b01547"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
@@ -716,42 +712,42 @@ S7::method(run, MassSpecSettings_FindFeatures_kpic2) <- function(x, engine = NUL
   .run_find_features_patRoon(x, engine)
 }
 
-# ______________________________________________________________________________________________________________________
-# qalgorithms -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FindFeatures_qalgorithms**
 #'
 #' @description The qAlgorithms uses a comprehensive peak model developed by
 #' \href{https://doi.org/10.1021/acs.analchem.4c00494}{Renner et al.} to
 #' identify peaks within LC-MS data. More information can be found in the
 #' GitHub repository of the \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} project.
-#' The qAlgorithms is best used with profile data but centroid data is also possible. Yet, a mass uncertainty
-#' should by supplied in parts per million (ppm) to account for the m/z deviation in centroid data.
+#' The qAlgorithms is best used with profile data but centroid data is also possible. Yet, a mass
+#' uncertainty should by supplied in parts per million (ppm) to account for the m/z deviation in
+#' centroid data.
 #'
-#' @param ppm numeric(1) defining the maximal tolerated m/z deviation in parts per million (ppm) only applicable for
-#' centroid data. For profile data, the ppm value is ignored.
+#' @param ppm numeric(1) defining the maximal tolerated m/z deviation in parts per million (ppm)
+#' only applicable for centroid data. For profile data, the ppm value is ignored.
 #'
-#' @noRd
+#' @export
 #'
-MassSpecSettings_FindFeatures_qalgorithms <- S7::new_class("MassSpecSettings_FindFeatures_qalgorithms",
+MassSpecSettings_FindFeatures_qalgorithms <- S7::new_class(
+  name = "MassSpecSettings_FindFeatures_qalgorithms",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(ppm = 5) {
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "FindFeatures",
-      required = NA_character_,
-      algorithm = "qalgorithms",
-      parameters = list(ppm = ppm),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "qAlgorithms",
-      developer = "Gerrit Renner",
-      contact = "gerrit.renner@uni-due.de",
-      link = "https://github.com/odea-project/qAlgorithms",
-      doi = "10.1021/acs.analchem.4c00494"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "FindFeatures",
+        required = NA_character_,
+        algorithm = "qalgorithms",
+        parameters = list(ppm = ppm),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "qAlgorithms",
+        developer = "Gerrit Renner",
+        contact = "gerrit.renner@uni-due.de",
+        link = "https://github.com/odea-project/qAlgorithms",
+        doi = "10.1021/acs.analchem.4c00494"
+      )
+    )
   },
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")

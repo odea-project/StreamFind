@@ -78,7 +78,8 @@ Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files 
 \pkg{patRoon} in the background.
 }
 \details{
-See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
+See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for
+more information and requirements.
 }
 \references{
 \insertRef{patroon01}{StreamFind}

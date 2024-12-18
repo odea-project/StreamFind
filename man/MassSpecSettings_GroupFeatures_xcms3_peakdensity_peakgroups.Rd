@@ -98,7 +98,8 @@ the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}
 package \pkg{patRoon} in the background.
 }
 \details{
-See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
+See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for
+more information and requirements.
 }
 \references{
 \insertRef{patroon01}{StreamFind}

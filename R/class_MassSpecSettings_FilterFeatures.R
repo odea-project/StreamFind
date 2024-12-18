@@ -1,16 +1,25 @@
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FilterFeatures_StreamFind**
 #'
 #' @description Settings for filtering of features and feature groups.
 #'
+#' @template arg-ms-correctSuppression
 #' @param minSnRatio Numeric (length 1) with the minimum signal-to-noise ratio.
 #' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering annotated isotopes
 #' (only prevails the monoisotopic features).
 #' @param excludeAdducts Logical (length 1) with `TRUE` for filtering annotated adducts.
 #' @param minIntensity Numeric (length 1) with the minimum intensity threshold.
+#' @param maxDeviationInReplicate Numeric (length 1) with the maximum standard deviation of the
+#' intensity in each replicate group. The value must be a percentage from 0 to 100. The filter is
+#' applied if the minimum standard deviation from all replicates is above the value.
+#' @param minAbundanceInReplicate Numeric (length 1) with the minimum abundance in each replicate
+#' group. The filter is applied if the maximum abundance from all replicates is below the value.
+#' @param blankThreshold Numeric (length 1) with the intensity multiplier to set the blank
+#' threshold. The filter is applied if the maximum mean intensity from all non-blank replicates
+#' is below the correspondent blank intensity times the multiplier.
+#' @param blankSubtractionConservative Logical (length 1) with `TRUE` for conservative blank
+#' subtraction. The filter is applied if the maximum mean intensity from all non-blank replicates
+#' is below the correspondent blank intensity times the multiplier. When set to `FALSE` the filter
+#' is applied per replicate.
 #' @param onlyWithMS2 Logical (length 1) with `TRUE` for filtering features without MS2 spectra.
 #'
 #' @return A `MassSpecSettings_FilterFeatures_StreamFind` object.
@@ -18,13 +27,18 @@
 #' @export
 #'
 MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class(
-  "MassSpecSettings_FilterFeatures_StreamFind",
+  name = "MassSpecSettings_FilterFeatures_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
-  constructor = function(minSnRatio = NA_real_,
+  constructor = function(correctSuppression = TRUE,
+                         minSnRatio = NA_real_,
                          excludeIsotopes = FALSE,
                          excludeAdducts = FALSE,
                          minIntensity = NA_real_,
+                         maxDeviationInReplicate = NA_real_,
+                         minAbundanceInReplicate = NA_real_,
+                         blankThreshold = NA_real_,
+                         blankSubtractionConservative = TRUE,
                          onlyWithMS2 = FALSE) {
     S7::new_object(
       ProcessingSettings(
@@ -33,10 +47,15 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class(
         required = "FindFeatures",
         algorithm = "StreamFind",
         parameters = list(
+          correctSuppression = as.logical(correctSuppression),
           minSnRatio = as.numeric(minSnRatio),
           excludeIsotopes = as.logical(excludeIsotopes),
           excludeAdducts = as.logical(excludeAdducts),
           minIntensity = as.numeric(minIntensity),
+          maxDeviationInReplicate = as.numeric(maxDeviationInReplicate),
+          minAbundanceInReplicate = as.numeric(minAbundanceInReplicate),
+          blankThreshold = as.numeric(blankThreshold),
+          blankSubtractionConservative = as.logical(blankSubtractionConservative),
           onlyWithMS2 = as.logical(onlyWithMS2)
         ),
         number_permitted = Inf,
@@ -53,10 +72,20 @@ MassSpecSettings_FilterFeatures_StreamFind <- S7::new_class(
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FilterFeatures")
     checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_logical(self@parameters$correctSuppression, len = 1)
     checkmate::assert_numeric(self@parameters$minSnRatio, len = 1)
     checkmate::assert_logical(self@parameters$excludeIsotopes, len = 1)
     checkmate::assert_logical(self@parameters$excludeAdducts, len = 1)
     checkmate::assert_numeric(self@parameters$minIntensity, len = 1)
+    checkmate::assert_numeric(
+      self@parameters$maxDeviationInReplicate,
+      len = 1,
+      lower = 0,
+      upper = 100
+    )
+    checkmate::assert_numeric(self@parameters$minAbundanceInReplicate, len = 1)
+    checkmate::assert_numeric(self@parameters$blankThreshold, len = 1)
+    checkmate::assert_logical(self@parameters$blankSubtractionConservative, len = 1)
     checkmate::assert_logical(self@parameters$onlyWithMS2, len = 1)
     NULL
   }
@@ -86,6 +115,11 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   }
 
   parameters <- x$parameters
+  correctSuppression <- parameters$correctSuppression
+  parameters$correctSuppression <- NULL
+  blankSubtractionConservative <- parameters$blankSubtractionConservative
+  parameters$blankSubtractionConservative <- NULL
+  
   filters <- names(parameters)
   n_features <- sum(vapply(engine$nts$feature_list, function(x) sum(!x$filtered), 0))
 
@@ -151,9 +185,19 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
 
   .filter_minSnRatio <- function(value = 3, engine) {
     if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
+      
+      if (is.na(value) || value == 0) {
+        return()
+      }
+      
       if (engine$nts@has_groups) {
         rpl <- unique(engine$analyses$replicates)
-        groups <- engine$get_groups(filtered = FALSE, intensities = FALSE, average = TRUE, metadata = TRUE)
+        groups <- engine$get_groups(
+          filtered = FALSE,
+          intensities = FALSE,
+          average = TRUE,
+          metadata = TRUE
+        )
         if (any(!is.na(groups$sn))) {
           groups_sel <- groups$sn < value
           groups <- groups$group[groups_sel]
@@ -193,11 +237,22 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
     }
   }
   
-  .filter_minIntensity <- function(value = 1000, engine) {
+  .filter_minIntensity <- function(value = 0, correctSuppression, engine) {
     if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
+      
+      if (is.na(value) || value == 0) {
+        return()
+      }
+      
       if (engine$nts@has_groups) {
         rpl <- unique(engine$analyses$replicates)
-        groups <- engine$get_groups(filtered = FALSE, intensities = TRUE, average = TRUE, metadata = FALSE)
+        groups <- engine$get_groups(
+          filtered = FALSE,
+          intensities = TRUE,
+          average = TRUE,
+          metadata = FALSE,
+          correctSuppression = correctSuppression
+        )
         groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) max(x) <= value)
         groups <- groups$group[groups_sel]
         feature_list <- engine$nts$feature_list
@@ -210,13 +265,184 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
         engine$nts$feature_list <- feature_list
       } else {
         feature_list <- engine$nts$feature_list
-        feature_list <- lapply(feature_list, function(x) {
+        feature_list <- lapply(feature_list, function(x, correctSuppression) {
+          if (correctSuppression) {
+            if ("suppression_factor" %in% colnames(x)) {
+              x$intensity <- x$intensity * x$suppression_factor
+            }
+          }
           sel <- x$intensity <= value
           x$filtered[sel] <- TRUE
           x$filter[sel] <- "minIntensity"
           x
-        })
+        }, correctSuppression = correctSuppression)
         engine$nts$feature_list <- feature_list
+      }
+    } else {
+      warning("There are no features in the MassSpecEngine!")
+    }
+  }
+  
+  .filter_maxDeviationInReplicate <- function(value = 100, correctSuppression, engine) {
+    if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
+      
+      if (is.na(value) || value == 100) {
+        return()
+      }
+      
+      if (engine$nts@has_groups) {
+        rpl <- unique(engine$analyses$replicates)
+        rpl <- paste(rpl, "_sd", sep = "")
+        groups <- engine$get_groups(
+          filtered = FALSE,
+          intensities = TRUE,
+          average = TRUE,
+          sdValues = TRUE,
+          metadata = FALSE,
+          correctSuppression = correctSuppression
+        )
+        groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) min(x) > value)
+        groups <- groups$group[groups_sel]
+        feature_list <- engine$nts$feature_list
+        feature_list <- lapply(feature_list, function(x, groups) {
+          sel <- x$group %in% groups
+          x$filtered[sel] <- TRUE
+          x$filter[sel] <- "maxDeviationInReplicate"
+          x
+        }, groups = groups)
+        engine$nts$feature_list <- feature_list
+      } else {
+        warning("There are no feature groups but needed for the maxDeviationInReplicate filter!")
+      }
+    } else {
+      warning("There are no features in the MassSpecEngine!")
+    }
+  }
+  
+  .filter_minAbundanceInReplicate <- function(value = 0, engine) {
+    if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
+      
+      if (is.na(value) || value == 0) {
+        return()
+      }
+      
+      if (engine$nts@has_groups) {
+        rpl <- unique(engine$analyses$replicates)
+        rpl <- paste(rpl, "_n", sep = "")
+        groups <- engine$get_groups(
+          filtered = FALSE,
+          intensities = TRUE,
+          average = TRUE,
+          sdValues = TRUE,
+          metadata = FALSE
+        )
+        groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) max(x) < value)
+        groups <- groups$group[groups_sel]
+        feature_list <- engine$nts$feature_list
+        feature_list <- lapply(feature_list, function(x, groups) {
+          sel <- x$group %in% groups
+          x$filtered[sel] <- TRUE
+          x$filter[sel] <- "minAbundanceInReplicate"
+          x
+        }, groups = groups)
+        engine$nts$feature_list <- feature_list
+      } else {
+        warning("There are no feature groups but needed for the minAbundanceInReplicate filter!")
+      }
+    } else {
+      warning("There are no features in the MassSpecEngine!")
+    }
+  }
+  
+  .filter_blankThreshold <- function(value = 3,
+                                     blankSubtractionConservative,
+                                     correctSuppression,
+                                     engine) {
+    if (engine$nts$has_features && is.numeric(value) && length(value) == 1) {
+      
+      if (is.na(value) || value == 0) {
+        return()
+      }
+      
+      if (engine$nts@has_groups) {
+        info <- engine$analyses$info[, c("replicate", "blank"), with = FALSE]
+        info <- unique(info)
+        
+        if (all(is.na(info$blank) | info$blank %in% "")) {
+          warning("There are no blank replicates!")
+          return()
+        }
+        
+        rpl <- unique(info$replicate[!info$replicate %in% info$blank])
+        
+        groups <- engine$get_groups(
+          filtered = FALSE,
+          intensities = TRUE,
+          average = TRUE,
+          sdValues = FALSE,
+          metadata = FALSE,
+          correctSuppression = correctSuppression
+        )
+        
+        groups_rpl <- groups[, rpl, with = FALSE]
+        
+        groups_blk <- groups[, unique(info$blank), with = FALSE]
+        
+        groups_list <- lapply(colnames(groups_rpl), function(x,
+                                                            value,
+                                                            info,
+                                                            groups_rpl,
+                                                            groups_blk) {
+          blk <- unique(info$blank[info$replicate %in% x])
+          if (length(blk) == 0) {
+            warning("There is no blank for replicate ", x, "!")
+            return(rep(FALSE, nrow(groups_rpl)))
+          }
+          blk_ints <- groups_blk[, blk, with = FALSE]
+          blk_ints <- apply(blk_ints, MARGIN = 1, FUN = function(z) mean(z) * value)
+          rpl_ints <- groups_rpl[, x, with = FALSE]
+          rpl_ints <- apply(rpl_ints, MARGIN = 1, FUN = function(z) mean(z))
+          rpl_ints < blk_ints
+        }, value = value, info = info, groups_rpl = groups_rpl, groups_blk = groups_blk)
+        names(groups_list) <- colnames(groups_rpl)
+        groups_list <- data.table::as.data.table(groups_list)
+        feature_list <- engine$nts$feature_list
+        if (blankSubtractionConservative) {
+          groups_sel <- apply(groups_list, MARGIN = 1, function(x) all(x))
+          groups <- groups$group[groups_sel]
+          feature_list <- lapply(feature_list, function(x, groups) {
+            sel <- x$group %in% groups
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- "blankThreshold"
+            x
+          }, groups = groups)
+        } else {
+          info2 <- engine$analyses$info
+          analyses <- names(feature_list)
+          feature_groups_list <- lapply(analyses, function(x, info2, groups, groups_list) {
+            rp <- info2$replicate[info2$analysis %in% x]
+            if (!rp %in% colnames(groups_list)) {
+              groups$group
+            } else {
+              sel <- groups_list[[rp]]
+              groups$group[sel]
+            }
+          }, info2 = info2, groups = groups, groups_list = groups_list)
+          
+          names(feature_groups_list) <- analyses
+          
+          feature_list <- Map(function(x, y) {
+            sel <- x$group %in% y
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- "blankThreshold"
+            x
+          }, feature_list, feature_groups_list)
+          
+          names(feature_list) <- analyses
+        }
+        engine$nts$feature_list <- feature_list
+      } else {
+        warning("There are no feature groups but needed for the blankThreshold filter!")
       }
     } else {
       warning("There are no features in the MassSpecEngine!")
@@ -250,444 +476,31 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
       warning("There are no features in the MassSpecEngine!")
     }
   }
-  
-  
-  #
-  # # Filters features with max replicate group intensity deviation.
-  # #
-  # .filter_maxGroupSd = function(value = 30) {
-  #
-  #   if (engine$has_groups()) {
-  #
-  #     if (is.numeric(value) & length(value) == 1) {
-  #
-  #       message("\U2699 Filtering by maxGroupSd...", appendLF = FALSE)
-  #
-  #       rpl <- engine$get_replicate_names()
-  #       rpl <- paste(rpl, "_sd", sep = '')
-  #       names(rpl) <- engine$get_analysis_names()
-  #
-  #       groups <- engine$get_groups(
-  #         filtered = FALSE, intensities = TRUE,
-  #         average = TRUE, sdValues = TRUE,
-  #         metadata = FALSE
-  #       )
-  #
-  #       rpl <- rpl[rpl %in% colnames(groups)]
-  #
-  #       lapply(1:nrow(groups), function(x, value, rpl, groups) {
-  #
-  #         g <- groups$group[x]
-  #         vec <- as.numeric(groups[x, unique(rpl), with = FALSE])
-  #         sel <- vec >= value & !is.na(vec)
-  #
-  #         for (i in 1:length(vec)) {
-  #
-  #           if (sel[i]) {
-  #             rp <- unique(rpl)[i]
-  #             anas <- names(rpl)[rpl %in% rp]
-  #
-  #             for (a in anas) {
-  #               sel2 <- private$.analyses[[a]]$features$group %in% g
-  #
-  #               if (TRUE %in% sel2) {
-  #                 if (!private$.analyses[[a]]$features$filtered[sel2]) {
-  #                   private$.analyses[[a]]$features$filtered[sel2] <- TRUE
-  #                   private$.analyses[[a]]$features$filter[sel2] <- "maxGroupSd"
-  #                 }
-  #               }
-  #             }
-  #           }
-  #         }
-  #       }, value = value, rpl = rpl, groups = groups)
-  #
-  #       # groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1,
-  #       #   function(x, value) {
-  #       #     all(x >= value | x == 0, na.rm = TRUE)
-  #       #   }, value = value
-  #       # )
-  #       #
-  #       # groups <- groups$group[groups_sel]
-  #       #
-  #       # private$.tag_filtered(groups, "maxGroupSd")
-  #
-  #       private$.register(
-  #         "filter_features",
-  #         "features",
-  #         "maxGroupSd",
-  #         "StreamFind",
-  #         as.character(packageVersion("StreamFind")),
-  #         paste0(value, "%")
-  #       )
-  #
-  #       message(" Done!")
-  #
-  #     } else {
-  #       warning("The value for maxGroupSd filtering must be numeric and of length one!")
-  #     }
-  #   } else {
-  #     warning("There are no feature groups in the MassSpecEngine!")
-  #   }
-  # },
-  #
-  # # Filters feature with min replicate group abundance.
-  # #
-  # .filter_minGroupAbundance = function(value = 3) {
-  #
-  #   if (engine$has_groups()) {
-  #
-  #     if (is.numeric(value) & length(value) == 1) {
-  #
-  #       message("\U2699 Filtering by minGroupAbundance...", appendLF = FALSE)
-  #
-  #       rpl <- engine$get_replicate_names()
-  #
-  #       groups <- engine$get_groups(filtered = FALSE, intensities = TRUE, average = FALSE, metadata = FALSE)
-  #
-  #       features <- engine$get_features(filtered = FALSE)
-  #
-  #       lapply(1:nrow(groups), function(x, value, rpl, groups) {
-  #
-  #         g <- groups$group[x]
-  #         which_fts <- which(features$group %in% g)
-  #         analyses <- features$analysis[which_fts]
-  #
-  #         r <- rpl[analyses]
-  #         r <- table(r)
-  #
-  #         for (i in 1:length(r)) {
-  #
-  #           if (r[i] < value) {
-  #             rp <- names(r[i])
-  #             anas <- names(rpl)[rpl %in% rp]
-  #
-  #             for (a in anas) {
-  #
-  #               if (a %in% analyses) {
-  #                 sel2 <- private$.analyses[[a]]$features$group %in% g
-  #                 private$.analyses[[a]]$features$filtered[sel2] <- TRUE
-  #                 private$.analyses[[a]]$features$filter[sel2] <- "minGroupAbundance"
-  #               }
-  #             }
-  #           }
-  #         }
-  #       }, value = value, rpl = rpl, groups = groups)
-  #
-  #       # # TODO add abundance to group metadata output
-  #       #
-  #       # groups_sel <- vapply(groups$group,
-  #       #   function(x, features, rpl, value) {
-  #       #     which_fts <- which(features$group %in% x)
-  #       #     analyses <- features$analysis[which_fts]
-  #       #     r <- rpl[analyses]
-  #       #     r <- table(r)
-  #       #     !any(apply(r, 1, function(x) max(x) >= value))
-  #       #   },
-  #       #   features = features,
-  #       #   rpl = engine$get_replicate_names(),
-  #       #   value = value,
-  #       #   FALSE
-  #       # )
-  #       #
-  #       # groups <- groups$group[groups_sel]
-  #       #
-  #       # private$.tag_filtered(groups, "minGroupAbundance")
-  #
-  #       private$.register(
-  #         "filter_features",
-  #         "features",
-  #         "minGroupAbundance",
-  #         "StreamFind",
-  #         as.character(packageVersion("StreamFind")),
-  #         value
-  #       )
-  #
-  #       message(" Done!")
-  #
-  #     } else {
-  #       warning("The value for minGroupAbundance filtering must be numeric and of length one!")
-  #     }
-  #   } else {
-  #     warning("There are no feature groups in the MassSpecEngine!")
-  #   }
-  # },
-  #
-  # # Filters feature groups which not higher then the defined threshold of the
-  # # corresponding blank replicate group.
-  # #
-  # .filter_blank = function(value = 30) {
-  #
-  #   if (engine$has_groups()) {
-  #
-  #     if (is.numeric(value) & length(value) == 1) {
-  #
-  #       blk <- engine$get_blank_names()
-  #
-  #       rpl <- engine$get_replicate_names()
-  #
-  #       names(blk) <- rpl
-  #
-  #       blk <- blk[!rpl %in% unique(blk)]
-  #
-  #       blk <- blk[!duplicated(names(blk))]
-  #
-  #       rpl <- rpl[!rpl %in% blk]
-  #
-  #       if (length(blk) != 0) {
-  #
-  #         message("\U2699 Subtracting blank...", appendLF = FALSE)
-  #
-  #         groups <- engine$get_groups(filtered = TRUE, intensities = TRUE, average = TRUE, sdValues = FALSE, metadata = FALSE)
-  #
-  #         for (r in seq_len(length(blk))) {
-  #           rp <- names(blk)[r]
-  #           bl <- blk[r]
-  #           groups[, (rp) := groups[[rp]] <= (groups[[bl]] * value)][]
-  #         }
-  #
-  #         lapply(1:nrow(groups), function(x, value, rpl, groups) {
-  #
-  #           g <- groups$group[x]
-  #           sel <- as.logical(groups[x, unique(rpl), with = FALSE])
-  #
-  #           for (i in 1:length(sel)) {
-  #
-  #             if (sel[i]) {
-  #               rp <- unique(rpl)[i]
-  #               anas <- names(rpl)[rpl %in% rp]
-  #
-  #               for (a in anas) {
-  #                 sel2 <- private$.analyses[[a]]$features$group %in% g
-  #
-  #                 if (TRUE %in% sel2) {
-  #                   if (!private$.analyses[[a]]$features$filtered[sel2]) {
-  #                     private$.analyses[[a]]$features$filtered[sel2] <- TRUE
-  #                     private$.analyses[[a]]$features$filter[sel2] <- "blank"
-  #                   }
-  #                 }
-  #               }
-  #             }
-  #           }
-  #         }, value = value, rpl = rpl, groups = groups)
-  #
-  #         blk_anas <- unique(names(engine$get_replicate_names()[engine$get_replicate_names() %in% blk]))
-  #
-  #         for (b in blk_anas) {
-  #           private$.analyses[[b]]$features$filtered <- TRUE
-  #           private$.analyses[[b]]$features$filter <- "blank"
-  #         }
-  #
-  #         # groups_sel <- apply(groups[, names(blk), with = FALSE], MARGIN = 1,
-  #         #   function(x) { all(x, na.rm = TRUE) }
-  #         # )
-  #         #
-  #         # groups <- groups$group[groups_sel]
-  #         #
-  #         # private$.tag_filtered(groups, "blank")
-  #
-  #         private$.register(
-  #           "filter_features",
-  #           "features",
-  #           "blank",
-  #           "StreamFind",
-  #           as.character(packageVersion("StreamFind")),
-  #           paste0("multiplier ", value)
-  #         )
-  #
-  #         message(" Done!")
-  #
-  #
-  #       } else {
-  #         warning("There are no blank analysis replicates!")
-  #       }
-  #     } else {
-  #       warning("The value for blank filtering must be numeric and of length one!")
-  #     }
-  #   } else {
-  #     warning("There are no feature groups in the MassSpecEngine!")
-  #   }
-  # },
-  #
-  # # Filters features and feature groups within a retention time range.
-  # #
-  # .filter_rtFilter = function(value = c(0, 0)) {
-  #
-  #   if (any(engine$has_features())) {
-  #
-  #     if (is.numeric(value) & length(value) == 2) {
-  #
-  #       message("\U2699 Filtering by rtFilter...", appendLF = FALSE)
-  #
-  #       value <- sort(value)
-  #
-  #       # if (engine$has_groups()) {
-  #       #   rpl <- engine$get_replicate_names()
-  #       #
-  #       #   groups <- engine$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = TRUE)
-  #       #
-  #       #   groups_sel <- (groups$rt <= value[2]) & (groups$rt >= value[1])
-  #       #
-  #       #   groups <- groups$group[groups_sel]
-  #       #
-  #       #   private$.tag_filtered(groups, "rtFilter")
-  #       #
-  #       # } else {
-  #         private$.analyses <- lapply(private$.analyses, function(x) {
-  #           sel <- (x$features$rt <= value[2]) & (x$features$rt >= value[1]) & (!x$features$filtered)
-  #           x$features$filtered[sel] <- TRUE
-  #           x$features$filter[sel] <- "rtFilter"
-  #           x
-  #         })
-  #       # }
-  #
-  #       private$.register(
-  #         "filter_features",
-  #         "features",
-  #         "rtFilter",
-  #         "StreamFind",
-  #         as.character(packageVersion("StreamFind")),
-  #         paste(value, collapse = "; ")
-  #       )
-  #
-  #       message(" Done!")
-  #
-  #     } else {
-  #       warning("The value for rt filtering must be numeric and of length two!")
-  #     }
-  #   } else {
-  #     warning("There are no features in the MassSpecEngine!")
-  #   }
-  # },
-  #
-  # # Filters features and feature groups within a mass range.
-  # #
-  # .filter_massFilter = function(value = c(0, 0)) {
-  #
-  #   if (any(engine$has_features())) {
-  #
-  #     if (is.numeric(value) & length(value) == 2) {
-  #
-  #       message("\U2699 Filtering by massFilter...", appendLF = FALSE)
-  #
-  #       value <- sort(value)
-  #
-  #       # if (engine$has_groups()) {
-  #       #   rpl <- engine$get_replicate_names()
-  #       #
-  #       #   groups <- engine$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = TRUE)
-  #       #
-  #       #   groups_sel <- (groups$mass <= value[2]) & (groups$mass >= value[1])
-  #       #
-  #       #   groups <- groups$group[groups_sel]
-  #       #
-  #       #   private$.tag_filtered(groups, "massFilter")
-  #       #
-  #       # } else {
-  #         private$.analyses <- lapply(private$.analyses, function(x) {
-  #           sel <- (x$features$mass <= value[2]) &
-  #             (x$features$mass >= value[1]) &
-  #             (!x$features$filtered)
-  #           x$features$filtered[sel] <- TRUE
-  #           x$features$filter[sel] <- "massFilter"
-  #           x
-  #         })
-  #       # }
-  #
-  #       private$.register(
-  #         "filter_features",
-  #         "features",
-  #         "massFilter",
-  #         "StreamFind",
-  #         as.character(packageVersion("StreamFind")),
-  #         paste(value, collapse = "; ")
-  #       )
-  #
-  #       message(" Done!")
-  #
-  #     } else {
-  #       warning("The value for neutral mass filtering must be numeric and of length two!")
-  #     }
-  #   } else {
-  #     warning("There are no features in the MassSpecEngine!")
-  #   }
-  # },
-  #
-  # # Filters features and feature groups within a mass range.
-  # #
-  # .filter_onlySuspects = function(value = NULL) {
-  #
-  #   if (any(engine$has_suspects())) {
-  #
-  #     if (is.logical(value) & length(value) == 1) {
-  #
-  #       message("\U2699 Filtering by onlySuspects...", appendLF = FALSE)
-  #
-  #       if (engine$has_groups()) {
-  #
-  #         sus <- engine$get_suspects(onGroups = TRUE)
-  #
-  #         groups <- engine$get_groups(filtered = FALSE, intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = FALSE)
-  #
-  #         groups_sel <- !groups$group %in% sus$group
-  #
-  #         groups <- groups$group[groups_sel]
-  #
-  #         private$.tag_filtered(groups, "onlySuspects")
-  #
-  #       } else {
-  #         private$.analyses <- lapply(private$.analyses, function(x) {
-  #           sel <- vapply(x$features$suspects, function(x) is.null(x), FALSE) & !x$features$filtered
-  #           x$features$filtered[sel] <- TRUE
-  #           x$features$filter[sel] <- "onlySuspects"
-  #           x
-  #         })
-  #       }
-  #
-  #       private$.register(
-  #         "filter_features",
-  #         "features",
-  #         "onlySuspects",
-  #         "StreamFind",
-  #         as.character(packageVersion("StreamFind")),
-  #         paste(value, collapse = "; ")
-  #       )
-  #
-  #       message(" Done!")
-  #
-  #     } else {
-  #       warning("The value for onlySuspects must be logical and of length one!")
-  #     }
-  #   } else {
-  #     warning("There are no suspects in the MassSpecEngine!")
-  #   }
-  # }
-  
+
   # MARK: Switch Loop
   # __Switch Loop ----
   
   for (i in seq_len(length(filters))) {
     if (is.na(parameters[[filters[i]]]) || length(parameters[[filters[i]]]) == 0) next
     
-    switch(filters[i],
-           minIntensity = .filter_minIntensity(parameters[[filters[i]]], engine),
-           minSnRatio = .filter_minSnRatio(parameters[[filters[i]]], engine),
-           
-           # maxGroupSd = (private$.filter_maxGroupSd(parameters[[filters[i]]])),
-           
-           # blank = (private$.filter_blank(parameters[[filters[i]]])),
-           
-           # minGroupAbundance = (private$.filter_minGroupAbundance(parameters[[filters[i]]])),
-           excludeIsotopes = .filter_excludeIsotopes(parameters[[filters[i]]], engine),
-           excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine),
-           onlyWithMS2 = .filter_onlyWithMS2(parameters[[filters[i]]], engine)
-           
-           # rtFilter = private$.filter_rtFilter(parameters[[filters[i]]]),
-           
-           # massFilter = private$.filter_massFilter(parameters[[filters[i]]]),
-           
-           # onlySuspects = .filter_onlySuspects(parameters[[filters[i]]], engine)
-           
-           # TODO add more filters
+    switch(
+      filters[i],
+      minIntensity = .filter_minIntensity(parameters[[filters[i]]], correctSuppression, engine),
+      minSnRatio = .filter_minSnRatio(parameters[[filters[i]]], engine),
+      maxDeviationInReplicate = .filter_maxDeviationInReplicate(
+        parameters[[filters[i]]],
+        correctSuppression, engine
+      ),
+      minAbundanceInReplicate = .filter_minAbundanceInReplicate(parameters[[filters[i]]], engine),
+      blankThreshold = .filter_blankThreshold(
+        parameters[[filters[i]]],
+        blankSubtractionConservative,
+        correctSuppression,
+        engine
+      ),
+      excludeIsotopes = .filter_excludeIsotopes(parameters[[filters[i]]], engine),
+      excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine),
+      onlyWithMS2 = .filter_onlyWithMS2(parameters[[filters[i]]], engine)
     )
   }
   
@@ -702,41 +515,49 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# patRoon -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_FilterFeatures_patRoon**
 #'
-#' @description Settings for filtering of features and feature groups. A full description of the filtering parameters is
-#'  in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
+#' @description Settings for filtering of features and feature groups. A full description of the
+#' filtering parameters is in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
 #'
-#' @return A ProcessingSettings S3 class object with subclass MassSpecSettings_FilterFeatures_patRoon.
+#' @return A MassSpecSettings_FilterFeatures_patRoon object.
 #'
 #' @param absMinIntensity Numeric length one. Minimum absolute intensity for a feature.
 #' @param relMinIntensity Numeric length one. Minimum relative intensity for a feature.
-#' @param preAbsMinIntensity Numeric length one. Minimum absolute intensity for a feature before grouping.
-#' @param preRelMinIntensity Numeric length one. Minimum relative intensity for a feature before grouping.
-#' @param absMinAnalyses Numeric length one. Minimum number of analyses a feature must be present in.
-#' @param relMinAnalyses Numeric length one. Minimum relative number of analyses a feature must be present in.
-#' @param absMinReplicates Numeric length one. Minimum number of replicates a feature must be present in.
-#' @param relMinReplicates Numeric length one. Minimum relative number of replicates a feature must be present in.
+#' @param preAbsMinIntensity Numeric length one. Minimum absolute intensity for a feature before
+#' grouping.
+#' @param preRelMinIntensity Numeric length one. Minimum relative intensity for a feature before
+#' grouping.
+#' @param absMinAnalyses Numeric length one. Minimum number of analyses a feature must be present
+#' in.
+#' @param relMinAnalyses Numeric length one. Minimum relative number of analyses a feature must be
+#' present in.
+#' @param absMinReplicates Numeric length one. Minimum number of replicates a feature must be
+#' present in.
+#' @param relMinReplicates Numeric length one. Minimum relative number of replicates a feature must
+#' be present in.
 #' @param absMinFeatures Numeric length one. Minimum number of features a feature group must contain.
-#' @param relMinFeatures Numeric length one. Minimum relative number of features a feature group must contain.
+#' @param relMinFeatures Numeric length one. Minimum relative number of features a feature group
+#' must contain.
 #' @param absMinReplicateAbundance Numeric length one. Minimum absolute abundance of a replicate.
 #' @param relMinReplicateAbundance Numeric length one. Minimum relative abundance of a replicate.
 #' @param absMinConc Numeric length one. Minimum absolute concentration of a feature.
 #' @param relMinConc Numeric length one. Minimum relative concentration of a feature.
 #' @param absMaxTox Numeric length one. Maximum absolute toxicity of a feature.
 #' @param relMaxTox Numeric length one. Maximum relative toxicity of a feature.
-#' @param absMinConcTox Numeric length one. Minimum absolute concentration of a feature to be considered toxic.
-#' @param relMinConcTox Numeric length one. Minimum relative concentration of a feature to be considered toxic.
-#' @param maxReplicateIntRSD Numeric length one. Maximum relative standard deviation of intensities within a replicate.
-#' @param blankThreshold Numeric length one. Maximum intensity of a feature to be considered a blank.
+#' @param absMinConcTox Numeric length one. Minimum absolute concentration of a feature to be
+#' considered toxic.
+#' @param relMinConcTox Numeric length one. Minimum relative concentration of a feature to be
+#' considered toxic.
+#' @param maxReplicateIntRSD Numeric length one. Maximum relative standard deviation of intensities
+#' within a replicate.
+#' @param blankThreshold Numeric length one. Maximum intensity of a feature to be considered a
+#' blank.
 #' @param retentionRange Numeric length two. Retention time range (in seconds) for a feature.
 #' @param mzRange Numeric length two. m/z range (in Da) for a feature.
 #' @param mzDefectRange Numeric length two. m/z defect range (in Da) for a feature.
-#' @param chromWidthRange Numeric length two. Chromatographic width range (in seconds) for a feature.
+#' @param chromWidthRange Numeric length two. Chromatographic width range (in seconds) for a
+#' feature.
 #' @param featQualityRange Numeric length two. Feature quality range for a feature.
 #' @param groupQualityRange Numeric length two. Group quality range for a feature group.
 #' @param rGroups Character with the replicate group names to filter.
@@ -910,7 +731,9 @@ S7::method(run, MassSpecSettings_FilterFeatures_patRoon) <- function(x, engine =
     "mzDefectRange", "chromWidthRange", "qualityRange", "negate"
   )
 
-  if ("features" %in% is(pat)) parameters <- parameters[names(parameters) %in% possible_only_in_features]
+  if ("features" %in% is(pat)) {
+    parameters <- parameters[names(parameters) %in% possible_only_in_features]
+  }
 
   parameters <- lapply(parameters, function(z) {
     if (all(is.na(z)) || length(z) == 0) {

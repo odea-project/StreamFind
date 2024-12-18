@@ -65,30 +65,30 @@
   mpList
 }
 
-# ______________________________________________________________________________________________________________________
-# TiChri -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_CorrectMatrixSuppression_TiChri**
 #'
-#' @description Settings for correcting matrix suppression based on the TiChri algorithm from 
-#' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm calculates the 
-#' matrix profile for the total ion chromatogram (TIC) and corrects the matrix suppression for features. Internal 
-#' standards can be assigned to improve the correction. The `suppression_factor` is added to the feature list and can 
-#' be used to correct the features intensity. The argument/parameter `correctSuppression` is available in plotting 
-#' and processing methods and when `TRUE`, the suppression factor is used to correct the feature intensity for better 
-#' comparison across analyses with different matrix suppression.
+#' @description Settings for correcting matrix suppression based on the TiChri algorithm from
+#' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm
+#' calculates the matrix profile for the total ion chromatogram (TIC) and corrects the matrix
+#' suppression for features. Internal standards can be assigned to improve the correction. The
+#' `suppression_factor` is added to the feature list and can be used to correct the features
+#' intensity. The argument/parameter `correctSuppression` is available in plotting and processing
+#' methods and when `TRUE`, the suppression factor is used to correct the feature intensity for
+#' better comparison across analyses with different matrix suppression.
 #'
-#' @param mpRtWindow Numeric of length one with the retention time window (in seconds) for calculating the matrix profile.
-#' @param istdAssignment Character of length one with the assignment method for internal standards. Possible values are
-#' `"nearest"`, `"range"`, and `"none"`. Default is `"nearest"`. Setting `"nearest"` assigns the nearest `istdN` internal
-#' standard/s, `"range"` assigns internal standard/s within the `istdRtWindow` window, and `"none"` does not assign internal
-#' standards. If internal standards are assigned, the `tichri` value is calculated for each internal standard and used 
-#' to correct the matrix suppression for the features. If no internal standards are assigned, the correction is based 
-#' only on the TIC matrix profile, which is less accurate.
-#' @param istdRtWindow Numeric of length one with the retention time window (in seconds) for assigning internal standards.
-#' Default is `5`.
-#' @param istdN Integer of length one with the number of internal standards to assign. Default is `2`.
+#' @param mpRtWindow Numeric of length one with the retention time window (in seconds) for
+#' calculating the matrix profile.
+#' @param istdAssignment Character of length one with the assignment method for internal standards.
+#' Possible values are `"nearest"`, `"range"`, and `"none"`. Default is `"nearest"`. Setting
+#' `"nearest"` assigns the nearest `istdN` internal standard/s, `"range"` assigns internal
+#' standard/s within the `istdRtWindow` window, and `"none"` does not assign internal standards.
+#' If internal standards are assigned, the `tichri` value is calculated for each internal standard
+#' and used to correct the matrix suppression for the features. If no internal standards are
+#' assigned, the correction is based only on the TIC matrix profile, which is less accurate.
+#' @param istdRtWindow Numeric of length one with the retention time window (in seconds) for
+#' assigning internal standards. Default is `5`.
+#' @param istdN Integer of length one with the number of internal standards to assign.
+#' Default is `2`.
 #'
 #' @return A `MassSpecSettings_CorrectMatrixSuppression_TiChri` object.
 #'
@@ -98,7 +98,7 @@
 #' @export
 #'
 MassSpecSettings_CorrectMatrixSuppression_TiChri <- S7::new_class(
-  "MassSpecSettings_CorrectMatrixSuppression_TiChri",
+  name = "MassSpecSettings_CorrectMatrixSuppression_TiChri",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(mpRtWindow = 10,
@@ -177,23 +177,6 @@ S7::method(run, MassSpecSettings_CorrectMatrixSuppression_TiChri) <- function(x,
     z
   })
 
-  cache <- .load_chache("correct_matrix_suppression", feature_list, x)
-
-  if (!is.null(cache$data)) {
-    feature_list <- cache$data
-    tryCatch(
-      {
-        engine$nts$feature_list <- feature_list
-        message("\U2139 Corrected matrix suppression loaded from cache!")
-        return(TRUE)
-      },
-      error = function(e) {
-        warning(e)
-        return(FALSE)
-      }
-    )
-  }
-
   parameters <- x$parameters
 
   message("\U2699 Calculating TIC matrix suppression")
@@ -247,7 +230,8 @@ S7::method(run, MassSpecSettings_CorrectMatrixSuppression_TiChri) <- function(x,
         istd_mp <- 0
         for (a in istd_anas) {
           a_mp <- ticMp[[a]]
-          a_sel <- (a_mp$rt >= (min(i_istd$rt[j_sel]) - parameters$mpRtWindow)) & (a_mp$rt <= (max(i_istd$rt[j_sel]) + parameters$mpRtWindow))
+          a_sel <- (a_mp$rt >= (min(i_istd$rt[j_sel]) - parameters$mpRtWindow))
+          a_sel <- a_sel & (a_mp$rt <= (max(i_istd$rt[j_sel]) + parameters$mpRtWindow))
           a_mp <- a_mp[a_sel, ]
           istd_mp <- istd_mp + mean(a_mp$mp)
         }
@@ -265,8 +249,17 @@ S7::method(run, MassSpecSettings_CorrectMatrixSuppression_TiChri) <- function(x,
     istd <- istd[!is.na(istd$matrixEffect), ]
   }
 
-  message("\U2699 Correcting matrix suppression for features in ", length(feature_list), " analyses")
-  feature_list <- lapply(names(feature_list), function(z, feature_list, ticMp, rpls, istd, parameters) {
+  message(
+    "\U2699 Correcting matrix suppression for features in ",
+    length(feature_list),
+    " analyses"
+  )
+  feature_list <- lapply(names(feature_list), function(z,
+                                                       feature_list,
+                                                       ticMp,
+                                                       rpls,
+                                                       istd,
+                                                       parameters) {
     fts <- feature_list[[z]]
     if (nrow(fts) == 0) {
       return(fts)
@@ -282,8 +275,14 @@ S7::method(run, MassSpecSettings_CorrectMatrixSuppression_TiChri) <- function(x,
     message("\U2699 Correcting matrix suppression for ", nrow(fts), " features in ", z)
     suppresion_factor <- vapply(seq_len(nrow(fts)), function(i, z, rpl, fts, mp, istd, parameters) {
       ft <- fts[i, ]
-      if (is.null(parameters$mpRtWindow)) parameters$mpRtWindow <- (ft[["rtmax"]] - ft[["rtmin"]]) / 2
-      mp_ft <- mean(mp$mp[.trim_vector(mp$rt, ft[["rtmin"]] - parameters$mpRtWindow, ft[["rtmax"]] + parameters$mpRtWindow)])
+      if (is.null(parameters$mpRtWindow)) {
+        parameters$mpRtWindow <- (ft[["rtmax"]] - ft[["rtmin"]]) / 2
+      }
+      sel_mp <- .trim_vector(
+        mp$rt, ft[["rtmin"]] - parameters$mpRtWindow,
+        ft[["rtmax"]] + parameters$mpRtWindow
+      )
+      mp_ft <- mean(mp$mp[sel_mp])
 
       if ("none" %in% parameters$istdAssignment) {
         # first part of eq. 7 from 10.1021/acs.analchem.1c00357
@@ -334,11 +333,6 @@ S7::method(run, MassSpecSettings_CorrectMatrixSuppression_TiChri) <- function(x,
   }, feature_list = feature_list, ticMp = ticMp, rpls = rpls, istd = istd, parameters = parameters)
 
   names(feature_list) <- info$analysis
-
-  if (!is.null(cache$hash)) {
-    .save_cache("correct_matrix_suppression", feature_list, cache$hash)
-    message("\U1f5ab Corrected matrix suppression cached!")
-  }
 
   tryCatch(
     {

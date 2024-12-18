@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_SubtractBlankSpectra_StreamFind**
 #'
 #' @description Subtracts the blank spectra to each analysis according to the blank assignment.
@@ -13,26 +8,29 @@
 #'
 #' @export
 #'
-MassSpecSettings_SubtractBlankSpectra_StreamFind <- S7::new_class("MassSpecSettings_SubtractBlankSpectra_StreamFind",
+MassSpecSettings_SubtractBlankSpectra_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_SubtractBlankSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(negativeToZero = FALSE) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "SubtractBlankSpectra",
-      required = "LoadSpectra",
-      algorithm = "StreamFind",
-      parameters = list(negativeToZero = negativeToZero),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "SubtractBlankSpectra",
+        required = "LoadSpectra",
+        algorithm = "StreamFind",
+        parameters = list(negativeToZero = negativeToZero),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {

@@ -2957,10 +2957,10 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
         fts_sd[is.na(fts_sd)] <- 0
 
         tbl_rpls <- table(rpls)
-        fts_n$tn <- tbl_rpls[fts_n$analysis]
-        fts_n$n <- round(fts_n$n / fts_n$tn * 100, digits = 0)
+        fts_n$n <- tbl_rpls[fts_n$analysis]
+        # fts_n$n <- round(fts_n$n / fts_n$tn * 100, digits = 0)
         fts_n$intensity <- NULL
-        fts_n$tn <- NULL
+        # fts_n$tn <- NULL
         fts_n$sd <- NULL
         fts_n$analysis <- paste(fts_n$analysis, "_n", sep = "")
         fts_n <- data.table::dcast(fts_n[, c("group", "analysis", "n"), with = TRUE], group ~ analysis, value.var = "n")
@@ -3009,7 +3009,7 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
         maxint = round(max(intensity), digits = 0),
         sn = round(max(vapply(quality, function(z) if (length(z) > 0) z$sn else 0, 0), na.rm = TRUE), digits = 1),
         iso = min(vapply(annotation, function(z) if (length(z) > 0) z$iso_step else 0, 0)),
-        istd = paste0(unique(vapply(istd, function(z) if (length(z) > 0) x$name else NA_character_, NA_character_)), collapse = "; "),
+        istd = paste0(unique(vapply(istd, function(z) if (length(z) > 0) z$name else NA_character_, NA_character_)), collapse = "; "),
         filtered = all(filtered)
       ), by = "group"]
 
@@ -4026,7 +4026,9 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
                                                               filtered = FALSE,
                                                               yLab = NULL,
                                                               title = NULL,
-                                                              colorBy = "analyses") {
+                                                              colorBy = "analyses",
+                                                              showLegend = TRUE,
+                                                              showHoverText = TRUE) {
   info <- get_features_count(x, analyses, filtered)
 
   if ("replicates" %in% colorBy) info$analysis <- info$replicate
@@ -4042,12 +4044,16 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
   info$features_sd[is.na(info$features_sd)] <- 0
 
   info <- unique(info)
-
-  info$hover_text <- paste(
-    info$analysis, "<br>",
-    "N.: ", info$n_analysis, "<br>",
-    "Features: ", info$features, " (SD: ", info$features_sd, ")"
-  )
+  
+  if (showHoverText) {
+    info$hover_text <- paste(
+      info$analysis, "<br>",
+      "N.: ", info$n_analysis, "<br>",
+      "Features: ", info$features, " (SD: ", info$features_sd, ")"
+    )
+  } else {
+    info$hover_text <- ""
+  }
 
   info <- info[order(info$analysis), ]
 
@@ -4068,7 +4074,9 @@ S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
       color = "darkred",
       symmetric = FALSE,
       visible = TRUE
-    )
+    ),
+    name = names(colors_tag),
+    showlegend = showLegend
   ) %>% plotly::layout(
     xaxis = list(title = NULL),
     yaxis = list(title = yLab)
@@ -4595,11 +4603,15 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
                                                               millisec = 5,
                                                               filtered = FALSE,
                                                               correctSuppression = TRUE,
+                                                              averaged = FALSE,
                                                               normalized = TRUE,
                                                               legendNames = NULL,
                                                               yLab = NULL,
-                                                              title = NULL) {
+                                                              title = NULL,
+                                                              showLegend = TRUE) {
   fts <- get_features(x, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+  
+  analyses <- .check_analyses_argument(x, analyses)
 
   if (nrow(fts) == 0) {
     message("\U2717 Features not found for the targets!")
@@ -4616,7 +4628,21 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
     }
   }
 
-  if (normalized && "intensity_rel" %in% colnames(fts)) fts$intensity <- as.numeric(fts$intensity_rel)
+  if (normalized && "intensity_rel" %in% colnames(fts)) {
+    fts$intensity <- as.numeric(fts$intensity_rel)
+  }
+  
+  if (averaged && x$nts$has_groups) {
+    if (!"replicate" %in% colnames(fts)) fts$replicate <- x$replicates[fts$analysis]
+    group_cols <- c("replicate", "group", "polarity")
+    if ("name" %in% colnames(fts)) group_cols <- c(group_cols, "name")
+    fts <- fts[, .(intensity = mean(intensity)), by = group_cols]
+    data.table::setnames(fts, "replicate", "analysis")
+    names(polarities) <- x$replicates[names(polarities)]
+    polarities <- polarities[!duplicated(names(polarities))]
+    analyses <- unique(x$replicates[analyses])
+    
+  }
 
   if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
     leg <- legendNames
@@ -4634,10 +4660,8 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
   u_leg <- unique(leg)
 
   colors <- .get_colors(u_leg)
-
-  analyses <- .check_analyses_argument(x, analyses)
-
-  showLeg <- rep(TRUE, length(u_leg))
+  
+  showLeg <- rep(showLegend, length(u_leg))
   names(showLeg) <- u_leg
 
   rpls <- x$replicates
@@ -4919,9 +4943,11 @@ S7::method(plot_fold_change, MassSpecAnalyses) <- function(x,
                                                            correctSuppression = FALSE,
                                                            fillZerosWithLowerLimit = FALSE,
                                                            lowerLimit = NA_real_,
+                                                           normalized = TRUE,
                                                            yLab = NULL,
                                                            title = NULL,
-                                                           interactive = TRUE) {
+                                                           interactive = TRUE,
+                                                           showLegend = TRUE) {
   fc <- get_fold_change(
     x,
     replicatesIn,
@@ -4973,6 +4999,16 @@ S7::method(plot_fold_change, MassSpecAnalyses) <- function(x,
 
     colours <- .get_colors(unique(fc_levels$replicate_out))
     colours_key <- colours[fc_levels$replicate_out]
+    
+    if (normalized) {
+      fc_summary_count$uid <- paste0(
+        fc_summary_count$replicate_out, "_", fc_summary_count$combination
+      )
+      for (i in unique(fc_summary_count$uid)) {
+        sel <- fc_summary_count$uid %in% i
+        fc_summary_count$count[sel] <- fc_summary_count$count[sel] / sum(fc_summary_count$count[sel])
+      }
+    }
 
     graphics::boxplot(
       fc_summary_count$count ~ fc_summary_count$bondaries,
@@ -4993,12 +5029,26 @@ S7::method(plot_fold_change, MassSpecAnalyses) <- function(x,
     # if (length(outliers$out) > 0) {
     #   points(outliers$group, outliers$out, col = "red", pch = 4)
     # }
-    legend(
-      "topright",
-      legend = names(colours),
-      fill = colours
-    )
+    if (showLegend) {
+      legend(
+        "topright",
+        legend = names(colours),
+        fill = colours
+      )
+    }
+    
   } else {
+    
+    if (normalized) {
+      fc_summary_count$uid <- paste0(
+        fc_summary_count$replicate_out, "_", fc_summary_count$combination
+      )
+      for (i in unique(fc_summary_count$uid)) {
+        sel <- fc_summary_count$uid %in% i
+        fc_summary_count$count[sel] <- fc_summary_count$count[sel] / sum(fc_summary_count$count[sel])
+      }
+    }
+    
     fig <- plotly::plot_ly(
       data = fc_summary_count,
       x = ~bondaries,
@@ -5006,7 +5056,8 @@ S7::method(plot_fold_change, MassSpecAnalyses) <- function(x,
       color = ~replicate_out,
       colors = .get_colors(unique(fc_summary_count$replicate_out)),
       type = "box",
-      jitter = 0.03
+      jitter = 0.03,
+      showlegend = showLegend
     )
     fig <- fig %>% plotly::layout(
       title = title,

@@ -672,6 +672,7 @@ CoreEngine <- R6::R6Class(
       message("\U2699 Running ", settings$method, " using ", settings$algorithm)
       
       processed <- FALSE
+      loaded_cached <- FALSE
       
       if (self$config_caches_data) {
         cache_category <- paste0("results_", settings$method, "_", settings$algorithm)
@@ -697,6 +698,7 @@ CoreEngine <- R6::R6Class(
             {
               self$results <- cache$data
               processed <- TRUE
+              loaded_cached <- TRUE
             },
             error = function(e) {
               warning(
@@ -724,7 +726,7 @@ CoreEngine <- R6::R6Class(
       
       if (processed) {
         
-        if (self$config_caches_data) {
+        if (self$config_caches_data && !loaded_cached) {
           if (!is.null(cache$hash)) {
             .save_cache(cache_category, self$results, cache$hash)
             message(

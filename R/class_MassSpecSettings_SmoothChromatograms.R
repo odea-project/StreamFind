@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# movingaverage -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_SmoothChromatograms_movingaverage**
 #'
 #' @description Smooths chromatograms using the moving average algorithm.
@@ -14,7 +9,7 @@
 #' @export
 #'
 MassSpecSettings_SmoothChromatograms_movingaverage <- S7::new_class(
-  "MassSpecSettings_SmoothChromatograms_movingaverage",
+  name = "MassSpecSettings_SmoothChromatograms_movingaverage",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -102,24 +97,23 @@ S7::method(run, MassSpecSettings_SmoothChromatograms_movingaverage) <- function(
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# savgol -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_SmoothChromatograms_savgol**
 #'
-#' @description Smooths chromatograms using the Savitzky-Golay algorithm from the \pkg{pracma} package.
+#' @description Smooths chromatograms using the Savitzky-Golay algorithm from the \pkg{pracma}
+#' package.
 #' 
 #' @param fl Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.
-#' @param forder Numeric (length 1) with the order of the filter (2 = quadratic filter, 4 = quartic).
-#' @param dorder Numeric (length 1) with the order of the derivative (0 = smoothing, 1 = first derivative, etc.).
+#' @param forder Numeric (length 1) with the order of the filter
+#' (2 = quadratic filter, 4 = quartic).
+#' @param dorder Numeric (length 1) with the order of the derivative
+#' (0 = smoothing, 1 = first derivative, etc.).
 #'
 #' @return A MassSpecSettings_SmoothChromatograms_savgol object.
 #'
 #' @export
 #'
 MassSpecSettings_SmoothChromatograms_savgol <- S7::new_class(
-  "MassSpecSettings_SmoothChromatograms_savgol",
+  name = "MassSpecSettings_SmoothChromatograms_savgol",
   parent = ProcessingSettings,
   package = "StreamFind",
   

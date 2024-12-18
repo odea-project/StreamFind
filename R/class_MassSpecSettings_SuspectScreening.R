@@ -1,15 +1,9 @@
-
-# ______________________________________________________________________________________________________________________
-# MARK: StreamFind
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_SuspectScreening_StreamFind**
 #'
 #' @description Settings for performing suspect screening using a data.frame with target compounds.
 #'
-#' @param database A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic 
-#' mass of the suspect targets.
+#' @param database A data.frame with at least the columns name and mass, indicating the name and
+#' neutral monoisotopic mass of the suspect targets.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
 #' @template arg-ms-ppmMS2
@@ -24,7 +18,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_SuspectScreening_StreamFind",
+MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_SuspectScreening_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -43,31 +38,33 @@ MassSpecSettings_SuspectScreening_StreamFind <- S7::new_class("MassSpecSettings_
                          minIntensity = 0,
                          filtered = FALSE) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "SuspectScreening",
-      required = "FindFeatures",
-      algorithm = "StreamFind",
-      parameters = list(
-        "database" = data.table::as.data.table(database),
-        "ppm" = as.numeric(ppm),
-        "sec" = as.numeric(sec),
-        "ppmMS2" = as.numeric(ppmMS2),
-        "minFragments" = as.numeric(minFragments),
-        "isolationWindow" = as.numeric(isolationWindow),
-        "mzClust" = as.numeric(mzClust),
-        "presence" = as.numeric(presence),
-        "minIntensity" = as.numeric(minIntensity),
-        "filtered" = as.logical(filtered)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "SuspectScreening",
+        required = "FindFeatures",
+        algorithm = "StreamFind",
+        parameters = list(
+          "database" = data.table::as.data.table(database),
+          "ppm" = as.numeric(ppm),
+          "sec" = as.numeric(sec),
+          "ppmMS2" = as.numeric(ppmMS2),
+          "minFragments" = as.numeric(minFragments),
+          "isolationWindow" = as.numeric(isolationWindow),
+          "mzClust" = as.numeric(mzClust),
+          "presence" = as.numeric(presence),
+          "minIntensity" = as.numeric(minIntensity),
+          "filtered" = as.logical(filtered)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -117,20 +114,6 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
   if (!nts@has_features) {
     warning("NTS object is empty! Not done.")
     return(FALSE)
-  }
-
-  cache <- .load_chache("suspect_screening", nts$feature_list, x)
-  
-  if (!is.null(cache$data)) {
-    tryCatch({
-      nts <- .add_features_column(nts, "suspects", cache$data)
-      engine$nts <- nts
-      message("\U2139 Suspect screening annotation loaded from cache!")
-      return(TRUE)
-    }, error = function(e) {
-      warning(e)
-      return(FALSE)
-    })
   }
   
   parameters <- x@parameters
@@ -189,11 +172,6 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
     
     names(sus_col) <- names(features)
     
-    if (!is.null(cache$hash)) {
-      .save_cache("suspect_screening", sus_col, cache$hash)
-      message("\U1f5ab Suspect screening annotation cached!")
-    }
-    
     nts <- .add_features_column(nts, "suspects", sus_col)
     engine$nts <- nts
     TRUE
@@ -204,14 +182,10 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
   }
 }
 
-# ______________________________________________________________________________________________________________________
-# MARK: forident
-# forident -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_SuspectScreening_forident**
 #'
-#' @description Settings for performing suspect screening using the \href{https://water.for-ident.org/}{FOR-IDENT} platform.
+#' @description Settings for performing suspect screening using the
+#' \href{https://water.for-ident.org/}{FOR-IDENT} platform.
 #'
 #' @param addMS2 Logical length 1. When `TRUE` and MS2 data is available, the
 #' fragments pattern (i.e., MS2 averaged spectra) is added to the .txt file to
@@ -234,7 +208,8 @@ S7::method(run, MassSpecSettings_SuspectScreening_StreamFind) <- function(x, eng
 #'
 #' @export
 #'
-MassSpecSettings_SuspectScreening_forident <- S7::new_class("MassSpecSettings_SuspectScreening_forident",
+MassSpecSettings_SuspectScreening_forident <- S7::new_class(
+  name = "MassSpecSettings_SuspectScreening_forident",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -243,24 +218,26 @@ MassSpecSettings_SuspectScreening_forident <- S7::new_class("MassSpecSettings_Su
                          path = getwd(),
                          name = "feature_list") {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "SuspectScreening",
-      algorithm = "forident",
-      parameters = list(
-        "addMS2" = addMS2,
-        "useNeutralMass" = useNeutralMass,
-        "path" = path,
-        "name" = name
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "forident",
-      developer = "Sylvia Grosse, Thomas Letzel",
-      contact = "support@for-ident.org",
-      link = "https://water.for-ident.org/#!home",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "SuspectScreening",
+        algorithm = "forident",
+        parameters = list(
+          "addMS2" = addMS2,
+          "useNeutralMass" = useNeutralMass,
+          "path" = path,
+          "name" = name
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "forident",
+        developer = "Sylvia Grosse, Thomas Letzel",
+        contact = "support@for-ident.org",
+        link = "https://water.for-ident.org/#!home",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -306,7 +283,10 @@ S7::method(run, MassSpecSettings_SuspectScreening_forident) <- function(x, engin
     polarities <- unique(engine$get_spectra_polarity())
     
     if (length(polarities) > 1 && x$parameters$addMS2) {
-      warning("Using ms2 data of feature groups from multiple polarities is not possible! Using features of each analysis instead.")
+      warning(
+        "Using ms2 data of feature groups from multiple polarities ", 
+        "is not possible! Using features of each analysis instead."
+      )
       
       out_list <- engine$get_features()
       out_list$rt <- out_list$rt / 60
@@ -357,7 +337,10 @@ S7::method(run, MassSpecSettings_SuspectScreening_forident) <- function(x, engin
     }
     sink()
     
-    message("\U2713 List saved as ", paste0(settings$parameters$path,"/", settings$parameters$name, ".txt"))
+    message(
+      "\U2713 List saved as ",
+      paste0(settings$parameters$path,"/", settings$parameters$name, ".txt")
+    )
     
   } else {
     
@@ -433,18 +416,16 @@ S7::method(run, MassSpecSettings_SuspectScreening_forident) <- function(x, engin
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# MARK: patRoon
-# patRoon -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_SuspectScreening_patRoon**
 #'
-#' @description Settings for performing suspect screening using the function \link[patRoon]{screenSuspects} from the patRoon R package.
+#' @description Settings for performing suspect screening using the function
+#' \link[patRoon]{screenSuspects} from the patRoon R package.
 #'
-#' @param suspects A data.frame with suspect information. See section Suspect list format in \link[patRoon]{screenSuspects} for more information.
-#' @param rtWindow The retention time window (in seconds) that will be used for matching a suspect (+/- feature data).
-#' @param mzWindow The m/z window that will be used for matching a suspect (+/- feature data)..
+#' @param suspects A data.frame with suspect information. See section Suspect list format in
+#' \link[patRoon]{screenSuspects} for more information.
+#' @param rtWindow The retention time window (in seconds) that will be used for matching a
+#' suspect (+/- feature data).
+#' @param mzWindow The m/z window that will be used for matching a suspect (+/- feature data).
 #' @template arg-ms-filtered
 #'
 #' @return A `MassSpecSettings_SuspectScreening_patRoon` object.
@@ -456,30 +437,36 @@ S7::method(run, MassSpecSettings_SuspectScreening_forident) <- function(x, engin
 #'
 #' @export
 #'
-MassSpecSettings_SuspectScreening_patRoon <- S7::new_class("MassSpecSettings_SuspectScreening_patRoon",
+MassSpecSettings_SuspectScreening_patRoon <- S7::new_class(
+  name = "MassSpecSettings_SuspectScreening_patRoon",
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(suspects = data.table::data.table(), rtWindow = 12, mzWindow = 0.005, filtered = FALSE) {
+  constructor = function(suspects = data.table::data.table(),
+                         rtWindow = 12,
+                         mzWindow = 0.005,
+                         filtered = FALSE) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "SuspectScreening",
-      algorithm = "patRoon",
-      parameters = list(
-        "suspects" = data.table::as.data.table(suspects),
-        "rtWindow" = as.numeric(rtWindow),
-        "mzWindow" = as.numeric(mzWindow),
-        "filtered" = as.logical(filtered)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "patRoon",
-      developer = "Rick Helmus",
-      contact = "r.helmus@uva.nl",
-      link = "https://github.com/rickhelmus/patRoon",
-      doi = "https://doi.org/10.1186/s13321-020-00477-w"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "SuspectScreening",
+        algorithm = "patRoon",
+        parameters = list(
+          "suspects" = data.table::as.data.table(suspects),
+          "rtWindow" = as.numeric(rtWindow),
+          "mzWindow" = as.numeric(mzWindow),
+          "filtered" = as.logical(filtered)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "patRoon",
+        developer = "Rick Helmus",
+        contact = "r.helmus@uva.nl",
+        link = "https://github.com/rickhelmus/patRoon",
+        doi = "https://doi.org/10.1186/s13321-020-00477-w"
+      )
+    )
   },
   
   validator = function(self) {

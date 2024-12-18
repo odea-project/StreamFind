@@ -1291,6 +1291,7 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
     }
   }
 
+  const std::vector<std::string> &fts_feature = features["feature"];
   const std::vector<std::string> &fts_group = features["group"];
   const std::vector<std::string> &fts_replicates = features["replicate"];
   const std::vector<std::string> &fts_analysis = features["analysis"];
@@ -1305,8 +1306,18 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
   // const std::vector<float> fts_mobilitymin = features["mobilitymin"];
   // const std::vector<float> fts_mobilitymax = features["mobilitymax"];
   const std::vector<float> &fts_intensity = features["intensity"];
+  const std::vector<int> &fts_polarity = features["polarity"];
+  const std::vector<bool> &fts_filtered = features["filtered"];
 
   std::vector<std::string> fts_id = fts_group;
+  
+  std::vector<bool> is_fts_id_na(number_analyses, false);
+  
+  for (int i = 0; i < number_analyses; i++)
+  {
+    if (fts_filtered[i]) fts_id[i] = "";
+    if (fts_id[i] == "") is_fts_id_na[i] = true;
+  }
 
   if (withinReplicate)
   {
@@ -1326,7 +1337,9 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
         max_presence = rpl.second;
 
     for (int i = 0; i < number_features; i++)
-      fts_id[i] = fts_id[i] + "_" + fts_replicates[i];
+    {
+      if (!is_fts_id_na[i]) fts_id[i] = fts_id[i] + "_" + fts_replicates[i];
+    }
   }
 
   if (max_presence == 0)
@@ -1339,8 +1352,11 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
   std::vector<std::string> id = fts_id;
 
   id.erase(
-      std::remove_if(id.begin(), id.end(), [&](const std::string &name)
-                     { return id_presence[name] == max_presence; }),
+      std::remove_if(
+        id.begin(),
+        id.end(), [&](const std::string &name)
+        {return (id_presence[name] == max_presence) || (name == "");}
+      ),
       id.end());
 
   if (id.empty())
@@ -1437,7 +1453,6 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
       for (size_t p = 0; p < pols.size(); p++)
       {
-
         float mz = mean_mass + (pols[p] * 1.007276);
         float mzmin = mz - max_mzmin_side - mzExpand;
         float mzmax = mz + max_mzmax_side + mzExpand;
@@ -1471,6 +1486,91 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
     if (n_j_targets == 0)
       continue;
+    
+    Rcpp::Rcout << "Checking if there are already corresponding features in " << analyses_names[j] << "...";
+    
+    for (int i = n_j_targets - 1; i >= 0; --i)
+    {
+      const int polarity_i = ana_targets[j].polarity[i];
+      const float mzmin_i = ana_targets[j].mzmin[i];
+      const float mzmax_i = ana_targets[j].mzmax[i];
+      const float rtmin_i = ana_targets[j].rtmin[i];
+      const float rtmax_i = ana_targets[j].rtmax[i];
+      
+      bool has_feature = false;
+      
+      for (int k = 0; k < number_features; k++)
+      {
+        if (fts_analysis[k] == analyses_names[j])
+        {
+          if (fts_group[k] == "" || fts_group[k] == "NA" || fts_group[k] == "NA_character_")
+          {
+            if (fts_polarity[k] == polarity_i)
+            {
+              if (fts_mz[k] >= mzmin_i && fts_mz[k] <= mzmax_i)
+              {
+                if (fts_rt[k] >= rtmin_i && fts_rt[k] <= rtmax_i)
+                {
+                  Rcpp::List empty_dt = Rcpp::List::create();
+                  empty_dt.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+                  Rcpp::List empty_list = Rcpp::List::create(empty_dt);
+                  
+                  Rcpp::List out_targets;
+                  out_targets["analysis"] = analyses_names[j];
+                  out_targets["feature"] = fts_feature[k];
+                  out_targets["group"] = ana_targets_groups[j][i];
+                  out_targets["rt"] = fts_rt[k];
+                  out_targets["mz"] = fts_mz[k];
+                  out_targets["intensity"] = fts_intensity[k];
+                  out_targets["area"] = fts_intensity[k];
+                  out_targets["rtmin"] = fts_rtmin[k];
+                  out_targets["rtmax"] = fts_rtmax[k];
+                  out_targets["mzmin"] = fts_mzmin[k];
+                  out_targets["mzmax"] = fts_mzmax[k];
+                  out_targets["polarity"] = fts_polarity[k];
+                  out_targets["mass"] = 0;
+                  out_targets["adduct"] = "";
+                  out_targets["filtered"] = false;
+                  out_targets["filled"] = false;
+                  out_targets["quality"] = empty_list;
+                  out_targets["annotation"] = empty_list;
+                  out_targets["eic"] = empty_list;
+                  out_targets["ms1"] = empty_list;
+                  out_targets["ms2"] = empty_list;
+                  out_targets["istd"] = empty_list;
+                  out_targets["suspects"] = empty_list;
+                  out_targets["formulas"] = empty_list;
+                  out_targets["compounds"] = empty_list;
+                  out_targets.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+                  out_analyses[fts_feature[k]] = out_targets;
+                  has_feature = true;
+                  break;
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      if (has_feature)
+      {
+        ana_targets[j].index.erase(ana_targets[j].index.begin() + i);
+        ana_targets[j].id.erase(ana_targets[j].id.begin() + i);
+        ana_targets[j].level.erase(ana_targets[j].level.begin() + i);
+        ana_targets[j].polarity.erase(ana_targets[j].polarity.begin() + i);
+        ana_targets[j].precursor.erase(ana_targets[j].precursor.begin() + i);
+        ana_targets[j].mzmin.erase(ana_targets[j].mzmin.begin() + i);
+        ana_targets[j].mzmax.erase(ana_targets[j].mzmax.begin() + i);
+        ana_targets[j].rtmin.erase(ana_targets[j].rtmin.begin() + i);
+        ana_targets[j].rtmax.erase(ana_targets[j].rtmax.begin() + i);
+        ana_targets[j].mobilitymin.erase(ana_targets[j].mobilitymin.begin() + i);
+        ana_targets[j].mobilitymax.erase(ana_targets[j].mobilitymax.begin() + i);
+        ana_targets_groups[j].erase(ana_targets_groups[j].begin() + i);
+        ana_targets_replicates[j].erase(ana_targets_replicates[j].begin() + i);
+      }
+    }
+    
+    Rcpp::Rcout << "Done!" << std::endl;
 
     Rcpp::Rcout << "Extracting " << ana_targets[j].id.size() << " EICs from analysis " << analyses_names[j] << "...";
 
@@ -1590,7 +1690,6 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
           Rcpp::Named("intensity") = res_i.intensity);
 
       eic.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
       Rcpp::List list_eic;
       list_eic.push_back(eic);
 

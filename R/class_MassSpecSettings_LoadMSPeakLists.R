@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# patRoon -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_LoadMSPeakLists_patRoon**
 #'
 #' @description Settings for loading MS2 and MS1 spectra for feature groups.
@@ -46,7 +41,8 @@
 #'
 #' @export
 #'
-MassSpecSettings_LoadMSPeakLists_patRoon <- S7::new_class("MassSpecSettings_LoadMSPeakLists_patRoon",
+MassSpecSettings_LoadMSPeakLists_patRoon <- S7::new_class(
+  name = "MassSpecSettings_LoadMSPeakLists_patRoon",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -60,30 +56,32 @@ MassSpecSettings_LoadMSPeakLists_patRoon <- S7::new_class("MassSpecSettings_Load
                          method = "hclust",
                          retainPrecursorMSMS = TRUE) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "LoadMSPeakLists",
-      required = c("FindFeatures", "GroupFeatures"),
-      algorithm = "patRoon",
-      parameters = list(
-        maxMSRtWindow = maxMSRtWindow,
-        precursorMzWindow = precursorMzWindow,
-        clusterMzWindow = clusterMzWindow,
-        topMost = topMost,
-        minIntensityPre = minIntensityPre,
-        minIntensityPost = minIntensityPost,
-        avgFun = avgFun,
-        method = method,
-        retainPrecursorMSMS = retainPrecursorMSMS
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "patRoon",
-      developer = "Rick Helmus",
-      contact = "r.helmus@uva.nl",
-      link = "https://github.com/rickhelmus/patRoon",
-      doi = "10.21105/joss.04029"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "LoadMSPeakLists",
+        required = c("FindFeatures", "GroupFeatures"),
+        algorithm = "patRoon",
+        parameters = list(
+          maxMSRtWindow = maxMSRtWindow,
+          precursorMzWindow = precursorMzWindow,
+          clusterMzWindow = clusterMzWindow,
+          topMost = topMost,
+          minIntensityPre = minIntensityPre,
+          minIntensityPost = minIntensityPost,
+          avgFun = avgFun,
+          method = method,
+          retainPrecursorMSMS = retainPrecursorMSMS
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "patRoon",
+        developer = "Rick Helmus",
+        contact = "r.helmus@uva.nl",
+        link = "https://github.com/rickhelmus/patRoon",
+        doi = "10.21105/joss.04029"
+      )
+    )
   },
   
   validator = function(self) {
@@ -161,13 +159,10 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_patRoon) <- function(x, engine 
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_LoadMSPeakLists_StreamFind**
 #'
-#' @description Settings for converting loaded MS2 and MS1 spectra into a `MSPeakLists` object from patRoon.
+#' @description Settings for converting loaded MS2 and MS1 spectra into a `MSPeakLists` object from
+#' patRoon.
 #'
 #' @param clusterMzWindow m/z window (in Da) used for clustering m/z values
 #' when spectra are averaged. For method="hclust" this corresponds to the
@@ -195,52 +190,55 @@ S7::method(run, MassSpecSettings_LoadMSPeakLists_patRoon) <- function(x, engine 
 #'
 #' @export
 #'
-MassSpecSettings_LoadMSPeakLists_StreamFind <- S7::new_class("MassSpecSettings_LoadMSPeakLists_StreamFind",
-                                                             parent = ProcessingSettings,
-                                                             package = "StreamFind",
-                                                             
-                                                             constructor = function(clusterMzWindow = 0.005,
-                                                                                    topMost = 100,
-                                                                                    minIntensityPre = 50,
-                                                                                    minIntensityPost = 50,
-                                                                                    avgFun = "mean",
-                                                                                    method = "distance") {
-                                                               
-                                                               S7::new_object(ProcessingSettings(
-                                                                 engine = "MassSpec",
-                                                                 method = "LoadMSPeakLists",
-                                                                 required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
-                                                                 algorithm = "StreamFind",
-                                                                 parameters = list(
-                                                                   clusterMzWindow = clusterMzWindow,
-                                                                   topMost = topMost,
-                                                                   minIntensityPre = minIntensityPre,
-                                                                   minIntensityPost = minIntensityPost,
-                                                                   avgFun = avgFun,
-                                                                   method = method
-                                                                 ),
-                                                                 number_permitted = 1,
-                                                                 version = as.character(packageVersion("StreamFind")),
-                                                                 software = "StreamFind",
-                                                                 developer = "Ricardo Cunha",
-                                                                 contact = "cunha@iuta.de",
-                                                                 link = "https://odea-project.github.io/StreamFind",
-                                                                 doi = NA_character_
-                                                               ))
-                                                             },
-                                                             
-                                                             validator = function(self) {
-                                                               checkmate::assert_choice(self@engine, "MassSpec")
-                                                               checkmate::assert_choice(self@method, "LoadMSPeakLists")
-                                                               checkmate::assert_choice(self@algorithm, "StreamFind")
-                                                               checkmate::assert_numeric(self@parameters$clusterMzWindow, len = 1)
-                                                               checkmate::assert_numeric(self@parameters$topMost, len = 1)
-                                                               checkmate::assert_numeric(self@parameters$minIntensityPre, len = 1)
-                                                               checkmate::assert_numeric(self@parameters$minIntensityPost, len = 1)
-                                                               checkmate::assert_character(self@parameters$avgFun)
-                                                               checkmate::assert_choice(self@parameters$method, c("hclust", "distance"))
-                                                               NULL
-                                                             }
+MassSpecSettings_LoadMSPeakLists_StreamFind <- S7::new_class(
+  name = "MassSpecSettings_LoadMSPeakLists_StreamFind",
+  parent = ProcessingSettings,
+  package = "StreamFind",
+  
+  constructor = function(clusterMzWindow = 0.005,
+                         topMost = 100,
+                         minIntensityPre = 50,
+                         minIntensityPost = 50,
+                         avgFun = "mean",
+                         method = "distance") {
+   
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "LoadMSPeakLists",
+        required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
+        algorithm = "StreamFind",
+        parameters = list(
+          clusterMzWindow = clusterMzWindow,
+          topMost = topMost,
+          minIntensityPre = minIntensityPre,
+          minIntensityPost = minIntensityPost,
+          avgFun = avgFun,
+          method = method
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
+  },
+  
+  validator = function(self) {
+    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@method, "LoadMSPeakLists")
+    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_numeric(self@parameters$clusterMzWindow, len = 1)
+    checkmate::assert_numeric(self@parameters$topMost, len = 1)
+    checkmate::assert_numeric(self@parameters$minIntensityPre, len = 1)
+    checkmate::assert_numeric(self@parameters$minIntensityPost, len = 1)
+    checkmate::assert_character(self@parameters$avgFun)
+    checkmate::assert_choice(self@parameters$method, c("hclust", "distance"))
+    NULL
+  }
 )
 
 #' @export

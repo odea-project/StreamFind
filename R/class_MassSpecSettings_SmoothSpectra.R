@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# movingaverage -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_SmoothSpectra_movingaverage**
 #'
 #' @description Smooths spectra using the moving average algorithm.
@@ -13,26 +8,29 @@
 #'
 #' @export
 #'
-MassSpecSettings_SmoothSpectra_movingaverage <- S7::new_class("MassSpecSettings_SmoothSpectra_movingaverage",
+MassSpecSettings_SmoothSpectra_movingaverage <- S7::new_class(
+  name = "MassSpecSettings_SmoothSpectra_movingaverage",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(windowSize = 5) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "SmoothSpectra",
-      algorithm = "movingaverage",
-      required = "LoadSpectra",
-      parameters = list(windowSize = windowSize),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "SmoothSpectra",
+        algorithm = "movingaverage",
+        required = "LoadSpectra",
+        parameters = list(windowSize = windowSize),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -95,46 +93,47 @@ S7::method(run, MassSpecSettings_SmoothSpectra_movingaverage) <- function(x, eng
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# savgol -----
-# ______________________________________________________________________________________________________________________
-
 #' **MassSpecSettings_SmoothSpectra_savgol**
 #'
 #' @description Smooths spectra using the Savitzky-Golay algorithm from the \pkg{pracma} package.
 #' 
 #' @param fl Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.
-#' @param forder Numeric (length 1) with the order of the filter (2 = quadratic filter, 4 = quartic).
-#' @param dorder Numeric (length 1) with the order of the derivative (0 = smoothing, 1 = first derivative, etc.).
+#' @param forder Numeric (length 1) with the order of the filter
+#' (2 = quadratic filter, 4 = quartic).
+#' @param dorder Numeric (length 1) with the order of the derivative
+#' (0 = smoothing, 1 = first derivative, etc.).
 #'
 #' @return A MassSpecSettings_SmoothSpectra_savgol object.
 #'
 #' @export
 #'
-MassSpecSettings_SmoothSpectra_savgol <- S7::new_class("MassSpecSettings_SmoothSpectra_savgol",
+MassSpecSettings_SmoothSpectra_savgol <- S7::new_class(
+  name = "MassSpecSettings_SmoothSpectra_savgol",
   parent = ProcessingSettings,
   package = "StreamFind",
   
   constructor = function(fl = 11, forder = 4, dorder = 0) {
     
-    S7::new_object(ProcessingSettings(
-      engine = "MassSpec",
-      method = "SmoothSpectra",
-      required = "LoadSpectra",
-      algorithm = "savgol",
-      parameters = list(
-        fl = fl,
-        forder = forder,
-        dorder = dorder
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "pracma",
-      developer = "Hans W. Borchers",
-      contact = NA_character_,
-      link = "https://cran.r-project.org/web/packages/pracma/index.html",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "MassSpec",
+        method = "SmoothSpectra",
+        required = "LoadSpectra",
+        algorithm = "savgol",
+        parameters = list(
+          fl = fl,
+          forder = forder,
+          dorder = dorder
+        ),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "pracma",
+        developer = "Hans W. Borchers",
+        contact = NA_character_,
+        link = "https://cran.r-project.org/web/packages/pracma/index.html",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {

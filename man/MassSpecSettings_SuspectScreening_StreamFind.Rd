@@ -19,8 +19,8 @@ MassSpecSettings_SuspectScreening_StreamFind(
 )
 }
 \arguments{
-\item{database}{A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic
-mass of the suspect targets.}
+\item{database}{A data.frame with at least the columns name and mass, indicating the name and
+neutral monoisotopic mass of the suspect targets.}
 
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}
 

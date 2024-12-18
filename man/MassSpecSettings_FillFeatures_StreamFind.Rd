@@ -24,18 +24,21 @@ retention time range.}
 \item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{minNumberTraces}{Integer of length one with the minimum number of traces to consider a feature.}
+\item{minNumberTraces}{Integer of length one with the minimum number of traces to consider a
+feature.}
 
 \item{baseCut}{Numeric of length one with the base cut for building Gaussian model.}
 
-\item{minSignalToNoiseRatio}{Numeric of length one with the minimum signal to noise ratio to consider a feature.}
+\item{minSignalToNoiseRatio}{Numeric of length one with the minimum signal to noise ratio to
+consider a feature.}
 
 \item{minGaussianFit}{Numeric of length one with the minimum Gaussian fit to consider a feature.}
 
-\item{minIntenisty}{Numeric of length one with the minimum intensity to collect spectra data for extracted ion chromatograms.}
+\item{minIntenisty}{Numeric of length one with the minimum intensity to collect spectra data for
+extracted ion chromatograms.}
 }
 \value{
-A ProcessingSettings S3 class object with subclass MassSpecSettings_FillFeatures_StreamFind.
+A MassSpecSettings_FillFeatures_StreamFind class object.
 }
 \description{
 Settings for filling missing values in features.
