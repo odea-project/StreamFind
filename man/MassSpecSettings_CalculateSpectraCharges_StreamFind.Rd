@@ -6,22 +6,26 @@
 \title{\strong{MassSpecSettings_CalculateSpectraCharges_StreamFind}}
 \usage{
 MassSpecSettings_CalculateSpectraCharges_StreamFind(
+  onlyTopScans = FALSE,
+  topScans = 1,
   roundVal = 35,
   relLowCut = 0.2,
   absLowCut = 300,
-  onlyMaxScan = FALSE,
   top = 5
 )
 }
 \arguments{
+\item{onlyTopScans}{Logical (length 1) to consider only the \emph{n} \code{TopScans} with the highest
+intensity.}
+
+\item{topScans}{Numeric (length 1) with the number of top scans to be considered.}
+
 \item{roundVal}{Numeric (length 1) with the rounding value for the m/z values before applying
 charge clustering.}
 
 \item{relLowCut}{Numeric (length 1) with the relative low cut for the charge clustering.}
 
 \item{absLowCut}{Numeric (length 1) with the absolute low cut for the charge clustering.}
-
-\item{onlyMaxScan}{Logical (length 1) to consider only the scan with the highest intensity.}
 
 \item{top}{Numeric (length 1) with the number of top charges to be considered.}
 }

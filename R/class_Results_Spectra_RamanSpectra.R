@@ -4,7 +4,6 @@ RamanSpectra <- S7::new_class(
   name = "RamanSpectra",
   package = "StreamFind",
   parent = Spectra,
-  
   properties = list(
     
     has_chromatograms = S7::new_property(
@@ -29,8 +28,8 @@ RamanSpectra <- S7::new_class(
                          peaks = list(),
                          chrom_peaks = list()) {
     S7::new_object(
-      Spectra(), 
-      name = "Spectra",
+      Spectra(),
+      name = "RamanSpectra",
       software = "StreamFind",
       version = as.character(packageVersion("StreamFind")),
       spectra = spectra,

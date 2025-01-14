@@ -38,7 +38,9 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 # ms$plot_spectra_3d(mass = dbsus[15, ], ppm = 60, sec = 120, colorBy = "replicates")
 
 # NTS workflow -----
-ms <- MassSpecEngine$new(analyses = ms_files_df)
+ms <- MassSpecEngine$new(analyses = ms_files_complete[c(1, 4)])
+
+ms$plot_chromatograms(analyses = 1)
 
 # show(ms$audit_trail)
 # as.data.frame(ms$audit_trail)

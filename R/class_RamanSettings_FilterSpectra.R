@@ -82,8 +82,15 @@ S7::method(run, RamanSettings_FilterSpectra_StreamFind) <- function(x, engine = 
     
     sub_spectra <- Map(function(z, y) {
       z$id <- NA_character_
+      if ("group" %in% colnames(y)) {
+        z$group <- NA_character_
+      }
       for (i in seq_len(nrow(y))) {
-        z$id[z$rt >= y$rtmin[i] & z$rt <= y$rtmax[i]] <- paste0(y$peak[i], "_", round(y$rt[i], digits = 1))
+        sel <- z$rt >= y$rtmin[i] & z$rt <= y$rtmax[i]
+        z$id[sel] <- paste0(y$peak[i], "_", round(y$rt[i], digits = 0))
+        if ("group" %in% colnames(y)) {
+          z$group[sel] <- y$group[i]
+        }
       }
       z <- z[!is.na(z$id), ]
       z

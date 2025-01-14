@@ -97,156 +97,106 @@ S7::method(run, MassSpecSettings_BinSpectra_StreamFind) <- function(x, engine = 
     if (is.integer(refBinAnalysis) && length(refBinAnalysis) == 1) {
       refBinAnalysis <- names(engine$analyses)[refBinAnalysis]
     }
-    
     if (!is.character(refBinAnalysis)) {
       warning("Reference analysis not found! Not done.")
       return(FALSE)
     }
-    
     refSpec <- spec_list[[refBinAnalysis]]
     
     if (nrow(refSpec) == 0) {
       warning("Reference analysis not found! Not done.")
       return(FALSE)
     }
-    
-    if (byUnit && !is.null(binNames)) {
-      
-      if (!all(names(binNames) %in% colnames(refSpec))) {
-        stop("Names in bins not found in spectra columns")
-      }
-      
-      .make_bin_sequence <- function(vec, bin_size) {
-        seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
-      }
-      
-      ref_bins_seq_list <- Map(function(name, val) {
-        .make_bin_sequence(refSpec[[name]], val)
-      }, binNames, binValues)
-      
-      ref_bin_matrix <- as.data.frame(do.call(expand.grid, ref_bins_seq_list))
-      
-      colnames(ref_bin_matrix) <- binNames
-      
-      ref_bin_key <- apply(ref_bin_matrix, 1, function(x) paste0(x, collapse = "-"))
-      
-      if (length(ref_bin_key) > 0) useRefBins <- TRUE
-    }
+  } else {
+    refSpec <- data.table::rbindlist(spec_list)
   }
   
-  spec_binned <- lapply(spec_list, function(z) {
+  if (byUnit && !is.null(binNames)) {
+    if (!all(names(binNames) %in% colnames(refSpec))) {
+      stop("Names in bins not found in spectra columns")
+    }
+    .make_bin_sequence <- function(vec, bin_size) {
+      seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
+    }
+    ref_bins_seq_list <- Map(function(name, val) {
+      .make_bin_sequence(refSpec[[name]], val)
+    }, binNames, binValues)
+    ref_bin_matrix <- as.data.frame(do.call(expand.grid, ref_bins_seq_list))
+    colnames(ref_bin_matrix) <- binNames
+    ref_bin_key <- apply(ref_bin_matrix, 1, function(x) paste0(x, collapse = "-"))
+    if (length(ref_bin_key) > 0) useRefBins <- TRUE
+  }
+  
+  spec_binned <- lapply(spec_list, function(z,
+                                            ref_bin_key,
+                                            ref_bin_matrix,
+                                            binNames,
+                                            binValues,
+                                            byUnit) {
     
     if (nrow(z) == 0) return(data.table::data.table())
     
     if (!byUnit && binNames[1] %in% colnames(z)) {
-      
       intensity <- NULL
-      
       unitVal <- unique(z[[binNames[1]]])
-      
       max_i <- length(unitVal) # maximum number of scan
-      
       min_i <- 1
-      
       unitSections <- seq(min_i, max_i, binValues[1])
-      
       idx <- seq_len(max_i)
-      
       binKey <- rep(NA_integer_, max_i)
-      
       for (i in unitSections) binKey[idx >= i] <- i
-      
       names(binKey) <- as.character(unitVal)
-      
       res <- data.table::data.table(
         "intensity" = z$intensity,
         "bin_key" = binKey[as.character(z[[binNames[1]]])]
       )
-      
       xVals <- colnames(z)
-      
       xVals <- xVals[!xVals %in% c("analysis", "replicate", "intensity")]
-      
       for (i in xVals) res[[i]] <- z[[i]]
-      
       valKeys <- xVals[!xVals %in% binNames[1]]
-      
       res[["z"]] <- res[[binNames[1]]]
-      
       res <- res[, .(z = mean(z), intensity = mean(intensity)), by = c("bin_key", valKeys)]
-      
       res[[binNames[1]]] <- res[["z"]]
-      
       res$z <- NULL
-      
       res <- unique(res)
-      
       data.table::setcolorder(res, c(binNames[1], valKeys, "intensity"))
-      
       res$bin_key <- NULL
-      
       if ("replicate" %in% colnames(z)) {
         res$replicate <- unique(z$replicate)
         data.table::setcolorder(res, c("replicate"))
       }
-      
       if ("analysis" %in% colnames(z)) {
         res$analysis <- unique(z$analysis)
         data.table::setcolorder(res, c("analysis"))
       }
-      
       res
       
     } else if (byUnit) {
-      
-      if (useRefBins) {
-        bins_seq_list <- ref_bins_seq_list
-        bin_matrix <- ref_bin_matrix
-        bin_key <- ref_bin_key
-        
-      } else {
-        
-        if (!all(binNames %in% colnames(z))) {
-          stop("Names in bins not fouond in spectra columns!")
-        }
-        
-        .make_bin_sequence <- function(vec, bin_size) {
-          seq(round(min(vec), digits = 0), round(max(vec) , digits = 0), bin_size)
-        }
-        
-        bins_seq_list <- Map(function(name, val) {
-          .make_bin_sequence(z[[name]], val)
-        }, binNames, binValues)
-        
-        bin_matrix <- as.data.frame(do.call(expand.grid, bins_seq_list))
-        
-        colnames(bin_matrix) <- binNames
-        
-        bin_key <- apply(bin_matrix, 1, function(i) paste0(i, collapse = "-"))
-      }
-      
-      bins <- lapply(seq_along(binNames), function(z) binValues[z])
+      bins <- lapply(seq_along(binNames), function(k) binValues[k])
       names(bins) <- binNames
-      
-      ints <- rcpp_fill_bin_spectra(z, bin_matrix, bins, overlap = 0.1, summaryFunction = "mean")
-      
+      ints <- rcpp_fill_bin_spectra(z, ref_bin_matrix, bins, overlap = 0.1, summaryFunction = "mean")
       out <- data.table::data.table(
         "analysis" = unique(z$analysis),
         "id" = unique(z$id),
         "polarity" = unique(z$polarity),
-        "rt" = bin_matrix$rt,
-        "mz" = bin_matrix$mz,
-        "mass" = bin_matrix$mass,
+        "rt" = ref_bin_matrix$rt,
+        "mz" = ref_bin_matrix$mz,
+        "mass" = ref_bin_matrix$mass,
         "intensity" = ints,
-        "bins" = bin_key
+        "bins" = ref_bin_key
       )
-      
       out
       
     } else {
       z
     }
-  })
+  },
+  ref_bin_key = ref_bin_key,
+  ref_bin_matrix = ref_bin_matrix,
+  binNames = binNames,
+  binValues = binValues,
+  byUnit = byUnit
+  )
   
   engine$spectra$spectra <- spec_binned
   message(paste0("\U2713 ", "Spectra binned!"))

@@ -95,12 +95,12 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
       if (length(self) == 0) {
         return(FALSE)
       }
-      if (is.null(self@results[["spectra"]])) {
+      if (is.null(self@results[["RamanSpectra"]])) {
         if (length(self$raw_spectra) == 0) {
           return(FALSE)
         }
       } else {
-        if (!is(self@results[["spectra"]], "StreamFind::RamanSpectra")) {
+        if (!is(self@results[["RamanSpectra"]], "StreamFind::RamanSpectra")) {
           return(FALSE)
         }
       }
@@ -111,8 +111,8 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
     ## __spectra -----
     spectra = S7::new_property(S7::class_data.frame,
       getter = function(self) {
-        if (!is.null(self@results[["spectra"]])) {
-          return(self@results[["spectra"]])
+        if (!is.null(self@results[["RamanSpectra"]])) {
+          return(self@results[["RamanSpectra"]])
         }
         StreamFind::RamanSpectra(self$raw_spectra)
       },
@@ -122,7 +122,7 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
             analyses_names <- unname(names(self))
             value_analyses_names <- names(value$spectra)
             if (identical(analyses_names, value_analyses_names)) {
-              self@results[["spectra"]] <- value
+              self@results[[value@name]] <- value
             } else {
               warning("Analysis names do not match! Not done.")
             }
@@ -130,7 +130,7 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
             replicate_names <- unique(unname(self$replicates))
             value_analyses_names <- names(value$spectra)
             if (identical(replicate_names, value_analyses_names)) {
-              self@results[["spectra"]] <- value
+              self@results[[value@name]] <- value
             } else {
               warning("Replicate names do not match! Not done.")
             }
@@ -157,7 +157,9 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
   ## __validator -----
   validator = function(self) {
     checkmate::assert_true(identical(self@possible_formats, c("asc", "sif")))
-    if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(names(self))))
+    if (length(self) > 0) {
+      checkmate::assert_true(identical(names(self@analyses), unname(names(self))))
+    }
     NULL
   }
 )
@@ -297,7 +299,7 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
                                                    analyses = NULL,
                                                    rt = NULL,
                                                    shift = NULL,
-                                                   minIntensity = 0,
+                                                   minIntensity = NULL,
                                                    useRawData = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
   if (is.null(analyses)) {
@@ -355,7 +357,7 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
     setorder(spec, analysis, shift)
   }
 
-  spec <- spec[spec$intensity >= minIntensity, ]
+  if (!is.null(minIntensity)) spec <- spec[spec$intensity >= minIntensity, ]
 
   setcolorder(spec, c("analysis", "replicate"))
   spec
@@ -388,14 +390,25 @@ S7::method(get_spectra_matrix, RamanAnalyses) <- function(x, analyses = NULL) {
   intensity <- NULL
 
   spec_list <- lapply(spec_list, function(z) {
-    z <- z[, .(intensity = mean(intensity)), by = c("shift")]
-    z <- data.table::dcast(z, formula = 1 ~ shift, value.var = "intensity")[, -1]
+    if ("group" %in% colnames(z)) {
+      data.table::setorder(z, group, shift)
+      z$var <- paste0(z$group, "_", z$shift)
+      z$var <- factor(z$var, levels = unique(z$var))
+    } else if ("id" %in% colnames(z)) {
+      data.table::setorder(z, id, shift)
+      z$var <- paste0(z$id, "_", z$shift)
+      z$var <- factor(z$var, levels = unique(z$var))
+    } else {
+      z$var <- z$shift
+    }
+    z <- z[, .(intensity = mean(intensity)), by = c("var")]
+    z <- data.table::dcast(z, formula = 1 ~ var, value.var = "intensity")[, -1]
     z
   })
-
+  
   spec <- as.matrix(rbindlist(spec_list, fill = TRUE))
   rownames(spec) <- names(spec_list)
-  attr(spec, "xValues") <- as.numeric(colnames(spec))
+  attr(spec, "xValues") <- colnames(spec)
   spec
 }
 
@@ -407,7 +420,7 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
                                                     analyses = NULL,
                                                     rt = NULL,
                                                     shift = NULL,
-                                                    minIntensity = 0,
+                                                    minIntensity = NULL,
                                                     useRawData = FALSE,
                                                     xVal = "shift",
                                                     xLab = NULL,
@@ -429,12 +442,14 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
   if ("rt" %in% xVal) {
     groupCols <- c("analysis", "replicate", "rt")
     if ("id" %in% colnames(spectra)) groupCols <- c("id", groupCols)
-    spectra <- spectra[, .(intensity = sum(intensity)), by = groupCols]
+    if ("group" %in% colnames(spectra)) groupCols <- c("group", groupCols)
+    spectra <- spectra[, .(intensity = mean(intensity)), by = groupCols]
     if (is.null(xLab)) xLab <- "Retention time / seconds"
     setnames(spectra, "rt", "shift")
   } else if ("shift" %in% xVal) {
     groupCols <- c("analysis", "replicate", "shift")
     if ("id" %in% colnames(spectra)) groupCols <- c("id", groupCols)
+    if ("group" %in% colnames(spectra)) groupCols <- c("group", groupCols)
     spectra <- spectra[, .(intensity = mean(intensity)), by = groupCols]
     if (is.null(xLab)) {
       if (interactive) {
@@ -454,7 +469,15 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
       spectra$replicate <- x$replicates[spectra$analysis]
     }
   }
+  
+  colorBy <- gsub("chrom_peaks", "targets", colorBy)
 
+  if (grepl("targets", colorBy)) {
+    if ("group" %in% colnames(spectra)) {
+      spectra$id <- spectra$group
+    }
+  }
+  
   spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
 
   setnames(spectra, "shift", "x")
@@ -474,7 +497,7 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
                                                        analyses = NULL,
                                                        rt = NULL,
                                                        shift = NULL,
-                                                       minIntensity = 0,
+                                                       minIntensity = NULL,
                                                        useRawData = FALSE,
                                                        legendNames = TRUE,
                                                        colorBy = "analyses",
@@ -531,7 +554,8 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
           temp <- spectra[spectra$analysis %in% z$analysis, ]
           temp$id <- NA_character_
           for (i in seq_len(nrow(z))) {
-            temp$id[temp$rt >= z$rtmin[i] & temp$rt <= z$rtmax[i]] <- paste0(z$peak[i], "_", z$rt[i])
+            sel <- temp$rt >= z$rtmin[i] & temp$rt <= z$rtmax[i]
+            temp$id[sel] <- paste0(z$peak[i], "_", z$rt[i])
           }
           temp <- temp[!is.na(temp$id), ]
           temp
@@ -539,6 +563,12 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
         spectra <- data.table::rbindlist(chrom_spectra)
         colorBy <- gsub("chrom_peaks", "targets", colorBy)
       }
+    }
+  }
+  
+  if (grepl("targets", colorBy)) {
+    if ("group" %in% colnames(spectra)) {
+      spectra$id <- spectra$group
     }
   }
   
@@ -592,7 +622,7 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
                                                              analyses = NULL,
                                                              rt = NULL,
                                                              shift = NULL,
-                                                             minIntensity = 0,
+                                                             minIntensity = NULL,
                                                              xVal = "shift",
                                                              xLab = NULL,
                                                              yLab = NULL,
@@ -611,14 +641,17 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
   baseline <- NULL
 
   if ("rt" %in% xVal) {
-    spectra <- spectra[, .(baseline = sum(baseline), raw = sum(raw)), by = c("analysis", "rt")]
-
+    groups_col <- c("analysis", "replicate", "rt")
+    if ("id" %in% colnames(spectra)) groups_col <- c("id", groups_col)
+    if ("group" %in% colnames(spectra)) groupCols <- c("group", groupCols)
+    spectra <- spectra[, .(baseline = mean(baseline), raw = mean(raw)), by = groups_col]
     if (is.null(xLab)) xLab <- "Retention time / seconds"
-
     setnames(spectra, "rt", "shift")
   } else if ("shift" %in% xVal) {
-    spectra <- spectra[, .(baseline = mean(baseline), raw = mean(raw)), by = c("analysis", "shift")]
-
+    groups_col <- c("analysis", "replicate", "shift")
+    if ("id" %in% colnames(spectra)) groups_col <- c("id", groups_col)
+    if ("group" %in% colnames(spectra)) groupCols <- c("group", groupCols)
+    spectra <- spectra[, .(baseline = mean(baseline), raw = mean(raw)), by = groups_col]
     if (is.null(xLab)) {
       if (interactive) {
         xLab <- "Raman shift / cm<sup>-1</sup>"
@@ -627,10 +660,22 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
       }
     }
   }
+  
+  if (!"replicate" %in% colnames(spectra)) {
+    spectra$replicate <- x$replicates[spectra$analysis]
+  }
 
   spectra <- unique(spectra)
 
   if (is.null(yLab)) yLab <- "Raman intensity / A.U."
+  
+  colorBy <- gsub("chrom_peaks", "targets", colorBy)
+  
+  if (grepl("targets", colorBy)) {
+    if ("group" %in% colnames(spectra)) {
+      spectra$id <- spectra$group
+    }
+  }
 
   spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
 
@@ -651,7 +696,7 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
                                                           analyses = NULL,
                                                           rt = NULL,
                                                           shift = NULL,
-                                                          minIntensity = 0,
+                                                          minIntensity = NULL,
                                                           useRawData = FALSE,
                                                           xLab = NULL,
                                                           yLab = NULL,
@@ -668,6 +713,10 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
     spectra[["shift"]] <- NULL
 
     spectra <- spectra[, .(intensity = sum(intensity)), by = c("analysis", "rt")]
+    
+    if (!"replicate" %in% colnames(spectra)) {
+      spectra$replicate <- x$replicates[spectra$analysis]
+    }
 
     spectra <- unique(spectra)
 
@@ -676,6 +725,8 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
     spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
 
     setnames(spectra, "rt", "x")
+    
+    if (is.null(yLab)) yLab <- "Cumulative Raman intensity / A.U."
 
     if (!interactive) {
       return(.plot_x_spectra_static(spectra, xLab, yLab, title, cex, showLegend))
@@ -790,9 +841,13 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
   spectra$id <- spectra$analysis
   
   if (!interactive) {
-    .plot_chrom_peaks_static(spectra, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+    .plot_chrom_peaks_static(
+      spectra, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab
+    )
   } else {
-    .plot_chrom_peaks_interactive(spectra, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+    .plot_chrom_peaks_interactive(
+      spectra, pks, legendNames, colorBy, title, showLegend, xLab, yLab
+    )
   }
 }
 
@@ -895,6 +950,7 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
                 }
 
                 shifts <- ((1 / ex_wavelength) - (1 / calibration_nm)) * 1e7
+                shifts <- round(shifts, digits = 0)
 
                 exposure_time <- as.numeric(sif_file$metadata$exposure_time)
 

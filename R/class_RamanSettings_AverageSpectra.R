@@ -1,15 +1,10 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **RamanSettings_AverageSpectra_StreamFind**
 #'
 #' @description Averages spectra based on variables.
 #' 
-#' @param by Character (length 1) with the grouping variable for averaging. Possible variables are `replicates`, 
-#' `chrom_peaks`, `rt`, `replicates+chrom_peaks`, `replicates+rt`, `chrom_peaks+rt`, `replicates+chrom_peaks+rt`.
-#' @param weightedAveraged Logical (length 1) for weighted averaging.
+#' @param by Character (length 1) with the grouping variable for averaging. Possible variables are 
+#' `replicates`, `chrom_peaks`, `rt`, `replicates+chrom_peaks`, `replicates+rt`, `chrom_peaks+rt`,
+#' `replicates+chrom_peaks+rt`.
 #'
 #' @return A RamanSettings_AverageSpectra_StreamFind object.
 #'
@@ -19,26 +14,25 @@ RamanSettings_AverageSpectra_StreamFind <- S7::new_class(
   "RamanSettings_AverageSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
-  constructor = function(by = "replicates", weightedAveraged = TRUE) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "Raman",
-      method = "AverageSpectra",
-      required = NA_character_,
-      algorithm = "StreamFind",
-      parameters = list(
-        by = by,
-        weightedAveraged = weightedAveraged
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+  constructor = function(by = "replicates") {
+    S7::new_object(
+      ProcessingSettings(
+        engine = "Raman",
+        method = "AverageSpectra",
+        required = NA_character_,
+        algorithm = "StreamFind",
+        parameters = list(
+          by = by
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
@@ -57,7 +51,6 @@ RamanSettings_AverageSpectra_StreamFind <- S7::new_class(
         "replicates+chrom_peaks+rt"
       )
     )
-    checkmate::assert_logical(self@parameters$weightedAveraged, max.len = 1)
     NULL
   }
 )
@@ -106,10 +99,17 @@ S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine =
   if ("chrom_peaks" %in% groupCols) {
     if (engine$spectra$has_chrom_peaks) {
       if (!"id" %in% colnames(spectra)) {
-        warning("Filter spectra to keep only from chromatographic peaks using RamanSettings_FilterSpectra_StreamFind! Not done.")
+        warning(
+          "Filter spectra to keep only from chromatographic peaks 
+          using RamanSettings_FilterSpectra_StreamFind! Not done."
+        )
         return(FALSE)
       }
-      groupCols <- c("id", groupCols)
+      if ("group" %in% colnames(spectra)) {
+        groupCols <- c("group", groupCols)
+      } else {
+        groupCols <- c("id", groupCols)
+      }
       groupCols <- groupCols[!groupCols %in% "chrom_peaks"]
     } else {
       warning("No chromatographic peaks found! Not done.")
@@ -127,30 +127,26 @@ S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine =
     spectra$id <- NULL
   }
   
-  if (x$parameters$weightedAveraged) {
-    intensity <- NULL
-    grouped_spectra <- spectra[, lapply(.SD, weighted.mean, w = intensity), by = groupCols]
-    
-    if (!"rt" %in% groupCols) {
-      grouped_spectra$rt <- NULL
-      rt <- spectra[, .(rt = mean(rt)), by = groupCols]
-      grouped_spectra <- merge(grouped_spectra, rt, by = groupCols)
-    }
-    
-  } else {
-    grouped_spectra <- spectra[, lapply(.SD, mean), by = groupCols]
+  if ("group" %in% colnames(spectra) && !"group" %in% groupCols) {
+    spectra$group <- NULL
   }
+  
+  grouped_spectra <- spectra[, lapply(.SD, mean), by = groupCols]
   
   if ("replicate" %in% groupCols) {
     setorder(grouped_spectra, shift, replicate)
     split_str <- grouped_spectra$replicate
     grouped_spectra$replicate <- NULL
     grouped_spectra_list <- split(grouped_spectra, split_str)
+    names_spectra <- unique(engine$analyses$replicates)
+    grouped_spectra_list <- grouped_spectra_list[names_spectra]
   } else {
     setorder(grouped_spectra, shift, analysis)
     split_str <- grouped_spectra$analysis
     grouped_spectra$analysis <- NULL
     grouped_spectra_list <- split(grouped_spectra, split_str)
+    names_spectra <- names(engine$analyses)
+    grouped_spectra_list <- grouped_spectra_list[names_spectra]
   }
   
   spectra <- engine$spectra

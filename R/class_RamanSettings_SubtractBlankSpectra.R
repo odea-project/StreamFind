@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **RamanSettings_SubtractBlankSpectra_StreamFind**
 #'
 #' @description Subtracts the blank spectra to each analysis according to the blank assignment.
@@ -13,27 +8,27 @@
 #'
 #' @export
 #'
-RamanSettings_SubtractBlankSpectra_StreamFind <- S7::new_class("RamanSettings_SubtractBlankSpectra_StreamFind",
+RamanSettings_SubtractBlankSpectra_StreamFind <- S7::new_class(
+  "RamanSettings_SubtractBlankSpectra_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(negativeToZero = FALSE) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "Raman",
-      method = "SubtractBlankSpectra",
-      algorithm = "StreamFind",
-      parameters = list(negativeToZero = negativeToZero),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "Raman",
+        method = "SubtractBlankSpectra",
+        algorithm = "StreamFind",
+        parameters = list(negativeToZero = negativeToZero),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "Raman")
     checkmate::assert_choice(self@method, "SubtractBlankSpectra")

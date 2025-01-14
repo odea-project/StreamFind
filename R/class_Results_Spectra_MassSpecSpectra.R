@@ -4,12 +4,10 @@ MassSpecSpectra <- S7::new_class(
   name = "MassSpecSpectra",
   package = "StreamFind",
   parent = Spectra,
-  
   properties = list(
     is_neutralized = S7::new_property(S7::class_logical, default = FALSE),
     charges = S7::new_property(S7::class_list, default = list())
   ),
-  
   constructor = function(spectra = list(),
                          is_averaged = FALSE,
                          is_neutralized = FALSE,
@@ -17,7 +15,7 @@ MassSpecSpectra <- S7::new_class(
                          charges = list()) {
     S7::new_object(
       Spectra(), 
-      name = "Spectra",
+      name = "MassSpecSpectra",
       software = "StreamFind",
       version = as.character(packageVersion("StreamFind")),
       spectra = spectra,

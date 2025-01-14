@@ -112,7 +112,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     get_overview = function() {
       self$analyses$info
     },
-
+    
     # MARK: get_spectra
     ## __ get_spectra -----
     #' @description Gets a `data.table` with spectra from analyses.
@@ -122,14 +122,14 @@ RamanEngine <- R6::R6Class("RamanEngine",
     get_spectra = function(analyses = NULL, rt = NULL, shift = NULL, minIntensity = 0, useRawData = FALSE) {
       get_spectra(self$analyses, analyses, rt, shift, minIntensity, useRawData)
     },
-
+    
     # MARK: get_spectra_matrix
     ## __ get_spectra_matrix -----
     #' @description Gets a matrix with spectra from analyses.
     get_spectra_matrix = function(analyses = NULL) {
       get_spectra_matrix(self$analyses, analyses)
     },
-
+    
     # MARK: add_analyses
     ## __ add_analyses -----
     #' @description Adds analyses based on asc files. Note that when adding new files, any existing results are removed.
@@ -144,7 +144,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
       self$analyses <- add(self$analyses, analyses)
       invisible(self)
     },
-
+    
     # MARK: remove_analyses
     ## __ remove_analyses -----
     #' @description Removes analyses.
@@ -179,14 +179,14 @@ RamanEngine <- R6::R6Class("RamanEngine",
       self$analyses$blanks <- value
       invisible(self)
     },
-
+    
     # MARK: has_spectra
     ## ___ has_spectra -----
     #' @description Checks if there are spectra results, returning `TRUE` or `FALSE`.
     has_spectra = function() {
       self$analyses$has_spectra
     },
-
+    
     # MARK: plot_spectra
     ## ___ plot_spectra -----
     #' @description Plots spectra for given *RamanAnalyses*.
@@ -200,7 +200,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     plot_spectra = function(analyses = NULL,
                             rt = NULL,
                             shift = NULL,
-                            minIntensity = 0,
+                            minIntensity = NULL,
                             useRawData = FALSE,
                             xVal = "shift",
                             xLab = NULL,
@@ -212,7 +212,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                             interactive = TRUE) {
       plot_spectra(self$analyses, analyses, rt, shift, minIntensity, useRawData, xVal, xLab, yLab, title, cex, showLegend, colorBy, interactive)
     },
-
+    
     # MARK: plot_spectra_baseline
     ## ___ plot_spectra_baseline -----
     #' @description Plots spectra corrected for given *RamanAnalyses*.
@@ -225,7 +225,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     plot_spectra_baseline = function(analyses = NULL,
                                      rt = NULL,
                                      shift = NULL,
-                                     minIntensity = 0,
+                                     minIntensity = NULL,
                                      xVal = "shift",
                                      xLab = NULL,
                                      yLab = NULL,
@@ -236,7 +236,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                      interactive = TRUE) {
       plot_spectra_baseline(self$analyses, analyses, rt, shift, minIntensity, xVal, xLab, yLab, title, cex, showLegend, colorBy, interactive)
     },
-
+    
     # MARK: plot_spectra_peaks
     ## ___ plot_spectra_peaks -----
     #' @description Plots peaks from spectra from analyses.
@@ -254,28 +254,28 @@ RamanEngine <- R6::R6Class("RamanEngine",
       if (!self$has_spectra_peaks()) {
         return(NULL)
       }
-
+      
       analyses <- .check_analyses_argument(self$analyses, analyses)
-
+      
       if (is.null(analyses)) {
         return(NULL)
       }
-
+      
       pks <- self$spectra_peaks
-
+      
       pks <- pks[pks$analysis %in% analyses, ]
-
+      
       if (nrow(pks) == 0) {
         message("\U2717 Peaks not found for the targets!")
         return(NULL)
       }
-
+      
       setnames(pks, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-
+      
       sp_data <- self$get_results("spectra")
       sp_data <- sp_data$spectra$data
       sp_data <- sp_data[unique(pks$analysis)]
-
+      
       if (self$has_averaged_spectra()) {
         spec <- lapply(sp_data, function(x) x$average)
         spec <- rbindlist(spec, fill = TRUE)
@@ -289,39 +289,40 @@ RamanEngine <- R6::R6Class("RamanEngine",
         setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
         setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
       }
-
+      
       if ("smoothed" %in% colnames(spec)) {
         spec$raw <- spec$smoothed
       }
-
+      
       ids <- spec$id
       names(ids) <- spec$analysis
       ids <- ids[!duplicated(names(ids))]
-
+      
       pks$id <- ids[pks$analysis]
-
+      
       if (is.null(xLab)) xLab <- "Mass / Da"
       if (is.null(yLab)) yLab <- "Intensity"
-
+      
       if (!interactive) {
         .plot_chrom_peaks_static(spec, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
       } else {
         .plot_chrom_peaks_interactive(spec, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
       }
     },
-
+    
     # MARK: plot_chromatograms
     ## ___ plot_chromatograms -----
     #' @description Plots chromatograms from analyses with spectra coupled to LC.
     #'
-    #' @param useRawData Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
+    #' @param useRawData Logical of length one. Set to `TRUE` for parsing raw spectra not spectra
+    #' results/processed.
     #'
     #' @return A plot.
     #'
     plot_chromatograms = function(analyses = NULL,
                                   rt = NULL,
                                   shift = NULL,
-                                  minIntensity = 0,
+                                  minIntensity = NULL,
                                   useRawData = FALSE,
                                   xLab = NULL,
                                   yLab = NULL,
@@ -330,7 +331,10 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                   showLegend = TRUE,
                                   colorBy = "analyses",
                                   interactive = TRUE) {
-      plot_chromatograms(self$analyses, analyses, rt, shift, minIntensity, useRawData, xLab, yLab, title, cex, showLegend, colorBy, interactive)
+      plot_chromatograms(
+        self$analyses, analyses, rt, shift, minIntensity, useRawData,
+        xLab, yLab, title, cex, showLegend, colorBy, interactive
+      )
     },
 
     # MARK: plot_chromatograms_peaks

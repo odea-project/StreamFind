@@ -132,18 +132,17 @@ S7::method(run, MassSpecSettings_AverageSpectra_StreamFind) <- function(x, engin
     spectra$id <- NULL
   }
   
+  if (!"rt" %in% groupCols) {
+    spectra$rt <- NULL
+  }
+  
   if (x$parameters$weightedAveraged) {
     intensity <- NULL
     grouped_spectra <- spectra[, lapply(.SD, weighted.mean, w = intensity), by = groupCols]
     
-    if (!"rt" %in% groupCols) {
-      grouped_spectra$rt <- NULL
-      rt <- spectra[, .(rt = mean(rt)), by = groupCols]
-      grouped_spectra <- merge(grouped_spectra, rt, by = groupCols)
-    }
-    
   } else {
-    grouped_spectra <- spectra[, lapply(.SD, mean), by = groupCols]
+    other_cols <- setdiff(colnames(spectra), groupCols)
+    grouped_spectra <- spectra[, .(intensity = mean(intensity)), by = groupCols, .SDcols = other_cols]
   }
   
   if ("replicate" %in% groupCols) {

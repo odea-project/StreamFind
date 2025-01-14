@@ -460,7 +460,7 @@ MassSpecAnalyses <- S7::new_class(
       S7::class_list,
       getter = function(self) {
         if (self$has_nts) {
-          return(self@results[["nts"]])
+          return(self@results[["NTS"]])
         }
         NULL
       },
@@ -470,7 +470,7 @@ MassSpecAnalyses <- S7::new_class(
             analyses_names <- unname(names(self))
             value_analyses_names <- sort(value@analyses_info$analysis)
             if (identical(analyses_names, value_analyses_names)) {
-              self@results[["nts"]] <- value
+              self@results[[value@name]] <- value
             } else {
               # TODO check if some analyses are in engine and subset engine to match nts
               warning("Analysis names do not match! Not done.")
@@ -493,10 +493,10 @@ MassSpecAnalyses <- S7::new_class(
         if (length(self) == 0) {
           return(FALSE)
         }
-        if (is.null(self@results[["spectra"]])) {
+        if (is.null(self@results[["MassSpecSpectra"]])) {
           return(FALSE)
         }
-        if (!is(self@results[["spectra"]], "StreamFind::MassSpecSpectra")) {
+        if (!is(self@results[["MassSpecSpectra"]], "StreamFind::MassSpecSpectra")) {
           return(FALSE)
         }
         TRUE
@@ -509,7 +509,7 @@ MassSpecAnalyses <- S7::new_class(
       S7::class_list,
       getter = function(self) {
         if (self$has_spectra) {
-          return(self@results[["spectra"]])
+          return(self@results[["MassSpecSpectra"]])
         }
         NULL
       },
@@ -519,7 +519,7 @@ MassSpecAnalyses <- S7::new_class(
             analyses_names <- unname(names(self))
             value_analyses_names <- names(value$spectra)
             if (identical(analyses_names, value_analyses_names)) {
-              self@results[["spectra"]] <- value
+              self@results[[value@name]] <- value
             } else {
               warning("Analysis names do not match! Not done.")
             }
@@ -527,7 +527,7 @@ MassSpecAnalyses <- S7::new_class(
             replicate_names <- unique(unname(self$replicates))
             value_analyses_names <- names(value$spectra)
             if (identical(replicate_names, value_analyses_names)) {
-              self@results[["spectra"]] <- value
+              self@results[[value@name]] <- value
             } else {
               warning("Replicate names do not match! Not done.")
             }
@@ -549,10 +549,10 @@ MassSpecAnalyses <- S7::new_class(
         if (length(self) == 0) {
           return(FALSE)
         }
-        if (is.null(self@results[["chromatograms"]])) {
+        if (is.null(self@results[["Chromatograms"]])) {
           return(FALSE)
         }
-        if (!is(self@results[["chromatograms"]], "StreamFind::Chromatograms")) {
+        if (!is(self@results[["Chromatograms"]], "StreamFind::Chromatograms")) {
           return(FALSE)
         }
         TRUE
@@ -565,7 +565,7 @@ MassSpecAnalyses <- S7::new_class(
       S7::class_list,
       getter = function(self) {
         if (self$has_chromatograms) {
-          return(self@results[["chromatograms"]])
+          return(self@results[["Chromatograms"]])
         }
         NULL
       },
@@ -575,7 +575,7 @@ MassSpecAnalyses <- S7::new_class(
             analyses_names <- unname(names(self))
             value_analyses_names <- names(value$chromatograms)
             if (identical(analyses_names, value_analyses_names)) {
-              self@results[["chromatograms"]] <- value
+              self@results[["Chromatograms"]] <- value
             } else {
               warning("Analysis names do not match! Not done.")
             }
@@ -583,7 +583,7 @@ MassSpecAnalyses <- S7::new_class(
             replicate_names <- unname(self$replicates)
             value_analyses_names <- names(value$chromatograms)
             if (identical(replicate_names, value_analyses_names)) {
-              self@results[["chromatograms"]] <- value
+              self@results[["Chromatograms"]] <- value
             } else {
               warning("Replicate names do not match! Not done.")
             }
@@ -1093,7 +1093,9 @@ S7::method(get_spectra_matrix, MassSpecAnalyses) <- function(x, analyses = NULL)
     z
   })
 
-  spec <- as.matrix(rbindlist(spec_list, fill = TRUE))
+  spec <- data.table::rbindlist(spec_list, fill = TRUE)
+  spec[is.na(spec)] <- 0
+  spec <- as.matrix(spec)
   rownames(spec) <- names(spec_list)
   spec
 }
@@ -1526,6 +1528,8 @@ S7::method(plot_spectra_3d, MassSpecAnalyses) <- function(x,
                                                           isolationWindow = 1.3,
                                                           minIntensityMS1 = 0,
                                                           minIntensityMS2 = 0,
+                                                          useRawData = FALSE,
+                                                          useLoadedData = TRUE,
                                                           legendNames = TRUE,
                                                           colorBy = "analyses",
                                                           xVal = "rt",
@@ -1536,7 +1540,7 @@ S7::method(plot_spectra_3d, MassSpecAnalyses) <- function(x,
   spec <- get_spectra(
     x, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
     allTraces = allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
-    useRawData = TRUE, useLoadedData = FALSE
+    useRawData = useRawData, useLoadedData = useLoadedData
   )
 
   if (nrow(spec) == 0) {
@@ -2131,7 +2135,7 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
       }
 
       message("\U2699 Parsing chromatograms from ", basename(z$file), "...", appendLF = FALSE)
-
+      
       chrom <- rcpp_parse_ms_chromatograms(z, idx)
 
       message(" Done!")

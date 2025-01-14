@@ -439,7 +439,7 @@ Rcpp::List rcpp_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx
 
   for (int i = 0; i < number_extracted_chromatograms; i++)
     total_traces += chromatograms[i][0].size();
-
+  
   if (total_traces == 0)
     return empty_df;
 
@@ -480,7 +480,7 @@ Rcpp::List rcpp_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx
       trace += 1;
     }
   }
-
+  
   out["index"] = index_out;
   out["id"] = id_out;
   out["polarity"] = polarity_out;

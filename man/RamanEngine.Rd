@@ -322,7 +322,7 @@ Plots spectra for given \emph{RamanAnalyses}.
   analyses = NULL,
   rt = NULL,
   shift = NULL,
-  minIntensity = 0,
+  minIntensity = NULL,
   useRawData = FALSE,
   xVal = "shift",
   xLab = NULL,
@@ -382,7 +382,7 @@ Plots spectra corrected for given \emph{RamanAnalyses}.
   analyses = NULL,
   rt = NULL,
   shift = NULL,
-  minIntensity = 0,
+  minIntensity = NULL,
   xVal = "shift",
   xLab = NULL,
   yLab = NULL,
@@ -490,7 +490,7 @@ Plots chromatograms from analyses with spectra coupled to LC.
   analyses = NULL,
   rt = NULL,
   shift = NULL,
-  minIntensity = 0,
+  minIntensity = NULL,
   useRawData = FALSE,
   xLab = NULL,
   yLab = NULL,
@@ -513,7 +513,8 @@ Plots chromatograms from analyses with spectra coupled to LC.
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw spectra not spectra
+results/processed.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}
 

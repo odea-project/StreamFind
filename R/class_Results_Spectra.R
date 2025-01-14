@@ -28,7 +28,7 @@ Spectra <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_true(self@name == "Spectra")
+    checkmate::assert_true(grepl("Spectra", self@name))
     checkmate::assert_true(self@software == "StreamFind")
     checkmate::assert_list(self@spectra)
     checkmate::assert_logical(self@is_averaged, max.len = 1)

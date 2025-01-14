@@ -1074,6 +1074,7 @@ MCRALS <- S7::new_class(
   validator = function(self) {
     checkmate::assert_true(self@name == "MCRALS")
     checkmate::assert_true(self@software == "StreamFind")
+    NULL
   }
 )
 

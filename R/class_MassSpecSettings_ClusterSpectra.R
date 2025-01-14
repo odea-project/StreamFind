@@ -88,34 +88,32 @@ S7::method(run, MassSpecSettings_ClusterSpectra_StreamFind) <- function(x, engin
     return(FALSE)
   }
   
+  number_analyses <- length(spec_list)
+  processed <- 0
   spec_list <- lapply(spec_list, function(z, val, clustVal, presence) {
-    
     if (nrow(z) > 0) {
-      
       z$mz <- z[[val]]
-      
       z$unique_id <- z$id
-      
       z$analysis <- ""
-      
       res <- rcpp_ms_cluster_spectra(z, clustVal, presence, FALSE)
-      
       res <- data.table::rbindlist(res, fill = TRUE)
-      
+      if (nrow(res) == 0) return(z)
       res <- res[order(res$mz), ]
-      
       res <- res[order(res$id), ]
-      
       res$analysis <- NULL
-      
       data.table::setnames(res, "mz", val)
-      
-      res
-      
+      processed <<- processed + 1
+      message(paste0("\U2713 ", "Processed ", processed, " of ", number_analyses, " analyses!"))
+      return(res)
     } else {
-      z
+      message(
+        paste0(
+          "\U2713 ", "No data to process for ",
+          processed, " of ", number_analyses, " analyses!"
+        )
+      )
+      return(z)
     }
-    
   }, val = val, clustVal = clustVal, presence = presence)
   
   engine$spectra$spectra <- spec_list

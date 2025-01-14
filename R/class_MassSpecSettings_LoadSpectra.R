@@ -134,7 +134,6 @@ MassSpecSettings_LoadSpectra_chrompeaks <- S7::new_class(
   name = "MassSpecSettings_LoadSpectra_chrompeaks",
   parent = ProcessingSettings,
   package = "chrompeaks",
-  
   constructor = function(levels = 1, mzmin = 0, mzmax = 0, minIntensity = 0) {
     S7::new_object(
       ProcessingSettings(

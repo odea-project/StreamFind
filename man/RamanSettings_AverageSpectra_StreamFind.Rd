@@ -4,16 +4,12 @@
 \alias{RamanSettings_AverageSpectra_StreamFind}
 \title{\strong{RamanSettings_AverageSpectra_StreamFind}}
 \usage{
-RamanSettings_AverageSpectra_StreamFind(
-  by = "replicates",
-  weightedAveraged = TRUE
-)
+RamanSettings_AverageSpectra_StreamFind(by = "replicates")
 }
 \arguments{
-\item{by}{Character (length 1) with the grouping variable for averaging. Possible variables are \code{replicates},
-\code{chrom_peaks}, \code{rt}, \code{replicates+chrom_peaks}, \code{replicates+rt}, \code{chrom_peaks+rt}, \code{replicates+chrom_peaks+rt}.}
-
-\item{weightedAveraged}{Logical (length 1) for weighted averaging.}
+\item{by}{Character (length 1) with the grouping variable for averaging. Possible variables are
+\code{replicates}, \code{chrom_peaks}, \code{rt}, \code{replicates+chrom_peaks}, \code{replicates+rt}, \code{chrom_peaks+rt},
+\code{replicates+chrom_peaks+rt}.}
 }
 \value{
 A RamanSettings_AverageSpectra_StreamFind object.

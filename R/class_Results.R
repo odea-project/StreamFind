@@ -3,7 +3,6 @@
 Results <- S7::new_class(
   name = "Results",
   package = "StreamFind",
-  
   properties = list(
     name = S7::new_property(S7::class_character, default = NA_character_),
     software = S7::new_property(S7::class_character, default = NA_character_),

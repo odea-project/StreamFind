@@ -4,7 +4,6 @@ DataFrame <- S7::new_class(
   name = "DataFrame",
   package = "StreamFind",
   parent = Results,
-  
   properties = list(
     data = S7::new_property(S7::class_data.frame, default = data.frame())
   ),
@@ -25,6 +24,7 @@ DataFrame <- S7::new_class(
     checkmate::assert_true(self@name == "DataFrame")
     checkmate::assert_true(self@software == "StreamFind")
     checkmate::assert_data_frame(self@data)
+    NULL
   }
 )
 

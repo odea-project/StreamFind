@@ -130,11 +130,11 @@ S7::method(run, MassSpecSettings_DeconvoluteSpectra_StreamFind) <- function(x, e
     
     profiles_dt$analysis <- ""
     
-    av_profile <- rcpp_ms_cluster_spectra(profiles_dt, mzClust = clustVal, presence = 0.1)[[1]]
+    av_profile <- rcpp_ms_cluster_spectra(profiles_dt, mzClust = clustVal, presence = 0.01)[[1]]
     
     av_profile <- as.data.table(av_profile)
     
-    av_profile$analysis <- NULL
+    if ("analysis" %in% colnames(av_profile)) av_profile$analysis <- NULL
     
     setnames(av_profile, "mz", "mass")
     

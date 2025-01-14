@@ -29,10 +29,10 @@
 #'
 #' @export
 #'
-StatisticSettings_MakeModel_pca_mdatools <- S7::new_class("StatisticSettings_MakeModel_pca_mdatools",
+StatisticSettings_MakeModel_pca_mdatools <- S7::new_class(
+  "StatisticSettings_MakeModel_pca_mdatools",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(center = FALSE,
                          scale = FALSE,
                          ncomp = NULL,
@@ -45,33 +45,35 @@ StatisticSettings_MakeModel_pca_mdatools <- S7::new_class("StatisticSettings_Mak
                          alpha = 0.05,
                          gamma = 0.01,
                          info = "") {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "Statistic",
-      method = "MakeModel",
-      algorithm = "pca_mdatools",
-      parameters = list(
-        center = center,
-        scale = scale,
-        ncomp = ncomp,
-        exclrows = exclrows,
-        exclcols = exclcols,
-        x.test = x.test,
-        method = method,
-        rand = rand,
-        lim.type = lim.type,
-        alpha = alpha,
-        gamma = gamma,
-        info = info
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "mdatools",
-      developer = "Sergey Kucheryavskiy",
-      contact = "svk@bio.aau.dk",
-      link = "https://github.com/svkucheryavski/mdatools",
-      doi = "10.1016/j.chemolab.2020.103937"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "Statistic",
+        method = "MakeModel",
+        required = NA_character_,
+        algorithm = "pca_mdatools",
+        parameters = list(
+          center = center,
+          scale = scale,
+          ncomp = ncomp,
+          exclrows = exclrows,
+          exclcols = exclcols,
+          x.test = x.test,
+          method = method,
+          rand = rand,
+          lim.type = lim.type,
+          alpha = alpha,
+          gamma = gamma,
+          info = info
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "mdatools",
+        developer = "Sergey Kucheryavskiy",
+        contact = "svk@bio.aau.dk",
+        link = "https://github.com/svkucheryavski/mdatools",
+        doi = "10.1016/j.chemolab.2020.103937"
+      )
+    )
   },
   
   validator = function(self) {
@@ -174,41 +176,42 @@ S7::method(run, StatisticSettings_MakeModel_pca_mdatools) <- function(x, engine 
 #'
 #' @export
 #'
-StatisticSettings_MakeModel_mcrpure_mdatools <- S7::new_class("StatisticSettings_MakeModel_mcrpure_mdatools",
+StatisticSettings_MakeModel_mcrpure_mdatools <- S7::new_class(
+  "StatisticSettings_MakeModel_mcrpure_mdatools",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(ncomp = NULL,
                          purevars = NULL,
                          offset = 0.05,
                          exclrows = NULL,
                          exclcols = NULL,
                          info = "") {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "Statistic",
-      method = "MakeModel",
-      algorithm = "mcrpure_mdatools",
-      parameters = list(
-        ncomp = ncomp,
-        purevars = purevars,
-        offset = offset,
-        exclrows = exclrows,
-        exclcols = exclcols,
-        info = info
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "mdatools",
-      developer = "Sergey Kucheryavskiy",
-      contact = "svk@bio.aau.dk",
-      link = "https://github.com/svkucheryavski/mdatools",
-      doi = "10.1016/j.chemolab.2020.103937"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "Statistic",
+        method = "MakeModel",
+        required = NA_character_,
+        algorithm = "mcrpure_mdatools",
+        parameters = list(
+          ncomp = ncomp,
+          purevars = purevars,
+          offset = offset,
+          exclrows = exclrows,
+          exclcols = exclcols,
+          info = info
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "mdatools",
+        developer = "Sergey Kucheryavskiy",
+        contact = "svk@bio.aau.dk",
+        link = "https://github.com/svkucheryavski/mdatools",
+        doi = "10.1016/j.chemolab.2020.103937"
+      )
+    )
   },
   
   validator = function(self) {
-    
     checkmate::assert_choice(self@engine, "Statistic")
     checkmate::assert_choice(self@method, "MakeModel")
     checkmate::assert_choice(self@algorithm, "mcrpure_mdatools")
@@ -306,10 +309,10 @@ S7::method(run, StatisticSettings_MakeModel_mcrpure_mdatools) <- function(x, eng
 #'
 #' @export
 #'
-StatisticSettings_MakeModel_mcrals_mdatools <- S7::new_class("StatisticSettings_MakeModel_mcrals_mdatools",
+StatisticSettings_MakeModel_mcrals_mdatools <- S7::new_class(
+  "StatisticSettings_MakeModel_mcrals_mdatools",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(ncomp = NULL,
                          cont.solver = "mcrals.nnls",
                          spec.solver = "mcrals.nnls",
@@ -319,32 +322,34 @@ StatisticSettings_MakeModel_mcrals_mdatools <- S7::new_class("StatisticSettings_
                          max.niter = 100,
                          tol = 10^-6,
                          info = "") {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "Statistic",
-      method = "MakeModel",
-      algorithm = "mcrals_mdatools",
-      parameters = list(
-        ncomp = ncomp,
-        cont.constraints = NULL,
-        spec.constraints = NULL,
-        cont.solver = cont.solver,
-        spec.solver = spec.solver,
-        exclrows = exclrows,
-        exclcols = exclcols,
-        verbose = verbose,
-        max.niter = max.niter,
-        tol = tol,
-        info = info
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "mdatools",
-      developer = "Sergey Kucheryavskiy",
-      contact = "svk@bio.aau.dk",
-      link = "https://github.com/svkucheryavski/mdatools",
-      doi = "10.1016/j.chemolab.2020.103937"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "Statistic",
+        method = "MakeModel",
+        required = NA_character_,
+        algorithm = "mcrals_mdatools",
+        parameters = list(
+          ncomp = ncomp,
+          cont.constraints = NULL,
+          spec.constraints = NULL,
+          cont.solver = cont.solver,
+          spec.solver = spec.solver,
+          exclrows = exclrows,
+          exclcols = exclcols,
+          verbose = verbose,
+          max.niter = max.niter,
+          tol = tol,
+          info = info
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "mdatools",
+        developer = "Sergey Kucheryavskiy",
+        contact = "svk@bio.aau.dk",
+        link = "https://github.com/svkucheryavski/mdatools",
+        doi = "10.1016/j.chemolab.2020.103937"
+      )
+    )
   },
   
   validator = function(self) {
@@ -456,29 +461,31 @@ S7::method(run, StatisticSettings_MakeModel_mcrals_mdatools) <- function(x, engi
 #'
 #' @export
 #' 
-StatisticSettings_MakeModel_knn <- S7::new_class("StatisticSettings_MakeModel_knn",
+StatisticSettings_MakeModel_knn <- S7::new_class(
+  "StatisticSettings_MakeModel_knn",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(k = 3, l = 0) {
-   
-    S7::new_object(ProcessingSettings(
-      engine = "Statistic",
-      method = "MakeModel",
-      algorithm = "knn",
-      parameters = list(
-        k = k,
-        l = l,
-        prob = TRUE
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "class",
-      developer = "Brian D. Ripley",
-      contact = "ripley@stats.ox.ac.uk",
-      link = "https://cran.r-project.org/web/packages/class/index.html",
-      doi = "ISBN 0-387-95457-0"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "Statistic",
+        method = "MakeModel",
+        required = NA_character_,
+        algorithm = "knn",
+        parameters = list(
+          k = k,
+          l = l,
+          prob = TRUE
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "class",
+        developer = "Brian D. Ripley",
+        contact = "ripley@stats.ox.ac.uk",
+        link = "https://cran.r-project.org/web/packages/class/index.html",
+        doi = "ISBN 0-387-95457-0"
+      )
+    )
   },
   
   validator = function(self) {

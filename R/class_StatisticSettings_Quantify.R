@@ -16,28 +16,30 @@
 #'
 #' @export
 #' 
-StatisticSettings_Quantify_mcrals <- S7::new_class("StatisticSettings_Quantify_mcrals",
+StatisticSettings_Quantify_mcrals <- S7::new_class(
+  "StatisticSettings_Quantify_mcrals",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
   constructor = function(concentrations = NA_real_) {
-    
-    S7::new_object(ProcessingSettings(
-      engine = "Statistic",
-      method = "Quantify",
-      required = "MakeModel",
-      algorithm = "mcrals",
-      parameters = list(concentrations = concentrations),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "mdatools",
-      developer = "Sergey Kucheryavskiy",
-      contact = "svk@bio.aau.dk",
-      link = "https://github.com/svkucheryavski/mdatools",
-      doi = "10.1016/j.chemolab.2020.103937"
-    ))
+    S7::new_object(
+      ProcessingSettings(
+        engine = "Statistic",
+        method = "Quantify",
+        required = "MakeModel",
+        algorithm = "mcrals",
+        parameters = list(
+          concentrations = concentrations
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "mdatools",
+        developer = "Sergey Kucheryavskiy",
+        contact = "svk@bio.aau.dk",
+        link = "https://github.com/svkucheryavski/mdatools",
+        doi = "10.1016/j.chemolab.2020.103937"
+      )
+    )
   },
-  
   validator = function(self) {
     checkmate::assert_choice(self@engine, "Statistic")
     checkmate::assert_choice(self@method, "Quantify")

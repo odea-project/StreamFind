@@ -72,12 +72,12 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
       if (length(self) == 0) {
         return(FALSE)
       }
-      if (is.null(self@results[["data"]])) {
+      if (is.null(self@results[["DataFrame"]])) {
         if (nrow(self$analyses) == 0) {
           return(FALSE)
         }
       }
-      if (!is(self@results[["data"]], "StreamFind::DataFrame")) {
+      if (!is(self@results[["DataFrame"]], "StreamFind::DataFrame")) {
         return(FALSE)
       }
       TRUE
@@ -87,8 +87,8 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     ## __data -----
     data = S7::new_property(S7::class_list,
       getter = function(self) {
-        if (!is.null(self@results[["data"]])) {
-          data <- self@results[["data"]]
+        if (!is.null(self@results[["DataFrame"]])) {
+          data <- self@results[["DataFrame"]]
         } else {
           data <- StreamFind::DataFrame(data = self$analyses)
         }
@@ -101,7 +101,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
       setter = function(self, value) {
         if (is(value, "StreamFind::DataFrame")) {
           self@results[["results"]] <- list()
-          self@results[["data"]] <- value
+          self@results[[value@name]] <- value
         } else {
           warning("Value must be a Data results object! Not done.")
         }
@@ -115,10 +115,10 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
       if (length(self) == 0) {
         return(FALSE)
       }
-      if (is.null(self@results[["model"]])) {
+      if (length(self@results) == 0) {
         return(FALSE)
       }
-      if (!is(self@results[["model"]], "StreamFind::StatisticModel")) {
+      if (!any(vapply(self@results, function(x) is(x, "StreamFind::StatisticModel"), FALSE))) {
         return(FALSE)
       }
       TRUE
@@ -129,13 +129,18 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     model = S7::new_property(S7::class_list,
       getter = function(self) {
         if (self$has_model) {
-          return(self@results[["model"]])
+          model_sel <- vapply(self@results, function(x) is(x, "StreamFind::StatisticModel"), FALSE)
+          model <- self@results[model_sel]
+          if (length(model) > 1) {
+            warning("More than one model found, returning the first one!")
+          }
+          return(model[[1]])
         }
         NULL
       },
       setter = function(self, value) {
         if (is(value, "StreamFind::StatisticModel")) {
-          self@results[["model"]] <- value
+          self@results[[value@name]] <- value
         } else {
           warning("Value must be a Model results object! Not done.")
         }
@@ -576,6 +581,7 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
       xVal <- seq_len(ncol(mat))
     } else {
       xVal <- attr(mat, "xValues")
+      xVal <- factor(xVal, levels = xVal)
     }
 
     for (i in seq_len(nrow(mat))) {

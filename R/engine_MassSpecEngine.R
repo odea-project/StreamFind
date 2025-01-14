@@ -91,7 +91,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @field nts Get/Set for the `NTS` results class.
     nts = function(value) {
       if (missing(value)) {
-        return(self$results[["nts"]])
+        return(self$results[["NTS"]])
       }
       if (is(value, "StreamFind::NTS")) {
         self$analyses$nts <- value
