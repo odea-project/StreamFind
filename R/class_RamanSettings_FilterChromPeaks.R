@@ -12,14 +12,15 @@ RamanSettings_FilterChromPeaks_native <- S7::new_class(
   "RamanSettings_FilterChromPeaks_native",
   parent = ProcessingSettings,
   package = "StreamFind",
-  constructor = function(minIntensity = 0) {
+  constructor = function(minIntensity = 0, minSignalNoiseRatio = 0) {
     S7::new_object(
       ProcessingSettings(
         engine = "Raman",
         method = "FilterChromPeaks",
         algorithm = "native",
         parameters = list(
-          minIntensity = minIntensity
+          minIntensity = minIntensity,
+          minSignalNoiseRatio = minSignalNoiseRatio
         ),
         number_permitted = 1,
         version = as.character(packageVersion("StreamFind")),
@@ -36,6 +37,7 @@ RamanSettings_FilterChromPeaks_native <- S7::new_class(
     checkmate::assert_choice(self@method, "FilterChromPeaks")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_number(self@parameters$minIntensity)
+    checkmate::assert_number(self@parameters$minSignalNoiseRatio)
     NULL
   }
 )
@@ -65,13 +67,15 @@ S7::method(run, RamanSettings_FilterChromPeaks_native) <- function(x, engine = N
   }
   
   minIntensity <- x$parameters$minIntensity
+  minSN <- x$parameters$minSignalNoiseRatio
   
   chrom_peaks <- engine$spectra$chrom_peaks
   
-  chrom_peaks <- lapply(chrom_peaks, function(z, minIntensity) {
+  chrom_peaks <- lapply(chrom_peaks, function(z, minIntensity, minSN) {
     z <- z[z$intensity >= minIntensity, ]
+    z <- z[z$sn >= minSN, ]
     z
-  }, minIntensity = minIntensity)
+  }, minIntensity = minIntensity, minSN = minSN)
   
   engine$spectra$chrom_peaks <- chrom_peaks
   message(paste0("\U2713 ", "Chromatographic peaks filtered!"))

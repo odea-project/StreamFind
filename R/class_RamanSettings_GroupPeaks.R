@@ -109,22 +109,36 @@ S7::method(run, RamanSettings_GroupPeaks_native) <- function(x, engine = NULL) {
           maxint <- which.max(spec_a$intensity)
           height_left <- spec_a$intensity[1]
           height_right <- spec_a$intensity[nrow(spec_a)]
+          noise <- mean(c(height_left, height_right))
+          if (noise < 0) {
+            sn <- (spec_a$intensity[maxint] + abs(noise))  / (noise + 2 * abs(noise))
+          } else {
+            sn <- spec_a$intensity[maxint] / noise
+          }
+          
+          area <- .integrate_peak_area(spec_a$rt, spec_a$intensity, temp_rtmin, temp_rtmax)
+          
+          new_chrom_peaks <- data.table::data.table(
+            analysis = a,
+            peak = paste0("f_", filled_peaks),
+            rt = spec_a$rt[maxint],
+            rtmin = temp_rtmin,
+            rtmax = temp_rtmax,
+            intensity = spec_a$intensity[maxint],
+            width = temp_rtmax - temp_rtmin,
+            height_left = height_left,
+            height_right = height_right,
+            area = area,
+            sn = round(sn, digits = 1),
+            group = group_name
+          )
+          
+          new_chrom_peaks <- new_chrom_peaks[, colnames(chrom_peaks), with = FALSE]
+          
           chrom_peaks <- rbind(
             chrom_peaks,
-            data.table::data.table(
-              analysis = a,
-              peak = paste0("f_", filled_peaks),
-              rt = spec_a$rt[maxint],
-              rtmin = temp_rtmin,
-              rtmax = temp_rtmax,
-              intensity = spec_a$intensity[maxint],
-              width = temp_rtmin - temp_rtmax,
-              height_left = height_left,
-              height_right = height_right,
-              area = NA_real_,
-              sn = spec_a$intensity[maxint] / mean(c(height_left, height_right)),
-              group = group_name
-            )
+            new_chrom_peaks,
+            fill = TRUE
           )
         }
       }

@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **RamanSettings_FindChromPeaks_LocalMaxima**
 #'
 #' @description Finds peak maxima in the chromatographic dimension of multiple Raman spectra.
@@ -171,6 +166,151 @@ S7::method(run, RamanSettings_FindChromPeaks_LocalMaxima) <- function(x, engine 
     }
     
     return(peak_results)
+  })
+  
+  names(chrom_peaks) <- names(spectra)
+  
+  engine$spectra$chrom_peaks <- chrom_peaks
+  message(paste0("\U2713 ", "Chromatograms peaks found and added!"))
+  TRUE
+}
+
+#' **RamanSettings_FindChromPeaks_pracma**
+#'
+#' @description Integrates chromatograms using the function `findpeaks` from the package
+#' \pkg{pracma} with natively added peak exclusion and evaluation steps.
+#' 
+#' @param merge Logical (length 1) indicating if the nearby peaks should be merged.
+#' @param closeByThreshold Numeric (length 1) with the maximum distance between peaks to be merged.
+#' @param minPeakHeight Numeric (length 1) with the minimum peak height to be considered.
+#' @param minPeakDistance Numeric (length 1) with the minimum distance between peaks.
+#' @param minPeakWidth Numeric (length 1) with the minimum peak width.
+#' @param maxPeakWidth Numeric (length 1) with the maximum peak width.
+#' @param minSN Numeric (length 1) with the minimum signal-to-noise ratio.
+#'
+#' @return A RamanSettings_FindChromPeaks_pracma object.
+#'
+#' @export
+#'
+RamanSettings_FindChromPeaks_pracma <- S7::new_class(
+  name = "RamanSettings_FindChromPeaks_pracma",
+  parent = ProcessingSettings,
+  package = "StreamFind",
+  
+  constructor = function(merge = TRUE,
+                         closeByThreshold = 45,
+                         minPeakHeight = 0,
+                         minPeakDistance = 10,
+                         minPeakWidth = 5,
+                         maxPeakWidth = 120,
+                         minSN = 10) {
+    
+    S7::new_object(
+      ProcessingSettings(
+        engine = "Raman",
+        method = "FindChromPeaks",
+        required = NA_character_,
+        algorithm = "pracma",
+        parameters = list(
+          merge = merge,
+          closeByThreshold = closeByThreshold,
+          minPeakHeight = minPeakHeight,
+          minPeakDistance = minPeakDistance,
+          minPeakWidth = minPeakWidth,
+          maxPeakWidth = maxPeakWidth,
+          minSN = minSN
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
+  },
+  
+  validator = function(self) {
+    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@method, "FindChromPeaks")
+    checkmate::assert_choice(self@algorithm, "pracma")
+    checkmate::assert_logical(self@parameters$merge, max.len = 1)
+    checkmate::assert_number(self@parameters$closeByThreshold)
+    checkmate::assert_number(self@parameters$minPeakHeight)
+    checkmate::assert_number(self@parameters$minPeakDistance)
+    checkmate::assert_number(self@parameters$minPeakWidth)
+    checkmate::assert_number(self@parameters$maxPeakWidth)
+    checkmate::assert_number(self@parameters$minSN)
+    NULL
+  }
+)
+
+#' @export
+#' @noRd
+S7::method(run, RamanSettings_FindChromPeaks_pracma) <- function(x, engine = NULL) {
+  
+  if (!is(engine, "RamanEngine")) {
+    warning("Engine is not a RamanEngine object!")
+    return(FALSE)
+  }
+  
+  if (!engine$has_analyses()) {
+    warning("There are no analyses! Not done.")
+    return(FALSE)
+  }
+  
+  if (!engine$has_spectra()) {
+    warning("No Spectra results object available! Not done.")
+    return(FALSE)
+  }
+  
+  if (!engine$spectra$has_chromatograms) {
+    warning("No chromatograms available! Not done.")
+    return(FALSE)
+  }
+  
+  parameters <- x$parameters
+  
+  spectra <- engine$spectra$spectra
+  
+  chrom_peaks <- lapply(spectra, function(s) {
+    
+    if (nrow(s) == 0) return(data.table::data.table())
+    
+    if (!"rt" %in% colnames(s)) {
+      return(data.table::data.table())
+    }
+    
+    intenisty <- NULL
+    
+    s <- s[, .(intensity = sum(intensity)), by = "rt"]
+    
+    pks <- .find_peaks(
+      s, "rt",
+      parameters$merge,
+      parameters$closeByThreshold,
+      parameters$minPeakHeight,
+      parameters$minPeakDistance,
+      parameters$maxPeakWidth,
+      parameters$minPeakWidth,
+      parameters$minSN
+    )
+    
+    if (nrow(pks) == 0) return(data.table::data.table())
+    
+    pks$idx <- NULL
+    
+    data.table::setnames(
+      pks,
+      c("xVal", "min", "max"),
+      c("rt", "rtmin", "rtmax"),
+      skip_absent = TRUE
+    )
+    
+    data.table::setcolorder(pks, c("peak"))
+    
+    pks
   })
   
   names(chrom_peaks) <- names(spectra)
