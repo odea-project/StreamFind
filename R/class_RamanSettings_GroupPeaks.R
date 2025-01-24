@@ -70,9 +70,9 @@ S7::method(run, RamanSettings_GroupPeaks_native) <- function(x, engine = NULL) {
   
   spec_list <- engine$spectra$spectra
   
-  chrom_peaks <- rbindlist(chrom_peaks, idcol = "analysis")
+  analyses_names <- names(chrom_peaks)
   
-  analyses_names <- unique(chrom_peaks$analysis)
+  chrom_peaks <- rbindlist(chrom_peaks, idcol = "analysis")
   
   peak_numbers <- unique(chrom_peaks$peak)
   
@@ -81,8 +81,6 @@ S7::method(run, RamanSettings_GroupPeaks_native) <- function(x, engine = NULL) {
   chrom_peaks$group <- NA_character_
   
   group_number <- 1
-  
-  chrom_peaks$group[1] <- group_number
   
   filled_peaks <- 0
   

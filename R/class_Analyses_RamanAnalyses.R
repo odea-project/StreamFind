@@ -48,6 +48,27 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
         self
       }
     ),
+    
+    # MARK: concentrations
+    # concentrations -----
+    concentrations = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) vapply(self@analyses, function(x) x$concentration, 0),
+      setter = function(self, value) {
+        if (length(value) != length(self)) {
+          warning("Length of concentrations not conform!")
+          return(self)
+        }
+        if (!is.numeric(value)) {
+          warning("Concentrations must be numeric!")
+          return(self)
+        }
+        for (i in seq_len(length(self))) {
+          self@analyses[[i]]$concentration <- value[i]
+        }
+        self
+      }
+    ),
 
     # MARK: types
     ## __types -----
@@ -70,7 +91,8 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
           "replicate" = vapply(self@analyses, function(x) x$replicate, ""),
           "blank" = vapply(self@analyses, function(x) x$blank, ""),
           "type" = vapply(self@analyses, function(x) x$type, ""),
-          "spectra" = vapply(self@analyses, function(x) nrow(x$spectra), 0)
+          "spectra" = vapply(self@analyses, function(x) nrow(x$spectra), 0),
+          "concentration" = vapply(self@analyses, function(x) x$concentration, 0)
         )
         row.names(df) <- seq_len(nrow(df))
         df
@@ -367,7 +389,9 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
 ## __get_spectra_matrix -----
 #' @export
 #' @noRd
-S7::method(get_spectra_matrix, RamanAnalyses) <- function(x, analyses = NULL) {
+S7::method(get_spectra_matrix, RamanAnalyses) <- function(x,
+                                                          analyses = NULL,
+                                                          targets = NULL) {
   if (!x$has_spectra) {
     warning("No spectra results object available!")
     return(matrix())
@@ -389,12 +413,26 @@ S7::method(get_spectra_matrix, RamanAnalyses) <- function(x, analyses = NULL) {
 
   intensity <- NULL
 
-  spec_list <- lapply(spec_list, function(z) {
+  spec_list <- lapply(spec_list, function(z, targets) {
     if ("group" %in% colnames(z)) {
+      if (!is.null(targets)) {
+        if (is.character(targets)) {
+          if (any(targets %in% z$group)) {
+            z <- z[z$group %in% targets, ]
+          }
+        }
+      }
       data.table::setorder(z, group, shift)
       z$var <- paste0(z$group, "_", z$shift)
       z$var <- factor(z$var, levels = unique(z$var))
     } else if ("id" %in% colnames(z)) {
+      if (!is.null(targets)) {
+        if (is.character(targets)) {
+          if (any(targets %in% z$id)) {
+            z <- z[z$id %in% targets, ]
+          }
+        }
+      }
       data.table::setorder(z, id, shift)
       z$var <- paste0(z$id, "_", z$shift)
       z$var <- factor(z$var, levels = unique(z$var))
@@ -404,7 +442,7 @@ S7::method(get_spectra_matrix, RamanAnalyses) <- function(x, analyses = NULL) {
     z <- z[, .(intensity = mean(intensity)), by = c("var")]
     z <- data.table::dcast(z, formula = 1 ~ var, value.var = "intensity")[, -1]
     z
-  })
+  }, targets = targets)
   
   spec <- as.matrix(rbindlist(spec_list, fill = TRUE))
   rownames(spec) <- names(spec_list)
@@ -971,7 +1009,7 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
                   "replicate" = sif_file_name,
                   "blank" = NA_character_,
                   "file" = x,
-                  "type" = "raman",
+                  "type" = "Raman",
                   "metadata" = metadata,
                   "spectra" = spectra
                 )
@@ -1014,7 +1052,11 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
         if (!is.na(blk)) ana$blank <- blk
 
         ana$blank <- blk
-
+        
+        ana$concentration <- NA_real_
+        
+        if ("rt" %in% colnames(ana$spectra)) ana$type <- "LC-Raman"
+        
         if (!is.null(cache$hash)) {
           .save_cache("parsed_raman_analyses", ana, cache$hash)
           message("\U1f5ab Parsed file cached!")

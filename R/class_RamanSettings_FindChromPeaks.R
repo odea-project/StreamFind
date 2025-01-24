@@ -91,6 +91,7 @@ S7::method(run, RamanSettings_FindChromPeaks_LocalMaxima) <- function(x, engine 
       heights_left <- numeric(0)
       heights_right <- numeric(0)
       peak_bases <- numeric(0)
+      peak_areas <- numeric(0)
       
       is_peak <- function(i, y) {
         y[i] > y[i - 1] && y[i] > y[i + 1]
@@ -131,6 +132,8 @@ S7::method(run, RamanSettings_FindChromPeaks_LocalMaxima) <- function(x, engine 
             heights_left <- c(heights_left, peak_height_left)
             heights_right <- c(heights_right, peak_height_right)
             peak_bases <- c(peak_bases, min(left, right))
+            peak_areas <- c(peak_areas, .integrate_peak_area(x, y, x[left], x[right]))
+            
             i <- right
           }
         }
@@ -146,7 +149,7 @@ S7::method(run, RamanSettings_FindChromPeaks_LocalMaxima) <- function(x, engine 
         width = widths,
         height_left = heights_left,
         height_right = heights_right,
-        area = NA_real_,
+        area = peak_areas,
         sn = y[peaks] / y[peak_bases]
       ))
     }

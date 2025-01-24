@@ -4,7 +4,10 @@
 \alias{RamanSettings_FilterChromPeaks_native}
 \title{\strong{RamanSettings_FilterChromPeaks_native}}
 \usage{
-RamanSettings_FilterChromPeaks_native(minIntensity = 0)
+RamanSettings_FilterChromPeaks_native(
+  minIntensity = 0,
+  minSignalNoiseRatio = 0
+)
 }
 \arguments{
 \item{minIntensity}{Numeric (length 1) with the minimum intensity to keep a chromatographic peak.}
