@@ -118,7 +118,7 @@ S7::method(run, RamanSettings_AddShiftValues_native) <- function(x, engine = NUL
       shifts <- shifts / length(shifts_list)
     }
   } else {
-    if (is.na(shifts)) {
+    if (all(is.na(shifts))) {
       warning("No shift values found! Not done.")
       return(FALSE)
     }

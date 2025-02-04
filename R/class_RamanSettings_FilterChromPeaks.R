@@ -3,6 +3,9 @@
 #' @description Settings for filtering chromatographic peaks.
 #' 
 #' @param minIntensity Numeric (length 1) with the minimum intensity to keep a chromatographic peak.
+#' @param minSignalNoiseRatio Numeric (length 1) with the minimum signal-to-noise ratio to keep a
+#' chromatographic peak.
+#' @param rtRange Numeric (length 2) with the retention time range to keep chromatographic peaks.
 #'
 #' @return A RamanSettings_FilterChromPeaks_native object.
 #'
@@ -12,7 +15,9 @@ RamanSettings_FilterChromPeaks_native <- S7::new_class(
   "RamanSettings_FilterChromPeaks_native",
   parent = ProcessingSettings,
   package = "StreamFind",
-  constructor = function(minIntensity = 0, minSignalNoiseRatio = 0) {
+  constructor = function(minIntensity = 0,
+                         minSignalNoiseRatio = 0,
+                         rtRange = c(0, 0)) {
     S7::new_object(
       ProcessingSettings(
         engine = "Raman",
@@ -20,7 +25,8 @@ RamanSettings_FilterChromPeaks_native <- S7::new_class(
         algorithm = "native",
         parameters = list(
           minIntensity = minIntensity,
-          minSignalNoiseRatio = minSignalNoiseRatio
+          minSignalNoiseRatio = minSignalNoiseRatio,
+          rtRange = rtRange
         ),
         number_permitted = 1,
         version = as.character(packageVersion("StreamFind")),
@@ -38,6 +44,7 @@ RamanSettings_FilterChromPeaks_native <- S7::new_class(
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_number(self@parameters$minIntensity)
     checkmate::assert_number(self@parameters$minSignalNoiseRatio)
+    checkmate::assert_numeric(self@parameters$rtRange, len = 2)
     NULL
   }
 )
@@ -68,12 +75,16 @@ S7::method(run, RamanSettings_FilterChromPeaks_native) <- function(x, engine = N
   
   minIntensity <- x$parameters$minIntensity
   minSN <- x$parameters$minSignalNoiseRatio
+  rtr <- sort(x$parameters$rtRange)
   
   chrom_peaks <- engine$spectra$chrom_peaks
   
   chrom_peaks <- lapply(chrom_peaks, function(z, minIntensity, minSN) {
     z <- z[z$intensity >= minIntensity, ]
     z <- z[z$sn >= minSN, ]
+    if (rtr[2] > 0) {
+      z <- z[z$rt >= rtr[1] & z$rt <= rtr[2], ]
+    }
     z
   }, minIntensity = minIntensity, minSN = minSN)
   

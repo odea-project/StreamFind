@@ -6,11 +6,17 @@
 \usage{
 RamanSettings_FilterChromPeaks_native(
   minIntensity = 0,
-  minSignalNoiseRatio = 0
+  minSignalNoiseRatio = 0,
+  rtRange = c(0, 0)
 )
 }
 \arguments{
 \item{minIntensity}{Numeric (length 1) with the minimum intensity to keep a chromatographic peak.}
+
+\item{minSignalNoiseRatio}{Numeric (length 1) with the minimum signal-to-noise ratio to keep a
+chromatographic peak.}
+
+\item{rtRange}{Numeric (length 2) with the retention time range to keep chromatographic peaks.}
 }
 \value{
 A RamanSettings_FilterChromPeaks_native object.

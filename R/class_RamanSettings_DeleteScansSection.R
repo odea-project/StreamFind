@@ -1,23 +1,25 @@
-#' **RamanSettings_DeleteSpectraSection_native**
+#' **RamanSettings_DeleteScansSection_native**
 #'
-#' @description Deletes a section of the spectra between *shift* minimum and maximum values.
+#' @description Deletes a section of the spectra based on a minimum and maximum scan number. Note 
+#' that both values are should be positive and represent the scan unit (e.g., retention time) and 
+#' not the scan number.
 #' 
-#' @param min Numeric vector (length 1) with the minimum shift value to delete.
-#' @param max Numeric vector (length 1) with the maximum shift value to delete.
+#' @param min Numeric vector (length 1) with the minimum scan value to delete.
+#' @param max Numeric vector (length 1) with the maximum scan value to delete.
 #'
-#' @return A RamanSettings_DeleteSpectraSection_native object.
+#' @return A RamanSettings_DeleteScansSection_native object.
 #'
 #' @export
 #'
-RamanSettings_DeleteSpectraSection_native <- S7::new_class(
-  "RamanSettings_DeleteSpectraSection_native",
+RamanSettings_DeleteScansSection_native <- S7::new_class(
+  "RamanSettings_DeleteScansSection_native",
   parent = ProcessingSettings,
   package = "StreamFind",
   
-  constructor = function(min = NULL, max = NULL) {
+  constructor = function(min = 0, max = 0) {
     S7::new_object(ProcessingSettings(
       engine = "Raman",
-      method = "DeleteSpectraSection",
+      method = "DeleteScansSection",
       required = NA_character_,
       algorithm = "native",
       parameters = list(
@@ -36,7 +38,7 @@ RamanSettings_DeleteSpectraSection_native <- S7::new_class(
   
   validator = function(self) {
     checkmate::assert_choice(self@engine, "Raman")
-    checkmate::assert_choice(self@method, "DeleteSpectraSection")
+    checkmate::assert_choice(self@method, "DeleteScansSection")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_numeric(self@parameters$min, len = 1)
     checkmate::assert_numeric(self@parameters$max, len = 1)
@@ -46,7 +48,7 @@ RamanSettings_DeleteSpectraSection_native <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, RamanSettings_DeleteSpectraSection_native) <- function(x, engine = NULL) {
+S7::method(run, RamanSettings_DeleteScansSection_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "RamanEngine")) {
     warning("Engine is not a RamanEngine object!")
@@ -63,21 +65,21 @@ S7::method(run, RamanSettings_DeleteSpectraSection_native) <- function(x, engine
     return(FALSE)
   }
   
-  shiftmin <- x$parameters$min
-  shiftmax <- x$parameters$max
+  rtmin <- x$parameters$min
+  rtmax <- x$parameters$max
   
   spec_list <- engine$spectra$spectra
   
-  if (!(is.null(shiftmin) && is.null(shiftmax))) {
-    shiftrange <- c(shiftmin, shiftmax)
-    shiftrange <- sort(shiftrange)
+  if (rtmax > 0) {
+    rtrange <- c(rtmin, rtmax)
+    rtrange <- sort(rtrange)
     
     spec_list <- lapply(spec_list, function(z) {
-      if (nrow(z) > 0 && "shift" %in% colnames(z)) {
-        sel <- (z$shift >= shiftrange[1]) & (z$shift <= shiftrange[2])
+      if (nrow(z) > 0 && "rt" %in% colnames(z)) {
+        sel <- (z$rt >= rtrange[1]) & (z$rt <= rtrange[2])
         if (length(sel) > 0) z <- z[!sel, ]
       } else {
-        warning("No shift column in spectra for deleting section!")
+        warning("No retention time column available for deleting scans!")
       }
       z
     })

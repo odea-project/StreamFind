@@ -100,9 +100,10 @@ CoreEngine <- R6::R6Class(
       }
       if (is(value, "StreamFind::Analyses")) {
         names_analyses <- names(private$.analyses)
+        old_results <- list()
         
         if (length(names_analyses) > 0) {
-          if (!is.null(private$.analyses$results)) {
+          if (length(private$.analyses$results) > 0) {
             old_results <- private$.analyses$results
           }
         }
@@ -114,7 +115,7 @@ CoreEngine <- R6::R6Class(
           }
           
           if (length(names(private$.analyses)) > 0) {
-            if (!is.null(private$.analyses$results)) {
+            if (length(private$.analyses$results) > 0) {
               for (r in names(private$.analyses$results)) {
                 if (!identical(private$.analyses$results[[r]], old_results[[r]])) {
                   private$.audit_trail <- add(private$.audit_trail, private$.analyses$results[[r]])

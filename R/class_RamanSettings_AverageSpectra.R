@@ -1,4 +1,4 @@
-#' **RamanSettings_AverageSpectra_StreamFind**
+#' **RamanSettings_AverageSpectra_native**
 #'
 #' @description Averages spectra based on variables.
 #' 
@@ -6,12 +6,12 @@
 #' `replicates`, `chrom_peaks`, `rt`, `replicates+chrom_peaks`, `replicates+rt`, `chrom_peaks+rt`,
 #' `replicates+chrom_peaks+rt`.
 #'
-#' @return A RamanSettings_AverageSpectra_StreamFind object.
+#' @return A RamanSettings_AverageSpectra_native object.
 #'
 #' @export
 #'
-RamanSettings_AverageSpectra_StreamFind <- S7::new_class(
-  "RamanSettings_AverageSpectra_StreamFind",
+RamanSettings_AverageSpectra_native <- S7::new_class(
+  "RamanSettings_AverageSpectra_native",
   parent = ProcessingSettings,
   package = "StreamFind",
   constructor = function(by = "replicates") {
@@ -20,7 +20,7 @@ RamanSettings_AverageSpectra_StreamFind <- S7::new_class(
         engine = "Raman",
         method = "AverageSpectra",
         required = NA_character_,
-        algorithm = "StreamFind",
+        algorithm = "native",
         parameters = list(
           by = by
         ),
@@ -38,7 +38,7 @@ RamanSettings_AverageSpectra_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "Raman")
     checkmate::assert_choice(self@method, "AverageSpectra")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_choice(
       self@parameters$by,
       c(
@@ -57,7 +57,7 @@ RamanSettings_AverageSpectra_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, RamanSettings_AverageSpectra_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "RamanEngine")) {
     warning("Engine is not a RamanEngine object!")
@@ -91,17 +91,16 @@ S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine =
   }
   
   groupCols <- "shift"
-  
-  if (grepl("replicates", x$parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
   if (grepl("chrom_peaks", x$parameters$by, fixed = FALSE)) groupCols <- c("chrom_peaks", groupCols)
   if (grepl("rt", x$parameters$by, fixed = FALSE)) groupCols <- c("rt", groupCols)
+  if (grepl("replicates", x$parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
   
   if ("chrom_peaks" %in% groupCols) {
     if (engine$spectra$has_chrom_peaks) {
       if (!"id" %in% colnames(spectra)) {
         warning(
           "Filter spectra to keep only from chromatographic peaks 
-          using RamanSettings_FilterSpectra_StreamFind! Not done."
+          using RamanSettings_FilterSpectra_native! Not done."
         )
         return(FALSE)
       }
@@ -121,6 +120,7 @@ S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine =
     spectra$analysis <- NULL
   } else {
     groupCols <- c("analysis", groupCols)
+    spectra$replicate <- NULL
   }
   
   if ("id" %in% colnames(spectra) && !"id" %in% groupCols) {
@@ -151,7 +151,7 @@ S7::method(run, RamanSettings_AverageSpectra_StreamFind) <- function(x, engine =
   
   spectra <- engine$spectra
   spectra$spectra <- grouped_spectra_list
-  spectra$is_averaged <- TRUE
+  if ("replicate" %in% groupCols) spectra$is_averaged <- TRUE
   engine$spectra <- spectra
   message(paste0("\U2713 ", "Averaged spectra!"))
   invisible(TRUE)

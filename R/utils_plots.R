@@ -125,6 +125,550 @@
   data
 }
 
+# MARK: .plot_lines_static
+#' @noRd
+.plot_lines_static <- function(spectra,
+                               xLab,
+                               yLab,
+                               title,
+                               cex,
+                               showLegend) {
+  cl <- .get_colors(unique(spectra$var))
+  
+  spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
+  
+  loop_key <- unique(spectra$loop)
+  
+  xr <- c(min(spectra$x), max(spectra$x))
+  if (showLegend) {
+    xr[2] <- xr[2] * 1.01
+  }
+  
+  intr <- c(min(spectra$intensity), max(spectra$intensity))
+  
+  if (is.null(cex) || !is.numeric(cex)) cex <- 1
+  
+  plot(spectra$x,
+       type = "n",
+       xlab = xLab,
+       ylab = yLab,
+       xlim = xr,
+       ylim = intr,
+       main = title
+  )
+  
+  for (t in loop_key) {
+    select_vector <- spectra$loop %in% t
+    
+    lt <- unique(spectra$var[select_vector])
+    
+    lines(
+      x = spectra$x[select_vector],
+      y = spectra$intensity[select_vector],
+      type = "l",
+      pch = 19,
+      cex = 0.5,
+      col = cl[lt]
+    )
+  }
+  
+  if (showLegend) {
+    legend(
+      x = "topright",
+      inset = 0.01,
+      y.intersp = 1.5,
+      legend = names(cl),
+      col = cl,
+      lwd = 2,
+      lty = 1,
+      cex = cex,
+      bty = "n"
+    )
+  }
+}
+
+# MARK: .plot_lines_interactive
+#' @noRd
+.plot_lines_interactive <- function(data,
+                                    xLab,
+                                    yLab,
+                                    title,
+                                    colorBy,
+                                    renderEngine = "webgl") {
+  leg <- unique(data$var)
+  cl <- .get_colors(leg)
+  data$loop <- paste0(data$analysis, data$replicate, data$id, data$var)
+  loop_key <- unique(data$loop)
+  
+  title <- list(
+    text = title, x = 0.13, y = 0.98,
+    font = list(size = 12, color = "black")
+  )
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = xLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = yLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  plot <- plot_ly()
+  showL <- rep(TRUE, length(leg))
+  names(showL) <- leg
+  
+  for (t in loop_key) {
+    select_vector <- data$loop %in% t
+    lt <- unique(data$var[select_vector])
+    x <- data$x[select_vector]
+    y <- data$intensity[select_vector]
+
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y,
+      type = "scatter",
+      mode = "lines+markers",
+      line = list(width = 0.5, color = unname(cl[lt])),
+      marker = list(size = 2, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste("<br>x: %{x}<br>", "y: %{y}")
+    )
+    
+    if (length(y) >= 1) showL[lt] <- FALSE
+  }
+  
+  plot <- plot %>% plotly::layout(
+    xaxis = xaxis,
+    yaxis = yaxis,
+    title = title
+  )
+  
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
+  
+  plot
+}
+
+# MARK: .plot_lines_baseline_static
+#' @noRd
+.plot_lines_baseline_static <- function(spectra, xLab, yLab, title, cex, showLegend) {
+  cl <- .get_colors(unique(spectra$var))
+  
+  spectra$loop <- paste0(data$analysis, data$replicate, spectra$id, spectra$var)
+  
+  loop_key <- unique(spectra$loop)
+  
+  xr <- c(min(spectra$x), max(spectra$x))
+  if (showLegend) {
+    xr[2] <- xr[2] * 1.01
+  }
+  
+  intr <- c(0, max(spectra$raw))
+  
+  if (is.null(cex) || !is.numeric(cex)) cex <- 1
+  
+  plot(spectra$x,
+       type = "n",
+       xlab = xLab,
+       ylab = yLab,
+       xlim = xr,
+       ylim = intr,
+       main = title
+  )
+  
+  for (t in loop_key) {
+    select_vector <- spectra$loop %in% t
+    
+    lt <- unique(spectra$var[select_vector])
+    
+    lines(
+      x = spectra$x[select_vector],
+      y = spectra$raw[select_vector],
+      type = "l",
+      lty = 1,
+      lwd = 1,
+      pch = 19,
+      cex = 0.5,
+      col = cl[lt]
+    )
+    
+    lines(
+      x = spectra$x[select_vector],
+      y = spectra$baseline[select_vector],
+      type = "l",
+      lty = 2,
+      lwd = 2,
+      pch = 19,
+      cex = 0.5,
+      col = cl[lt]
+    )
+  }
+  
+  if (showLegend) {
+    legend(
+      x = "topright",
+      legend = names(cl),
+      col = cl,
+      lwd = 2,
+      lty = 1,
+      cex = cex,
+      bty = "n"
+    )
+  }
+}
+
+# MARK: .plot_lines_baseline_interactive
+#' @noRd
+.plot_lines_baseline_interactive <- function(spectra,
+                                             xLab,
+                                             yLab,
+                                             title,
+                                             colorBy,
+                                             renderEngine = "webgl") {
+  leg <- unique(spectra$var)
+  cl <- .get_colors(leg)
+  
+  spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
+  loop_key <- unique(spectra$loop)
+  
+  title <- list(
+    text = title, x = 0.13, y = 0.98,
+    font = list(size = 12, color = "black")
+  )
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = xLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = yLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  plot <- plot_ly()
+  
+  showL <- rep(TRUE, length(leg))
+  
+  names(showL) <- leg
+  
+  for (t in loop_key) {
+    select_vector <- spectra$loop %in% t
+    lt <- unique(spectra$var[select_vector])
+    x <- spectra$x[select_vector]
+    y <- spectra$raw[select_vector]
+    y2 <- spectra$baseline[select_vector]
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y,
+      type = "scatter", mode = "lines+markers",
+      line = list(width = 0.5, color = unname(cl[lt])),
+      marker = list(size = 2, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste("<br>x: %{x}<br>", "y: %{y}")
+    )
+    
+    plot <- plot %>% add_trace(
+      x = x,
+      y = y2,
+      type = "scatter", mode = "lines",
+      line = list(width = 2, color = unname(cl[lt]), dash = "dash"),
+      name = lt,
+      legendgroup = lt,
+      showlegend = FALSE,
+      hovertemplate = paste("<br>x: %{x}<br>", "y: %{y}")
+    )
+    
+    if (length(y) >= 1) showL[lt] <- FALSE
+  }
+  
+  plot <- plot %>% plotly::layout(
+    xaxis = xaxis,
+    yaxis = yaxis,
+    title = title
+  )
+  
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
+  
+  plot
+}
+
+# MARK: .plot_lines_peaks_static
+#' @noRd
+.plot_lines_peaks_static <- function(chroms = NULL,
+                                     peaks = NULL,
+                                     legendNames = NULL,
+                                     colorBy = "targets",
+                                     title = NULL,
+                                     showLegend = TRUE,
+                                     xlim = NULL,
+                                     ylim = NULL,
+                                     cex = 0.6,
+                                     xLab = NULL,
+                                     yLab = NULL) {
+  peaks$unique_ids <- paste0(peaks$analysis, "_", peaks$id, "_", peaks$peak)
+  
+  peaks <- .make_colorBy_varkey(peaks, colorBy, legendNames)
+  
+  leg <- unique(peaks$var)
+  
+  cl <- .get_colors(leg)
+  
+  ids <- unique(peaks$unique_ids)
+  
+  if (!"raw" %in% colnames(chroms)) chroms$raw <- chroms$intensity
+  
+  xlab <- "Retention time / seconds"
+  ylab <- "Intensity / counts"
+  if (!is.null(xLab)) xlab <- xLab
+  if (!is.null(yLab)) ylab <- yLab
+  
+  if (is.numeric(xlim) & length(xlim) == 1) {
+    rtr <- c(min(chroms$rt) - xlim, max(chroms$rt) + xlim)
+  } else if (is.numeric(xlim) & length(xlim) == 2) {
+    rtr <- xlim
+  } else {
+    rtr <- c(min(chroms$rt), max(chroms$rt))
+    if (showLegend) {
+      rtr[2] <- rtr[2] * 1.01
+    }
+  }
+  
+  if (is.numeric(ylim) & length(ylim) == 1) {
+    intr <- c(min(chroms$raw) - ylim, (max(chroms$raw) + ylim))
+  } else if (is.numeric(ylim) & length(ylim) == 2) {
+    intr <- ylim
+  } else {
+    intr <- c(0, max(chroms$raw))
+  }
+  
+  if (is.null(cex) || !is.numeric(cex)) cex <- 0.6
+  
+  plot(
+    chroms$rt,
+    type = "n",
+    xlab = xlab,
+    ylab = ylab,
+    xlim = rtr,
+    ylim = intr,
+    main = title
+  )
+  
+  for (t in ids) {
+    select_vector <- peaks$unique_ids == t
+    
+    lt <- unique(peaks$var[select_vector])
+    
+    pk <- peaks[select_vector, ]
+    
+    chrom <- chroms[chroms$analysis %in% pk$analysis[1] & chroms$id %in% pk$id[1], ]
+    
+    sel_chrom <- chrom$rt >= pk$rtmin[1] & chrom$rt <= pk$rtmax[1]
+    
+    pk_chrom <- chrom[sel_chrom, ]
+    
+    points(
+      x = pk_chrom$rt,
+      y = pk_chrom$raw,
+      type = "p",
+      pch = 19,
+      cex = 0.2,
+      col = cl[lt]
+    )
+    
+    lines(
+      x = chrom$rt,
+      y = chrom$raw,
+      type = "l",
+      pch = 19,
+      cex = 0.3,
+      col = cl[lt]
+    )
+    
+    if (!"baseline" %in% colnames(chrom)) pk_chrom$baseline <- rep(min(pk_chrom$raw), nrow(pk_chrom))
+    
+    polygon(
+      c(pk_chrom$rt, rev(pk_chrom$rt)),
+      c(pk_chrom$raw, rev(pk_chrom$baseline)),
+      col = paste(color = unname(cl[lt]), 50, sep = ""),
+      border = FALSE
+    )
+    
+    # text(
+    #   x = pk$rt[1], y = pk$intensity[1], adj = c(0.5, -1),
+    #   labels = pk$peak[1],
+    #   vfont = NULL, cex = 0.8, col = "black", font = NULL, srt = 0
+    # )
+  }
+  
+  if (showLegend) {
+    legend(
+      x = "topright",
+      legend = names(cl),
+      col = cl,
+      lwd = 2,
+      lty = 1,
+      cex = cex,
+      bty = "n"
+    )
+  }
+}
+
+# MARK: .plot_lines_peaks_interactive
+#' @noRd
+.plot_lines_peaks_interactive <- function(chroms = NULL,
+                                          peaks = NULL,
+                                          legendNames = NULL,
+                                          colorBy = "targets",
+                                          title = NULL,
+                                          showLegend = TRUE,
+                                          xLab = NULL,
+                                          yLab = NULL,
+                                          renderEngine = "webgl") {
+  
+  peaks$unique_ids <- paste0(peaks$analysis, "_", peaks$peak)
+  peaks <- .make_colorBy_varkey(peaks, colorBy, legendNames)
+  leg <- unique(peaks$var)
+  cl <- .get_colors(leg)
+  ids <- unique(peaks$unique_ids)
+  if (!"raw" %in% colnames(chroms)) chroms$raw <- chroms$intensity
+  
+  title <- list(
+    text = title, x = 0.13, y = 0.98,
+    font = list(size = 12, color = "black")
+  )
+  
+  xlab <- "Retention time / seconds"
+  ylab <- "Intensity / counts"
+  if (!is.null(xLab)) xlab <- xLab
+  if (!is.null(yLab)) ylab <- yLab
+  
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = xlab,
+    range = c(min(chroms$x), max(chroms$x)),
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2, title = ylab,
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  plot <- plot_ly()
+  
+  if (showLegend) {
+    showL <- rep(TRUE, length(leg))
+  } else {
+    showL <- rep(FALSE, length(leg))
+  }
+  
+  names(showL) <- leg
+  
+  for (t in ids) {
+    select_vector <- peaks$unique_ids == t
+    lt <- unique(peaks$var[select_vector])
+    pk <- peaks[select_vector, ]
+    chrom <- chroms[chroms$analysis %in% pk$analysis[1], ]
+    data.table::setorder(chrom, x)
+    sel_chrom <- chrom$x >= pk$min[1] & chrom$x <= pk$max[1]
+    pk_chrom <- chrom[sel_chrom, ]
+    
+    plot <- plot %>% add_trace(
+      x = chrom$x,
+      y = chrom$raw,
+      type = "scatter", mode = "lines",
+      line = list(width = 0.3, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = showL[lt],
+      hovertemplate = paste("<br>x: %{x}<br>", "intensity: %{y}")
+    )
+    
+    if (nrow(pk_chrom) >= 1) showL[lt] <- FALSE
+    
+    hT <- paste(
+      "</br> analysis: ", pk$analysis[1],
+      "</br> peak: ", pk$peak[1],
+      "</br>   x: ", round(pk$x[1], digits = 0),
+      "</br>   width: ", round(pk$max[1] - pk$min[1], digits = 0),
+      "</br>   intensity: ", round(pk$intensity[1], digits = 0),
+      "</br>   area: ", round(pk$area[1], digits = 0),
+      "</br>   sn: ", round(pk$sn[1], digits = 0),
+      if ("calibration" %in% colnames(pk)) {
+        paste0("</br> calibration: ", pk$calibration[1])
+      } else {
+        ""
+      },
+      if ("concentration" %in% colnames(pk)) {
+        paste0("</br> concentration: ", round(pk$concentration[1], digits = 2))
+      } else {
+        ""
+      }
+    )
+    
+    data.table::setorder(pk_chrom, x)
+    pk_chrom_init_raw <- pk_chrom$raw[1]
+    pk_chrom_end_raw <- pk_chrom$raw[nrow(pk_chrom)]
+    pk_chrom$baseline <- seq(pk_chrom_init_raw, pk_chrom_end_raw, length.out = nrow(pk_chrom))
+    
+    chords <- data.table::data.table(
+      x = c(pk_chrom$x, rev(pk_chrom$x)),
+      y = c(pk_chrom$raw, rev(pk_chrom$baseline))
+    )
+    
+    plot <- plot %>% add_trace(
+      x = chords$x,
+      y = chords$y,
+      type = "scatter", mode = "lines+markers",
+      line = list(width = 0.6, color = unname(cl[lt])),
+      fill = 'tozeroy', connectgaps = TRUE,
+      fillcolor = paste(color = unname(cl[lt]), 50, sep = ""),
+      marker = list(size = 3, color = unname(cl[lt])),
+      name = lt,
+      legendgroup = lt,
+      showlegend = FALSE,
+      hovertemplate = paste0(hT, paste("<br>x: %{x}<br>", "intensity: %{y}"))
+    )
+  }
+  
+  if (showLegend) {
+    plot <- plot %>% plotly::layout(
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+  } else {
+    plot <- plot %>% plotly::layout(
+      legend = NULL,
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+  }
+  
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
+  
+  plot
+}
+
 # MARK: .plot_spectra_3d_interactive
 #' @noRd
 .plot_spectra_3d_interactive <- function(spectra = NULL,
@@ -2710,7 +3254,8 @@
                                             xLab = NULL,
                                             yLab = NULL,
                                             title = NULL,
-                                            showLegend = TRUE) {
+                                            showLegend = TRUE,
+                                            renderEngine = "webgl") {
   chromatograms <- .make_colorBy_varkey(chromatograms, colorBy, legendNames)
   
   leg <- unique(chromatograms$var)
@@ -2796,6 +3341,10 @@
       yaxis = yaxis,
       title = title
     )
+  }
+  
+  if (renderEngine == "webgl") {
+    plot <- plot %>% plotly::toWebGL()
   }
   
   plot

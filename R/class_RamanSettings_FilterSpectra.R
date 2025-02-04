@@ -1,20 +1,16 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
-#' **RamanSettings_FilterSpectra_StreamFind**
+#' **RamanSettings_FilterSpectra_native**
 #'
 #' @description Various filter options for Raman spectra.
 #' 
-#' @param onlyChromPeaksSpectra Logical (length 1) for keeping only spectra with chromatographic peaks.
+#' @param onlyChromPeaksSpectra Logical (length 1) for keeping only spectra with chromatographic 
+#' peaks.
 #'
-#' @return A RamanSettings_FilterSpectra_StreamFind object.
+#' @return A RamanSettings_FilterSpectra_native object.
 #'
 #' @export
 #'
-RamanSettings_FilterSpectra_StreamFind <- S7::new_class(
-  "RamanSettings_FilterSpectra_StreamFind",
+RamanSettings_FilterSpectra_native <- S7::new_class(
+  "RamanSettings_FilterSpectra_native",
   parent = ProcessingSettings,
   package = "StreamFind",
   
@@ -23,7 +19,7 @@ RamanSettings_FilterSpectra_StreamFind <- S7::new_class(
     S7::new_object(ProcessingSettings(
       engine = "Raman",
       method = "FilterSpectra",
-      algorithm = "StreamFind",
+      algorithm = "native",
       parameters = list(
         onlyChromPeaksSpectra = onlyChromPeaksSpectra
       ),
@@ -40,7 +36,7 @@ RamanSettings_FilterSpectra_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "Raman")
     checkmate::assert_choice(self@method, "FilterSpectra")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_logical(self@parameters$onlyChromPeaksSpectra, max.len = 1)
     NULL
   }
@@ -48,7 +44,7 @@ RamanSettings_FilterSpectra_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, RamanSettings_FilterSpectra_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, RamanSettings_FilterSpectra_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "RamanEngine")) {
     warning("Engine is not a RamanEngine object!")

@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **RamanSettings_SubtractSpectraSection_StreamFind**
 #'
 #' @description Subtracts a section of the spectra based on a variable (i.e. column name).
@@ -14,11 +9,12 @@
 #'
 #' @export
 #'
-RamanSettings_SubtractSpectraSection_StreamFind <- S7::new_class("RamanSettings_SubtractSpectraSection_StreamFind",
+RamanSettings_SubtractSpectraSection_StreamFind <- S7::new_class(
+  name = "RamanSettings_SubtractSpectraSection_StreamFind",
   parent = ProcessingSettings,
   package = "StreamFind",
-  
-  constructor = function(sectionVal = "rt", sectionWindow = c(10, 200)) {
+  constructor = function(sectionVal = "rt",
+                         sectionWindow = c(10, 200)) {
     
     S7::new_object(ProcessingSettings(
       engine = "Raman",
