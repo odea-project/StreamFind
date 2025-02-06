@@ -4,11 +4,17 @@
 \alias{RamanSettings_FilterSpectra_native}
 \title{\strong{RamanSettings_FilterSpectra_native}}
 \usage{
-RamanSettings_FilterSpectra_native(onlyChromPeaksSpectra = FALSE)
+RamanSettings_FilterSpectra_native(
+  onlyChromPeaksSpectra = FALSE,
+  onlyTopChromPeaksSpectra = 0
+)
 }
 \arguments{
 \item{onlyChromPeaksSpectra}{Logical (length 1) for keeping only spectra with chromatographic
 peaks.}
+
+\item{onlyTopChromPeaksSpectra}{Numeric (length 1) with the number of top spectra to keep for
+each chromatographic peak.}
 }
 \value{
 A RamanSettings_FilterSpectra_native object.

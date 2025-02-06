@@ -162,6 +162,7 @@ Collate:
     'class_RamanSettings_NormalizeSpectra.R'
     'class_RamanSettings_RemoveCosmicRays.R'
     'class_RamanSettings_InvertAxis.R'
+    'class_RamanSettings_ScaleTime.R'
     'class_RamanSettings_SmoothSpectra.R'
     'class_RamanSettings_SubtractBlankSpectra.R'
     'class_RamanSettings_SubtractScansSection.R'

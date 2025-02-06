@@ -487,7 +487,7 @@ S7::method(plot_scores, PCA) <- function(x,
       }
       colorGroups <- gsub(" ", "_", colorGroups)
       
-      if (all(names(colorGroups) %in% scores$analysis)) {
+      if (all(names(colorGroups) %in% scores$analysis) && length(names(colorGroups)) > 0) {
         scores$var_name <- colorGroups[scores$analysis]
         scores$var_name <- factor(scores$var_name, levels = unique(scores$var_name))
       } else {
@@ -537,7 +537,7 @@ S7::method(plot_scores, PCA) <- function(x,
     
     scores$x_val <- x_val
     scores$y_val <- y_val
-    scores$text <- text
+    scores[["text"]] <- text
     
     fig <- plot_ly(
       data = scores,
@@ -762,8 +762,13 @@ S7::method(plot_residuals, PCA) <- function(x,
     fig <- plot_ly()
 
     xVal <- seq_len(ncol(dt) - 3)
+    
+    showVarList <- list()
 
     for (i in seq_len(nrow(dt))) {
+      
+      showVar <- is.null(showVarList[[dt$var_name[i]]])
+      
       fig <- fig %>% add_trace(
         x = xVal,
         y = unlist(dt[i, xVal]),
@@ -777,8 +782,10 @@ S7::method(plot_residuals, PCA) <- function(x,
         ),
         name = dt$var_name[i],
         legendgroup = dt$var_name[i],
-        showlegend = TRUE
+        showlegend = showVar
       )
+      
+      showVarList[[dt$var_name[i]]] <- FALSE
     }
 
     xaxis <- list(

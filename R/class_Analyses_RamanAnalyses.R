@@ -436,6 +436,7 @@ S7::method(`c`, RamanAnalyses) <- function(x, ...) {
 #' @noRd
 S7::method(get_spectra, RamanAnalyses) <- function(x,
                                                    analyses = NULL,
+                                                   targets = NULL,
                                                    rt = NULL,
                                                    shift = NULL,
                                                    minIntensity = NULL,
@@ -461,6 +462,14 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
   }
   
   spec <- lapply(spec, function(z) {
+    if (!is.null(targets) && ("group" %in% colnames(z) || "id" %in% colnames(z))) {
+      if ("group" %in% colnames(z)) {
+        z <- z[z$group %in% targets, ]
+      } else {
+        z <- z[z$id %in% targets, ]
+      }
+    }
+    
     if (!is.null(rt) && length(rt) == 2 && "rt" %in% colnames(z)) {
       rt_range <- sort(rt)
       sel <- z$rt >= rt_range[1] & z$rt <= rt_range[2]
@@ -552,6 +561,7 @@ S7::method(get_spectra_matrix, RamanAnalyses) <- function(x,
 #' @noRd
 S7::method(plot_spectra, RamanAnalyses) <- function(x,
                                                     analyses = NULL,
+                                                    targets = NULL,
                                                     rt = NULL,
                                                     shift = NULL,
                                                     minIntensity = NULL,
@@ -564,7 +574,7 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
                                                     interactive = TRUE,
                                                     cex = 0.6,
                                                     renderEngine = "webgl") {
-  spectra <- get_spectra(x, analyses, rt, shift, minIntensity, useRawData)
+  spectra <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData)
 
   if (sum(vapply(spectra, nrow, 0)) == 0) {
     warning("No spectra found for the defined targets!")
@@ -629,6 +639,7 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
 #' @noRd
 S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
                                                        analyses = NULL,
+                                                       targets = NULL,
                                                        rt = NULL,
                                                        shift = NULL,
                                                        minIntensity = NULL,
@@ -642,7 +653,7 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
                                                        zLab = NULL,
                                                        renderEngine = "webgl") {
   
-  spectra <- get_spectra(x, analyses, rt, shift, minIntensity, useRawData)
+  spectra <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData)
   
   if (x$spectra$is_averaged && !useRawData) {
     spectra <- data.table::rbindlist(spectra, idcol = "replicate", fill = TRUE)
@@ -765,6 +776,7 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
 #' @noRd
 S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
                                                              analyses = NULL,
+                                                             targets = NULL,
                                                              rt = NULL,
                                                              shift = NULL,
                                                              minIntensity = NULL,
@@ -778,7 +790,7 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
                                                              cex = 0.6,
                                                              renderEngine = "webgl") {
   
-  spectra <- get_spectra(x, analyses, rt, shift, minIntensity, useRawData = FALSE)
+  spectra <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData = FALSE)
   
   if (sum(vapply(spectra, nrow, 0)) == 0) {
     warning("No spectra found for the defined targets!")
@@ -850,6 +862,7 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
 #' @noRd
 S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
                                                           analyses = NULL,
+                                                          targets = NULL,
                                                           rt = NULL,
                                                           shift = NULL,
                                                           minIntensity = NULL,
@@ -862,7 +875,7 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
                                                           interactive = TRUE,
                                                           cex = 0.6,
                                                           renderEngine = "webgl") {
-  spectra <- get_spectra(x, analyses, rt, shift, minIntensity, useRawData)
+  spectra <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData)
   
   if (!all(vapply(spectra, function(z) "rt" %in% colnames(z), FALSE))) {
     warning("Column rt not found in spectra data.table for plotting chromatograms!")
@@ -915,7 +928,10 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
 ## __get_chromatograms_peaks -----
 #' @export
 #' @noRd
-S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x, analyses = NULL, rt = NULL) {
+S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x,
+                                                               analyses = NULL,
+                                                               targets = NULL,
+                                                               rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
   if (is.null(analyses)) {
     return(data.table::data.table())
@@ -949,6 +965,14 @@ S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x, analyses = NUL
     }
   }
   
+  if (!is.null(targets)) {
+    if ("group" %in% colnames(pks)) {
+      pks <- pks[pks$group %in% targets, ]
+    } else if ("id" %in% colnames(pks)) {
+      pks <- pks[pks$id %in% targets, ]
+    }
+  }
+  
   if (is.numeric(rt)) {
     pks <- pks[pks$rt >= rt[1] & pks$rt <= rt[2], ]
   }
@@ -967,6 +991,7 @@ S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x, analyses = NUL
 #' @noRd
 S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
                                                                 analyses = NULL,
+                                                                targets = NULL,
                                                                 rt = NULL,
                                                                 title = NULL,
                                                                 legendNames = TRUE,
@@ -979,14 +1004,14 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
                                                                 interactive = TRUE,
                                                                 cex = 0.6,
                                                                 renderEngine = "webgl") {
-  pks <- get_chromatograms_peaks(x, analyses = analyses, rt = rt)
+  pks <- get_chromatograms_peaks(x, analyses, targets, rt)
   
   if (nrow(pks) == 0) {
     message("\U2717 Peaks not found!")
     return(NULL)
   }
   
-  spectra <- get_spectra(x, analyses = analyses, useRawData = FALSE)
+  spectra <- get_spectra(x, analyses = analyses, targets = targets, useRawData = FALSE)
   
   if (!all(vapply(spectra, function(z) "rt" %in% colnames(z), FALSE))) {
     warning("Column rt not found in spectra data.table for plotting chromatograms!")
