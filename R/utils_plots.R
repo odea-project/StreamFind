@@ -127,44 +127,44 @@
 
 # MARK: .plot_lines_static
 #' @noRd
-.plot_lines_static <- function(spectra,
+.plot_lines_static <- function(data,
                                xLab,
                                yLab,
                                title,
                                cex,
                                showLegend) {
-  cl <- .get_colors(unique(spectra$var))
+  cl <- .get_colors(unique(data$var))
+  data$loop <- paste0(data$analysis, data$replicate, spectra$id, spectra$var)
+  loop_key <- unique(data$loop)
   
-  spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
+  xr <- c(min(data$x), max(data$x))
   
-  loop_key <- unique(spectra$loop)
-  
-  xr <- c(min(spectra$x), max(spectra$x))
   if (showLegend) {
     xr[2] <- xr[2] * 1.01
   }
   
-  intr <- c(min(spectra$intensity), max(spectra$intensity))
+  intr <- c(min(data$intensity), max(data$intensity))
   
   if (is.null(cex) || !is.numeric(cex)) cex <- 1
   
-  plot(spectra$x,
-       type = "n",
-       xlab = xLab,
-       ylab = yLab,
-       xlim = xr,
-       ylim = intr,
-       main = title
+  plot(
+    data$x,
+    type = "n",
+    xlab = xLab,
+    ylab = yLab,
+    xlim = xr,
+    ylim = intr,
+    main = title
   )
   
   for (t in loop_key) {
-    select_vector <- spectra$loop %in% t
+    select_vector <- data$loop %in% t
     
-    lt <- unique(spectra$var[select_vector])
+    lt <- unique(data$var[select_vector])
     
     lines(
-      x = spectra$x[select_vector],
-      y = spectra$intensity[select_vector],
+      x = data$x[select_vector],
+      y = data$intensity[select_vector],
       type = "l",
       pch = 19,
       cex = 0.5,
@@ -258,39 +258,35 @@
 
 # MARK: .plot_lines_baseline_static
 #' @noRd
-.plot_lines_baseline_static <- function(spectra, xLab, yLab, title, cex, showLegend) {
-  cl <- .get_colors(unique(spectra$var))
-  
-  spectra$loop <- paste0(data$analysis, data$replicate, spectra$id, spectra$var)
-  
-  loop_key <- unique(spectra$loop)
-  
-  xr <- c(min(spectra$x), max(spectra$x))
+.plot_lines_baseline_static <- function(data, xLab, yLab, title, cex, showLegend) {
+  cl <- .get_colors(unique(data$var))
+  data$loop <- paste0(data$analysis, data$replicate, data$id, data$var)
+  loop_key <- unique(data$loop)
+  xr <- c(min(data$x), max(data$x))
   if (showLegend) {
     xr[2] <- xr[2] * 1.01
   }
   
-  intr <- c(0, max(spectra$raw))
-  
+  intr <- c(0, max(data$raw))
   if (is.null(cex) || !is.numeric(cex)) cex <- 1
   
-  plot(spectra$x,
-       type = "n",
-       xlab = xLab,
-       ylab = yLab,
-       xlim = xr,
-       ylim = intr,
-       main = title
+  plot(
+    data$x,
+    type = "n",
+    xlab = xLab,
+    ylab = yLab,
+    xlim = xr,
+    ylim = intr,
+    main = title
   )
   
   for (t in loop_key) {
-    select_vector <- spectra$loop %in% t
-    
-    lt <- unique(spectra$var[select_vector])
+    select_vector <- data$loop %in% t
+    lt <- unique(data$var[select_vector])
     
     lines(
-      x = spectra$x[select_vector],
-      y = spectra$raw[select_vector],
+      x = data$x[select_vector],
+      y = data$raw[select_vector],
       type = "l",
       lty = 1,
       lwd = 1,
@@ -300,8 +296,8 @@
     )
     
     lines(
-      x = spectra$x[select_vector],
-      y = spectra$baseline[select_vector],
+      x = data$x[select_vector],
+      y = data$baseline[select_vector],
       type = "l",
       lty = 2,
       lwd = 2,
@@ -326,17 +322,16 @@
 
 # MARK: .plot_lines_baseline_interactive
 #' @noRd
-.plot_lines_baseline_interactive <- function(spectra,
+.plot_lines_baseline_interactive <- function(data,
                                              xLab,
                                              yLab,
                                              title,
                                              colorBy,
                                              renderEngine = "webgl") {
-  leg <- unique(spectra$var)
+  leg <- unique(data$var)
   cl <- .get_colors(leg)
-  
-  spectra$loop <- paste0(spectra$analysis, spectra$id, spectra$var)
-  loop_key <- unique(spectra$loop)
+  data$loop <- paste0(data$analysis, data$replicate, data$id, data$var)
+  loop_key <- unique(data$loop)
   
   title <- list(
     text = title, x = 0.13, y = 0.98,
@@ -362,11 +357,11 @@
   names(showL) <- leg
   
   for (t in loop_key) {
-    select_vector <- spectra$loop %in% t
-    lt <- unique(spectra$var[select_vector])
-    x <- spectra$x[select_vector]
-    y <- spectra$raw[select_vector]
-    y2 <- spectra$baseline[select_vector]
+    select_vector <- data$loop %in% t
+    lt <- unique(data$var[select_vector])
+    x <- data$x[select_vector]
+    y <- data$raw[select_vector]
+    y2 <- data$baseline[select_vector]
     
     plot <- plot %>% add_trace(
       x = x,
@@ -678,7 +673,8 @@
                                          yVal = "mz",
                                          xLab = NULL,
                                          yLab = NULL,
-                                         zLab = NULL) {
+                                         zLab = NULL,
+                                         renderEngine = "webgl") {
   checkmate::assert_choice(xVal, c("rt", "mz", "mobility"))
   checkmate::assert_choice(yVal, c("rt", "mz", "mobility"))
   
@@ -750,6 +746,10 @@
     yaxis = list(title = ylab),
     zaxis = list(title = zlab)
   ))
+  
+  if (renderEngine %in% "webgl") {
+    fig <- fig %>% plotly::toWebGL()
+  }
   
   fig
 }
@@ -1067,7 +1067,8 @@
                                           title = NULL,
                                           showLegend = TRUE,
                                           xLab = NULL,
-                                          yLab = NULL) {
+                                          yLab = NULL,
+                                          renderEngine = "webgl") {
   eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
   
   leg <- unique(eic$var)
@@ -1139,6 +1140,10 @@
     plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
   } else {
     plot <- plot %>% plotly::layout(legend = NULL, xaxis = xaxis, yaxis = yaxis, title = title)
+  }
+  
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
   }
   
   plot
@@ -1217,7 +1222,7 @@
 
 # MARK: .plot_spectra_ms2_interactive
 #' @noRd
-.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, xLab = NULL, yLab = NULL) {
+.plot_spectra_ms2_interactive <- function(ms2 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, xLab = NULL, yLab = NULL, renderEngine = "webgl") {
   ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
   
   leg <- unique(ms2$var)
@@ -1286,6 +1291,10 @@
   
   plot <- plot %>% plotly::layout(bargap = 1, title = title, xaxis = xaxis, yaxis = yaxis, barmode = "overlay", uniformtext = list(minsize = 6, mode = "show"))
   
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
+  
   return(plot)
 }
 
@@ -1339,7 +1348,7 @@
 
 # MARK: .plot_spectra_ms1_interactive
 #' @noRd
-.plot_spectra_ms1_interactive <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, xLab = NULL, yLab = NULL, showText = FALSE) {
+.plot_spectra_ms1_interactive <- function(ms1 = NULL, legendNames = NULL, colorBy = "targets", title = NULL, xLab = NULL, yLab = NULL, showText = FALSE, renderEngine = "webgl") {
   ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
   
   leg <- unique(ms1$var)
@@ -1402,6 +1411,10 @@
   )
   
   plot <- plot %>% plotly::layout(bargap = 1, title = title, xaxis = xaxis, yaxis = yaxis, barmode = "overlay", uniformtext = list(minsize = 6, mode = "show"))
+  
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
   
   return(plot)
 }
@@ -4040,7 +4053,8 @@
                                           title = NULL,
                                           showLegend = TRUE,
                                           xLab = NULL,
-                                          yLab = NULL) {
+                                          yLab = NULL,
+                                          renderEngine = "webgl") {
   peaks$unique_ids <- paste0(peaks$analysis, "_", peaks$id, "_", peaks$peak)
   
   peaks <- .make_colorBy_varkey(peaks, colorBy, legendNames)
@@ -4168,6 +4182,10 @@
     )
   }
   
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
+  
   plot
 }
 
@@ -4230,7 +4248,7 @@
 
 # MARK: .plot_x_spectra_interactive
 #' @noRd
-.plot_x_spectra_interactive <- function(spectra, xLab, yLab, title, colorBy) {
+.plot_x_spectra_interactive <- function(spectra, xLab, yLab, title, colorBy, renderEngine = "webgl") {
   leg <- unique(spectra$var)
 
   cl <- .get_colors(leg)
@@ -4288,6 +4306,10 @@
     yaxis = yaxis,
     title = title
   )
+  
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
 
   plot
 }

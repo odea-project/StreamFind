@@ -2424,7 +2424,8 @@ Plots spectra given MS analyses.
   title = NULL,
   cex = 0.6,
   showLegend = TRUE,
-  interactive = TRUE
+  interactive = TRUE,
+  renderEngine = "webgl"
 )}\if{html}{\out{</div>}}
 }
 
@@ -2513,6 +2514,8 @@ spectra from raw data files.}
 \item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
 
 \item{\code{averaged}}{Logical of length one. Set to \code{TRUE} for plotting the averaged spectra.}
 
@@ -4362,9 +4365,11 @@ Plots the fold-change analysis between the \code{replicatesIn} and \code{replica
   correctSuppression = FALSE,
   fillZerosWithLowerLimit = FALSE,
   lowerLimit = NA_real_,
+  normalized = TRUE,
   yLab = NULL,
   title = NULL,
-  interactive = TRUE
+  interactive = TRUE,
+  showLegend = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -4424,11 +4429,15 @@ correct the intensity before fold-change analysis.}
 
 \item{\code{lowerLimit}}{Numeric of length one. The lower limit to fill the zero values.}
 
+\item{\code{normalized}}{Logical of length one. When \code{TRUE} the fold-change values are normalized.}
+
 \item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{title}}{A string with the title.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
 }
 \if{html}{\out{</div>}}
 }

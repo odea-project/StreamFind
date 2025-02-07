@@ -124,12 +124,12 @@ within engine, as shown below.
 # Creates the workflow for Raman data
 # with an ordered list of processing settings
 raman_workflow <- list(
-  RamanSettings_AverageSpectra_StreamFind(),
+  RamanSettings_AverageSpectra_native(),
   RamanSettings_SubtractBlankSpectra_StreamFind(),
-  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -100, shiftmax = 350),
-  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 1800, shiftmax = 2500),
-  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30)
+  RamanSettings_SmoothSpectra_savgol(fl = 7, forder = 4, dorder = 0),
+  RamanSettings_DeleteSpectraSection_native(min = -100, max = 350),
+  RamanSettings_DeleteSpectraSection_native(min = 1800, max = 2500),
+  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 11, differences = 1, itermax = 30)
 )
 
 # Adds the workflow to the engine

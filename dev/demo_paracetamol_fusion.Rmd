@@ -55,7 +55,7 @@ options(
   )
 )
 
-main_dir <- "C:/Users/thiss/Documents/Paracetamol_subset" # Ricardo laptop
+main_dir <- "C:/Users/apoli/Documents/example_files/isoft/Paracetamol_subset" # Ricardo laptop
 ms_dir <- paste0(main_dir, "/ms")
 ms_files <- list.files(ms_dir, pattern = ".mzML$", full.names = TRUE)
 raman_dir <- paste0(main_dir, "/raman")
@@ -244,11 +244,11 @@ scroll_box(width = "100%", height = "400px")
 
 ```{r raman-workflow}
 raman_workflow <- list(
-  RamanSettings_AverageSpectra_StreamFind(),
+  RamanSettings_AverageSpectra_native(),
   RamanSettings_SubtractBlankSpectra_StreamFind(),
   RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = -100, shiftmax = 350),
-  RamanSettings_DeleteSpectraSection_StreamFind(shiftmin = 1800, shiftmax = 2500),
+  RamanSettings_DeleteSpectraSection_native(min = -100, max = 350),
+  RamanSettings_DeleteSpectraSection_native(min = 1800, max = 2500),
   RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30),
   RamanSettings_NormalizeSpectra_minmax(),
   RamanSettings_NormalizeSpectra_blockweight()
@@ -287,7 +287,7 @@ str(fused_mat)
 Principle Components Analysis (PCA) can be used for unsupervised evaluation, that is, we assume that the main (or training) set of analyses is of good quality and we test new analyses to evaluate their closeness to the main set. You could say it is a supervised approach, but in the sense that we assume the quality of the main set. However, we do not classify the possible deviation of the new analyses, which would be a clearly supervised approach, as we show in the next subchapter.
 
 ```{r sets-show}
-main_set_idx <- c(c(1:9), 13, 15)
+main_set_idx <- c(1:10)
 
 main_set <- fused_mat[main_set_idx, ]
 rownames(main_set)
@@ -313,7 +313,7 @@ plot(stat$model, showText = TRUE)
 K-Nearest Neighbors (KNN) can be used to classify analyses based on pre-classified training analyses.
 
 ```{r sets-show-knn}
-train_idx <- grep("_1|_2|_01|_06|_07|_10", rownames(fused_mat))
+train_idx <- unique(c(grep("1", rownames(fused_mat)), grep("2", rownames(fused_mat))))
 
 train_set <- fused_mat[train_idx, ]
 train_set <- train_set[order(rownames(train_set)), ]
@@ -325,7 +325,7 @@ rownames(test_set)
 
 ```{r knn-classes}
 labels <- c(
-  rep("fiz", 9),
+  rep("fiz", 8),
   rep("fiz_acid", 2),
   rep("fiz_ass", 2),
   rep("fiz_caff", 2),
@@ -340,136 +340,3 @@ stat2$run(StatisticSettings_MakeModel_knn(k = 3))
 stat2$predict(test_set)
 stat2$model$prediction$results
 ```
-
-# MS Only
-
-Statistical analysis is performed on MS data only.
-
-```{r fusion}
-ms_spec_mat <- ms$get_spectra_matrix()
-ms_spec_mat <- mdatools::prep.autoscale(ms_spec_mat, center = TRUE, scale = FALSE)
-str(ms_spec_mat)
-```
-
-## Unsupervised
-
-```{r sets-show}
-main_set_idx <- c(c(1:9), 13, 15)
-ms_main_set <- ms_spec_mat[main_set_idx, ]
-rownames(ms_main_set)
-ms_test_set <- ms_spec_mat[-main_set_idx, ]
-rownames(ms_test_set)
-```
-
-```{r pca-engine, fig.cap="MS PCA model (native plot from mdatools R package).", fig.height=9, warning=FALSE}
-ms_stat <- StatisticEngine$new(analyses = ms_main_set)
-ms_stat$run(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 0.01, gamma = 0.001))
-plot(ms_stat$model, showText = TRUE)
-```
-
-```{r pca-predict, warning=FALSE, fig.cap="MS PCA model prediction distances. For more information about the distances plese consult the mdatools guide in https://mdatools.com/docs/pca--distances-and-limits.html."}
-ms_stat$predict(ms_test_set)
-plot(ms_stat$model, showText = TRUE)
-```
-
-## Supervised (classification)
-
-K-Nearest Neighbors (KNN) can be used to classify analyses based on pre-classified training analyses.
-
-```{r sets-show-knn}
-train_idx <- grep("_1|_2|_01|_06|_07|_10", rownames(ms_spec_mat))
-
-ms_train_set <- ms_spec_mat[train_idx, ]
-ms_train_set <- ms_train_set[order(rownames(train_set)), ]
-rownames(ms_train_set)
-
-ms_test_set <- ms_spec_mat[-train_idx, ]
-rownames(ms_test_set)
-```
-
-```{r knn-classes}
-labels <- c(
-  rep("fiz", 9),
-  rep("fiz_acid", 2),
-  rep("fiz_ass", 2),
-  rep("fiz_caff", 2),
-  rep("fiz_old", 2)
-)
-```
-
-```{r knn-engine}
-ms_stat2 <- StatisticEngine$new(analyses = ms_train_set)
-ms_stat2$add_classes(labels)
-ms_stat2$run(StatisticSettings_MakeModel_knn(k = 3))
-ms_stat2$predict(ms_test_set)
-ms_stat2$model$prediction$results
-```
-
-# Raman Only
-
-Statistical analysis is performed on Raman data only.
-
-```{r fusion}
-raman_spec_mat <- raman$get_spectra_matrix()
-raman_spec_mat <- mdatools::prep.autoscale(raman_spec_mat, center = TRUE, scale = FALSE)
-str(raman_spec_mat)
-```
-
-## Unsupervised
-
-```{r sets-show}
-main_set_idx <- c(c(1:9), 13, 15)
-raman_main_set <- raman_spec_mat[main_set_idx, ]
-rownames(raman_main_set)
-raman_test_set <- raman_spec_mat[-main_set_idx, ]
-rownames(raman_test_set)
-```
-
-```{r pca-engine, fig.cap="MS PCA model (native plot from mdatools R package).", fig.height=9, warning=FALSE}
-raman_stat <- StatisticEngine$new(analyses = raman_main_set)
-raman_stat$run(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 0.01, gamma = 0.001))
-plot(raman_stat$model, showText = TRUE)
-```
-
-```{r pca-predict, warning=FALSE, fig.cap="MS PCA model prediction distances. For more information about the distances plese consult the mdatools guide in https://mdatools.com/docs/pca--distances-and-limits.html."}
-raman_stat$predict(raman_test_set)
-plot(raman_stat$model, showText = TRUE)
-```
-
-## Supervised (classification)
-
-K-Nearest Neighbors (KNN) can be used to classify analyses based on pre-classified training analyses.
-
-```{r sets-show-knn}
-train_idx <- grep("_1|_2|_01|_06|_07|_10", rownames(raman_spec_mat))
-
-raman_train_set <- raman_spec_mat[train_idx, ]
-raman_train_set <- raman_train_set[order(rownames(train_set)), ]
-rownames(raman_train_set)
-
-raman_test_set <- raman_spec_mat[-train_idx, ]
-rownames(raman_test_set)
-```
-
-```{r knn-classes}
-labels <- c(
-  rep("fiz", 9),
-  rep("fiz_acid", 2),
-  rep("fiz_ass", 2),
-  rep("fiz_caff", 2),
-  rep("fiz_old", 2)
-)
-```
-
-```{r knn-engine}
-raman_stat2 <- StatisticEngine$new(analyses = raman_train_set)
-raman_stat2$add_classes(labels)
-raman_stat2$run(StatisticSettings_MakeModel_knn(k = 3))
-raman_stat2$predict(raman_test_set)
-raman_stat2$model$prediction$results
-```
-
-```{r}
-
-```
-

@@ -159,9 +159,8 @@ ms$plot_spectra_ms1(
   rt = rt_av,
   sec = 0.5,
   colorBy = "replicates",
-  presence = 0.1,
-  minIntensity = 5000,
-  interactive = FALSE
+  presence = 0.01,
+  minIntensity = 100
 )
 ```
 
@@ -175,18 +174,19 @@ ms$run(
     mzmin = 1200,
     mzmax = 2000,
     levels = 1,
-    minIntensity = 100
+    minIntensity = 10
   )
 )
 
 # Calculates the charges for the extracted spectra
 ms$run(
   MassSpecSettings_CalculateSpectraCharges_StreamFind(
-    roundVal = 15,
+    onlyTopScans = TRUE,
+    topScans = 6,
+    roundVal = 10,
     relLowCut = 0.2,
-    absLowCut = 10000,
-    onlyMaxScan = FALSE,
-    top = 5
+    absLowCut = 0,
+    top = 10
   )
 )
 
@@ -220,8 +220,6 @@ ms$run(
 ms$run(MassSpecSettings_NormalizeSpectra_minmax())
   
 ms$run(MassSpecSettings_NormalizeSpectra_blockweight())
-
-ms$print_workflow()
 ```
 
 The `print_workflow()` method can be used to inspect the workflow settings.
@@ -276,19 +274,19 @@ As for MS data, the workflow for Raman data is also assembled using an ordered l
 
 ```{r raman-workflow}
 raman_workflow <- list(
-  RamanSettings_BinSpectra_StreamFind(
+  RamanSettings_BinScans_StreamFind(
     binNames = "rt",
     binValues = 20,
     byUnit = FALSE
   ),
 
-  RamanSettings_SubtractSpectraSection_StreamFind(
+  RamanSettings_SubtractSpectraSection_native(
     sectionVal = "rt",
     sectionWindow = c(0, 200)
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
-    shiftmin = -100,
+  RamanSettings_DeleteSpectraSection_native(
+    min = -100,
     shiftmax = 315
   ),
 

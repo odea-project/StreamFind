@@ -65,6 +65,7 @@
 #' @template arg-showText
 #' @template arg-settings
 #' @template arg-ms-correctSuppression
+#' @template arg-renderEngine
 #'
 #' @references
 #' \insertRef{patroon01}{StreamFind}
@@ -1181,12 +1182,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             title = NULL,
                             cex = 0.6,
                             showLegend = TRUE,
-                            interactive = TRUE) {
+                            interactive = TRUE,
+                            renderEngine = "webgl") {
       StreamFind::plot_spectra(
         self$analyses,
         analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
         allTraces, isolationWindow, minIntensityMS1, minIntensityMS2, useRawData, useLoadedData,
-        legendNames, colorBy, xVal, xLab, yLab, title, cex, showLegend, interactive
+        legendNames, colorBy, xVal, xLab, yLab, title, cex, showLegend, interactive, renderEngine
       )
     },
 
@@ -1794,6 +1796,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' correct the intensity before fold-change analysis.
     #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled with the lower limit.
     #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
+    #' @param normalized Logical of length one. When `TRUE` the fold-change values are normalized.
     #' 
     plot_fold_change = function(replicatesIn = NULL,
                                 replicatesOut = NULL,

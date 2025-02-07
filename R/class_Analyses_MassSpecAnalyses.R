@@ -742,7 +742,10 @@ S7::method(read, MassSpecAnalyses) <- function(x, file) {
 ## get_spectra_tic -----
 #' @export
 #' @noRd
-S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x, analyses = NULL, levels = c(1, 2), rt = NULL) {
+S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x,
+                                                          analyses = NULL,
+                                                          levels = c(1, 2),
+                                                          rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
   value <- x$spectra_tic[analyses]
   value <- data.table::rbindlist(value, idcol = "analysis", fill = TRUE)
@@ -773,7 +776,10 @@ S7::method(get_matrix_suppression, MassSpecAnalyses) <- function(x, rtWindow = 1
 ## get_spectra_bpc -----
 #' @export
 #' @noRd
-S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x, analyses = NULL, levels = c(1, 2), rt = NULL) {
+S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x,
+                                                          analyses = NULL,
+                                                          levels = c(1, 2),
+                                                          rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
   value <- x$spectra_bpc[analyses]
   value <- data.table::rbindlist(value, idcol = "analysis", fill = TRUE)
@@ -844,7 +850,9 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
     }
   }
 
-  num_cols <- c("mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax")
+  num_cols <- c(
+    "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax"
+  )
 
   if (all(apply(targets[, num_cols, with = FALSE], 1, function(z) sum(z, na.rm = TRUE)) != 0)) {
     if (TRUE %in% is.na(targets$mz)) {
@@ -989,7 +997,9 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
         message("\U2699 Parsing spectra from ", basename(a$file), "...", appendLF = FALSE)
 
         if (nrow(no_cached_targets) == 1) {
-          num_cols <- c("mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax")
+          num_cols <- c(
+            "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax"
+          )
           if (apply(no_cached_targets[, num_cols, with = FALSE], 1, function(z) sum(z, na.rm = TRUE)) == 0) {
             no_cached_targets <- no_cached_targets[0, ]
           }
@@ -1195,7 +1205,8 @@ S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
     eic <- as.data.table(eic)
     if (!"id" %in% colnames(eic)) eic$id <- NA_character_
     if (!"polarity" %in% colnames(eic)) eic$polarity <- 0
-    eic <- eic[, `:=`(intensity = max(intensity), mz = mean(mz)), by = c("analysis", "polarity", "id", "rt")][]
+    cols_summary <- c("analysis", "polarity", "id", "rt")
+    eic <- eic[, `:=`(intensity = max(intensity), mz = mean(mz)), by = cols_summary][]
     eic <- eic[, c("analysis", "polarity", "id", "rt", "mz", "intensity"), with = FALSE]
     eic <- unique(eic)
   }
@@ -1446,7 +1457,8 @@ S7::method(plot_spectra, MassSpecAnalyses) <- function(x,
                                                        title = NULL,
                                                        cex = 0.6,
                                                        showLegend = TRUE,
-                                                       interactive = TRUE) {
+                                                       interactive = TRUE,
+                                                       renderEngine = "webgl") {
   spec <- get_spectra(x, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
     allTraces = allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
     useRawData, useLoadedData
@@ -1505,7 +1517,7 @@ S7::method(plot_spectra, MassSpecAnalyses) <- function(x,
   if (!interactive) {
     return(.plot_x_spectra_static(spec, xLab, yLab, title, cex, showLegend))
   } else {
-    return(.plot_x_spectra_interactive(spec, xLab, yLab, title, colorBy))
+    return(.plot_x_spectra_interactive(spec, xLab, yLab, title, colorBy, renderEngine))
   }
 }
 
@@ -1536,7 +1548,8 @@ S7::method(plot_spectra_3d, MassSpecAnalyses) <- function(x,
                                                           yVal = "mz",
                                                           xLab = NULL,
                                                           yLab = NULL,
-                                                          zLab = NULL) {
+                                                          zLab = NULL,
+                                                          renderEngine = "webgl") {
   spec <- get_spectra(
     x, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
     allTraces = allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
@@ -1557,7 +1570,9 @@ S7::method(plot_spectra_3d, MassSpecAnalyses) <- function(x,
 
   if ("feature" %in% colnames(spec)) spec$id <- spec$feature
   if (!"replicates" %in% colorBy) spec$replicate <- x$replicates[spec$analysis]
-  .plot_spectra_3d_interactive(spec, colorBy, legendNames, xVal, yVal, xLab, yLab, zLab)
+  .plot_spectra_3d_interactive(
+    spec, colorBy, legendNames, xVal, yVal, xLab, yLab, zLab, renderEngine
+  )
 }
 
 # MARK: plot_spectra_tic
@@ -1578,11 +1593,13 @@ S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
                                                            ylim = NULL,
                                                            cex = 0.6,
                                                            downsize = 1,
-                                                           interactive = TRUE) {
+                                                           interactive = TRUE,
+                                                           renderEngine = "webgl") {
   intensity <- NULL
   level <- NULL
   tic <- get_spectra_tic(x, analyses, levels, rt)
-  tic <- tic[, .(intensity = mean(intensity)), by = .(rt = floor(rt / downsize) * downsize, analysis, level)]
+  tic$rt <- floor(tic$rt / downsize) * downsize
+  tic <- tic[, .(intensity = mean(intensity)), by = .("rt", "analysis", "level")]
   if (nrow(tic) == 0) {
     message("\U2717 TIC not found for the analyses!")
     return(NULL)
@@ -1590,9 +1607,13 @@ S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
   if (grepl("replicates", colorBy)) tic$replicate <- x@replicates[tic$analysis]
   if (!"id" %in% colnames(tic)) tic$id <- tic$analysis
   if (!interactive) {
-    .plot_spectra_eic_static(tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+    .plot_spectra_eic_static(
+      tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab
+    )
   } else {
-    .plot_spectra_eic_interactive(tic, legendNames, colorBy, title, showLegend, xLab, yLab)
+    .plot_spectra_eic_interactive(
+      tic, legendNames, colorBy, title, showLegend, xLab, yLab, renderEngine
+    )
   }
 }
 
@@ -1771,7 +1792,8 @@ S7::method(plot_spectra_ms1, MassSpecAnalyses) <- function(x,
                                                            title = NULL,
                                                            colorBy = "targets",
                                                            showText = FALSE,
-                                                           interactive = TRUE) {
+                                                           interactive = TRUE,
+                                                           renderEngine = "webgl") {
   ms1 <- get_spectra_ms1(x, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust, presence, minIntensity)
 
   if (nrow(ms1) == 0) {
@@ -1784,7 +1806,7 @@ S7::method(plot_spectra_ms1, MassSpecAnalyses) <- function(x,
   if (!interactive) {
     .plot_spectra_ms1_static(ms1, legendNames, colorBy, title, xLab, yLab, showText)
   } else {
-    .plot_spectra_ms1_interactive(ms1, legendNames, colorBy, title, xLab, yLab, showText)
+    .plot_spectra_ms1_interactive(ms1, legendNames, colorBy, title, xLab, yLab, showText, renderEngine)
   }
 }
 
@@ -1811,7 +1833,8 @@ S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
                                                            yLab = NULL,
                                                            title = NULL,
                                                            colorBy = "targets",
-                                                           interactive = TRUE) {
+                                                           interactive = TRUE,
+                                                           renderEngine = "webgl") {
   ms2 <- get_spectra_ms2(x, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, isolationWindow, mzClust, presence, minIntensity)
 
   if (nrow(ms2) == 0) {
@@ -1824,7 +1847,7 @@ S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
   if (!interactive) {
     .plot_spectra_ms2_static(ms2, legendNames, colorBy, title, xLab, yLab)
   } else {
-    .plot_spectra_ms2_interactive(ms2, legendNames, colorBy, title, xLab, yLab)
+    .plot_spectra_ms2_interactive(ms2, legendNames, colorBy, title, xLab, yLab, renderEngine)
   }
 }
 
@@ -2287,7 +2310,8 @@ S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
                                                              xlim = NULL,
                                                              ylim = NULL,
                                                              cex = 0.6,
-                                                             interactive = TRUE) {
+                                                             interactive = TRUE,
+                                                             renderEngine = "webgl") {
   chromatograms <- StreamFind::get_chromatograms(
     x, analyses,
     chromatograms,
@@ -2314,7 +2338,7 @@ S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
   if (!interactive) {
     .plot_spectra_eic_static(chromatograms, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
   } else {
-    .plot_chromatograms_interactive(chromatograms, legendNames, colorBy, xLab, yLab, title, showLegend)
+    .plot_chromatograms_interactive(chromatograms, legendNames, colorBy, xLab, yLab, title, showLegend, renderEngine)
   }
 }
 
@@ -2334,7 +2358,8 @@ S7::method(plot_chromatograms_peaks, MassSpecAnalyses) <- function(x,
                                                                    cex = 0.6,
                                                                    xLab = NULL,
                                                                    yLab = NULL,
-                                                                   interactive = TRUE) {
+                                                                   interactive = TRUE,
+                                                                   renderEngine = "webgl") {
   pks <- get_chromatograms_peaks(x, analyses = analyses, chromatograms = chromatograms)
 
   if (nrow(pks) == 0) {
@@ -2363,7 +2388,7 @@ S7::method(plot_chromatograms_peaks, MassSpecAnalyses) <- function(x,
   if (!interactive) {
     .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
   } else {
-    .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
+    .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab, renderEngine)
   }
 }
 

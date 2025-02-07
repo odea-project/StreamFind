@@ -454,7 +454,7 @@ S7::method(run, MassSpecSettings_CalculateSpectraCharges_StreamFind) <- function
     } else {
       warning("No data in analysis ", processed, " to calculate charges!")
       processed <<- processed + 1
-      data.table::data.table()
+      list("spectra" = z, "charges" = data.table::data.table())
     }
   },
   roundVal = roundVal,
