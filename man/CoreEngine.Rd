@@ -4,8 +4,9 @@
 \alias{CoreEngine}
 \title{\strong{CoreEngine} R6 class and methods}
 \description{
-The \code{CoreEngine} R6 class is used internally for harmonizing the different data
-specific engines. Users should not use this class directly.
+The \code{CoreEngine} R6 class is used harmonizing method across different data specific
+engines. Users should not use this class directly as core method are available from the specific
+data engines.
 }
 \note{
 If there are \code{ProcessingSettings} objects with the same method names it is better to

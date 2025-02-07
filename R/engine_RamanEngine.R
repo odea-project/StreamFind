@@ -1,10 +1,12 @@
 # MARK: RamanEngine
 #' **RamanEngine** R6 class and methods
 #'
-#' @description The *RamanEngine* R6 class is a framework for parsing, processing, inspecting and storing Raman
-#' spectroscopic data. Raman data can be loaded from .asc and .sif files.
+#' @description The *RamanEngine* R6 class is a framework for parsing, processing, inspecting and 
+#' storing Raman spectroscopic data. Raman data can be loaded from "asc", "sif", "json", "wdf", 
+#' "sdf", "csv" and "txt" files.
 #'
 #' @template arg-headers
+#' @template arg-workflow
 #' @template arg-settings-and-list
 #' @template arg-results
 #' @template arg-analyses
@@ -20,6 +22,10 @@
 #' @template arg-xlim-ylim
 #' @template arg-cex
 #' @template arg-showLegend
+#' @template arg-renderEngine
+#' @template arg-useRawData
+#' @template arg-raman-targets
+#' @template arg-raman-target
 #'
 #' @references
 #' \insertRef{orpl01}{StreamFind}
@@ -31,7 +37,6 @@ RamanEngine <- R6::R6Class("RamanEngine",
 
   # MARK: active bindings
   # _ active bindings -----
-
   active = list(
 
     # MARK: raw_spectra
@@ -61,13 +66,13 @@ RamanEngine <- R6::R6Class("RamanEngine",
     # __ initialize -----
     #' @description Creates an R6 class *RamanEngine*. Child of *CoreEngine* R6 class.
     #'
-    #' @param file Character of length one with the full path to the `sqlite` save file of the engine.
-    #' @param headers A `ProjectHeaders` S7 class object.
-    #' @param workflow A `Workflow` S7 class object.
-    #' @param analyses A `RamanAnalyses` S7 class object or a `character vector` with full file paths to .asc and/or
-    #' .sif raman files or a `data.frame` with colnames `file`, `replicate` and `blank`. The "replicate" column is used
-    #' to group the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full
-    #' path to .asc and/or .sif files.
+    #' @param file Character (length 1) with the full path to the `sqlite` or `rds` save file of 
+    #' the engine.
+    #' @param analyses A `RamanAnalyses` S7 class object or a `character vector` with full file 
+    #' paths to "asc", "sif", "json", "wdf", "sdf", "csv" and/or "txt" raman files or a `data.frame`
+    #' with colnames `file`, `replicate` and `blank`. The "replicate" column is used to group the 
+    #' analyses and the "blank" column is used to identify the blank samples. The "file" column is 
+    #' the full to the raman files.
     #'
     initialize = function(file = NULL, headers = NULL, workflow = NULL, analyses = NULL) {
       super$initialize(file, headers, workflow, analyses)
@@ -117,26 +122,43 @@ RamanEngine <- R6::R6Class("RamanEngine",
     ## __ get_spectra -----
     #' @description Gets a `data.table` with spectra from analyses.
     #'
-    #' @param useRawData Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
+    #' @param useRawData Logical of length one. Set to `TRUE` for parsing raw spectra not spectra 
+    #' results/processed.
     #'
-    get_spectra = function(analyses = NULL, rt = NULL, shift = NULL, minIntensity = 0, useRawData = FALSE) {
-      get_spectra(self$analyses, analyses, rt, shift, minIntensity, useRawData)
+    get_spectra = function(analyses = NULL,
+                           targets = NULL,
+                           rt = NULL,
+                           shift = NULL,
+                           minIntensity = NULL,
+                           useRawData = FALSE) {
+      get_spectra(self$analyses, analyses, targets, rt, shift, minIntensity, useRawData)
     },
     
     # MARK: get_spectra_matrix
     ## __ get_spectra_matrix -----
     #' @description Gets a matrix with spectra from analyses.
-    get_spectra_matrix = function(analyses = NULL) {
-      get_spectra_matrix(self$analyses, analyses)
+    get_spectra_matrix = function(analyses = NULL,
+                                  targets = NULL) {
+      get_spectra_matrix(self$analyses, analyses, targets)
+    },
+    
+    # MARK: get_chromatograms_peaks
+    ## __ get_chromatograms_peaks -----
+    #' @description Gets chromatographic peaks from analyses with spectra coupled to LC.
+    #'
+    get_chromatograms_peaks = function(analyses = NULL,
+                                       targets = NULL,
+                                       rt = NULL) {
+      get_chromatograms_peaks(self$analyses, analyses, targets, rt)
     },
     
     # MARK: add_analyses
     ## __ add_analyses -----
-    #' @description Adds analyses based on asc files. Note that when adding new files, any existing results are removed.
+    #' @description Adds analyses based on asc files. Note that when adding new files, any existing 
+    #' results are removed.
     #'
-    #' @param analyses A RamanAnalysis S3 class object or a list with RamanAnalysis S3 class objects as
-    #' elements (see `?RamanAnalysis` for more information) or a character vector with with full paths of **.asc** files
-    #' from Raman analyses.
+    #' @param analyses A `RamanAnalyses` S7 class object or a `character vector` with full file 
+    #' paths to "asc", "sif", "json", "wdf", "sdf", "csv" and/or "txt" raman files.
     #'
     #' @return Invisible.
     #'
@@ -161,7 +183,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
     ## __ add_replicate_names -----
     #' @description Adds replicate names to the analysis.
     #' 
-    #' @param value Character vector with the replicate names. Must have the same length as the number of analyses.
+    #' @param value Character vector with the replicate names. Must have the same length as the
+    #' number of analyses.
     #' 
     add_replicate_names = function(value) {
       self$analyses$replicates <- value
@@ -172,7 +195,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
     ## __ add_blank_names -----
     #' @description Adds blank names to the analysis.
     #' 
-    #' @param value Character vector with the replicate names. Must have the same length as the number of analyses and
+    #' @param value Character vector with the replicate names. Must have the same length as the
+    #' number of analyses and
     #' must be one of replicate names.
     #' 
     add_blank_names = function(value) {
@@ -181,137 +205,132 @@ RamanEngine <- R6::R6Class("RamanEngine",
     },
     
     # MARK: has_spectra
-    ## ___ has_spectra -----
+    ## __ has_spectra -----
     #' @description Checks if there are spectra results, returning `TRUE` or `FALSE`.
     has_spectra = function() {
       self$analyses$has_spectra
     },
     
     # MARK: plot_spectra
-    ## ___ plot_spectra -----
+    ## __ plot_spectra -----
     #' @description Plots spectra for given *RamanAnalyses*.
     #'
-    #' @param xVal Character of length one. Possible are "rt" or "shift" for using the retention time or the shift
-    #' as x axis, respectively.
-    #' @param useRawData Logical of length one. Set to `TRUE` for parsing raw spectra not spectra results/processed.
+    #' @param useRawData Logical of length one. Set to `TRUE` for parsing raw spectra not spectra
+    #' results/processed.
     #'
-    #' @return A plot.
+    #' @return A spectra plot.
     #'
     plot_spectra = function(analyses = NULL,
+                            targets = NULL,
                             rt = NULL,
                             shift = NULL,
                             minIntensity = NULL,
                             useRawData = FALSE,
-                            xVal = "shift",
                             xLab = NULL,
                             yLab = NULL,
                             title = NULL,
-                            cex = 0.6,
                             showLegend = TRUE,
                             colorBy = "analyses",
-                            interactive = TRUE) {
-      plot_spectra(self$analyses, analyses, rt, shift, minIntensity, useRawData, xVal, xLab, yLab, title, cex, showLegend, colorBy, interactive)
+                            interactive = TRUE,
+                            cex = 0.6,
+                            renderEngine = "webgl") {
+      plot_spectra(
+        self$analyses,
+        analyses,
+        targets,
+        rt,
+        shift,
+        minIntensity,
+        useRawData,
+        xLab,
+        yLab,
+        title,
+        showLegend,
+        colorBy,
+        interactive,
+        cex,
+        renderEngine
+      )
+    },
+    
+    # MARK: plot_spectra_3d
+    ## __ plot_spectra_3d -----
+    #' @description Plots spectra in 3D, when a time dimension is available.
+    #' 
+    #' @param zLab Character (length 1). The label for the z-axis.
+    #'
+    #' @return A 3D plot.
+    #'
+    plot_spectra_3d = function(analyses = NULL,
+                               targets = NULL,
+                               rt = NULL,
+                               shift = NULL,
+                               minIntensity = NULL,
+                               useRawData = FALSE,
+                               legendNames = TRUE,
+                               colorBy = "analyses",
+                               xLab = NULL,
+                               yLab = NULL,
+                               zLab = NULL,
+                               renderEngine = "webgl") {
+      plot_spectra_3d(
+        self$analyses,
+        analyses,
+        targets,
+        rt,
+        shift,
+        minIntensity,
+        useRawData,
+        legendNames,
+        colorBy,
+        xLab,
+        yLab,
+        zLab,
+        renderEngine
+      )
     },
     
     # MARK: plot_spectra_baseline
-    ## ___ plot_spectra_baseline -----
+    ## __ plot_spectra_baseline -----
     #' @description Plots spectra corrected for given *RamanAnalyses*.
-    #'
-    #' @param xVal Character of length one. Possible are "rt" or "shift" for using the retention time or the shift
-    #' as x axis, respectively.
     #'
     #' @return A plot.
     #'
     plot_spectra_baseline = function(analyses = NULL,
+                                     targets = NULL,
                                      rt = NULL,
                                      shift = NULL,
                                      minIntensity = NULL,
-                                     xVal = "shift",
                                      xLab = NULL,
                                      yLab = NULL,
                                      title = NULL,
-                                     cex = 0.6,
                                      showLegend = TRUE,
                                      colorBy = "analyses",
-                                     interactive = TRUE) {
-      plot_spectra_baseline(self$analyses, analyses, rt, shift, minIntensity, xVal, xLab, yLab, title, cex, showLegend, colorBy, interactive)
+                                     interactive = TRUE,
+                                     cex = 0.6,
+                                     renderEngine = "webgl") {
+      plot_spectra_baseline(
+        self$analyses,
+        analyses,
+        targets,
+        rt,
+        shift,
+        minIntensity,
+        xLab,
+        yLab,
+        title,
+        showLegend,
+        colorBy,
+        interactive,
+        cex,
+        renderEngine
+      )
     },
     
-    # MARK: plot_spectra_peaks
-    ## ___ plot_spectra_peaks -----
-    #' @description Plots peaks from spectra from analyses.
-    plot_spectra_peaks = function(analyses = NULL,
-                                  legendNames = NULL,
-                                  title = NULL,
-                                  colorBy = "analyses",
-                                  showLegend = TRUE,
-                                  xlim = NULL,
-                                  ylim = NULL,
-                                  cex = 0.6,
-                                  xLab = NULL,
-                                  yLab = NULL,
-                                  interactive = TRUE) {
-      if (!self$has_spectra_peaks()) {
-        return(NULL)
-      }
-      
-      analyses <- .check_analyses_argument(self$analyses, analyses)
-      
-      if (is.null(analyses)) {
-        return(NULL)
-      }
-      
-      pks <- self$spectra_peaks
-      
-      pks <- pks[pks$analysis %in% analyses, ]
-      
-      if (nrow(pks) == 0) {
-        message("\U2717 Peaks not found for the targets!")
-        return(NULL)
-      }
-      
-      setnames(pks, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-      
-      sp_data <- self$get_results("spectra")
-      sp_data <- sp_data$spectra$data
-      sp_data <- sp_data[unique(pks$analysis)]
-      
-      if (self$has_averaged_spectra()) {
-        spec <- lapply(sp_data, function(x) x$average)
-        spec <- rbindlist(spec, fill = TRUE)
-        if ("rt" %in% colnames(spec)) spec$rt <- NULL
-        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-      } else {
-        spec <- lapply(sp_data, function(x) x$raw)
-        spec <- rbindlist(spec, fill = TRUE)
-        if ("rt" %in% colnames(spec)) spec$rt <- NULL
-        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-      }
-      
-      if ("smoothed" %in% colnames(spec)) {
-        spec$raw <- spec$smoothed
-      }
-      
-      ids <- spec$id
-      names(ids) <- spec$analysis
-      ids <- ids[!duplicated(names(ids))]
-      
-      pks$id <- ids[pks$analysis]
-      
-      if (is.null(xLab)) xLab <- "Mass / Da"
-      if (is.null(yLab)) yLab <- "Intensity"
-      
-      if (!interactive) {
-        .plot_chrom_peaks_static(spec, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-      } else {
-        .plot_chrom_peaks_interactive(spec, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
-      }
-    },
+    
     
     # MARK: plot_chromatograms
-    ## ___ plot_chromatograms -----
+    ## __ plot_chromatograms -----
     #' @description Plots chromatograms from analyses with spectra coupled to LC.
     #'
     #' @param useRawData Logical of length one. Set to `TRUE` for parsing raw spectra not spectra
@@ -320,6 +339,7 @@ RamanEngine <- R6::R6Class("RamanEngine",
     #' @return A plot.
     #'
     plot_chromatograms = function(analyses = NULL,
+                                  targets = NULL,
                                   rt = NULL,
                                   shift = NULL,
                                   minIntensity = NULL,
@@ -327,73 +347,63 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                   xLab = NULL,
                                   yLab = NULL,
                                   title = NULL,
-                                  cex = 0.6,
                                   showLegend = TRUE,
                                   colorBy = "analyses",
-                                  interactive = TRUE) {
+                                  interactive = TRUE,
+                                  cex = 0.6,
+                                  renderEngine = "webgl") {
       plot_chromatograms(
-        self$analyses, analyses, rt, shift, minIntensity, useRawData,
-        xLab, yLab, title, cex, showLegend, colorBy, interactive
+        self$analyses,
+        analyses,
+        targets,
+        rt,
+        shift,
+        minIntensity,
+        useRawData,
+        xLab,
+        yLab,
+        title,
+        showLegend,
+        colorBy,
+        interactive,
+        cex,
+        renderEngine
       )
     },
 
     # MARK: plot_chromatograms_peaks
-    ## ___ plot_chromatograms_peaks -----
+    ## __ plot_chromatograms_peaks -----
     #' @description Plots peaks from chromatograms from analyses.
     #'
     plot_chromatograms_peaks = function(analyses = NULL,
-                                        chromatograms = NULL,
-                                        legendNames = NULL,
+                                        targets = NULL,
+                                        rt = NULL,
                                         title = NULL,
+                                        legendNames = TRUE,
                                         colorBy = "targets",
                                         showLegend = TRUE,
-                                        xlim = NULL,
-                                        ylim = NULL,
-                                        cex = 0.6,
                                         xLab = NULL,
                                         yLab = NULL,
-                                        interactive = TRUE) {
-      if (!self$has_chromatograms_peaks()) {
-        return(NULL)
-      }
-
-      analyses <- .check_analyses_argument(self$analyses, analyses)
-
-      if (is.null(analyses)) {
-        return(NULL)
-      }
-
-      pks <- self$chromatograms_peaks
-      pks <- rbindlist(pks)
-      pks <- pks[pks$analysis %in% analyses, ]
-
-      if (is.numeric(chromatograms)) {
-        which_pks <- pks$index %in% chromatograms
-        pks <- pks[which_pks, ]
-      } else if (is.character(chromatograms)) {
-        which_pks <- pks$id %in% chromatograms
-        pks <- pks[which_pks, ]
-      } else if (!is.null(chromatograms)) {
-        return(NULL)
-      }
-
-      if (nrow(pks) == 0) {
-        message("\U2717 Peaks not found for the targets!")
-        return(NULL)
-      }
-
-      chroms <- self$get_chromatograms(analyses = analyses, chromatograms = chromatograms)
-
-      if ("replicates" %in% colorBy) {
-        chroms$replicate <- self$get_replicate_names()[chroms$analysis]
-        pks$replicate <- self$get_replicate_names()[pks$analysis]
-      }
-
-      if (!interactive) {
-        .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-      } else {
-        .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
-      }
+                                        interactive = TRUE,
+                                        cex = 0.6,
+                                        renderEngine = "webgl") {
+      plot_chromatograms_peaks(
+        self$analyses,
+        analyses,
+        targets,
+        rt,
+        title,
+        legendNames,
+        colorBy,
+        showLegend,
+        xlim = NULL,
+        ylim = NULL,
+        xLab,
+        yLab,
+        interactive,
+        cex,
+        renderEngine
+      )
     }
   )
 )

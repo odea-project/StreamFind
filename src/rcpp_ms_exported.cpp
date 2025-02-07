@@ -1308,6 +1308,16 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
   const std::vector<float> &fts_intensity = features["intensity"];
   const std::vector<int> &fts_polarity = features["polarity"];
   const std::vector<bool> &fts_filtered = features["filtered"];
+  // const std::vector<std::string> &fts_adduct = features["adduct"];
+  // const std::vector<Rcpp::List> &fts_quality = features["quality"];
+  // const std::vector<Rcpp::List> &fts_annotation = features["annotation"];
+  // const std::vector<Rcpp::List> &fts_eic = features["eic"];
+  // const std::vector<Rcpp::List> &fts_ms1 = features["ms1"];
+  // const std::vector<Rcpp::List> &fts_ms2 = features["ms2"];
+  // const std::vector<Rcpp::List> &fts_istd = features["istd"];
+  // const std::vector<Rcpp::List> &fts_suspects = features["suspects"];
+  // const std::vector<Rcpp::List> &fts_formulas = features["formulas"];
+  // const std::vector<Rcpp::List> &fts_compounds = features["compounds"];
 
   std::vector<std::string> fts_id = fts_group;
   
@@ -1628,7 +1638,6 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
     for (int i = 0; i < n_j_targets; i++)
     {
-
       const std::string &id_i = tg_id[i];
 
       sc::MS_TARGETS_SPECTRA res_i = res[id_i];
@@ -1636,7 +1645,9 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       const int n_res_i = res_i.id.size();
 
       if (n_res_i < minNumberTraces)
+      {
         continue;
+      }
 
       nts::merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
 
@@ -1647,10 +1658,14 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
       const float &gauss_f = quality["gauss_f"];
 
       if (sn < minSignalToNoiseRatio)
+      {
         continue;
+      }
 
       if (gauss_f < minGaussianFit)
+      {
         continue;
+      }
 
       const float area_i = nts::trapezoidal_area(res_i.rt, res_i.intensity);
 

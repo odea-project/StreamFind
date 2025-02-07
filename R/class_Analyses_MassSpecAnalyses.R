@@ -444,10 +444,10 @@ MassSpecAnalyses <- S7::new_class(
         if (length(self) == 0) {
           return(FALSE)
         }
-        if (is.null(self@results[["nts"]])) {
+        if (is.null(self@results[["NTS"]])) {
           return(FALSE)
         }
-        if (!is(self@results[["nts"]], "StreamFind::NTS")) {
+        if (!is(self@results[["NTS"]], "StreamFind::NTS")) {
           return(FALSE)
         }
         TRUE

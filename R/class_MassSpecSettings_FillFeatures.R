@@ -118,7 +118,7 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     parameters$minSignalToNoiseRatio,
     parameters$minGaussianFit
   )
-
+  
   res <- lapply(res, function(z) {
     temp <- data.table::rbindlist(z, fill = TRUE)
     if (nrow(temp) > 0) temp <- temp[!duplicated(temp$group), ]
@@ -138,11 +138,11 @@ S7::method(run, MassSpecSettings_FillFeatures_StreamFind) <- function(x, engine 
     duplos <- unique(z$feature[duplicated(z$feature)])
     if (length(duplos) > 0) {
       for (duplo in duplos) {
-        temp <- z[z$feature == duplo, ]
+        temp <- z[z$feature %in% duplo, ]
         grp <- temp$group[!is.na(temp$group)]
         if (length(grp) > 0) {
-          z$group[z$feature == duplo] <- grp[1]
-          z <- z[!(z$feature == duplo && z$adduct == "" && z$mass == 0), ]
+          z$group[z$feature %in% duplo] <- grp[1]
+          z <- z[!(z$feature %in% duplo & z$adduct %in% "" & z$mass %in% 0), ]
         }
       }
     }

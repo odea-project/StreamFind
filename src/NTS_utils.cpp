@@ -221,8 +221,19 @@ Rcpp::List nts::calculate_gaussian_fit(const std::string &ft,
       Rcpp::Named("gauss_u") = mu_fitted,
       Rcpp::Named("gauss_s") = sigma_fitted,
       Rcpp::Named("gauss_f") = r_squared);
+  
+  if (intensity.empty())
+  {
+    return quality;
+  }
 
   size_t max_position = nts::find_max_index(intensity);
+  
+  if (max_position == 0 || max_position >= intensity.size())
+  {
+    return quality;
+  }
+  
   const float max_intensity = intensity[max_position];
   
   const std::vector<float> left_intensity = std::vector<float>(intensity.begin(), intensity.begin() + max_position);

@@ -196,7 +196,7 @@ NTS <- S7::new_class(
   constructor = function(analyses_info = data.table::data.table(), feature_list = list()) {
     S7::new_object(
       StreamFind::Results(),
-      name = "nts",
+      name = "NTS",
       software = "StreamFind",
       version = as.character(packageVersion("StreamFind")),
       analyses_info = analyses_info,
@@ -206,7 +206,7 @@ NTS <- S7::new_class(
   
   # MARK: validator
   validator = function(self) {
-    checkmate::assert_true(self@name == "nts")
+    checkmate::assert_true(self@name == "NTS")
     checkmate::assert_true(self@software == "StreamFind")
     checkmate::assert_character(self@version, len = 1)
     if (length(self@has_features) > 0) {

@@ -253,6 +253,7 @@ S7::method(run, MassSpecSettings_FilterFeatures_StreamFind) <- function(x, engin
           metadata = FALSE,
           correctSuppression = correctSuppression
         )
+        
         groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) max(x) <= value)
         groups <- groups$group[groups_sel]
         feature_list <- engine$nts$feature_list

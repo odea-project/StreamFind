@@ -646,8 +646,6 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
                                                        useRawData = FALSE,
                                                        legendNames = TRUE,
                                                        colorBy = "analyses",
-                                                       xVal = "shift",
-                                                       yVal = "rt",
                                                        xLab = NULL,
                                                        yLab = NULL,
                                                        zLab = NULL,
@@ -666,27 +664,9 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
     return(NULL)
   }
   
-  checkmate::assert_choice(xVal, c("shift", "rt"))
-  checkmate::assert_choice(yVal, c("shift", "rt"))
-  
-  if (any(duplicated(c(xVal, yVal)))) {
-    stop("Duplicated x and y values are not possible!")
-  }
-  
-  xlab <- switch(
-    xVal,
-    "shift" = "Shift / cm<sup>-1</sup>",
-    "rt" = "Elution time / seconds",
-  )
-  
-  ylab <- switch(
-    yVal,
-    "shift" = "Shift / cm<sup>-1</sup>",
-    "rt" = "Elution time / seconds",
-  )
-  
+  xlab <- "Shift / cm<sup>-1</sup>"
+  ylab <- "Retention time / seconds"
   zlab <- "Intensity / counts"
-  
   if (!is.null(xLab)) xlab <- xLab
   if (!is.null(yLab)) ylab <- yLab
   if (!is.null(zLab)) zlab <- zLab
@@ -733,10 +713,6 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
     sep = ""
   )
   
-  spectra[["x"]] <- spectra[[xVal[1]]]
-  
-  spectra[["y"]] <- spectra[[yVal[1]]]
-  
   colors_var <- .get_colors(unique(spectra$var))
   
   hover_text <- paste0(
@@ -748,7 +724,7 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
     "<br>intensity: ", spectra$intensity
   )
   
-  fig <- plotly::plot_ly(spectra, x = ~x, y = ~y, z = ~intensity) %>%
+  fig <- plotly::plot_ly(spectra, x = ~shift, y = ~rt, z = ~intensity) %>%
     group_by(spectra$rt) %>%
       plotly::add_lines(
         color = ~var,
@@ -780,7 +756,6 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
                                                              rt = NULL,
                                                              shift = NULL,
                                                              minIntensity = NULL,
-                                                             xVal = "shift",
                                                              xLab = NULL,
                                                              yLab = NULL,
                                                              title = NULL,

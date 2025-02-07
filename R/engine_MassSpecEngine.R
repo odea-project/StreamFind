@@ -29,8 +29,8 @@
 #' @template arg-ms-isolationWindow
 #' @template arg-ms-minIntensityMS1
 #' @template arg-ms-minIntensityMS2
-#' @template arg-ms-useRawData
-#' @template arg-ms-useLoadedData
+#' @template arg-useRawData
+#' @template arg-useLoadedData
 #' @template arg-ms-mzClust
 #' @template arg-ms-presence
 #' @template arg-ms-rtmin
@@ -1796,29 +1796,31 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
     #' 
     plot_fold_change = function(replicatesIn = NULL,
-                               replicatesOut = NULL,
-                               groups = NULL,
-                               mass = NULL,
-                               mz = NULL,
-                               rt = NULL,
-                               mobility = NULL,
-                               ppm = 4,
-                               sec = 10,
-                               millisec = 5,
-                               filtered = FALSE,
-                               constantThreshold = 0.5,
-                               eliminationThreshold = 0.2,
-                               correctSuppression = FALSE,
-                               fillZerosWithLowerLimit = FALSE,
-                               lowerLimit = NA_real_,
-                               yLab = NULL,
-                               title = NULL,
-                               interactive = TRUE) {
+                                replicatesOut = NULL,
+                                groups = NULL,
+                                mass = NULL,
+                                mz = NULL,
+                                rt = NULL,
+                                mobility = NULL,
+                                ppm = 4,
+                                sec = 10,
+                                millisec = 5,
+                                filtered = FALSE,
+                                constantThreshold = 0.5,
+                                eliminationThreshold = 0.2,
+                                correctSuppression = FALSE,
+                                fillZerosWithLowerLimit = FALSE,
+                                lowerLimit = NA_real_,
+                                normalized = TRUE,
+                                yLab = NULL,
+                                title = NULL,
+                                interactive = TRUE,
+                                showLegend = TRUE) {
       StreamFind::plot_fold_change(
         self$analyses,
-        replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
-        filtered, constantThreshold, eliminationThreshold, correctSuppression,
-        fillZerosWithLowerLimit, lowerLimit, yLab, title, interactive
+        replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
+        constantThreshold, eliminationThreshold, correctSuppression, fillZerosWithLowerLimit, lowerLimit,
+        normalized, yLab, title, interactive, showLegend
       )
     },
 

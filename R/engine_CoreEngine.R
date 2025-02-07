@@ -1,7 +1,8 @@
 #' **CoreEngine** R6 class and methods
 #'
-#' @description The `CoreEngine` R6 class is used internally for harmonizing the different data
-#' specific engines. Users should not use this class directly.
+#' @description The `CoreEngine` R6 class is used harmonizing method across different data specific
+#' engines. Users should not use this class directly as core method are available from the specific
+#' data engines.
 #'  
 #' @template arg-headers
 #' @template arg-workflow

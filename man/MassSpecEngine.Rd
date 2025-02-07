@@ -610,9 +610,11 @@ data (i.e., MS1 data).}
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -698,9 +700,11 @@ in milliseconds.}
 targets to be used as identifier/s. When not given, the id is built as a
 combination of the \emph{m/z} and retention time ranges or values.}
 
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -780,9 +784,11 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -867,9 +873,11 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -938,9 +946,11 @@ Gets chromatograms from each analysis.
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1104,7 +1114,8 @@ right the mass range.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1196,7 +1207,8 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1283,7 +1295,8 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1456,7 +1469,8 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 
 \item{\code{minIntensityFeatures}}{Numeric (length 1) with the minimum intensity for features.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
 on the mass resolution of the MS data.}
@@ -1553,7 +1567,8 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 
 \item{\code{minIntensityFeatures}}{Numeric (length 1) with the minimum intensity for features.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
 on the mass resolution of the MS data.}
@@ -2472,9 +2487,11 @@ data (i.e., MS1 data).}
 \item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
@@ -2544,9 +2561,11 @@ Plots chromatograms in the analyses.
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in results/processed.}
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}
 
@@ -3206,7 +3225,8 @@ retention time range.}
 \item{\code{mzExpand}}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
@@ -3426,7 +3446,8 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
@@ -3532,7 +3553,8 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
@@ -3744,7 +3766,8 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 
 \item{\code{minIntensityFeatures}}{Numeric (length 1) with the minimum intensity for features.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
 on the mass resolution of the MS data.}
@@ -3861,7 +3884,8 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 
 \item{\code{minIntensityFeatures}}{Numeric (length 1) with the minimum intensity for features.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
 on the mass resolution of the MS data.}
@@ -3968,7 +3992,8 @@ retention time range.}
 \item{\code{mzExpand}}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{correctSuppression}}{Logical (length 1). When \code{TRUE} and suppression factor is available
 the intensities are corrected for suppression.}
@@ -4298,7 +4323,8 @@ retention time range.}
 \item{\code{mzExpand}}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data from files.}
+\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
 Mixed use (e.g. \code{analyses+polarities}) is also possible.}
