@@ -176,6 +176,7 @@ Collate:
     'engine_StatisticEngine.R'
     'app_config.R'
     'app_utils.R'
+    'app_mod_WorkflowAssembler_Result_NTS.R'
     'app_mod_WorkflowAssembler_Result_Spectra.R'
     'app_mod_WorkflowAssembler_WorkflowTab.R'
     'app_mod_WorkflowAssembler_Analyses.R'

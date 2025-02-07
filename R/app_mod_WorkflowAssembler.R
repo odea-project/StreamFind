@@ -68,6 +68,7 @@
     reactive_saved_workflow <- shiny::reactiveVal(NULL)
     reactive_saved_results <- shiny::reactiveVal(NULL)
     reactive_audit_saved <- shiny::reactiveVal(NULL)
+    reactive_config <- shiny::reactiveVal(AppConfig())
     
     ## obs Engine Save File -----
     shiny::observeEvent(reactive_engine_save_file(), {
@@ -410,7 +411,6 @@
         result_methods <- capture.output(.mod_WorkflowAssembler_Result_Server)
         tab_list <- list()
         for (i in seq_along(res)) {
-          
           has_result_method <- any(
             vapply(result_methods, function(z) grepl(class(res[[1]])[1], z), FALSE)
           )
@@ -426,18 +426,18 @@
             )
             
             tab_list[[i]] <- shiny::tabPanel(
-              title = class(res[[i]])[1],
+              title = names(res)[i],
               .mod_WorkflowAssembler_Result_UI(res[[i]], paste0("tab_", names(res)[i]), ns)
             )
           } else {
             shiny::showNotification(
-              paste("No results method for", class(res[[i]]), "!"),
+              paste("No results method for", names(res)[i], "!"),
               duration = 5,
               type = "warning"
             )
             tab_list[[i]] <- shiny::tabPanel(
               title = class(res[[i]])[1],
-              htmltools::div(paste0(" ", i, ": ", class(res[[i]])[1]))
+              htmltools::div(paste0(" ", i, ": ", names(res)[i]))
             )
           }
         }
@@ -478,8 +478,6 @@
       }
     })
     
-    
-    reactive_config <- shiny::reactiveVal(AppConfig())
     # TODO update configuration based on the golem-config.yml?
     reactive_config_change_trigger <- shiny::reactiveVal(0)
     

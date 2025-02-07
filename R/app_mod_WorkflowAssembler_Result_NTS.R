@@ -8,9 +8,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
   #   shiny::column(12, shiny::uiOutput(ns(ns2("spectra_plot_ui"))))
   # )
   
-  
-  
-  
+  shiny::fluidRow()
   
 }
 
@@ -23,9 +21,6 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
                                                                   reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
-    
-    
-    
     
     
     
