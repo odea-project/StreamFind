@@ -6,11 +6,10 @@
 \description{
 The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
 storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
-chromatograms produced by UV detection) can be loaded from mzML and mzXML formats. If
-\code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and
-found via CLI (i.e., must be added to the environmental variables), the engine can also load
-vendor formats by direct conversion to mzML. Note that conversion of vendor formats is only
-possible under Windows OS.
+chromatograms produced by UV detection) can be loaded from mzML. If \code{msconvert} from
+\href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e.,
+must be added to the environmental variables), the engine can also load vendor formats by direct
+conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
 }
 \details{
 The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
@@ -33,11 +32,11 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{nts}}{Get/Set for the \code{NTS} results class.}
+\item{\code{NTS}}{Get/Set for the \code{NTS} results class.}
 
-\item{\code{spectra}}{Get/set for the \code{Spectra} results class.}
+\item{\code{Spectra}}{Get/set for the \code{Spectra} results class.}
 
-\item{\code{chromatograms}}{Get/set for the chromatograms results class.}
+\item{\code{Chromatograms}}{Get/set for the chromatograms results class.}
 }
 \if{html}{\out{</div>}}
 }
@@ -91,15 +90,15 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
 \item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
 \item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
-\item \href{#method-MassSpecEngine-has_nts}{\code{MassSpecEngine$has_nts()}}
+\item \href{#method-MassSpecEngine-has_results_nts}{\code{MassSpecEngine$has_results_nts()}}
 \item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
 \item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
 \item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
-\item \href{#method-MassSpecEngine-has_chromatograms}{\code{MassSpecEngine$has_chromatograms()}}
+\item \href{#method-MassSpecEngine-has_results_chromatograms}{\code{MassSpecEngine$has_results_chromatograms()}}
 \item \href{#method-MassSpecEngine-has_chromatograms_peaks}{\code{MassSpecEngine$has_chromatograms_peaks()}}
-\item \href{#method-MassSpecEngine-has_spectra}{\code{MassSpecEngine$has_spectra()}}
+\item \href{#method-MassSpecEngine-has_results_spectra}{\code{MassSpecEngine$has_results_spectra()}}
 \item \href{#method-MassSpecEngine-has_spectra_peaks}{\code{MassSpecEngine$has_spectra_peaks()}}
 \item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
 \item \href{#method-MassSpecEngine-has_neutralized_spectra}{\code{MassSpecEngine$has_neutralized_spectra()}}
@@ -137,25 +136,16 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 <details><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="clear_cache"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-clear_cache'><code>StreamFind::CoreEngine$clear_cache()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_analyses'><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_headers'><code>StreamFind::CoreEngine$export_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_workflow'><code>StreamFind::CoreEngine$export_workflow()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="clear_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-clear_results'><code>StreamFind::CoreEngine$clear_results()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_cache_info"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_cache_info'><code>StreamFind::CoreEngine$get_cache_info()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_cache_size"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_cache_size'><code>StreamFind::CoreEngine$get_cache_size()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_results'><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_workflow'><code>StreamFind::CoreEngine$import_workflow()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="info_cache_categories"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-info_cache_categories'><code>StreamFind::CoreEngine$info_cache_categories()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="info_cache_file_size"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-info_cache_file_size'><code>StreamFind::CoreEngine$info_cache_file_size()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="load"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-load'><code>StreamFind::CoreEngine$load()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run'><code>StreamFind::CoreEngine$run()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_Workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_Workflow'><code>StreamFind::CoreEngine$run_Workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save'><code>StreamFind::CoreEngine$save()</code></a></span></li>
 </ul>
 </details>
@@ -164,11 +154,10 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \if{html}{\out{<a id="method-MassSpecEngine-new"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-new}{}}}
 \subsection{Method \code{new()}}{
-Creates an R6 MassSpecEngine class object.
+Creates an R6 \code{MassSpecEngine} class object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$new(
-  file = NULL,
-  headers = NULL,
+  metadata = NULL,
   workflow = NULL,
   analyses = NULL,
   centroid = FALSE,
@@ -179,25 +168,28 @@ Creates an R6 MassSpecEngine class object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{Character of length one with the full path to the \code{sqlite} or 'rds' save file of the engine.}
+\item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
+There is no type restrictions except for name (must be type character), author (must be type
+character) and date (must be class POSIXct or POSIXt). A file entry must be a character string
+with a full path to a file.}
 
-\item{\code{headers}}{A named list with headers or a \code{ProjectHeaders} object. Each list element must have length one. There
-is no type restrictions except for name (must be type character), author (must be type character character) and date
-(must be class POSIXct or class POSIXt).}
+\item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
+with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
-\item{\code{workflow}}{A \code{Workflow} S7 class object or a list of \code{ProcessingSettings} S7 class objects.}
-
-\item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file paths to mzML/mzXML
-files or a \code{data.frame} with \code{colnames}: "file", "replicate" and "blank". The "replicate" column is used to group
-the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to
-the mzML/mzXML files. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}
-is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load
-vendor formats by direct conversion to mzML. Note that conversion of vendor formats is only possible under
+\item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file
+paths to mzML files or a \code{data.frame} with \code{colnames}: "file", "replicate" and "blank". The
+"replicate" column is used to group the analyses and the "blank" column is used to identify
+the blank samples. The "file" column is the full path to the mzML files. If \code{msconvert} from
+\href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI
+(i.e., must be added to the environmental variables), the engine can also load vendor formats
+by direct conversion to mzML. Note that conversion of vendor formats is only possible under
 Windows OS.}
 
-\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
+\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from
+vendor formats to mzML.}
 
-\item{\code{levels}}{Numeric vector with the MS levels to consider when centroiding data. Default is \code{c(1, 2)}.}
+\item{\code{levels}}{Numeric vector with the MS levels to consider when centroiding data. Default
+is \code{c(1, 2)}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -217,7 +209,8 @@ Gets the analysis replicate names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -234,7 +227,8 @@ Gets the analysis replicate names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -251,7 +245,8 @@ Gets the analysis blank replicate names.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -268,7 +263,8 @@ Gets the full file paths of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -285,7 +281,8 @@ Gets the file format of each analysis.'
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -302,7 +299,8 @@ Gets the instruments information of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -319,7 +317,8 @@ Gets the software information of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -336,7 +335,8 @@ Gets the number of spectra in each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -353,7 +353,8 @@ Gets the spectra mode of each analysis (i.e., profile or centroid).
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -370,7 +371,8 @@ Gets the spectra levels of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -387,7 +389,8 @@ Gets the lower \emph{m/z} value of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -404,7 +407,8 @@ Gets the higher \emph{m/z} value of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -421,7 +425,8 @@ Gets the start retention time value of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -438,7 +443,8 @@ Gets the end retention time value of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -455,7 +461,8 @@ Gets the polarity of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -472,7 +479,8 @@ Gets the spectra headers data.table of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -489,7 +497,8 @@ Gets the total ion chromatogram (TIC) of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
@@ -513,7 +522,8 @@ Gets the base peak chromatogram (BPC) of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
@@ -554,7 +564,8 @@ Gets spectra from each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
@@ -631,7 +642,8 @@ Gets a matrix with spectra from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -640,7 +652,8 @@ Gets a matrix with spectra from analyses.
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_eic"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_eic}{}}}
 \subsection{Method \code{get_spectra_eic()}}{
-Gets spectra extract ion chromatograms (EIC) from the analyses based on targets as a data.table.
+Gets spectra extract ion chromatograms (EIC) from the analyses based on targets
+as a data.table.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_eic(
   analyses = NULL,
@@ -660,7 +673,8 @@ Gets spectra extract ion chromatograms (EIC) from the analyses based on targets 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -736,7 +750,8 @@ Gets level 1 spectra from the analyses based on targets as a data.frame.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -821,7 +836,8 @@ Gets level 2 spectra from the analyses based on targets as a data.frame.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -894,7 +910,8 @@ Gets the number of chromatograms in each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -911,7 +928,8 @@ Gets the chromatograms headers data.table of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -936,7 +954,8 @@ Gets chromatograms from each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
 
@@ -967,7 +986,8 @@ Gets integrated peaks from chromatograms.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
 }
@@ -978,7 +998,8 @@ Gets integrated peaks from chromatograms.
 \if{html}{\out{<a id="method-MassSpecEngine-get_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features}{}}}
 \subsection{Method \code{get_features()}}{
-Gets a data.table with all features from NTS results or as selected by the arguments.
+Gets a data.table with all features from NTS results or as selected by the
+arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features(
   analyses = NULL,
@@ -997,7 +1018,8 @@ Gets a data.table with all features from NTS results or as selected by the argum
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -1067,7 +1089,8 @@ Gets a data.table with feature EICs following the targets from the arguments.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -1124,8 +1147,8 @@ from files.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features_ms1"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features_ms1}{}}}
 \subsection{Method \code{get_features_ms1()}}{
-Gets a data.table of averaged MS1 spectrum for features in the analyses or as selected from the
-arguments.
+Gets a data.table of averaged MS1 spectrum for features in the analyses or as
+selected from the arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features_ms1(
   analyses = NULL,
@@ -1150,7 +1173,8 @@ arguments.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -1217,8 +1241,8 @@ from files.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features_ms2"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features_ms2}{}}}
 \subsection{Method \code{get_features_ms2()}}{
-Gets a data.table of averaged MS2 spectrum for features in the analyses or as selected from the
-arguments.
+Gets a data.table of averaged MS2 spectrum for features in the analyses or as
+selected from the arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features_ms2(
   analyses = NULL,
@@ -1242,7 +1266,8 @@ arguments.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -1689,7 +1714,8 @@ Gets feature components (i.e., isotope and adduct related to a main feature) in 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -1765,7 +1791,8 @@ and time (\code{sec}) deviations.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{database}}{A data.frame with at least the columns name and mass, indicating the name and neutral
 monoisotopic mass of the suspect targets.}
@@ -1950,7 +1977,8 @@ Gets metadata from each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1991,7 +2019,8 @@ Removes analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2061,7 +2090,8 @@ Loads spectra from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
@@ -2141,7 +2171,8 @@ Loads all chromatograms from all analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
 
@@ -2158,12 +2189,12 @@ Invisible.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_nts"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_nts}{}}}
-\subsection{Method \code{has_nts()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-has_results_nts"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_nts}{}}}
+\subsection{Method \code{has_results_nts()}}{
 Checks if there are NTS results, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_nts()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_nts()}\if{html}{\out{</div>}}
 }
 
 }
@@ -2199,7 +2230,8 @@ Checks if there are MSPeakLists for analyses, returning \code{TRUE} or \code{FAL
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -2225,12 +2257,12 @@ Checks if there are compounds assigned to feature groups, returning \code{TRUE} 
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_chromatograms}{}}}
-\subsection{Method \code{has_chromatograms()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-has_results_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_chromatograms}{}}}
+\subsection{Method \code{has_results_chromatograms()}}{
 Checks if there are chromatograms, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_chromatograms()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_chromatograms()}\if{html}{\out{</div>}}
 }
 
 }
@@ -2245,12 +2277,12 @@ Checks if there are integrated peaks from chromatograms, returning \code{TRUE} o
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_spectra}{}}}
-\subsection{Method \code{has_spectra()}}{
+\if{html}{\out{<a id="method-MassSpecEngine-has_results_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_spectra}{}}}
+\subsection{Method \code{has_results_spectra()}}{
 Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_spectra()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_spectra()}\if{html}{\out{</div>}}
 }
 
 }
@@ -2278,7 +2310,8 @@ Checks if there are spectra calculated charges, returning \code{TRUE} or \code{F
 \if{html}{\out{<a id="method-MassSpecEngine-has_neutralized_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_neutralized_spectra}{}}}
 \subsection{Method \code{has_neutralized_spectra()}}{
-Checks if spectra are neutralized (i.e., \emph{m/z} converted to mass), returning \code{TRUE} or \code{FALSE}.
+Checks if spectra are neutralized (i.e., \emph{m/z} converted to mass),
+returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_neutralized_spectra()}\if{html}{\out{</div>}}
 }
@@ -2318,7 +2351,8 @@ Plots raw spectra in 3D for given MS analyses and targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
@@ -2432,7 +2466,8 @@ Plots spectra given MS analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
@@ -2554,7 +2589,8 @@ Plots chromatograms in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
 
@@ -2617,7 +2653,8 @@ Plots chromatograms corrected baseline for given analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
 
@@ -2667,7 +2704,8 @@ Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time f
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -2761,7 +2799,8 @@ Plots spectra extract ion chromatograms (EIC) from the analyses based on targets
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -2853,7 +2892,8 @@ Plots the spectra total ion chromatogram (TIC) of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
@@ -2914,7 +2954,8 @@ Plots the spectra base peak chromatogram (BPC) of each analysis.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
@@ -2979,7 +3020,8 @@ Plots level 2 spectra from the analyses based on targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -3080,7 +3122,8 @@ Plots level 1 spectra from the analyses based on targets.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -3183,7 +3226,8 @@ Plots features from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -3291,7 +3335,8 @@ Plots a map of the retention time vs \emph{m/z} of features from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -3392,7 +3437,8 @@ Plots level 1 spectra from features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -3503,7 +3549,8 @@ Plots level 2 spectra from features in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -3951,7 +3998,8 @@ target feature groups.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
 
@@ -4041,7 +4089,8 @@ Method to plot the intensity profile of feature groups across the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
 
@@ -4130,7 +4179,8 @@ Maps feature components in the analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
@@ -4212,7 +4262,8 @@ Plots the quality control assessment of the internal standards.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{presence}}{Logical (length 1). When \code{TRUE} the presence of the internal standards is plotted.}
 
@@ -4260,7 +4311,8 @@ Plots suspects.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{database}}{A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic
 mass of the suspect targets.}
@@ -4467,7 +4519,8 @@ Plots peaks from chromatograms from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
 
@@ -4520,7 +4573,8 @@ Plots charge assignment of deconvoluted spectra from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}
@@ -4571,7 +4625,8 @@ Plots peaks from spectra from analyses.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
 the added targets as legend of the plot.}

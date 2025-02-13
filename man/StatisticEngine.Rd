@@ -4,9 +4,9 @@
 \alias{StatisticEngine}
 \title{\strong{StatisticEngine} R6 class and methods}
 \description{
-The \emph{StatisticEngine} R6 class is a framework for performing statistical analysis on data. Data can be added as a
-character vector with a path to a \code{csv} file with variable names as first row and analyses names as first column
-or a \code{data.frame} or \code{matrix} object.
+The \emph{StatisticEngine} R6 class is a framework for performing statistical analysis on data.
+Data can be added as a character vector with a path to a \code{csv} file with variable names as first
+row and analyses names as first column or a \code{data.frame} or \code{matrix} object.
 }
 \note{
 Note that the model must be created before prediction and data must have the same number of variables as
@@ -67,25 +67,16 @@ and data row names are used as analyses names.
 <details><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="clear_cache"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-clear_cache'><code>StreamFind::CoreEngine$clear_cache()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_analyses'><code>StreamFind::CoreEngine$export_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_headers'><code>StreamFind::CoreEngine$export_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="export_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-export_workflow'><code>StreamFind::CoreEngine$export_workflow()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="clear_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-clear_results'><code>StreamFind::CoreEngine$clear_results()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_cache_info"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_cache_info'><code>StreamFind::CoreEngine$get_cache_info()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="get_cache_size"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-get_cache_size'><code>StreamFind::CoreEngine$get_cache_size()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_analyses'><code>StreamFind::CoreEngine$has_analyses()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_results"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_results'><code>StreamFind::CoreEngine$has_results()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="has_settings"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-has_settings'><code>StreamFind::CoreEngine$has_settings()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_analyses'><code>StreamFind::CoreEngine$import_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_headers'><code>StreamFind::CoreEngine$import_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="import_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-import_workflow'><code>StreamFind::CoreEngine$import_workflow()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="info_cache_categories"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-info_cache_categories'><code>StreamFind::CoreEngine$info_cache_categories()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="info_cache_file_size"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-info_cache_file_size'><code>StreamFind::CoreEngine$info_cache_file_size()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="load"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-load'><code>StreamFind::CoreEngine$load()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_analyses"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_analyses'><code>StreamFind::CoreEngine$print_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_headers"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_headers'><code>StreamFind::CoreEngine$print_headers()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print_workflow'><code>StreamFind::CoreEngine$print_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run'><code>StreamFind::CoreEngine$run()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_Workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_Workflow'><code>StreamFind::CoreEngine$run_Workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save'><code>StreamFind::CoreEngine$save()</code></a></span></li>
 </ul>
 </details>
@@ -96,25 +87,23 @@ and data row names are used as analyses names.
 \subsection{Method \code{new()}}{
 Creates an R6 class \emph{StatisticEngine}. Child of \emph{CoreEngine} R6 class.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$new(
-  file = NULL,
-  headers = NULL,
-  workflow = NULL,
-  analyses = NULL
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{StatisticEngine$new(metadata = NULL, workflow = NULL, analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{Character of length one with the full path to the \code{sqlite}/\code{rds} save file of the engine.}
+\item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
+There is no type restrictions except for name (must be type character), author (must be type
+character) and date (must be class POSIXct or POSIXt). A file entry must be a character string
+with a full path to a file.}
 
-\item{\code{headers}}{A \code{ProjectHeaders} S7 class object.}
+\item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
+with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
-\item{\code{workflow}}{A \code{Workflow} S7 class object.}
-
-\item{\code{analyses}}{A \code{StatisticAnalyses} S7 class object or a \verb{character vector} with full file path to \code{.csv}
-file with variable names as first row and analyses names as first column or a \code{data.frame} or \code{matrix} object.}
+\item{\code{analyses}}{A \code{StatisticAnalyses} S7 class object or a \verb{character vector}
+with full file path to \code{.csv} file with variable names as first row and analyses
+names as first column or a \code{data.frame} or \code{matrix} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -306,7 +295,8 @@ Plots the data.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{features}}{A numeric vector with the features (columns of data matrix) to plot.}
 
@@ -371,7 +361,8 @@ Plots scores of the model.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 
@@ -406,7 +397,8 @@ Plots residuals of the model.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analyses}}{A numeric/character vector with the number/name of the analyses.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 

@@ -101,21 +101,21 @@ ant$add_replicate_names(sub("_\\d+$", "", ant$get_analysis_names()))
 # ant$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", ant$get_analysis_names()))
 # ant$merge_spectra_time_series()
 
-ant$bin_spectra(Settings_bin_spectra_StreamFind(windowSpectrumUnits = 5))
+ant$bin_spectra(Method_bin_spectra_StreamFind(windowSpectrumUnits = 5))
 
-ant$normalize_spectra(Settings_normalize_spectra_StreamFind(liftTozero = TRUE))
+ant$normalize_spectra(Method_normalize_spectra_StreamFind(liftTozero = TRUE))
 
-ant$subtract_spectra_section(Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)))
+ant$subtract_spectra_section(Method_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)))
 
-ant$smooth_spectra(Settings_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0))
+ant$smooth_spectra(Method_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0))
 
-ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 330))))
+ant$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("shift" = c(-40, 330))))
 
-ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, 2600))))
+ant$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("shift" = c(2000, 2600))))
 
-ant$correct_spectra_baseline(Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.02, maxit = 20)))
+ant$correct_spectra_baseline(Method_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.02, maxit = 20)))
 
-ant$normalize_spectra(Settings_normalize_spectra_StreamFind(liftTozero = TRUE))
+ant$normalize_spectra(Method_normalize_spectra_StreamFind(liftTozero = TRUE))
 
 ant$plot_spectra(rt = c(5, 8))
 
@@ -131,7 +131,7 @@ View(ant$get_results("spectra"))
 
 
 
-# ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(10, max(e_sec$get_spectra()$rt)))))
+# ant$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("rt" = c(10, max(e_sec$get_spectra()$rt)))))
 
 
 
@@ -144,7 +144,7 @@ ant$plot_spectra(rt = c(5, 8))
 ant$plot_spectra_baseline(rt = c(5, 8))
 ant$plot_spectra(rt = c(11, 14))
 
-# ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 10))))
+# ant$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("rt" = c(0, 10))))
 
 
 ant$plot_spectra(rt = c(10, 13))
@@ -189,20 +189,20 @@ cuv$average_spectra()
 
 cuv$subtract_blank_spectra()
 
-cuv$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 470))))
+cuv$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("shift" = c(-40, 470))))
 
-cuv$smooth_spectra(Settings_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0))
+cuv$smooth_spectra(Method_smooth_spectra_savgol(fl = 11, forder = 2, dorder = 0))
 
-cuv$correct_spectra_baseline(Settings_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.03, maxit = 10)))
+cuv$correct_spectra_baseline(Method_correct_spectra_baseline_baseline(method = "als", args = list(lambda = 3, p = 0.03, maxit = 10)))
 
-cuv$correct_spectra_baseline(Settings_correct_spectra_baseline_airpls(lambda = 5))
+cuv$correct_spectra_baseline(Method_correct_spectra_baseline_airpls(lambda = 5))
 
-cuv$normalize_spectra(Settings_normalize_spectra_StreamFind())
+cuv$normalize_spectra(Method_normalize_spectra_StreamFind())
 
 
 cuv$raw_spectra
 
-is(Settings_normalize_spectra_StreamFind())
+is(Method_normalize_spectra_StreamFind())
 
 cuv$plot_spectra()
 
@@ -264,22 +264,22 @@ e_sec$add_replicate_names(sub("_\\d+$", "", e_sec$get_analysis_names()))
 # e_sec$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", e_sec$get_analysis_names()))
 # e_sec$merge_spectra_time_series()
 
-e_sec$bin_spectra(Settings_bin_spectra_StreamFind(windowSpectrumUnits = 5))
+e_sec$bin_spectra(Method_bin_spectra_StreamFind(windowSpectrumUnits = 5))
 
 e_sec$normalize_spectra()
 
-e_sec$subtract_spectra_section(Settings_subtract_spectra_section_StreamFind(sectionWindow = c(10, 30)))
+e_sec$subtract_spectra_section(Method_subtract_spectra_section_StreamFind(sectionWindow = c(10, 30)))
 
-e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 900))))
+e_sec$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("shift" = c(-40, 900))))
 
-e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 435.241 - 5))))
+e_sec$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("rt" = c(0, 435.241 - 5))))
 
-e_sec$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(435.241 + 5, max(e_sec$get_spectra()$rt)))))
+e_sec$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("rt" = c(435.241 + 5, max(e_sec$get_spectra()$rt)))))
 
-e_sec$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 3))
+e_sec$smooth_spectra(Method_smooth_spectra_StreamFind(windowSize = 3))
 
 e_sec$correct_spectra_baseline(
-  Settings_correct_spectra_baseline_StreamFind(
+  Method_correct_spectra_baseline_StreamFind(
     method = "als", args = list(lambda = 5, p = 0.05, maxit = 10)
   )
 )
@@ -327,24 +327,24 @@ ant <- RamanEngine$new(ant_files, runParallel = FALSE)
 # ant$add_replicate_names(sub("_(\\d)\\d*$", "_\\1", ant$get_analysis_names()))
 # ant$merge_spectra_time_series()
 
-ant$bin_spectra(Settings_bin_spectra_StreamFind(windowSpectrumUnits = 19))
+ant$bin_spectra(Method_bin_spectra_StreamFind(windowSpectrumUnits = 19))
 
 ant$normalize_spectra()
 
-ant$subtract_spectra_section(Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)))
+ant$subtract_spectra_section(Method_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)))
 
-ant$smooth_spectra(Settings_smooth_spectra_StreamFind(windowSize = 5))
+ant$smooth_spectra(Method_smooth_spectra_StreamFind(windowSize = 5))
 
-ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(-40, 330))))
+ant$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("shift" = c(-40, 330))))
 
-ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("shift" = c(2000, max(e_sec$get_spectra()$shift)))))
+ant$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("shift" = c(2000, max(e_sec$get_spectra()$shift)))))
 
-ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 6))))
+ant$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("rt" = c(0, 6))))
 
-ant$delete_spectra_section(Settings_delete_spectra_section_StreamFind(list("rt" = c(10, max(e_sec$get_spectra()$rt)))))
+ant$delete_spectra_section(Method_delete_spectra_section_StreamFind(list("rt" = c(10, max(e_sec$get_spectra()$rt)))))
 
 ant$correct_spectra_baseline(
-  Settings_correct_spectra_baseline_StreamFind(
+  Method_correct_spectra_baseline_StreamFind(
     method = "als", args = list(lambda = 3, p = 0.09, maxit = 10)
   )
 )
@@ -442,7 +442,7 @@ averageRamanSpectra <- function(spectra) {
 }
 
 
-Settings_subtract_spectra_section_StreamFindd()
+Method_subtract_spectra_section_StreamFindd()
 
 
 plot_chromatogram() # TODO when rt column is present, sums up the intensities for each rt

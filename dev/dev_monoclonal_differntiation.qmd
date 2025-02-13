@@ -111,7 +111,7 @@ DT::datatable(rs$analyses$info)
 
 ```{r}
 rs$run(
-  RamanSettings_BinSpectra_StreamFind(
+  RamanMethod_BinSpectra_StreamFind(
     binNames = "rt",
     binValues = 30,
     byUnit = FALSE
@@ -121,7 +121,7 @@ rs$run(
 
 ```{r}
 rs$run(
-  RamanSettings_SubtractSpectraSection_StreamFind(
+  RamanMethod_SubtractSpectraSection_StreamFind(
     sectionVal = "rt",
     sectionWindow = c(10, 200)
   )
@@ -130,7 +130,7 @@ rs$run(
 
 ```{r}
 rs$run(
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     rtmin = 0,
     rtmax = 20
   )
@@ -139,7 +139,7 @@ rs$run(
 
 ```{r}
 rs$run(
-  RamanSettings_FindChromPeaks_LocalMaxima(
+  RamanMethod_FindChromPeaks_LocalMaxima(
     minWidth = 10,
     maxWidth = 15,
     minHeight = 50000
@@ -155,7 +155,7 @@ rs$analyses$spectra$chrom_peaks <- pks
 
 ```{r}
 rs$run(
-  RamanSettings_FilterSpectra_StreamFind(
+  RamanMethod_FilterSpectra_StreamFind(
     onlyChromPeaksSpectra = TRUE
   )
 )
@@ -163,14 +163,14 @@ rs$run(
 
 ```{r}
 rs$run(
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     shiftmin = -100,
     shiftmax = 500
   )
 )
 
 rs$run(
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     shiftmin = 2000,
     shiftmax = 3000
   )
@@ -179,7 +179,7 @@ rs$run(
 
 ```{r}
 rs$run(
-  RamanSettings_CorrectSpectraBaseline_baseline_als(
+  RamanMethod_CorrectSpectraBaseline_baseline_als(
     lambda = 3,
     p = 0.015,
     maxit = 10
@@ -189,7 +189,7 @@ rs$run(
 
 ```{r}
 rs$run(
-  RamanSettings_AverageSpectra_StreamFind(
+  RamanMethod_AverageSpectra_StreamFind(
     by = "replicates+chrom_peaks",
     weightedAveraged = FALSE
   )
@@ -233,14 +233,14 @@ rs$plot_spectra(rt = c(620, 640), shift = c(400, 1800))
 
 ```{r}
 rs$run(
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     rtmin = 0,
     rtmax = 401
   )
 )
 
 rs$run(
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     rtmin = 427,
     rtmax = 2000
   )
@@ -253,59 +253,59 @@ rs$plot_chromatograms()
 
 ```{r raman-workflow}
 rs_workflow <- list(
-  RamanSettings_BinSpectra_StreamFind(
+  RamanMethod_BinSpectra_StreamFind(
     binNames = "rt",
     binValues = 21,
     byUnit = FALSE
   ),
 
-  RamanSettings_SubtractSpectraSection_StreamFind(
+  RamanMethod_SubtractSpectraSection_StreamFind(
     sectionVal = "rt",
     sectionWindow = c(0, 400)
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     shiftmin = -100,
     shiftmax = 315
   ),
 
-  RamanSettings_SmoothSpectra_savgol(
+  RamanMethod_SmoothSpectra_savgol(
     fl = 11,
     forder = 2,
     dorder = 0
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     shiftmin = 315,
     shiftmax = 330
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     shiftmin = 2300,
     shiftmax = 2600
   ),
 
-  RamanSettings_CorrectSpectraBaseline_baseline_als(
+  RamanMethod_CorrectSpectraBaseline_baseline_als(
     lambda = 3,
     p = 0.015,
     maxit = 10
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     rtmin = 0,
     rtmax = 420
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     rtmin = 430,
     rtmax = 900
   ),
 
-  RamanSettings_AverageSpectra_StreamFind(),
+  RamanMethod_AverageSpectra_StreamFind(),
 
-  RamanSettings_NormalizeSpectra_minmax(),
+  RamanMethod_NormalizeSpectra_minmax(),
 
-  RamanSettings_NormalizeSpectra_blockweight()
+  RamanMethod_NormalizeSpectra_blockweight()
 )
 
 rs$workflow <- rs_workflow
@@ -315,13 +315,13 @@ rs$print_workflow()
 
 ```{r raman-what does sectionWindow mean?}
 rs_workflow <- list(
-  RamanSettings_BinSpectra_StreamFind(
+  RamanMethod_BinSpectra_StreamFind(
     binNames = "rt",
     binValues = 21,
     byUnit = FALSE
   ),
 
-  RamanSettings_SubtractSpectraSection_StreamFind(
+  RamanMethod_SubtractSpectraSection_StreamFind(
     sectionVal = "rt",
     sectionWindow = c(0, 200)
   ))

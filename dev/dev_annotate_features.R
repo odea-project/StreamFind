@@ -25,7 +25,7 @@ db3 <- db3[, cols, with = FALSE]
 
 # settings ---------------------------------------------------------------------
 
-tof_ffs <- ProcessingSettings(
+tof_ffs <- ProcessingStep(
   call = "find_features",
   algorithm = "xcms3_centwave",
   parameters = list(
@@ -44,7 +44,7 @@ tof_ffs <- ProcessingSettings(
   )
 )
 
-orb_ffs <- ProcessingSettings(
+orb_ffs <- ProcessingStep(
   call = "find_features",
   algorithm = "xcms3_centwave",
   parameters = list(
@@ -63,7 +63,7 @@ orb_ffs <- ProcessingSettings(
   )
 )
 
-orb_ffs_2 <- ProcessingSettings(
+orb_ffs_2 <- ProcessingStep(
   call = "find_features",
   algorithm = "xcms3_centwave",
   parameters = list(
@@ -82,7 +82,7 @@ orb_ffs_2 <- ProcessingSettings(
   )
 )
 
-afs <- get_default_ProcessingSettings(
+afs <- get_default_ProcessingStep(
   call = "annotate_features",
   algorithm = "StreamFind"
 )

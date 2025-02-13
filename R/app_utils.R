@@ -45,17 +45,48 @@
   
   model_elements <- list()
   
-  model_elements[[1]] <- shiny::img(src = "www/logo_StreamFind.png", width = 250, style = "display: block; margin-left: auto; margin-right: auto;")
+  model_elements[[1]] <- shiny::img(
+    src = "www/logo_StreamFind.png",
+    width = 250,
+    style = "display: block; margin-left: auto; margin-right: auto;"
+  )
   
-  model_elements[[2]] <- shiny::fluidRow(shiny::p("Select an engine to start a new project: ", style = "text-align: center;margin-top: 40px;"))
+  model_elements[[2]] <- shiny::fluidRow(
+    shiny::p(
+      "Select an engine to start a new project: ",
+      style = "text-align: center;margin-top: 40px;"
+    )
+  )
   
-  model_elements[[3]] <- htmltools::div(lapply(available_engines, function(obj) shiny::actionButton(inputId = paste0(time_var, "_select_", obj), label = obj)), style = "text-align: center;")
+  model_elements[[3]] <- htmltools::div(
+    lapply(available_engines, function(obj) {
+      shiny::actionButton(inputId = paste0(time_var, "_select_", obj), label = obj)
+    }),
+    style = "text-align: center;"
+  )
   
-  model_elements[[4]] <- shiny::fluidRow(shiny::p("Load an existing engine: ", style = "text-align: center;margin-top: 40px;"))
+  model_elements[[4]] <- shiny::fluidRow(
+    shiny::p("Load an existing engine: ", style = "text-align: center;margin-top: 40px;")
+  )
   
-  shinyFiles::shinyFileChoose(input, paste0(time_var, "_select_LoadEngine"), roots = volumes, defaultRoot = "wd", session = session, filetypes = list(sqlite = "sqlite", rds = "rds"))
+  shinyFiles::shinyFileChoose(
+    input,
+    paste0(time_var, "_select_LoadEngine"),
+    roots = volumes,
+    defaultRoot = "wd",
+    session = session,
+    filetypes = list(sqlite = "sqlite", rds = "rds")
+  )
   
-  model_elements[[5]] <- htmltools::div(shinyFiles::shinyFilesButton(paste0(time_var, "_select_LoadEngine"), "Load Engine (.sqlite or .rds)", "Load Engine from .sqlite or .rds file", multiple = FALSE), style = "text-align: center;")
+  model_elements[[5]] <- htmltools::div(
+    shinyFiles::shinyFilesButton(
+      paste0(time_var, "_select_LoadEngine"),
+      "Load Engine (.sqlite or .rds)",
+      "Load Engine from .sqlite or .rds file",
+      multiple = FALSE
+    ),
+    style = "text-align: center;"
+  )
   
   shiny::showModal(shiny::modalDialog(
     title = " ",
@@ -76,8 +107,39 @@
         fileinfo <- shinyFiles::parseFilePaths(volumes, input[[input_name]])
         if (nrow(fileinfo) > 0) {
           engine_save_file <- fileinfo$datapath
-          engine_save_file <- StreamFind::EngineSaveFile(engine_save_file)
-          engine_name <- engine_save_file$engine
+          
+          if (tools::file_ext(engine_save_file) %in% c("sqlite", "rds")) {
+            
+            if (file.exists(engine_save_file)) {
+              file_format <- tools::file_ext(engine_save_file)
+              
+              if (file_format %in% "sqlite") {
+                db <- .openCacheDBScope(file = engine_save_file)
+                engine_name <- DBI::dbListTables(db)
+                if (length(engine_name) == 0) engine_name <- NA_character_
+                
+              } else if (file_format %in% "rds") {
+                data <- readRDS(engine_save_file)
+                if (is.list(data)) if ("engine" %in% names(data)) {
+                  engine_name <- data$engine
+                } else {
+                  engine_name <- NA_character_
+                }
+              } else {
+                engine_name <- NA_character_
+              }
+              
+            } else {
+              msg <- paste("The file", engine_save_file, "does not exist!")
+              shiny::showNotification(msg, duration = 10, type = "error")
+              reactive_engine_save_file(NA_character_)
+              shiny::removeModal()
+              reactive_show_init_modal(TRUE)
+              return()
+            }
+          } else {
+            engine_name = NA_character_
+          }
           
           if (is.na(engine_name)) {
             msg <- paste("The file", engine_save_file, "is not a valid engine file!")

@@ -53,18 +53,18 @@ anaInfo <- data.frame(
 ms <- MassSpecEngine$new(files = anaInfo)
 
 ms$add_settings(list(
-  Settings_find_features_openms(),
-  Settings_group_features_openms(),
-  Settings_fill_features_StreamFind(),
-  # Settings_annotate_features_StreamFind(),
-  Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10)
-  # Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
-  # Settings_filter_features_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 5, absMinReplicateAbundance = 3),
-  # Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
-  # Settings_calculate_quality_StreamFind(),
-  # Settings_filter_features_StreamFind(minSnRatio = 3),
-  # Settings_load_features_ms2_StreamFind(),
-  # Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+  Method_find_features_openms(),
+  Method_group_features_openms(),
+  Method_fill_features_StreamFind(),
+  # Method_annotate_features_StreamFind(),
+  Method_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10)
+  # Method_filter_features_StreamFind(excludeIsotopes = TRUE),
+  # Method_filter_features_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 5, absMinReplicateAbundance = 3),
+  # Method_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
+  # Method_calculate_quality_StreamFind(),
+  # Method_filter_features_StreamFind(minSnRatio = 3),
+  # Method_load_features_ms2_StreamFind(),
+  # Method_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
 ))
 
 ms$run_workflow()

@@ -80,11 +80,11 @@ core <- CoreEngine$new()
 core
 ```
 
-Note that when an empty `CoreEngine` is created, required `ProjectHeaders` are created with name, author, path and date.Yet, `ProjectHeaders` can be specified directly during creation of the `CoreEngine` via the argument `headers` or added to the engine as shown in \@ref(project-headers). The `CoreEngine` does not directly handle data processing. Processing methods are data specific and therefore, are used via the data dedicated engines. Yet, the framework to manage the data processing workflow and the results are implemented in the `CoreEngine` and are therefore, harmonized across engines. Users will not directly use the `CoreEngine` but it is important to understand that it is in the background.
+Note that when an empty `CoreEngine` is created, required `Metadata` are created with name, author, path and date.Yet, `Metadata` can be specified directly during creation of the `CoreEngine` via the argument `headers` or added to the engine as shown in \@ref(project-headers). The `CoreEngine` does not directly handle data processing. Processing methods are data specific and therefore, are used via the data dedicated engines. Yet, the framework to manage the data processing workflow and the results are implemented in the `CoreEngine` and are therefore, harmonized across engines. Users will not directly use the `CoreEngine` but it is important to understand that it is in the background.
 
 ## Project headers
 
-The `ProjectHeaders` S7 class is meant to hold project information/metadata, such as description, location, etc. The users can add any kind of attribute but it must have length one and be named. Below, a list of headers is created and added to the `CoreEngine` for demonstration. Internally, the list of headers is converted to a `ProjectHeaders` object.
+The `Metadata` S7 class is meant to hold project information/metadata, such as description, location, etc. The users can add any kind of attribute but it must have length one and be named. Below, a list of headers is created and added to the `CoreEngine` for demonstration. Internally, the list of headers is converted to a `Metadata` object.
 
 ```{r headers}
 headers <- list(
@@ -100,13 +100,13 @@ core$print_headers()
 
 ## Processing settings
 
-A data processing workflow is represented in StreamFind by the S7 class `Workflow`, which is composed of an ordered list of S7 class `ProcessingSettings` objects. Each `ProcessingSettings` object is a representation of a processing method/step that transforms the data according to a specific algorithm. The `ProcessingSettings` objects are used to harmonize the diversity of processing methods and algorithms available for a given data type.
+A data processing workflow is represented in StreamFind by the S7 class `Workflow`, which is composed of an ordered list of S7 class `ProcessingStep` objects. Each `ProcessingStep` object is a representation of a processing method/step that transforms the data according to a specific algorithm. The `ProcessingStep` objects are used to harmonize the diversity of processing methods and algorithms available for a given data type.
 
 ```{r settings}
-ProcessingSettings()
+ProcessingStep()
 ```
 
-A `ProcessingSettings` object must always have the engine type, the processing method name, the name of the algorithm to be used, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available. Lastly but not least, the parameters which is a flexible list of conditions to apply the algorithm during data processing. As example, `ProcessingSettings` for annotating features using a native algorithm from StreamFind is shown below. Each `ProcessingSettings` object has a dedicated constructor method with documentation to support the usage. Help pages for processing methods can be obtained with the native R function `?` or `help()`  (e.g., `help(MassSpecSettings_AnnotateFeatures_StreamFind)`).
+A `ProcessingStep` object must always have the engine type, the processing method name, the name of the algorithm to be used, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available. Lastly but not least, the parameters which is a flexible list of conditions to apply the algorithm during data processing. As example, `ProcessingStep` for annotating features using a native algorithm from StreamFind is shown below. Each `ProcessingStep` object has a dedicated constructor method with documentation to support the usage. Help pages for processing methods can be obtained with the native R function `?` or `help()`  (e.g., `help(MassSpecSettings_AnnotateFeatures_StreamFind)`).
 
 ```{r settings-annotate}
 # constructor for annotating features workflow step
@@ -148,7 +148,7 @@ file.remove(project_file_path)
 
 # Data specific engines
 
-As above mentioned, the `CoreEngine` does not handle data processing directly. The data processing is delegated to child engines, where specific `ProcessingSettings` can be applied. A simple example is given below by creating a child `RamanEngine` and accessing the spectra from the analyses (added as full paths to *.asc* files on disk). Note that the workflow and results are still empty, as no data processing methods were applied.
+As above mentioned, the `CoreEngine` does not handle data processing directly. The data processing is delegated to child engines, where specific `ProcessingStep` can be applied. A simple example is given below by creating a child `RamanEngine` and accessing the spectra from the analyses (added as full paths to *.asc* files on disk). Note that the workflow and results are still empty, as no data processing methods were applied.
 
 ```{r raman-engine}
 # Example raman .asc files
@@ -195,7 +195,7 @@ raman$plot_spectra(interactive = FALSE, colorBy = "replicates")
 
 # Processing workflow
 
-As above mentioned, `ProcessingSettings` are used to design an ordered list of processing methods in a `Workflow` object. Below we create a list of `ProcessingSettings` for processing the Raman spectra in the engine and add to the `raman` engine.
+As above mentioned, `ProcessingStep` are used to design an ordered list of processing methods in a `Workflow` object. Below we create a list of `ProcessingStep` for processing the Raman spectra in the engine and add to the `raman` engine.
 
 ```{r raman-workflow}
 ps <- list(
@@ -235,7 +235,7 @@ raman$print_workflow()
 raman$run_workflow()
 ```
 
-The method `run()` can be used to applied a single `ProcessingSettings` object to the data. Note that the `ProcessingSettings` step is always added to the bottom of the workflow in the engine. Below, the normalization based on minimum and maximum is applied to the Raman spectra and then the workflow is shown, including another normalization step in the last position.
+The method `run()` can be used to applied a single `ProcessingStep` object to the data. Note that the `ProcessingStep` step is always added to the bottom of the workflow in the engine. Below, the normalization based on minimum and maximum is applied to the Raman spectra and then the workflow is shown, including another normalization step in the last position.
 
 ```{r add-extra-settings}
 # performs again normalization using minimum and maximum
@@ -268,6 +268,6 @@ raman$plot_spectra()
 
 # Conclusion
 
-This quick guide introduced the general framework of StreamFind. The StreamFind is a data processing workflow designer that uses R6 classes to manage, process, visualize and report data within a project. The `CoreEngine` is the parent class of all other data specific engines and manages the project information via the class `ProjectHeaders`. The `ProcessingSettings` are used to harmonize the diversity of processing methods and algorithms available in a `Workflow` object. The data processing is delegated to child engines, such as the `RamanEngine` and `MassSpecEngine`. The `Workflow` is assembled by combining different `ProcessingSettings` in a specific order. The results can be accessed with dedicated fields (e.g. `spectra` and `plot_spectra`). StreamFind can be used via scripting as demonstrated in this guide or via the embedded shiny app for a graphical user interface. See the [StreamFind App Guide](https://odea-project.github.io/StreamFind/articles/app_guide.html) for more information.
+This quick guide introduced the general framework of StreamFind. The StreamFind is a data processing workflow designer that uses R6 classes to manage, process, visualize and report data within a project. The `CoreEngine` is the parent class of all other data specific engines and manages the project information via the class `Metadata`. The `ProcessingStep` are used to harmonize the diversity of processing methods and algorithms available in a `Workflow` object. The data processing is delegated to child engines, such as the `RamanEngine` and `MassSpecEngine`. The `Workflow` is assembled by combining different `ProcessingStep` in a specific order. The results can be accessed with dedicated fields (e.g. `spectra` and `plot_spectra`). StreamFind can be used via scripting as demonstrated in this guide or via the embedded shiny app for a graphical user interface. See the [StreamFind App Guide](https://odea-project.github.io/StreamFind/articles/app_guide.html) for more information.
 
 ------------------------------------------------------------------------

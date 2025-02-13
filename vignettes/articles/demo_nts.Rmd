@@ -97,7 +97,7 @@ ms <- MassSpecEngine$new(analyses = files)
 ms
 ```
 
-# *ProjectHeaders*
+# *Metadata*
 
 Project headers (e.g., name, author and description) can be added to the `MassSpecEngine$headers` as a list object as shown below. The elements of the list can be anything but must have length one.
 
@@ -150,12 +150,12 @@ ms$add_blank_names(blks)
 ms$analyses$info[, 1:5]
 ```
 
-# *ProcessingSettings*
+# *ProcessingStep*
 
-Data processing is performed by steps according to *ProcessingSettings*. S7 *ProcessingSettings* class objects are obtained via the respective [`[Engine type]Settings_[module name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingSettings* for the step `FindFeatures` using the algorithm *openms*. The parameters for each processing module can be changed via the constructor arguments. Documentation for each *ProcessingSettings* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
+Data processing is performed by steps according to *ProcessingStep*. S7 *ProcessingStep* class objects are obtained via the respective [`[Engine type]Settings_[module name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingStep* for the step `FindFeatures` using the algorithm *openms*. The parameters for each processing module can be changed via the constructor arguments. Documentation for each *ProcessingStep* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
 
 ```{r ffs}
-# Gets ProcessingSettings for finding features using the openms algorithm
+# Gets ProcessingStep for finding features using the openms algorithm
 ffs <- MassSpecSettings_FindFeatures_openms(
   noiseThrInt = 1000,
   chromSNR = 3,
@@ -181,7 +181,7 @@ ffs <- MassSpecSettings_FindFeatures_openms(
   verbose = FALSE
 )
 
-# Prints in console the details of the ProcessingSettings
+# Prints in console the details of the ProcessingStep
 show(ffs)
 ```
 
@@ -320,13 +320,13 @@ ms$print_workflow()
 The *Workflow* can be applied by `run_workflow()`, as demonstrated below. Note that with `run_workflow()`, the processing modules are applied with the same order as they were added.
 
 ```{r do-workflow, results='hide'}
-# Runs all ProcessingSettings added
+# Runs all ProcessingStep added
 ms$run_workflow()
 ```
 
 # Results
 
-The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods in the *MassSpecEngine*. Internally, the *MassSpecEngine* stores the results in the *NTS* object, which can be accessed with `MassSpecEngine$nts`. Yet, the engine interface is recommended for accessing the results. However, the *NTS* object can be used for more advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
+The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods in the *MassSpecEngine*. Internally, the *MassSpecEngine* stores the results in the *NTS* object, which can be accessed with `MassSpecEngine$NTS`. Yet, the engine interface is recommended for accessing the results. However, the *NTS* object can be used for more advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
 
 ## `data.table` objects
 
@@ -436,7 +436,7 @@ The NTS object holds methods to obtain original objects from the [patRoon](https
 
 ```{r pat-features}
 # Native patRoon object
-fGroups <- get_patRoon_features(ms$nts, filtered = FALSE, featureGroups = TRUE)
+fGroups <- get_patRoon_features(ms$NTS, filtered = FALSE, featureGroups = TRUE)
 
 fGroups
 ```

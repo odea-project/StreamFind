@@ -36,16 +36,16 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
                                                                                  reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
-    has_spectra <- shiny::reactiveVal(FALSE)
-    has_chromatograms <- shiny::reactiveVal(FALSE)
+    has_results_spectra <- shiny::reactiveVal(FALSE)
+    has_results_chromatograms <- shiny::reactiveVal(FALSE)
     levels <- shiny::reactiveVal(1)
     rt_end <- shiny::reactiveVal(0)
     rt_start <- shiny::reactiveVal(0)
 
     init_analyses <- reactive_analyses()
     if (length(init_analyses) > 0) {
-      has_spectra(max(init_analyses@spectra_number) > 0)
-      has_chromatograms(max(init_analyses@chromatograms_number) > 0)
+      has_results_spectra(max(init_analyses@spectra_number) > 0)
+      has_results_chromatograms(max(init_analyses@chromatograms_number) > 0)
       levels(as.numeric(unlist(strsplit(unique(init_analyses@spectra_level), ", "))))
       rt_end(round(max(init_analyses@spectra_highest_rt), digits = 0))
       rt_start(round(min(init_analyses@spectra_lowest_rt), digits = 0))
@@ -54,14 +54,14 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     shiny::observe({
       analyses <- reactive_analyses()
       if (length(analyses) > 0) {
-        has_spectra(max(reactive_analyses()@spectra_number) > 0)
-        has_chromatograms(max(reactive_analyses()@chromatograms_number) > 0)
+        has_results_spectra(max(reactive_analyses()@spectra_number) > 0)
+        has_results_chromatograms(max(reactive_analyses()@chromatograms_number) > 0)
         levels(as.numeric(unlist(strsplit(unique(reactive_analyses()@spectra_level), ", "))))
         rt_end(round(max(reactive_analyses()@spectra_highest_rt), digits = 0))
         rt_start(round(min(reactive_analyses()@spectra_lowest_rt), digits = 0))
       } else {
-        has_spectra(FALSE)
-        has_chromatograms(FALSE)
+        has_results_spectra(FALSE)
+        has_results_chromatograms(FALSE)
         levels(1)
         rt_end(0)
         rt_start(0)
@@ -120,7 +120,7 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     output$summary_plot_ui <- shiny::renderUI({
       if (length(reactive_analyses()) == 0) {
         htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
-      } else if (has_spectra()) {
+      } else if (has_results_spectra()) {
         if (!is.null(input$summary_plot_interactive)) {
           if (input$summary_plot_interactive) {
             shinycssloaders::withSpinner(
@@ -144,7 +144,7 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
       if (length(reactive_analyses()) == 0) {
         return()
       }
-      if (has_spectra()) {
+      if (has_results_spectra()) {
         htmltools::div(
           style = "display: flex; align-items: center;",
           htmltools::div(
@@ -344,7 +344,7 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     output$chrom_plot_ui <- shiny::renderUI({
       if (length(reactive_analyses()) == 0) {
         htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
-      } else if (has_chromatograms()) {
+      } else if (has_results_chromatograms()) {
         if (!is.null(input$summary_chrom_interactive)) {
           if (input$summary_chrom_interactive) {
             plotly::plotlyOutput(ns(ns2("chrom_plotly")), height = "600px")
@@ -362,7 +362,7 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
       if (length(reactive_analyses()) == 0) {
         return()
       }
-      if (has_chromatograms()) {
+      if (has_results_chromatograms()) {
         htmltools::div(
           style = "display: flex; align-items: center;",
           htmltools::div(
@@ -470,7 +470,7 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     output$eics_interface <- shiny::renderUI({
       if (length(reactive_analyses()) == 0) {
         htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
-      } else if (has_spectra()) {
+      } else if (has_results_spectra()) {
         htmltools::div(
           htmltools::div(
             style = "display: flex; align-items: center;",

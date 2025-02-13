@@ -23,7 +23,7 @@ ude_db <- ude_db[, cols, with = FALSE]
 files <- list.files(path, pattern = ".mzML", full.names = TRUE)
 
 # Settings for annotation of isotopes
-afs <- Settings_annotate_features_StreamFind(
+afs <- Method_annotate_features_StreamFind(
   maxIsotopes = 5,
   elements = c("C", "H", "N", "O", "S", "Cl", "Br"),
   mode = "small molecules",
@@ -39,7 +39,7 @@ afs <- Settings_annotate_features_StreamFind(
 
 tof_fl <- files[41]
 
-tof_ffs <- Settings_find_features_xcms3_centwave(
+tof_ffs <- Method_find_features_xcms3_centwave(
   ppm = 12,
   peakwidth = c(5, 40),
   snthresh = 5,
@@ -65,7 +65,7 @@ tof_ms$plot_spectra_eic(mz = tof_db, ppm = 20, sec = 30)
 
 afin_fl <- files[29]
 
-afin_ffs <- Settings_find_features_xcms3_centwave(
+afin_ffs <- Method_find_features_xcms3_centwave(
   ppm = 3,
   peakwidth = c(5, 80),
   snthresh = 10,
@@ -91,7 +91,7 @@ afin_ms$plot_spectra_eic(mz = afin_db[!is.na(afin_db$rt), ], ppm = 10, sec = 30)
 
 ude_fl <- files[32]
 
-ude_ffs <- Settings_find_features_xcms3_centwave(
+ude_ffs <- Method_find_features_xcms3_centwave(
   ppm = 4,
   peakwidth = c(5, 80),
   snthresh = 10,
@@ -128,7 +128,7 @@ toforb_ms$plot_spectra_xic(mz = meto_db, ppm = 20, sec = 240)
 
 suspects_ms <- tof_ms$subset_features(features = tof_suspects)
 
-slfms2 <- Settings_load_features_ms2_StreamFind(
+slfms2 <- Method_load_features_ms2_StreamFind(
   isolationWindow = 1.3,
   mzClust = 0.008,
   presence = 0.9,
@@ -139,7 +139,7 @@ suspects_ms$load_features_ms2(slfms2)
 
 suspects_ms$plot_features_ms2(loadedMS2 = TRUE, colorBy = "targets")
 
-sssfi <- Settings_suspect_screening_forident(
+sssfi <- Method_suspect_screening_forident(
   addMS2 = TRUE,
   useNeutralMass = FALSE,
   path = getwd(),

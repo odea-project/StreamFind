@@ -12,19 +12,24 @@ dev_files <- list.files(dev_file_path, pattern = "mzML", full.names = TRUE)[1:3]
 ## settings -------------------------------------------------------------------
 workflow <- StreamFind::Workflow(
   list(
-    MassSpecSettings_FindFeatures_openms(),
-    MassSpecSettings_AnnotateFeatures_StreamFind(),
-    MassSpecSettings_GroupFeatures_openms(),
-    MassSpecSettings_FilterFeatures_StreamFind(excludeIsotopes = TRUE),
-    MassSpecSettings_FilterFeatures_patRoon(absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 10, absMinReplicateAbundance = 3),
-    MassSpecSettings_LoadFeaturesEIC_StreamFind(rtExpand = 60, mzExpand = 0.0005),
-    MassSpecSettings_CalculateFeaturesQuality_StreamFind(),
-    MassSpecSettings_FilterFeatures_StreamFind(minSnRatio = 5),
-    MassSpecSettings_LoadFeaturesMS1_StreamFind(),
-    MassSpecSettings_LoadFeaturesMS2_StreamFind()
-    # MassSpecSettings_LoadMSPeakLists_StreamFind(),
-    # MassSpecSettings_GenerateFormulas_genform(),
-    # MassSpecSettings_GenerateCompounds_metfrag()
+    MassSpecMethod_FindFeatures_openms(),
+    MassSpecMethod_AnnotateFeatures_StreamFind(),
+    MassSpecMethod_GroupFeatures_openms(),
+    MassSpecMethod_FilterFeatures_StreamFind(excludeIsotopes = TRUE),
+    MassSpecMethod_FilterFeatures_patRoon(
+      absMinIntensity = 5000,
+      maxReplicateIntRSD = 30,
+      blankThreshold = 10,
+      absMinReplicateAbundance = 3
+    ),
+    MassSpecMethod_LoadFeaturesEIC_StreamFind(rtExpand = 60, mzExpand = 0.0005),
+    MassSpecMethod_CalculateFeaturesQuality_StreamFind(),
+    MassSpecMethod_FilterFeatures_StreamFind(minSnRatio = 5),
+    MassSpecMethod_LoadFeaturesMS1_StreamFind(),
+    MassSpecMethod_LoadFeaturesMS2_StreamFind()
+    # MassSpecMethod_LoadMSPeakLists_StreamFind(),
+    # MassSpecMethod_GenerateFormulas_genform(),
+    # MassSpecMethod_GenerateCompounds_metfrag()
   )
 )
 
@@ -53,8 +58,8 @@ raman$analyses$replicates <- c(rep("BVCZ", 11), rep("Blank", 11))
 raman$analyses$blanks <- rep("Blank", 22)
 raman_workflow <- StreamFind::Workflow(
   list(
-    RamanSettings_AverageSpectra_StreamFind(),
-    RamanSettings_SubtractBlankSpectra_StreamFind()
+    RamanMethod_AverageSpectra_StreamFind(),
+    RamanMethod_SubtractBlankSpectra_StreamFind()
   )
 )
 raman$workflow <- raman_workflow

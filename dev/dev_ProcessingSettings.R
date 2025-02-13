@@ -1,13 +1,13 @@
 
 library(StreamFind)
 
-save_default_ProcessingSettings(
+save_default_ProcessingStep(
   call = "find_features",
   software = "xcms",
   algorithm = "centwave"
 )
 
-# save_default_ProcessingSettings(
+# save_default_ProcessingStep(
 #   call = "find_features",
 #   algorithm = "openms"
 # )

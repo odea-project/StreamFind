@@ -97,7 +97,7 @@ Screening (NTS) data processing workflows.</p>
     </div>
     <div class="section level2">
     <h2 id="active-bindings">Active bindings<a class="anchor" aria-label="anchor" href="#active-bindings"></a></h2>
-    <p></p><div class="r6-active-bindings"><dl><dt><code>nts</code></dt>
+    <p></p><div class="r6-active-bindings"><dl><dt><code>NTS</code></dt>
 <dd><p>Get/Set for the <code>NTS</code> results class.</p></dd>
 
 
@@ -163,15 +163,15 @@ Screening (NTS) data processing workflows.</p>
 <li><p><a href="#method-MassSpecEngine-add_blank_names"><code>MassSpecEngine$add_blank_names()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-load_spectra"><code>MassSpecEngine$load_spectra()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-load_chromatograms"><code>MassSpecEngine$load_chromatograms()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-has_nts"><code>MassSpecEngine$has_nts()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-has_results_nts"><code>MassSpecEngine$has_results_nts()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_features"><code>MassSpecEngine$has_features()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_groups"><code>MassSpecEngine$has_groups()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_MSPeakLists"><code>MassSpecEngine$has_MSPeakLists()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_formulas"><code>MassSpecEngine$has_formulas()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_compounds"><code>MassSpecEngine$has_compounds()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-has_chromatograms"><code>MassSpecEngine$has_chromatograms()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-has_results_chromatograms"><code>MassSpecEngine$has_results_chromatograms()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_chromatograms_peaks"><code>MassSpecEngine$has_chromatograms_peaks()</code></a></p></li>
-<li><p><a href="#method-MassSpecEngine-has_spectra"><code>MassSpecEngine$has_spectra()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-has_results_spectra"><code>MassSpecEngine$has_results_spectra()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_spectra_peaks"><code>MassSpecEngine$has_spectra_peaks()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_spectra_charges"><code>MassSpecEngine$has_spectra_charges()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-has_neutralized_spectra"><code>MassSpecEngine$has_neutralized_spectra()</code></a></p></li>
@@ -241,13 +241,13 @@ Screening (NTS) data processing workflows.</p>
 
 
 <dt><code>headers</code></dt>
-<dd><p>A named list with headers or a <code>ProjectHeaders</code> object. Each list element must have length one. There
+<dd><p>A named list with headers or a <code>Metadata</code> object. Each list element must have length one. There
 is no type restrictions except for name (must be type character), author (must be type character character) and date
 (must be class POSIXct or class POSIXt).</p></dd>
 
 
 <dt><code>workflow</code></dt>
-<dd><p>A <code>Workflow</code> S7 class object or a list of <code>ProcessingSettings</code> S7 class objects.</p></dd>
+<dd><p>A <code>Workflow</code> S7 class object or a list of <code>ProcessingStep</code> S7 class objects.</p></dd>
 
 
 <dt><code>analyses</code></dt>
@@ -2510,11 +2510,11 @@ data (i.e., MS2 data).</p></dd>
 <p>Invisible.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-has_nts"></a><div class="section">
-<h3 id="method-has-nts-">Method <code>has_nts()</code><a class="anchor" aria-label="anchor" href="#method-has-nts-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-has_results_nts"></a><div class="section">
+<h3 id="method-has-NTS-">Method <code>has_results_nts()</code><a class="anchor" aria-label="anchor" href="#method-has-NTS-"></a></h3>
 <p>Checks if there are NTS results, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
 <h4 id="usage-46">Usage<a class="anchor" aria-label="anchor" href="#usage-46"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">has_nts</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">has_results_nts</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
@@ -2566,11 +2566,11 @@ data (i.e., MS2 data).</p></dd>
 </div>
 
 
-</div><p></p><hr><a id="method-MassSpecEngine-has_chromatograms"></a><div class="section">
-<h3 id="method-has-chromatograms-">Method <code>has_chromatograms()</code><a class="anchor" aria-label="anchor" href="#method-has-chromatograms-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-has_results_chromatograms"></a><div class="section">
+<h3 id="method-has-chromatograms-">Method <code>has_results_chromatograms()</code><a class="anchor" aria-label="anchor" href="#method-has-chromatograms-"></a></h3>
 <p>Checks if there are chromatograms, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
 <h4 id="usage-52">Usage<a class="anchor" aria-label="anchor" href="#usage-52"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">has_chromatograms</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">has_results_chromatograms</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
@@ -2582,11 +2582,11 @@ data (i.e., MS2 data).</p></dd>
 </div>
 
 
-</div><p></p><hr><a id="method-MassSpecEngine-has_spectra"></a><div class="section">
-<h3 id="method-has-spectra-">Method <code>has_spectra()</code><a class="anchor" aria-label="anchor" href="#method-has-spectra-"></a></h3>
+</div><p></p><hr><a id="method-MassSpecEngine-has_results_spectra"></a><div class="section">
+<h3 id="method-has-spectra-">Method <code>has_results_spectra()</code><a class="anchor" aria-label="anchor" href="#method-has-spectra-"></a></h3>
 <p>Checks if there are spectra, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
 <h4 id="usage-54">Usage<a class="anchor" aria-label="anchor" href="#usage-54"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">has_spectra</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">has_results_spectra</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 
@@ -5621,7 +5621,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 </div>
 
 </div><p></p><hr><a id="method-MassSpecEngine-report_nts"></a><div class="section">
-<h3 id="method-report-nts-">Method <code>report_nts()</code><a class="anchor" aria-label="anchor" href="#method-report-nts-"></a></h3>
+<h3 id="method-report-NTS-">Method <code>report_nts()</code><a class="anchor" aria-label="anchor" href="#method-report-NTS-"></a></h3>
 <p>Saves the HTML report from the function <a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a> from the package <span class="pkg">patRoon</span>.
 The interface is exactly the same and the arguments description are taken from the documentation in <span class="pkg">patRoon</span>.
 Therefore, for further information, we recommend to consult directly the function <a href="https://rdrr.io/pkg/patRoon/man/reporting.html" class="external-link">report</a> in

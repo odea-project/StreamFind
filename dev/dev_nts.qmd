@@ -103,7 +103,7 @@ DT::datatable(ms$analyses$info)
 
 ```{r}
 ms$run(
-  MassSpecSettings_FindFeatures_openms(
+  MassSpecMethod_FindFeatures_openms(
     noiseThrInt = 1000,
     chromSNR = 5,
     chromFWHM = 7,

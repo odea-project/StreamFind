@@ -116,7 +116,7 @@
     ns2 <- shiny::NS(id)
     
     # var Available Methods -----
-    processing_methods <- .get_available_settings(engine_type)
+    processing_methods <- .get_available_processing_methods(engine_type)
     
     if (length(processing_methods) == 0) {
       shiny::showNotification(
@@ -126,7 +126,7 @@
       )
       processing_methods_short <- NULL
     } else {
-      engine_key <- paste0(gsub("Engine", "", engine_type), "Settings_")
+      engine_key <- paste0(gsub("Engine", "", engine_type), "Method_")
       processing_methods_short <- gsub(engine_key, "", processing_methods)
       names(processing_methods) <- processing_methods_short
     }
@@ -455,7 +455,7 @@
         {
           engine$workflow <- reactive_workflow()
           engine$run_workflow()
-          reactive_analyses(engine$analyses)
+          reactive_analyses(engine$Analyses)
           reactive_workflow(engine$workflow)
           reactive_results(engine$results)
           reactive_audit(engine$audit_trail)

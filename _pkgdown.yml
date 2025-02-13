@@ -16,9 +16,9 @@ reference:
 
 # - title: Project Headers
 #   desc: >
-#     The _ProjectHeaders_ S7 class is used to manage and store project headers (i.e. metadata) in the processing engines.
+#     The _Metadata_ S7 class is used to manage and store project headers (i.e. metadata) in the processing engines.
 #   contents:
-#     - ProjectHeaders
+#     - Metadata
 
 - title: Processing settings
   desc: >

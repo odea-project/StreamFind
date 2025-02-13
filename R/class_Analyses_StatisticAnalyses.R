@@ -1,4 +1,5 @@
 # MARK: StatisticAnalyses
+# StatisticAnalyses -----
 #' @export
 #' @noRd
 StatisticAnalyses <- S7::new_class("StatisticAnalyses",
@@ -6,33 +7,35 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
   properties = list(
 
     # MARK: analyses
-    ## __analyses -----
+    ## analyses -----
     analyses = S7::new_property(S7::class_data.frame, default = data.frame()),
 
     # MARK: type
-    ## __type -----
+    ## type -----
     type = S7::new_property(S7::class_character, getter = function(self) {
       out <- rep("model", nrow(self$analyses))
       if (is(self$results[["model"]], "StreamFind::StatisticModel")) {
         has_test <- !is.null(self$results[["model"]]$model$res$test$data)
         has_prediction <- !is.null(self$results[["model"]]$model$res$prediction$data)
         if (has_test) out <- c(out, rep("test", nrow(self$results[["model"]]$model$res$test$data)))
-        if (has_prediction) out <- c(out, rep("prediction", nrow(self$results[["model"]]$model$res$prediction$data)))
+        if (has_prediction) {
+          out <- c(out, rep("prediction", nrow(self$results[["model"]]$model$res$prediction$data)))
+        }
       }
       names(out) <- names(self)
       out
     }),
 
     # MARK: classes
-    ## __classes -----
+    ## classes -----
     classes = S7::new_property(S7::class_character, default = character()),
 
     # MARK: concentrations
-    ## __concentrations -----
+    ## concentrations -----
     concentrations = S7::new_property(S7::class_numeric, default = numeric(0)),
 
     # MARK: info
-    ## __info -----
+    ## info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
       if (length(self) > 0) {
         analyses_names <- names(self)
@@ -43,13 +46,21 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
         )
 
         if (length(self@classes) > 0) {
-          df <- cbind(df, "class" = c(self@classes, rep(NA_character_, length(self@type) - length(self@classes))))
+          df <- cbind(
+            df,
+            "class" = c(self@classes, rep(NA_character_, length(self@type) - length(self@classes)))
+          )
         }
 
         if (length(self@concentrations) > 0) {
-          df <- cbind(df, "concentration" = c(self@concentrations, rep(NA_real_, length(self@type) - length(self@concentrations))))
+          df <- cbind(
+            df,
+            "concentration" = c(
+              self@concentrations,
+              rep(NA_real_, length(self@type) - length(self@concentrations))
+            )
+          )
         }
-
         row.names(df) <- seq_len(length(analyses_names))
         df
       } else {
@@ -58,7 +69,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }, default = data.frame()),
 
     # MARK: number_variables
-    ## __number_variables -----
+    ## number_variables -----
     number_variables = S7::new_property(S7::class_numeric, getter = function(self) {
       if (length(self) == 0) {
         return(0)
@@ -67,7 +78,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: has_data
-    ## __has_data -----
+    ## has_data -----
     has_data = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
         return(FALSE)
@@ -84,7 +95,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: data
-    ## __data -----
+    ## data -----
     data = S7::new_property(S7::class_list,
       getter = function(self) {
         if (!is.null(self@results[["DataFrame"]])) {
@@ -110,7 +121,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     ),
 
     # MARK: has_model
-    ## __has_model -----
+    ## has_model -----
     has_model = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
         return(FALSE)
@@ -125,7 +136,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: model
-    ## __model -----
+    ## model -----
     model = S7::new_property(S7::class_list,
       getter = function(self) {
         if (self$has_model) {
@@ -149,7 +160,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     ),
 
     # MARK: has_test
-    ## __has_test -----
+    ## has_test -----
     has_test = S7::new_property(S7::class_logical, getter = function(self) {
       if (!self$has_model) {
         return(FALSE)
@@ -161,7 +172,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: test
-    ## __test -----
+    ## test -----
     test = S7::new_property(S7::class_list, getter = function(self) {
       if (self$has_test) {
         return(self@results[["model"]]$model$res$test)
@@ -170,7 +181,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: has_prediction
-    ## __has_prediction -----
+    ## has_prediction -----
     has_prediction = S7::new_property(S7::class_logical, getter = function(self) {
       if (!self$has_model) {
         return(FALSE)
@@ -182,7 +193,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: prediction
-    ## __prediction -----
+    ## prediction -----
     prediction = S7::new_property(S7::class_list, getter = function(self) {
       if (self$has_prediction) {
         return(self@results[["model"]]$model$res$prediction)
@@ -191,7 +202,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: has_quantification
-    ## __has_quantification -----
+    ## has_quantification -----
     has_quantification = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
         return(FALSE)
@@ -206,7 +217,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: quantification
-    ## __quantification -----
+    ## quantification -----
     quantification = S7::new_property(S7::class_list,
       getter = function(self) {
         if (self$has_quantification) {
@@ -226,7 +237,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
   ),
 
   # MARK: constructor
-  ## __constructor -----
+  ## constructor -----
   constructor = function(analyses = NULL, classes = character(), concentrations = numeric(), ...) {
     if (is.null(analyses)) analyses <- data.frame()
 
@@ -249,11 +260,17 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
       }
     }
 
-    S7::new_object(Analyses(), possible_formats = ".csv", analyses = analyses, classes = classes, concentrations = concentrations)
+    S7::new_object(
+      Analyses(),
+      possible_formats = ".csv",
+      analyses = analyses,
+      classes = classes,
+      concentrations = concentrations
+    )
   },
 
   # MARK: validator
-  ## __validator -----
+  ## validator -----
   validator = function(self) {
     checkmate::assert_true(identical(self@possible_formats, ".csv"))
     checkmate::assert_data_frame(self@analyses)
@@ -269,7 +286,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
 # Methods -----
 
 # MARK: names
-## __names -----
+## names -----
 #' @noRd
 S7::method(names, StatisticAnalyses) <- function(x) {
   out <- rownames(x$analyses)
@@ -283,7 +300,7 @@ S7::method(names, StatisticAnalyses) <- function(x) {
 }
 
 # MARK: length
-## __length -----
+## length -----
 #' @export
 #' @noRd
 S7::method(length, StatisticAnalyses) <- function(x) {
@@ -291,7 +308,7 @@ S7::method(length, StatisticAnalyses) <- function(x) {
 }
 
 # MARK: add
-## __add -----
+## add -----
 #' @export
 #' @noRd
 S7::method(add, StatisticAnalyses) <- function(x, value) {
@@ -316,7 +333,9 @@ S7::method(add, StatisticAnalyses) <- function(x, value) {
 
     if (nrow(value) > 0) {
       if (length(rownames(value)) == 0) {
-        rownames(value) <- paste0("analysis_", seq(nrow(x@analyses) + 1, nrow(x@analyses) + nrow(value), by = 1))
+        rownames(value) <- paste0(
+          "analysis_", seq(nrow(x@analyses) + 1, nrow(x@analyses) + nrow(value), by = 1)
+        )
       }
     }
 
@@ -328,7 +347,7 @@ S7::method(add, StatisticAnalyses) <- function(x, value) {
 }
 
 # MARK: remove
-## __remove -----
+## remove -----
 #' @export
 #' @noRd
 S7::method(remove, StatisticAnalyses) <- function(x, value) {
@@ -348,7 +367,7 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
 }
 
 # MARK: `[`
-## __`[` -----
+## `[` -----
 
 #' @export
 #' @noRd
@@ -366,7 +385,7 @@ S7::method(`[`, StatisticAnalyses) <- function(x, i) {
 }
 
 # MARK: `[<-`
-## __`[<-` -----
+## `[<-` -----
 #' @export
 #' @noRd
 S7::method(`[<-`, StatisticAnalyses) <- function(x, i, value) {
@@ -375,7 +394,7 @@ S7::method(`[<-`, StatisticAnalyses) <- function(x, i, value) {
 }
 
 # MARK: `[[`
-## __`[[` -----
+## `[[` -----
 #' @export
 #' @noRd
 S7::method(`[[`, StatisticAnalyses) <- function(x, i) {
@@ -392,7 +411,7 @@ S7::method(`[[`, StatisticAnalyses) <- function(x, i) {
 }
 
 # MARK: `[[<-`
-## __`[[<-` -----
+## `[[<-` -----
 #' @export
 #' @noRd
 S7::method(`[[<-`, StatisticAnalyses) <- function(x, i, value) {
@@ -401,7 +420,7 @@ S7::method(`[[<-`, StatisticAnalyses) <- function(x, i, value) {
 }
 
 # MARK: predict
-## __predict -----
+## predict -----
 #' @export
 #' @noRd
 S7::method(predict, StatisticAnalyses) <- function(x, data) {
@@ -439,7 +458,10 @@ S7::method(predict, StatisticAnalyses) <- function(x, data) {
   }
 
   if (ncol(data) != x$number_variables) {
-    warning("The number of variables in the data must be equal to the number of variables in the model! Not done.")
+    warning(
+      "The number of variables in the data must be equal to the
+      number of variables in the model! Not done."
+    )
     return(x)
   }
 
@@ -454,7 +476,7 @@ S7::method(predict, StatisticAnalyses) <- function(x, data) {
 }
 
 # MARK: test
-## __test -----
+## test -----
 #' @export
 #' @noRd
 S7::method(test, StatisticAnalyses) <- function(x, data) {
@@ -492,7 +514,10 @@ S7::method(test, StatisticAnalyses) <- function(x, data) {
   }
 
   if (ncol(data) != x$number_variables) {
-    warning("The number of variables in the data must be equal to the number of variables in the model! Not done.")
+    warning(
+      "The number of variables in the data must be equal
+      to the number of variables in the model! Not done."
+    )
     return(x)
   }
 
@@ -510,7 +535,7 @@ S7::method(test, StatisticAnalyses) <- function(x, data) {
 # Get Methods -----
 
 # MARK: get_model_data
-## __get_model_data -----
+## get_model_data -----
 #' @export
 #' @noRd
 S7::method(get_model_data, StatisticAnalyses) <- function(x) {
@@ -525,7 +550,7 @@ S7::method(get_model_data, StatisticAnalyses) <- function(x) {
 # Plot Methods -----
 
 # MARK: plot_data
-## __plot_data -----
+## plot_data -----
 #' @export
 #' @noRd
 S7::method(plot_data, StatisticAnalyses) <- function(x,
@@ -570,7 +595,15 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
 
   if (!interactive) {
     cl <- .get_colors(rownames(mat))
-    plot(seq_len(ncol(mat)), mat[1, ], type = "l", col = unname(cl[1]), xlab = xLab, ylab = yLab, main = title, ylim = range(mat))
+    plot(
+      seq_len(ncol(mat)),
+      mat[1, ], type = "l",
+      col = unname(cl[1]),
+      xlab = xLab,
+      ylab = yLab,
+      main = title,
+      ylim = range(mat)
+    )
     for (i in 2:nrow(mat)) lines(seq_len(ncol(mat)), mat[i, ], col = unname(cl[i]))
     legend("topright", legend = rownames(mat), col = unname(cl), lty = 1, cex = 0.8)
   } else {
@@ -602,8 +635,19 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
       )
     }
 
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -612,7 +656,7 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
 }
 
 # MARK: plot_residual_distance
-## __plot_residual_distance -----
+## plot_residual_distance -----
 #' @export
 #' @noRd
 S7::method(plot_residual_distance, StatisticAnalyses) <- function(x, ...) {
@@ -620,7 +664,7 @@ S7::method(plot_residual_distance, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_explained_variance
-## __plot_explained_variance -----
+## plot_explained_variance -----
 #' @export
 #' @noRd
 S7::method(plot_explained_variance, StatisticAnalyses) <- function(x, ...) {
@@ -628,7 +672,7 @@ S7::method(plot_explained_variance, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_scores
-## __plot_scores -----
+## plot_scores -----
 #' @export
 #' @noRd
 S7::method(plot_scores, StatisticAnalyses) <- function(x, ...) {
@@ -638,7 +682,7 @@ S7::method(plot_scores, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_loadings
-## __plot_loadings -----
+## plot_loadings -----
 #' @export
 #' @noRd
 S7::method(plot_loadings, StatisticAnalyses) <- function(x, ...) {
@@ -646,7 +690,7 @@ S7::method(plot_loadings, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_residuals
-## __plot_residuals -----
+## plot_residuals -----
 #' @export
 #' @noRd
 S7::method(plot_residuals, StatisticAnalyses) <- function(x, ...) {
@@ -656,7 +700,7 @@ S7::method(plot_residuals, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_resolved_spectra
-## __plot_resolved_spectra -----
+## plot_resolved_spectra -----
 #' @export
 #' @noRd
 S7::method(plot_resolved_spectra, StatisticAnalyses) <- function(x, ...) {

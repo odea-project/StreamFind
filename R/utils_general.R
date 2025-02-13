@@ -8,19 +8,20 @@
 }
 
 #' @noRd
-.get_available_settings <- function(engine = NA_character_) {
+.get_available_processing_methods <- function(engine = NA_character_) {
   StreamFind_env <- as.environment("package:StreamFind")
   if (grepl("Engine$", engine)) engine <- gsub("Engine", "", engine)
-  engine_settings_key <- paste0(engine, "Settings_")
-  return(ls(envir = StreamFind_env, pattern = paste0("^", engine_settings_key)))
+  engine_methods_key <- paste0(engine, "Method_")
+  return(ls(envir = StreamFind_env, pattern = paste0("^", engine_methods_key)))
 }
 
 #' @noRd
 .get_available_methods <- function(engine = NA_character_) {
-  settings <- .get_available_settings(engine)
-  settings <- gsub(paste0(engine, "Settings_"), "", settings)
-  settings <- gsub("_.*", "", settings)
-  return(unique(settings))
+  if (grepl("Engine$", engine)) engine <- gsub("Engine", "", engine)
+  processing_methods <- .get_available_processing_methods(engine)
+  processing_methods <- gsub(paste0(engine, "Method_"), "", processing_methods)
+  processing_methods <- gsub("_.*", "", processing_methods)
+  return(unique(processing_methods))
 }
 
 #' .trim_vector

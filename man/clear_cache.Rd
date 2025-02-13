@@ -7,8 +7,10 @@
 clear_cache(what = NULL, file = "cache.sqlite")
 }
 \arguments{
-\item{what}{A character string specifying the cache to remove. If NULL, a list of available
-caches is shown.}
+\item{what}{A character vector with the names of the cache categories to clear. An integer
+vector with the indices of the categories to clear can alternatively be given to remove
+categories. If \code{NULL} (the default), the entire cache is cleared. Use the method
+\code{get_cache_info} to get the cached categories.}
 
 \item{file}{A character string specifying the cache file to use. Default is "cache.sqlite".}
 }

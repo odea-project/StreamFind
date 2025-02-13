@@ -504,7 +504,7 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
                                      int maxGaps = 1)
 {
 
-  nts::MS_ISOTOPE_SET isotopes;
+  NTS::MS_ISOTOPE_SET isotopes;
 
   std::vector<std::string> elements = {"C", "H", "N", "O", "S", "Cl", "Br", "Si"};
 
@@ -513,7 +513,7 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
   const int max_number_elements = 5;
 
   Rcpp::Rcout << "Building combinatorial isotopic chains with length " << max_number_elements << "...";
-  nts::MS_ISOTOPE_COMBINATIONS combinations(isotopes, max_number_elements);
+  NTS::MS_ISOTOPE_COMBINATIONS combinations(isotopes, max_number_elements);
   Rcpp::Rcout << "Done!" << std::endl;
 
   const int number_analyses = feature_list.size();
@@ -526,13 +526,13 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
 
     Rcpp::List features = feature_list[a];
 
-    const nts::MS_FEATURES_MZ_SORTED fdf(features);
+    const NTS::MS_FEATURES_MZ_SORTED fdf(features);
 
     const std::vector<std::string> fts = features["feature"];
 
     const int number_features = fdf.n;
 
-    nts::MS_ANNOTATION af(number_features);
+    NTS::MS_ANNOTATION af(number_features);
 
     Rcpp::Rcout << "Annotating isotopes in " << number_features << " features...";
 
@@ -554,7 +554,7 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
       const float &mzmax = fdf.mzmax[f];
       const float max_mz_chain = (mz + maxIsotopes) * 1.05;
 
-      std::vector<int> candidates = nts::find_isotopic_candidates(
+      std::vector<int> candidates = NTS::find_isotopic_candidates(
           number_features,
           fdf.feature, fdf.mz, fdf.rt, fdf.polarity,
           polarity, feature, mz, mzmin, mzmax, rt, rtmin, rtmax,
@@ -567,7 +567,7 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
 
         candidates.insert(candidates.begin(), f);
 
-        nts::MS_CANDIDATE_CHAIN candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
+        NTS::MS_CANDIDATE_CHAIN candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
 
         annotate_isotopes(af, combinations, candidates_chain, maxIsotopes, maxCharge, maxGaps);
       }
@@ -617,7 +617,7 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
       const float &mzmax = fdf.mzmax[f];
       const float max_mz_adducts = (mz + 100);
 
-      std::vector<int> candidates = nts::find_adduct_candidates(
+      std::vector<int> candidates = NTS::find_adduct_candidates(
           number_features, fdf.mz, fdf.rt, fdf.polarity, af.iso_step, polarity, mz, mzmin, mzmax, rt, rtmin, rtmax, rtWindowAlignment, max_mz_adducts);
 
       const int number_candidates = candidates.size();
@@ -625,8 +625,8 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
       if (number_candidates > 0)
       {
         candidates.insert(candidates.begin(), f);
-        nts::MS_CANDIDATE_CHAIN candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
-        nts::annotate_adducts(af, candidates_chain, polarity);
+        NTS::MS_CANDIDATE_CHAIN candidates_chain(candidates, fdf.feature, fdf.index, fdf.mz, fdf.mzmin, fdf.mzmax, fdf.rt, fdf.intensity);
+        NTS::annotate_adducts(af, candidates_chain, polarity);
       }
     }
 
@@ -819,7 +819,7 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
 
     const Rcpp::List &analysis = analyses[i];
 
-    sc::MS_SPECTRA_HEADERS headers = nts::get_ms_analysis_list_headers(analysis);
+    sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
 
     const std::string file = analysis["file"];
 
@@ -841,7 +841,7 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
 
       sc::MS_TARGETS_SPECTRA res_j = res[id_j];
 
-      nts::merge_traces_within_rt(res_j.rt, res_j.mz, res_j.intensity);
+      NTS::merge_traces_within_rt(res_j.rt, res_j.mz, res_j.intensity);
 
       const int n = res_j.rt.size();
       const std::vector<std::string> id_vec = std::vector<std::string>(n, id_j);
@@ -901,10 +901,10 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
 
   std::vector<std::string> features_analyses_names = features.names();
 
-  int rtWindowMax_idx = nts::find_max_index(rtWindow);
-  int rtWindowMin_idx = nts::find_min_index(rtWindow);
-  int mzWindowMax_idx = nts::find_max_index(mzWindow);
-  int mzWindowMin_idx = nts::find_min_index(mzWindow);
+  int rtWindowMax_idx = NTS::find_max_index(rtWindow);
+  int rtWindowMin_idx = NTS::find_min_index(rtWindow);
+  int mzWindowMax_idx = NTS::find_max_index(mzWindow);
+  int mzWindowMin_idx = NTS::find_min_index(mzWindow);
 
   for (int i = 0; i < number_analyses; i++)
   {
@@ -990,7 +990,7 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
 
     const Rcpp::List &analysis = analyses[i];
 
-    sc::MS_SPECTRA_HEADERS headers = nts::get_ms_analysis_list_headers(analysis);
+    sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
 
     const std::string file = analysis["file"];
 
@@ -1029,7 +1029,7 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
           Rcpp::Named("mz") = res_j.mz,
           Rcpp::Named("intensity") = res_j.intensity);
 
-      Rcpp::List ms1_clustered = nts::cluster_spectra(ms1, mzClust, presence);
+      Rcpp::List ms1_clustered = NTS::cluster_spectra(ms1, mzClust, presence);
 
       ms1_clustered.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
@@ -1162,7 +1162,7 @@ Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
 
     const Rcpp::List &analysis = analyses[i];
 
-    sc::MS_SPECTRA_HEADERS headers = nts::get_ms_analysis_list_headers(analysis);
+    sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
 
     const std::string file = analysis["file"];
 
@@ -1201,7 +1201,7 @@ Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
           Rcpp::Named("mz") = res_j.mz,
           Rcpp::Named("intensity") = res_j.intensity);
 
-      Rcpp::List ms2_clustered = nts::cluster_spectra(ms2, mzClust, presence);
+      Rcpp::List ms2_clustered = NTS::cluster_spectra(ms2, mzClust, presence);
 
       ms2_clustered.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
@@ -1586,7 +1586,7 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
     const Rcpp::List &analysis = analyses[j];
 
-    const sc::MS_SPECTRA_HEADERS headers = nts::get_ms_analysis_list_headers(analysis);
+    const sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
 
     const std::string file = analysis["file"];
 
@@ -1649,9 +1649,9 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
         continue;
       }
 
-      nts::merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
+      NTS::merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
 
-      Rcpp::List quality = nts::calculate_gaussian_fit(id_i, res_i.rt, res_i.intensity, baseCut);
+      Rcpp::List quality = NTS::calculate_gaussian_fit(id_i, res_i.rt, res_i.intensity, baseCut);
 
       const float &sn = quality["sn"];
 
@@ -1667,13 +1667,13 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
         continue;
       }
 
-      const float area_i = nts::trapezoidal_area(res_i.rt, res_i.intensity);
+      const float area_i = NTS::trapezoidal_area(res_i.rt, res_i.intensity);
 
-      const size_t max_position = nts::find_max_index(res_i.intensity);
+      const size_t max_position = NTS::find_max_index(res_i.intensity);
 
       const float rt_i = res_i.rt[max_position];
 
-      const float mz_i = nts::mean(res_i.mz);
+      const float mz_i = NTS::mean(res_i.mz);
 
       const float mass_i = mz_i - (res_i.polarity[0] * 1.007276);
 
@@ -1901,7 +1901,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
 
     const Rcpp::List &analysis = analyses[i];
 
-    const sc::MS_SPECTRA_HEADERS headers = nts::get_ms_analysis_list_headers(analysis);
+    const sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
 
     const std::string file = analysis["file"];
 
@@ -1944,7 +1944,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
         rt = res_j.rt;
         mz = res_j.mz;
         intensity = res_j.intensity;
-        nts::merge_traces_within_rt(rt, mz, intensity);
+        NTS::merge_traces_within_rt(rt, mz, intensity);
         Rcpp::List eic = Rcpp::List::create(
             Rcpp::Named("feature") = id_j,
             Rcpp::Named("polarity") = res_j.polarity,
@@ -1968,7 +1968,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
       const int n = rt.size();
 
       if (n > minNumberTraces)
-        quality = nts::calculate_gaussian_fit(id_j, rt, intensity, baseCut);
+        quality = NTS::calculate_gaussian_fit(id_j, rt, intensity, baseCut);
 
       quality.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 

@@ -128,8 +128,8 @@ empty
 Analyses: 
 empty </code></pre>
 <p>Note that when an empty <code>CoreEngine</code> is created, required
-<code>ProjectHeaders</code> are created with name, author, path and
-date.Yet, <code>ProjectHeaders</code> can be specified directly during
+<code>Metadata</code> are created with name, author, path and
+date.Yet, <code>Metadata</code> can be specified directly during
 creation of the <code>CoreEngine</code> via the argument
 <code>headers</code> or added to the engine as shown in
 @ref(project-headers). The <code>CoreEngine</code> does not directly
@@ -142,12 +142,12 @@ is important to understand that it is in the background.</p>
 <div class="section level3">
 <h3 id="project-headers">Project headers<a class="anchor" aria-label="anchor" href="#project-headers"></a>
 </h3>
-<p>The <code>ProjectHeaders</code> S7 class is meant to hold project
+<p>The <code>Metadata</code> S7 class is meant to hold project
 information/metadata, such as description, location, etc. The users can
 add any kind of attribute but it must have length one and be named.
 Below, a list of headers is created and added to the
 <code>CoreEngine</code> for demonstration. Internally, the list of
-headers is converted to a <code>ProjectHeaders</code> object.</p>
+headers is converted to a <code>Metadata</code> object.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">headers</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  name <span class="op">=</span> <span class="st">"Project Example"</span>, </span>
@@ -168,15 +168,15 @@ date: 2024-11-29 10:05:08.936701</code></pre>
 </h3>
 <p>A data processing workflow is represented in StreamFind by the S7
 class <code>Workflow</code>, which is composed of an ordered list of S7
-class <code>ProcessingSettings</code> objects. Each
-<code>ProcessingSettings</code> object is a representation of a
+class <code>ProcessingStep</code> objects. Each
+<code>ProcessingStep</code> object is a representation of a
 processing method/step that transforms the data according to a specific
-algorithm. The <code>ProcessingSettings</code> objects are used to
+algorithm. The <code>ProcessingStep</code> objects are used to
 harmonize the diversity of processing methods and algorithms available
 for a given data type.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">ProcessingSettings</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code>&lt;StreamFind::ProcessingSettings&gt;
+<code class="sourceCode R"><span><span class="fu">ProcessingStep</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<pre><code>&lt;StreamFind::ProcessingStep&gt;
  @ engine          : chr NA
  @ method          : chr NA
  @ algorithm       : chr NA
@@ -189,15 +189,15 @@ for a given data type.</p>
  @ link            : chr NA
  @ doi             : chr NA
  @ call            : chr "NASettings_NA_NA"</code></pre>
-<p>A <code>ProcessingSettings</code> object must always have the engine
+<p>A <code>ProcessingStep</code> object must always have the engine
 type, the processing method name, the name of the algorithm to be used,
 the origin software, the main developer name and contact as well as a
 link to further information and the DOI, when available. Lastly but not
 least, the parameters which is a flexible list of conditions to apply
 the algorithm during data processing. As example,
-<code>ProcessingSettings</code> for annotating features using a native
+<code>ProcessingStep</code> for annotating features using a native
 algorithm from StreamFind is shown below. Each
-<code>ProcessingSettings</code> object has a dedicated constructor
+<code>ProcessingStep</code> object has a dedicated constructor
 method with documentation to support the usage. Help pages for
 processing methods can be obtained with the native R function
 <code>?</code> or <code><a href="https://rdrr.io/r/utils/help.html" class="external-link">help()</a></code> (e.g.,
@@ -260,7 +260,7 @@ date: 2024-11-29 10:05:08.936701</code></pre>
 </h2>
 <p>As above mentioned, the <code>CoreEngine</code> does not handle data
 processing directly. The data processing is delegated to child engines,
-where specific <code>ProcessingSettings</code> can be applied. A simple
+where specific <code>ProcessingStep</code> can be applied. A simple
 example is given below by creating a child <code>RamanEngine</code> and
 accessing the spectra from the analyses (added as full paths to
 <em>.asc</em> files on disk). Note that the workflow and results are
@@ -413,9 +413,9 @@ Analyses:
 <div class="section level2">
 <h2 id="processing-workflow">Processing workflow<a class="anchor" aria-label="anchor" href="#processing-workflow"></a>
 </h2>
-<p>As above mentioned, <code>ProcessingSettings</code> are used to
+<p>As above mentioned, <code>ProcessingStep</code> are used to
 design an ordered list of processing methods in a <code>Workflow</code>
-object. Below we create a list of <code>ProcessingSettings</code> for
+object. Below we create a list of <code>ProcessingStep</code> for
 processing the Raman spectra in the engine and add to the
 <code>raman</code> engine.</p>
 <div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
@@ -458,8 +458,8 @@ processing the Raman spectra in the engine and add to the
 <code class="sourceCode R"><span><span class="co"># the data processing workflow is applied</span></span>
 <span><span class="va">raman</span><span class="op">$</span><span class="fu">run_workflow</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>The method <code>run()</code> can be used to applied a single
-<code>ProcessingSettings</code> object to the data. Note that the
-<code>ProcessingSettings</code> step is always added to the bottom of
+<code>ProcessingStep</code> object to the data. Note that the
+<code>ProcessingStep</code> step is always added to the bottom of
 the workflow in the engine. Below, the normalization based on minimum
 and maximum is applied to the Raman spectra and then the workflow is
 shown, including another normalization step in the last position.</p>
@@ -573,12 +573,12 @@ StreamFind is a data processing workflow designer that uses R6 classes
 to manage, process, visualize and report data within a project. The
 <code>CoreEngine</code> is the parent class of all other data specific
 engines and manages the project information via the class
-<code>ProjectHeaders</code>. The <code>ProcessingSettings</code> are
+<code>Metadata</code>. The <code>ProcessingStep</code> are
 used to harmonize the diversity of processing methods and algorithms
 available in a <code>Workflow</code> object. The data processing is
 delegated to child engines, such as the <code>RamanEngine</code> and
 <code>MassSpecEngine</code>. The <code>Workflow</code> is assembled by
-combining different <code>ProcessingSettings</code> in a specific order.
+combining different <code>ProcessingStep</code> in a specific order.
 The results can be accessed with dedicated fields
 (e.g. <code>spectra</code> and <code>plot_spectra</code>). StreamFind
 can be used via scripting as demonstrated in this guide or via the

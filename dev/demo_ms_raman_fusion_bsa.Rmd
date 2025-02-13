@@ -108,17 +108,17 @@ As pre-processing, the following steps are applied:
 2. Find the mass-to-charge (*m/z*) range of BSA for deconvolution of charges; 
 3. Deconvolute charges for estimation of the exact mass, in DA; 
 
-The individual processing steps are applied according to *ProcessingSettings*. Below, the integration of the TIC is shown using the dedicated *ProcessingSettings* after loading the TIC chromatograms from the analysis files and smoothing using a moving average approach.
+The individual processing steps are applied according to *ProcessingStep*. Below, the integration of the TIC is shown using the dedicated *ProcessingStep* after loading the TIC chromatograms from the analysis files and smoothing using a moving average approach.
 
 ```{r load-chroms}
 # Loads the TIC chromatograms
-ms$run(MassSpecSettings_LoadChromatograms_StreamFind(chromatograms = "TIC"))
-ms$analyses$has_chromatograms
+ms$run(MassSpecMethod_LoadChromatograms_StreamFind(chromatograms = "TIC"))
+ms$analyses$has_results_chromatograms
 ```
 
 ```{r smooth-chroms}
 # Smoothing of the TIC chromatogram for improving peak finding
-ms$run(MassSpecSettings_SmoothChromatograms_movingaverage(windowSize = 5))
+ms$run(MassSpecMethod_SmoothChromatograms_movingaverage(windowSize = 5))
 ```
 
 ```{r plot-chroms, fig.cap="Smoothed TICs for each analysis replicate."}
@@ -128,7 +128,7 @@ ms$plot_chromatograms(colorBy = "replicates+targets")
 ```{r localmaxima-chroms}
 
 # Settings for finding the local maxima in the loaded TIC chromatograms
-ps_maxima <- MassSpecSettings_FindChromPeaks_LocalMaxima(
+ps_maxima <- MassSpecMethod_FindChromPeaks_LocalMaxima(
   minWidth = 3,
   maxWidth = 5,
   minHeight = 30E6
@@ -164,13 +164,13 @@ ms$plot_spectra_ms1(
 )
 ```
 
-According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingSettings* for deconvolution, as shown below. The retention time dimensions for extraction of spectra is based on the local peak maxima shown above.
+According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingStep* for deconvolution, as shown below. The retention time dimensions for extraction of spectra is based on the local peak maxima shown above.
 
 ```{r workflow-ms}
 
 # Extracts the spectra for the defined *m/z* range and local peak maxima
 ms$run(
-  MassSpecSettings_LoadSpectra_chrompeaks(
+  MassSpecMethod_LoadSpectra_chrompeaks(
     mzmin = 1200,
     mzmax = 2000,
     levels = 1,
@@ -180,7 +180,7 @@ ms$run(
 
 # Calculates the charges for the extracted spectra
 ms$run(
-  MassSpecSettings_CalculateSpectraCharges_StreamFind(
+  MassSpecMethod_CalculateSpectraCharges_StreamFind(
     onlyTopScans = TRUE,
     topScans = 6,
     roundVal = 10,
@@ -191,10 +191,10 @@ ms$run(
 )
 
 # Deconvolutes the charges for the extracted spectra
-ms$run(MassSpecSettings_DeconvoluteSpectra_StreamFind())
+ms$run(MassSpecMethod_DeconvoluteSpectra_StreamFind())
 
 ms$run(
-  MassSpecSettings_SmoothSpectra_movingaverage(
+  MassSpecMethod_SmoothSpectra_movingaverage(
     windowSize = 15
   )
 )
@@ -202,7 +202,7 @@ ms$run(
 # The binning is applied to ensure that all spectra have the same dimensions
 # (i.e., mass-time and intensity pair)
 ms$run(
-   MassSpecSettings_BinSpectra_StreamFind(
+   MassSpecMethod_BinSpectra_StreamFind(
     binNames = c("rt", "mass"),
     binValues = c(5, 20),
     byUnit = TRUE,
@@ -211,15 +211,15 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_AverageSpectra_StreamFind(
+  MassSpecMethod_AverageSpectra_StreamFind(
     by = "replicates",
     weightedAveraged = FALSE
   )
 )
 
-ms$run(MassSpecSettings_NormalizeSpectra_minmax())
+ms$run(MassSpecMethod_NormalizeSpectra_minmax())
   
-ms$run(MassSpecSettings_NormalizeSpectra_blockweight())
+ms$run(MassSpecMethod_NormalizeSpectra_blockweight())
 ```
 
 The `print_workflow()` method can be used to inspect the workflow settings.
@@ -274,62 +274,62 @@ As for MS data, the workflow for Raman data is also assembled using an ordered l
 
 ```{r raman-workflow}
 raman_workflow <- list(
-  RamanSettings_BinScans_StreamFind(
+  RamanMethod_BinScans_StreamFind(
     binNames = "rt",
     binValues = 20,
     byUnit = FALSE
   ),
 
-  RamanSettings_SubtractSpectraSection_native(
+  RamanMethod_SubtractSpectraSection_native(
     sectionVal = "rt",
     sectionWindow = c(0, 200)
   ),
 
-  RamanSettings_DeleteSpectraSection_native(
+  RamanMethod_DeleteSpectraSection_native(
     min = -100,
     shiftmax = 315
   ),
 
-  RamanSettings_SmoothSpectra_savgol(
+  RamanMethod_SmoothSpectra_savgol(
     fl = 11,
     forder = 2,
     dorder = 0
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     shiftmin = 315,
     shiftmax = 330
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     shiftmin = 2300,
     shiftmax = 2600
   ),
 
-  RamanSettings_CorrectSpectraBaseline_baseline_als(
+  RamanMethod_CorrectSpectraBaseline_baseline_als(
     lambda = 3,
     p = 0.015,
     maxit = 10
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     rtmin = 0,
     rtmax = 420
   ),
 
-  RamanSettings_DeleteSpectraSection_StreamFind(
+  RamanMethod_DeleteSpectraSection_StreamFind(
     rtmin = 430,
     rtmax = 900
   ),
 
-  RamanSettings_AverageSpectra_StreamFind(
+  RamanMethod_AverageSpectra_StreamFind(
     by = "replicates",
     weightedAveraged = FALSE
   ),
 
-  RamanSettings_NormalizeSpectra_minmax(),
+  RamanMethod_NormalizeSpectra_minmax(),
 
-  RamanSettings_NormalizeSpectra_blockweight()
+  RamanMethod_NormalizeSpectra_blockweight()
 )
 
 raman$workflow <- raman_workflow
@@ -385,7 +385,7 @@ plot_data(stat$analyses)
 # Note that scale is set to FALSE to avoid scaling the data
 # as blockweight normalization was applied for each dataset
 stat$run(
-  StatisticSettings_MakeModel_pca_mdatools(
+  StatisticMethod_MakeModel_pca_mdatools(
     center = TRUE,
     ncomp = 2,
     alpha = 0.05,
@@ -415,7 +415,7 @@ An alternative approach for the statistic analysis is the MCR pure model (based 
 
 ```{r mcr-run}
 # Note that the model in the engine will be overwritten by the MCR model
-stat$run(StatisticSettings_MakeModel_mcrpure_mdatools(ncomp = 2, offset = 0.05))
+stat$run(StatisticMethod_MakeModel_mcrpure_mdatools(ncomp = 2, offset = 0.05))
 summary(stat$model)
 ```
 

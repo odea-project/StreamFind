@@ -14,7 +14,7 @@
 #include <filesystem>
 #include "StreamCraft_lib.h"
 
-namespace nts
+namespace NTS
 {
 
   // MARK: MS_FEATURES_MZ_SORTED
@@ -663,6 +663,6 @@ namespace nts
 
   Rcpp::List cluster_spectra(const Rcpp::List &spectra, const float &mzClust, const float &presence);
 
-}; // namespace nts
+}; // namespace NTS
 
 #endif

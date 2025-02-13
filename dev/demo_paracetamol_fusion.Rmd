@@ -154,12 +154,12 @@ scroll_box(width = "100%", height = "400px")
 
 ```{r ms-workflow}
 ms_workflow <- list(
-  MassSpecSettings_LoadSpectra_StreamFind(levels = 1, mzmax = 300, rtmax = 120),
-  MassSpecSettings_BinSpectra_StreamFind(binNames = c("rt", "mz"), binValues = c(5, 2), refBinAnalysis = 1),
-  MassSpecSettings_NormalizeSpectra_minmax(),
-  MassSpecSettings_AverageSpectra_StreamFind(),
-  MassSpecSettings_SubtractBlankSpectra_StreamFind(negativeToZero = TRUE),
-  MassSpecSettings_NormalizeSpectra_blockweight()
+  MassSpecMethod_LoadSpectra_StreamFind(levels = 1, mzmax = 300, rtmax = 120),
+  MassSpecMethod_BinSpectra_StreamFind(binNames = c("rt", "mz"), binValues = c(5, 2), refBinAnalysis = 1),
+  MassSpecMethod_NormalizeSpectra_minmax(),
+  MassSpecMethod_AverageSpectra_StreamFind(),
+  MassSpecMethod_SubtractBlankSpectra_StreamFind(negativeToZero = TRUE),
+  MassSpecMethod_NormalizeSpectra_blockweight()
 )
 
 ms$workflow <- ms_workflow
@@ -244,14 +244,14 @@ scroll_box(width = "100%", height = "400px")
 
 ```{r raman-workflow}
 raman_workflow <- list(
-  RamanSettings_AverageSpectra_native(),
-  RamanSettings_SubtractBlankSpectra_StreamFind(),
-  RamanSettings_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
-  RamanSettings_DeleteSpectraSection_native(min = -100, max = 350),
-  RamanSettings_DeleteSpectraSection_native(min = 1800, max = 2500),
-  RamanSettings_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30),
-  RamanSettings_NormalizeSpectra_minmax(),
-  RamanSettings_NormalizeSpectra_blockweight()
+  RamanMethod_AverageSpectra_native(),
+  RamanMethod_SubtractBlankSpectra_StreamFind(),
+  RamanMethod_SmoothSpectra_savgol(fl = 21, forder = 4, dorder = 0),
+  RamanMethod_DeleteSpectraSection_native(min = -100, max = 350),
+  RamanMethod_DeleteSpectraSection_native(min = 1800, max = 2500),
+  RamanMethod_CorrectSpectraBaseline_airpls(lambda = 45, differences = 1, itermax = 30),
+  RamanMethod_NormalizeSpectra_minmax(),
+  RamanMethod_NormalizeSpectra_blockweight()
 )
 
 raman$workflow <- raman_workflow
@@ -299,7 +299,7 @@ rownames(test_set)
 ```{r pca-engine, fig.cap="PCA model (native plot from mdatools R package).", fig.height=9, warning=FALSE}
 stat <- StatisticEngine$new(analyses = main_set)
 # The alpha and gamma parameters are used to evaluate the model limits
-stat$run(StatisticSettings_MakeModel_pca_mdatools(ncomp = 3, alpha = 0.01, gamma = 0.001))
+stat$run(StatisticMethod_MakeModel_pca_mdatools(ncomp = 3, alpha = 0.01, gamma = 0.001))
 plot(stat$model, showText = TRUE)
 ```
 
@@ -336,7 +336,7 @@ labels <- c(
 ```{r knn-engine}
 stat2 <- StatisticEngine$new(analyses = train_set)
 stat2$add_classes(labels)
-stat2$run(StatisticSettings_MakeModel_knn(k = 3))
+stat2$run(StatisticMethod_MakeModel_knn(k = 3))
 stat2$predict(test_set)
 stat2$model$prediction$results
 ```

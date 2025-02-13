@@ -48,7 +48,7 @@ ms$add_replicate_names(rpls)
 ms$add_blank_names(blks)
 
 ms$run(
-  MassSpecSettings_FindFeatures_openms(
+  MassSpecMethod_FindFeatures_openms(
     noiseThrInt = 1000,
     chromSNR = 3,
     chromFWHM = 7,
@@ -75,7 +75,7 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_AnnotateFeatures_StreamFind(
+  MassSpecMethod_AnnotateFeatures_StreamFind(
     rtWindowAlignment = 0.3,
     maxIsotopes = 8,
     maxCharge = 2,
@@ -84,14 +84,14 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_FilterFeatures_StreamFind(
+  MassSpecMethod_FilterFeatures_StreamFind(
     excludeIsotopes = TRUE,
     excludeAdducts = TRUE
   )
 )
 
 ms$run(
-  MassSpecSettings_GroupFeatures_openms(
+  MassSpecMethod_GroupFeatures_openms(
     rtalign = FALSE,
     QT = FALSE,
     maxAlignRT = 5,
@@ -103,13 +103,13 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_FilterFeatures_StreamFind(
+  MassSpecMethod_FilterFeatures_StreamFind(
     minIntensity = 3000
   )
 )
 
 ms$run(
-  MassSpecSettings_FillFeatures_StreamFind(
+  MassSpecMethod_FillFeatures_StreamFind(
     withinReplicate = FALSE,
     rtExpand = 2,
     mzExpand = 0.0005,
@@ -122,7 +122,7 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_CalculateFeaturesQuality_StreamFind(
+  MassSpecMethod_CalculateFeaturesQuality_StreamFind(
     filtered = FALSE,
     rtExpand = 2,
     mzExpand = 0.0005,
@@ -133,13 +133,13 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_FilterFeatures_StreamFind(
+  MassSpecMethod_FilterFeatures_StreamFind(
     minSnRatio = 5
   )
 )
 
 ms$run(
-  MassSpecSettings_FilterFeatures_patRoon(
+  MassSpecMethod_FilterFeatures_patRoon(
     maxReplicateIntRSD = 40,
     blankThreshold = 5,
     absMinReplicateAbundance = 3
@@ -147,7 +147,7 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_FindInternalStandards_StreamFind(
+  MassSpecMethod_FindInternalStandards_StreamFind(
     database = db_is,
     ppm = 8,
     sec = 10
@@ -155,7 +155,7 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_CorrectMatrixSuppression_TiChri(
+  MassSpecMethod_CorrectMatrixSuppression_TiChri(
     mpRtWindow = 10,
     istdAssignment = "range",
     istdRtWindow = 50,
@@ -164,25 +164,25 @@ ms$run(
 )
 
 ms$run(
-  MassSpecSettings_LoadFeaturesMS1_StreamFind(
+  MassSpecMethod_LoadFeaturesMS1_StreamFind(
     filtered = FALSE
   )
 )
 
 ms$run(
-  MassSpecSettings_LoadFeaturesMS2_StreamFind(
+  MassSpecMethod_LoadFeaturesMS2_StreamFind(
     filtered = FALSE
   )
 )
 
 ms$run(
-  MassSpecSettings_LoadFeaturesEIC_StreamFind(
+  MassSpecMethod_LoadFeaturesEIC_StreamFind(
     filtered = FALSE
   )
 )
 
 ms$run(
-  MassSpecSettings_SuspectScreening_StreamFind(
+  MassSpecMethod_SuspectScreening_StreamFind(
     database = db_with_ms2,
     ppm = 10,
     sec = 15,
@@ -194,17 +194,17 @@ ms$run(
 #StreamFind::clear_cache("all")
 
 # Access NTS object and print to console
-#show(ms$nts)
+#show(ms$NTS)
 
 # Access feature_list
-#names(ms$nts$feature_list)
+#names(ms$NTS$feature_list)
 
-#fts <- ms$nts$feature_list
+#fts <- ms$NTS$feature_list
 
 # Access properties
-#nts <- ms$nts
-#nts@number_features
-#nts@analyses_info
+#NTS <- ms$NTS
+#NTS@number_features
+#NTS@analyses_info
 
 
 #show(ms$analyses)

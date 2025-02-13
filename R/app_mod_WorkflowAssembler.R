@@ -10,7 +10,7 @@
           shiny::uiOutput(ns("save_engine")), shiny::uiOutput(ns("reset_engine"))
         ),
         shiny::uiOutput(ns("engine_save_file_ui")),
-        shiny::fluidRow(shiny::uiOutput(ns("headers_ui")))
+        shiny::fluidRow(shiny::uiOutput(ns("metadata_ui")))
       )
     ),
     shinydashboard::tabItem(
@@ -50,7 +50,6 @@
     ns <- session$ns
     # _Global Constants/Mutable -----
     pkg_resources <- system.file(package = "StreamFind", dir = "extdata")
-    mandatory_header_names <- c("name", "author", "file", "date")
     volumes <- .app_util_get_volumes()
     engine <- NULL
     analyses_class_dummy <- NULL
@@ -58,12 +57,12 @@
     # _Global Reactive Variables -----
     reactive_wdir <- shiny::reactiveVal(getwd())
     reactive_volumes <- shiny::reactiveVal(volumes)
-    reactive_headers <- shiny::reactiveVal(NULL)
+    reactive_metadata <- shiny::reactiveVal(NULL)
     reactive_analyses <- shiny::reactiveVal(NULL)
     reactive_workflow <- shiny::reactiveVal(NULL)
     reactive_results <- shiny::reactiveVal(NULL)
     reactive_audit <- shiny::reactiveVal(NULL)
-    reactive_saved_headers <- shiny::reactiveVal(NULL)
+    reactive_saved_metadata <- shiny::reactiveVal(NULL)
     reactive_saved_analyses <- shiny::reactiveVal(NULL)
     reactive_saved_workflow <- shiny::reactiveVal(NULL)
     reactive_saved_results <- shiny::reactiveVal(NULL)
@@ -105,16 +104,16 @@
           })
         }
         
-        reactive_headers(engine$headers)
-        reactive_analyses(engine$analyses)
-        reactive_workflow(engine$workflow)
-        reactive_results(engine$results)
-        reactive_audit(engine$audit_trail)
-        reactive_saved_headers(engine$headers)
-        reactive_saved_analyses(engine$analyses)
-        reactive_saved_workflow(engine$workflow)
-        reactive_saved_results(engine$results)
-        reactive_audit_saved(engine$audit_trail)
+        reactive_metadata(engine$Metadata)
+        reactive_analyses(engine$Analyses)
+        reactive_workflow(engine$Workflow)
+        reactive_results(engine$Analyses$results)
+        reactive_audit(engine$AuditTrail)
+        reactive_saved_metadata(engine$Metadata)
+        reactive_saved_analyses(engine$Analyses)
+        reactive_saved_workflow(engine$Workflow)
+        reactive_saved_results(engine$Analyses$results)
+        reactive_audit_saved(engine$AuditTrail)
         reactive_clean_start(FALSE)
       }
     })
@@ -125,7 +124,7 @@
     shiny::observe({
       has_unsaved_changes <- "unsaved_changes" %in% names(reactive_warnings())
       equal_history <- all(
-        identical(reactive_headers(), reactive_saved_headers()),
+        identical(reactive_metadata(), reactive_saved_metadata()),
         identical(reactive_analyses(), reactive_saved_analyses()),
         identical(reactive_workflow(), reactive_saved_workflow()),
         identical(reactive_results(), reactive_saved_results()),
@@ -179,16 +178,16 @@
     shiny::observeEvent(input$save_engine_button, {
       engine$save(reactive_engine_save_file())
       reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
-      reactive_headers(engine$headers)
-      reactive_analyses(engine$analyses)
-      reactive_workflow(engine$workflow)
-      reactive_results(engine$results)
-      reactive_audit(engine$audit_trail)
-      reactive_saved_headers(engine$headers)
-      reactive_saved_analyses(engine$analyses)
+      reactive_metadata(engine$Metadata)
+      reactive_analyses(engine$Analyses)
+      reactive_workflow(engine$Workflow)
+      reactive_results(engine$Analyses$results)
+      reactive_audit(engine$AuditTrail)
+      reactive_saved_metadata(engine$Metadata)
+      reactive_saved_analyses(engine$Analyses)
       reactive_saved_workflow(engine$workflow)
-      reactive_saved_results(engine$results)
-      reactive_audit_saved(engine$audit_trail)
+      reactive_saved_results(engine$Analyses$results)
+      reactive_audit_saved(engine$AuditTrail)
     })
     
     ## event Save Engine File -----
@@ -200,23 +199,23 @@
       )
       if (nrow(file_info) > 0) {
         file_path <- file_info$datapath
-        engine$headers <- reactive_headers()
-        engine$analyses <- reactive_analyses()
-        engine$workflow <- reactive_workflow()
-        engine$results <- reactive_results()
+        engine$Metadata <- reactive_metadata()
+        engine$Analyses <- reactive_analyses()
+        engine$Workflow <- reactive_workflow()
+        engine$Analyses$results <- reactive_results()
         engine$save(file_path)
         reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
-        reactive_headers(engine$headers)
-        reactive_analyses(engine$analyses)
-        reactive_workflow(engine$workflow)
-        reactive_results(engine$results)
-        reactive_audit(engine$audit_trail)
-        reactive_engine_save_file(engine$file$path)
-        reactive_saved_headers(engine$headers)
-        reactive_saved_analyses(engine$analyses)
-        reactive_saved_workflow(engine$workflow)
-        reactive_saved_results(engine$results)
-        reactive_audit_saved(engine$audit_trail)
+        reactive_metadata(engine$Metadata)
+        reactive_analyses(engine$Analyses)
+        reactive_workflow(engine$Workflow)
+        reactive_results(engine$Analyses$results)
+        reactive_audit(engine$AuditTrail)
+        reactive_engine_save_file(engine$Metadata$file)
+        reactive_saved_metadata(engine$Metadata)
+        reactive_saved_analyses(engine$Analyses)
+        reactive_saved_workflow(engine$Workflow)
+        reactive_saved_results(engine$Analyses$results)
+        reactive_audit_saved(engine$AuditTrail)
       }
     })
     
@@ -238,29 +237,29 @@
     shiny::observeEvent(input$reset_engine_button, {
       if (is.na(reactive_engine_save_file())) {
         reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
-        reactive_headers(engine$headers)
-        reactive_analyses(engine$analyses)
-        reactive_workflow(engine$workflow)
-        reactive_results(engine$results)
-        reactive_audit(engine$audit_trail)
-        reactive_saved_headers(engine$headers)
-        reactive_saved_analyses(engine$analyses)
-        reactive_saved_workflow(engine$workflow)
-        reactive_saved_results(engine$results)
-        reactive_audit_saved(engine$audit_trail)
+        reactive_metadata(engine$Metadata)
+        reactive_analyses(engine$Analyses)
+        reactive_workflow(engine$Workflow)
+        reactive_results(engine$Analyses$results)
+        reactive_audit(engine$AuditTrail)
+        reactive_saved_metadata(engine$Metadata)
+        reactive_saved_analyses(engine$Analyses)
+        reactive_saved_workflow(engine$Workflow)
+        reactive_saved_results(engine$Analyses$results)
+        reactive_audit_saved(engine$AuditTrail)
       } else {
         engine$load(reactive_engine_save_file())
         reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
-        reactive_headers(engine$headers)
-        reactive_analyses(engine$analyses)
-        reactive_workflow(engine$workflow)
-        reactive_results(engine$results)
-        reactive_audit(engine$audit_trail)
-        reactive_saved_headers(engine$headers)
-        reactive_saved_analyses(engine$analyses)
-        reactive_saved_workflow(engine$workflow)
-        reactive_saved_results(engine$results)
-        reactive_audit_saved(engine$audit_trail)
+        reactive_metadata(engine$Metadata)
+        reactive_analyses(engine$Analyses)
+        reactive_workflow(engine$Workflow)
+        reactive_results(engine$Analyses$results)
+        reactive_audit(engine$AuditTrail)
+        reactive_saved_metadata(engine$Metadata)
+        reactive_saved_analyses(engine$Analyses)
+        reactive_saved_workflow(engine$Workflow)
+        reactive_saved_results(engine$Analyses$results)
+        reactive_audit_saved(engine$AuditTrail)
       }
     })
     
@@ -312,9 +311,9 @@
     })
     
     ## module Headers -----
-    output$headers_ui <- shiny::renderUI({
-      .mod_WorkflowAssembler_ProjectHeaders_Server("headers", ns, reactive_headers, reactive_config)
-      .mod_WorkflowAssembler_ProjectHeaders_UI("headers", ns)
+    output$metadata_ui <- shiny::renderUI({
+      .mod_WorkflowAssembler_Metadata_Server("metadata", ns, reactive_metadata, reactive_config)
+      .mod_WorkflowAssembler_Metadata_UI("metadata", ns)
     })
     
     ## _Analyses -----

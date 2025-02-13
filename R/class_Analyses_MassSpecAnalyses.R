@@ -1,3 +1,5 @@
+# MARK: MassSpecAnalyses
+# MassSpecAnalyses -----
 #' @export
 #' @noRd
 MassSpecAnalyses <- S7::new_class(
@@ -7,11 +9,11 @@ MassSpecAnalyses <- S7::new_class(
   properties = list(
 
     # MARK: analyses
-    # analyses -----
+    ## analyses -----
     analyses = S7::new_property(S7::class_list, default = list()),
 
     # MARK: replicates
-    # replicates -----
+    ## replicates -----
     replicates = S7::new_property(
       S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$replicate, NA_character_),
@@ -27,11 +29,11 @@ MassSpecAnalyses <- S7::new_class(
         for (i in seq_len(length(self))) {
           self@analyses[[i]]$replicate <- value[i]
         }
-        if (self$has_nts) {
-          if (self@results$nts$has_features) {
-            self@results$nts$features@analysisInfo$group <- value
-            if (self@results$nts$has_groups) {
-              self@results$nts$features@features@analysisInfo$group <- value
+        if (self$has_results_nts) {
+          if (self@results$NTS$has_features) {
+            self@results$NTS$features@analysisInfo$group <- value
+            if (self@results$NTS$has_groups) {
+              self@results$NTS$features@features@analysisInfo$group <- value
             }
           }
         }
@@ -40,7 +42,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: blanks
-    # blanks -----
+    ## blanks -----
     blanks = S7::new_property(
       S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$blank, NA_character_),
@@ -58,11 +60,11 @@ MassSpecAnalyses <- S7::new_class(
           return(self)
         }
         for (i in seq_len(length(self))) self@analyses[[i]]$blank <- value[i]
-        if (self$has_nts) {
-          if (self@results$nts$has_features) {
-            self@results$nts$features@analysisInfo$blank <- value
-            if (self@results$nts$has_groups) {
-              self@results$nts$features@features@analysisInfo$blank <- value
+        if (self$has_results_nts) {
+          if (self@results$NTS$has_features) {
+            self@results$NTS$features@analysisInfo$blank <- value
+            if (self@results$NTS$has_groups) {
+              self@results$NTS$features@features@analysisInfo$blank <- value
             }
           }
         }
@@ -71,7 +73,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: concentrations
-    # concentrations -----
+    ## concentrations -----
     concentrations = S7::new_property(
       S7::class_numeric,
       getter = function(self) vapply(self@analyses, function(x) x$concentration, 0),
@@ -85,11 +87,11 @@ MassSpecAnalyses <- S7::new_class(
           return(self)
         }
         for (i in seq_len(length(self))) self@analyses[[i]]$concentration <- value[i]
-        if (self$has_nts) {
-          if (self@results$nts$has_features) {
-            self@results$nts$features@analysisInfo$concentration <- value
-            if (self@results$nts$has_groups) {
-              self@results$nts$features@features@analysisInfo$concentration <- value
+        if (self$has_results_nts) {
+          if (self@results$NTS$has_features) {
+            self@results$NTS$features@analysisInfo$concentration <- value
+            if (self@results$NTS$has_groups) {
+              self@results$NTS$features@features@analysisInfo$concentration <- value
             }
           }
         }
@@ -98,7 +100,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: types
-    # types -----
+    ## types -----
     types = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -107,7 +109,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: files
-    # files -----
+    ## files -----
     files = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -116,7 +118,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: formats
-    # formats -----
+    ## formats -----
     formats = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -125,7 +127,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: instruments
-    # instruments -----
+    ## instruments -----
     instruments = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -134,7 +136,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: software
-    # software -----
+    ## software -----
     software = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -143,7 +145,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_number
-    # spectra_number -----
+    ## spectra_number -----
     spectra_number = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -152,7 +154,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_headers
-    # spectra_headers -----
+    ## spectra_headers -----
     spectra_headers = S7::new_property(
       S7::class_list,
       getter = function(self) {
@@ -166,7 +168,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_mode
-    # spectra_mode -----
+    ## spectra_mode -----
     spectra_mode = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -185,7 +187,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_level
-    # spectra_level -----
+    ## spectra_level -----
     spectra_level = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -201,7 +203,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_lowest_mz
-    # spectra_lowest_mz -----
+    ## spectra_lowest_mz -----
     spectra_lowest_mz = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -210,7 +212,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_highest_mz
-    # spectra_highest_mz -----
+    ## spectra_highest_mz -----
     spectra_highest_mz = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -219,7 +221,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_lowest_rt
-    # spectra_lowest_rt -----
+    ## spectra_lowest_rt -----
     spectra_lowest_rt = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -228,7 +230,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_highest_rt
-    # spectra_highest_rt -----
+    ## spectra_highest_rt -----
     spectra_highest_rt = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -237,7 +239,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_lowest_mobility
-    # spectra_highest_mobility -----
+    ## spectra_highest_mobility -----
     spectra_highest_mobility = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -246,7 +248,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_lowest_mobility
-    # spectra_lowest_mobility -----
+    ## spectra_lowest_mobility -----
     spectra_lowest_mobility = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -255,7 +257,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_polarity
-    # spectra_polarity -----
+    ## spectra_polarity -----
     spectra_polarity = S7::new_property(
       S7::class_character,
       getter = function(self) {
@@ -286,7 +288,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_tic
-    # spectra_tic -----
+    ## spectra_tic -----
     spectra_tic = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -301,7 +303,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: spectra_bpc
-    # spectra_bpc -----
+    ## spectra_bpc -----
     spectra_bpc = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
@@ -315,36 +317,17 @@ MassSpecAnalyses <- S7::new_class(
       }
     ),
 
-    # MARK: spectra_raw
-    # spectra_raw -----
-    spectra_raw = S7::new_property(
-      S7::class_list,
-      getter = function(self) {
-        StreamFind::MassSpecSpectra(
-          lapply(self@analyses, function(x) {
-            if (nrow(x$spectra) > 0) {
-              x$spectra
-            } else {
-              levels <- unique(self$spectra_level)
-              levels <- as.numeric(unlist(strsplit(levels, ", ")))
-              targets <- MassSpecTargets()@targets
-              rcpp_parse_ms_spectra(x, levels, targets, 0, 0)
-            }
-          })
-        )
-      }
-    ),
-
     # MARK: chromatograms_number
-    # chromatograms_number -----
+    ## chromatograms_number -----
     chromatograms_number = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
         vapply(self@analyses, function(x) x$chromatograms_number, 0)
       }
     ),
-
-    # chromatograms_headers -----
+    
+    # MARK: chromatograms_headers
+    ## chromatograms_headers -----
     chromatograms_headers = S7::new_property(
       S7::class_data.frame,
       getter = function(self) {
@@ -358,7 +341,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: chromatograms_raw
-    # chromatograms_raw -----
+    ## chromatograms_raw -----
     chromatograms_raw = S7::new_property(
       S7::class_list,
       getter = function(self) {
@@ -375,7 +358,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: info
-    # info -----
+    ## info -----
     info = S7::new_property(
       S7::class_data.frame,
       getter = function(self) {
@@ -401,7 +384,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: has_ion_mobility
-    # has_ion_mobility -----
+    ## has_ion_mobility -----
     has_ion_mobility = S7::new_property(
       S7::class_logical,
       getter = function(self) {
@@ -413,7 +396,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: has_loaded_spectra
-    # has_loaded_spectra -----
+    ## has_loaded_spectra -----
     has_loaded_spectra = S7::new_property(
       S7::class_logical,
       getter = function(self) {
@@ -425,7 +408,7 @@ MassSpecAnalyses <- S7::new_class(
     ),
 
     # MARK: has_loaded_chromatograms
-    # has_loaded_chromatograms -----
+    ## has_loaded_chromatograms -----
     has_loaded_chromatograms = S7::new_property(
       S7::class_logical,
       getter = function(self) {
@@ -436,9 +419,9 @@ MassSpecAnalyses <- S7::new_class(
       }
     ),
 
-    # MARK: has_nts
-    # has_nts -----
-    has_nts = S7::new_property(
+    # MARK: has_results_nts
+    ## has_results_nts -----
+    has_results_nts = S7::new_property(
       S7::class_logical,
       getter = function(self) {
         if (length(self) == 0) {
@@ -453,41 +436,10 @@ MassSpecAnalyses <- S7::new_class(
         TRUE
       }
     ),
-
-    # MARK: nts
-    # nts -----
-    nts = S7::new_property(
-      S7::class_list,
-      getter = function(self) {
-        if (self$has_nts) {
-          return(self@results[["NTS"]])
-        }
-        NULL
-      },
-      setter = function(self, value) {
-        if (is(value, "StreamFind::NTS")) {
-          if (value@number_analyses > 0) {
-            analyses_names <- unname(names(self))
-            value_analyses_names <- sort(value@analyses_info$analysis)
-            if (identical(analyses_names, value_analyses_names)) {
-              self@results[[value@name]] <- value
-            } else {
-              # TODO check if some analyses are in engine and subset engine to match nts
-              warning("Analysis names do not match! Not done.")
-            }
-          } else {
-            warning("NTS results object is empty! Not done.")
-          }
-        } else {
-          warning("Value must be an NTS results object! Not done.")
-        }
-        self
-      }
-    ),
-
-    # MARK: has_spectra
-    # has_spectra -----
-    has_spectra = S7::new_property(
+    
+    # MARK: has_results_spectra
+    ## has_results_spectra -----
+    has_results_spectra = S7::new_property(
       S7::class_logical,
       getter = function(self) {
         if (length(self) == 0) {
@@ -502,13 +454,62 @@ MassSpecAnalyses <- S7::new_class(
         TRUE
       }
     ),
+    
+    # MARK: has_results_chromatograms
+    ## has_results_chromatograms -----
+    has_results_chromatograms = S7::new_property(
+      S7::class_logical,
+      getter = function(self) {
+        if (length(self) == 0) {
+          return(FALSE)
+        }
+        if (is.null(self@results[["Chromatograms"]])) {
+          return(FALSE)
+        }
+        if (!is(self@results[["Chromatograms"]], "StreamFind::Chromatograms")) {
+          return(FALSE)
+        }
+        TRUE
+      }
+    ),
 
-    # MARK: spectra
-    # spectra -----
-    spectra = S7::new_property(
+    # MARK: NTS
+    ## NTS -----
+    NTS = S7::new_property(
       S7::class_list,
       getter = function(self) {
-        if (self$has_spectra) {
+        if (self$has_results_nts) {
+          return(self@results[["NTS"]])
+        }
+        NULL
+      },
+      setter = function(self, value) {
+        if (is(value, "StreamFind::NTS")) {
+          if (value@number_analyses > 0) {
+            analyses_names <- unname(names(self))
+            value_analyses_names <- sort(value@analyses_info$analysis)
+            if (identical(analyses_names, value_analyses_names)) {
+              self@results[[value@name]] <- value
+            } else {
+              # TODO check if some analyses are in engine and subset engine to match NTS
+              warning("Analysis names do not match! Not done.")
+            }
+          } else {
+            warning("NTS results object is empty! Not done.")
+          }
+        } else {
+          warning("Value must be an NTS results object! Not done.")
+        }
+        self
+      }
+    ),
+
+    # MARK: Spectra
+    ## Spectra -----
+    Spectra = S7::new_property(
+      S7::class_list,
+      getter = function(self) {
+        if (self$has_results_spectra) {
           return(self@results[["MassSpecSpectra"]])
         }
         NULL
@@ -541,30 +542,12 @@ MassSpecAnalyses <- S7::new_class(
       }
     ),
 
-    # MARK: has_chromatograms
-    # has_chromatograms -----
-    has_chromatograms = S7::new_property(
-      S7::class_logical,
-      getter = function(self) {
-        if (length(self) == 0) {
-          return(FALSE)
-        }
-        if (is.null(self@results[["Chromatograms"]])) {
-          return(FALSE)
-        }
-        if (!is(self@results[["Chromatograms"]], "StreamFind::Chromatograms")) {
-          return(FALSE)
-        }
-        TRUE
-      }
-    ),
-
-    # MARK: chromatograms
-    # chromatograms -----
-    chromatograms = S7::new_property(
+    # MARK: Chromatograms
+    ## Chromatograms -----
+    Chromatograms = S7::new_property(
       S7::class_list,
       getter = function(self) {
-        if (self$has_chromatograms) {
+        if (self$has_results_chromatograms) {
           return(self@results[["Chromatograms"]])
         }
         NULL
@@ -599,17 +582,19 @@ MassSpecAnalyses <- S7::new_class(
   ),
 
   # MARK: constructor
-  # constructor -----
+  ## constructor -----
   constructor = function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
     analyses <- .get_MassSpecAnalysis_from_files(files, centroid, levels)
     S7::new_object(Analyses(), possible_formats = c("mzML", "mzXML", "d"), analyses = analyses)
   },
 
   # MARK: validator
-  # validator -----
+  ## validator -----
   validator = function(self) {
     checkmate::assert_true(identical(self@possible_formats, c("mzML", "mzXML", "d")))
-    if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(names(self))))
+    if (length(self) > 0) {
+      checkmate::assert_true(identical(names(self@analyses), unname(names(self))))
+    }
     NULL
   }
 )
@@ -629,7 +614,7 @@ S7::method(names, MassSpecAnalyses) <- function(x) {
 #' @noRd
 S7::method(add, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    if (all(grepl(x@possible_formats, value))) {
+    if (all(tools::file_ext(value) %in% x@possible_formats)) {
       value <- .get_MassSpecAnalysis_from_files(value)
     } else {
       warning("File/s not valid!")
@@ -647,8 +632,10 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
   analyses <- c(x@analyses, value)
   analyses <- analyses[order(names(analyses))]
   if (length(analyses) > length(x@analyses)) {
-    warning("All results removed!")
-    x@results <- list()
+    if (length(x$results) > 0) {
+      warning("All results removed!")
+      x@results <- list()
+    }
   }
   x@analyses <- analyses
   x
@@ -661,11 +648,11 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
     x$analyses <- x$analyses[!names(x) %in% value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_nts) x@results$nts <- x@results$nts[!names(x) %in% value]
+    if (x@has_results_nts) x@results$NTS <- x@results$NTS[!names(x) %in% value]
   } else if (is.numeric(value)) {
     x@analyses <- x@analyses[-value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_nts) x@results$nts <- x@results$nts[-value]
+    if (x@has_results_nts) x@results$NTS <- x@results$NTS[-value]
   }
   x
 }
@@ -675,7 +662,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 #' @noRd
 S7::method(`[`, MassSpecAnalyses) <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_nts) x@results$nts <- x@results$nts[i]
+  if (x@has_results_nts) x@results$NTS <- x@results$NTS[i]
   x
 }
 
@@ -692,7 +679,7 @@ S7::method(`[<-`, MassSpecAnalyses) <- function(x, i, value) {
 #' @noRd
 S7::method(`[[`, MassSpecAnalyses) <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_nts) x@results$nts <- x@results$nts[i]
+  if (x@has_results_nts) x@results$NTS <- x@results$NTS[i]
   x
 }
 
@@ -919,11 +906,11 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
   # __________________________________________________________________
   # Extracts spectra results
   # __________________________________________________________________
-  if ((!useRawData) && x$has_spectra) {
-    if (x$spectra$is_averaged) {
-      spec <- rbindlist(x$spectra$spectra, idcol = "replicate", fill = TRUE)
+  if ((!useRawData) && x$has_results_spectra) {
+    if (x$Spectra$is_averaged) {
+      spec <- rbindlist(x$Spectra$spectra, idcol = "replicate", fill = TRUE)
     } else {
-      spec <- rbindlist(x$spectra$spectra, idcol = "analysis", fill = TRUE)
+      spec <- rbindlist(x$Spectra$spectra, idcol = "analysis", fill = TRUE)
     }
     if ("analysis" %in% colnames(spec)) {
       spec <- spec[spec$analysis %in% analyses, ]
@@ -1072,13 +1059,13 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
 #' @export
 #' @noRd
 S7::method(get_spectra_matrix, MassSpecAnalyses) <- function(x, analyses = NULL) {
-  if (!x$has_spectra) {
+  if (!x$has_results_spectra) {
     warning("No spectra results object available!")
     return(matrix())
   }
   analyses <- .check_analyses_argument(x, analyses)
-  spec_list <- x$spectra$spectra
-  if (x$spectra$is_averaged) {
+  spec_list <- x$Spectra$spectra
+  if (x$Spectra$is_averaged) {
     rpl <- x$replicates
     rpl <- unique(rpl[analyses])
     spec_list <- spec_list[rpl]
@@ -1135,7 +1122,7 @@ S7::method(load_spectra, MassSpecAnalyses) <- function(x,
     allTraces, isolationWindow, minIntensityMS1, minIntensityMS2
   )
   if (!is.null(cache$data)) {
-    x$spectra <- cache$data
+    x$Spectra <- cache$data
     message("\U2139 Spectra loaded from cache!")
     return(x)
   }
@@ -1164,7 +1151,7 @@ S7::method(load_spectra, MassSpecAnalyses) <- function(x,
       .save_cache("load_spectra", spec, cache$hash)
       message("\U1f5ab Spectra cached!")
     }
-    x$spectra <- spec
+    x$Spectra <- spec
   } else {
     warning("Not done! Spectra not found.")
   }
@@ -1389,19 +1376,19 @@ S7::method(get_spectra_peaks, MassSpecAnalyses) <- function(x, analyses = NULL) 
     return(data.table::data.table())
   }
 
-  if (!x$has_spectra) {
+  if (!x$has_results_spectra) {
     return(data.table::data.table())
   }
 
-  pks <- x$spectra$peaks
+  pks <- x$Spectra$peaks
   if (length(pks) == 0) {
     return(data.table::data.table())
   }
 
-  if (x$spectra$is_averaged) {
-    pks <- data.table::rbindlist(x$spectra$peaks, idcol = "replicate", fill = TRUE)
+  if (x$Spectra$is_averaged) {
+    pks <- data.table::rbindlist(x$Spectra$peaks, idcol = "replicate", fill = TRUE)
   } else {
-    pks <- data.table::rbindlist(x$spectra$peaks, idcol = "analysis", fill = TRUE)
+    pks <- data.table::rbindlist(x$Spectra$peaks, idcol = "analysis", fill = TRUE)
   }
 
   if ("analysis" %in% colnames(pks)) {
@@ -1599,7 +1586,7 @@ S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
   level <- NULL
   tic <- get_spectra_tic(x, analyses, levels, rt)
   tic$rt <- floor(tic$rt / downsize) * downsize
-  tic <- tic[, .(intensity = mean(intensity)), by = .("rt", "analysis", "level")]
+  tic <- tic[, .(intensity = mean(intensity)), by = c("rt", "analysis", "level")]
   if (nrow(tic) == 0) {
     message("\U2717 TIC not found for the analyses!")
     return(NULL)
@@ -1957,16 +1944,16 @@ S7::method(plot_spectra_charges, MassSpecAnalyses) <- function(x,
     return(NULL)
   }
 
-  if (!x$has_spectra) {
+  if (!x$has_results_spectra) {
     return(NULL)
   }
 
-  if (length(x$spectra$charges) == 0) {
+  if (length(x$Spectra$charges) == 0) {
     message("\U2717 Spectra charges not found!")
     return(NULL)
   }
 
-  res <- x$spectra$charges
+  res <- x$Spectra$charges
 
   res <- rbindlist(res, idcol = "analysis", fill = TRUE)
 
@@ -2066,7 +2053,7 @@ S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
   # __________________________________________________________________
   # Extracts chromatograms from results via the active binding
   # __________________________________________________________________
-  if ((!useRawData) && x$has_chromatograms) {
+  if ((!useRawData) && x$has_results_chromatograms) {
     if (x$chromatograms$is_averaged) {
       chroms <- rbindlist(x$chromatograms$chromatograms, idcol = "replicate", fill = TRUE)
     } else {
@@ -2243,7 +2230,7 @@ S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = 
     return(data.table::data.table())
   }
 
-  if (!x$has_chromatograms) {
+  if (!x$has_results_chromatograms) {
     return(data.table::data.table())
   }
 
@@ -2442,13 +2429,13 @@ S7::method(plot_chromatograms_baseline, MassSpecAnalyses) <- function(x,
 S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL, filtered = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
   info <- data.table::data.table()
-  if (x$has_nts) {
-    if (x$nts$has_features) {
+  if (x$has_results_nts) {
+    if (x$NTS$has_features) {
       info <- data.table::data.table(
-        "analysis" = x@nts@analyses_info$analysis,
-        "features" = x@nts@number_features,
-        "filtered" = x@nts@number_filtered_features,
-        "groups" = x@nts@number_groups
+        "analysis" = x@NTS@analyses_info$analysis,
+        "features" = x@NTS@number_features,
+        "filtered" = x@NTS@number_filtered_features,
+        "groups" = x@NTS@number_groups
       )
       if (filtered) {
         info$features <- info$filtered + info$features
@@ -2483,7 +2470,7 @@ S7::method(get_features, MassSpecAnalyses) <- function(x,
 
   fts <- NULL
 
-  if (x$has_nts) fts <- x$nts$feature_list[analyses]
+  if (x$has_results_nts) fts <- x$NTS$feature_list[analyses]
 
   if (is.null(fts)) {
     return(data.table::data.table())
@@ -2658,7 +2645,7 @@ S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
   }
 
   if (useLoadedData) {
-    if (x$nts$has_features_eic) {
+    if (x$NTS$has_features_eic) {
       useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
@@ -2776,7 +2763,7 @@ S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
   }
 
   if (useLoadedData) {
-    if (x$nts$has_features_ms1) {
+    if (x$NTS$has_features_ms1) {
       useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
@@ -2862,7 +2849,7 @@ S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
   }
 
   if (useLoadedData) {
-    if (x$nts$has_features_ms1) {
+    if (x$NTS$has_features_ms1) {
       useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
@@ -2939,11 +2926,11 @@ S7::method(get_groups, MassSpecAnalyses) <- function(x,
                                                      sdValues = FALSE,
                                                      metadata = FALSE,
                                                      correctSuppression = FALSE) {
-  if (!x$has_nts) {
+  if (!x$has_results_nts) {
     return(data.table::data.table())
   }
 
-  if (!x$nts$has_groups) {
+  if (!x$NTS$has_groups) {
     return(data.table::data.table())
   }
 
@@ -3299,12 +3286,12 @@ S7::method(get_components, MassSpecAnalyses) <- function(x,
                                                          sec = 60,
                                                          millisec = 5,
                                                          filtered = FALSE) {
-  if (!x$has_nts) {
+  if (!x$has_results_nts) {
     warning("No NTS results found!")
     return(data.table::data.table())
   }
 
-  if (!x$nts$has_features) {
+  if (!x$NTS$has_features) {
     warning("Features not found!")
     return(data.table::data.table())
   }
@@ -3320,7 +3307,7 @@ S7::method(get_components, MassSpecAnalyses) <- function(x,
 
   if ("name" %in% colnames(fts)) names_uid <- fts[, c("name", "uid"), with = FALSE]
 
-  all_fts <- x$nts$feature_list
+  all_fts <- x$NTS$feature_list
 
   all_fts <- Map(function(x, y) {
     x$analysis <- y
@@ -3397,12 +3384,12 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
                                                        minIntensity = 0,
                                                        filtered = FALSE,
                                                        onGroups = TRUE) {
-  if (!x$has_nts) {
+  if (!x$has_results_nts) {
     warning("No NTS results found!")
     return(data.table::data.table())
   }
 
-  if (!x$nts$has_features) {
+  if (!x$NTS$has_features) {
     warning("Features not found!")
     return(data.table::data.table())
   }
@@ -3617,7 +3604,7 @@ S7::method(get_suspects, MassSpecAnalyses) <- function(x,
     suspects <- data.table::rbindlist(suspects, fill = TRUE)
   }
 
-  if (nrow(suspects) > 0 && !filtered && x$nts$has_groups && onGroups) {
+  if (nrow(suspects) > 0 && !filtered && x$NTS$has_groups && onGroups) {
     if (all(!is.na(suspects$group))) {
       suspects$id_level <- factor(suspects$id_level, levels = c("1", "2", "3a", "3b", "4"), ordered = TRUE)
 
@@ -3707,7 +3694,7 @@ S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TR
         istd$iso_c <- NA_real_
       }
 
-      if (x$nts$has_groups && average) {
+      if (x$NTS$has_groups && average) {
         rpl <- x$replicates
 
         istd$replicate <- rpl[istd$analysis]
@@ -3790,7 +3777,7 @@ S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TR
           "feature"
         )
 
-        if (x$nts$has_groups) cols <- c(cols, "group")
+        if (x$NTS$has_groups) cols <- c(cols, "group")
 
         istd <- istd[, cols, with = FALSE]
         istd$intensity <- round(istd$intensity, digits = 0)
@@ -3826,12 +3813,12 @@ S7::method(get_compounds, MassSpecAnalyses) <- function(x,
                                                         millisec = 5,
                                                         filtered = FALSE,
                                                         averaged = TRUE) {
-  if (!x$has_nts) {
+  if (!x$has_results_nts) {
     warning("No NTS results found!")
     return(data.table::data.table())
   }
 
-  if (!x$nts$has_features) {
+  if (!x$NTS$has_features) {
     warning("Features not found!")
     return(data.table::data.table())
   }
@@ -3845,7 +3832,7 @@ S7::method(get_compounds, MassSpecAnalyses) <- function(x,
 
   compounds <- fts$compounds
 
-  if (!averaged && x$nts$has_groups) {
+  if (!averaged && x$NTS$has_groups) {
     compounds <- Map(function(z, y) {
       if (nrow(z) > 0) z$analysis <- y
       z
@@ -3882,7 +3869,7 @@ S7::method(get_compounds, MassSpecAnalyses) <- function(x,
   compounds <- data.table::rbindlist(compounds, fill = TRUE)
 
   if (nrow(compounds) > 0) {
-    if (averaged && x$nts$has_groups) {
+    if (averaged && x$NTS$has_groups) {
       data.table::setcolorder(compounds, c("group", "rt", "mass", "polarity", "compoundName"))
       compounds <- compounds[!duplicated(paste0(compounds$group, compounds$compoundName, compounds$polarity))]
     } else {
@@ -3913,12 +3900,12 @@ S7::method(get_fold_change, MassSpecAnalyses) <- function(x,
                                                           correctSuppression = FALSE,
                                                           fillZerosWithLowerLimit = FALSE,
                                                           lowerLimit = NA_real_) {
-  if (!x$has_nts) {
+  if (!x$has_results_nts) {
     warning("\U2717 NTS resuts not found!")
     return(NULL)
   }
 
-  if (!x$nts$has_groups) {
+  if (!x$NTS$has_groups) {
     warning("\U2717 Feature groups not found!")
     return(NULL)
   }
@@ -4661,7 +4648,7 @@ S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
     fts$intensity <- as.numeric(fts$intensity_rel)
   }
   
-  if (averaged && x$nts$has_groups) {
+  if (averaged && x$NTS$has_groups) {
     if (!"replicate" %in% colnames(fts)) fts$replicate <- x$replicates[fts$analysis]
     group_cols <- c("replicate", "group", "polarity")
     if ("name" %in% colnames(fts)) group_cols <- c(group_cols, "name")
@@ -4836,11 +4823,11 @@ S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
                                                                   widths = TRUE) {
   analyses <- .check_analyses_argument(x, analyses)
 
-  if (!x$has_nts) {
+  if (!x$has_results_nts) {
     return(NULL)
   }
 
-  if (x$nts$has_groups) {
+  if (x$NTS$has_groups) {
     istd <- get_internal_standards(x, average = TRUE)
     istd <- istd[istd$replicate %in% x$replicates[analyses], ]
     .plot_internal_standards_qc_interactive(istd, x$replicates[analyses], presence, recovery, deviations, widths)
@@ -4878,11 +4865,11 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
                                                         useLoadedData = TRUE,
                                                         colorBy = "targets",
                                                         interactive = TRUE) {
-  if (!x$has_nts) {
+  if (!x$has_results_nts) {
     return(NULL)
   }
 
-  if (!x$nts$has_features_suspects) {
+  if (!x$NTS$has_features_suspects) {
     return(NULL)
   }
 

@@ -579,20 +579,20 @@ S7::method(report, NTS) <- function(x,
 
 # MARK: .add_features_column
 #' @noRd
-.add_features_column <- function(nts = NULL, name = NULL, data = NULL) {
-  if (!is(nts, "StreamFind::NTS")) {
+.add_features_column <- function(NTS = NULL, name = NULL, data = NULL) {
+  if (!is(NTS, "StreamFind::NTS")) {
     warning("NTS object is not of class NTS! Not done.")
-    return(nts)
+    return(NTS)
   }
-  if (nts@has_features) {
-    feature_list <- nts@feature_list
+  if (NTS@has_features) {
+    feature_list <- NTS@feature_list
     feature_list <- Map(function(x, y) {
       if (nrow(x) == length(y)) x[[name]] <- y
       x
     }, feature_list, data)
-    nts$feature_list <- feature_list
+    NTS$feature_list <- feature_list
   } else {
     warning("No features found! Not done.")
   }
-  nts
+  NTS
 }

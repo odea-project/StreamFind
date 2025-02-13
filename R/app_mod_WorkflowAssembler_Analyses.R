@@ -171,7 +171,7 @@
         files <- fileinfo$datapath
         number_files <- length(files)
         if (number_files > 0) {
-          if (all(grepl(reactive_analyses()@possible_formats, files))) {
+          if (all(tools::file_ext(files) %in% reactive_analyses()@possible_formats)) {
             analyses <- reactive_analyses()
 
             # TODO add modal to accept remove results
@@ -202,7 +202,7 @@
             reactive_analyses(analyses)
             
           } else {
-            shiny::showNotification("Invalid file format!", duration = 10, type = "warning")
+            shiny::showNotification("Invalid file/s format/s!", duration = 10, type = "warning")
           }
         }
       }

@@ -202,7 +202,7 @@ Analyses:
 </div>
 <div class="section level2">
 <h2 id="projectheaders">
-<em>ProjectHeaders</em><a class="anchor" aria-label="anchor" href="#projectheaders"></a>
+<em>Metadata</em><a class="anchor" aria-label="anchor" href="#projectheaders"></a>
 </h2>
 <p>Project headers (e.g., name, author and description) can be added to
 the <code>MassSpecEngine$headers</code> as a list object as shown below.
@@ -307,21 +307,21 @@ replicate and blank replicate names assigned (more details <a href="https://odea
 </div>
 <div class="section level2">
 <h2 id="processingsettings">
-<em>ProcessingSettings</em><a class="anchor" aria-label="anchor" href="#processingsettings"></a>
+<em>ProcessingStep</em><a class="anchor" aria-label="anchor" href="#processingsettings"></a>
 </h2>
 <p>Data processing is performed by steps according to
-<em>ProcessingSettings</em>. S7 <em>ProcessingSettings</em> class
-objects are obtained via the respective <a href="https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data"><code>[Engine type]Settings_[module name]_[algorithm name]</code></a>
+<em>ProcessingStep</em>. S7 <em>ProcessingStep</em> class
+objects are obtained via the respective <a href="https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data"><code>[Engine type]Method_[module name]_[algorithm name]</code></a>
 constructor functions, attributing the respective subclass. Below we
-obtain the <em>ProcessingSettings</em> for the step
+obtain the <em>ProcessingStep</em> for the step
 <code>FindFeatures</code> using the algorithm <em>openms</em>. The
 parameters for each processing module can be changed via the constructor
-arguments. Documentation for each <em>ProcessingSettings</em> subclass
+arguments. Documentation for each <em>ProcessingStep</em> subclass
 can be found in the <a href="https://odea-project.github.io/StreamFind/reference/index.html">StreamFind
 reference documentation</a>.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Gets ProcessingSettings for finding features using the openms algorithm</span></span>
-<span><span class="va">ffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MassSpecSettings_FindFeatures_openms.html">MassSpecSettings_FindFeatures_openms</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="co"># Gets ProcessingStep for finding features using the openms algorithm</span></span>
+<span><span class="va">ffs</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/MassSpecMethod_FindFeatures_openms.html">MassSpecMethod_FindFeatures_openms</a></span><span class="op">(</span></span>
 <span>  noiseThrInt <span class="op">=</span> <span class="fl">1000</span>,</span>
 <span>  chromSNR <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>  chromFWHM <span class="op">=</span> <span class="fl">7</span>,</span>
@@ -346,10 +346,10 @@ reference documentation</a>.</p>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Prints in console the details of the ProcessingSettings</span></span>
+<span><span class="co"># Prints in console the details of the ProcessingStep</span></span>
 <span><span class="fu">show</span><span class="op">(</span><span class="va">ffs</span><span class="op">)</span></span></code></pre></div>
 <pre><code>
- StreamFind::MassSpecSettings_FindFeatures_openms 
+ StreamFind::MassSpecMethod_FindFeatures_openms 
  engine       MassSpec
  method       FindFeatures
  algorithm    openms
@@ -391,7 +391,7 @@ reference documentation</a>.</p>
 <span>  <span class="va">ffs</span>,</span>
 <span></span>
 <span>  <span class="co"># Annotation of natural isotopes and adducts</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_AnnotateFeatures_StreamFind.html">MassSpecSettings_AnnotateFeatures_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_AnnotateFeatures_StreamFind.html">MassSpecMethod_AnnotateFeatures_StreamFind</a></span><span class="op">(</span></span>
 <span>    rtWindowAlignment <span class="op">=</span> <span class="fl">0.3</span>,</span>
 <span>    maxIsotopes <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>    maxCharge <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -399,13 +399,13 @@ reference documentation</a>.</p>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Excludes annotated isotopes and adducts</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_FilterFeatures_StreamFind.html">MassSpecSettings_FilterFeatures_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_FilterFeatures_StreamFind.html">MassSpecMethod_FilterFeatures_StreamFind</a></span><span class="op">(</span></span>
 <span>    excludeIsotopes <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    excludeAdducts <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Grouping features across analyses</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_GroupFeatures_openms.html">MassSpecSettings_GroupFeatures_openms</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_GroupFeatures_openms.html">MassSpecMethod_GroupFeatures_openms</a></span><span class="op">(</span></span>
 <span>    rtalign <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    QT <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    maxAlignRT <span class="op">=</span> <span class="fl">5</span>,</span>
@@ -416,13 +416,13 @@ reference documentation</a>.</p>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Filter feature groups with maximum intensity below 5000 counts</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_FilterFeatures_StreamFind.html">MassSpecSettings_FilterFeatures_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_FilterFeatures_StreamFind.html">MassSpecMethod_FilterFeatures_StreamFind</a></span><span class="op">(</span></span>
 <span>    minIntensity <span class="op">=</span> <span class="fl">5000</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Fill features with missing data</span></span>
 <span>  <span class="co"># Reduces false negatives</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_FillFeatures_StreamFind.html">MassSpecSettings_FillFeatures_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_FillFeatures_StreamFind.html">MassSpecMethod_FillFeatures_StreamFind</a></span><span class="op">(</span></span>
 <span>    withinReplicate <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    rtExpand <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>    mzExpand <span class="op">=</span> <span class="fl">0.0005</span>,</span>
@@ -434,7 +434,7 @@ reference documentation</a>.</p>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Calculate quality metrics for each feature</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_CalculateFeaturesQuality_StreamFind.html">MassSpecSettings_CalculateFeaturesQuality_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_CalculateFeaturesQuality_StreamFind.html">MassSpecMethod_CalculateFeaturesQuality_StreamFind</a></span><span class="op">(</span></span>
 <span>    filtered <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>    rtExpand <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>    mzExpand <span class="op">=</span> <span class="fl">0.0005</span>,</span>
@@ -445,12 +445,12 @@ reference documentation</a>.</p>
 <span></span>
 <span>  <span class="co"># Filter features based on minimum signal-to-noise ratio (s/n)</span></span>
 <span>  <span class="co"># The s/n is calculated using the CalculateFeaturesQuality method</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_FilterFeatures_StreamFind.html">MassSpecSettings_FilterFeatures_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_FilterFeatures_StreamFind.html">MassSpecMethod_FilterFeatures_StreamFind</a></span><span class="op">(</span></span>
 <span>    minSnRatio <span class="op">=</span> <span class="fl">5</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Filter features using other parameters via the patRoon package</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_FilterFeatures_patRoon.html">MassSpecSettings_FilterFeatures_patRoon</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_FilterFeatures_patRoon.html">MassSpecMethod_FilterFeatures_patRoon</a></span><span class="op">(</span></span>
 <span>    maxReplicateIntRSD <span class="op">=</span> <span class="fl">40</span>,</span>
 <span>    blankThreshold <span class="op">=</span> <span class="fl">5</span>,</span>
 <span>    absMinReplicateAbundance <span class="op">=</span> <span class="fl">3</span></span>
@@ -460,31 +460,31 @@ reference documentation</a>.</p>
 <span>  <span class="co"># db_is is a data.table with the</span></span>
 <span>  <span class="co"># name, mass and expected retention time of</span></span>
 <span>  <span class="co"># spiked internal standards, as shown below</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_FindInternalStandards_StreamFind.html">MassSpecSettings_FindInternalStandards_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_FindInternalStandards_StreamFind.html">MassSpecMethod_FindInternalStandards_StreamFind</a></span><span class="op">(</span></span>
 <span>    database <span class="op">=</span> <span class="va">db_is</span>,</span>
 <span>    ppm <span class="op">=</span> <span class="fl">8</span>,</span>
 <span>    sec <span class="op">=</span> <span class="fl">10</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Loads MS1 for features not filtered</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_LoadFeaturesMS1_StreamFind.html">MassSpecSettings_LoadFeaturesMS1_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_LoadFeaturesMS1_StreamFind.html">MassSpecMethod_LoadFeaturesMS1_StreamFind</a></span><span class="op">(</span></span>
 <span>    filtered <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Loads MS2 for features not filtered</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_LoadFeaturesMS2_StreamFind.html">MassSpecSettings_LoadFeaturesMS2_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_LoadFeaturesMS2_StreamFind.html">MassSpecMethod_LoadFeaturesMS2_StreamFind</a></span><span class="op">(</span></span>
 <span>    filtered <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Loads feature extracted ion chromatograms (EIC)</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_LoadFeaturesEIC_StreamFind.html">MassSpecSettings_LoadFeaturesEIC_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_LoadFeaturesEIC_StreamFind.html">MassSpecMethod_LoadFeaturesEIC_StreamFind</a></span><span class="op">(</span></span>
 <span>    filtered <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span>  <span class="op">)</span>,</span>
 <span></span>
 <span>  <span class="co"># Performs suspect screening using the StreamFind algorithm</span></span>
 <span>  <span class="co"># db_with_ms2 is a database with suspect chemical standards</span></span>
 <span>  <span class="co"># includes MS2 data (i.e., fragmentation pattern) from standards</span></span>
-<span>  <span class="fu"><a href="../reference/MassSpecSettings_SuspectScreening_StreamFind.html">MassSpecSettings_SuspectScreening_StreamFind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="../reference/MassSpecMethod_SuspectScreening_StreamFind.html">MassSpecMethod_SuspectScreening_StreamFind</a></span><span class="op">(</span></span>
 <span>    database <span class="op">=</span> <span class="va">db_with_ms2</span>,</span>
 <span>    ppm <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>    sec <span class="op">=</span> <span class="fl">15</span>,</span>
@@ -524,7 +524,7 @@ as demonstrated below. Note that with <code>run_workflow()</code>, the
 processing modules are applied with the same order as they were
 added.</p>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Runs all ProcessingSettings added</span></span>
+<code class="sourceCode R"><span><span class="co"># Runs all ProcessingStep added</span></span>
 <span><span class="va">ms</span><span class="op">$</span><span class="fu">run_workflow</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -534,7 +534,7 @@ added.</p>
 <code>data.table</code> objects or plotted by dedicated methods in the
 <em>MassSpecEngine</em>. Internally, the <em>MassSpecEngine</em> stores
 the results in the <em>NTS</em> object, which can be accessed with
-<code>MassSpecEngine$nts</code>. Yet, the engine interface is
+<code>MassSpecEngine$NTS</code>. Yet, the engine interface is
 recommended for accessing the results. However, the <em>NTS</em> object
 can be used for more advanced operations, such as exporting the results
 to a database or other formats or use the native objects from other
@@ -991,14 +991,14 @@ suspect target names and analysis replicate names.</p>
 <p>The NTS object holds the original objects from the <a href="https://github.com/rickhelmus/patRoon" class="external-link">patRoon</a> package, which
 can be accessed directly. For instance, the S4 class
 <code>features</code> or <code>featureGroups</code> objects are can be
-accessed via the <em>NTS</em> object with <code>ms$nts$features</code>.
+accessed via the <em>NTS</em> object with <code>ms$NTS$features</code>.
 The <code>patRoon</code> package provides a set of functions for the
-native objects and can be applied the <code>ms$nts$features</code>
+native objects and can be applied the <code>ms$NTS$features</code>
 object, as shown below. See more information in the <a href="https://rickhelmus.github.io/patRoon/reference/index.html" class="external-link">patRoon
 reference documentation</a>.</p>
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Native patRoon object</span></span>
-<span><span class="va">ms</span><span class="op">$</span><span class="va">nts</span><span class="op">$</span><span class="va">features</span></span></code></pre></div>
+<span><span class="va">ms</span><span class="op">$</span><span class="va">NTS</span><span class="op">$</span><span class="va">features</span></span></code></pre></div>
 <pre><code>A featureGroupsSet object
 Hierarchy:
 featureGroups
@@ -1019,7 +1019,7 @@ Replicate groups used as blank: blank_neg, blank_pos (2 total)
 Sets: negative, positive</code></pre>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Using the native patRoon's plotUpSet method</span></span>
-<span><span class="fu">patRoon</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/patRoon/man/generics.html" class="external-link">plotUpSet</a></span><span class="op">(</span><span class="va">ms</span><span class="op">$</span><span class="va">nts</span><span class="op">$</span><span class="va">features</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">patRoon</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/patRoon/man/generics.html" class="external-link">plotUpSet</a></span><span class="op">(</span><span class="va">ms</span><span class="op">$</span><span class="va">NTS</span><span class="op">$</span><span class="va">features</span><span class="op">)</span></span></code></pre></div>
 <p><img src="demo_nts_files/figure-html/pat-plot-1.png" alt="UpSet plot of features" width="864" style="display: block; margin: auto;"></p>
 </div>
 <div class="section level2">

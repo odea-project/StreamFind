@@ -53,7 +53,7 @@ should not use this class directly.</p>
 
     <div class="section level2">
     <h2 id="note">Note<a class="anchor" aria-label="anchor" href="#note"></a></h2>
-    <p>If there are <code>ProcessingSettings</code> objects with the same method names it is better to use <code>run_workflow()</code>.</p>
+    <p>If there are <code>ProcessingStep</code> objects with the same method names it is better to use <code>run_workflow()</code>.</p>
 <p>The engine data is saved in an <strong>rds</strong> file and loaded in the app. If save file is defined in the engine it
 is used, otherwise the save file name is automatically set to the engine class name and the date in the format
 <strong>rds</strong>. Changes made in the app can be saved in the <strong>rds</strong> file and then loaded to continue working on the
@@ -62,7 +62,7 @@ engine by scripting.</p>
     <div class="section level2">
     <h2 id="active-bindings">Active bindings<a class="anchor" aria-label="anchor" href="#active-bindings"></a></h2>
     <p></p><div class="r6-active-bindings"><dl><dt><code>headers</code></dt>
-<dd><p><code>ProjectHeaders</code> S7 class object.</p></dd>
+<dd><p><code>Metadata</code> S7 class object.</p></dd>
 
 
 <dt><code>workflow</code></dt>
@@ -136,13 +136,13 @@ can also be a character with an <code>sqlite</code> or <code>rds</code> file pat
 
 
 <dt><code>headers</code></dt>
-<dd><p>A named list with headers or a <code>ProjectHeaders</code> object. Each list element must have length one. There
+<dd><p>A named list with headers or a <code>Metadata</code> object. Each list element must have length one. There
 is no type restrictions except for name (must be type character), author (must be type character character) and date
 (must be class POSIXct or class POSIXt).</p></dd>
 
 
 <dt><code>workflow</code></dt>
-<dd><p>A <code>Workflow</code> S7 class object or a list of <code>ProcessingSettings</code> S7 class objects.</p></dd>
+<dd><p>A <code>Workflow</code> S7 class object or a list of <code>ProcessingStep</code> S7 class objects.</p></dd>
 
 
 <dt><code>analyses</code></dt>
@@ -323,8 +323,8 @@ data is patRoon.</p></dd>
 <div class="section">
 <h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>settings</code></dt>
-<dd><p>A <code>ProcessingSettings</code> object or a <code>character</code> string with the method name of a previously added
-<code>ProcessingSettings</code> in the engine.</p></dd>
+<dd><p>A <code>ProcessingStep</code> object or a <code>character</code> string with the method name of a previously added
+<code>ProcessingStep</code> in the engine.</p></dd>
 
 
 </dl><p></p></div>

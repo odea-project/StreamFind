@@ -6,7 +6,7 @@ RamanSpectra <- S7::new_class(
   parent = Spectra,
   properties = list(
     
-    has_chromatograms = S7::new_property(
+    has_results_chromatograms = S7::new_property(
       S7::class_logical,
       getter = function(self) {
         if (length(self$spectra) > 0) {

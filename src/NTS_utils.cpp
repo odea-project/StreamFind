@@ -1,7 +1,7 @@
 #include "NTS_utils.h"
 
 // MARK: GET_MS_ANALYSIS_LIST_HEADERS
-sc::MS_SPECTRA_HEADERS nts::get_ms_analysis_list_headers(const Rcpp::List &analysis)
+sc::MS_SPECTRA_HEADERS NTS::get_ms_analysis_list_headers(const Rcpp::List &analysis)
 {
   sc::MS_SPECTRA_HEADERS headers;
   const Rcpp::List &hd = analysis["spectra_headers"];
@@ -32,13 +32,13 @@ sc::MS_SPECTRA_HEADERS nts::get_ms_analysis_list_headers(const Rcpp::List &analy
 };
 
 // MARK: MEAN
-float nts::mean(const std::vector<float> &v)
+float NTS::mean(const std::vector<float> &v)
 {
   return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
 };
 
 // MARK: STANDARD_DEVIATION
-float nts::standard_deviation(const std::vector<float> &v, float mean_val)
+float NTS::standard_deviation(const std::vector<float> &v, float mean_val)
 {
   float sum = 0.0;
   for (float num : v)
@@ -49,19 +49,19 @@ float nts::standard_deviation(const std::vector<float> &v, float mean_val)
 };
 
 // MARK: FIND_MAX_INDEX
-size_t nts::find_max_index(const std::vector<float> &v)
+size_t NTS::find_max_index(const std::vector<float> &v)
 {
   return std::max_element(v.begin(), v.end()) - v.begin();
 };
 
 // MARK: FIND_MIN_INDEX
-size_t nts::find_min_index(const std::vector<float> &v)
+size_t NTS::find_min_index(const std::vector<float> &v)
 {
   return std::min_element(v.begin(), v.end()) - v.begin();
 };
 
 // MARK: MERGE_TRACES_WITHIN_RT
-void nts::merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity)
+void NTS::merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity)
 {
   std::vector<float> rt_out;
   std::vector<float> mz_out;
@@ -91,7 +91,7 @@ void nts::merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz,
 };
 
 // MARK: TRIM_TO_EQUAL_LENGTH_AROUND_MAX_POSITION
-void nts::trim_to_equal_length_around_max_position(std::vector<float> &x, const size_t max_position)
+void NTS::trim_to_equal_length_around_max_position(std::vector<float> &x, const size_t max_position)
 {
   const int n = x.size();
   std::vector<float> x_out(n);
@@ -105,7 +105,7 @@ void nts::trim_to_equal_length_around_max_position(std::vector<float> &x, const 
 };
 
 // MARK: TRAPEZOIDAL_AREA
-float nts::trapezoidal_area(const std::vector<float> &x, const std::vector<float> &intensity)
+float NTS::trapezoidal_area(const std::vector<float> &x, const std::vector<float> &intensity)
 {
   if (x.size() != intensity.size() || x.size() < 2)
   {
@@ -126,25 +126,25 @@ float nts::trapezoidal_area(const std::vector<float> &x, const std::vector<float
 };
 
 // MARK: GAUSSIAN
-float nts::gaussian(const float &A, const float &mu, const float &sigma, const float &x)
+float NTS::gaussian(const float &A, const float &mu, const float &sigma, const float &x)
 {
   return A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
 };
 
 // MARK: FIT_GAUSSIAN_COST_FUNCTION
-float nts::fit_gaussian_cost_function(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
+float NTS::fit_gaussian_cost_function(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
 {
   float cost = 0.0;
   for (size_t i = 0; i < x.size(); ++i)
   {
-    float y_pred = nts::gaussian(A, mu, sigma, x[i]);
+    float y_pred = NTS::gaussian(A, mu, sigma, x[i]);
     cost += pow(y[i] - y_pred, 2);
   }
   return cost;
 };
 
 // MARK: FIT_GAUSSIAN
-void nts::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y, float &A_fitted, float &mu_fitted, float &sigma_fitted)
+void NTS::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y, float &A_fitted, float &mu_fitted, float &sigma_fitted)
 {
 
   // Optimization parameters
@@ -184,7 +184,7 @@ void nts::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y,
 };
 
 // MARK: CALCULATE_GAUSSIAN_RSQUARED
-float nts::calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
+float NTS::calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
 {
   float ss_total = 0.0;
   float ss_residual = 0.0;
@@ -192,7 +192,7 @@ float nts::calculate_gaussian_rsquared(const std::vector<float> &x, const std::v
 
   for (size_t i = 0; i < x.size(); ++i)
   {
-    float y_pred = nts::gaussian(A, mu, sigma, x[i]);
+    float y_pred = NTS::gaussian(A, mu, sigma, x[i]);
     ss_residual += pow(y[i] - y_pred, 2);
     ss_total += pow(y[i] - mean_y, 2);
   }
@@ -200,7 +200,7 @@ float nts::calculate_gaussian_rsquared(const std::vector<float> &x, const std::v
 };
 
 // MARK: CALCULATE_GAUSSIAN_FIT
-Rcpp::List nts::calculate_gaussian_fit(const std::string &ft,
+Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
                                        const std::vector<float> &rt,
                                        const std::vector<float> &intensity,
                                        const float &baseCut)
@@ -227,7 +227,7 @@ Rcpp::List nts::calculate_gaussian_fit(const std::string &ft,
     return quality;
   }
 
-  size_t max_position = nts::find_max_index(intensity);
+  size_t max_position = NTS::find_max_index(intensity);
   
   if (max_position == 0 || max_position >= intensity.size())
   {
@@ -237,12 +237,12 @@ Rcpp::List nts::calculate_gaussian_fit(const std::string &ft,
   const float max_intensity = intensity[max_position];
   
   const std::vector<float> left_intensity = std::vector<float>(intensity.begin(), intensity.begin() + max_position);
-  const size_t min_left_position = nts::find_min_index(left_intensity);
+  const size_t min_left_position = NTS::find_min_index(left_intensity);
   const float noise_left = left_intensity[min_left_position];
   const float sn_left = max_intensity / noise_left;
   
   const std::vector<float> right_intensity = std::vector<float>(intensity.begin() + max_position, intensity.end());
-  const size_t min_right_position = nts::find_min_index(right_intensity);
+  const size_t min_right_position = NTS::find_min_index(right_intensity);
   const float noise_right = right_intensity[min_right_position];
   const float sn_right = max_intensity / noise_right;
   
@@ -297,7 +297,7 @@ Rcpp::List nts::calculate_gaussian_fit(const std::string &ft,
   if (n_trimmed < 3)
     return quality;
 
-  max_position = nts::find_max_index(int_trimmed);
+  max_position = NTS::find_max_index(int_trimmed);
 
   trim_to_equal_length_around_max_position(rt_trimmed, max_position);
   trim_to_equal_length_around_max_position(int_trimmed, max_position);
@@ -307,7 +307,7 @@ Rcpp::List nts::calculate_gaussian_fit(const std::string &ft,
   if (n_trimmed < 3)
     return quality;
 
-  max_position = nts::find_max_index(int_trimmed);
+  max_position = NTS::find_max_index(int_trimmed);
 
   A_fitted = int_trimmed[max_position];
   mu_fitted = rt_trimmed[max_position];
@@ -331,7 +331,7 @@ Rcpp::List nts::calculate_gaussian_fit(const std::string &ft,
 };
 
 // MARK: FIND_ISOTOPIC_CANDIDATES
-std::vector<int> nts::find_isotopic_candidates(
+std::vector<int> NTS::find_isotopic_candidates(
     const int &number_features,
     const std::vector<std::string> &features,
     const std::vector<float> &mzs,
@@ -371,7 +371,7 @@ std::vector<int> nts::find_isotopic_candidates(
 };
 
 // MARK: IS_MAX_GAP_REACHED
-bool nts::is_max_gap_reached(const int &s, const int &maxGaps, const std::vector<int> &steps)
+bool NTS::is_max_gap_reached(const int &s, const int &maxGaps, const std::vector<int> &steps)
 {
   if (steps.size() < 2)
     return false;
@@ -386,7 +386,7 @@ bool nts::is_max_gap_reached(const int &s, const int &maxGaps, const std::vector
 };
 
 // MARK: ANNOTATE_ISOTOPES
-void nts::annotate_isotopes(MS_ANNOTATION &af,
+void NTS::annotate_isotopes(MS_ANNOTATION &af,
                             const MS_ISOTOPE_COMBINATIONS &combinations,
                             const MS_CANDIDATE_CHAIN &candidates_chain,
                             const int &maxIsotopes,
@@ -407,13 +407,13 @@ void nts::annotate_isotopes(MS_ANNOTATION &af,
   const float &mono_intensity = candidates_chain.intensity[0];
   const float &mono_mzr = candidates_chain.mzr[0];
 
-  std::vector<nts::MS_ISOTOPE_CHAIN> isotopic_chains = {MS_ISOTOPE_CHAIN(1, mono_index, mono_feature, mono_mz, mono_mzr, mono_rt)};
+  std::vector<NTS::MS_ISOTOPE_CHAIN> isotopic_chains = {MS_ISOTOPE_CHAIN(1, mono_index, mono_feature, mono_mz, mono_mzr, mono_rt)};
 
   if (maxCharge > 1)
   {
     for (int z = 2; z <= maxCharge; z++)
     {
-      isotopic_chains.push_back(nts::MS_ISOTOPE_CHAIN(z, mono_index, mono_feature, mono_mz, mono_mzr, mono_rt));
+      isotopic_chains.push_back(NTS::MS_ISOTOPE_CHAIN(z, mono_index, mono_feature, mono_mz, mono_mzr, mono_rt));
     }
   }
 
@@ -422,7 +422,7 @@ void nts::annotate_isotopes(MS_ANNOTATION &af,
   for (int z = 0; z < number_charges; z++)
   {
 
-    nts::MS_ISOTOPE_CHAIN &iso_chain = isotopic_chains[z];
+    NTS::MS_ISOTOPE_CHAIN &iso_chain = isotopic_chains[z];
 
     const int charge = iso_chain.charge[0];
 
@@ -431,7 +431,7 @@ void nts::annotate_isotopes(MS_ANNOTATION &af,
     for (int s = 1; s < number_steps; ++s)
     {
 
-      if (nts::is_max_gap_reached(s, maxGaps, iso_chain.step))
+      if (NTS::is_max_gap_reached(s, maxGaps, iso_chain.step))
         break;
 
       std::vector<int> which_combinations;
@@ -734,7 +734,7 @@ void nts::annotate_isotopes(MS_ANNOTATION &af,
 };
 
 // MARK: FIND_ADDUCT_CANDIDATES
-std::vector<int> nts::find_adduct_candidates(
+std::vector<int> NTS::find_adduct_candidates(
     const int &number_features,
     const std::vector<float> &mzs,
     const std::vector<float> &rts,
@@ -773,10 +773,10 @@ std::vector<int> nts::find_adduct_candidates(
 };
 
 // MARK: ANNOTATE_ADDUCTS
-void nts::annotate_adducts(MS_ANNOTATION &af, const MS_CANDIDATE_CHAIN &candidates_chain, const int &pol)
+void NTS::annotate_adducts(MS_ANNOTATION &af, const MS_CANDIDATE_CHAIN &candidates_chain, const int &pol)
 {
 
-  nts::MS_ADDUCT_SET all_adducts;
+  NTS::MS_ADDUCT_SET all_adducts;
 
   const float neutralizer = all_adducts.neutralizer(pol);
 
@@ -829,7 +829,7 @@ void nts::annotate_adducts(MS_ANNOTATION &af, const MS_CANDIDATE_CHAIN &candidat
 };
 
 // MARK: CLUSTER_SPECTRA
-Rcpp::List nts::cluster_spectra(const Rcpp::List &spectra, const float &mzClust = 0.005, const float &presence = 0.8)
+Rcpp::List NTS::cluster_spectra(const Rcpp::List &spectra, const float &mzClust = 0.005, const float &presence = 0.8)
 {
 
   const std::vector<std::string> &names_spectra = spectra.names();

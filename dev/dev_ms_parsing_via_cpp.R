@@ -79,9 +79,9 @@ cols <- c("name", "formula", "mass", "rt")
 ## settings --------------------------------------------------------------------
 
 # settings <- list(
-#   Settings_find_features_xcms3_centwave(),
-#   Settings_group_features_xcms3_peakdensity(),
-#   Settings_filter_features_StreamFind(
+#   Method_find_features_xcms3_centwave(),
+#   Method_group_features_xcms3_peakdensity(),
+#   Method_filter_features_StreamFind(
 #     minIntensity = 5000,
 #     minSnRatio = 20,
 #     maxGroupSd = 30,
@@ -89,8 +89,8 @@ cols <- c("name", "formula", "mass", "rt")
 #     minGroupAbundance = 3,
 #     excludeIsotopes = TRUE
 #   ),
-#   Settings_load_features_ms1_StreamFind(),
-#   Settings_load_features_ms2_StreamFind()
+#   Method_load_features_ms1_StreamFind(),
+#   Method_load_features_ms2_StreamFind()
 #   
 # )
 
@@ -165,7 +165,7 @@ rhdf5::h5closeAll()
 
 
 ms <- MassSpecEngine$new(files = files) #files[13:18]
-# ms$find_features(Settings_find_features_openms())
+# ms$find_features(Method_find_features_openms())
 ms$save(paste0(getwd(), "/ms.sqlite"))
 ms$run_app()
 
@@ -376,10 +376,10 @@ ms <- MassSpecData$new(files = all_files[10:21],
   settings = list(
     find = settings_ff,
     group = settings_gf,
-    ms1ft = settingsSettings_load_features_ms1_StreamFind,
-    ms2ft = settingsSettings_load_features_ms2_StreamFind,
-    ms1gp = settingsSettings_load_groups_ms1_StreamFind,
-    ms2gp = settingsSettings_load_groups_ms2_StreamFind
+    ms1ft = settingsMethod_load_features_ms1_StreamFind,
+    ms2ft = settingsMethod_load_features_ms2_StreamFind,
+    ms1gp = settingsMethod_load_groups_ms1_StreamFind,
+    ms2gp = settingsMethod_load_groups_ms2_StreamFind
   )
 )
 
@@ -398,7 +398,7 @@ ms1$find_features()
 feat <- ms1$get_features()
 write.csv(feat, "./ms_features.csv")
 
-ps <- as.ProcessingSettings(settings_ff)
+ps <- as.ProcessingStep(settings_ff)
 
 asJSON(ps)
 
