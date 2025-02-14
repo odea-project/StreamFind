@@ -560,7 +560,9 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
                                                      interactive = TRUE,
                                                      xLab = NULL,
                                                      yLab = NULL,
-                                                     title = NULL) {
+                                                     title = NULL,
+                                                     colorGroups = NULL,
+                                                     xTickLabelsShow = TRUE) {
   mat <- x$data$data
 
   if (!is.null(analyses)) mat <- mat[analyses, , drop = FALSE]
@@ -607,7 +609,24 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
     for (i in 2:nrow(mat)) lines(seq_len(ncol(mat)), mat[i, ], col = unname(cl[i]))
     legend("topright", legend = rownames(mat), col = unname(cl), lty = 1, cex = 0.8)
   } else {
-    cl <- .get_colors(rownames(mat))
+    
+    if (!is.null(colorGroups)) {
+      if (length(colorGroups) != nrow(mat)) {
+        warning("The color groups must have the same length as the number of analyses!")
+        return(NULL)
+      }
+      
+      colorGroups <- gsub(" ", "_", colorGroups)
+      var_name <- colorGroups
+      cl <- .get_colors(unique(colorGroups))
+    } else {
+      var_name <- rownames(mat)
+      cl <- .get_colors(unique(rownames(mat)))
+    }
+    
+    how_leg <- rep(TRUE, length(cl))
+    names(how_leg) <- names(cl)
+    
     fig <- plotly::plot_ly()
 
     if (is.null(attr(mat, "xValues"))) {
@@ -622,24 +641,26 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
         x = xVal,
         y = unlist(mat[i, ]),
         type = "scatter", mode = "lines",
-        line = list(width = 0.5, color = unname(cl[i])),
+        line = list(width = 0.5, color = unname(cl[var_name[i]])),
         text = paste0(
           "Analysis: ", rownames(mat)[i], "<br>",
           "Variable: ", xVal, "<br>",
           "Intensity: ", unlist(mat[i, ])
         ),
         hoverinfo = "text",
-        name = names(cl)[i],
-        legendgroup = names(cl)[i],
-        showlegend = TRUE
+        name = var_name[i],
+        legendgroup = var_name[i],
+        showlegend = how_leg[var_name[i]]
       )
+      how_leg[var_name[i]] <- FALSE
     }
 
     xaxis <- list(
       linecolor = toRGB("black"),
       linewidth = 2,
       title = xLab,
-      titlefont = list(size = 12, color = "black")
+      titlefont = list(size = 12, color = "black"),
+      showticklabels = xTickLabelsShow
     )
     
     yaxis <- list(

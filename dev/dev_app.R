@@ -54,15 +54,15 @@ ms$run_app()
 
 # RamanEngine ------------------------------------------------------------------
 raman <- RamanEngine$new(analyses = raman_files)
-raman$analyses$replicates <- c(rep("BVCZ", 11), rep("Blank", 11))
-raman$analyses$blanks <- rep("Blank", 22)
+raman$Analyses$replicates <- c(rep("BVCZ", 11), rep("Blank", 11))
+raman$Analyses$blanks <- rep("Blank", 22)
 raman_workflow <- StreamFind::Workflow(
   list(
-    RamanMethod_AverageSpectra_StreamFind(),
+    RamanMethod_AverageSpectra_native(),
     RamanMethod_SubtractBlankSpectra_StreamFind()
   )
 )
-raman$workflow <- raman_workflow
-raman$run_workflow()
-raman$save(paste0(getwd(), "/raman.rds"))
+raman$Workflow <- raman_workflow
+raman$run_Workflow()
+raman$save("raman.rds")
 raman$run_app()

@@ -1120,7 +1120,7 @@ S7::method(get_model_data, MCRALS) <- function(x) {
   }
 
   model <- x$model
-
+  
   var_expvar <- as.data.frame(model$variance[1, ])
   colnames(var_expvar) <- "expvar"
   var_expvar$pc <- rownames(var_expvar)
@@ -1135,10 +1135,12 @@ S7::method(get_model_data, MCRALS) <- function(x) {
 
   resolved <- as.data.frame(model$resspec)
   resolved$result <- "model"
-  resolved$feature <- as.numeric(attr(model$resspec, "features"))
-  if (any(is.na(resolved$feature))) {
-    resolved$feature <- seq_len(length(attr(model$resspec, "features")))
-  }
+  
+  # attempt check is attr(model$resspec, "features") can be changed to numeric if not keep character
+  features <- attr(model$resspec, "features")
+  features <- suppressWarnings(as.numeric(features))
+  if (any(is.na(features))) features <- seq_len(length(features))
+  resolved$feature <- features
   resolved <- data.table::as.data.table(resolved)
 
   contributions <- as.data.frame(model$rescont)

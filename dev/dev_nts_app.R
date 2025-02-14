@@ -20,7 +20,7 @@ db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 
 ms <- MassSpecEngine$new(analyses = files)
 
-ms$headers <- list(
+ms$Metadata <- list(
   name = "Wastewater Ozonation Showcase",
   author = "Ricardo Cunha",
   description = "Demonstration project"
@@ -73,6 +73,8 @@ ms$run(
     verbose = FALSE
   )
 )
+
+show(ms$NTS)
 
 ms$run(
   MassSpecMethod_AnnotateFeatures_StreamFind(
@@ -207,15 +209,15 @@ ms$run(
 #NTS@analyses_info
 
 
-#show(ms$analyses)
+#show(ms$Analyses)
 
-#show(ms$analyses$results$NTS)
+#show(ms$Analyses$results$NTS)
 
-#plot_features_count(ms$analyses)
+#plot_features_count(ms$Analyses)
 
-#map_features(ms$analyses, analyses = 6:7)
+#map_features(ms$Analyses, analyses = 6:7)
 
-#plot_features(ms$analyses, analyses = 7, features = 1:5)
+#plot_features(ms$Analyses, analyses = 7, features = 1:5)
 
 ms$save("ms.rds")
 

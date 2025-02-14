@@ -288,7 +288,9 @@ Plots the data.
   interactive = TRUE,
   xLab = NULL,
   yLab = NULL,
-  title = NULL
+  title = NULL,
+  colorGroups = NULL,
+  xTickLabelsShow = TRUE
 )}\if{html}{\out{</div>}}
 }
 
@@ -309,6 +311,10 @@ object.}
 \item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{title}}{A string with the title.}
+
+\item{\code{colorGroups}}{A factor character vector with the color groups for the data.}
+
+\item{\code{xTickLabelsShow}}{Logical, if TRUE the x-axis tick labels are shown.}
 }
 \if{html}{\out{</div>}}
 }

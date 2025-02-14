@@ -1,3 +1,6 @@
+# MARK: Utility Functions
+# Utility Functions -----
+
 # MARK: .get_colors
 #' @noRd
 .get_colors <- function(obj) {
@@ -125,23 +128,18 @@
   data
 }
 
+# MARK: Generic Line Plots
+# Generic Line Plots -----
+
 # MARK: .plot_lines_static
 #' @noRd
-.plot_lines_static <- function(data,
-                               xLab,
-                               yLab,
-                               title,
-                               cex,
-                               showLegend) {
+.plot_lines_static <- function(data, xLab, yLab, title, cex, showLegend) {
   cl <- .get_colors(unique(data$var))
   data$loop <- paste0(data$analysis, data$replicate, spectra$id, spectra$var)
   loop_key <- unique(data$loop)
-  
   xr <- c(min(data$x), max(data$x))
   
-  if (showLegend) {
-    xr[2] <- xr[2] * 1.01
-  }
+  if (showLegend) xr[2] <- xr[2] * 1.01
   
   intr <- c(min(data$intensity), max(data$intensity))
   
@@ -189,12 +187,7 @@
 
 # MARK: .plot_lines_interactive
 #' @noRd
-.plot_lines_interactive <- function(data,
-                                    xLab,
-                                    yLab,
-                                    title,
-                                    colorBy,
-                                    renderEngine = "webgl") {
+.plot_lines_interactive <- function(data, xLab, yLab, title, colorBy, renderEngine = "webgl") {
   leg <- unique(data$var)
   cl <- .get_colors(leg)
   data$loop <- paste0(data$analysis, data$replicate, data$id, data$var)
@@ -263,9 +256,7 @@
   data$loop <- paste0(data$analysis, data$replicate, data$id, data$var)
   loop_key <- unique(data$loop)
   xr <- c(min(data$x), max(data$x))
-  if (showLegend) {
-    xr[2] <- xr[2] * 1.01
-  }
+  if (showLegend) xr[2] <- xr[2] * 1.01
   
   intr <- c(0, max(data$raw))
   if (is.null(cex) || !is.numeric(cex)) cex <- 1
@@ -404,27 +395,22 @@
 
 # MARK: .plot_lines_peaks_static
 #' @noRd
-.plot_lines_peaks_static <- function(chroms = NULL,
-                                     peaks = NULL,
-                                     legendNames = NULL,
-                                     colorBy = "targets",
-                                     title = NULL,
-                                     showLegend = TRUE,
-                                     xlim = NULL,
-                                     ylim = NULL,
-                                     cex = 0.6,
-                                     xLab = NULL,
-                                     yLab = NULL) {
+.plot_lines_peaks_static <- function(chroms,
+                                     peaks,
+                                     legendNames,
+                                     colorBy,
+                                     title,
+                                     showLegend,
+                                     xlim,
+                                     ylim,
+                                     cex,
+                                     xLab,
+                                     yLab) {
   peaks$unique_ids <- paste0(peaks$analysis, "_", peaks$id, "_", peaks$peak)
-  
   peaks <- .make_colorBy_varkey(peaks, colorBy, legendNames)
-  
   leg <- unique(peaks$var)
-  
   cl <- .get_colors(leg)
-  
   ids <- unique(peaks$unique_ids)
-  
   if (!"raw" %in% colnames(chroms)) chroms$raw <- chroms$intensity
   
   xlab <- "Retention time / seconds"
@@ -525,16 +511,15 @@
 
 # MARK: .plot_lines_peaks_interactive
 #' @noRd
-.plot_lines_peaks_interactive <- function(chroms = NULL,
-                                          peaks = NULL,
-                                          legendNames = NULL,
-                                          colorBy = "targets",
-                                          title = NULL,
-                                          showLegend = TRUE,
-                                          xLab = NULL,
-                                          yLab = NULL,
+.plot_lines_peaks_interactive <- function(chroms,
+                                          peaks,
+                                          legendNames,
+                                          colorBy,
+                                          title,
+                                          showLegend,
+                                          xLab,
+                                          yLab,
                                           renderEngine = "webgl") {
-  
   peaks$unique_ids <- paste0(peaks$analysis, "_", peaks$peak)
   peaks <- .make_colorBy_varkey(peaks, colorBy, legendNames)
   leg <- unique(peaks$var)
@@ -663,6 +648,9 @@
   
   plot
 }
+
+# MARK: MassSpec Plots
+# MassSpec Plots -----
 
 # MARK: .plot_spectra_3d_interactive
 #' @noRd

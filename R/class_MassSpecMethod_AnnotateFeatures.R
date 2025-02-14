@@ -78,7 +78,7 @@ S7::method(run, MassSpecMethod_AnnotateFeatures_StreamFind) <- function(x, engin
     return(FALSE)
   }
 
-  if (!engine$Analyses$has_results_nts()) {
+  if (!engine$Analyses$has_results_nts) {
     warning("No NTS object available! Not done.")
     return(FALSE)
   }

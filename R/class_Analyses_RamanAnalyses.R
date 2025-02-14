@@ -95,57 +95,70 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
 
     # MARK: types
     ## types -----
-    types = S7::new_property(S7::class_character, getter = function(self) {
+    types = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
       vapply(self@analyses, function(x) x$type, NA_character_)
-    }),
+      }
+    ),
 
     # MARK: files
     ## files -----
-    files = S7::new_property(S7::class_character, getter = function(self) {
-      vapply(self@analyses, function(x) x$file, NA_character_)
-    }),
+    files = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
+        vapply(self@analyses, function(x) x$file, NA_character_)
+      }
+    ),
 
     # MARK: info
     ## info -----
-    info = S7::new_property(S7::class_data.frame, getter = function(self) {
-      if (length(self) > 0) {
-        df <- data.table::data.table(
-          "analysis" = vapply(self@analyses, function(x) x$name, ""),
-          "replicate" = vapply(self@analyses, function(x) x$replicate, ""),
-          "blank" = vapply(self@analyses, function(x) x$blank, ""),
-          "reference" = vapply(self@analyses, function(x) x$reference, ""),
-          "type" = vapply(self@analyses, function(x) x$type, ""),
-          "spectra" = vapply(self@analyses, function(x) nrow(x$spectra), 0),
-          "concentration" = vapply(self@analyses, function(x) x$concentration, 0)
-        )
-        row.names(df) <- seq_len(nrow(df))
-        df
-      } else {
-        data.frame()
+    info = S7::new_property(
+      S7::class_data.frame,
+      getter = function(self) {
+        if (length(self) > 0) {
+          df <- data.table::data.table(
+            "analysis" = vapply(self@analyses, function(x) x$name, ""),
+            "replicate" = vapply(self@analyses, function(x) x$replicate, ""),
+            "blank" = vapply(self@analyses, function(x) x$blank, ""),
+            "reference" = vapply(self@analyses, function(x) x$reference, ""),
+            "type" = vapply(self@analyses, function(x) x$type, ""),
+            "spectra" = vapply(self@analyses, function(x) nrow(x$spectra), 0),
+            "concentration" = vapply(self@analyses, function(x) x$concentration, 0)
+          )
+          row.names(df) <- seq_len(nrow(df))
+          df
+        } else {
+          data.frame()
+        }
       }
-    }),
+    ),
 
     # MARK: has_spectra
     ## has_spectra -----
-    has_spectra = S7::new_property(S7::class_logical, getter = function(self) {
-      if (length(self) == 0) {
-        return(FALSE)
-      }
-      if (is.null(self@results[["RamanSpectra"]])) {
-        if (sum(vapply(self$analyses, function(x) nrow(x$spectra), 0)) == 0) {
+    has_spectra = S7::new_property(
+      S7::class_logical,
+      getter = function(self) {
+        if (length(self) == 0) {
           return(FALSE)
         }
-      } else {
-        if (!is(self@results[["RamanSpectra"]], "StreamFind::RamanSpectra")) {
-          return(FALSE)
+        if (is.null(self@results[["RamanSpectra"]])) {
+          if (sum(vapply(self$analyses, function(x) nrow(x$spectra), 0)) == 0) {
+            return(FALSE)
+          }
+        } else {
+          if (!is(self@results[["RamanSpectra"]], "StreamFind::RamanSpectra")) {
+            return(FALSE)
+          }
         }
+        TRUE
       }
-      TRUE
-    }),
+    ),
 
     # MARK: Spectra
     ## Spectra -----
-    Spectra = S7::new_property(S7::class_data.frame,
+    Spectra = S7::new_property(
+      S7::class_data.frame,
       getter = function(self) {
         if (!is.null(self@results[["RamanSpectra"]])) {
           return(self@results[["RamanSpectra"]])
@@ -272,8 +285,10 @@ S7::method(add, RamanAnalyses) <- function(x, value) {
   analyses <- analyses[order(names(analyses))]
 
   if (length(analyses) > length(x@analyses)) {
-    message("All results removed!")
-    x@results <- list()
+    if (length(x$results) > 0) {
+      warning("All results removed!")
+      x@results <- list()
+    }
   }
 
   x@analyses <- analyses
@@ -450,25 +465,56 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
   
   if (x$has_spectra) {
     if (useRawData) {
-      spec <- lapply(self@analyses, function(x) x$spectra)
+      spec <- StreamFind::RamanSpectra(lapply(x@analyses, function(x) x$spectra))
+      spec$spectra <- spec$spectra[analyses]
+      
     } else {
-      spec <- x$Spectra$spectra
+      spec <- x$Spectra
+      
+      if (spec$is_averaged) {
+        rpl <- x$replicates
+        rpl <- rpl[analyses]
+        spec$spectra <- spec$spectra[names(spec$spectra) %in% unname(rpl)]
+        spec$spectra <- Map( function(z, y) {
+          z$replicate <- y
+          z
+        }, spec$spectra, names(spec$spectra))
+      } else {
+        spec$spectra <- spec$spectra[analyses]
+        spec$spectra <- Map( function(z, y) {
+          z$analysis <- y
+          z
+        }, spec$spectra, names(spec$spectra))
+      }
+    }
+    
+    if (spec$has_chrom_peaks) {
+      if (length(spec$spectra) == length(spec$chrom_peaks[names(spec$spectra)])) {
+        spec$spectra <- Map(function(z, y) {
+          z$id <- NA_character_
+          for (i in seq_len(nrow(y))) {
+            sel <- z$rt >= y$rtmin[i] & z$rt <= y$rtmax[i]
+            if (sum(sel) > 0) {
+              if ("group" %in% colnames(y)) {
+                z$id[sel] <- y$group[i]
+              } else {
+                z$id[sel] <- y$peak[i]
+              }
+            }
+          }
+          z
+        }, spec$spectra, spec$chrom_peaks[names(spec$spectra)])
+      }
     }
     
   } else {
     warning("No spectra available!")
     return(list())
   }
-
-  if (x$Spectra$is_averaged && !useRawData) {
-    rpl <- x$replicates
-    rpl <- rpl[analyses]
-    spec <- spec[names(spec) %in% unname(rpl)]
-  } else {
-    spec <- spec[analyses]
-  }
   
-  spec <- lapply(spec, function(z) {
+  spec_list <- spec$spectra
+
+  spec_list <- lapply(spec_list, function(z) {
     if (!is.null(targets) && ("group" %in% colnames(z) || "id" %in% colnames(z))) {
       if ("group" %in% colnames(z)) {
         z <- z[z$group %in% targets, ]
@@ -494,7 +540,7 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
     z
   })
   
-  spec
+  spec_list
 }
 
 # MARK: get_spectra_matrix
@@ -503,7 +549,11 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
 #' @noRd
 S7::method(get_spectra_matrix, RamanAnalyses) <- function(x,
                                                           analyses = NULL,
-                                                          targets = NULL) {
+                                                          targets = NULL,
+                                                          rt = NULL,
+                                                          shift = NULL,
+                                                          minIntensity = NULL,
+                                                          useRawData = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
   if (is.null(analyses)) {
     return(list())
@@ -514,55 +564,28 @@ S7::method(get_spectra_matrix, RamanAnalyses) <- function(x,
     return(matrix())
   }
 
-  spec_list <- x$Spectra$spectra
+  spec_list <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData)
 
-  if (x$Spectra$is_averaged) {
-    rpl <- x$replicates
-    rpl <- unique(rpl[analyses])
-    spec_list <- spec_list[rpl]
-  } else {
-    spec_list <- spec_list[analyses]
-  }
-
-  spec_list <- spec_list[vapply(spec_list, function(z) nrow(z) > 0, FALSE)]
-
-  intensity <- NULL
-
-  spec_list <- lapply(spec_list, function(z, targets) {
-    if ("group" %in% colnames(z)) {
-      if (!is.null(targets)) {
-        if (is.character(targets)) {
-          if (any(targets %in% z$group)) {
-            z <- z[z$group %in% targets, ]
-          }
-        }
-      }
-      data.table::setorder(z, group, shift)
-      z$var <- paste0(z$group, "_", z$shift)
-      z$var <- factor(z$var, levels = unique(z$var))
-    } else if ("id" %in% colnames(z)) {
-      if (!is.null(targets)) {
-        if (is.character(targets)) {
-          if (any(targets %in% z$id)) {
-            z <- z[z$id %in% targets, ]
-          }
-        }
-      }
+  spec_list <- lapply(spec_list, function(z) {
+    if ("id" %in% colnames(z)) {
       data.table::setorder(z, id, shift)
       z$var <- paste0(z$id, "_", z$shift)
       z$var <- factor(z$var, levels = unique(z$var))
     } else {
       z$var <- z$shift
     }
+    
+    intensity <- NULL
     z <- z[, .(intensity = mean(intensity)), by = c("var")]
     z <- data.table::dcast(z, formula = 1 ~ var, value.var = "intensity")[, -1]
     z
-  }, targets = targets)
+    
+  })
   
-  spec <- as.matrix(rbindlist(spec_list, fill = TRUE))
-  rownames(spec) <- names(spec_list)
-  attr(spec, "xValues") <- colnames(spec)
-  spec
+  mat <- as.matrix(rbindlist(spec_list, fill = TRUE))
+  rownames(mat) <- names(spec_list)
+  attr(mat, "xValues") <- colnames(mat)
+  mat
 }
 
 # MARK: plot_spectra
@@ -590,20 +613,15 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
     warning("No spectra found for the defined targets!")
     return(NULL)
   }
-
-  intensity <- NULL
   
-  if (x$Spectra$is_averaged && !useRawData) {
-    spectra <- data.table::rbindlist(spectra, idcol = "replicate", fill = TRUE)
-  } else {
-    spectra <- data.table::rbindlist(spectra, idcol = "analysis", fill = TRUE)
-  }
+  spectra <- data.table::rbindlist(spectra, fill = TRUE)
   
-  groupCols <- c("analysis", "replicate", "shift")
+  groupCols <- c("shift")
+  if ("analysis" %in% colnames(spectra)) groupCols <- c("analysis", groupCols)
+  if ("replicate" %in% colnames(spectra)) groupCols <- c("replicate", groupCols)
   if ("id" %in% colnames(spectra)) groupCols <- c("id", groupCols)
-  if ("group" %in% colnames(spectra)) groupCols <- c("group", groupCols)
   groupCols <- groupCols[groupCols %in% colnames(spectra)]
-  
+  intensity <- NULL
   spectra <- spectra[, .(intensity = mean(intensity)), by = groupCols]
   
   spectra <- unique(spectra)
@@ -626,12 +644,6 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
   
   colorBy <- gsub("chrom_peaks", "targets", colorBy)
 
-  if (grepl("targets", colorBy)) {
-    if ("group" %in% colnames(spectra)) {
-      spectra$id <- spectra$group
-    }
-  }
-  
   spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
 
   setnames(spectra, "shift", "x")
@@ -663,16 +675,12 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
   
   spectra <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData)
   
-  if (x$Spectra$is_averaged && !useRawData) {
-    spectra <- data.table::rbindlist(spectra, idcol = "replicate", fill = TRUE)
-  } else {
-    spectra <- data.table::rbindlist(spectra, idcol = "analysis", fill = TRUE)
-  }
-  
-  if (nrow(spectra) == 0) {
-    message("\U2717 Traces not found for the targets!")
+  if (sum(vapply(spectra, nrow, 0)) == 0) {
+    warning("No spectra found for the defined targets!")
     return(NULL)
   }
+  
+  spectra <- data.table::rbindlist(spectra, fill = TRUE)
   
   xlab <- "Shift / cm<sup>-1</sup>"
   ylab <- "Retention time / seconds"
@@ -681,36 +689,12 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
   if (!is.null(yLab)) ylab <- yLab
   if (!is.null(zLab)) zlab <- zLab
   
-  if (grepl("chrom_peaks", colorBy, fixed = FALSE)) {
-    if (!x$Spectra$has_chrom_peaks) {
-      warning("No chromatographic peaks available!")
-      return(NULL)
-    } else {
-      chrom_peaks <- x$Spectra$chrom_peaks
-      chrom_peaks <- Map(function(z, y) {
-        z$analysis <- y
-        z
-      }, chrom_peaks, names(chrom_peaks))
-      if (length(chrom_peaks) > 0) {
-        chrom_spectra <- lapply(chrom_peaks, function(z, spectra) {
-          temp <- spectra[spectra$analysis %in% z$analysis, ]
-          temp$id <- NA_character_
-          for (i in seq_len(nrow(z))) {
-            sel <- temp$rt >= z$rtmin[i] & temp$rt <= z$rtmax[i]
-            temp$id[sel] <- paste0(z$peak[i], "_", z$rt[i])
-          }
-          temp <- temp[!is.na(temp$id), ]
-          temp
-        }, spectra = spectra)
-        spectra <- data.table::rbindlist(chrom_spectra)
-        colorBy <- gsub("chrom_peaks", "targets", colorBy)
-      }
-    }
-  }
-  
+  colorBy <- gsub("chrom_peaks", "targets", colorBy)
+
   if (grepl("targets", colorBy)) {
-    if ("group" %in% colnames(spectra)) {
-      spectra$id <- spectra$group
+    if (!"id" %in% colnames(spectra)) {
+      warning("No targets found!")
+      return(NULL)
     }
   }
   

@@ -284,6 +284,8 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     #'
     #' @param features A numeric vector with the features (columns of data matrix) to plot.
     #' @param transpose Logical, if TRUE the data is transposed (i.e., column names are used as legend).
+    #' @param colorGroups A factor character vector with the color groups for the data.
+    #' @param xTickLabelsShow Logical, if TRUE the x-axis tick labels are shown.
     #'
     plot_data = function(analyses = NULL,
                          features = NULL,
@@ -291,8 +293,21 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
                          interactive = TRUE,
                          xLab = NULL,
                          yLab = NULL,
-                         title = NULL) {
-      plot_data(self$Analyses, analyses, features, transpose, interactive, xLab, yLab, title)
+                         title = NULL,
+                         colorGroups = NULL,
+                         xTickLabelsShow = TRUE) {
+      plot_data(
+        self$Analyses,
+        analyses,
+        features,
+        transpose,
+        interactive,
+        xLab,
+        yLab,
+        title,
+        colorGroups,
+        xTickLabelsShow
+      )
     },
 
     # MARK: plot_explained_variance
