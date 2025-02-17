@@ -45,7 +45,9 @@ Imports:
     fst,
     zlibbioc,
     Rhdf5lib,
-    reticulate
+    reticulate,
+    ggplot2,
+    dplyr
 Suggests: 
     StreamFindData,
     mzR,

@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadChromatograms_StreamFind**
+#' **MassSpecMethod_LoadChromatograms_native**
 #'
 #' @description Loads chromatograms from mass spectrometry analyses.
 #' 
@@ -8,12 +8,12 @@
 #' @param rtmax A numeric vector with the maximum retention time values to be used.
 #' @param minIntensity A numeric value with the minimum intensity to be used.
 #'
-#' @return A `MassSpecMethod_LoadChromatograms_StreamFind` object.
+#' @return A `MassSpecMethod_LoadChromatograms_native` object.
 #'
 #' @export
 #'
-MassSpecMethod_LoadChromatograms_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_LoadChromatograms_StreamFind",
+MassSpecMethod_LoadChromatograms_native <- S7::new_class(
+  name = "MassSpecMethod_LoadChromatograms_native",
   parent = ProcessingStep,
   package = "StreamFind",
   
@@ -27,7 +27,7 @@ MassSpecMethod_LoadChromatograms_StreamFind <- S7::new_class(
         engine = "MassSpec",
         method = "LoadChromatograms",
         required = NA_character_,
-        algorithm = "StreamFind",
+        algorithm = "native",
         parameters = list(
           chromatograms = chromatograms,
           rtmin = rtmin,
@@ -48,7 +48,7 @@ MassSpecMethod_LoadChromatograms_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "LoadChromatograms")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_true(
       is.numeric(self@parameters$chromatograms) || is.character(self@parameters$chromatograms)
     )
@@ -61,7 +61,7 @@ MassSpecMethod_LoadChromatograms_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_LoadChromatograms_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, MassSpecMethod_LoadChromatograms_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")

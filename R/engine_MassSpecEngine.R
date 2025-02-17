@@ -6,8 +6,10 @@
 #' storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
 #' chromatograms produced by UV detection) can be loaded from mzML. If `msconvert` from 
 #' \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e.,
-#' must be added to the environmental variables), the engine can also load vendor formats by direct
-#' conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
+#' must be added to the environmental variables), the engine can also load vendor formats (i.e., 
+#' Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF / WIFF2)
+#' by direct conversion to mzML. Note that conversion of vendor formats is only possible under
+#' Windows OS.
 #'
 #' @details The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
 #' assembly of Non-Target Screening (NTS) data processing workflows.
@@ -83,11 +85,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
   inherit = CoreEngine,
 
   # MARK: active_bindings
-  # _ active bindings -----
+  # Active Bindings -----
   active = list(
 
     # MARK: NTS
-    ## __ NTS -----
+    ## NTS -----
     #' @field NTS Get/Set for the `NTS` results class.
     NTS = function(value) {
       if (missing(value)) {
@@ -102,7 +104,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: Spectra
-    ## __ Spectra -----
+    ## Spectra -----
     #' @field Spectra Get/set for the `Spectra` results class.
     Spectra = function(value) {
       if (missing(value)) {
@@ -117,7 +119,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: Chromatograms
-    ## __ Chromatograms -----
+    ## Chromatograms -----
     #' @field Chromatograms Get/set for the chromatograms results class.
     Chromatograms = function(value) {
       if (missing(value)) {
@@ -133,11 +135,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
   ),
 
   # MARK: public fields
-  # _ public fields -----
+  # Public Fields -----
   public = list(
 
     # MARK: initialize
-    ## __ initialize -----
+    ## initialize -----
     #' @description Creates an R6 `MassSpecEngine` class object.
     #'
     #' @param analyses A `MassSpecAnalyses` S7 class object or a `character vector` with full file
@@ -146,8 +148,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' the blank samples. The "file" column is the full path to the mzML files. If `msconvert` from
     #' \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI 
     #' (i.e., must be added to the environmental variables), the engine can also load vendor formats
-    #' by direct conversion to mzML. Note that conversion of vendor formats is only possible under 
-    #' Windows OS.
+    #' (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF
+    #' / WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only
+    #' possible under Windows OS.
     #' @param centroid Logical (length 1). Set to `TRUE` to centroid data when converting from
     #' vendor formats to mzML.
     #' @param levels Numeric vector with the MS levels to consider when centroiding data. Default
@@ -163,130 +166,181 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       super$initialize(metadata, workflow, analyses, centroid, levels)
       invisible(self)
     },
+    
+    # MARK: add_analyses
+    ## add_analyses -----
+    #' @description Adds analyses. Note that when adding new analyses, any existing results are
+    #' removed.
+    #'
+    #' @param analyses A character vector with full file paths to mzML/mzXML files. f `msconvert`
+    #' from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI 
+    #' (i.e., must be added to the environmental variables), the engine can also load vendor formats
+    #' (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF
+    #' / WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only
+    #' possible under Windows OS.
+    #'
+    add_analyses = function(analyses = NULL) {
+      self$Analyses <- add(self$Analyses, analyses)
+      invisible(self)
+    },
+    
+    # MARK: remove_analyses
+    ## remove_analyses -----
+    #' @description Removes analyses.
+    remove_analyses = function(analyses = NULL) {
+      analyses <- .check_analyses_argument(self$Analyses, analyses)
+      self$Analyses <- remove(self$Analyses, analyses)
+      invisible(self)
+    },
+    
+    # MARK: add_replicate_names
+    ## add_replicate_names -----
+    #' @description Adds replicate names to the analysis.
+    #' 
+    #' @param value Character vector with the replicate names. Must have the same length as the
+    #' number of analyses.
+    #' 
+    add_replicate_names = function(value) {
+      self$Analyses$replicates <- value
+      invisible(self)
+    },
+    
+    # MARK: add_blank_names
+    ## add_blank_names -----
+    #' @description Adds blank names to the analysis.
+    #' 
+    #' @param value Character vector with the replicate names. Must have the same length as the
+    #' number of analyses and must be one of replicate names.
+    #' 
+    add_blank_names = function(value) {
+      self$Analyses$blanks <- value
+      invisible(self)
+    },
 
     # MARK: get_analysis_names
-    ## __ get_analysis_names -----
-    #' @description Gets the analysis replicate names.
+    ## get_analysis_names -----
+    #' @description Gets a character vector with the analysis replicate names.
     get_analysis_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       names(self$Analyses)[analyses]
     },
 
     # MARK: get_replicate_names
-    ## __ get_replicate_names -----
-    #' @description Gets the analysis replicate names.
+    ## get_replicate_names -----
+    #' @description Gets a character vector with the analysis replicate names.
     get_replicate_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$replicates[analyses]
     },
 
     # MARK: get_blank_names
-    ## __ get_blank_names -----
-    #' @description Gets the analysis blank replicate names.
+    ## get_blank_names -----
+    #' @description Gets a character vector with the analysis blank replicate names.
     get_blank_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$blanks[analyses]
     },
 
     # MARK: get_files
-    ## __ get_files -----
-    #' @description Gets the full file paths of each analysis.
+    ## get_files -----
+    #' @description Gets a character vector with the full file paths of each analysis.
     get_files = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$files[analyses]
     },
 
     # MARK: get_formats
-    ## __ get_formats -----
-    #' @description Gets the file format of each analysis.'
+    ## get_formats -----
+    #' @description Gets a character vector with the file format of each analysis.'
     get_formats = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$formats[analyses]
     },
 
     # MARK: get_instruments
-    ## __ get_instruments -----
-    #' @description Gets the instruments information of each analysis.
+    ## get_instruments -----
+    #' @description Gets a list of instrument information from each analysis as elements.
     get_instruments = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$instruments[analyses]
     },
 
     # MARK: get_software
-    ## __ get_software -----
-    #' @description Gets the software information of each analysis.
+    ## get_software -----
+    #' @description Gets a list of software information from each analysis as elements.
     get_software = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$software[analyses]
     },
 
     # MARK: get_spectra_number
-    ## __ get_spectra_number -----
-    #' @description Gets the number of spectra in each analysis.
+    ## get_spectra_number -----
+    #' @description Gets a numeric vector with the number of spectra in each analysis.
     get_spectra_number = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$spectra_number[analyses]
     },
 
     # MARK: get_spectra_mode
-    ## __ get_spectra_mode -----
-    #' @description Gets the spectra mode of each analysis (i.e., profile or centroid).
+    ## get_spectra_mode -----
+    #' @description Gets a character vector with the spectra mode of each analysis
+    #' (i.e., profile or centroid).
     get_spectra_mode = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$spectra_mode[analyses]
     },
 
     # MARK: get_spectra_level
-    ## __ get_spectra_level -----
-    #' @description Gets the spectra levels of each analysis.
+    ## get_spectra_level -----
+    #' @description Gets a character vector with the spectra levels (e.g., "1, 2") of each analysis.
     get_spectra_level = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$spectra_level[analyses]
     },
 
     # MARK: get_spectra_lowest_mz
-    ## __ get_spectra_lowest_mz -----
-    #' @description Gets the lower \emph{m/z} value of each analysis.
+    ## get_spectra_lowest_mz -----
+    #' @description Gets a numeric vector with the lower \emph{m/z} value of each analysis.
     get_spectra_lowest_mz = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$spectra_lowest_mz[analyses]
     },
 
     # MARK: get_spectra_highest_mz
-    ## __ get_spectra_highest_mz -----
-    #' @description Gets the higher \emph{m/z} value of each analysis.
+    ## get_spectra_highest_mz -----
+    #' @description Gets a numeric vector with the higher \emph{m/z} value of each analysis.
     get_spectra_highest_mz = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$spectra_highest_mz[analyses]
     },
 
     # MARK: get_spectra_lowest_rt
-    ## __ get_spectra_lowest_rt -----
-    #' @description Gets the start retention time value of each analysis.
+    ## get_spectra_lowest_rt -----
+    #' @description Gets a numeric vector with the start retention time value of each analysis.
     get_spectra_lowest_rt = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$spectra_lowest_rt[analyses]
     },
 
     # MARK: get_spectra_highest_rt
-    ## __ get_spectra_highest_rt -----
-    #' @description Gets the end retention time value of each analysis.
+    ## get_spectra_highest_rt -----
+    #' @description Gets a numeric vector with the end retention time value of each analysis.
     get_spectra_highest_rt = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$spectra_highest_rt[analyses]
     },
 
     # MARK: get_spectra_polarity
-    ## __ get_spectra_polarity -----
-    #' @description Gets the polarity of each analysis.
+    ## get_spectra_polarity -----
+    #' @description Gets a character vector with the polarity of each analysis.
     get_spectra_polarity = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       self$Analyses$spectra_polarity[analyses]
     },
 
     # MARK: get_spectra_headers
-    ## __ get_spectra_headers -----
-    #' @description Gets the spectra headers data.table of each analysis.
+    ## get_spectra_headers -----
+    #' @description Gets a data.table of the spectra headers from each analysis.
     get_spectra_headers = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
       value <- self$Analyses$spectra_headers[analyses]
@@ -295,32 +349,314 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: get_spectra_tic
-    ## __ get_spectra_tic -----
-    #' @description Gets the total ion chromatogram (TIC) of each analysis.
+    ## get_spectra_tic -----
+    #' @description Gets a data.table of the total ion chromatogram (TIC) from each analysis.
     #'
     #' @param rt Numeric (length 2). The retention time range to filter the TIC.
-    #'
-    #' @return A data.table with the TIC chromatogram.
     #'
     get_spectra_tic = function(analyses = NULL, levels = c(1, 2), rt = NULL) {
       StreamFind::get_spectra_tic(self$Analyses, analyses, levels, rt)
     },
 
     # MARK: get_spectra_bpc
-    ## __ get_spectra_bpc -----
-    #' @description Gets the base peak chromatogram (BPC) of each analysis.
+    ## get_spectra_bpc -----
+    #' @description Gets a data.table of the base peak chromatogram (BPC) from each analysis.
     #'
     #' @param rt Numeric (length 2). The retention time range to filter the BPC.
-    #'
-    #' @return A character vector.
     #'
     get_spectra_bpc = function(analyses = NULL, levels = c(1, 2), rt = NULL) {
       StreamFind::get_spectra_bpc(self$Analyses, analyses, levels, rt)
     },
-
+    
+    # MARK: get_spectra_eic
+    ## get_spectra_eic -----
+    #' @description Gets a data.table of extract ion chromatograms (EIC) from the analyses based
+    #' on targets.
+    get_spectra_eic = function(analyses = NULL,
+                               mass = NULL,
+                               mz = NULL,
+                               rt = NULL,
+                               mobility = NULL,
+                               ppm = 20,
+                               sec = 60,
+                               millisec = 5,
+                               id = NULL) {
+      StreamFind::get_spectra_eic(
+        self$Analyses,
+        analyses, mass, mz, rt, mobility, ppm, sec, millisec, id
+      )
+    },
+    
+    # MARK: get_spectra_ms1
+    ## get_spectra_ms1 -----
+    #' @description Gets a data.table of level 1 spectra from the analyses based on targets.
+    get_spectra_ms1 = function(analyses = NULL,
+                               mass = NULL,
+                               mz = NULL,
+                               rt = NULL,
+                               mobility = NULL,
+                               ppm = 20,
+                               sec = 60,
+                               millisec = 5,
+                               id = NULL,
+                               mzClust = 0.003,
+                               presence = 0.8,
+                               minIntensity = 1000) {
+      StreamFind::get_spectra_ms1(
+        self$Analyses,
+        analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
+        mzClust, presence, minIntensity
+      )
+    },
+    
+    # MARK: get_spectra_ms2
+    ## get_spectra_ms2 -----
+    #' @description Gets a data.table of level 2 spectra from the analyses based on targets.
+    get_spectra_ms2 = function(analyses = NULL,
+                               mass = NULL,
+                               mz = NULL,
+                               rt = NULL,
+                               mobility = NULL,
+                               ppm = 20,
+                               sec = 60,
+                               millisec = 5,
+                               id = NULL,
+                               isolationWindow = 1.3,
+                               mzClust = 0.005,
+                               presence = 0.8,
+                               minIntensity = 0) {
+      StreamFind::get_spectra_ms2(
+        self$Analyses,
+        analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
+        isolationWindow, mzClust, presence, minIntensity
+      )
+    },
+    
+    # MARK: plot_spectra_tic
+    ## plot_spectra_tic -----
+    #' @description Plots the spectra total ion chromatogram (TIC) of each analysis.
+    #'
+    #' @param downsize An integer of length one to downsize the TIC plot. The default is 1.
+    #'
+    plot_spectra_tic = function(analyses = NULL,
+                                levels = c(1, 2),
+                                rt = NULL,
+                                xLab = NULL,
+                                yLab = NULL,
+                                title = NULL,
+                                colorBy = "analyses",
+                                legendNames = NULL,
+                                downsize = 1,
+                                interactive = TRUE,
+                                renderEngine = "webgl") {
+      StreamFind::plot_spectra_tic(
+        self$Analyses, analyses,levels, rt, xLab, yLab, title, colorBy, legendNames,
+        downsize, interactive, renderEngine
+      )
+    },
+    
+    # MARK: plot_spectra_bpc
+    ## plot_spectra_bpc -----
+    #' @description Plots the spectra base peak chromatogram (BPC) of each analysis.
+    plot_spectra_bpc = function(analyses = NULL,
+                                levels = c(1, 2),
+                                rt = NULL,
+                                xLab = NULL,
+                                yLab = NULL,
+                                title = NULL,
+                                colorBy = "analyses",
+                                legendNames = NULL,
+                                interactive = TRUE,
+                                renderEngine = "webgl") {
+      StreamFind::plot_spectra_bpc(
+        self$Analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames,
+        interactive, renderEngine
+      )
+    },
+    
+    # MARK: plot_spectra_eic
+    ## plot_spectra_eic -----
+    #' @description Plots spectra extract ion chromatograms (EIC) from the analyses based on targets.
+    plot_spectra_eic = function(analyses = NULL,
+                                mass = NULL,
+                                mz = NULL,
+                                rt = NULL,
+                                mobility = NULL,
+                                ppm = 20,
+                                sec = 60,
+                                millisec = 5,
+                                id = NULL,
+                                legendNames = NULL,
+                                xLab = NULL,
+                                yLab = NULL,
+                                title = NULL,
+                                colorBy = "targets",
+                                interactive = TRUE,
+                                renderEngine = "webgl") {
+      StreamFind::plot_spectra_eic(
+        self$Analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, legendNames, xLab,
+        yLab, title, colorBy, interactive, renderEngine
+      )
+    },
+    
+    # MARK: plot_spectra_xic
+    ## plot_spectra_xic -----
+    #' @description Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time
+    #' from the analyses.
+    #'
+    #' @param plotTargetMark Logical (length 1), set to \code{TRUE} to plot a target mark.
+    #'
+    #' @param targetsMark A data.frame with columns `mz` and `rt`, defining the
+    #' \emph{m/z} and retention time values of each target. Note that the number
+    #'  of rows should match with the number of targets.
+    #'
+    #' @param ppmMark A numeric vector of length one to define the mass deviation,
+    #' in ppm, of the target mark. The default is 5 ppm.
+    #'
+    #' @param secMark A numeric vector of length one to define the time deviation,
+    #' in seconds, of the target mark. The default is 10 ppm.
+    #'
+    #' @param numberRows An integer vector of length one to define the number of
+    #' rows to grid the plots. Note that each target is always plotted in one row
+    #' for all selected analyses.
+    #'
+    plot_spectra_xic = function(analyses = NULL,
+                                mass = NULL,
+                                mz = NULL,
+                                rt = NULL,
+                                mobility = NULL,
+                                ppm = 20,
+                                sec = 60,
+                                millisec = 5,
+                                id = NULL,
+                                legendNames = NULL,
+                                plotTargetMark = TRUE,
+                                targetsMark = NULL,
+                                ppmMark = 5,
+                                secMark = 10,
+                                numberRows = 1,
+                                renderEngine = "webgl") {
+      StreamFind::plot_spectra_xic(
+        self$Analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
+        legendNames, plotTargetMark, targetsMark, ppmMark, secMark, numberRows, renderEngine
+      )
+    },
+    
+    # MARK: plot_spectra_ms1
+    ## plot_spectra_ms1 -----
+    #' @description Plots level 1 spectra from the analyses based on targets.
+    plot_spectra_ms1 = function(analyses = NULL,
+                                mass = NULL,
+                                mz = NULL,
+                                rt = NULL,
+                                mobility = NULL,
+                                ppm = 20,
+                                sec = 60,
+                                millisec = 5,
+                                id = NULL,
+                                mzClust = 0.003,
+                                presence = 0.8,
+                                minIntensity = 1000,
+                                legendNames = NULL,
+                                xLab = NULL,
+                                yLab = NULL,
+                                title = NULL,
+                                colorBy = "targets",
+                                showText = FALSE,
+                                interactive = TRUE) {
+      StreamFind::plot_spectra_ms1(
+        self$Analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust,
+        presence, minIntensity, legendNames, xLab, yLab, title, colorBy, showText, interactive
+      )
+    },
+    
+    # MARK: plot_spectra_ms2
+    ## plot_spectra_ms2 -----
+    #' @description Plots level 2 spectra from the analyses based on targets.
+    plot_spectra_ms2 = function(analyses = NULL,
+                                mass = NULL,
+                                mz = NULL,
+                                rt = NULL,
+                                mobility = NULL,
+                                ppm = 20,
+                                sec = 60,
+                                millisec = 5,
+                                id = NULL,
+                                isolationWindow = 1.3,
+                                mzClust = 0.005,
+                                presence = 0.8,
+                                minIntensity = 0,
+                                legendNames = NULL,
+                                xLab = NULL,
+                                yLab = NULL,
+                                title = NULL,
+                                colorBy = "targets",
+                                interactive = TRUE) {
+      StreamFind::plot_spectra_ms2(
+        self$Analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, isolationWindow,
+        mzClust, presence, minIntensity, legendNames, xLab, yLab, title, colorBy, interactive
+      )
+    },
+    
+    # MARK: has_results_nts
+    ## has_results_nts -----
+    #' @description Checks if there are NTS results, returning `TRUE` or `FALSE`.
+    has_results_nts = function() {
+      self$Analyses$has_results_nts
+    },
+    
+    # MARK: has_results_spectra
+    ## has_results_spectra -----
+    #' @description Checks if there are spectra, returning `TRUE` or `FALSE`.
+    has_results_spectra = function() {
+      self$Analyses$has_results_spectra
+    },
+    
+    # MARK: has_results_chromatograms
+    ## has_results_chromatograms -----
+    #' @description Checks if there are chromatograms, returning `TRUE` or `FALSE`.
+    has_results_chromatograms = function() {
+      self$Analyses$has_results_chromatograms
+    },
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    # MARK: Spectra Methods
+    # Spectra Methods -----
+    
     # MARK: get_spectra
-    ## __ get_spectra -----
-    #' @description Gets spectra from each analysis.
+    ## get_spectra -----
+    #' @description Gets a data.table of spectra from each analysis based .
     get_spectra = function(analyses = NULL,
                            levels = NULL,
                            mass = NULL,
@@ -345,85 +681,16 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_spectra_matrix
-    ## __ get_spectra_matrix -----
+    ## get_spectra_matrix -----
     #' @description Gets a matrix with spectra from analyses.
     get_spectra_matrix = function(analyses = NULL) {
       StreamFind::get_spectra_matrix(self$Analyses, analyses)
     },
     
-    # MARK: get_spectra_eic
-    ## __ get_spectra_eic -----
-    #' @description Gets spectra extract ion chromatograms (EIC) from the analyses based on targets
-    #' as a data.table.
-    get_spectra_eic = function(analyses = NULL,
-                               mass = NULL,
-                               mz = NULL,
-                               rt = NULL,
-                               mobility = NULL,
-                               ppm = 20,
-                               sec = 60,
-                               millisec = 5,
-                               id = NULL,
-                               useRawData = TRUE,
-                               useLoadedData = FALSE) {
-      StreamFind::get_spectra_eic(
-        self$Analyses,
-        analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
-        useRawData, useLoadedData
-      )
-    },
     
-    # MARK: get_spectra_ms1
-    ## __ get_spectra_ms1 -----
-    #' @description Gets level 1 spectra from the analyses based on targets as a data.frame.
-    get_spectra_ms1 = function(analyses = NULL,
-                               mass = NULL,
-                               mz = NULL,
-                               rt = NULL,
-                               mobility = NULL,
-                               ppm = 20,
-                               sec = 60,
-                               millisec = 5,
-                               id = NULL,
-                               mzClust = 0.003,
-                               presence = 0.8,
-                               minIntensity = 1000,
-                               useRawData = TRUE,
-                               useLoadedData = FALSE) {
-      StreamFind::get_spectra_ms1(
-        self$Analyses,
-        analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
-        mzClust, presence, minIntensity, useRawData, useLoadedData
-      )
-    },
-    
-    # MARK: get_spectra_ms2
-    ## __ get_spectra_ms2 -----
-    #' @description Gets level 2 spectra from the analyses based on targets as a data.frame.
-    get_spectra_ms2 = function(analyses = NULL,
-                               mass = NULL,
-                               mz = NULL,
-                               rt = NULL,
-                               mobility = NULL,
-                               ppm = 20,
-                               sec = 60,
-                               millisec = 5,
-                               id = NULL,
-                               isolationWindow = 1.3,
-                               mzClust = 0.005,
-                               presence = 0.8,
-                               minIntensity = 0,
-                               useRawData = TRUE,
-                               useLoadedData = FALSE) {
-      StreamFind::get_spectra_ms2(
-        self$Analyses,
-        analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
-        isolationWindow, mzClust, presence, minIntensity, useRawData, useLoadedData
-      )
-    },
     
     # MARK: get_chromatograms_number
-    ## __ get_chromatograms_number -----
+    ## get_chromatograms_number -----
     #' @description Gets the number of chromatograms in each analysis.
     get_chromatograms_number = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
@@ -431,7 +698,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_chromatograms_headers
-    ## __ get_chromatograms_headers -----
+    ## get_chromatograms_headers -----
     #' @description Gets the chromatograms headers data.table of each analysis.
     get_chromatograms_headers = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
@@ -441,7 +708,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_chromatograms
-    ## __ get_chromatograms -----
+    ## get_chromatograms -----
     #' @description Gets chromatograms from each analysis.
     get_chromatograms = function(analyses = NULL,
                                  chromatograms = NULL,
@@ -457,14 +724,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_chromatograms_peaks
-    ## __ get_chromatograms_peaks -----
+    ## get_chromatograms_peaks -----
     #' @description Gets integrated peaks from chromatograms.
     get_chromatograms_peaks = function(analyses = NULL, chromatograms = NULL) {
       StreamFind::get_chromatograms_peaks(self$Analyses, analyses, chromatograms)
     },
     
+    # MARK: NTS Methods
+    # NTS Methods -----
+    
     # MARK: get_features
-    ## __ get_features -----
+    ## get_features -----
     #' @description Gets a data.table with all features from NTS results or as selected by the 
     #' arguments.
     get_features = function(analyses = NULL,
@@ -483,7 +753,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_features_eic
-    ## __ get_features_eic -----
+    ## get_features_eic -----
     #' @description Gets a data.table with feature EICs following the targets from the arguments.
     get_features_eic = function(analyses = NULL,
                                 features = NULL,
@@ -506,7 +776,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_features_ms1
-    ## __ get_features_ms1 -----
+    ## get_features_ms1 -----
     #' @description Gets a data.table of averaged MS1 spectrum for features in the analyses or as
     #' selected from the arguments.
     get_features_ms1 = function(analyses = NULL,
@@ -533,7 +803,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_features_ms2
-    ## __ get_features_ms2 -----
+    ## get_features_ms2 -----
     #' @description Gets a data.table of averaged MS2 spectrum for features in the analyses or as
     #' selected from the arguments.
     get_features_ms2 = function(analyses = NULL,
@@ -559,7 +829,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_groups
-    ## __ get_groups -----
+    ## get_groups -----
     #' @description Gets a data.table with feature groups from the analyses.
     #'
     #' @param sdValues Logical (length 1). Set to `TRUE` for returning the sd values when averaging
@@ -590,7 +860,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_groups_ms1
-    ## __ get_groups_ms1 -----
+    ## get_groups_ms1 -----
     #' @description Gets a data.table of averaged MS1 spectrum for feature groups in the analyses.
     get_groups_ms1 = function(groups = NULL,
                               mass = NULL,
@@ -620,7 +890,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_groups_ms2
-    ## __ get_groups_ms2 -----
+    ## get_groups_ms2 -----
     #' @description Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
     get_groups_ms2 = function(groups = NULL,
                               mass = NULL,
@@ -649,7 +919,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_MSPeakLists
-    ## __ get_MSPeakLists -----
+    ## get_MSPeakLists -----
     #' @description Creates S4 class `MSPeakLists`. Note that feature groups are required. The MS and MSMS spectra
     #' of each feature are then average by \pkg{patRoon} to produce the feature group spectra using the parameters
     #' of the function \link[patRoon]{getDefAvgPListParams}.
@@ -766,7 +1036,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: get_components
-    ## __ get_components -----
+    ## get_components -----
     #' @description Gets feature components (i.e., isotope and adduct related to a main feature) in the analyses.
     get_components = function(analyses = NULL,
                               features = NULL,
@@ -782,7 +1052,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: get_suspects
-    ## __ get_suspects -----
+    ## get_suspects -----
     #' @description Gets a data.table of suspects from features according to a defined database and mass (`ppm`)
     #' and time (`sec`) deviations.
     #'
@@ -818,7 +1088,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: get_internal_standards
-    ## __ get_internal_standards -----
+    ## get_internal_standards -----
     #' @description Gets a data.table with internal standards found by the `find_internal_standards` module.
     #'
     #' @param average Logical of length one. When `TRUE` and groups are present, internal standards are averaged per
@@ -829,7 +1099,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: get_fold_change
-    ## __ get_fold_change -----
+    ## get_fold_change -----
     #' @description Gets a data.table with fold-change analysis between the `replicatesIn` and `replicatesOut`.
     #' 
     #' @param replicatesIn Character vector with the names of the replicates to be considered as the denominator.
@@ -865,137 +1135,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
-    # MARK: get_metadata
-    ## __ get_metadata -----
-    #' @description Gets metadata from each analysis.
-    #'
-    #' @return A data.table.
-    #'
-    get_metadata = function(analyses = NULL) {
-      # TODO manage metadata
-
-      # analyses <- .check_analyses_argument(self$Analyses, analyses)
-      # if (is.null(analyses)) return(data.table())
-      # metadata <- lapply(private$.analyses[analyses], function(x) {
-      #   as.data.table(x$metadata)
-      # })
-      # metadata <- rbindlist(metadata, idcol = "analysis", fill = TRUE)
-      #
-      # metadata
-    },
-
-    # MARK: add_analyses
-    ## __ add_analyses -----
-    #' @description Adds analyses. Note that when adding new analyses, any existing results are removed.
-    #'
-    #' @param analyses A MassSpecAnalysis class object or a list with MassSpecAnalysis class objects as
-    #' elements (see `?MassSpecAnalysis` for more information) or a character vector with full path to mzML/mzXML files.
-    #'
-    #' @return Invisible.
-    #'
-    add_analyses = function(analyses = NULL) {
-      self$Analyses <- add(self$Analyses, analyses)
-      invisible(self)
-    },
-
-    # MARK: remove_analyses
-    ## __ remove_analyses -----
-    #' @description Removes analyses.
-    #'
-    #' @return Invisible.
-    #'
-    remove_analyses = function(analyses = NULL) {
-      analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses <- remove(self$Analyses, analyses)
-      invisible(self)
-    },
-    
-    # MARK: add_replicate_names
-    ## __ add_replicate_names -----
-    #' @description Adds replicate names to the analysis.
-    #' 
-    #' @param value Character vector with the replicate names. Must have the same length as the number of analyses.
-    #' 
-    add_replicate_names = function(value) {
-      self$Analyses$replicates <- value
-      invisible(self)
-    },
-    
-    # MARK: add_blank_names
-    ## __ add_blank_names -----
-    #' @description Adds blank names to the analysis.
-    #' 
-    #' @param value Character vector with the replicate names. Must have the same length as the number of analyses and
-    #' must be one of replicate names.
-    #' 
-    add_blank_names = function(value) {
-      self$Analyses$blanks <- value
-      invisible(self)
-    },
-
-    # MARK: load_spectra
-    ## ___ load_spectra -----
-    #' @description Loads spectra from analyses.
-    #'
-    #' @return Invisible.
-    #'
-    load_spectra = function(analyses = NULL,
-                            levels = NULL,
-                            mass = NULL,
-                            mz = NULL,
-                            rt = NULL,
-                            mobility = NULL,
-                            ppm = 20,
-                            sec = 60,
-                            millisec = 5,
-                            id = NULL,
-                            allTraces = TRUE,
-                            isolationWindow = 1.3,
-                            minIntensityMS1 = 0,
-                            minIntensityMS2 = 0) {
-      self$Analyses <- StreamFind::load_spectra(
-        self$Analyses,
-        analyses,
-        levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
-        allTraces, isolationWindow, minIntensityMS1, minIntensityMS2
-      )
-      invisible(self)
-    },
-
-    # MARK: load_chromatograms
-    ## ___ load_chromatograms -----
-    #' @description Loads all chromatograms from all analyses.
-    #'
-    #' @return Invisible.
-    #'
-    load_chromatograms = function(analyses = NULL,
-                                  chromatograms = NULL,
-                                  rtmin = 0,
-                                  rtmax = 0,
-                                  minIntensity = NULL) {
-      self$Analyses <- StreamFind::load_chromatograms(
-        self$Analyses,
-        analyses,
-        chromatograms,
-        rtmin,
-        rtmax,
-        minIntensity
-      )
-      invisible(self)
-    },
-
-    # MARK: has_results_nts
-    ## ___ has_results_nts
-    #' @description Checks if there are NTS results, returning `TRUE` or `FALSE`.
-    has_results_nts = function() {
-      if (is(self$NTS, "StreamFind::NTS")) {
-        return(TRUE)
-      }
-      FALSE
-    },
-
     # MARK: has_features
-    ## ___ has_features -----
+    ## _has_features -----
     #' @description Checks if there are features from NTS results, returning `TRUE` or `FALSE`.
     has_features = function() {
       if (self$has_results_nts()) {
@@ -1007,7 +1148,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: has_groups
-    ## ___ has_groups -----
+    ## _has_groups -----
     #' @description Checks if there are feature groups from NTS results, returning `TRUE` or `FALSE`.
     has_groups = function() {
       if (self$has_results_nts()) {
@@ -1019,7 +1160,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: has_MSPeakLists
-    ## ___ has_MSPeakLists -----
+    ## _has_MSPeakLists -----
     #' @description Checks if there are MSPeakLists for analyses, returning `TRUE` or `FALSE`.
     has_MSPeakLists = function(analyses = NULL) {
       if (self$has_results_nts()) {
@@ -1031,7 +1172,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: has_formulas
-    ## ___ has_formulas -----
+    ## _has_formulas -----
     #' @description Checks if there are formulas assigned to feature groups, returning `TRUE` or `FALSE`.
     has_formulas = function() {
       if (self$has_results_nts()) {
@@ -1043,7 +1184,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: has_compounds
-    ## ___ has_compounds -----
+    ## _has_compounds -----
     #' @description Checks if there are compounds assigned to feature groups, returning `TRUE` or `FALSE`.
     has_compounds = function() {
       if (self$has_results_nts()) {
@@ -1054,18 +1195,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
-    # MARK: has_results_chromatograms
-    ## ___ has_results_chromatograms -----
-    #' @description Checks if there are chromatograms, returning `TRUE` or `FALSE`.
-    has_results_chromatograms = function() {
-      if (is(self$chromatograms, "StreamFind::Chromatograms")) {
-        return(TRUE)
-      }
-      FALSE
-    },
-
     # MARK: has_chromatograms_peaks
-    ## ___ has_chromatograms_peaks -----
+    ## _has_chromatograms_peaks -----
     #' @description Checks if there are integrated peaks from chromatograms, returning `TRUE` or `FALSE`.
     has_chromatograms_peaks = function() {
       if (self$has_results_chromatograms()) {
@@ -1076,18 +1207,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
-    # MARK: has_results_spectra
-    ## ___ has_results_spectra -----
-    #' @description Checks if there are spectra, returning `TRUE` or `FALSE`.
-    has_results_spectra = function() {
-      if (is(self$spectra, "StreamFind::Spectra")) {
-        return(TRUE)
-      }
-      FALSE
-    },
-
     # MARK: has_spectra_peaks
-    ## ___ has_spectra_peaks -----
+    ## _has_spectra_peaks -----
     #' @description Checks if there are spectra peaks, returning `TRUE` or `FALSE`.
     has_spectra_peaks = function() {
       if (self$has_results_spectra()) {
@@ -1099,7 +1220,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: has_spectra_charges
-    ## ___ has_spectra_charges -----
+    ## _has_spectra_charges -----
     #' @description Checks if there are spectra calculated charges, returning `TRUE` or `FALSE`.
     has_spectra_charges = function() {
       if (self$has_results_spectra()) {
@@ -1111,7 +1232,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: has_neutralized_spectra
-    ## ___ has_neutralized_spectra -----
+    ## _has_neutralized_spectra -----
     #' @description Checks if spectra are neutralized (i.e., \emph{m/z} converted to mass),
     #' returning `TRUE` or `FALSE`.
     has_neutralized_spectra = function() {
@@ -1124,7 +1245,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_spectra_3d
-    ## ___ plot_spectra_3d -----
+    ## _plot_spectra_3d -----
     #' @description Plots raw spectra in 3D for given MS analyses and targets.
     #'
     #' @param xVal Character length one. Possible values are "mz", "rt" or "mobility".
@@ -1158,7 +1279,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_spectra
-    ## ___ plot_spectra -----
+    ## _plot_spectra -----
     #' @description Plots spectra given MS analyses.
     #'
     #' @param xVal Character length one. Possible values are "mz", "rt", "mobility" or "mass".
@@ -1201,7 +1322,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_chromatograms
-    ## ___ plot_chromatograms -----
+    ## _plot_chromatograms -----
     #' @description Plots chromatograms in the analyses.
     plot_chromatograms = function(analyses = NULL,
                                   chromatograms = NULL,
@@ -1239,7 +1360,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: plot_chromatograms_baseline
-    ## ___ plot_chromatograms_baseline -----
+    ## _plot_chromatograms_baseline -----
     #' @description Plots chromatograms corrected baseline for given analyses.
     plot_chromatograms_baseline = function(analyses = NULL,
                                            chromatograms = NULL,
@@ -1256,181 +1377,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
 
-    # MARK: plot_spectra_xic
-    ## ___ plot_spectra_xic -----
-    #' @description Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
-    #'
-    #' @param plotTargetMark Logical (length 1), set to \code{TRUE} to plot a target mark.
-    #'
-    #' @param targetsMark A data.frame with columns `mz` and `rt`, defining the
-    #' \emph{m/z} and retention time values of each target. Note that the number
-    #'  of rows should match with the number of targets.
-    #'
-    #' @param ppmMark A numeric vector of length one to define the mass deviation,
-    #' in ppm, of the target mark. The default is 5 ppm.
-    #'
-    #' @param secMark A numeric vector of length one to define the time deviation,
-    #' in seconds, of the target mark. The default is 10 ppm.
-    #'
-    #' @param numberRows An integer vector of length one to define the number of
-    #' rows to grid the plots. Note that each target is always plotted in one row
-    #' for all selected analyses.
-    #'
-    plot_spectra_xic = function(analyses = NULL,
-                                mass = NULL,
-                                mz = NULL,
-                                rt = NULL,
-                                mobility = NULL,
-                                ppm = 20,
-                                sec = 60,
-                                millisec = 5,
-                                id = NULL,
-                                legendNames = NULL,
-                                plotTargetMark = TRUE,
-                                targetsMark = NULL,
-                                ppmMark = 5,
-                                secMark = 10,
-                                numberRows = 1) {
-      StreamFind::plot_spectra_xic(
-        self$Analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
-        legendNames, plotTargetMark, targetsMark, ppmMark, secMark, numberRows
-      )
-    },
-
-    # MARK: plot_spectra_eic
-    ## ___ plot_spectra_eic -----
-    #' @description Plots spectra extract ion chromatograms (EIC) from the analyses based on targets.
-    plot_spectra_eic = function(analyses = NULL,
-                                mass = NULL,
-                                mz = NULL,
-                                rt = NULL,
-                                mobility = NULL,
-                                ppm = 20,
-                                sec = 60,
-                                millisec = 5,
-                                id = NULL,
-                                legendNames = NULL,
-                                xLab = NULL,
-                                yLab = NULL,
-                                title = NULL,
-                                colorBy = "targets",
-                                showLegend = TRUE,
-                                xlim = NULL,
-                                ylim = NULL,
-                                cex = 0.6,
-                                interactive = TRUE) {
-      StreamFind::plot_spectra_eic(
-        self$Analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, legendNames, xLab,
-        yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive
-      )
-    },
-
-    # MARK: plot_spectra_tic
-    ## ___ plot_spectra_tic -----
-    #' @description Plots the spectra total ion chromatogram (TIC) of each analysis.
-    #'
-    #' @param downsize An integer of length one to downsize the TIC plot. The default is 1.
-    #'
-    plot_spectra_tic = function(analyses = NULL,
-                                levels = c(1, 2),
-                                rt = NULL,
-                                xLab = NULL,
-                                yLab = NULL,
-                                title = NULL,
-                                colorBy = "analyses",
-                                legendNames = NULL,
-                                showLegend = TRUE,
-                                xlim = NULL,
-                                ylim = NULL,
-                                cex = 0.6,
-                                downsize = 1,
-                                interactive = TRUE) {
-      StreamFind::plot_spectra_tic(
-        self$Analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames, showLegend, xlim,
-        ylim, cex, downsize, interactive
-      )
-    },
-
-    # MARK: plot_spectra_bpc
-    ## ___ plot_spectra_bpc -----
-    #' @description Plots the spectra base peak chromatogram (BPC) of each analysis.
-    plot_spectra_bpc = function(analyses = NULL,
-                                levels = c(1, 2),
-                                rt = NULL,
-                                xLab = NULL,
-                                yLab = NULL,
-                                title = NULL,
-                                colorBy = "analyses",
-                                legendNames = NULL,
-                                showLegend = TRUE,
-                                xlim = NULL,
-                                ylim = NULL,
-                                cex = 0.6,
-                                interactive = TRUE) {
-      StreamFind::plot_spectra_bpc(
-        self$Analyses, analyses, levels, rt, xLab, yLab, title, colorBy, legendNames, showLegend, xlim,
-        ylim, cex, interactive
-      )
-    },
-
-    # MARK: plot_spectra_ms2
-    ## ___ plot_spectra_ms2 -----
-    #' @description Plots level 2 spectra from the analyses based on targets.
-    plot_spectra_ms2 = function(analyses = NULL,
-                                mass = NULL,
-                                mz = NULL,
-                                rt = NULL,
-                                mobility = NULL,
-                                ppm = 20,
-                                sec = 60,
-                                millisec = 5,
-                                id = NULL,
-                                isolationWindow = 1.3,
-                                mzClust = 0.005,
-                                presence = 0.8,
-                                minIntensity = 0,
-                                legendNames = NULL,
-                                xLab = NULL,
-                                yLab = NULL,
-                                title = NULL,
-                                colorBy = "targets",
-                                interactive = TRUE) {
-      StreamFind::plot_spectra_ms2(
-        self$Analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, isolationWindow,
-        mzClust, presence, minIntensity, legendNames, xLab, yLab, title, colorBy, interactive
-      )
-    },
-
-    # MARK: plot_spectra_ms1
-    ## ___ plot_spectra_ms1 -----
-    #' @description Plots level 1 spectra from the analyses based on targets.
-    plot_spectra_ms1 = function(analyses = NULL,
-                                mass = NULL,
-                                mz = NULL,
-                                rt = NULL,
-                                mobility = NULL,
-                                ppm = 20,
-                                sec = 60,
-                                millisec = 5,
-                                id = NULL,
-                                mzClust = 0.003,
-                                presence = 0.8,
-                                minIntensity = 1000,
-                                legendNames = NULL,
-                                xLab = NULL,
-                                yLab = NULL,
-                                title = NULL,
-                                colorBy = "targets",
-                                showText = FALSE,
-                                interactive = TRUE) {
-      StreamFind::plot_spectra_ms1(
-        self$Analyses, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust,
-        presence, minIntensity, legendNames, xLab, yLab, title, colorBy, showText, interactive
-      )
-    },
+    
 
     # MARK: plot_features
-    ## ___ plot_features -----
+    ## _plot_features -----
     #' @description Plots features from analyses.
     plot_features = function(analyses = NULL,
                              features = NULL,
@@ -1463,7 +1413,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: map_features
-    ## ___ map_features -----
+    ## _map_features -----
     #' @description Plots a map of the retention time vs \emph{m/z} of features from analyses.
     map_features = function(analyses = NULL,
                             features = NULL,
@@ -1492,7 +1442,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_features_ms1
-    ## ___ plot_features_ms1 -----
+    ## _plot_features_ms1 -----
     #' @description Plots level 1 spectra from features in the analyses.
     plot_features_ms1 = function(analyses = NULL,
                                  features = NULL,
@@ -1524,7 +1474,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_features_ms2
-    ## ___ plot_features_ms2 -----
+    ## _plot_features_ms2 -----
     #' @description Plots level 2 spectra from features in the analyses.
     plot_features_ms2 = function(analyses = NULL,
                                  features = NULL,
@@ -1555,7 +1505,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_groups
-    ## ___ plot_groups -----
+    ## _plot_groups -----
     #' @description Plots feature groups EIC.
     plot_groups = function(groups = NULL,
                            mass = NULL,
@@ -1585,7 +1535,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_groups_ms1
-    ## ___ plot_groups_ms1 -----
+    ## _plot_groups_ms1 -----
     #' @description Plots level 1 spectra from feature groups in the analyses.
     plot_groups_ms1 = function(groups = NULL,
                                mass = NULL,
@@ -1620,7 +1570,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_groups_ms2
-    ## ___ plot_groups_ms2 -----
+    ## _plot_groups_ms2 -----
     #' @description Plots level 1 spectra from feature groups in the analyses.
     plot_groups_ms2 = function(groups = NULL,
                                mass = NULL,
@@ -1654,7 +1604,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_groups_overview
-    ## ___ plot_groups_overview -----
+    ## _plot_groups_overview -----
     #' @description Method to give an overview of the EIC, alignment and intensity variance from features within
     #' target feature groups.
     #'
@@ -1686,7 +1636,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_groups_profile
-    ## ___ plot_groups_profile -----
+    ## _plot_groups_profile -----
     #' @description Method to plot the intensity profile of feature groups across the analyses.
     #'
     #' @param normalized Logical (length 1). When `TRUE` the profile intensities are normalized.
@@ -1713,7 +1663,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: map_components
-    ## ___ map_components -----
+    ## _map_components -----
     #' @description Maps feature components in the analyses.
     map_components = function(analyses = NULL,
                               features = NULL,
@@ -1741,7 +1691,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_internal_standards
-    ## ___ plot_internal_standards -----
+    ## _plot_internal_standards -----
     #' @description Plots the quality control assessment of the internal standards.
     #'
     #' @param presence Logical (length 1). When `TRUE` the presence of the internal standards is plotted.
@@ -1754,7 +1704,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_suspects
-    ## ___ plot_suspects -----
+    ## _plot_suspects -----
     #' @description Plots suspects.
     #'
     #' @param database A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic
@@ -1793,7 +1743,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
     
     # MARK: plot_fold_change
-    ## ___ plot_fold_change -----
+    ## _plot_fold_change -----
     #' @description Plots the fold-change analysis between the `replicatesIn` and `replicatesOut`.
     #' 
     #' @param replicatesIn Character vector with the names of the replicates to be considered as the denominator.
@@ -1836,7 +1786,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_chromatograms_peaks
-    ## ___ plot_chromatograms_peaks -----
+    ## _plot_chromatograms_peaks -----
     #' @description Plots peaks from chromatograms from analyses.
     plot_chromatograms_peaks = function(analyses = NULL,
                                         chromatograms = NULL,
@@ -1857,7 +1807,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_spectra_charges
-    ## ___ plot_spectra_charges -----
+    ## _plot_spectra_charges -----
     #' @description Plots charge assignment of deconvoluted spectra from analyses.
     plot_spectra_charges = function(analyses = NULL,
                                     legendNames = NULL,
@@ -1877,7 +1827,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: plot_spectra_peaks
-    ## ___ plot_spectra_peaks -----
+    ## _plot_spectra_peaks -----
     #' @description Plots peaks from spectra from analyses.
     plot_spectra_peaks = function(analyses = NULL,
                                   legendNames = NULL,
@@ -1950,7 +1900,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     },
 
     # MARK: report_nts
-    ## ___ report_nts -----
+    ## _report_nts -----
     #' @description Saves the HTML report from the function \link[patRoon]{report} from the package \pkg{patRoon}.
     #' The interface is exactly the same and the arguments description are taken from the documentation in \pkg{patRoon}.
     #' Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in

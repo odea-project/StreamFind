@@ -75,8 +75,8 @@ and data row names are used as analyses names.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="load"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-load'><code>StreamFind::CoreEngine$load()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run'><code>StreamFind::CoreEngine$run()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_Workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_Workflow'><code>StreamFind::CoreEngine$run_Workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save'><code>StreamFind::CoreEngine$save()</code></a></span></li>
 </ul>
 </details>

@@ -99,6 +99,14 @@ get_patRoon_MSPeakLists <- S7::new_generic("get_patRoon_MSPeakLists", "x")
 
 #' @export
 #' @noRd
+get_raw_chromatograms <- S7::new_generic("get_raw_chromatograms", "x")
+
+#' @export
+#' @noRd
+get_raw_spectra <- S7::new_generic("get_raw_spectra", "x")
+
+#' @export
+#' @noRd
 get_spectra <- S7::new_generic("get_spectra", "x")
 
 #' @export

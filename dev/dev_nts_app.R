@@ -20,6 +20,35 @@ db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 
 ms <- MassSpecEngine$new(analyses = files)
 
+# ms$Analyses$has_results_nts
+# ms$Analyses$has_results_spectra
+# ms$Analyses$has_results_chromatograms
+# ms$Analyses$NTS
+# ms$Analyses$Spectra
+# ms$Analyses$Chromatograms
+
+# ms$get_spectra_bpc(analyses = 1:2)
+# ms$get_spectra_headers()
+# ms$get_instruments()
+# ms$plot_spectra_tic(levels = 1)
+# ms$plot_spectra_bpc(levels = 1)
+# plot_spectra_eic(ms$Analyses, mass = db[2, ], colorBy = "replicates+targets")
+# plot_spectra_xic(ms$Analyses, analyses = c(11, 17), mass = db[2, ],)
+# plot_spectra_ms1(
+#   ms$Analyses,
+#   analyses = c(11),
+#   mass = data.frame(min = 265, max =  280, rtmin = 910, rtmax = 920),
+#   colorBy = "replicates+targets",
+#   interactive = F
+# )
+# plot_spectra_ms2(
+#   ms$Analyses,
+#   analyses = c(11, 17),
+#   mass = db[2, ],
+#   colorBy = "replicates+targets",
+#   interactive = T
+# )
+
 ms$Metadata <- list(
   name = "Wastewater Ozonation Showcase",
   author = "Ricardo Cunha",

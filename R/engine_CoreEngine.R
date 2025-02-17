@@ -618,9 +618,9 @@ CoreEngine <- R6::R6Class(
       invisible(self)
     },
     
-    # MARK: run_Workflow
+    # MARK: run_workflow
     #' @description Runs all processing steps in Workflow.
-    run_Workflow = function() {
+    run_workflow = function() {
       if (length(self$Workflow) > 0) {
         steps <- self$Workflow$processing_steps
         self$Workflow <- StreamFind::Workflow()

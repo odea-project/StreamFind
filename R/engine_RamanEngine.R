@@ -9,22 +9,17 @@
 #' @template arg-core-metadata
 #' @template arg-core-workflow
 #' @template arg-analyses
-#' @template arg-raman-target
-#' @template arg-ms-minIntensity
-#' @template arg-settings
 #' @template arg-chromatograms
 #' @template arg-title
 #' @template arg-legendNames
 #' @template arg-colorBy
 #' @template arg-labs
 #' @template arg-interactive
-#' @template arg-xlim-ylim
-#' @template arg-cex
-#' @template arg-showLegend
 #' @template arg-renderEngine
 #' @template arg-useRawData
-#' @template arg-raman-targets
 #' @template arg-raman-target
+#' @template arg-raman-minIntensity
+#' @template arg-raman-targets
 #'
 #' @references
 #' \insertRef{orpl01}{StreamFind}
@@ -134,8 +129,20 @@ RamanEngine <- R6::R6Class("RamanEngine",
     ## get_spectra_matrix -----
     #' @description Gets a matrix with spectra.
     get_spectra_matrix = function(analyses = NULL,
-                                  targets = NULL) {
-      get_spectra_matrix(self$Analyses, analyses, targets)
+                                  targets = NULL,
+                                  rt = NULL,
+                                  shift = NULL,
+                                  minIntensity = NULL,
+                                  useRawData = FALSE) {
+      get_spectra_matrix(
+        self$Analyses,
+        analyses,
+        targets,
+        rt,
+        shift,
+        minIntensity,
+        useRawData
+      )
     },
     
     # MARK: get_chromatograms_peaks
@@ -210,10 +217,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
                             xLab = NULL,
                             yLab = NULL,
                             title = NULL,
-                            showLegend = TRUE,
                             colorBy = "analyses",
                             interactive = TRUE,
-                            cex = 0.6,
                             renderEngine = "webgl") {
       plot_spectra(
         self$Analyses,
@@ -226,10 +231,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
         xLab,
         yLab,
         title,
-        showLegend,
         colorBy,
         interactive,
-        cex,
         renderEngine
       )
     },
@@ -280,10 +283,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                      xLab = NULL,
                                      yLab = NULL,
                                      title = NULL,
-                                     showLegend = TRUE,
                                      colorBy = "analyses",
                                      interactive = TRUE,
-                                     cex = 0.6,
                                      renderEngine = "webgl") {
       plot_spectra_baseline(
         self$Analyses,
@@ -295,10 +296,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
         xLab,
         yLab,
         title,
-        showLegend,
         colorBy,
         interactive,
-        cex,
         renderEngine
       )
     },
@@ -318,10 +317,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                   xLab = NULL,
                                   yLab = NULL,
                                   title = NULL,
-                                  showLegend = TRUE,
                                   colorBy = "analyses",
                                   interactive = TRUE,
-                                  cex = 0.6,
                                   renderEngine = "webgl") {
       plot_chromatograms(
         self$Analyses,
@@ -334,10 +331,8 @@ RamanEngine <- R6::R6Class("RamanEngine",
         xLab,
         yLab,
         title,
-        showLegend,
         colorBy,
         interactive,
-        cex,
         renderEngine
       )
     },
@@ -351,11 +346,9 @@ RamanEngine <- R6::R6Class("RamanEngine",
                                         title = NULL,
                                         legendNames = TRUE,
                                         colorBy = "targets",
-                                        showLegend = TRUE,
                                         xLab = NULL,
                                         yLab = NULL,
                                         interactive = TRUE,
-                                        cex = 0.6,
                                         renderEngine = "webgl") {
       plot_chromatograms_peaks(
         self$Analyses,
@@ -365,13 +358,11 @@ RamanEngine <- R6::R6Class("RamanEngine",
         title,
         legendNames,
         colorBy,
-        showLegend,
         xlim = NULL,
         ylim = NULL,
         xLab,
         yLab,
         interactive,
-        cex,
         renderEngine
       )
     }

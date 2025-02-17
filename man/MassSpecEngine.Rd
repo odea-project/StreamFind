@@ -8,8 +8,10 @@ The MassSpecEngine R6 class is a framework for parsing, processing, inspecting a
 storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
 chromatograms produced by UV detection) can be loaded from mzML. If \code{msconvert} from
 \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e.,
-must be added to the environmental variables), the engine can also load vendor formats by direct
-conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
+must be added to the environmental variables), the engine can also load vendor formats (i.e.,
+Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF / WIFF2)
+by direct conversion to mzML. Note that conversion of vendor formats is only possible under
+Windows OS.
 }
 \details{
 The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
@@ -44,6 +46,10 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-MassSpecEngine-new}{\code{MassSpecEngine$new()}}
+\item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
+\item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
+\item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
+\item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
 \item \href{#method-MassSpecEngine-get_analysis_names}{\code{MassSpecEngine$get_analysis_names()}}
 \item \href{#method-MassSpecEngine-get_replicate_names}{\code{MassSpecEngine$get_replicate_names()}}
 \item \href{#method-MassSpecEngine-get_blank_names}{\code{MassSpecEngine$get_blank_names()}}
@@ -62,11 +68,20 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \item \href{#method-MassSpecEngine-get_spectra_headers}{\code{MassSpecEngine$get_spectra_headers()}}
 \item \href{#method-MassSpecEngine-get_spectra_tic}{\code{MassSpecEngine$get_spectra_tic()}}
 \item \href{#method-MassSpecEngine-get_spectra_bpc}{\code{MassSpecEngine$get_spectra_bpc()}}
-\item \href{#method-MassSpecEngine-get_spectra}{\code{MassSpecEngine$get_spectra()}}
-\item \href{#method-MassSpecEngine-get_spectra_matrix}{\code{MassSpecEngine$get_spectra_matrix()}}
 \item \href{#method-MassSpecEngine-get_spectra_eic}{\code{MassSpecEngine$get_spectra_eic()}}
 \item \href{#method-MassSpecEngine-get_spectra_ms1}{\code{MassSpecEngine$get_spectra_ms1()}}
 \item \href{#method-MassSpecEngine-get_spectra_ms2}{\code{MassSpecEngine$get_spectra_ms2()}}
+\item \href{#method-MassSpecEngine-plot_spectra_tic}{\code{MassSpecEngine$plot_spectra_tic()}}
+\item \href{#method-MassSpecEngine-plot_spectra_bpc}{\code{MassSpecEngine$plot_spectra_bpc()}}
+\item \href{#method-MassSpecEngine-plot_spectra_eic}{\code{MassSpecEngine$plot_spectra_eic()}}
+\item \href{#method-MassSpecEngine-plot_spectra_xic}{\code{MassSpecEngine$plot_spectra_xic()}}
+\item \href{#method-MassSpecEngine-plot_spectra_ms1}{\code{MassSpecEngine$plot_spectra_ms1()}}
+\item \href{#method-MassSpecEngine-plot_spectra_ms2}{\code{MassSpecEngine$plot_spectra_ms2()}}
+\item \href{#method-MassSpecEngine-has_results_nts}{\code{MassSpecEngine$has_results_nts()}}
+\item \href{#method-MassSpecEngine-has_results_spectra}{\code{MassSpecEngine$has_results_spectra()}}
+\item \href{#method-MassSpecEngine-has_results_chromatograms}{\code{MassSpecEngine$has_results_chromatograms()}}
+\item \href{#method-MassSpecEngine-get_spectra}{\code{MassSpecEngine$get_spectra()}}
+\item \href{#method-MassSpecEngine-get_spectra_matrix}{\code{MassSpecEngine$get_spectra_matrix()}}
 \item \href{#method-MassSpecEngine-get_chromatograms_number}{\code{MassSpecEngine$get_chromatograms_number()}}
 \item \href{#method-MassSpecEngine-get_chromatograms_headers}{\code{MassSpecEngine$get_chromatograms_headers()}}
 \item \href{#method-MassSpecEngine-get_chromatograms}{\code{MassSpecEngine$get_chromatograms()}}
@@ -83,22 +98,12 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \item \href{#method-MassSpecEngine-get_suspects}{\code{MassSpecEngine$get_suspects()}}
 \item \href{#method-MassSpecEngine-get_internal_standards}{\code{MassSpecEngine$get_internal_standards()}}
 \item \href{#method-MassSpecEngine-get_fold_change}{\code{MassSpecEngine$get_fold_change()}}
-\item \href{#method-MassSpecEngine-get_metadata}{\code{MassSpecEngine$get_metadata()}}
-\item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
-\item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
-\item \href{#method-MassSpecEngine-add_replicate_names}{\code{MassSpecEngine$add_replicate_names()}}
-\item \href{#method-MassSpecEngine-add_blank_names}{\code{MassSpecEngine$add_blank_names()}}
-\item \href{#method-MassSpecEngine-load_spectra}{\code{MassSpecEngine$load_spectra()}}
-\item \href{#method-MassSpecEngine-load_chromatograms}{\code{MassSpecEngine$load_chromatograms()}}
-\item \href{#method-MassSpecEngine-has_results_nts}{\code{MassSpecEngine$has_results_nts()}}
 \item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
 \item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
 \item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
-\item \href{#method-MassSpecEngine-has_results_chromatograms}{\code{MassSpecEngine$has_results_chromatograms()}}
 \item \href{#method-MassSpecEngine-has_chromatograms_peaks}{\code{MassSpecEngine$has_chromatograms_peaks()}}
-\item \href{#method-MassSpecEngine-has_results_spectra}{\code{MassSpecEngine$has_results_spectra()}}
 \item \href{#method-MassSpecEngine-has_spectra_peaks}{\code{MassSpecEngine$has_spectra_peaks()}}
 \item \href{#method-MassSpecEngine-has_spectra_charges}{\code{MassSpecEngine$has_spectra_charges()}}
 \item \href{#method-MassSpecEngine-has_neutralized_spectra}{\code{MassSpecEngine$has_neutralized_spectra()}}
@@ -106,12 +111,6 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \item \href{#method-MassSpecEngine-plot_spectra}{\code{MassSpecEngine$plot_spectra()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms}{\code{MassSpecEngine$plot_chromatograms()}}
 \item \href{#method-MassSpecEngine-plot_chromatograms_baseline}{\code{MassSpecEngine$plot_chromatograms_baseline()}}
-\item \href{#method-MassSpecEngine-plot_spectra_xic}{\code{MassSpecEngine$plot_spectra_xic()}}
-\item \href{#method-MassSpecEngine-plot_spectra_eic}{\code{MassSpecEngine$plot_spectra_eic()}}
-\item \href{#method-MassSpecEngine-plot_spectra_tic}{\code{MassSpecEngine$plot_spectra_tic()}}
-\item \href{#method-MassSpecEngine-plot_spectra_bpc}{\code{MassSpecEngine$plot_spectra_bpc()}}
-\item \href{#method-MassSpecEngine-plot_spectra_ms2}{\code{MassSpecEngine$plot_spectra_ms2()}}
-\item \href{#method-MassSpecEngine-plot_spectra_ms1}{\code{MassSpecEngine$plot_spectra_ms1()}}
 \item \href{#method-MassSpecEngine-plot_features}{\code{MassSpecEngine$plot_features()}}
 \item \href{#method-MassSpecEngine-map_features}{\code{MassSpecEngine$map_features()}}
 \item \href{#method-MassSpecEngine-plot_features_ms1}{\code{MassSpecEngine$plot_features_ms1()}}
@@ -144,8 +143,8 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="load"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-load'><code>StreamFind::CoreEngine$load()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run'><code>StreamFind::CoreEngine$run()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_Workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_Workflow'><code>StreamFind::CoreEngine$run_Workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save'><code>StreamFind::CoreEngine$save()</code></a></span></li>
 </ul>
 </details>
@@ -182,8 +181,9 @@ paths to mzML files or a \code{data.frame} with \code{colnames}: "file", "replic
 the blank samples. The "file" column is the full path to the mzML files. If \code{msconvert} from
 \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI
 (i.e., must be added to the environmental variables), the engine can also load vendor formats
-by direct conversion to mzML. Note that conversion of vendor formats is only possible under
-Windows OS.}
+(i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF
+/ WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only
+possible under Windows OS.}
 
 \item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from
 vendor formats to mzML.}
@@ -198,10 +198,87 @@ A new MassSpecEngine class object.
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_analyses}{}}}
+\subsection{Method \code{add_analyses()}}{
+Adds analyses. Note that when adding new analyses, any existing results are
+removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A character vector with full file paths to mzML/mzXML files. f \code{msconvert}
+from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI
+(i.e., must be added to the environmental variables), the engine can also load vendor formats
+(i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF
+/ WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only
+possible under Windows OS.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_replicate_names}{}}}
+\subsection{Method \code{add_replicate_names()}}{
+Adds replicate names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_replicate_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the
+number of analyses.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_blank_names}{}}}
+\subsection{Method \code{add_blank_names()}}{
+Adds blank names to the analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_blank_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{Character vector with the replicate names. Must have the same length as the
+number of analyses and must be one of replicate names.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_analysis_names"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_analysis_names}{}}}
 \subsection{Method \code{get_analysis_names()}}{
-Gets the analysis replicate names.
+Gets a character vector with the analysis replicate names.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_analysis_names(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -219,7 +296,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_replicate_names"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_replicate_names}{}}}
 \subsection{Method \code{get_replicate_names()}}{
-Gets the analysis replicate names.
+Gets a character vector with the analysis replicate names.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_replicate_names(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -237,7 +314,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_blank_names"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_blank_names}{}}}
 \subsection{Method \code{get_blank_names()}}{
-Gets the analysis blank replicate names.
+Gets a character vector with the analysis blank replicate names.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_blank_names(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -255,7 +332,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_files"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_files}{}}}
 \subsection{Method \code{get_files()}}{
-Gets the full file paths of each analysis.
+Gets a character vector with the full file paths of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_files(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -273,7 +350,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_formats"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_formats}{}}}
 \subsection{Method \code{get_formats()}}{
-Gets the file format of each analysis.'
+Gets a character vector with the file format of each analysis.'
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_formats(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -291,7 +368,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_instruments"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_instruments}{}}}
 \subsection{Method \code{get_instruments()}}{
-Gets the instruments information of each analysis.
+Gets a list of instrument information from each analysis as elements.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_instruments(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -309,7 +386,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_software"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_software}{}}}
 \subsection{Method \code{get_software()}}{
-Gets the software information of each analysis.
+Gets a list of software information from each analysis as elements.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_software(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -327,7 +404,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_number"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_number}{}}}
 \subsection{Method \code{get_spectra_number()}}{
-Gets the number of spectra in each analysis.
+Gets a numeric vector with the number of spectra in each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_number(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -345,7 +422,8 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_mode"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_mode}{}}}
 \subsection{Method \code{get_spectra_mode()}}{
-Gets the spectra mode of each analysis (i.e., profile or centroid).
+Gets a character vector with the spectra mode of each analysis
+(i.e., profile or centroid).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_mode(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -363,7 +441,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_level"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_level}{}}}
 \subsection{Method \code{get_spectra_level()}}{
-Gets the spectra levels of each analysis.
+Gets a character vector with the spectra levels (e.g., "1, 2") of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_level(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -381,7 +459,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_lowest_mz"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_lowest_mz}{}}}
 \subsection{Method \code{get_spectra_lowest_mz()}}{
-Gets the lower \emph{m/z} value of each analysis.
+Gets a numeric vector with the lower \emph{m/z} value of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_lowest_mz(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -399,7 +477,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_highest_mz"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_highest_mz}{}}}
 \subsection{Method \code{get_spectra_highest_mz()}}{
-Gets the higher \emph{m/z} value of each analysis.
+Gets a numeric vector with the higher \emph{m/z} value of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_highest_mz(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -417,7 +495,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_lowest_rt"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_lowest_rt}{}}}
 \subsection{Method \code{get_spectra_lowest_rt()}}{
-Gets the start retention time value of each analysis.
+Gets a numeric vector with the start retention time value of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_lowest_rt(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -435,7 +513,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_highest_rt"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_highest_rt}{}}}
 \subsection{Method \code{get_spectra_highest_rt()}}{
-Gets the end retention time value of each analysis.
+Gets a numeric vector with the end retention time value of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_highest_rt(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -453,7 +531,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_polarity"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_polarity}{}}}
 \subsection{Method \code{get_spectra_polarity()}}{
-Gets the polarity of each analysis.
+Gets a character vector with the polarity of each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_polarity(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -471,7 +549,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_headers"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_headers}{}}}
 \subsection{Method \code{get_spectra_headers()}}{
-Gets the spectra headers data.table of each analysis.
+Gets a data.table of the spectra headers from each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_headers(analyses = NULL)}\if{html}{\out{</div>}}
 }
@@ -489,7 +567,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_tic"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_tic}{}}}
 \subsection{Method \code{get_spectra_tic()}}{
-Gets the total ion chromatogram (TIC) of each analysis.
+Gets a data.table of the total ion chromatogram (TIC) from each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_tic(analyses = NULL, levels = c(1, 2), rt = NULL)}\if{html}{\out{</div>}}
 }
@@ -506,15 +584,12 @@ object.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A data.table with the TIC chromatogram.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra_bpc"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_bpc}{}}}
 \subsection{Method \code{get_spectra_bpc()}}{
-Gets the base peak chromatogram (BPC) of each analysis.
+Gets a data.table of the base peak chromatogram (BPC) from each analysis.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_bpc(analyses = NULL, levels = c(1, 2), rt = NULL)}\if{html}{\out{</div>}}
 }
@@ -531,15 +606,759 @@ object.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-A character vector.
 }
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_eic}{}}}
+\subsection{Method \code{get_spectra_eic()}}{
+Gets a data.table of extract ion chromatograms (EIC) from the analyses based
+on targets.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_eic(
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_ms1}{}}}
+\subsection{Method \code{get_spectra_ms1()}}{
+Gets a data.table of level 1 spectra from the analyses based on targets.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_ms1(
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
+on the mass resolution of the MS data.}
+
+\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
+spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
+
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_ms2}{}}}
+\subsection{Method \code{get_spectra_ms2()}}{
+Gets a data.table of level 2 spectra from the analyses based on targets.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_ms2(
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 0
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
+on the mass resolution of the MS data.}
+
+\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
+spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
+
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_tic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_tic}{}}}
+\subsection{Method \code{plot_spectra_tic()}}{
+Plots the spectra total ion chromatogram (TIC) of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_tic(
+  analyses = NULL,
+  levels = c(1, 2),
+  rt = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  legendNames = NULL,
+  downsize = 1,
+  interactive = TRUE,
+  renderEngine = "webgl"
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{levels}}{Integer vector with the levels of MS data.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
+Mixed use (e.g. \code{analyses+polarities}) is also possible.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{downsize}}{An integer of length one to downsize the TIC plot. The default is 1.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_bpc"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_bpc}{}}}
+\subsection{Method \code{plot_spectra_bpc()}}{
+Plots the spectra base peak chromatogram (BPC) of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_bpc(
+  analyses = NULL,
+  levels = c(1, 2),
+  rt = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  legendNames = NULL,
+  interactive = TRUE,
+  renderEngine = "webgl"
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{levels}}{Integer vector with the levels of MS data.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
+Mixed use (e.g. \code{analyses+polarities}) is also possible.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_eic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_eic}{}}}
+\subsection{Method \code{plot_spectra_eic()}}{
+Plots spectra extract ion chromatograms (EIC) from the analyses based on targets.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_eic(
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE,
+  renderEngine = "webgl"
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
+Mixed use (e.g. \code{analyses+polarities}) is also possible.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_xic"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_xic}{}}}
+\subsection{Method \code{plot_spectra_xic()}}{
+Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time
+from the analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_xic(
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  legendNames = NULL,
+  plotTargetMark = TRUE,
+  targetsMark = NULL,
+  ppmMark = 5,
+  secMark = 10,
+  numberRows = 1,
+  renderEngine = "webgl"
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{plotTargetMark}}{Logical (length 1), set to \code{TRUE} to plot a target mark.}
+
+\item{\code{targetsMark}}{A data.frame with columns \code{mz} and \code{rt}, defining the
+\emph{m/z} and retention time values of each target. Note that the number
+of rows should match with the number of targets.}
+
+\item{\code{ppmMark}}{A numeric vector of length one to define the mass deviation,
+in ppm, of the target mark. The default is 5 ppm.}
+
+\item{\code{secMark}}{A numeric vector of length one to define the time deviation,
+in seconds, of the target mark. The default is 10 ppm.}
+
+\item{\code{numberRows}}{An integer vector of length one to define the number of
+rows to grid the plots. Note that each target is always plotted in one row
+for all selected analyses.}
+
+\item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_ms1"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_ms1}{}}}
+\subsection{Method \code{plot_spectra_ms1()}}{
+Plots level 1 spectra from the analyses based on targets.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_ms1(
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showText = FALSE,
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
+on the mass resolution of the MS data.}
+
+\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
+spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
+
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
+Mixed use (e.g. \code{analyses+polarities}) is also possible.}
+
+\item{\code{showText}}{Logical (length 1), set to \code{TRUE} to show the text annotations.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_ms2"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_ms2}{}}}
+\subsection{Method \code{plot_spectra_ms2()}}{
+Plots level 2 spectra from the analyses based on targets.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_ms2(
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 0,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{\code{rt}}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
+
+\item{\code{millisec}}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
+on the mass resolution of the MS data.}
+
+\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
+spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
+
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{\code{xLab}}{A string with the title for the x axis.}
+
+\item{\code{yLab}}{A string with the title for the y axis.}
+
+\item{\code{title}}{A string with the title.}
+
+\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
+Mixed use (e.g. \code{analyses+polarities}) is also possible.}
+
+\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_results_nts"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_nts}{}}}
+\subsection{Method \code{has_results_nts()}}{
+Checks if there are NTS results, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_nts()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_results_spectra"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_spectra}{}}}
+\subsection{Method \code{has_results_spectra()}}{
+Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_spectra()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-has_results_chromatograms"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_chromatograms}{}}}
+\subsection{Method \code{has_results_chromatograms()}}{
+Checks if there are chromatograms, returning \code{TRUE} or \code{FALSE}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_chromatograms()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-get_spectra"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra}{}}}
 \subsection{Method \code{get_spectra()}}{
-Gets spectra from each analysis.
+Gets a data.table of spectra from each analysis based .
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra(
   analyses = NULL,
@@ -644,256 +1463,6 @@ Gets a matrix with spectra from analyses.
 \describe{
 \item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_eic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_eic}{}}}
-\subsection{Method \code{get_spectra_eic()}}{
-Gets spectra extract ion chromatograms (EIC) from the analyses based on targets
-as a data.table.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_eic(
-  analyses = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  useRawData = TRUE,
-  useLoadedData = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
-
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
-results/processed.}
-
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
-from files.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_ms1}{}}}
-\subsection{Method \code{get_spectra_ms1()}}{
-Gets level 1 spectra from the analyses based on targets as a data.frame.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_ms1(
-  analyses = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 1000,
-  useRawData = TRUE,
-  useLoadedData = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
-
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
-on the mass resolution of the MS data.}
-
-\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
-spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
-
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
-
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
-results/processed.}
-
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
-from files.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_spectra_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_spectra_ms2}{}}}
-\subsection{Method \code{get_spectra_ms2()}}{
-Gets level 2 spectra from the analyses based on targets as a data.frame.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_spectra_ms2(
-  analyses = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  isolationWindow = 1.3,
-  mzClust = 0.005,
-  presence = 0.8,
-  minIntensity = 0,
-  useRawData = TRUE,
-  useLoadedData = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
-
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
-applied for ion isolation and fragmentation during acquisition of tandem
-data (i.e., MS2 data).}
-
-\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
-on the mass resolution of the MS data.}
-
-\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
-spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
-
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
-
-\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
-results/processed.}
-
-\item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
-from files.}
 }
 \if{html}{\out{</div>}}
 }
@@ -1966,239 +2535,6 @@ correct the intensity before fold-change analysis.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-get_metadata"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_metadata}{}}}
-\subsection{Method \code{get_metadata()}}{
-Gets metadata from each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_metadata(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-A data.table.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_analyses}{}}}
-\subsection{Method \code{add_analyses()}}{
-Adds analyses. Note that when adding new analyses, any existing results are removed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A MassSpecAnalysis class object or a list with MassSpecAnalysis class objects as
-elements (see \code{?MassSpecAnalysis} for more information) or a character vector with full path to mzML/mzXML files.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-remove_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_analyses}{}}}
-\subsection{Method \code{remove_analyses()}}{
-Removes analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_replicate_names"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_replicate_names}{}}}
-\subsection{Method \code{add_replicate_names()}}{
-Adds replicate names to the analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_replicate_names(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-add_blank_names"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_blank_names}{}}}
-\subsection{Method \code{add_blank_names()}}{
-Adds blank names to the analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_blank_names(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character vector with the replicate names. Must have the same length as the number of analyses and
-must be one of replicate names.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-load_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_spectra}{}}}
-\subsection{Method \code{load_spectra()}}{
-Loads spectra from analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_spectra(
-  analyses = NULL,
-  levels = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  allTraces = TRUE,
-  isolationWindow = 1.3,
-  minIntensityMS1 = 0,
-  minIntensityMS2 = 0
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{levels}}{Integer vector with the levels of MS data.}
-
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
-
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{allTraces}}{Logical, when \code{TRUE} all level 2 data is returned.
-When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-are returned, using the \code{isolationWindow} to calculate the mass window.}
-
-\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
-applied for ion isolation and fragmentation during acquisition of tandem
-data (i.e., MS2 data).}
-
-\item{\code{minIntensityMS1}}{Numeric value with the minimum intensity of level 1
-data (i.e., MS1 data).}
-
-\item{\code{minIntensityMS2}}{Numeric value with the minimum intensity of level 2
-data (i.e., MS2 data).}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-load_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-load_chromatograms}{}}}
-\subsection{Method \code{load_chromatograms()}}{
-Loads all chromatograms from all analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$load_chromatograms(
-  analyses = NULL,
-  chromatograms = NULL,
-  rtmin = 0,
-  rtmax = 0,
-  minIntensity = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{chromatograms}}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
-
-\item{\code{rtmin}}{Numeric (length 1) with the minimum retention time.}
-
-\item{\code{rtmax}}{Numeric (length 1) with the maximum retention time.}
-
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_results_nts"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_nts}{}}}
-\subsection{Method \code{has_results_nts()}}{
-Checks if there are NTS results, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_nts()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_features}{}}}
 \subsection{Method \code{has_features()}}{
@@ -2257,32 +2593,12 @@ Checks if there are compounds assigned to feature groups, returning \code{TRUE} 
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_results_chromatograms"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_chromatograms}{}}}
-\subsection{Method \code{has_results_chromatograms()}}{
-Checks if there are chromatograms, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_chromatograms()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_chromatograms_peaks"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_chromatograms_peaks}{}}}
 \subsection{Method \code{has_chromatograms_peaks()}}{
 Checks if there are integrated peaks from chromatograms, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_chromatograms_peaks()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_results_spectra"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_spectra}{}}}
-\subsection{Method \code{has_results_spectra()}}{
-Checks if there are spectra, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_spectra()}\if{html}{\out{</div>}}
 }
 
 }
@@ -2670,520 +2986,6 @@ object.}
 
 \item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
 Mixed use (e.g. \code{analyses+polarities}) is also possible.}
-
-\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_xic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_xic}{}}}
-\subsection{Method \code{plot_spectra_xic()}}{
-Plots spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_xic(
-  analyses = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  legendNames = NULL,
-  plotTargetMark = TRUE,
-  targetsMark = NULL,
-  ppmMark = 5,
-  secMark = 10,
-  numberRows = 1
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
-
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
-the added targets as legend of the plot.}
-
-\item{\code{plotTargetMark}}{Logical (length 1), set to \code{TRUE} to plot a target mark.}
-
-\item{\code{targetsMark}}{A data.frame with columns \code{mz} and \code{rt}, defining the
-\emph{m/z} and retention time values of each target. Note that the number
-of rows should match with the number of targets.}
-
-\item{\code{ppmMark}}{A numeric vector of length one to define the mass deviation,
-in ppm, of the target mark. The default is 5 ppm.}
-
-\item{\code{secMark}}{A numeric vector of length one to define the time deviation,
-in seconds, of the target mark. The default is 10 ppm.}
-
-\item{\code{numberRows}}{An integer vector of length one to define the number of
-rows to grid the plots. Note that each target is always plotted in one row
-for all selected analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_eic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_eic}{}}}
-\subsection{Method \code{plot_spectra_eic()}}{
-Plots spectra extract ion chromatograms (EIC) from the analyses based on targets.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_eic(
-  analyses = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  showLegend = TRUE,
-  xlim = NULL,
-  ylim = NULL,
-  cex = 0.6,
-  interactive = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
-
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
-the added targets as legend of the plot.}
-
-\item{\code{xLab}}{A string with the title for the x axis.}
-
-\item{\code{yLab}}{A string with the title for the y axis.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
-Mixed use (e.g. \code{analyses+polarities}) is also possible.}
-
-\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
-
-\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
-
-\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
-
-\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
-
-\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_tic"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_tic}{}}}
-\subsection{Method \code{plot_spectra_tic()}}{
-Plots the spectra total ion chromatogram (TIC) of each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_tic(
-  analyses = NULL,
-  levels = c(1, 2),
-  rt = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "analyses",
-  legendNames = NULL,
-  showLegend = TRUE,
-  xlim = NULL,
-  ylim = NULL,
-  cex = 0.6,
-  downsize = 1,
-  interactive = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{levels}}{Integer vector with the levels of MS data.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{xLab}}{A string with the title for the x axis.}
-
-\item{\code{yLab}}{A string with the title for the y axis.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
-Mixed use (e.g. \code{analyses+polarities}) is also possible.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
-the added targets as legend of the plot.}
-
-\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
-
-\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
-
-\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
-
-\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
-
-\item{\code{downsize}}{An integer of length one to downsize the TIC plot. The default is 1.}
-
-\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_bpc"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_bpc}{}}}
-\subsection{Method \code{plot_spectra_bpc()}}{
-Plots the spectra base peak chromatogram (BPC) of each analysis.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_bpc(
-  analyses = NULL,
-  levels = c(1, 2),
-  rt = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "analyses",
-  legendNames = NULL,
-  showLegend = TRUE,
-  xlim = NULL,
-  ylim = NULL,
-  cex = 0.6,
-  interactive = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{levels}}{Integer vector with the levels of MS data.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{xLab}}{A string with the title for the x axis.}
-
-\item{\code{yLab}}{A string with the title for the y axis.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
-Mixed use (e.g. \code{analyses+polarities}) is also possible.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
-the added targets as legend of the plot.}
-
-\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
-
-\item{\code{xlim}}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
-
-\item{\code{ylim}}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
-
-\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
-
-\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_ms2"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_ms2}{}}}
-\subsection{Method \code{plot_spectra_ms2()}}{
-Plots level 2 spectra from the analyses based on targets.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_ms2(
-  analyses = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  isolationWindow = 1.3,
-  mzClust = 0.005,
-  presence = 0.8,
-  minIntensity = 0,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  interactive = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
-
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
-applied for ion isolation and fragmentation during acquisition of tandem
-data (i.e., MS2 data).}
-
-\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
-on the mass resolution of the MS data.}
-
-\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
-spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
-
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
-the added targets as legend of the plot.}
-
-\item{\code{xLab}}{A string with the title for the x axis.}
-
-\item{\code{yLab}}{A string with the title for the y axis.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
-Mixed use (e.g. \code{analyses+polarities}) is also possible.}
-
-\item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-plot_spectra_ms1"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_spectra_ms1}{}}}
-\subsection{Method \code{plot_spectra_ms1()}}{
-Plots level 1 spectra from the analyses based on targets.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_spectra_ms1(
-  analyses = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 1000,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  showText = FALSE,
-  interactive = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{mz}}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
-
-\item{\code{rt}}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
-
-\item{\code{mobility}}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
-
-\item{\code{ppm}}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{\code{sec}}{Numeric of length one with the time deviation, in seconds.}
-
-\item{\code{millisec}}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{\code{id}}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
-on the mass resolution of the MS data.}
-
-\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
-spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
-
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
-
-\item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
-the added targets as legend of the plot.}
-
-\item{\code{xLab}}{A string with the title for the x axis.}
-
-\item{\code{yLab}}{A string with the title for the y axis.}
-
-\item{\code{title}}{A string with the title.}
-
-\item{\code{colorBy}}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
-Mixed use (e.g. \code{analyses+polarities}) is also possible.}
-
-\item{\code{showText}}{Logical (length 1), set to \code{TRUE} to show the text annotations.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 }

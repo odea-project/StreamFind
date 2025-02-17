@@ -59,10 +59,11 @@ raman$Analyses$blanks <- rep("Blank", 22)
 raman_workflow <- StreamFind::Workflow(
   list(
     RamanMethod_AverageSpectra_native(),
-    RamanMethod_SubtractBlankSpectra_StreamFind()
+    RamanMethod_SubtractBlankSpectra_StreamFind(),
+    RamanMethod_CorrectSpectraBaseline_baseline_als()
   )
 )
 raman$Workflow <- raman_workflow
-raman$run_Workflow()
+raman$run_workflow()
 raman$save("raman.rds")
 raman$run_app()

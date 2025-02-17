@@ -44,6 +44,7 @@
 # MARK: .make_colorBy_varkey
 #' @noRd
 .make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL) {
+  
   if (!"id" %in% colnames(data)) {
     if ("feature" %in% colnames(data)) {
       data$id <- data$feature
@@ -64,10 +65,7 @@
     if (!is.character(data$level)) {
       data$level <- paste("MS", data$level, sep = "")
     }
-
     data$level <- factor(data$level)
-  } else {
-    data$level <- "not defined"
   }
 
   if ("polarity" %in% colnames(data)) {
@@ -77,54 +75,79 @@
       data$polarity <- as.character(data$polarity)
       data$polarity <- pol_key[data$polarity]
     }
-  } else {
-    data$polarity <- "not defined"
   }
 
   if ("analyses" %in% colorBy) {
     varkey <- data$analysis
-  } else if (("targets+analyses" %in% colorBy || "analyses+targets" %in% colorBy) && "analysis" %in% colnames(data)) {
+  } else if (
+    ("targets+analyses" %in% colorBy || "analyses+targets" %in% colorBy) && 
+    "analysis" %in% colnames(data)) {
+    
     if ("name" %in% colnames(data) & isTRUE(legendNames)) {
       varkey <- paste0(data$name, " - ", data$analysis)
     } else {
       varkey <- paste0(data$id, " - ", data$analysis)
     }
+    
   } else if ("replicates" %in% colorBy && "replicate" %in% colnames(data)) {
     varkey <- data$replicate
-  } else if (("targets+replicates" %in% colorBy || "replicates+targets" %in% colorBy) && "replicate" %in% colnames(data)) {
+    
+  } else if (
+    ("targets+replicates" %in% colorBy || "replicates+targets" %in% colorBy) &&
+    "replicate" %in% colnames(data)) {
+    
     if ("name" %in% colnames(data) & isTRUE(legendNames)) {
       varkey <- paste0(data$name, " - ", data$replicate)
     } else {
       varkey <- paste0(data$id, " - ", data$replicate)
     }
+    
   } else if ("polarities" %in% colorBy && "polarity" %in% colnames(data)) {
     varkey <- data$polarity
-  } else if (("targets+polarities" %in% colorBy || "polarities+targets" %in% colorBy) && "polarity" %in% colnames(data)) {
+    
+  } else if (
+    ("targets+polarities" %in% colorBy || "polarities+targets" %in% colorBy) &&
+    "polarity" %in% colnames(data)) {
+    
     if ("name" %in% colnames(data) & isTRUE(legendNames)) {
       varkey <- paste0(data$name, " - ", data$polarity)
     } else {
       varkey <- paste0(data$id, " - ", data$polarity)
     }
-  } else if (("analyses+polarities" %in% colorBy || "polarities+analyses" %in% colorBy) && "polarity" %in% colnames(data)) {
+    
+  } else if (
+    ("analyses+polarities" %in% colorBy || "polarities+analyses" %in% colorBy) &&
+    "polarity" %in% colnames(data)) {
+    
     varkey <- paste0(data$analysis, " - ", data$polarity)
-  } else if (("replicates+polarities" %in% colorBy || "polarities+replicates" %in% colorBy) && "polarity" %in% colnames(data)) {
+    
+  } else if (
+    ("replicates+polarities" %in% colorBy || "polarities+replicates" %in% colorBy) &&
+    "polarity" %in% colnames(data)) {
+    
     varkey <- paste0(data$replicate, " - ", data$polarity)
+    
   } else if ("levels" %in% colorBy && "level" %in% colnames(data)) {
     varkey <- data$level
-  } else if (("levels+polarities" %in% colorBy || "polarities+levels" %in% colorBy) && "polarity" %in% colnames(data) && "level" %in% colnames(data)) {
+    
+  } else if (
+    ("levels+polarities" %in% colorBy || "polarities+levels" %in% colorBy) &&
+    "polarity" %in% colnames(data) && "level" %in% colnames(data)) {
+    
     varkey <- paste0(data$level, " - ", data$polarity)
+    
   } else if (is.character(legendNames) && length(legendNames) == length(unique(data$id))) {
     leg <- legendNames
     names(leg) <- unique(data$id)
     varkey <- leg[data$id]
+    
   } else if ("name" %in% colnames(data) && isTRUE(legendNames)) {
     varkey <- data$name
+    
   } else {
     varkey <- data$id
   }
-  
   data$var <- varkey
-  
   data
 }
 

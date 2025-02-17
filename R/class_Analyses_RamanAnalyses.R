@@ -476,13 +476,17 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
         rpl <- rpl[analyses]
         spec$spectra <- spec$spectra[names(spec$spectra) %in% unname(rpl)]
         spec$spectra <- Map( function(z, y) {
-          z$replicate <- y
+          if (nrow(z) > 0) z$replicate <- y
           z
         }, spec$spectra, names(spec$spectra))
       } else {
+        rpl <- x$replicates
         spec$spectra <- spec$spectra[analyses]
         spec$spectra <- Map( function(z, y) {
-          z$analysis <- y
+          if (nrow(z) > 0) {
+            z$analysis <- y
+            z$replicate <- rpl[y]
+          }
           z
         }, spec$spectra, names(spec$spectra))
       }
@@ -491,14 +495,16 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
     if (spec$has_chrom_peaks) {
       if (length(spec$spectra) == length(spec$chrom_peaks[names(spec$spectra)])) {
         spec$spectra <- Map(function(z, y) {
-          z$id <- NA_character_
-          for (i in seq_len(nrow(y))) {
-            sel <- z$rt >= y$rtmin[i] & z$rt <= y$rtmax[i]
-            if (sum(sel) > 0) {
-              if ("group" %in% colnames(y)) {
-                z$id[sel] <- y$group[i]
-              } else {
-                z$id[sel] <- y$peak[i]
+          if (nrow(z) > 0) {
+            z$id <- NA_character_
+            for (i in seq_len(nrow(y))) {
+              sel <- z$rt >= y$rtmin[i] & z$rt <= y$rtmax[i]
+              if (sum(sel) > 0) {
+                if ("group" %in% colnames(y)) {
+                  z$id[sel] <- y$group[i]
+                } else {
+                  z$id[sel] <- y$peak[i]
+                }
               }
             }
           }
@@ -602,10 +608,8 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
                                                     xLab = NULL,
                                                     yLab = NULL,
                                                     title = NULL,
-                                                    showLegend = TRUE,
                                                     colorBy = "analyses",
                                                     interactive = TRUE,
-                                                    cex = 0.6,
                                                     renderEngine = "webgl") {
   spectra <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData)
 
@@ -635,23 +639,59 @@ S7::method(plot_spectra, RamanAnalyses) <- function(x,
   }
 
   if (is.null(yLab)) yLab <- "Raman intensity / A.U."
-
-  if (grepl("replicates", colorBy)) {
-    if (!"replicate" %in% colnames(spectra)) {
-      spectra$replicate <- x$replicates[spectra$analysis]
-    }
-  }
   
   colorBy <- gsub("chrom_peaks", "targets", colorBy)
 
   spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
-
-  setnames(spectra, "shift", "x")
-
+  
+  spectra$loop <- paste0(spectra$analysis, spectra$replicate, spectra$id, spectra$var)
+  
+  cl <- .get_colors(unique(spectra$var))
+  
   if (!interactive) {
-    return(.plot_x_spectra_static(spectra, xLab, yLab, title, cex, showLegend))
+    ggplot2::ggplot(spectra, ggplot2::aes(x = shift, y = intensity, group = loop)) + 
+      ggplot2::geom_line(ggplot2::aes(color = var)) + 
+      ggplot2::scale_color_manual(values = cl) + 
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
   } else {
-    return(.plot_lines_interactive(spectra, xLab, yLab, title, colorBy, renderEngine))
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+    
+    loop <- NULL
+    
+    plot <- spectra %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~shift,
+        y = ~intensity,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines",
+        line = list(width = 0.5),
+        text = ~paste(
+          "<br>analysis: ", analysis,
+          "<br>replicate: ", replicate,
+          "<br>id: ", id,
+          "<br>shift: ", shift,
+          "<br>intensity: ", intensity
+        ),
+        hoverinfo = "text"
+      ) %>% plotly::layout(
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+    
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
+    }
+    
+    plot
   }
 }
 
@@ -710,11 +750,11 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
   colors_var <- .get_colors(unique(spectra$var))
   
   hover_text <- paste0(
-    "<br>id: ", spectra$id,
     "<br>analysis: ", spectra$analysis,
     "<br>replicate: ", spectra$replicate,
-    "<br>shift: ", spectra$shift,
+    "<br>id: ", spectra$id,
     "<br>rt: ", spectra$rt,
+    "<br>shift: ", spectra$shift,
     "<br>intensity: ", spectra$intensity
   )
   
@@ -723,6 +763,7 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
       plotly::add_lines(
         color = ~var,
         colors = colors_var,
+        line = list(width = 0.5),
         hoverinfo = "text",
         text = hover_text,
         line = list(width = 4)
@@ -753,10 +794,8 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
                                                              xLab = NULL,
                                                              yLab = NULL,
                                                              title = NULL,
-                                                             showLegend = TRUE,
                                                              colorBy = "analyses",
                                                              interactive = TRUE,
-                                                             cex = 0.6,
                                                              renderEngine = "webgl") {
   
   spectra <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData = FALSE)
@@ -766,25 +805,19 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
     return(NULL)
   }
   
-  has_baseline <- any(vapply(spectra, function(z) "baseline" %in% colnames(z), FALSE))
+  spectra <- data.table::rbindlist(spectra, fill = TRUE)
   
-  if (!has_baseline) {
+  if (!"baseline" %in% colnames(spectra)) {
     warning("Baseline not found!")
     return(NULL)
-  }
-  
-  baseline <- NULL
-  
-  if (x$Spectra$is_averaged) {
-    spectra <- data.table::rbindlist(spectra, idcol = "replicate", fill = TRUE)
-  } else {
-    spectra <- data.table::rbindlist(spectra, idcol = "analysis", fill = TRUE)
   }
   
   groupCols <- c("analysis", "replicate", "shift")
   if ("id" %in% colnames(spectra)) groupCols <- c("id", groupCols)
   if ("group" %in% colnames(spectra)) groupCols <- c("group", groupCols)
   groupCols <- groupCols[groupCols %in% colnames(spectra)]
+  
+  baseline = NULL
   
   spectra <- spectra[, .(baseline = mean(baseline), raw = mean(raw)), by = groupCols]
   
@@ -800,28 +833,73 @@ S7::method(plot_spectra_baseline, RamanAnalyses) <- function(x,
   
   if (is.null(yLab)) yLab <- "Raman intensity / A.U."
   
-  if ("replicates" %in% colorBy) {
-    if (!"replicate" %in% colnames(spectra)) {
-      spectra$replicate <- x$replicates[spectra$analysis]
-    }
-  }
-  
   colorBy <- gsub("chrom_peaks", "targets", colorBy)
-  
-  if (grepl("targets", colorBy)) {
-    if ("group" %in% colnames(spectra)) {
-      spectra$id <- spectra$group
-    }
-  }
   
   spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
   
-  setnames(spectra, "shift", "x")
-
+  spectra$loop <- paste0(spectra$analysis, spectra$replicate, spectra$id, spectra$var)
+  
+  cl <- .get_colors(unique(spectra$var))
+  
   if (!interactive) {
-    return(.plot_x_spectra_baseline_static(spectra, xLab, yLab, title, cex, showLegend))
+    ggplot2::ggplot(spectra, ggplot2::aes(x = shift, group = loop)) + 
+      ggplot2::geom_line(ggplot2::aes(y = raw, color = var)) +
+      ggplot2::geom_line(ggplot2::aes(y = baseline, color = var), linetype = "dashed") +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
   } else {
-    return(.plot_lines_baseline_interactive(spectra, xLab, yLab, title, colorBy, renderEngine))
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+    
+    loop <- NULL
+    
+    plot <- spectra %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~shift,
+        y = ~raw,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines",
+        line = list(width = 0.5),
+        text = ~paste(
+          "<br>analysis: ", analysis,
+          "<br>replicate: ", replicate,
+          "<br>id: ", id,
+          "<br>shift: ", shift,
+          "<br>intensity: ", raw
+        ),
+        hoverinfo = "text",
+        name = ~var,
+        legendgroup = ~var
+      ) %>% plotly::add_trace(
+        x = ~shift,
+        y = ~baseline,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines",
+        line = list(dash = "dash", width = 0.5),
+        name = ~var,
+        legendgroup = ~var,
+        showlegend = FALSE
+      ) %>% plotly::layout(
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+    
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
+    }
+    
+    plot
+    
   }
 }
 
@@ -839,30 +917,24 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
                                                           xLab = NULL,
                                                           yLab = NULL,
                                                           title = NULL,
-                                                          showLegend = TRUE,
                                                           colorBy = "analyses",
                                                           interactive = TRUE,
-                                                          cex = 0.6,
                                                           renderEngine = "webgl") {
   spectra <- get_spectra(x, analyses, targets, rt, shift, minIntensity, useRawData)
-  
-  if (!all(vapply(spectra, function(z) "rt" %in% colnames(z), FALSE))) {
-    warning("Column rt not found in spectra data.table for plotting chromatograms!")
-    return(NULL)
-  }
   
   if (sum(vapply(spectra, nrow, 0)) == 0) {
     warning("No spectra found for the defined targets!")
     return(NULL)
   }
   
-  intensity <- NULL
+  spectra <- data.table::rbindlist(spectra, fill = TRUE)
   
-  if (x$Spectra$is_averaged && !useRawData) {
-    spectra <- data.table::rbindlist(spectra, idcol = "replicate", fill = TRUE)
-  } else {
-    spectra <- data.table::rbindlist(spectra, idcol = "analysis", fill = TRUE)
+  if (!"rt" %in% colnames(spectra)) {
+    warning("Column rt not found in spectra data.table for plotting chromatograms!")
+    return(NULL)
   }
+  
+  intensity <- NULL
   
   groupCols <- c("analysis", "replicate", "rt")
   if ("id" %in% colnames(spectra)) groupCols <- c("id", groupCols)
@@ -876,20 +948,58 @@ S7::method(plot_chromatograms, RamanAnalyses) <- function(x,
   if (is.null(xLab)) xLab <- "Retention time / seconds"
   if (is.null(yLab)) yLab <- "Cumulative Raman intensity / A.U."
   
-  if ("replicates" %in% colorBy) {
-    if (!"replicate" %in% colnames(spectra)) {
-      spectra$replicate <- x$replicates[spectra$analysis]
-    }
-  }
+  colorBy <- gsub("chrom_peaks", "targets", colorBy)
   
   spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames = NULL)
   
-  setnames(spectra, "rt", "x")
+  spectra$loop <- paste0(spectra$analysis, spectra$replicate, spectra$id, spectra$var)
+  
+  cl <- .get_colors(unique(spectra$var))
   
   if (!interactive) {
-    return(.plot_x_spectra_static(spectra, xLab, yLab, title, cex, showLegend))
+    ggplot2::ggplot(spectra, ggplot2::aes(x = rt, y = intensity, group = loop)) + 
+      ggplot2::geom_line(ggplot2::aes(color = var)) + 
+      ggplot2::scale_color_manual(values = cl) + 
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
   } else {
-    return(.plot_lines_interactive(spectra, xLab, yLab, title, colorBy, renderEngine))
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+    
+    loop <- NULL
+    
+    plot <- spectra %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines",
+        line = list(width = 0.5),
+        text = ~paste(
+          "<br>analysis: ", analysis,
+          "<br>replicate: ", replicate,
+          "<br>id: ", id,
+          "<br>rt: ", rt,
+          "<br>intensity: ", intensity
+        ),
+        hoverinfo = "text"
+      ) %>% plotly::layout(
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+    
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
+    }
+    
+    plot
   }
 }
 
@@ -923,6 +1033,7 @@ S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x,
   
   if ("analysis" %in% colnames(pks)) {
     pks <- pks[pks$analysis %in% analyses, ]
+    
   } else if ("replicate" %in% colnames(pks)) {
     rpl <- x$replicates
     rpl <- rpl[analyses]
@@ -934,6 +1045,10 @@ S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x,
     }
   }
   
+  if (!"replicate" %in% colnames(pks)) {
+    pks$replicate <- x$replicates[pks$analysis]
+  }
+  
   if (!is.null(targets)) {
     if ("group" %in% colnames(pks)) {
       pks <- pks[pks$group %in% targets, ]
@@ -942,8 +1057,10 @@ S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x,
     }
   }
   
-  if (is.numeric(rt)) {
-    pks <- pks[pks$rt >= rt[1] & pks$rt <= rt[2], ]
+  if (is.numeric(rt) && length(rt) == 2) {
+    rt <- sort(rt)
+    sel <- pks$rt >= rt[1] & pks$rt <= rt[2]
+    pks <- pks[sel, ]
   }
   
   if (nrow(pks) == 0) {
@@ -965,13 +1082,11 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
                                                                 title = NULL,
                                                                 legendNames = TRUE,
                                                                 colorBy = "targets",
-                                                                showLegend = TRUE,
                                                                 xlim = NULL,
                                                                 ylim = NULL,
                                                                 xLab = NULL,
                                                                 yLab = NULL,
                                                                 interactive = TRUE,
-                                                                cex = 0.6,
                                                                 renderEngine = "webgl") {
   pks <- get_chromatograms_peaks(x, analyses, targets, rt)
   
@@ -980,25 +1095,29 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
     return(NULL)
   }
   
-  spectra <- get_spectra(x, analyses = analyses, targets = targets, useRawData = FALSE)
-  
-  if (!all(vapply(spectra, function(z) "rt" %in% colnames(z), FALSE))) {
-    warning("Column rt not found in spectra data.table for plotting chromatograms!")
-    return(NULL)
-  }
+  spectra <- get_spectra(
+    x,
+    analyses,
+    targets,
+    rt,
+    shift = NULL,
+    minIntensity = 0,
+    useRawData = FALSE
+  )
   
   if (sum(vapply(spectra, nrow, 0)) == 0) {
     warning("No spectra found for the defined targets!")
     return(NULL)
   }
   
-  intensity <- NULL
+  spectra <- data.table::rbindlist(spectra, fill = TRUE)
   
-  if (x$Spectra$is_averaged) {
-    spectra <- data.table::rbindlist(spectra, idcol = "replicate", fill = TRUE)
-  } else {
-    spectra <- data.table::rbindlist(spectra, idcol = "analysis", fill = TRUE)
+  if (!"rt" %in% colnames(spectra)) {
+    warning("Column rt not found in spectra data.table for plotting chromatograms!")
+    return(NULL)
   }
+  
+  intensity <- NULL
   
   groupCols <- c("analysis", "replicate", "rt")
   if ("id" %in% colnames(spectra)) groupCols <- c("id", groupCols)
@@ -1012,26 +1131,161 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
   if (is.null(xLab)) xLab <- "Retention time / seconds"
   if (is.null(yLab)) yLab <- "Cumulative Raman intensity / A.U."
   
-  if ("replicates" %in% colorBy) {
-    if (!"replicate" %in% colnames(pks)) {
-      pks$replicate <- x$replicates[pks$analysis]
-    }
-    if (!"replicate" %in% colnames(spectra)) {
-      spectra$replicate <- x$replicates[spectra$analysis]
-    }
+  colorBy <- gsub("chrom_peaks", "targets", colorBy)
+  
+  spectra <- .make_colorBy_varkey(spectra, colorBy, legendNames)
+  
+  if ("group" %in% colnames(pks)) {
+    pks$id <- pks$group
+  } else {
+    pks$id <- pks$peak
   }
   
-  data.table::setnames(spectra, "rt", "x")
-  data.table::setnames(pks, c("rt", "rtmin", "rtmax"), c("x", "min", "max"))
+  pks <- .make_colorBy_varkey(pks, colorBy, legendNames)
+  
+  cl <- .get_colors(unique(pks$var))
+  cl50 <- paste(cl, "50", sep = "")
+  names(cl50) <- names(cl)
   
   if (!interactive) {
-    .plot_chrom_peaks_static(
-      spectra, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab
-    )
+    plot <- ggplot2::ggplot(spectra, ggplot2::aes(x = rt))
+    
+    for (i in seq_len(nrow(pks))) {
+      pk_analysis <- pks[["analysis"]][i]
+      pk_replicate <- pks[["replicate"]][i]
+      pk_id <- pks[["id"]][i]
+      pk_var <- pks[["var"]][i]
+      temp <- dplyr::filter(spectra, analysis %in% pk_analysis & replicate %in% pk_replicate)
+      temp$var <- pk_var
+      
+      plot <- plot + ggplot2::geom_line(
+        data = temp,
+        ggplot2::aes(y = intensity, color = var)
+      )
+      
+      temp <- temp[temp$id %in% pk_id, ]
+      
+      plot <- plot + ggplot2::geom_ribbon(
+        data = temp,
+        ggplot2::aes(
+          ymin = rep(min(intensity), length(intensity)),
+          ymax = intensity,
+          fill = var
+        )
+      )
+    }
+    
+    plot <- plot + ggplot2::scale_color_manual(values = cl) +
+      ggplot2::scale_fill_manual(values = cl50, guide = "none") +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
+    plot
+    
   } else {
-    .plot_lines_peaks_interactive(
-      spectra, pks, legendNames, colorBy, title, showLegend, xLab, yLab, renderEngine
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+    
+    show_legend <- rep(TRUE, length(cl))
+    names(show_legend) <- names(cl)
+    
+    plot <- plot_ly(spectra, x = ~rt)
+    
+    for (i in seq_len(nrow(pks))) {
+      pk_analysis <- pks[["analysis"]][i]
+      pk_replicate <- pks[["replicate"]][i]
+      pk_id <- pks[["id"]][i]
+      pk_var <- pks[["var"]][i]
+      
+      plot <- plot %>% add_trace(
+        data = dplyr::filter(
+          spectra,
+          analysis %in% pk_analysis & replicate %in% pk_replicate & id %in% pk_id
+        ),
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        mode = "markers",
+        marker = list(color = cl[pk_var], size = 5),
+        text = ~paste(
+          "<br>analysis: ", pk_analysis,
+          "<br>replicate: ", pk_replicate,
+          "<br>id: ", pk_id,
+          "<br>rt: ", round(rt, 2),
+          "<br>intensity: ", round(intensity, 0)
+        ),
+        hoverinfo = "text",
+        name = pk_var,
+        legendgroup = pk_var,
+        showlegend = FALSE
+      )
+      
+      plot <- plot %>% plotly::add_ribbons(
+        data = dplyr::filter(
+          spectra,
+          analysis %in% pk_analysis & replicate %in% pk_replicate & id %in% pk_id
+        ),
+        x = ~rt,
+        ymin = ~min(intensity),
+        ymax = ~intensity,
+        line = list(color = cl[pk_var], width = 1.5),
+        fillcolor = cl50[pk_var],
+        text = ~paste(
+          "<br>analysis: ", pk_analysis,
+          "<br>replicate: ", pk_replicate,
+          "<br>id: ", pk_id,
+          "<br>rt: ", round(rt, 2),
+          "<br>intensity: ", round(intensity, 0)
+        ),
+        hoverinfo = "text",
+        name = pk_var,
+        legendgroup = pk_var,
+        showlegend = show_legend[pk_var]
+      )
+      
+      show_legend[pk_var] <- FALSE
+    }
+    
+    for (i in seq_len(nrow(pks))) {
+      pk_analysis <- pks[["analysis"]][i]
+      pk_replicate <- pks[["replicate"]][i]
+      pk_id <- pks[["id"]][i]
+      pk_var <- pks[["var"]][i]
+      
+      plot <- plot %>% add_trace(
+        data = dplyr::filter(spectra, analysis %in% pk_analysis & replicate %in% pk_replicate),
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        mode = "lines",
+        line = list(color = cl[pk_var], width = 0.5),
+        name = pk_var,
+        legendgroup = pk_var,
+        showlegend = FALSE
+      )
+    }
+    
+    plot <- plot %>% plotly::layout(
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
     )
+    
+    if (renderEngine %in% "webgl") {
+      # Fix for warnings with hoveron when webgl is used
+      plot$x$attrs <- lapply(plot$x$attrs, function(x) {
+        if (!is.null(x[["hoveron"]])) {
+          x[["hoveron"]] <- NULL
+        }
+        x
+      })
+      
+      plot <- plot %>% plotly::toWebGL()
+    }
+    
+    plot
   }
 }
 

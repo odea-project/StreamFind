@@ -48,7 +48,7 @@ with a \code{Workflow} object.}
 \item \href{#method-CoreEngine-print}{\code{CoreEngine$print()}}
 \item \href{#method-CoreEngine-save}{\code{CoreEngine$save()}}
 \item \href{#method-CoreEngine-run}{\code{CoreEngine$run()}}
-\item \href{#method-CoreEngine-run_Workflow}{\code{CoreEngine$run_Workflow()}}
+\item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
 \item \href{#method-CoreEngine-run_app}{\code{CoreEngine$run_app()}}
 \item \href{#method-CoreEngine-clone}{\code{CoreEngine$clone()}}
 }
@@ -230,12 +230,12 @@ Runs a processing method defined by the \code{ProcessingStep} object.
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-run_Workflow"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-run_Workflow}{}}}
-\subsection{Method \code{run_Workflow()}}{
+\if{html}{\out{<a id="method-CoreEngine-run_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-run_workflow}{}}}
+\subsection{Method \code{run_workflow()}}{
 Runs all processing steps in Workflow.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_Workflow()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_workflow()}\if{html}{\out{</div>}}
 }
 
 }

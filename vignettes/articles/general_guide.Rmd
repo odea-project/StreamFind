@@ -251,7 +251,7 @@ show(raman$Workflow)
 
 ```{r run-raman-workflow}
 # The data processing workflow is applied
-raman$run_Workflow()
+raman$run_workflow()
 
 # Gets the names of the results in the Analyses object
 # A RamanSpectra (Results child class) is now added with the processed spectra

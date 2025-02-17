@@ -58,8 +58,8 @@ storing Raman spectroscopic data. Raman data can be loaded from "asc", "sif", "j
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="load"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-load'><code>StreamFind::CoreEngine$load()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="print"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-print'><code>StreamFind::CoreEngine$print()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run'><code>StreamFind::CoreEngine$run()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_Workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_Workflow'><code>StreamFind::CoreEngine$run_Workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_app"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_app'><code>StreamFind::CoreEngine$run_app()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="run_workflow"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-run_workflow'><code>StreamFind::CoreEngine$run_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="CoreEngine" data-id="save"><a href='../../StreamFind/html/CoreEngine.html#method-CoreEngine-save'><code>StreamFind::CoreEngine$save()</code></a></span></li>
 </ul>
 </details>
@@ -202,10 +202,6 @@ data.}
 
 \item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
-
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
-
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
@@ -222,7 +218,14 @@ results/processed.}
 \subsection{Method \code{get_spectra_matrix()}}{
 Gets a matrix with spectra.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_spectra_matrix(analyses = NULL, targets = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{RamanEngine$get_spectra_matrix(
+  analyses = NULL,
+  targets = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = NULL,
+  useRawData = FALSE
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -233,6 +236,15 @@ object.}
 
 \item{\code{targets}}{character vector with names of chromatographic peaks for selective retrieval of
 data.}
+
+\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
+
+\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+
+\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{useRawData}}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
 }
 \if{html}{\out{</div>}}
 }
@@ -254,8 +266,6 @@ object.}
 
 \item{\code{targets}}{character vector with names of chromatographic peaks for selective retrieval of
 data.}
-
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
 \item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 }
@@ -361,10 +371,8 @@ Plots spectra.
   xLab = NULL,
   yLab = NULL,
   title = NULL,
-  showLegend = TRUE,
   colorBy = "analyses",
   interactive = TRUE,
-  cex = 0.6,
   renderEngine = "webgl"
 )}\if{html}{\out{</div>}}
 }
@@ -380,10 +388,6 @@ data.}
 
 \item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
-
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
-
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
@@ -397,14 +401,10 @@ results/processed.}
 
 \item{\code{title}}{A string with the title.}
 
-\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
-
 \item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
 \code{replicates}.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-
-\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
 
 \item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
 }
@@ -443,10 +443,6 @@ object.}
 data.}
 
 \item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
-
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
-
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
@@ -487,10 +483,8 @@ Plots the spectra baseline correction.
   xLab = NULL,
   yLab = NULL,
   title = NULL,
-  showLegend = TRUE,
   colorBy = "analyses",
   interactive = TRUE,
-  cex = 0.6,
   renderEngine = "webgl"
 )}\if{html}{\out{</div>}}
 }
@@ -506,10 +500,6 @@ data.}
 
 \item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
-
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
-
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
@@ -520,14 +510,10 @@ data.}
 
 \item{\code{title}}{A string with the title.}
 
-\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
-
 \item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
 \code{replicates}.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-
-\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
 
 \item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
 }
@@ -551,10 +537,8 @@ of the spectrum signals for each time unit.
   xLab = NULL,
   yLab = NULL,
   title = NULL,
-  showLegend = TRUE,
   colorBy = "analyses",
   interactive = TRUE,
-  cex = 0.6,
   renderEngine = "webgl"
 )}\if{html}{\out{</div>}}
 }
@@ -570,10 +554,6 @@ data.}
 
 \item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
-
-\item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
-
 \item{\code{shift}}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
@@ -587,14 +567,10 @@ results/processed.}
 
 \item{\code{title}}{A string with the title.}
 
-\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
-
 \item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
 \code{replicates}.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-
-\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
 
 \item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
 }
@@ -614,11 +590,9 @@ Plots peaks from chromatograms.
   title = NULL,
   legendNames = TRUE,
   colorBy = "targets",
-  showLegend = TRUE,
   xLab = NULL,
   yLab = NULL,
   interactive = TRUE,
-  cex = 0.6,
   renderEngine = "webgl"
 )}\if{html}{\out{</div>}}
 }
@@ -634,8 +608,6 @@ data.}
 
 \item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
 
-\item{\code{rt}}{Numeric of length two with the minimum and maximum retention time, in seconds.}
-
 \item{\code{title}}{A string with the title.}
 
 \item{\code{legendNames}}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
@@ -644,15 +616,11 @@ the added targets as legend of the plot.}
 \item{\code{colorBy}}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
 \code{replicates}.}
 
-\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
-
 \item{\code{xLab}}{A string with the title for the x axis.}
 
 \item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{interactive}}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-
-\item{\code{cex}}{Numeric (length 1) defining the scale of the legend for non interactive plotting.}
 
 \item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
 }

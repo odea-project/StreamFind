@@ -34,7 +34,7 @@ core <- CoreEngine$new(Metadata = list(file = "core.rds"))
 # }
 
 
-
+plot_spectra_baseline(raman$Analyses, colorBy = "replicates", interactive = TRUE)
 
 # Resources -------
 ms_files <- StreamFindData::get_ms_file_paths()

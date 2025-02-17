@@ -84,7 +84,7 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_baseline_als) <- fun
     maxit = x$parameters$maxit
   )
   
-  chrom_list <- engine$chromatograms$chromatograms
+  chrom_list <- engine$Chromatograms$chromatograms
   
   chrom_list <- lapply(chrom_list, function(z, baseline_method, baseline_args) {
     
@@ -115,7 +115,7 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_baseline_als) <- fun
     
   }, baseline_method = baseline_method, baseline_args = baseline_args)
   
-  engine$chromatograms$chromatograms <- chrom_list
+  engine$Chromatograms$chromatograms <- chrom_list
   message(paste0("\U2713 ", "Chromatograms beseline corrected!"))
   TRUE
 }
@@ -207,7 +207,7 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_airpls) <- function(
   differences = x$parameters$differences
   itermax = x$parameters$itermax
   
-  chrom_list <- engine$chromatograms$chromatograms
+  chrom_list <- engine$Chromatograms$chromatograms
   
   chrom_list <- lapply(chrom_list, function(z, lambda, differences, itermax) {
     
@@ -240,7 +240,7 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_airpls) <- function(
     
   }, lambda = lambda, differences = differences, itermax = itermax)
   
-  engine$chromatograms$chromatograms <- chrom_list
+  engine$Chromatograms$chromatograms <- chrom_list
   message(paste0("\U2713 ", "Chromatograms beseline corrected!"))
   TRUE
 }
