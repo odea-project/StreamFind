@@ -6,6 +6,8 @@
 #' @param lambda Numeric (length 1) with the 2nd derivative constraint.
 #' @param p Numeric (length 1) with the weighting of positive residuals.
 #' @param maxit Integer (length 1) with the maximum number of iterations.
+#' @param liftByLowestNegativeToZero Logical (length 1) indicating if the corrected chromatogram
+#' should be lifted by the lowest negative value to zero.
 #'
 #' @return A MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object.
 #'
@@ -18,7 +20,8 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- S7::new_class(
   
   constructor = function(lambda = 5,
                          p = 0.05,
-                         maxit = 10) {
+                         maxit = 10,
+                         liftByLowestNegativeToZero = FALSE) {
     S7::new_object(
       ProcessingStep(
         engine = "MassSpec",
@@ -28,7 +31,8 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- S7::new_class(
         parameters = list(
           lambda = as.numeric(lambda),
           p = as.numeric(p),
-          maxit = as.numeric(maxit)
+          maxit = as.numeric(maxit),
+          liftByLowestNegativeToZero = as.logical(liftByLowestNegativeToZero)
         ),
         number_permitted = Inf,
         version = as.character(packageVersion("StreamFind")),
@@ -48,6 +52,7 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- S7::new_class(
     checkmate::assert_number(self@parameters$lambda)
     checkmate::assert_number(self@parameters$p)
     checkmate::assert_integer(as.integer(self@parameters$maxit))
+    checkmate::assert_logical(self@parameters$liftByLowestNegativeToZero)
     NULL
   }
 )
@@ -84,6 +89,8 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_baseline_als) <- fun
     maxit = x$parameters$maxit
   )
   
+  liftByLowestNegativeToZero <- x$parameters$liftByLowestNegativeToZero
+  
   chrom_list <- engine$Chromatograms$chromatograms
   
   chrom_list <- lapply(chrom_list, function(z, baseline_method, baseline_args) {
@@ -95,6 +102,9 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_baseline_als) <- fun
         
         temp_x <- lapply(temp_x, function(z) {
           baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
+          if (any(baseline_data$corrected < 0) && liftByLowestNegativeToZero) {
+            baseline_data$corrected <- baseline_data$corrected + abs(min(baseline_data$corrected))
+          }
           z$baseline <- baseline_data$baseline
           z$raw <- z$intensity
           z$intensity <- baseline_data$corrected
@@ -105,6 +115,9 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_baseline_als) <- fun
         
       } else {
         baseline_data <- .baseline_correction(z$intensity, baseline_method, baseline_args)
+        if (any(baseline_data$corrected < 0) && liftByLowestNegativeToZero) {
+          baseline_data$corrected <- baseline_data$corrected + abs(min(baseline_data$corrected))
+        }
         z$baseline <- baseline_data$baseline
         z$raw <- z$intensity
         z$intensity <- baseline_data$corrected
@@ -216,11 +229,11 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_airpls) <- function(
       if ("id" %in% colnames(z)) {
         temp_x <- split(z, z$id)
         
-        temp_x <- lapply(temp_x, function(z) {
-          baseline_data <- .airPLS_by_zmzhang(z$intensity, lambda, differences, itermax)
+        temp_x <- lapply(temp_x, function(z) { 
+          baseline_data <- .airPLS_by_zmzhang(z$intensity, lambda, differences, itermax) 
           z$baseline <- baseline_data
           z$raw <- z$intensity
-          baseline_data[baseline_data > z$intensity] <- z$intensity[baseline_data > z$intensity]
+          # baseline_data[baseline_data > z$intensity] <- z$intensity[baseline_data > z$intensity]
           z$intensity <- z$intensity - baseline_data
           z
         })
@@ -231,7 +244,7 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_airpls) <- function(
         baseline_data <- .airPLS_by_zmzhang(z$intensity, lambda, differences, itermax)
         z$baseline <- baseline_data
         z$raw <- z$intensity
-        baseline_data[baseline_data > z$intensity] <- z$intensity[baseline_data > z$intensity]
+        # baseline_data[baseline_data > z$intensity] <- z$intensity[baseline_data > z$intensity]
         z$intensity <- z$intensity - baseline_data
       }
     }

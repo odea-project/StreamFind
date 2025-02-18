@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FindSpectraMaxima_StreamFind**
+#' **MassSpecMethod_FindSpectraMaxima_native**
 #'
 #' @description Finds maximum peaks in continuous spectra.
 #' 
@@ -6,12 +6,12 @@
 #' @param maxWidth Numeric (length 1) with the maximum width of a peak.
 #' @param minHeight Numeric (length 1) with the minimum height of a peak.
 #'
-#' @return A MassSpecMethod_FindSpectraMaxima_StreamFind object.
+#' @return A MassSpecMethod_FindSpectraMaxima_native object.
 #'
 #' @export
 #'
-MassSpecMethod_FindSpectraMaxima_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_FindSpectraMaxima_StreamFind",
+MassSpecMethod_FindSpectraMaxima_native <- S7::new_class(
+  name = "MassSpecMethod_FindSpectraMaxima_native",
   parent = ProcessingStep,
   package = "StreamFind",
   
@@ -22,7 +22,7 @@ MassSpecMethod_FindSpectraMaxima_StreamFind <- S7::new_class(
         engine = "MassSpec",
         method = "FindSpectraMaxima",
         required = "LoadSpectra",
-        algorithm = "StreamFind",
+        algorithm = "native",
         parameters = list(
           minWidth = as.numeric(minWidth),
           maxWidth = as.numeric(maxWidth),
@@ -42,7 +42,7 @@ MassSpecMethod_FindSpectraMaxima_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FindSpectraMaxima")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_number(self@parameters$minWidth)
     checkmate::assert_number(self@parameters$maxWidth)
     checkmate::assert_number(self@parameters$minHeight)
@@ -52,7 +52,7 @@ MassSpecMethod_FindSpectraMaxima_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_FindSpectraMaxima_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, MassSpecMethod_FindSpectraMaxima_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
@@ -64,7 +64,7 @@ S7::method(run, MassSpecMethod_FindSpectraMaxima_StreamFind) <- function(x, engi
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$has_results_spectra()) {
     warning("No Spectra results object available! Not done.")
     return(FALSE)
   }
@@ -138,7 +138,7 @@ S7::method(run, MassSpecMethod_FindSpectraMaxima_StreamFind) <- function(x, engi
         
         return(data.table::data.table(
           id = unique(z$id),
-          peak = seq_along(peaks),
+          peak = paste0("S", unique(z$id), "_P", seq_along(peaks), "_M", round(x[peaks], 0)),
           mass = x[peaks],
           min = peaks_left,
           max = peaks_right,

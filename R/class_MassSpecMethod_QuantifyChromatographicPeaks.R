@@ -1,4 +1,4 @@
-#' **MassSpecMethod_QuantifyChromatographicPeaks_StreamFind**
+#' **MassSpecMethod_QuantifyChromatographicPeaks_native**
 #'
 #' @description Quantifies chromatographic peaks based on a calibration model.
 #' 
@@ -8,12 +8,12 @@
 #' @param model Character with the model to use for calibration. Possible values are *linear*,
 #' *quadratic*, or *cubic*.
 #'
-#' @return A MassSpecMethod_QuantifyChromatographicPeaks_StreamFind object.
+#' @return A MassSpecMethod_QuantifyChromatographicPeaks_native object.
 #'
 #' @export
 #'
-MassSpecMethod_QuantifyChromatographicPeaks_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_QuantifyChromatographicPeaks_StreamFind",
+MassSpecMethod_QuantifyChromatographicPeaks_native <- S7::new_class(
+  name = "MassSpecMethod_QuantifyChromatographicPeaks_native",
   parent = ProcessingStep,
   package = "StreamFind",
   
@@ -24,7 +24,7 @@ MassSpecMethod_QuantifyChromatographicPeaks_StreamFind <- S7::new_class(
         engine = "MassSpec",
         method = "QuantifyChromatographicPeaks",
         required = c("LoadChromatograms", "IntegrateChromatograms"),
-        algorithm = "StreamFind",
+        algorithm = "native",
         parameters = list(
           calibration = as.numeric(calibration),
           value = as.character(value),
@@ -44,7 +44,7 @@ MassSpecMethod_QuantifyChromatographicPeaks_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "QuantifyChromatographicPeaks")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_numeric(self@parameters$calibration)
     NULL
   }
@@ -52,7 +52,7 @@ MassSpecMethod_QuantifyChromatographicPeaks_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_QuantifyChromatographicPeaks_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, MassSpecMethod_QuantifyChromatographicPeaks_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
@@ -69,7 +69,7 @@ S7::method(run, MassSpecMethod_QuantifyChromatographicPeaks_StreamFind) <- funct
     return(FALSE)
   }
   
-  chromatograms <- engine$chromatograms
+  chromatograms <- engine$Chromatograms
   
   if (!chromatograms$has_peaks) {
     warning("No chromatograms peaks available! Not done.")
@@ -135,10 +135,9 @@ S7::method(run, MassSpecMethod_QuantifyChromatographicPeaks_StreamFind) <- funct
   split_vec <- peaks$analysis
   peaks$analysis <- NULL
   peaks_list <- split(peaks, split_vec)
-  chromatograms$peaks[names(peaks)] <- peaks_list
-  chromatograms$peaks <- peaks_list
+  chromatograms$peaks[names(peaks_list)] <- peaks_list
   chromatograms$calibration_model <- calibration_fit
-  engine$chromatograms <- chromatograms
+  engine$Chromatograms <- chromatograms
   message(paste0("\U2713 ", "Chromatographic peaks quantified!"))
   TRUE
 }

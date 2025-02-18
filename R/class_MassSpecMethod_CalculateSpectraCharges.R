@@ -1,4 +1,4 @@
-#' **MassSpecMethod_CalculateSpectraCharges_StreamFind**
+#' **MassSpecMethod_CalculateSpectraCharges_native**
 #'
 #' @description Calculates spectral charges from multi-charged compounds (e.g. proteins and
 #' monoclonal antibodies) for mass deconvolution.
@@ -12,12 +12,12 @@
 #' @param absLowCut Numeric (length 1) with the absolute low cut for the charge clustering.
 #' @param top Numeric (length 1) with the number of top charges to be considered.
 #'
-#' @return A MassSpecMethod_CalculateSpectraCharges_StreamFind object.
+#' @return A MassSpecMethod_CalculateSpectraCharges_native object.
 #'
 #' @export
 #'
-MassSpecMethod_CalculateSpectraCharges_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_CalculateSpectraCharges_StreamFind",
+MassSpecMethod_CalculateSpectraCharges_native <- S7::new_class(
+  name = "MassSpecMethod_CalculateSpectraCharges_native",
   parent = ProcessingStep,
   package = "StreamFind",
   
@@ -32,7 +32,7 @@ MassSpecMethod_CalculateSpectraCharges_StreamFind <- S7::new_class(
         engine = "MassSpec",
         method = "CalculateSpectraCharges",
         required = "LoadSpectra",
-        algorithm = "StreamFind",
+        algorithm = "native",
         parameters = list(
           onlyTopScans = as.logical(onlyTopScans),
           topScans = as.numeric(topScans),
@@ -55,7 +55,7 @@ MassSpecMethod_CalculateSpectraCharges_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "CalculateSpectraCharges")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_logical(self@parameters$onlyTopScans, max.len = 1)
     checkmate::assert_numeric(self@parameters$topScans, max.len = 1)
     checkmate::assert_number(self@parameters$roundVal)
@@ -68,7 +68,7 @@ MassSpecMethod_CalculateSpectraCharges_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_CalculateSpectraCharges_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, MassSpecMethod_CalculateSpectraCharges_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
@@ -80,7 +80,7 @@ S7::method(run, MassSpecMethod_CalculateSpectraCharges_StreamFind) <- function(x
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$has_results_spectra()) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
@@ -129,9 +129,9 @@ S7::method(run, MassSpecMethod_CalculateSpectraCharges_StreamFind) <- function(x
       }
       
       z$mz <- round(z$mz, digits = 4)
-      cols_merge <- c("mz", "polarity")
+      cols_merge <- c("mz", "polarity", "level")
       if ("id" %in% colnames(z)) cols_merge <- c(cols_merge, "id")
-      z <- z[, .(rt = mean(rt), mz = mean(mz), intensity = sum(intensity)), by = cols_merge]
+      z <- z[, .(rt = mean(rt), intensity = sum(intensity)), by = cols_merge]
       z <- unique(z)
       z <- z[order(mz), ]
       z$cluster <- round(z$mz / roundVal) * roundVal

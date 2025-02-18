@@ -56,7 +56,7 @@ S7::method(run, MassSpecMethod_SmoothSpectra_movingaverage) <- function(x, engin
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$has_results_spectra()) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
@@ -161,7 +161,7 @@ S7::method(run, MassSpecMethod_SmoothSpectra_savgol) <- function(x, engine = NUL
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$has_results_spectra()) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }

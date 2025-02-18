@@ -71,13 +71,13 @@ S7::method(run, MassSpecMethod_FindChromPeaks_LocalMaxima) <- function(x, engine
   
   parameters <- x$parameters
   
-  chroms <- engine$Analyses$chromatograms$chromatograms
+  chroms <- engine$Chromatograms$chromatograms
 
   chrom_peaks <- lapply(chroms, function(s) {
     
     if (nrow(s) == 0) return(data.table::data.table())
     
-    find_relevant_peaks <- function(x, y, id, min_width, max_width, min_height) {
+    find_relevant_peaks <- function(x, y, id, idx, min_width, max_width, min_height) {
       peaks <- numeric(0)
       peaks_left <- numeric(0)
       peaks_right <- numeric(0)
@@ -133,7 +133,8 @@ S7::method(run, MassSpecMethod_FindChromPeaks_LocalMaxima) <- function(x, engine
       
       return(data.table::data.table(
         id = id,
-        peak = seq_along(peaks),
+        index = idx,
+        peak = paste0("C", idx ,"_P", seq_along(peaks), "_RT", round(x[peaks], 0)),
         rt = x[peaks],
         rtmin = peaks_left,
         rtmax = peaks_right,
@@ -153,11 +154,12 @@ S7::method(run, MassSpecMethod_FindChromPeaks_LocalMaxima) <- function(x, engine
     
     for (uid in uids) {
       s_id <- s[ids %in% uid, ]
+      idx <- unique(s_id$index)
       intensity <- NULL
       s_id <- s_id[, .(intensity = sum(intensity)), by = "rt"]
       
       peaks_id <- find_relevant_peaks(
-        s_id$rt, s_id$intensity, uid,
+        s_id$rt, s_id$intensity, uid, idx,
         min_width = parameters$minWidth,
         max_width = parameters$maxWidth,
         min_height = parameters$minHeight
@@ -180,7 +182,7 @@ S7::method(run, MassSpecMethod_FindChromPeaks_LocalMaxima) <- function(x, engine
   
   names(chrom_peaks) <- names(chroms)
   
-  engine$chromatograms$peaks <- chrom_peaks
+  engine$Chromatograms$peaks <- chrom_peaks
   message(paste0("\U2713 ", "Chromatograms peaks found and added!"))
   TRUE
 }
@@ -313,6 +315,8 @@ S7::method(run, MassSpecMethod_FindChromPeaks_pracma) <- function(x, engine = NU
       pks$pro_mz <- unique(z$pro_mz)
       
       pks$index <- unique(z$index)
+      
+      pks$peak <- paste0("C", pks$index ,"_P", pks$peak, "_RT", round(pks$rt, 0))
       
       setcolorder(pks, c("index", "id", "peak", "polarity", "pre_ce", "pre_mz", "pro_mz"))
       

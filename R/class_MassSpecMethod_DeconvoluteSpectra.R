@@ -1,4 +1,4 @@
-#' **MassSpecMethod_DeconvoluteSpectra_StreamFind**
+#' **MassSpecMethod_DeconvoluteSpectra_native**
 #'
 #' @description Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after
 #' assignment of charges.
@@ -7,12 +7,12 @@
 #' @param window Optional numeric (length 1) with the window in \emph{m/z} for collecting traces of
 #' a given charge.
 #'
-#' @return A MassSpecMethod_DeconvoluteSpectra_StreamFind object.
+#' @return A MassSpecMethod_DeconvoluteSpectra_native object.
 #'
 #' @export
 #'
-MassSpecMethod_DeconvoluteSpectra_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_DeconvoluteSpectra_StreamFind",
+MassSpecMethod_DeconvoluteSpectra_native <- S7::new_class(
+  name = "MassSpecMethod_DeconvoluteSpectra_native",
   parent = ProcessingStep,
   package = "StreamFind",
   
@@ -22,7 +22,7 @@ MassSpecMethod_DeconvoluteSpectra_StreamFind <- S7::new_class(
         engine = "MassSpec",
         method = "DeconvoluteSpectra",
         required = c("LoadSpectra", "CalculateSpectraCharges"),
-        algorithm = "StreamFind",
+        algorithm = "native",
         parameters = list(
           clustVal = as.numeric(clustVal),
           window = as.numeric(window)
@@ -41,7 +41,7 @@ MassSpecMethod_DeconvoluteSpectra_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "DeconvoluteSpectra")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_number(self@parameters$clustVal)
     checkmate::assert_number(self@parameters$window)
     NULL
@@ -50,7 +50,7 @@ MassSpecMethod_DeconvoluteSpectra_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_DeconvoluteSpectra_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, MassSpecMethod_DeconvoluteSpectra_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
@@ -62,12 +62,12 @@ S7::method(run, MassSpecMethod_DeconvoluteSpectra_StreamFind) <- function(x, eng
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$has_results_spectra()) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
   
-  if (!engine$has_spectra_charges()) {
+  if (length(engine$Spectra$charges) == 0) {
     warning("No spectra charge results object available! Not done.")
     return(FALSE)
   }

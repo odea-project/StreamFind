@@ -368,6 +368,30 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       StreamFind::get_spectra_bpc(self$Analyses, analyses, levels, rt)
     },
     
+    # MARK: get_raw_spectra
+    ## get_raw_spectra -----
+    #' @description Gets a data.table of spectra from the analyses based on targets.
+    get_raw_spectra = function(analyses = NULL,
+                               levels = NULL,
+                               mass = NULL,
+                               mz = NULL,
+                               rt = NULL,
+                               mobility = NULL,
+                               ppm = 20,
+                               sec = 60,
+                               millisec = 5,
+                               id = NULL,
+                               allTraces = TRUE,
+                               isolationWindow = 1.3,
+                               minIntensityMS1 = 0,
+                               minIntensityMS2 = 0) {
+      StreamFind::get_raw_spectra(
+        self$Analyses,
+        analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+        allTraces, isolationWindow, minIntensityMS1, minIntensityMS2
+      )
+    },
+    
     # MARK: get_spectra_eic
     ## get_spectra_eic -----
     #' @description Gets a data.table of extract ion chromatograms (EIC) from the analyses based
@@ -598,6 +622,38 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       )
     },
     
+    # MARK: get_chromatograms_number
+    ## get_chromatograms_number -----
+    #' @description Gets the number of chromatograms in each analysis.
+    get_chromatograms_number = function(analyses = NULL) {
+      analyses <- .check_analyses_argument(self$Analyses, analyses)
+      self$Analyses$chromatograms_number[analyses]
+    },
+    
+    # MARK: get_chromatograms_headers
+    ## get_chromatograms_headers -----
+    #' @description Gets the chromatograms headers data.table of each analysis.
+    get_chromatograms_headers = function(analyses = NULL) {
+      analyses <- .check_analyses_argument(self$Analyses, analyses)
+      value <- self$Analyses$chromatograms_headers[analyses]
+      value <- rbindlist(value, idcol = "analysis", fill = TRUE)
+      value
+    },
+    
+    # MARK: get_raw_chromatograms
+    ## get_raw_chromatograms -----
+    #' @description Gets a list of chromatograms data.table objects from each analysis.
+    get_raw_chromatograms = function(analyses = NULL,
+                                     chromatograms = NULL,
+                                     rtmin = 0,
+                                     rtmax = 0,
+                                     minIntensity = NULL) {
+      StreamFind::get_raw_chromatograms(
+        self$Analyses,
+        analyses, chromatograms, rtmin, rtmax, minIntensity
+      )
+    },
+    
     # MARK: has_results_nts
     ## has_results_nts -----
     #' @description Checks if there are NTS results, returning `TRUE` or `FALSE`.
@@ -619,44 +675,125 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       self$Analyses$has_results_chromatograms
     },
     
+    # MARK: Chromatograms
+    # Chromatograms -----
     
+    # MARK: get_chromatograms
+    ## get_chromatograms -----
+    #' @description Gets a list of chromatograms from the Chromatograms results.
+    get_chromatograms = function(analyses = NULL,
+                                 chromatograms = NULL,
+                                 rtmin = 0,
+                                 rtmax = 0,
+                                 minIntensity = NULL) {
+      if (self$has_results_chromatograms()) {
+        StreamFind::get_chromatograms(
+          self$Chromatograms, analyses, chromatograms, rtmin, rtmax, minIntensity
+        )
+      } else {
+        warning("No chromatograms results available! Not done.")
+        return(list())
+      }
+    },
     
+    # MARK: get_chromatograms_peaks
+    ## get_chromatograms_peaks -----
+    #' @description Gets a data.table of integrated peaks from the Chromatograms results.
+    get_chromatograms_peaks = function(analyses = NULL,
+                                       chromatograms = NULL,
+                                       rtmin = 0,
+                                       rtmax = 0,
+                                       minIntensity = NULL) {
+      if (self$has_results_chromatograms()) {
+        StreamFind::get_chromatograms_peaks(
+          self$Chromatograms, analyses, chromatograms, rtmin, rtmax, minIntensity
+        )
+      } else {
+        warning("No chromatograms results available! Not done.")
+        return(list())
+      }
+    },
     
+    # MARK: plot_chromatograms
+    ## plot_chromatograms -----
+    #' @description Plots chromatograms from the Chromatograms results.
+    plot_chromatograms = function(analyses = NULL,
+                                  chromatograms = NULL,
+                                  rtmin = 0,
+                                  rtmax = 0,
+                                  minIntensity = NULL,
+                                  xLab = NULL,
+                                  yLab = NULL,
+                                  title = NULL,
+                                  colorBy = "analyses+targets",
+                                  legendNames = NULL,
+                                  interactive = TRUE,
+                                  renderEngine = "webgl") {
+      if (self$has_results_chromatograms()) {
+        StreamFind::plot_chromatograms(
+          self$Chromatograms, analyses, chromatograms, rtmin, rtmax, minIntensity,
+          xLab, yLab, title, colorBy, legendNames, interactive, renderEngine
+        )
+      } else {
+        warning("No chromatograms results available! Not done.")
+        return(NULL)
+      }
+    },
     
+    # MARK: plot_chromatograms_baseline
+    ## plot_chromatograms_baseline -----
+    #' @description Plots baseline correction from the Chromatograms results.
+    plot_chromatograms_baseline = function(analyses = NULL,
+                                           chromatograms = NULL,
+                                           xLab = NULL,
+                                           yLab = NULL,
+                                           title = NULL,
+                                           colorBy = "analyses",
+                                           interactive = TRUE,
+                                           renderEngine = "webgl") {
+      if (self$has_results_chromatograms()) {
+        StreamFind::plot_chromatograms_baseline(
+          self$Chromatograms, analyses, chromatograms,
+          xLab, yLab, title, colorBy, interactive, renderEngine
+        )
+      } else {
+        warning("No chromatograms results available! Not done.")
+        return(NULL)
+      }
+    },
     
+    # MARK: plot_chromatograms_peaks
+    ## plot_chromatograms_peaks -----
+    #' @description Plots chromatographic peaks from the Chromatograms results.
+    plot_chromatograms_peaks = function(analyses = NULL,
+                                        chromatograms = NULL,
+                                        rtmin = 0,
+                                        rtmax = 0,
+                                        minIntensity = NULL,
+                                        xLab = NULL,
+                                        yLab = NULL,
+                                        title = NULL,
+                                        colorBy = "analyses+targets",
+                                        legendNames = NULL,
+                                        interactive = TRUE,
+                                        renderEngine = "webgl") {
+      if (self$has_results_chromatograms()) {
+        StreamFind::plot_chromatograms_peaks(
+          self$Chromatograms, analyses, chromatograms, rtmin, rtmax, minIntensity,
+          xLab, yLab, title, colorBy, legendNames, interactive, renderEngine
+        )
+      } else {
+        warning("No chromatograms results available! Not done.")
+        return(NULL)
+      }
+    },
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    # MARK: Spectra Methods
-    # Spectra Methods -----
+    # MARK: Spectra
+    # Spectra -----
     
     # MARK: get_spectra
     ## get_spectra -----
-    #' @description Gets a data.table of spectra from each analysis based .
+    #' @description Gets a list of data.table object with spectra each analysis.
     get_spectra = function(analyses = NULL,
                            levels = NULL,
                            mass = NULL,
@@ -670,64 +807,199 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            allTraces = TRUE,
                            isolationWindow = 1.3,
                            minIntensityMS1 = 0,
-                           minIntensityMS2 = 0,
-                           useRawData = TRUE,
-                           useLoadedData = TRUE) {
-      StreamFind::get_spectra(
-        self$Analyses,
-        analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id, allTraces,
-        isolationWindow, minIntensityMS1, minIntensityMS2, useRawData, useLoadedData
-      )
+                           minIntensityMS2 = 0) {
+      if (self$has_results_spectra()) {
+        StreamFind::get_spectra(
+          self$Spectra,
+          analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id, allTraces,
+          isolationWindow, minIntensityMS1, minIntensityMS2
+        )
+      } else {
+        warning("No spectra results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: plot_spectra
+    ## plot_spectra -----
+    #' @description Plots spectra.
+    #'
+    #' @param xVal Character length one. Possible values are "mz", "rt", "mobility" or "mass".
+    #'
+    plot_spectra = function(analyses = NULL,
+                            levels = NULL,
+                            mass = NULL,
+                            mz = NULL,
+                            rt = NULL,
+                            mobility = NULL,
+                            ppm = 20,
+                            sec = 60,
+                            millisec = 5,
+                            id = NULL,
+                            allTraces = TRUE,
+                            isolationWindow = 1.3,
+                            minIntensityMS1 = 0,
+                            minIntensityMS2 = 0,
+                            legendNames = TRUE,
+                            colorBy = "analyses",
+                            xVal = "mz",
+                            xLab = NULL,
+                            yLab = NULL,
+                            title = NULL,
+                            interactive = TRUE,
+                            renderEngine = "webgl") {
+      if (self$has_results_spectra()) {
+        StreamFind::plot_spectra(
+          self$Spectra,
+          analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+          allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
+          legendNames, colorBy, xVal, xLab, yLab, title, interactive, renderEngine
+        )
+      } else {
+        warning("No spectra results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: plot_spectra_3d
+    ## plot_spectra_3d -----
+    #' @description Plots spectra in 3D.
+    #'
+    #' @param xVal Character length one. Possible values are "mz", "rt" or "mobility".
+    #' @param yVal Character length one. Possible values are "mz", "rt" or "mobility".
+    #' @param zLab A string with the title for the z axis.
+    #'
+    plot_spectra_3d = function(analyses = NULL,
+                               levels = NULL,
+                               mass = NULL,
+                               mz = NULL,
+                               rt = NULL,
+                               mobility = NULL,
+                               ppm = 20,
+                               sec = 60,
+                               millisec = 5,
+                               id = NULL,
+                               allTraces = TRUE,
+                               isolationWindow = 1.3,
+                               minIntensityMS1 = 0,
+                               minIntensityMS2 = 0,
+                               legendNames = TRUE,
+                               colorBy = "analyses",
+                               xVal = "rt",
+                               yVal = "mz",
+                               xLab = NULL,
+                               yLab = NULL,
+                               zLab = NULL,
+                               renderEngine = "webgl") {
+      if (self$has_results_spectra()) {
+        StreamFind::plot_spectra(
+          self$Spectra,
+          analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+          allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
+          legendNames, colorBy, xVal, yVal, xLab, yLab, zLab, renderEngine 
+        )
+      } else {
+        warning("No spectra results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: plot_spectra_charges
+    ## plot_spectra_charges -----
+    #' @description Plots charge assignment of deconvoluted spectra from analyses.
+    plot_spectra_charges = function(analyses = NULL,
+                                    legendNames = NULL,
+                                    title = NULL,
+                                    colorBy = "analyses",
+                                    xLab = NULL,
+                                    yLab = NULL,
+                                    interactive = TRUE,
+                                    renderEngine = "webgl") {
+      if (self$has_results_spectra()) {
+        StreamFind::plot_spectra_charges(
+          self$Spectra,
+          analyses, legendNames, title, colorBy, xLab, yLab, interactive, renderEngine
+        )
+      } else {
+        warning("No spectra results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: get_spectra_peaks
+    ## get_spectra_peaks -----
+    #' @description Gets a data.table with peaks from spectra in each analysis.
+    get_spectra_peaks = function(analyses = NULL) {
+      if (self$has_results_spectra()) {
+        StreamFind::get_spectra_peaks(self$Spectra, analyses)
+      } else {
+        warning("No spectra results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: plot_spectra_peaks
+    ## plot_spectra_peaks -----
+    #' @description Plots peaks from spectra in each analysis.
+    #' 
+    #' @param xVal Character length one. Possible values are "mz" or "mobility".
+    #' 
+    plot_spectra_peaks = function(analyses = NULL,
+                                  legendNames = TRUE,
+                                  colorBy = "analyses",
+                                  xVal = "mz",
+                                  xLab = NULL,
+                                  yLab = NULL,
+                                  title = NULL,
+                                  interactive = TRUE,
+                                  renderEngine = "webgl") {
+      if (self$has_results_spectra()) {
+        StreamFind::plot_spectra_charges(
+          self$Spectra,
+          analyses, legendNames, colorBy, xVal, xLab, yLab, title, interactive, renderEngine
+        )
+      } else {
+        warning("No spectra results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: plot_spectra_baseline
+    ## plot_spectra_baseline -----
+    #' @description Plots spectra baseline correction.
+    #' 
+    #' @param xVal Character length one. Possible values are "mz" or "mobility".
+    #' 
+    plot_spectra_baseline = function(analyses = NULL,
+                                     legendNames = TRUE,
+                                     colorBy = "analyses",
+                                     xVal = "mz",
+                                     xLab = NULL,
+                                     yLab = NULL,
+                                     title = NULL,
+                                     interactive = TRUE,
+                                     renderEngine = "webgl") {
+      if (self$has_results_spectra()) {
+        StreamFind::plot_spectra_baseline(
+          self$Spectra,
+          analyses, legendNames, colorBy, xVal, xLab, yLab, title, interactive, renderEngine
+        )
+      } else {
+        warning("No spectra results available! Not done.")
+        return(NULL)
+      }
     },
     
     # MARK: get_spectra_matrix
     ## get_spectra_matrix -----
     #' @description Gets a matrix with spectra from analyses.
     get_spectra_matrix = function(analyses = NULL) {
-      StreamFind::get_spectra_matrix(self$Analyses, analyses)
-    },
-    
-    
-    
-    # MARK: get_chromatograms_number
-    ## get_chromatograms_number -----
-    #' @description Gets the number of chromatograms in each analysis.
-    get_chromatograms_number = function(analyses = NULL) {
-      analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$chromatograms_number[analyses]
-    },
-    
-    # MARK: get_chromatograms_headers
-    ## get_chromatograms_headers -----
-    #' @description Gets the chromatograms headers data.table of each analysis.
-    get_chromatograms_headers = function(analyses = NULL) {
-      analyses <- .check_analyses_argument(self$Analyses, analyses)
-      value <- self$Analyses$chromatograms_headers[analyses]
-      value <- rbindlist(value, idcol = "analysis", fill = TRUE)
-      value
-    },
-    
-    # MARK: get_chromatograms
-    ## get_chromatograms -----
-    #' @description Gets chromatograms from each analysis.
-    get_chromatograms = function(analyses = NULL,
-                                 chromatograms = NULL,
-                                 rtmin = 0,
-                                 rtmax = 0,
-                                 minIntensity = NULL,
-                                 useRawData = FALSE,
-                                 useLoadedData = TRUE) {
-      StreamFind::get_chromatograms(
-        self$Analyses,
-        analyses, chromatograms, rtmin, rtmax, minIntensity, useRawData, useLoadedData
-      )
-    },
-    
-    # MARK: get_chromatograms_peaks
-    ## get_chromatograms_peaks -----
-    #' @description Gets integrated peaks from chromatograms.
-    get_chromatograms_peaks = function(analyses = NULL, chromatograms = NULL) {
-      StreamFind::get_chromatograms_peaks(self$Analyses, analyses, chromatograms)
+      if (self$has_results_spectra()) {
+        StreamFind::get_spectra_matrix(self$Spectra, analyses)
+      } else {
+        warning("No spectra results available! Not done.")
+        return(NULL)
+      }
     },
     
     # MARK: NTS Methods
@@ -1195,190 +1467,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
-    # MARK: has_chromatograms_peaks
-    ## _has_chromatograms_peaks -----
-    #' @description Checks if there are integrated peaks from chromatograms, returning `TRUE` or `FALSE`.
-    has_chromatograms_peaks = function() {
-      if (self$has_results_chromatograms()) {
-        if (length(self$chromatograms$peaks) > 0) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
-    # MARK: has_spectra_peaks
-    ## _has_spectra_peaks -----
-    #' @description Checks if there are spectra peaks, returning `TRUE` or `FALSE`.
-    has_spectra_peaks = function() {
-      if (self$has_results_spectra()) {
-        if (length(self$spectra$peaks) > 0) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
-    # MARK: has_spectra_charges
-    ## _has_spectra_charges -----
-    #' @description Checks if there are spectra calculated charges, returning `TRUE` or `FALSE`.
-    has_spectra_charges = function() {
-      if (self$has_results_spectra()) {
-        if (length(self$spectra$charges) > 0) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
-    # MARK: has_neutralized_spectra
-    ## _has_neutralized_spectra -----
-    #' @description Checks if spectra are neutralized (i.e., \emph{m/z} converted to mass),
-    #' returning `TRUE` or `FALSE`.
-    has_neutralized_spectra = function() {
-      if (self$has_results_spectra()) {
-        if (self$spectra$is_neutralized) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
-    # MARK: plot_spectra_3d
-    ## _plot_spectra_3d -----
-    #' @description Plots raw spectra in 3D for given MS analyses and targets.
-    #'
-    #' @param xVal Character length one. Possible values are "mz", "rt" or "mobility".
-    #' @param yVal Character length one. Possible values are "mz", "rt" or "mobility".
-    #' @param zLab A string with the title for the z axis.
-    #'
-    plot_spectra_3d = function(analyses = NULL,
-                               levels = NULL,
-                               mass = NULL,
-                               mz = NULL,
-                               rt = NULL,
-                               mobility = NULL,
-                               ppm = 20,
-                               sec = 60,
-                               millisec = 5,
-                               id = NULL,
-                               allTraces = TRUE,
-                               isolationWindow = 1.3,
-                               minIntensityMS1 = 0,
-                               minIntensityMS2 = 0,
-                               legendNames = TRUE,
-                               colorBy = "analyses",
-                               xVal = "rt",
-                               yVal = "mz",
-                               xLab = NULL,
-                               yLab = NULL,
-                               zLab = NULL) {
-      StreamFind::plot_spectra_3d(self$Analyses, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
-        allTraces, isolationWindow, minIntensityMS1, minIntensityMS2, legendNames, colorBy, xVal, yVal, xLab, yLab, zLab
-      )
-    },
-
-    # MARK: plot_spectra
-    ## _plot_spectra -----
-    #' @description Plots spectra given MS analyses.
-    #'
-    #' @param xVal Character length one. Possible values are "mz", "rt", "mobility" or "mass".
-    #' spectra from raw data files.
-    #' @param averaged Logical of length one. Set to `TRUE` for plotting the averaged spectra.
-    #' @param baseline Logical of length one. Set to `TRUE` for plotting the spectra with baseline corrected.
-    #'
-    plot_spectra = function(analyses = NULL,
-                            levels = NULL,
-                            mass = NULL,
-                            mz = NULL,
-                            rt = NULL,
-                            mobility = NULL,
-                            ppm = 20,
-                            sec = 60,
-                            millisec = 5,
-                            id = NULL,
-                            allTraces = TRUE,
-                            isolationWindow = 1.3,
-                            minIntensityMS1 = 0,
-                            minIntensityMS2 = 0,
-                            useRawData = FALSE,
-                            useLoadedData = TRUE,
-                            legendNames = TRUE,
-                            colorBy = "analyses",
-                            xVal = "mz",
-                            xLab = NULL,
-                            yLab = NULL,
-                            title = NULL,
-                            cex = 0.6,
-                            showLegend = TRUE,
-                            interactive = TRUE,
-                            renderEngine = "webgl") {
-      StreamFind::plot_spectra(
-        self$Analyses,
-        analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
-        allTraces, isolationWindow, minIntensityMS1, minIntensityMS2, useRawData, useLoadedData,
-        legendNames, colorBy, xVal, xLab, yLab, title, cex, showLegend, interactive, renderEngine
-      )
-    },
-
-    # MARK: plot_chromatograms
-    ## _plot_chromatograms -----
-    #' @description Plots chromatograms in the analyses.
-    plot_chromatograms = function(analyses = NULL,
-                                  chromatograms = NULL,
-                                  rtmin = 0,
-                                  rtmax = 0,
-                                  minIntensity = NULL,
-                                  useRawData = FALSE,
-                                  useLoadedData = TRUE,
-                                  xLab = NULL,
-                                  yLab = NULL,
-                                  title = NULL,
-                                  colorBy = "targets",
-                                  legendNames = NULL,
-                                  showLegend = TRUE,
-                                  xlim = NULL,
-                                  ylim = NULL,
-                                  cex = 0.6,
-                                  interactive = TRUE) {
-      StreamFind::plot_chromatograms(
-        self$Analyses,
-        analyses,
-        chromatograms,
-        rtmin, rtmax,
-        minIntensity,
-        useRawData,
-        useLoadedData,
-        xLab, yLab,
-        title, colorBy,
-        legendNames,
-        showLegend,
-        xlim, ylim,
-        cex,
-        interactive
-      )
-    },
-    
-    # MARK: plot_chromatograms_baseline
-    ## _plot_chromatograms_baseline -----
-    #' @description Plots chromatograms corrected baseline for given analyses.
-    plot_chromatograms_baseline = function(analyses = NULL,
-                                           chromatograms = NULL,
-                                           xLab = NULL,
-                                           yLab = NULL,
-                                           title = NULL,
-                                           cex = 0.6,
-                                           showLegend = TRUE,
-                                           colorBy = "analyses",
-                                           interactive = TRUE) {
-      StreamFind::plot_chromatograms_baseline(
-        self$Analyses, analyses, chromatograms, xLab, yLab, title, cex, showLegend, colorBy,
-        interactive
-      )
-    },
-
-    
-
     # MARK: plot_features
     ## _plot_features -----
     #' @description Plots features from analyses.
@@ -1783,120 +1871,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         constantThreshold, eliminationThreshold, correctSuppression, fillZerosWithLowerLimit, lowerLimit,
         normalized, yLab, title, interactive, showLegend
       )
-    },
-
-    # MARK: plot_chromatograms_peaks
-    ## _plot_chromatograms_peaks -----
-    #' @description Plots peaks from chromatograms from analyses.
-    plot_chromatograms_peaks = function(analyses = NULL,
-                                        chromatograms = NULL,
-                                        legendNames = NULL,
-                                        title = NULL,
-                                        colorBy = "targets",
-                                        showLegend = TRUE,
-                                        xlim = NULL,
-                                        ylim = NULL,
-                                        cex = 0.6,
-                                        xLab = NULL,
-                                        yLab = NULL,
-                                        interactive = TRUE) {
-      StreamFind::plot_chromatograms_peaks(
-        self$Analyses, analyses, chromatograms, legendNames, title, colorBy, showLegend, xlim,
-        ylim, cex, xLab, yLab, interactive
-      )
-    },
-
-    # MARK: plot_spectra_charges
-    ## _plot_spectra_charges -----
-    #' @description Plots charge assignment of deconvoluted spectra from analyses.
-    plot_spectra_charges = function(analyses = NULL,
-                                    legendNames = NULL,
-                                    title = NULL,
-                                    colorBy = "analyses",
-                                    showLegend = TRUE,
-                                    xlim = NULL,
-                                    ylim = NULL,
-                                    cex = 0.6,
-                                    xLab = NULL,
-                                    yLab = NULL,
-                                    interactive = TRUE) {
-      StreamFind::plot_spectra_charges(
-        self$Analyses, analyses, legendNames, title, colorBy, showLegend, xlim, ylim, cex, xLab,
-        yLab, interactive
-      )
-    },
-
-    # MARK: plot_spectra_peaks
-    ## _plot_spectra_peaks -----
-    #' @description Plots peaks from spectra from analyses.
-    plot_spectra_peaks = function(analyses = NULL,
-                                  legendNames = NULL,
-                                  title = NULL,
-                                  colorBy = "analyses",
-                                  showLegend = TRUE,
-                                  xlim = NULL,
-                                  ylim = NULL,
-                                  cex = 0.6,
-                                  xLab = NULL,
-                                  yLab = NULL,
-                                  interactive = TRUE) {
-      if (!self$has_spectra_peaks()) {
-        return(NULL)
-      }
-
-      analyses <- .check_analyses_argument(self$Analyses, analyses)
-
-      if (is.null(analyses)) {
-        return(NULL)
-      }
-
-      pks <- self$spectra_peaks
-
-      pks <- pks[pks$analysis %in% analyses, ]
-
-      if (nrow(pks) == 0) {
-        message("\U2717 Peaks not found for the targets!")
-        return(NULL)
-      }
-
-      setnames(pks, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-
-      sp_data <- self$get_results("spectra")
-      sp_data <- sp_data$spectra$data
-      sp_data <- sp_data[unique(pks$analysis)]
-
-      if (self$has_averaged_spectra()) {
-        spec <- lapply(sp_data, function(x) x$average)
-        spec <- rbindlist(spec, fill = TRUE)
-        if ("rt" %in% colnames(spec)) spec$rt <- NULL
-        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-      } else {
-        spec <- lapply(sp_data, function(x) x$raw)
-        spec <- rbindlist(spec, fill = TRUE)
-        if ("rt" %in% colnames(spec)) spec$rt <- NULL
-        setnames(spec, c("mass", "massmin", "massmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-        setnames(spec, c("mz", "mzmin", "mzmax"), c("rt", "rtmin", "rtmax"), skip_absent = TRUE)
-      }
-
-      if ("smoothed" %in% colnames(spec)) {
-        spec$raw <- spec$smoothed
-      }
-
-      ids <- spec$id
-      names(ids) <- spec$analysis
-      ids <- ids[!duplicated(names(ids))]
-
-      pks$id <- ids[pks$analysis]
-
-      if (is.null(xLab)) xLab <- "Mass / Da"
-      if (is.null(yLab)) yLab <- "Intensity"
-
-      if (!interactive) {
-        .plot_chrom_peaks_static(spec, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-      } else {
-        .plot_chrom_peaks_interactive(spec, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
-      }
     },
 
     # MARK: report_nts

@@ -1,3 +1,5 @@
+# MARK: Chromatograms
+# Chromatograms ------
 #' @export
 #' @noRd
 Chromatograms <- S7::new_class(
@@ -10,12 +12,15 @@ Chromatograms <- S7::new_class(
     replicates = S7::new_property(S7::class_character, default = character()),
     is_averaged = S7::new_property(S7::class_logical, default = FALSE),
     peaks = S7::new_property(S7::class_list, default = list()),
-    has_peaks = S7::new_property(S7::class_logical, getter = function(self) length(self@peaks) > 0),
+    has_peaks = S7::new_property(
+      S7::class_logical,
+      getter = function(self) length(self@peaks) > 0
+    ),
     calibration_model = S7::new_property(S7::class_list, default = list())
   ),
   
   # MARK: constructor
-  ## __constructor -----
+  ## constructor -----
   constructor = function(chromatograms = list(),
                          replicates = character(),
                          is_averaged = FALSE,
@@ -35,7 +40,7 @@ Chromatograms <- S7::new_class(
   },
   
   # MARK: validator
-  ## __validator -----
+  ## validator -----
   validator = function(self) {
     checkmate::assert_true(self@name == "Chromatograms")
     checkmate::assert_true(self@software == "StreamFind")
@@ -393,7 +398,10 @@ S7::method(plot_chromatograms_baseline, Chromatograms) <- function(x,
 #' @noRd
 S7::method(get_chromatograms_peaks, Chromatograms) <- function(x,
                                                                analyses = NULL,
-                                                               chromatograms = NULL) {
+                                                               chromatograms = NULL,
+                                                               rtmin = 0,
+                                                               rtmax = 0,
+                                                               minIntensity = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
   if (is.null(analyses)) {
     return(data.table::data.table())
@@ -409,23 +417,30 @@ S7::method(get_chromatograms_peaks, Chromatograms) <- function(x,
   }
   
   if (x$is_averaged) {
-    pks <- data.table::rbindlist(x$chromatograms$peaks, idcol = "replicate", fill = TRUE)
-  } else {
-    pks <- data.table::rbindlist(x$chromatograms$peaks, idcol = "analysis", fill = TRUE)
-  }
-  
-  if ("analysis" %in% colnames(pks)) {
-    pks <- pks[pks$analysis %in% analyses, ]
-  } else if ("replicate" %in% colnames(pks)) {
     rpl <- x$replicates
     rpl <- rpl[analyses]
-    pks <- pks[pks$replicate %in% unname(rpl)]
-    
-    if (!"analysis" %in% colnames(pks)) {
-      pks$analysis <- pks$replicate
-      data.table::setcolorder(pks, c("analysis", "replicate"))
-    }
+    pks <- pks[names(pks) %in% unname(rpl)]
+    pks <- Map( function(z, y) {
+      if (nrow(z) > 0) {
+        z$replicate <- y
+        data.table::setcolorder(z, c("replicate"))
+      }
+      z
+    }, pks, names(pks))
+  } else {
+    rpl <- x$replicates[analyses]
+    pks <- pks[analyses]
+    pks <- Map( function(z, y) {
+      if (nrow(z) > 0) {
+        z$analysis <- y
+        z$replicate <- rpl[y]
+        data.table::setcolorder(z, c("analysis", "replicate"))
+      }
+      z
+    }, pks, names(pks))
   }
+  
+  pks <- data.table::rbindlist(pks, fill = TRUE)
   
   if (is.numeric(chromatograms)) {
     which_pks <- pks$index %in% chromatograms
@@ -437,6 +452,12 @@ S7::method(get_chromatograms_peaks, Chromatograms) <- function(x,
     return(data.table::data.table())
   }
   
+  if (is.numeric(minIntensity)) pks <- pks[pks$intensity > minIntensity, ]
+  
+  if (is.numeric(rtmin) && is.numeric(rtmax)) {
+    if (rtmax > 0) pks <- pks[pks$rt >= rtmin & pks$rt <= rtmax]
+  }
+  
   if (nrow(pks) == 0) {
     message("\U2717 Peaks not found for the targets!")
     return(data.table::data.table())
@@ -445,3 +466,213 @@ S7::method(get_chromatograms_peaks, Chromatograms) <- function(x,
   pks
 }
 
+# MARK: plot_chromatograms_peaks
+## plot_chromatograms_peaks -----
+#' @export
+#' @noRd
+S7::method(plot_chromatograms_peaks, Chromatograms) <- function(x,
+                                                                analyses = NULL,
+                                                                chromatograms = NULL,
+                                                                rtmin = 0,
+                                                                rtmax = 0,
+                                                                minIntensity = NULL,
+                                                                xLab = NULL,
+                                                                yLab = NULL,
+                                                                title = NULL,
+                                                                colorBy = "analyses+targets",
+                                                                legendNames = NULL,
+                                                                interactive = TRUE,
+                                                                renderEngine = "webgl") {
+  pks <- get_chromatograms_peaks(x, analyses, chromatograms, rtmin, rtmax, minIntensity)
+  
+  if (nrow(pks) == 0) {
+    message("\U2717 Peaks not found!")
+    return(NULL)
+  }
+  
+  chroms <- get_chromatograms(x, analyses, chromatograms)
+  
+  chroms <- data.table::rbindlist(chroms)
+  
+  if (nrow(chroms) == 0) {
+    message("\U2717 Chromatograms not found!")
+    return(NULL)
+  }
+  
+  if (grepl("targets", colorBy)) {
+    pks$id <- pks$peak
+  }
+  
+  pks <- .make_colorBy_varkey(pks, colorBy, legendNames)
+  
+  cl <- .get_colors(unique(pks$var))
+  cl50 <- paste(cl, "50", sep = "")
+  names(cl50) <- names(cl)
+  
+  if (!interactive) {
+    plot <- ggplot2::ggplot(chroms, ggplot2::aes(x = rt))
+    
+    for (i in seq_len(nrow(pks))) {
+      pk_analysis <- pks[["analysis"]][i]
+      pk_replicate <- pks[["replicate"]][i]
+      pk_chrom <- pks[["index"]][i]
+      pk_id <- pks[["peak"]][i]
+      pk_var <- pks[["var"]][i]
+      pk_rtmin <- pks[["rtmin"]][i]
+      pk_rtmax <- pks[["rtmax"]][i]
+      
+      temp <- dplyr::filter(
+        chroms,
+        analysis %in% pk_analysis & replicate %in% pk_replicate & index %in% pk_chrom
+      )
+      
+      temp$var <- pk_var
+      
+      plot <- plot + ggplot2::geom_line(
+        data = temp,
+        ggplot2::aes(y = intensity, color = var)
+      )
+      
+      temp <- temp[temp$rt >= pk_rtmin & temp$rt <= pk_rtmax, ]
+      
+      plot <- plot + ggplot2::geom_ribbon(
+        data = temp,
+        ggplot2::aes(
+          ymin = rep(min(intensity), length(intensity)),
+          ymax = intensity,
+          fill = var
+        )
+      )
+    }
+    
+    plot <- plot + ggplot2::scale_color_manual(values = cl) +
+      ggplot2::scale_fill_manual(values = cl50, guide = "none") +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
+    plot
+    
+    
+    
+    
+  } else {
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+    
+    show_legend <- rep(TRUE, length(cl))
+    names(show_legend) <- names(cl)
+    
+    plot <- plot_ly(chroms, x = ~rt)
+    
+    for (i in seq_len(nrow(pks))) {
+      pk_analysis <- pks[["analysis"]][i]
+      pk_replicate <- pks[["replicate"]][i]
+      pk_chrom <- pks[["index"]][i]
+      pk_id <- pks[["peak"]][i]
+      pk_var <- pks[["var"]][i]
+      pk_rtmin <- pks[["rtmin"]][i]
+      pk_rtmax <- pks[["rtmax"]][i]
+      pk_sn <- pks[["sn"]][i]
+      
+      temp <- dplyr::filter(
+        chroms,
+        analysis %in% pk_analysis &
+        replicate %in% pk_replicate &
+        index %in% pk_chrom &
+        rt >= pk_rtmin & rt <= pk_rtmax
+      )
+      
+      plot <- plot %>% add_trace(
+        data = temp,
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        mode = "markers",
+        marker = list(color = cl[pk_var], size = 5),
+        text = ~paste(
+          "<br>analysis: ", pk_analysis,
+          "<br>replicate: ", pk_replicate,
+          "<br>chrom: ", pk_chrom,
+          "<br>peak: ", pk_id,
+          "<br>S/N: ", pk_sn,
+          "<br>rt: ", round(rt, 2),
+          "<br>intensity: ", round(intensity, 0)
+        ),
+        hoverinfo = "text",
+        name = pk_var,
+        legendgroup = pk_var,
+        showlegend = FALSE
+      )
+      
+      plot <- plot %>% plotly::add_ribbons(
+        data = temp,
+        x = ~rt,
+        ymin = ~min(intensity),
+        ymax = ~intensity,
+        line = list(color = cl[pk_var], width = 1.5),
+        fillcolor = cl50[pk_var],
+        text = ~paste(
+          "<br>analysis: ", pk_analysis,
+          "<br>replicate: ", pk_replicate,
+          "<br>chrom: ", pk_chrom,
+          "<br>peak: ", pk_id,
+          "<br>S/N: ", pk_sn,
+          "<br>rt: ", round(rt, 2),
+          "<br>intensity: ", round(intensity, 0)
+        ),
+        hoverinfo = "text",
+        name = pk_var,
+        legendgroup = pk_var,
+        showlegend = show_legend[pk_var]
+      )
+      
+      show_legend[pk_var] <- FALSE
+    }
+    
+    for (i in seq_len(nrow(pks))) {
+      pk_analysis <- pks[["analysis"]][i]
+      pk_replicate <- pks[["replicate"]][i]
+      pk_chrom <- pks[["index"]][i]
+      pk_var <- pks[["var"]][i]
+      
+      plot <- plot %>% add_trace(
+        data = dplyr::filter(
+          chroms,
+          analysis %in% pk_analysis &
+          replicate %in% pk_replicate &
+          index %in% pk_chrom
+        ),
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        mode = "lines",
+        line = list(color = cl[pk_var], width = 0.5),
+        name = pk_var,
+        legendgroup = pk_var,
+        showlegend = FALSE
+      )
+    }
+    
+    plot <- plot %>% plotly::layout(
+      xaxis = xaxis,
+      yaxis = yaxis,
+      title = title
+    )
+    
+    if (renderEngine %in% "webgl") {
+      # Fix for warnings with hoveron when webgl is used
+      plot$x$attrs <- lapply(plot$x$attrs, function(x) {
+        if (!is.null(x[["hoveron"]])) {
+          x[["hoveron"]] <- NULL
+        }
+        x
+      })
+      
+      plot <- plot %>% plotly::toWebGL()
+    }
+    
+    plot
+  }
+}

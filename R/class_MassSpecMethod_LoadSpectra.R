@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadSpectra_StreamFind**
+#' **MassSpecMethod_LoadSpectra_native**
 #'
 #' @description .
 #' 
@@ -11,12 +11,12 @@
 #' @param mobilitymax A numeric vector with the maximum mobility values to be used.
 #' @param minIntensity A numeric value with the minimum intensity to be used.
 #'
-#' @return A `MassSpecMethod_LoadSpectra_StreamFind` object.
+#' @return A `MassSpecMethod_LoadSpectra_native` object.
 #'
 #' @export
 #'
-MassSpecMethod_LoadSpectra_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_LoadSpectra_StreamFind",
+MassSpecMethod_LoadSpectra_native <- S7::new_class(
+  name = "MassSpecMethod_LoadSpectra_native",
   parent = ProcessingStep,
   package = "StreamFind",
   
@@ -34,7 +34,7 @@ MassSpecMethod_LoadSpectra_StreamFind <- S7::new_class(
         engine = "MassSpec",
         method = "LoadSpectra",
         required = NA_character_,
-        algorithm = "StreamFind",
+        algorithm = "native",
         parameters = list(
           levels = levels,
           mzmin = mzmin,
@@ -59,7 +59,7 @@ MassSpecMethod_LoadSpectra_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "LoadSpectra")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_numeric(self@parameters$levels)
     checkmate::assert_numeric(self@parameters$mzmin, len = 1)
     checkmate::assert_numeric(self@parameters$mzmax, len = 1)
@@ -74,7 +74,7 @@ MassSpecMethod_LoadSpectra_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_LoadSpectra_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, MassSpecMethod_LoadSpectra_native) <- function(x, engine = NULL) {
   
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
@@ -103,7 +103,8 @@ S7::method(run, MassSpecMethod_LoadSpectra_StreamFind) <- function(x, engine = N
   )
   
   tryCatch({
-    engine$load_spectra(
+    engine$Analyses <- load_spectra(
+      engine$Analyses,
       levels = parameters$levels,
       mz = ranges,
       minIntensityMS1 = parameters$minIntensity,
@@ -189,19 +190,19 @@ S7::method(run, MassSpecMethod_LoadSpectra_chrompeaks) <- function(x, engine = N
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_results_chromatograms) {
+  if (!engine$has_results_chromatograms()) {
     warning("No chromatograms available! Not done.")
     return(FALSE)
   }
   
-  if (!engine$Analyses$chromatograms$has_peaks) {
+  if (!engine$Chromatograms$has_peaks) {
     warning("No chromatograms peaks available! Not done.")
     return(FALSE)
   }
   
   parameters <- x@parameters
   
-  peaks <- engine$Analyses$chromatograms$peaks
+  peaks <- engine$Chromatograms$peaks
   
   peaks <- data.table::rbindlist(peaks, idcol = "analysis", fill = TRUE)
   
@@ -209,10 +210,11 @@ S7::method(run, MassSpecMethod_LoadSpectra_chrompeaks) <- function(x, engine = N
   
   peaks$mzmax <- parameters$mzmax
   
-  peaks$id <- paste0(peaks$id, "_", peaks$peak)
+  peaks$id <- peaks$peak
   
   tryCatch({
-    engine$load_spectra(
+    engine$Analyses <- load_spectra(
+      engine$Analyses,
       levels = parameters$levels,
       mz = peaks,
       minIntensityMS1 = parameters$minIntensity,

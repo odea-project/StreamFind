@@ -8,7 +8,8 @@
 MassSpecMethod_CorrectChromatogramsBaseline_baseline_als(
   lambda = 5,
   p = 0.05,
-  maxit = 10
+  maxit = 10,
+  liftByLowestNegativeToZero = FALSE
 )
 }
 \arguments{
@@ -17,6 +18,9 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als(
 \item{p}{Numeric (length 1) with the weighting of positive residuals.}
 
 \item{maxit}{Integer (length 1) with the maximum number of iterations.}
+
+\item{liftByLowestNegativeToZero}{Logical (length 1) indicating if the corrected chromatogram
+should be lifted by the lowest negative value to zero.}
 }
 \value{
 A MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object.

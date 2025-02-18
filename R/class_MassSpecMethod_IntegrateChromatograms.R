@@ -1,4 +1,4 @@
-#' **MassSpecMethod_IntegrateChromatograms_StreamFind**
+#' **MassSpecMethod_IntegrateChromatograms_pracma**
 #'
 #' @description Integrates chromatograms using the function `findpeaks` from the package
 #' \pkg{pracma} with natively 
@@ -12,12 +12,12 @@
 #' @param maxPeakWidth Numeric (length 1) with the maximum peak width.
 #' @param minSN Numeric (length 1) with the minimum signal-to-noise ratio.
 #'
-#' @return A MassSpecMethod_IntegrateChromatograms_StreamFind object.
+#' @return A MassSpecMethod_IntegrateChromatograms_pracma object.
 #'
 #' @export
 #'
-MassSpecMethod_IntegrateChromatograms_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_IntegrateChromatograms_StreamFind",
+MassSpecMethod_IntegrateChromatograms_pracma <- S7::new_class(
+  name = "MassSpecMethod_IntegrateChromatograms_pracma",
   parent = ProcessingStep,
   package = "StreamFind",
   
@@ -34,7 +34,7 @@ MassSpecMethod_IntegrateChromatograms_StreamFind <- S7::new_class(
         engine = "MassSpec",
         method = "IntegrateChromatograms",
         required = "LoadChromatograms",
-        algorithm = "StreamFind",
+        algorithm = "pracma",
         parameters = list(
           merge = merge,
           closeByThreshold = closeByThreshold,
@@ -58,7 +58,7 @@ MassSpecMethod_IntegrateChromatograms_StreamFind <- S7::new_class(
   validator = function(self) {
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "IntegrateChromatograms")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
+    checkmate::assert_choice(self@algorithm, "pracma")
     checkmate::assert_logical(self@parameters$merge, max.len = 1)
     checkmate::assert_number(self@parameters$closeByThreshold)
     checkmate::assert_number(self@parameters$minPeakHeight)
@@ -72,7 +72,7 @@ MassSpecMethod_IntegrateChromatograms_StreamFind <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_IntegrateChromatograms_StreamFind) <- function(x, engine = NULL) {
+S7::method(run, MassSpecMethod_IntegrateChromatograms_pracma) <- function(x, engine = NULL) {
   
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
@@ -91,7 +91,7 @@ S7::method(run, MassSpecMethod_IntegrateChromatograms_StreamFind) <- function(x,
   
   parameters <- x$parameters
   
-  chroms <- engine$chromatograms$chromatograms
+  chroms <- engine$Chromatograms$chromatograms
   
   chrom_peaks <- lapply(chroms, function(s) {
     
@@ -112,7 +112,7 @@ S7::method(run, MassSpecMethod_IntegrateChromatograms_StreamFind) <- function(x,
         parameters$minSN
       )
       
-      if (nrow(pks) == 0) return(data.table())
+      if (nrow(pks) == 0) return(data.table::data.table())
       
       setnames(pks, c("xVal", "min", "max"), c("rt", "rtmin", "rtmax"))
       
@@ -128,6 +128,8 @@ S7::method(run, MassSpecMethod_IntegrateChromatograms_StreamFind) <- function(x,
       
       pks$index <- unique(z$index)
       
+      pks$peak <- paste0("C", pks$index ,"_P", pks$peak, "_RT", round(pks$rt, 0))
+      
       setcolorder(pks, c("index", "id", "peak", "polarity", "pre_ce", "pre_mz", "pro_mz"))
       
       pks
@@ -140,7 +142,7 @@ S7::method(run, MassSpecMethod_IntegrateChromatograms_StreamFind) <- function(x,
   
   names(chrom_peaks) <- names(chroms)
   
-  engine$chromatograms$peaks <- chrom_peaks
+  engine$Chromatograms$peaks <- chrom_peaks
   message(paste0("\U2713 ", "Chromatograms integrated!"))
   TRUE
 }
