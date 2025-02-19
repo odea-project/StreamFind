@@ -395,30 +395,6 @@ MassSpecAnalyses <- S7::new_class(
       }
     ),
 
-    # MARK: has_loaded_spectra
-    ## has_loaded_spectra -----
-    has_loaded_spectra = S7::new_property(
-      S7::class_logical,
-      getter = function(self) {
-        if (length(self) == 0) {
-          return(FALSE)
-        }
-        vapply(self@analyses, function(x) nrow(x$spectra) > 0, FALSE)
-      }
-    ),
-
-    # MARK: has_loaded_chromatograms
-    ## has_loaded_chromatograms -----
-    has_loaded_chromatograms = S7::new_property(
-      S7::class_logical,
-      getter = function(self) {
-        if (length(self) == 0) {
-          return(FALSE)
-        }
-        vapply(self@analyses, function(x) nrow(x$chromatograms) > 0, FALSE)
-      }
-    ),
-
     # MARK: has_results_nts
     ## has_results_nts -----
     has_results_nts = S7::new_property(
@@ -917,7 +893,7 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
     }
     
     cache <- lapply(seq_len(nrow(targets)), function(i) {
-      .load_chache(
+      .load_cache_sqlite(
         paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", targets$id[i])),
         a$file,
         levels,
@@ -962,7 +938,7 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
         for (i in names(spec)) {
           if (nrow(spec[[i]]) > 0) {
             if (!is.null(cache[[i]]$hash)) {
-              .save_cache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", i)), spec[[i]], cache[[i]]$hash)
+              .save_cache_sqlite(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", i)), spec[[i]], cache[[i]]$hash)
               # message("\U1f5ab Parsed spectra for ", i, " cached!")
             }
           }
@@ -1879,6 +1855,8 @@ S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
   if (showText) {
     ms2$text_string <- paste0(round(ms2$mz, 4))
     ms2$text_string[ms2$is_pre] <- paste0("Pre ", ms2$text_string[ms2$is_pre])
+  } else {
+    ms2$text_string <- ""
   }
   
   if (!interactive) {
@@ -1993,7 +1971,7 @@ S7::method(get_raw_chromatograms, MassSpecAnalyses) <- function(x,
       return(data.table::data.table())
     }
     
-    cache <- StreamFind:::.load_chache("parsed_ms_chromatograms", z$file, idx)
+    cache <- StreamFind:::.load_cache_sqlite("parsed_ms_chromatograms", z$file, idx)
     
     if (!is.null(cache$data)) {
       message("\U2139 Chromatograms loaded from cache!")
@@ -2016,7 +1994,7 @@ S7::method(get_raw_chromatograms, MassSpecAnalyses) <- function(x,
     if (!"replicate" %in% colnames(chrom)) chrom$replicate <- z$replicate
     
     if (!is.null(cache$hash)) {
-      StreamFind:::.save_cache("parsed_ms_chromatograms", chrom, cache$hash)
+      StreamFind:::.save_cache_sqlite("parsed_ms_chromatograms", chrom, cache$hash)
       message("\U1f5ab Parsed chromatograms cached!")
     }
     
@@ -2063,7 +2041,7 @@ S7::method(load_spectra, MassSpecAnalyses) <- function(x,
                                                        isolationWindow = 1.3,
                                                        minIntensityMS1 = 0,
                                                        minIntensityMS2 = 0) {
-  cache <- .load_chache(
+  cache <- .load_cache_sqlite(
     "load_spectra",
     x, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
     allTraces, isolationWindow, minIntensityMS1, minIntensityMS2
@@ -2101,7 +2079,7 @@ S7::method(load_spectra, MassSpecAnalyses) <- function(x,
       is_averaged = FALSE
     )
     if (!is.null(cache$hash)) {
-      .save_cache("load_spectra", spec, cache$hash)
+      .save_cache_sqlite("load_spectra", spec, cache$hash)
       message("\U1f5ab Spectra cached!")
     }
     x$Spectra <- spec
@@ -2178,224 +2156,74 @@ S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
                                                                   title = NULL,
                                                                   colorBy = "analyses",
                                                                   legendNames = NULL,
-                                                                  showLegend = TRUE,
-                                                                  xlim = NULL,
-                                                                  ylim = NULL,
-                                                                  cex = 0.6,
-                                                                  interactive = TRUE) {
+                                                                  downsize = 1,
+                                                                  interactive = TRUE,
+                                                                  renderEngine = "webgl") {
   mp <- get_matrix_suppression(x, rtWindow)
   if (nrow(mp) == 0) {
     message("\U2717 TIC matrix suppression not found for the analyses!")
     return(NULL)
   }
-  if (grepl("replicates", colorBy) && "replicate" %in% colnames(mp)) mp$replicate <- x@replicates[mp$analysis]
   if (!"id" %in% colnames(mp)) mp$id <- mp$analysis
   mp$intensity <- mp$mp
   if (is.null(yLab)) yLab <- "Supression Factor"
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+
+  mp <- .make_colorBy_varkey(mp, colorBy, legendNames)
+  mp$loop <- paste0(mp$analysis, mp$replicate, mp$id, mp$var)
+  cl <- .get_colors(unique(mp$var))
+  
   if (!interactive) {
-    .plot_spectra_eic_static(mp, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+    ggplot2::ggplot(mp, ggplot2::aes(x = rt, y = intensity, group = loop)) + 
+      ggplot2::geom_line(ggplot2::aes(color = var)) + 
+      ggplot2::scale_color_manual(values = cl) + 
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
   } else {
-    .plot_spectra_eic_interactive(mp, legendNames, colorBy, title, showLegend, xLab, yLab)
-  }
-}
-
-# MARK: get_features_count
-## get_features_count -----
-#' @export
-#' @noRd
-S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL, filtered = FALSE) {
-  analyses <- .check_analyses_argument(x, analyses)
-  info <- data.table::data.table()
-  if (x$has_results_nts) {
-    if (x$NTS$has_features) {
-      info <- data.table::data.table(
-        "analysis" = x@NTS@analyses_info$analysis,
-        "features" = x@NTS@number_features,
-        "filtered" = x@NTS@number_filtered_features,
-        "groups" = x@NTS@number_groups
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+    
+    loop <- NULL
+    
+    plot <- mp %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines+markers",
+        line = list(width = 0.5),
+        marker = list(size = 2),
+        text = ~paste(
+          "<br>analysis: ", analysis,
+          "<br>replicate: ", replicate,
+          "<br>id: ", id,
+          "<br>polarity: ", polarity,
+          "<br>level: ", level,
+          "<br>rt: ", rt,
+          "<br>suppression: ", intensity
+        ),
+        hoverinfo = "text"
+      ) %>% plotly::layout(
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
       )
-      if (filtered) {
-        info$features <- info$filtered + info$features
-      }
-      info$replicate <- x$replicates[info$analysis]
-      info <- info[info$analysis %in% analyses, ]
+    
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
     }
+    
+    plot
   }
-  info
 }
 
-# MARK: get_features
-## get_features -----
-#' @export
-#' @noRd
-S7::method(get_features, MassSpecAnalyses) <- function(x,
-                                                       analyses = NULL,
-                                                       features = NULL,
-                                                       mass = NULL,
-                                                       mz = NULL,
-                                                       rt = NULL,
-                                                       mobility = NULL,
-                                                       ppm = 20,
-                                                       sec = 60,
-                                                       millisec = 5,
-                                                       filtered = FALSE) {
-  analyses <- .check_analyses_argument(x, analyses)
 
-  if (is.null(analyses)) {
-    return(data.table::data.table())
-  }
-
-  fts <- NULL
-
-  if (x$has_results_nts) fts <- x$NTS$feature_list[analyses]
-
-  if (is.null(fts)) {
-    return(data.table::data.table())
-  }
-
-  fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
-
-  if (nrow(fts) == 0) {
-    return(data.table::data.table())
-  }
-
-  if (!filtered) fts <- fts[!fts$filtered, ]
-
-  fts$feature <- as.character(fts$feature)
-
-  if (!is.null(features)) {
-    target_id <- features
-
-    if (is.character(target_id)) {
-      if ("group" %in% colnames(fts)) {
-        fts <- fts[fts$feature %in% target_id | fts$group %in% target_id, ]
-      } else {
-        fts <- fts[fts$feature %in% target_id, ]
-      }
-
-      fts$replicate <- x$replicates[fts$analysis]
-
-      return(fts)
-    } else if (is.numeric(target_id)) {
-      fts <- fts[target_id, ]
-
-      fts$replicate <- x$replicates[fts$analysis]
-
-      return(fts)
-    }
-
-    if (is.data.frame(target_id)) {
-      if (all(colnames(fts) %in% colnames(target_id))) {
-        return(target_id)
-      }
-
-      if ("analysis" %in% colnames(target_id)) {
-        sel <- rep(FALSE, nrow(fts))
-
-        for (i in seq_len(nrow(target_id))) {
-          sel[(fts$feature %in% target_id$feature[i] &
-            fts$analysis %in% target_id$analysis[i]) |
-            fts$group %in% target_id$group] <- TRUE
-        }
-
-        fts <- fts[sel, ]
-
-        if ("name" %in% colnames(target_id)) {
-          ids <- target_id$name
-          names(ids) <- target_id$feature
-          fts$name <- ids[fts$feature]
-        }
-
-        return(fts)
-      } else if ("group" %in% colnames(target_id)) {
-        sel <- rep(FALSE, nrow(fts))
-
-        for (i in seq_len(nrow(target_id))) {
-          sel[fts$feature %in% target_id$feature[i] |
-            fts$group %in% target_id$group] <- TRUE
-        }
-
-        fts <- fts[sel, ]
-
-        if ("name" %in% colnames(target_id)) {
-          ids <- target_id$name
-          names(ids) <- target_id$group
-          ids <- ids[!duplicated(names(ids))]
-          fts$name <- ids[fts$group]
-        }
-
-        fts$replicate <- x$replicates[fts$analysis]
-
-        return(fts)
-      }
-    }
-
-    return(data.table::data.table())
-  }
-
-  polarities <- x$spectra_polarity[analyses]
-
-  id <- NULL
-
-  targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
-
-  targets <- targets@targets
-
-  if (nrow(targets) > 0) {
-    for (i in seq_len(nrow(targets))) {
-      if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
-
-      if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mz)
-
-      if ("mobility" %in% colnames(fts)) {
-        if (targets$mobilitymax[i] == 0) targets$mobilitymax[i] <- max(fts$mobility)
-      }
-    }
-
-    sel <- rep(FALSE, nrow(fts))
-
-    ids <- rep(NA_character_, nrow(fts))
-
-    if ("polarity" %in% colnames(targets) && nrow(targets) > 0) {
-      for (i in seq_len(nrow(targets))) {
-        if (targets$polarity[i] == "positive") targets$polarity[i] <- 1
-        if (targets$polarity[i] == "negative") targets$polarity[i] <- -1
-      }
-    }
-
-    for (i in seq_len(nrow(targets))) {
-      if ("mobility" %in% colnames(fts)) {
-        sel[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
-          data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-          data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-          data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- TRUE
-
-        ids[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
-          data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-          data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-          data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- targets$id[i]
-      } else {
-        sel[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
-          data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-          data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
-
-        ids[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
-          data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-          data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
-      }
-    }
-
-    fts$name <- ids
-
-    fts$replicate <- x$replicates[fts$analysis]
-
-    return(fts[sel])
-  }
-
-  fts$replicate <- x$replicates[fts$analysis]
-
-  fts
-}
 
 # MARK: get_features_eic
 ## get_features_eic -----
@@ -3810,71 +3638,6 @@ S7::method(get_fold_change, MassSpecAnalyses) <- function(x,
 
 # Plot NTS -----
 
-# MARK: plot_features_count
-## plot_features_count -----
-#' @export
-#' @noRd
-S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
-                                                              analyses = NULL,
-                                                              filtered = FALSE,
-                                                              yLab = NULL,
-                                                              title = NULL,
-                                                              colorBy = "analyses",
-                                                              showLegend = TRUE,
-                                                              showHoverText = TRUE) {
-  info <- get_features_count(x, analyses, filtered)
-
-  if ("replicates" %in% colorBy) info$analysis <- info$replicate
-
-  features <- NULL
-
-  info <- info[, .(
-    features = round(mean(features), digits = 0),
-    features_sd = round(sd(features), digits = 0),
-    n_analysis = length(features)
-  ), by = c("analysis")]
-
-  info$features_sd[is.na(info$features_sd)] <- 0
-
-  info <- unique(info)
-  
-  if (showHoverText) {
-    info$hover_text <- paste(
-      info$analysis, "<br>",
-      "N.: ", info$n_analysis, "<br>",
-      "Features: ", info$features, " (SD: ", info$features_sd, ")"
-    )
-  } else {
-    info$hover_text <- ""
-  }
-
-  info <- info[order(info$analysis), ]
-
-  colors_tag <- StreamFind:::.get_colors(info$analysis)
-
-  if (is.null(yLab)) yLab <- "Number of features"
-
-  plotly::plot_ly(
-    x = info$analysis,
-    y = info$features,
-    marker = list(color = unname(colors_tag)),
-    type = "bar",
-    text = info$hover_text,
-    hoverinfo = "text",
-    error_y = list(
-      type = "data",
-      array = info$features_sd,
-      color = "darkred",
-      symmetric = FALSE,
-      visible = TRUE
-    ),
-    name = names(colors_tag),
-    showlegend = showLegend
-  ) %>% plotly::layout(
-    xaxis = list(title = NULL),
-    yaxis = list(title = yLab)
-  )
-}
 
 # MARK: plot_features
 ## plot_features -----
@@ -4999,7 +4762,7 @@ S7::method(plot_fold_change, MassSpecAnalyses) <- function(x,
     }
 
     analyses <- lapply(files, function(x) {
-      cache <- .load_chache("parsed_ms_analyses", x)
+      cache <- .load_cache_sqlite("parsed_ms_analyses", x)
       if (!is.null(cache$data)) {
         message("\U2139 ", basename(x), " analysis loaded from cache!")
         cache$data
@@ -5038,7 +4801,7 @@ S7::method(plot_fold_change, MassSpecAnalyses) <- function(x,
         }
 
         if (!is.null(cache$hash)) {
-          .save_cache("parsed_ms_analyses", ana, cache$hash)
+          .save_cache_sqlite("parsed_ms_analyses", ana, cache$hash)
           message("\U1f5ab Parsed analysis cached!")
         }
 

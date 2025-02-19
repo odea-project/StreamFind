@@ -115,28 +115,32 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_ms_load_features_eic
-Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses, Rcpp::List features, bool filtered, float rtExpand, float mzExpand, float minTracesIntensity);
-RcppExport SEXP _StreamFind_rcpp_ms_load_features_eic(SEXP analysesSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP) {
+Rcpp::List rcpp_ms_load_features_eic(std::vector<std::string> analyses_names, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::List features, bool filtered, float rtExpand, float mzExpand, float minTracesIntensity);
+RcppExport SEXP _StreamFind_rcpp_ms_load_features_eic(SEXP analyses_namesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type headers(headersSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type features(featuresSEXP);
     Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
     Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
     Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
     Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_load_features_eic(analyses, features, filtered, rtExpand, mzExpand, minTracesIntensity));
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_load_features_eic(analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minTracesIntensity));
     return rcpp_result_gen;
 END_RCPP
 }
 // rcpp_ms_load_features_ms1
-Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses, Rcpp::List features, bool filtered, std::vector<float> rtWindow, std::vector<float> mzWindow, float minTracesIntensity, float mzClust, float presence);
-RcppExport SEXP _StreamFind_rcpp_ms_load_features_ms1(SEXP analysesSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtWindowSEXP, SEXP mzWindowSEXP, SEXP minTracesIntensitySEXP, SEXP mzClustSEXP, SEXP presenceSEXP) {
+Rcpp::List rcpp_ms_load_features_ms1(std::vector<std::string> analyses_names, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::List features, bool filtered, std::vector<float> rtWindow, std::vector<float> mzWindow, float minTracesIntensity, float mzClust, float presence);
+RcppExport SEXP _StreamFind_rcpp_ms_load_features_ms1(SEXP analyses_namesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtWindowSEXP, SEXP mzWindowSEXP, SEXP minTracesIntensitySEXP, SEXP mzClustSEXP, SEXP presenceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type headers(headersSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type features(featuresSEXP);
     Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
     Rcpp::traits::input_parameter< std::vector<float> >::type rtWindow(rtWindowSEXP);
@@ -144,34 +148,39 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
     Rcpp::traits::input_parameter< float >::type mzClust(mzClustSEXP);
     Rcpp::traits::input_parameter< float >::type presence(presenceSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_load_features_ms1(analyses, features, filtered, rtWindow, mzWindow, minTracesIntensity, mzClust, presence));
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_load_features_ms1(analyses_names, analyses_files, headers, features, filtered, rtWindow, mzWindow, minTracesIntensity, mzClust, presence));
     return rcpp_result_gen;
 END_RCPP
 }
 // rcpp_ms_load_features_ms2
-Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses, Rcpp::List features, bool filtered, float minTracesIntensity, float isolationWindow, float mzClust, float presence);
-RcppExport SEXP _StreamFind_rcpp_ms_load_features_ms2(SEXP analysesSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP minTracesIntensitySEXP, SEXP isolationWindowSEXP, SEXP mzClustSEXP, SEXP presenceSEXP) {
+Rcpp::List rcpp_ms_load_features_ms2(std::vector<std::string> analyses_names, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::List features, bool filtered, float minTracesIntensity, float isolationWindow, float mzClust, float presence);
+RcppExport SEXP _StreamFind_rcpp_ms_load_features_ms2(SEXP analyses_namesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP minTracesIntensitySEXP, SEXP isolationWindowSEXP, SEXP mzClustSEXP, SEXP presenceSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type headers(headersSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type features(featuresSEXP);
     Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
     Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
     Rcpp::traits::input_parameter< float >::type isolationWindow(isolationWindowSEXP);
     Rcpp::traits::input_parameter< float >::type mzClust(mzClustSEXP);
     Rcpp::traits::input_parameter< float >::type presence(presenceSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_load_features_ms2(analyses, features, filtered, minTracesIntensity, isolationWindow, mzClust, presence));
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_load_features_ms2(analyses_names, analyses_files, headers, features, filtered, minTracesIntensity, isolationWindow, mzClust, presence));
     return rcpp_result_gen;
 END_RCPP
 }
 // rcpp_ms_fill_features
-Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses, Rcpp::DataFrame features, bool withinReplicate, float rtExpand, float mzExpand, float minTracesIntensity, float minNumberTraces, float baseCut, float minSignalToNoiseRatio, float minGaussianFit);
-RcppExport SEXP _StreamFind_rcpp_ms_fill_features(SEXP analysesSEXP, SEXP featuresSEXP, SEXP withinReplicateSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP baseCutSEXP, SEXP minSignalToNoiseRatioSEXP, SEXP minGaussianFitSEXP) {
+Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names, std::vector<std::string> analyses_replicates, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::DataFrame features, bool withinReplicate, float rtExpand, float mzExpand, float minTracesIntensity, float minNumberTraces, float baseCut, float minSignalToNoiseRatio, float minGaussianFit);
+RcppExport SEXP _StreamFind_rcpp_ms_fill_features(SEXP analyses_namesSEXP, SEXP analyses_replicatesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP withinReplicateSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP baseCutSEXP, SEXP minSignalToNoiseRatioSEXP, SEXP minGaussianFitSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_replicates(analyses_replicatesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type headers(headersSEXP);
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
     Rcpp::traits::input_parameter< bool >::type withinReplicate(withinReplicateSEXP);
     Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
@@ -181,17 +190,19 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< float >::type baseCut(baseCutSEXP);
     Rcpp::traits::input_parameter< float >::type minSignalToNoiseRatio(minSignalToNoiseRatioSEXP);
     Rcpp::traits::input_parameter< float >::type minGaussianFit(minGaussianFitSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_fill_features(analyses, features, withinReplicate, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut, minSignalToNoiseRatio, minGaussianFit));
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_fill_features(analyses_names, analyses_replicates, analyses_files, headers, features, withinReplicate, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut, minSignalToNoiseRatio, minGaussianFit));
     return rcpp_result_gen;
 END_RCPP
 }
 // rcpp_ms_calculate_features_quality
-Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses, Rcpp::List features, bool filtered, float rtExpand, float mzExpand, float minTracesIntensity, float minNumberTraces, float baseCut);
-RcppExport SEXP _StreamFind_rcpp_ms_calculate_features_quality(SEXP analysesSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP baseCutSEXP) {
+Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_names, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::List features, bool filtered, float rtExpand, float mzExpand, float minTracesIntensity, float minNumberTraces, float baseCut);
+RcppExport SEXP _StreamFind_rcpp_ms_calculate_features_quality(SEXP analyses_namesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP baseCutSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type headers(headersSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type features(featuresSEXP);
     Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
     Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
@@ -199,7 +210,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
     Rcpp::traits::input_parameter< float >::type minNumberTraces(minNumberTracesSEXP);
     Rcpp::traits::input_parameter< float >::type baseCut(baseCutSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_calculate_features_quality(analyses, features, filtered, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut));
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_calculate_features_quality(analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minTracesIntensity, minNumberTraces, baseCut));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -283,11 +294,11 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra, 5},
     {"_StreamFind_rcpp_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms, 2},
     {"_StreamFind_rcpp_ms_annotate_features", (DL_FUNC) &_StreamFind_rcpp_ms_annotate_features, 5},
-    {"_StreamFind_rcpp_ms_load_features_eic", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_eic, 6},
-    {"_StreamFind_rcpp_ms_load_features_ms1", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms1, 8},
-    {"_StreamFind_rcpp_ms_load_features_ms2", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms2, 7},
-    {"_StreamFind_rcpp_ms_fill_features", (DL_FUNC) &_StreamFind_rcpp_ms_fill_features, 10},
-    {"_StreamFind_rcpp_ms_calculate_features_quality", (DL_FUNC) &_StreamFind_rcpp_ms_calculate_features_quality, 8},
+    {"_StreamFind_rcpp_ms_load_features_eic", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_eic, 8},
+    {"_StreamFind_rcpp_ms_load_features_ms1", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms1, 10},
+    {"_StreamFind_rcpp_ms_load_features_ms2", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms2, 9},
+    {"_StreamFind_rcpp_ms_fill_features", (DL_FUNC) &_StreamFind_rcpp_ms_fill_features, 13},
+    {"_StreamFind_rcpp_ms_calculate_features_quality", (DL_FUNC) &_StreamFind_rcpp_ms_calculate_features_quality, 10},
     {"_StreamFind_rcpp_ms_group_features", (DL_FUNC) &_StreamFind_rcpp_ms_group_features, 3},
     {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
     {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},

@@ -106,8 +106,14 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
   feature_list_nf <- data.table::copy(feature_list)
   feature_list_nf$group[is.na(feature_list_nf$group)] <- ""
   
+  ana_info <- engine$NTS$analyses_info
+  headers <- engine$NTS$spectra_headers
+  
   res <- rcpp_ms_fill_features(
-    analyses_list,
+    ana_info$analysis,
+    ana_info$replicate,
+    ana_info$file,
+    headers,
     feature_list_nf,
     parameters$withinReplicate,
     parameters$rtExpand,

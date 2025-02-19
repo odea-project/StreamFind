@@ -21,11 +21,8 @@ db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 ms <- MassSpecEngine$new(analyses = files)
 
 # ms$Analyses$has_results_nts
-# ms$Analyses$has_results_spectra
-# ms$Analyses$has_results_chromatograms
+# ms$has_results_nts()
 # ms$Analyses$NTS
-# ms$Analyses$Spectra
-# ms$Analyses$Chromatograms
 
 # ms$get_spectra_bpc(analyses = 1:2)
 # ms$get_spectra_headers()
@@ -39,7 +36,7 @@ ms <- MassSpecEngine$new(analyses = files)
 #   analyses = c(11),
 #   mass = data.frame(min = 265, max =  280, rtmin = 910, rtmax = 920),
 #   colorBy = "replicates+targets",
-#   interactive = F
+#   interactive = T
 # )
 # plot_spectra_ms2(
 #   ms$Analyses,
@@ -76,6 +73,8 @@ blks <- c(
 ms$add_replicate_names(rpls)
 ms$add_blank_names(blks)
 
+# ms$run(MassSpecMethod_FindFeatures_xcms3_centwave())
+
 ms$run(
   MassSpecMethod_FindFeatures_openms(
     noiseThrInt = 1000,
@@ -104,6 +103,40 @@ ms$run(
 )
 
 show(ms$NTS)
+nts <- ms$NTS
+# nts@number_analyses
+# nts@number_features
+# nts@has_features
+# nts@number_filtered_features
+# nts@has_filtered_features
+# nts@has_groups
+# nts@has_features_eic
+# nts@has_features_ms1
+# nts@has_features_ms2
+# nts@has_features_suspects
+# nts@number_groups
+# nts@group_names
+
+# plot_matrix_suppression(ms$Analyses)
+
+plot_features_count(nts)
+
+get_features(nts, mass = db[2:3, ])
+
+get_features_eic(nts, mass = db[2, ])
+plot_features_eic(nts, mass = db[2, ])
+plot_features_eic(nts, mass = db[2:3, ], legendNames = TRUE)
+
+get_features_ms1(nts, mass = db[2, ])
+
+plot_features_ms1(nts, mass = db[2:3, ], legendNames = TRUE)
+
+View(get_features_ms2(nts, mass = db[2:3, ]))
+
+plot_features_ms2(nts, mass = db[2:3, ], legendNames = TRUE)
+
+# ms$clear_cache()
+
 
 ms$run(
   MassSpecMethod_AnnotateFeatures_StreamFind(
@@ -120,6 +153,8 @@ ms$run(
     excludeAdducts = TRUE
   )
 )
+
+# ms$run(MassSpecMethod_GroupFeatures_xcms3_peakdensity()
 
 ms$run(
   MassSpecMethod_GroupFeatures_openms(
@@ -251,10 +286,5 @@ ms$run(
 ms$save("ms.rds")
 
 ms$run_app()
-
-
-
-
-
 
 

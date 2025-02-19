@@ -186,51 +186,74 @@ ConfigCache <- S7::new_class(
   package = "StreamFind",
   properties = list(
     value = S7::new_property(S7::class_logical),
-    file = S7::new_property(S7::class_character),
+    mode = S7::new_property(S7::class_character, default = "rds"),
+    folder = S7::new_property(S7::class_character, default = "cache"),
+    file = S7::new_property(S7::class_character, default = "cache.sqlite"),
     size = S7::new_property(
       S7::class_numeric,
       getter = function(self) {
-        if (file.exists(self@file)) {
-          size <- file.size(self@file)
-          if (size > 1024^3) {
-            size <- size / 1024^3
-            unit <- "GB"
-          } else if (size > 1024^2) {
-            size <- size / 1024^2
-            unit <- "MB"
-          } else if (size > 1024) {
-            size <- size / 1024
-            unit <- "KB"
+        if ("sqlite" %in% self@mode) {
+          if (file.exists(self@file)) {
+            size <- file.size(self@file)
           } else {
-            unit <- "bytes"
+            message("Cache file does not exist!")
+            return(NA_real_)
           }
-          names(size) <- unit
-          size
+        } else if ("rds" %in% self@mode) {
+          if (dir.exists(self@folder)) {
+            size <- sum(file.size(list.files(self@folder, full.names = TRUE)))
+          } else {
+            message("Cache folder does not exist!")
+            return(NA_real_)
+          }
         } else {
-          message("Cache file does not exist!")
-          NA_real_
+          message("Invalid cache mode!")
+          return(NA_real_)
         }
+        if (size > 1024^3) {
+          size <- size / 1024^3
+          unit <- "GB"
+        } else if (size > 1024^2) {
+          size <- size / 1024^2
+          unit <- "MB"
+        } else if (size > 1024) {
+          size <- size / 1024
+          unit <- "KB"
+        } else {
+          unit <- "bytes"
+        }
+        names(size) <- unit
+        size
       }
     ),
     info = S7::new_property(
       S7::class_data.frame,
       getter = function(self) {
-        if (file.exists(self@file)) {
-          db <- .openCacheDBScope(file = self@file)
-          tables <- DBI::dbListTables(db)
-          if (length(tables) == 0) {
-            message("\U2139 Cache file is empty.")
+        if ("sqlite" %in% self@mode) {
+          if (file.exists(self@file)) {
+            db <- .openCacheDBScope(file = self@file)
+            tables <- DBI::dbListTables(db)
+            if (length(tables) == 0) {
+              message("\U2139 Cache file is empty.")
+            } else {
+              tableRows <- sapply(tables, function(tab) {
+                DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))
+              })
+              tableRows <- unlist(tableRows)
+              return(data.table::data.table(name = tables, rows = tableRows))
+            }
           } else {
-            tableRows <- sapply(tables, function(tab) {
-              DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))
-            })
-            tableRows <- unlist(tableRows)
-            return(data.table::data.table(name = tables, rows = tableRows))
+            message("Cache file does not exist!")
           }
+          data.table::data.table()
+          
+        } else if ("rds" %in% self@mode) {
+          .info_cache_rds(self@folder)
+          
         } else {
-          message("Cache file does not exist!")
+          message("Invalid cache mode!")
+          data.table::data.table()
         }
-        data.table::data.table()
       }
     )
   ),
@@ -240,16 +263,73 @@ ConfigCache <- S7::new_class(
       name = "Cache results",
       description = "Enable/disable caching of results between processing steps.",
       value = TRUE,
-      file = "cache.sqlite"
+      mode = "rds",
+      file = "cache.sqlite",
+      folder = "cache"
     )
   },
   validator = function(self) {
     checkmate::assert_logical(self@value, max.len = 1)
+    checkmate::assert_choice(self@mode, c("rds", "sqlite"))
     checkmate::assert_character(self@file)
     checkmate::assert_true(tools::file_ext(self@file) %in% "sqlite")
     NULL
   }
 )
+
+#' @export
+#' @noRd
+S7::method(load_cache, ConfigCache) <- function(x, category = NULL, ...) {
+  if (x@value) {
+    if ("sqlite" %in% x@mode) {
+      .load_cache_sqlite(category = category, ..., file = x@file)
+    } else if ("rds" %in% x@mode) {
+      .load_chache_rds(category = category, ..., folder = x@folder)
+    } else {
+      message("Invalid cache mode!")
+      return(NULL)
+    }
+  } else {
+    message("Cache is disabled!")
+    return(NULL)
+  }
+}
+
+#' @export
+#' @noRd
+S7::method(save_cache, ConfigCache) <- function(x, category = NULL, data = NULL, hash = NULL) {
+  if (x@value) {
+    if ("sqlite" %in% x@mode) {
+      .save_cache_sqlite(category, data, hash, file = x@file)
+    } else if ("rds" %in% x@mode) {
+      .save_cache_rds(category, data, hash, folder = x@folder)
+    } else {
+      message("Invalid cache mode!")
+      return(invisible(NULL))
+    }
+  } else {
+    message("Cache is disabled!")
+    return(invisible(NULL))
+  }
+}
+
+#' @export
+#' @noRd
+S7::method(clear_cache, ConfigCache) <- function(x, what = NULL) {
+  if (x@value) {
+    if ("sqlite" %in% x@mode) {
+      clear_cache(what, file = x@file)
+    } else if ("rds" %in% x@mode) {
+      .clear_cache_rds(what, folder = x@folder)
+    } else {
+      message("Invalid cache mode!")
+      return(invisible(NULL))
+    }
+  } else {
+    message("Cache is disabled!")
+    return(invisible(NULL))
+  }
+}
 
 # MARK: EngineConfig
 ## EngineConfig -----

@@ -167,10 +167,10 @@ MassSpecTargets <- S7::new_class(
         
       } else if (!"polarity" %in% colnames(targets)) {
         
-        if (!is.null(polarities) && "analysis" %in% colnames(targets)) {
+        if (!is.null(polarities) && "analysis" %in% colnames(targets) && !is.null(names(polarities))) {
           targets$polarity <- polarities[targets$analysis]
         
-        } else if (!is.null(polarities) && !is.null(analyses)) {
+        } else if (!is.null(polarities) && !is.null(analyses) && !is.null(names(polarities))) {
           targets <- lapply(analyses, function(x, t) {
             t$analysis <- x
             t$polarity <- polarities[x]
@@ -178,9 +178,6 @@ MassSpecTargets <- S7::new_class(
           }, t = targets)
           targets <- data.table::rbindlist(targets)
 
-        } else if (!is.null(polarities) && length(polarities) == nrow(targets)) {
-          targets$polarity <- polarities
-          
         } else if (!is.null(polarities) && length(polarities) <= 2) {
           targets <- lapply(unique(polarities), function(p, t) {
             t$polarity <- p

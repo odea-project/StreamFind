@@ -208,13 +208,13 @@
   )
 }
 
-#' @title .save_cache_backend
+#' @title .save_cache_sqlite_backend
 #'
 #' @description From patRoon package to use within the CoreEngine.
 #'
 #' @noRd
 #'
-.save_cache_backend <- function(file, category, data, hash) {
+.save_cache_sqlite_backend <- function(file, category, data, hash) {
   db <- .openCacheDBScope(file = file)
 
   RSQLite::sqliteSetBusyHandler(db, 300 * 1000) # UNDONE: make configurable?
@@ -233,13 +233,13 @@
   })
 }
 
-#' @title .load_cache_backend
+#' @title .load_cache_sqlite_backend
 #'
 #' @description From patRoon package to use within the CoreEngine.
 #'
 #' @noRd
 #'
-.load_cache_backend <- function(file, category, hashes) {
+.load_cache_sqlite_backend <- function(file, category, hashes) {
   db <- .openCacheDBScope(file = file)
   RSQLite::sqliteSetBusyHandler(db, 300 * 1000)
   ret <- NULL
@@ -263,30 +263,125 @@
   ret
 }
 
-#' @title .load_chache
+#' @title .load_cache_sqlite
 #'
 #' @description Cache interface adapted from patRoon package.
 #'
 #' @noRd
-#'
-.load_chache <- function(category = NULL, ..., file = "cache.sqlite") {
+.load_cache_sqlite <- function(category = NULL, ..., file = "cache.sqlite") {
   list_out <- list()
   hash <- .make_hash(...)
-  data <- .load_cache_backend(file, category, hash)
+  data <- .load_cache_sqlite_backend(file, category, hash)
   list_out[["hash"]] <- hash
   list_out[["data"]] <- data
   list_out
 }
 
-#' @title .save_cache
+#' @title .save_cache_sqlite
 #'
 #' @description Cache interface adapted from patRoon package.
 #'
 #' @noRd
-.save_cache <- function(category = NULL, data = NULL, hash = NULL, file = "cache.sqlite") {
-  .save_cache_backend(file, category, data, hash)
+.save_cache_sqlite <- function(category = NULL, data = NULL, hash = NULL, file = "cache.sqlite") {
+  .save_cache_sqlite_backend(file, category, data, hash)
 }
 
+#' @title .save_cache_rds
+#'
+#' @description Cache interface for rds files in a given folder.
+#'
+#' @noRd
+.save_cache_rds <- function(category = NULL, data = NULL, hash = NULL, folder = "cache") {
+  if (!dir.exists(folder)) dir.create(folder)
+  file <- file.path(folder, paste0(category, "_", hash, ".rds"))
+  saveRDS(data, file)
+}
+
+#' @title .load_chache_rds
+#'
+#' @description Cache interface for rds files in a given folder.
+#'
+#' @noRd
+.load_chache_rds <- function(category = NULL, ..., folder = "cache") {
+  list_out <- list()
+  hash <- .make_hash(...)
+  file <- file.path(folder, paste0(category, "_", hash, ".rds"))
+  if (file.exists(file)) {
+    data <- readRDS(file)
+  } else {
+    data <- NULL
+  }
+  list_out[["hash"]] <- hash
+  list_out[["data"]] <- data
+  list_out
+}
+
+#' @title .info_cache_rds
+#' 
+#' @description Cache interface for rds files in a given folder.
+#' 
+#' @noRd
+.info_cache_rds <- function(folder = "cache") {
+  files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
+  if (length(files) == 0) {
+    return(data.table::data.table())
+  }
+  data <- lapply(files, function(x) {
+    file_name <- tools::file_path_sans_ext(basename(x))
+    category <- gsub("_[a-z0-9]+$", "", file_name)
+    hash <- gsub("^.*_", "", file_name)
+    size <- file.size(x)
+    data.table::data.table(
+      category = tools::file_path_sans_ext(basename(x)),
+      hash = digest::digest(data, algo = "xxhash64"),
+      size = object.size(data)
+    )
+  })
+  data.table::rbindlist(data, fill = TRUE)
+}
+
+#' @title .clear_cache_rds
+#' 
+#' @description Cache interface for rds files in a given folder.
+#' 
+#' @noRd
+.clear_cache_rds <- function(what = NULL, folder = "cache") {
+  if (!dir.exists(folder)) {
+    warning("Folder does not exist!")
+    return(invisible(NULL))
+  }
+  
+  if (what == "all") {
+    files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
+    if (length(files) > 0) {
+      file.remove(files)
+    } else {
+      warning("No files to remove!")
+    }
+  } else if (is.character(what)) {
+    files <- list.files(folder, pattern = paste0(what, "_.*.rds$"), full.names = TRUE)
+    if (length(files) > 0) {
+      file.remove(files)
+    } else {
+      warning("No files to remove!")
+    }
+  } else if (is.numeric(what)) {
+    files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
+    if (length(files) > 0) {
+      file.remove(files[what])
+    } else {
+      warning("No files to remove!")
+    }
+  } else {
+    warning("Nothing selected to remove!")
+  }
+  return(invisible(NULL))
+}
+
+#' @title .convert_to_json
+#' 
+#' @description Converts an object to JSON format.
+#' 
 #' @noRd
 .convert_to_json <- function(x) {
   jsonlite::toJSON(
@@ -304,34 +399,22 @@
   )
 }
 
-#' Registers changes in the history private field.
-#' @noRd
-.register <- function(action = NA_character_, data = NA_character_, name = NA_character_, details = NA_character_) {
-  date_time <- Sys.time()
-  if (is.null(private$.history)) private$.history <- list()
-  private$.history[[as.character.POSIXt(date_time)]] <- data.table(
-    "time" = date_time,
-    "action" = action,
-    "data" = data,
-    "name" = name,
-    "details" = details
-  )
-  invisible(self)
-}
-
-#' Checks the analyses argument as a character/integer vector to match analyses names. Returns a valid character
-#' vector with analysis names or `NULL` for non-matching. If `analyses` is `NULL`, returns all analysis names.
+#' @title .check_analyses_argument
+#' 
+#' @description Checks the analyses argument as a character/integer vector to match analyses names. Returns a
+#' valid character vector with analysis names or `NULL` for non-matching. If `analyses` is `NULL`,
+#' returns all analysis names.
+#' 
 #' @noRd
 .check_analyses_argument <- function(obj, value) {
   if (is.null(value)) {
     names(obj)
   } else {
-    analyses <- names(obj)[value]
-    if (!all(analyses %in% names(obj))) {
+    if (!all(value %in% names(obj))) {
       warning("Defined analyses not found!")
       NULL
     } else {
-      analyses
+      value
     }
   }
 }

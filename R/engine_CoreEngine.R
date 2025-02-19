@@ -305,7 +305,7 @@ CoreEngine <- R6::R6Class(
     #' 
     clear_cache = function(value = NULL) {
       if (is.null(value)) value = "all"
-      StreamFind::clear_cache(value, self$Config$ConfigCache$file)
+      StreamFind::clear_cache(self$Config$ConfigCache, value)
       message("\U2713 Cache cleared!")
     },
     
@@ -377,7 +377,7 @@ CoreEngine <- R6::R6Class(
       
       if (tools::file_ext(file) %in% "sqlite") {
         hash <- .make_hash(is(self))
-        data <- .load_cache_backend(file, is(self), hash)
+        data <- .load_cache_sqlite_backend(file, is(self), hash)
         if (!is.null(data)) {
           private$.Metadata <- data$Metadata
           private$.Workflow <- data$Workflow
@@ -477,7 +477,7 @@ CoreEngine <- R6::R6Class(
         )
         
         hash <- .make_hash(is(self))
-        .save_cache(is(self), data, hash, file)
+        .save_cache_sqlite(is(self), data, hash, file)
         
       } else if (tools::file_ext(file) %in% "rds") {
         data <- list(
@@ -538,8 +538,9 @@ CoreEngine <- R6::R6Class(
       if (self$Config$ConfigCache$value) {
         cache_category <- paste0("results_", step$method, "_", step$algorithm)
         
-        cache <- .load_chache(
-          cache_category,
+        cache <- StreamFind::load_cache(
+          self$Config$ConfigCache,
+          category = cache_category,
           as.list(self$Workflow),
           as.list(step),
           self$Analyses$info,
@@ -567,7 +568,7 @@ CoreEngine <- R6::R6Class(
                 step$method, ":\n", e, "\n",
                 "Results deleted from cache!"
               )
-              clear_cache(cache_category)
+              StreamFind::sclear_cache(self$Config$ConfigCache, cache_category)
             },
             warning = function(w) {
               warning(
@@ -575,7 +576,7 @@ CoreEngine <- R6::R6Class(
                 step$method, ":\n", w, "\n",
                 "Results deleted from cache!"
               )
-              clear_cache(cache_category)
+              StreamFind::sclear_cache(self$Config$ConfigCache, cache_category)
             }
           )
         }
@@ -589,7 +590,12 @@ CoreEngine <- R6::R6Class(
         
         if (self$Config$ConfigCache$value && !loaded_cached) {
           if (!is.null(cache$hash)) {
-            .save_cache(cache_category, self$Analyses$results, cache$hash)
+            StreamFind::save_cache(
+              self$Config$ConfigCache,
+              category = cache_category,
+              data = self$Analyses$results,
+              hash = cache$hash
+            )
             message(
               "\U1f5ab Results from ",
               step$method,

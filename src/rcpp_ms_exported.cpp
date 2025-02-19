@@ -701,7 +701,9 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
 
 // MARK: rcpp_ms_load_features_eic
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
+Rcpp::List rcpp_ms_load_features_eic(std::vector<std::string> analyses_names,
+                                     std::vector<std::string> analyses_files,
+                                     Rcpp::List headers,
                                      Rcpp::List features,
                                      bool filtered = false,
                                      float rtExpand = 0,
@@ -709,19 +711,10 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
                                      float minTracesIntensity = 0)
 {
 
-  const int number_analyses = analyses.size();
+  const int number_analyses = analyses_names.size();
 
   if (number_analyses == 0)
     return features;
-
-  std::vector<std::string> analyses_names(number_analyses);
-
-  for (int i = 0; i < number_analyses; i++)
-  {
-    Rcpp::List analysis = analyses[i];
-    std::string name = analysis["name"];
-    analyses_names[i] = name;
-  }
 
   const int number_features_analyses = features.size();
 
@@ -817,18 +810,22 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
     if (targets.id.size() == 0)
       continue;
 
-    const Rcpp::List &analysis = analyses[i];
+    // const Rcpp::List &analysis = analyses[i];
+    // 
+    // sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
 
-    sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
-
-    const std::string file = analysis["file"];
+    const std::string file = analyses_files[i];
 
     if (!std::filesystem::exists(file))
       continue;
 
     sc::MS_FILE ana(file);
+    
+    const Rcpp::List &hd = headers[i];
+    
+    const sc::MS_SPECTRA_HEADERS header = NTS::as_MS_SPECTRA_HEADERS(hd);
 
-    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header, minTracesIntensity, 0);
 
     for (int j = 0; j < n_features; j++)
     {
@@ -870,7 +867,9 @@ Rcpp::List rcpp_ms_load_features_eic(Rcpp::List analyses,
 
 // MARK: rcpp_ms_load_features_ms1
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
+Rcpp::List rcpp_ms_load_features_ms1(std::vector<std::string> analyses_names,
+                                     std::vector<std::string> analyses_files,
+                                     Rcpp::List headers,
                                      Rcpp::List features,
                                      bool filtered,
                                      std::vector<float> rtWindow,
@@ -880,19 +879,10 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
                                      float presence)
 {
 
-  const int number_analyses = analyses.size();
+  const int number_analyses = analyses_names.size();
 
   if (number_analyses == 0)
     return features;
-
-  std::vector<std::string> analyses_names(number_analyses);
-
-  for (int i = 0; i < number_analyses; i++)
-  {
-    Rcpp::List analysis = analyses[i];
-    std::string name = analysis["name"];
-    analyses_names[i] = name;
-  }
 
   const int number_features_analyses = features.size();
 
@@ -988,18 +978,18 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
     if (targets.id.size() == 0)
       continue;
 
-    const Rcpp::List &analysis = analyses[i];
-
-    sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
-
-    const std::string file = analysis["file"];
+    const std::string file = analyses_files[i];
 
     if (!std::filesystem::exists(file))
       continue;
 
     sc::MS_FILE ana(file);
+    
+    const Rcpp::List &hd = headers[i];
+    
+    const sc::MS_SPECTRA_HEADERS header = NTS::as_MS_SPECTRA_HEADERS(hd);
 
-    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header, minTracesIntensity, 0);
 
     for (int j = 0; j < n_features; j++)
     {
@@ -1045,7 +1035,9 @@ Rcpp::List rcpp_ms_load_features_ms1(Rcpp::List analyses,
 
 // MARK: rcpp_ms_load_features_ms2
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
+Rcpp::List rcpp_ms_load_features_ms2(std::vector<std::string> analyses_names,
+                                     std::vector<std::string> analyses_files,
+                                     Rcpp::List headers,
                                      Rcpp::List features,
                                      bool filtered,
                                      float minTracesIntensity,
@@ -1054,19 +1046,10 @@ Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
                                      float presence)
 {
 
-  const int number_analyses = analyses.size();
+  const int number_analyses = analyses_names.size();
 
   if (number_analyses == 0)
     return features;
-
-  std::vector<std::string> analyses_names(number_analyses);
-
-  for (int i = 0; i < number_analyses; i++)
-  {
-    Rcpp::List analysis = analyses[i];
-    std::string name = analysis["name"];
-    analyses_names[i] = name;
-  }
 
   const int number_features_analyses = features.size();
 
@@ -1160,18 +1143,18 @@ Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
     if (targets.id.size() == 0)
       continue;
 
-    const Rcpp::List &analysis = analyses[i];
-
-    sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
-
-    const std::string file = analysis["file"];
+    const std::string file = analyses_files[i];
 
     if (!std::filesystem::exists(file))
       continue;
 
     sc::MS_FILE ana(file);
+    
+    const Rcpp::List &hd = headers[i];
+    
+    const sc::MS_SPECTRA_HEADERS header = NTS::as_MS_SPECTRA_HEADERS(hd);
 
-    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, 0, minTracesIntensity);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header, 0, minTracesIntensity);
 
     for (int j = 0; j < n_features; j++)
     {
@@ -1217,7 +1200,10 @@ Rcpp::List rcpp_ms_load_features_ms2(Rcpp::List analyses,
 
 // MARK: rcpp_ms_fill_features
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
+Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
+                                 std::vector<std::string> analyses_replicates,
+                                 std::vector<std::string> analyses_files,
+                                 Rcpp::List headers,
                                  Rcpp::DataFrame features,
                                  bool withinReplicate = false,
                                  float rtExpand = 0,
@@ -1231,24 +1217,17 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
   Rcpp::List out;
 
-  const int number_analyses = analyses.size();
+  const int number_analyses = analyses_names.size();
 
   if (number_analyses == 0)
     return out;
 
-  std::vector<std::string> analyses_names(number_analyses);
-  std::vector<std::string> analyses_rpls(number_analyses);
   std::vector<std::vector<int>> analyses_polarities(number_analyses);
 
   for (int i = 0; i < number_analyses; i++)
   {
-    Rcpp::List analysis = analyses[i];
-    std::string name = analysis["name"];
-    analyses_names[i] = name;
-    std::string rpl = analysis["replicate"];
-    analyses_rpls[i] = rpl;
-    Rcpp::List headers = analysis["spectra_headers"];
-    std::vector<int> pols = headers["polarity"];
+    const Rcpp::List &hd_i = headers[i];
+    std::vector<int> pols = hd_i["polarity"];
     std::set<int> pols_set(pols.begin(), pols.end());
     std::vector<int> pols_unique(pols_set.begin(), pols_set.end());
     analyses_polarities[i] = pols_unique;
@@ -1336,8 +1315,7 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
     for (int i = 0; i < number_analyses; i++)
     {
-      Rcpp::List analysis = analyses[i];
-      std::string rpl = analysis["replicate"];
+      std::string rpl = analyses_replicates[i];
       rpl_sizes[rpl]++;
     }
 
@@ -1440,8 +1418,7 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
       if (withinReplicate)
       {
-        const Rcpp::List &analysis = analyses[j];
-        const std::string &rpl = analysis["replicate"];
+        const std::string &rpl = analyses_replicates[j];
 
         // continues if analysis replicate j is not within the same replicate as the feature group
         if (fts_replicates_k[0] != rpl)
@@ -1584,18 +1561,18 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
     Rcpp::Rcout << "Extracting " << ana_targets[j].id.size() << " EICs from analysis " << analyses_names[j] << "...";
 
-    const Rcpp::List &analysis = analyses[j];
+    const Rcpp::List &hd = headers[j];
+    
+    const sc::MS_SPECTRA_HEADERS header = NTS::as_MS_SPECTRA_HEADERS(hd);
 
-    const sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
-
-    const std::string file = analysis["file"];
+    const std::string file = analyses_files[j];
 
     if (!std::filesystem::exists(file))
       continue;
 
     sc::MS_FILE ana(file);
 
-    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(ana_targets[j], headers, minTracesIntensity, 0);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(ana_targets[j], header, minTracesIntensity, 0);
 
     const int n_traces = res.id.size();
 
@@ -1760,7 +1737,9 @@ Rcpp::List rcpp_ms_fill_features(Rcpp::List analyses,
 
 // MARK: rcpp_ms_calculate_features_quality
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
+Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_names,
+                                              std::vector<std::string> analyses_files,
+                                              Rcpp::List headers,
                                               Rcpp::List features,
                                               bool filtered = false,
                                               float rtExpand = 0,
@@ -1770,19 +1749,10 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
                                               float baseCut = 0)
 {
 
-  const int number_analyses = analyses.size();
+  const int number_analyses = analyses_names.size();
 
   if (number_analyses == 0)
     return features;
-
-  std::vector<std::string> analyses_names(number_analyses);
-
-  for (int i = 0; i < number_analyses; i++)
-  {
-    Rcpp::List analysis = analyses[i];
-    std::string name = analysis["name"];
-    analyses_names[i] = name;
-  }
 
   const int number_features_analyses = features.size();
 
@@ -1899,18 +1869,19 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List analyses,
     if (targets.id.size() == 0)
       continue;
 
-    const Rcpp::List &analysis = analyses[i];
+    
+    const Rcpp::List &hd = headers[i];
+    
+    const sc::MS_SPECTRA_HEADERS header = NTS::as_MS_SPECTRA_HEADERS(hd);
 
-    const sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
-
-    const std::string file = analysis["file"];
+    const std::string file = analyses_files[i];
 
     if (!std::filesystem::exists(file))
       continue;
 
     sc::MS_FILE ana(file);
 
-    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header, minTracesIntensity, 0);
 
     for (int j = 0; j < n_features; j++)
     {

@@ -1,10 +1,9 @@
 #include "NTS_utils.h"
 
 // MARK: GET_MS_ANALYSIS_LIST_HEADERS
-sc::MS_SPECTRA_HEADERS NTS::get_ms_analysis_list_headers(const Rcpp::List &analysis)
+sc::MS_SPECTRA_HEADERS NTS::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
 {
   sc::MS_SPECTRA_HEADERS headers;
-  const Rcpp::List &hd = analysis["spectra_headers"];
   const std::vector<int> &hd_index = hd["index"];
   const std::vector<int> &hd_polarity = hd["polarity"];
   const std::vector<int> &hd_configuration = hd["configuration"];

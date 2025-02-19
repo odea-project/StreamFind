@@ -591,7 +591,7 @@ namespace NTS
 
   // MARK: FUNCTIONS
 
-  sc::MS_SPECTRA_HEADERS get_ms_analysis_list_headers(const Rcpp::List& analysis);
+  sc::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd);
 
   float mean(const std::vector<float> &v);
 

@@ -111,7 +111,6 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \item \href{#method-MassSpecEngine-get_fold_change}{\code{MassSpecEngine$get_fold_change()}}
 \item \href{#method-MassSpecEngine-has_features}{\code{MassSpecEngine$has_features()}}
 \item \href{#method-MassSpecEngine-has_groups}{\code{MassSpecEngine$has_groups()}}
-\item \href{#method-MassSpecEngine-has_MSPeakLists}{\code{MassSpecEngine$has_MSPeakLists()}}
 \item \href{#method-MassSpecEngine-has_formulas}{\code{MassSpecEngine$has_formulas()}}
 \item \href{#method-MassSpecEngine-has_compounds}{\code{MassSpecEngine$has_compounds()}}
 \item \href{#method-MassSpecEngine-plot_features}{\code{MassSpecEngine$plot_features()}}
@@ -3199,24 +3198,6 @@ Checks if there are feature groups from NTS results, returning \code{TRUE} or \c
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_groups()}\if{html}{\out{</div>}}
 }
 
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngine-has_MSPeakLists"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngine-has_MSPeakLists}{}}}
-\subsection{Method \code{has_MSPeakLists()}}{
-Checks if there are MSPeakLists for analyses, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_MSPeakLists(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-}
-\if{html}{\out{</div>}}
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-MassSpecEngine-has_formulas"></a>}}

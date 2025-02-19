@@ -1355,7 +1355,7 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
     names(references) <- as.character(files)
 
     analyses <- lapply(files, function(x) {
-      cache <- .load_chache("parsed_raman_analyses", x)
+      cache <- .load_cache_sqlite("parsed_raman_analyses", x)
 
       if (!is.null(cache$data)) {
         message("\U2139 Analysis loaded from cache!")
@@ -1536,7 +1536,7 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
         if ("rt" %in% colnames(ana$spectra)) ana$type <- "LC-Raman"
         
         if (!is.null(cache$hash)) {
-          .save_cache("parsed_raman_analyses", ana, cache$hash)
+          .save_cache_sqlite("parsed_raman_analyses", ana, cache$hash)
           message("\U1f5ab Parsed file cached!")
         }
 

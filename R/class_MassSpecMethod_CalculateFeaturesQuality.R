@@ -100,10 +100,14 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
   })
 
   parameters <- x$parameters
-  analyses_list <- engine$Analyses$analyses
+  
+  ana_info <- engine$NTS$analyses_info
+  headers <- engine$NTS$spectra_headers
 
   feature_list <- rcpp_ms_calculate_features_quality(
-    analyses_list,
+    ana_info$analysis,
+    ana_info$file,
+    headers,
     feature_list,
     parameters$filtered,
     parameters$rtExpand,

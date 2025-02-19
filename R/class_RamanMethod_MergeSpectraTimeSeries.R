@@ -70,7 +70,7 @@ S7::method(run, RamanMethod_MergeSpectraTimeSeries_StreamFind) <- function(x, en
 
     cached_merged_analysis <- FALSE
     merged_analysis <- NULL
-    cache <- .load_chache("merged_raman_analysis", x, anas, anasl)
+    cache <- .load_cache_sqlite("merged_raman_analysis", x, anas, anasl)
 
     if (!is.null(cache$data)) {
       merged_analysis <- cache$data
@@ -127,7 +127,7 @@ S7::method(run, RamanMethod_MergeSpectraTimeSeries_StreamFind) <- function(x, en
       message(" Done!")
 
       if (!is.null(cache$hash)) {
-        .save_cache("merged_raman_analysis", merged_analysis, cache$hash)
+        .save_cache_sqlite("merged_raman_analysis", merged_analysis, cache$hash)
         message("\U1f5ab Merged Raman analysis cached!")
       }
     } else {

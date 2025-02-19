@@ -188,10 +188,12 @@
     "polarity" = engine$get_spectra_polarity(),
     "file" = engine$Analyses$files
   )
+  
+  headers <- engine$Analyses$spectra_headers[analyses_info$analysis]
 
   feature_list <- feature_list[analyses_info$analysis]
 
-  nts <- NTS(analyses_info, feature_list)
+  nts <- NTS(analyses_info, headers, feature_list)
 
   if (is(nts, "StreamFind::NTS")) {
     engine$NTS <- nts

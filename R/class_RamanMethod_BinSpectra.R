@@ -85,7 +85,7 @@ S7::method(run, RamanMethod_BinSpectra_StreamFind) <- function(x, engine = NULL)
   
   spec_list <- engine$Spectra$spectra
   
-  cache <- .load_chache("bin_spectra", spec_list, x)
+  cache <- .load_cache_sqlite("bin_spectra", spec_list, x)
   
   if (!is.null(cache$data)) {
     message("\U2139 Binned spectra loaded from cache!")
@@ -248,7 +248,7 @@ S7::method(run, RamanMethod_BinSpectra_StreamFind) <- function(x, engine = NULL)
   })
   
   if (!is.null(cache$hash)) {
-    .save_cache("bin_spectra", spec_binned, cache$hash)
+    .save_cache_sqlite("bin_spectra", spec_binned, cache$hash)
     message("\U1f5ab Binned spectra cached!")
   }
   

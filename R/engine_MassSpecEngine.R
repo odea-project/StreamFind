@@ -1431,18 +1431,6 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       FALSE
     },
 
-    # MARK: has_MSPeakLists
-    ## _has_MSPeakLists -----
-    #' @description Checks if there are MSPeakLists for analyses, returning `TRUE` or `FALSE`.
-    has_MSPeakLists = function(analyses = NULL) {
-      if (self$has_results_nts()) {
-        if (length(self$NTS$mspl) > 0) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
     # MARK: has_formulas
     ## _has_formulas -----
     #' @description Checks if there are formulas assigned to feature groups, returning `TRUE` or `FALSE`.

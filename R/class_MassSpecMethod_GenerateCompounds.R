@@ -195,7 +195,7 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
   
   parameters <- x$parameters
   
-  cache <- .load_chache("generate_compounds", NTS, x)
+  cache <- .load_cache_sqlite("generate_compounds", NTS, x)
   
   if (!is.null(cache$data)) {
     feature_list <- cache$data
@@ -309,7 +309,7 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
   }
   
   if (!is.null(cache$hash)) {
-    .save_cache("generate_compounds", feature_list, cache$hash)
+    .save_cache_sqlite("generate_compounds", feature_list, cache$hash)
     message("\U1f5ab Generated compounds cached!")
   }
   

@@ -9,6 +9,12 @@ add <- S7::new_generic("add", "x")
 
 # C -----
 
+#' @export
+#' @noRd
+clear_cache <- function(x, ...) {
+  UseMethod("clear_cache")
+}
+
 # D -----
 
 # E -----
@@ -154,6 +160,10 @@ get_suspects <- S7::new_generic("get_suspects", "x")
 #' @export
 #'@noRd
 load <- S7::new_generic("load", "x")
+
+#' @export
+#' @noRd
+load_cache <- S7::new_generic("load_cache", "x")
 
 #' @export
 #' @noRd
@@ -364,6 +374,10 @@ run <- S7::new_generic("run", "x")
 #' @export
 #' @noRd
 save <- S7::new_generic("save", "x")
+
+#' @export
+#' @noRd
+save_cache <- S7::new_generic("save_cache", "x")
 
 #' @export
 #' @noRd
