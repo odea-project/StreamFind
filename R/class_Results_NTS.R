@@ -21,6 +21,35 @@ NTS <- S7::new_class(
     ## feature_list -----
     feature_list = S7::new_property(S7::class_list, default = list()),
     
+    # MARK: spectra_polarity
+    ## spectra_polarity -----
+    spectra_polarity = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
+        vapply(self@spectra_headers, function(x) {
+          if (nrow(x) == 0) return(NA_character_)
+          polarity <- unique(x$polarity)
+          if (length(polarity) > 1) {
+            # tries to infer short polarity switching from scans
+            polarities <- x$polarity
+            scans_pos <- length(polarities[polarities == 1])
+            scans_neg <- length(polarities[polarities == -1])
+            ratio <- scans_pos / scans_neg
+            if (ratio > 1.5) {
+              polarity <- 1
+            } else if (ratio < 0.5) {
+              polarity <- -1
+            }
+          }
+          polarity[polarity == 0] <- "unkown"
+          polarity[polarity == 1] <- "positive"
+          polarity[polarity == -1] <- "negative"
+          if (length(polarity) > 1) polarity <- paste(polarity, collapse = ", ")
+          polarity
+        }, NA_character_)
+      }
+    ),
+    
     # MARK: replicates
     ## replicates -----
     replicates = S7::new_property(
@@ -618,6 +647,235 @@ S7::method(get_features, NTS) <- function(x,
   fts
 }
 
+# MARK: map_features
+## map_features -----
+#' @export
+#' @noRd
+S7::method(map_features, NTS) <- function(x,
+                                          analyses = NULL,
+                                          features = NULL,
+                                          mass = NULL,
+                                          mz = NULL,
+                                          rt = NULL,
+                                          mobility = NULL,
+                                          ppm = 20,
+                                          sec = 60,
+                                          millisec = 5,
+                                          neutral_mass = TRUE,
+                                          filtered = FALSE,
+                                          legendNames = NULL,
+                                          xLab = NULL,
+                                          yLab = NULL,
+                                          title = NULL,
+                                          colorBy = "replicates+targets",
+                                          showLegend = TRUE,
+                                          interactive = TRUE,
+                                          renderEngine = "webgl") {
+  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+  
+  if (nrow(fts) == 0) {
+    message("\U2717 Features not found for the targets!")
+    return(NULL)
+  }
+  
+  fts <- .make_colorBy_varkey(fts, colorBy, legendNames)
+  
+  cl <- .get_colors(unique(fts$var))
+  cl50 <- paste(cl, "50", sep = "")
+  names(cl50) <- names(cl)
+  
+  
+  if (!interactive) {
+    if (is.null(xLab)) xLab <- "Retention time / seconds"
+    if (is.null(yLab)) {
+      if (neutral_mass) {
+        yLab <- expression(italic("m/z ") / " Da")
+      } else {
+        yLab <- "Mass / Da"
+      }
+    }
+    
+    if (neutral_mass) {
+      fts$mzmin <- fts$mass - (fts$mz - fts$mzmin)
+      fts$mzmax <- fts$mass + (fts$mzmax - fts$mz)
+      fts$mz <- fts$mass
+    }
+    
+    ggplot2::ggplot(fts, aes(x = rt, y = mz)) +
+      ggplot2::geom_rect(
+        ggplot2::aes(
+          xmin = rtmin, xmax = rtmax,
+          ymin = mzmin, ymax = mzmax,
+          fill = factor(var)
+        ), alpha = 0.7
+      ) +
+      ggplot2::geom_point(ggplot2::aes(color = factor(var)), size = 2) +
+      ggplot2::scale_color_manual(values = cl) + 
+      ggplot2::scale_fill_manual(values = cl, guide = FALSE) + 
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
+  } else {
+    if (is.null(xLab)) xLab <- "Retention time / seconds"
+    if (is.null(yLab)) {
+      if (neutral_mass) {
+        yLab <- "<i>m/z</i> / Da"
+      } else {
+        yLab <- "Mass / Da"
+      }
+    }
+    
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+    
+    plotlegend <- rep(TRUE, length(cl))
+    
+    names(plotlegend) <- names(cl)
+    
+    plot <- plot_ly()
+    
+    for (i in seq_len(nrow(fts))) {
+      ft <- fts[i, ]
+      
+      if (neutral_mass) {
+        ft$mzmin <- ft$mass - (ft$mz - ft$mzmin)
+        ft$mzmax <- ft$mass + (ft$mzmax - ft$mz)
+        ft$mz <- ft$mass
+      }
+      
+      x0 <- ft$rtmin
+      x1 <- ft$rtmax
+      y0 <- ft$mzmin
+      y1 <- ft$mzmax
+      ft_var <- ft$var
+      
+      plot <- plot %>% add_trace(
+        x = c(x0, x1, x1, x0, x0),
+        y = c(y0, y0, y1, y1, y0),
+        type = "scatter",
+        mode = "lines",
+        fill = "toself",
+        fillcolor = paste0(cl[ft_var], "70"),
+        line = list(color = cl[ft_var]),
+        opacity = 0.2,
+        name = ft_var,
+        legendgroup = ft_var,
+        showlegend = FALSE
+      )
+    }
+    
+    for (i in seq_len(nrow(fts))) {
+      ft <- fts[i, ]
+      
+      hT <- .make_features_hover_string(ft)
+      
+      if (neutral_mass) ft$mz <- ft$mass
+      
+      plot <- plot %>% add_trace(
+        x = ft$rt,
+        y = ft$mz,
+        type = "scatter", mode = "markers",
+        marker = list(size = 8, color = cl[ft$var]),
+        name = ft$var,
+        legendgroup = ft$var,
+        showlegend = plotlegend[ft$var],
+        text = hT,
+        hoverinfo = "text"
+      )
+      
+      if (isTRUE(plotlegend[ft$var])) {
+        plotlegend[ft$var] <- FALSE
+      }
+    }
+    
+    if (showLegend) {
+      plot <- plot %>% plotly::layout(
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+    } else {
+      plot <- plot %>% plotly::layout(
+        legend = NULL,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+    }
+    
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
+    }
+    
+    plot
+  }
+}
+
+# MARK: map_features_intensity
+## map_features_intensity -----
+#' @export
+#' @noRd
+S7::method(map_features_intensity, NTS) <- function(x,
+                                                    analyses = NULL,
+                                                    features = NULL,
+                                                    mass = NULL,
+                                                    mz = NULL,
+                                                    rt = NULL,
+                                                    mobility = NULL,
+                                                    ppm = 20,
+                                                    sec = 60,
+                                                    millisec = 5,
+                                                    filtered = FALSE,
+                                                    legendNames = NULL,
+                                                    xLab = NULL,
+                                                    yLab = NULL,
+                                                    title = NULL,
+                                                    colorBy = "replicates+targets",
+                                                    renderEngine = "webgl") {
+  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+  
+  if (nrow(fts) == 0) {
+    message("\U2717 Features not found for the targets!")
+    return(NULL)
+  }
+  
+  fts <- .make_colorBy_varkey(fts, colorBy, legendNames)
+  
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity (Counts)"
+  
+  title <- list(text = title, font = list(size = 12, color = "black"))
+  xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+  yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+  
+  hT <- .make_features_hover_string(fts)
+  
+  plot <- plotly::plot_ly(
+    data = fts,
+    x = ~rt,
+    y = ~intensity,
+    color = ~var,
+    type = "scatter",
+    mode = "markers",
+    colors = StreamFind:::.get_colors(unique(fts$var)),
+    text = ~hT,
+    hoverinfo = "text"
+  ) %>%
+  plotly::layout(
+    xaxis = xaxis,
+    yaxis = yaxis,
+    title = title
+  )
+  
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
+  
+  plot
+}
+
 # MARK: get_features_eic
 ## get_features_eic -----
 #' @export
@@ -740,32 +998,31 @@ S7::method(get_features_eic, NTS) <- function(x,
   eic
 }
 
-# MARK: plot_features_eic
-## plot_features_eic -----
+# MARK: plot_features
+## plot_features -----
 #' @export
 #' @noRd
-S7::method(plot_features_eic, NTS) <- function(x,
-                                               analyses = NULL,
-                                               features = NULL,
-                                               mass = NULL,
-                                               mz = NULL,
-                                               rt = NULL,
-                                               mobility = NULL,
-                                               ppm = 20,
-                                               sec = 60,
-                                               millisec = 5,
-                                               rtExpand = 120,
-                                               mzExpand = 0.001,
-                                               useLoadedData = TRUE,
-                                               filtered = FALSE,
-                                               legendNames = NULL,
-                                               xLab = NULL,
-                                               yLab = NULL,
-                                               title = NULL,
-                                               colorBy = "targets",
-                                               showLegend = TRUE,
-                                               interactive = TRUE,
-                                               renderEngine = "webgl") {
+S7::method(plot_features, NTS) <- function(x,
+                                           analyses = NULL,
+                                           features = NULL,
+                                           mass = NULL,
+                                           mz = NULL,
+                                           rt = NULL,
+                                           mobility = NULL,
+                                           ppm = 20,
+                                           sec = 60,
+                                           millisec = 5,
+                                           rtExpand = 120,
+                                           mzExpand = 0.001,
+                                           useLoadedData = TRUE,
+                                           filtered = FALSE,
+                                           legendNames = NULL,
+                                           xLab = NULL,
+                                           yLab = NULL,
+                                           title = NULL,
+                                           colorBy = "targets",
+                                           interactive = TRUE,
+                                           renderEngine = "webgl") {
   fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
   if (nrow(fts) == 0) {
     message("\U2717 Features not found for the targets!")
@@ -783,7 +1040,8 @@ S7::method(plot_features_eic, NTS) <- function(x,
   )
   
   intensity <- NULL
-  eic <- eic[, `:=`(intensity = max(intensity)), by = c("analysis", "replicate", "polarity", "feature", "rt")][]
+  cols_by <- c("analysis", "replicate", "polarity", "feature", "rt")
+  eic <- eic[, `:=`(intensity = max(intensity)), by = cols_by]
   eic <- unique(eic)
   
   if (nrow(eic) == 0) {
@@ -851,22 +1109,19 @@ S7::method(plot_features_eic, NTS) <- function(x,
     plot <- plot_ly()
     
     for (i in seq_len(nrow(fts))) {
-      ft_analysis <- fts[["analysis"]][i]
-      ft_replicate <- fts[["replicate"]][i]
-      ft_id <- fts[["feature"]][i]
-      ft_var <- fts[["var"]][i]
-      ft_min <- fts[["rtmin"]][i]
-      ft_max <- fts[["rtmax"]][i]
+      pk <- fts[i, ]
       
-      # ft_sn <- fts[["sn"]][i]
+      ft_var <- pk$var
+      
+      hT <- .make_features_hover_string(pk)
       
       temp <- dplyr::filter(
         eic,
-        analysis %in% ft_analysis &
-        replicate %in% ft_replicate &
-        feature %in% ft_id &
-        rt >= ft_min &
-        rt <= ft_max
+        analysis %in% pk$analysis &
+        replicate %in% pk$replicate &
+        feature %in% pk$feature &
+        rt >= pk$rtmin &
+        rt <= pk$rtmax
       )
       
       plot <- plot %>% add_trace(
@@ -876,13 +1131,7 @@ S7::method(plot_features_eic, NTS) <- function(x,
         type = "scatter",
         mode = "markers",
         marker = list(color = cl[ft_var], size = 5),
-        text = ~paste(
-          "<br>analysis: ", ft_analysis,
-          "<br>replicate: ", ft_replicate,
-          "<br>feature: ", ft_id,
-          "<br>rt: ", round(rt, 0),
-          "<br>intensity: ", round(intensity, 0)
-        ),
+        text = hT,
         hoverinfo = "text",
         name = ft_var,
         legendgroup = ft_var,
@@ -896,13 +1145,7 @@ S7::method(plot_features_eic, NTS) <- function(x,
         ymax = ~intensity,
         line = list(color = cl[ft_var], width = 1.5),
         fillcolor = cl50[ft_var],
-        text = ~paste(
-          "<br>analysis: ", ft_analysis,
-          "<br>replicate: ", ft_replicate,
-          "<br>feature: ", ft_id,
-          "<br>rt: ", round(rt, 0),
-          "<br>intensity: ", round(intensity, 0)
-        ),
+        text = hT,
         hoverinfo = "text",
         name = ft_var,
         legendgroup = ft_var,
@@ -913,16 +1156,15 @@ S7::method(plot_features_eic, NTS) <- function(x,
     }
     
     for (i in seq_len(nrow(fts))) {
-      ft_analysis <- fts[["analysis"]][i]
-      ft_replicate <- fts[["replicate"]][i]
-      ft_var <- fts[["var"]][i]
+      pk <- fts[i, ]
+      ft_var <- pk$var
       
       plot <- plot %>% add_trace(
         data = dplyr::filter(
           eic,
-          analysis %in% ft_analysis &
-          replicate %in% ft_replicate &
-          feature %in% ft_id
+          analysis %in% pk$analysis &
+          replicate %in% pk$replicate &
+          feature %in% pk$feature
         ),
         x = ~rt,
         y = ~intensity,
@@ -1392,7 +1634,1189 @@ S7::method(plot_features_ms2, NTS) <- function(x,
   }
 }
 
+# MARK: get_groups
+## get_groups -----
+#' @export
+#' @noRd
+S7::method(get_groups, NTS) <- function(x,
+                                        groups = NULL,
+                                        mass = NULL,
+                                        mz = NULL,
+                                        rt = NULL,
+                                        mobility = NULL,
+                                        ppm = 20,
+                                        sec = 60,
+                                        millisec = 5,
+                                        filtered = FALSE,
+                                        intensities = TRUE,
+                                        average = FALSE,
+                                        sdValues = FALSE,
+                                        metadata = FALSE,
+                                        correctSuppression = FALSE) {
+  
+  if (!x$has_groups) {
+    return(data.table::data.table())
+  }
+  
+  fts <- get_features(
+    x, analyses = NULL, features = groups,
+    mass, mz, rt, mobility, ppm, sec, millisec,
+    filtered = filtered
+  )
+  
+  if (correctSuppression) {
+    if ("suppression_factor" %in% colnames(fts)) {
+      fts$intensity <- fts$intensity * fts$suppression_factor
+    }
+  }
+  
+  if (nrow(fts) > 0) {
+    g_ids <- unique(fts$group)
+    fgroups <- data.table::data.table("group" = g_ids)
+    
+    if (intensities) {
+      if (average) {
+        intensity <- NULL
+        rpls <- x$replicates
+        fts_temp <- data.table::copy(fts)
+        fts_temp$analysis <- rpls[fts_temp$analysis]
+        fts_av <- fts_temp[, .(
+          intensity = mean(intensity),
+          sd = sd(intensity),
+          n = length(intensity)
+        ), by = c("group", "analysis")]
+        fts_av$sd[is.na(fts_av$sd)] <- 0
+        fts_av$sd <- round(fts_av$sd / fts_av$intensity * 100, digits = 0)
+        fts_sd <- data.table::copy(fts_av)
+        fts_n <- data.table::copy(fts_av)
+        fts_sd$intensity <- NULL
+        fts_sd$n <- NULL
+        fts_sd$analysis <- paste(fts_sd$analysis, "_sd", sep = "")
+        fts_sd <- data.table::dcast(
+          fts_sd[, c("group", "analysis", "sd"), with = TRUE], 
+          group ~ analysis, 
+          value.var = "sd"
+        )
+        fts_sd[is.na(fts_sd)] <- 0
+        tbl_rpls <- table(rpls)
+        fts_n$n <- tbl_rpls[fts_n$analysis]
+        fts_n$intensity <- NULL
+        fts_n$sd <- NULL
+        fts_n$analysis <- paste(fts_n$analysis, "_n", sep = "")
+        fts_n <- data.table::dcast(
+          fts_n[, c("group", "analysis", "n"), with = TRUE],
+          group ~ analysis,
+          value.var = "n"
+        )
+        fts_n[is.na(fts_n)] <- 0
+        fts_av$sd <- NULL
+        fts_av$n <- NULL
+        fts_av <- data.table::dcast(fts_av, group ~ analysis, value.var = "intensity")
+        fts_av[is.na(fts_av)] <- 0
+      } else {
+        fts_av <- fts[, .(intensity = max(intensity)), by = c("group", "analysis")]
+        fts_av <- data.table::dcast(fts_av, group ~ analysis, value.var = "intensity")
+        fts_av[is.na(fts_av)] <- 0
+      }
+    }
+    
+    if ("name" %in% colnames(fts)) {
+      g_names <- fts$name
+      names(g_names) <- fts$group
+      g_names <- g_names[!duplicated(names(g_names))]
+      fgroups$name <- g_names[fgroups$group]
+    }
+    
+    if (metadata) {
+      rtmin <- NULL
+      rtmax <- NULL
+      mzmin <- NULL
+      mzmax <- NULL
+      feature <- NULL
+      quality <- NULL
+      annotation <- NULL
+      istd <- NULL
+      
+      fts_meta <- fts[, .(
+        rt = round(mean(rt), digits = 0),
+        mass = round(mean(mass), digits = 4),
+        rtdev = round(max(rtmax - rtmin), digits = 0),
+        massdev = round(max(mzmax - mzmin), digits = 4),
+        presence = round(length(feature) / length(x) * 100, digits = 1),
+        maxint = round(max(intensity), digits = 0),
+        sn = round(
+          max(
+            vapply(quality, function(z) {
+              if (length(z) > 0) z$sn else 0
+            }, 0),
+            na.rm = TRUE
+          ),
+          digits = 1
+        ),
+        iso = min(
+          vapply(annotation, function(z) if (length(z) > 0) z$iso_step else 0, 0),
+          na.rm = TRUE
+        ),
+        istd = paste0(unique(
+          vapply(istd, function(z) {
+            if (length(z) > 0) z$name else NA_character_
+          }, NA_character_)
+        ), collapse = "; "),
+        filtered = all(filtered)
+      ), by = "group"]
+      
+      fgroups <- fgroups[fts_meta, on = "group"]
+    }
+    
+    if (intensities) fgroups <- fgroups[fts_av, on = "group"]
+    
+    if (average && sdValues) {
+      fgroups <- fgroups[fts_sd, on = "group"]
+      fgroups <- fgroups[fts_n, on = "group"]
+    }
+    
+    fgroups
+  } else {
+    data.table::data.table()
+  }
+}
 
+# MARK: plot_groups
+## plot_groups -----
+#' @export
+#' @noRd
+S7::method(plot_groups, NTS) <- function(x,
+                                         groups = NULL,
+                                         mass = NULL,
+                                         mz = NULL,
+                                         rt = NULL,
+                                         mobility = NULL,
+                                         ppm = 20,
+                                         sec = 60,
+                                         millisec = 5,
+                                         rtExpand = 15,
+                                         mzExpand = 0.001,
+                                         filtered = FALSE,
+                                         legendNames = NULL,
+                                         xLab = NULL,
+                                         yLab = NULL,
+                                         title = NULL,
+                                         colorBy = "targets",
+                                         interactive = TRUE,
+                                         renderEngine = "webgl") {
+  fts <- get_features(
+    x, analyses = NULL, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered
+  )
+  
+  if (grepl("targets", colorBy) & !isTRUE(legendNames)) {
+    fts$name <- fts$group
+    if (is.null(legendNames)) legendNames <- TRUE
+  }
+  
+  plot_features(
+    x,
+    features = fts,
+    rtExpand = rtExpand,
+    mzExpand = mzExpand,
+    filtered = filtered,
+    legendNames = legendNames,
+    xLab = xLab,
+    yLab = yLab,
+    title = title,
+    colorBy = colorBy,
+    interactive = interactive,
+    renderEngine = renderEngine
+  )
+}
+
+# MARK: plot_groups_overview
+## plot_groups_overview -----
+#' @export
+#' @noRd
+S7::method(plot_groups_overview, NTS) <- function(x,
+                                                  analyses = NULL,
+                                                  groups = NULL,
+                                                  mass = NULL,
+                                                  mz = NULL,
+                                                  rt = NULL,
+                                                  mobility = NULL,
+                                                  ppm = 20,
+                                                  sec = 60,
+                                                  millisec = 5,
+                                                  rtExpand = 120,
+                                                  mzExpand = 0.005,
+                                                  useLoadedData = TRUE,
+                                                  correctSuppression = TRUE,
+                                                  filtered = FALSE,
+                                                  legendNames = NULL,
+                                                  title = NULL,
+                                                  heights = c(0.35, 0.5, 0.15),
+                                                  renderEngine = "webgl") {
+  fts <- get_features(x, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+  
+  if (nrow(fts) == 0) {
+    message("\U2717 Features not found for the targets!")
+    return(NULL)
+  }
+  
+  eic <- get_features_eic(
+    x, analyses = unique(fts$analysis), features = fts,
+    rtExpand = rtExpand, mzExpand = mzExpand,
+    filtered = filtered, useLoadedData = useLoadedData
+  )
+  
+  intensity <- NULL
+  cols_by <- c("analysis", "polarity", "feature", "rt")
+  eic <- eic[, `:=`(intensity = max(intensity)), by = cols_by]
+  eic <- unique(eic)
+  
+  if (nrow(eic) == 0) {
+    message("\U2717 Traces and/or features not found for targets!")
+    return(NULL)
+  }
+  
+  if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
+    leg <- legendNames
+    names(leg) <- unique(fts$group)
+    leg <- leg[fts$group]
+  } else if (isTRUE(legendNames) & "name" %in% colnames(fts)) {
+    leg <- fts$name
+  } else {
+    leg <- fts$group
+  }
+  
+  names(leg) <- paste0(fts$feature, "_", fts$analysis)
+  eic$uid <- paste0(eic$feature, "_", eic$analysis)
+  fts$uid <- paste0(fts$feature, "_", fts$analysis)
+  eic$var <- leg[eic$uid]
+  fts$var <- leg
+  
+  analyses <- .check_analyses_argument(x, analyses)
+  
+  # .plot_groups_overview_aux(fts, eic, heights, analyses, correctSuppression)
+  
+  leg <- unique(eic$var)
+  colors <- .get_colors(leg)
+  showleg <- rep(TRUE, length(leg))
+  names(showleg) <- names(leg)
+  plot <- plot_ly()
+  
+  for (g in leg) {
+    uid <- unique(eic$uid[eic$var == g])
+    
+    for (u in uid) {
+      ft <- fts[fts$uid == u, ]
+      if (nrow(ft) == 0) next
+      df <- eic[eic$uid == u, ]
+      
+      plot <- plot %>% add_trace(
+        df,
+        x = df$rt,
+        y = df$intensity,
+        type = "scatter", mode = "lines",
+        line = list(width = 0.5, color = colors[g]),
+        connectgaps = TRUE,
+        name = g,
+        legendgroup = g,
+        showlegend = FALSE
+      )
+      
+      df <- df[df$rt >= ft$rtmin & df$rt <= ft$rtmax, ]
+      df$mz <- as.numeric(df$mz)
+      
+      plot <- plot %>% add_trace(
+        df,
+        x = df$rt,
+        y = df$intensity,
+        type = "scatter", mode = "lines+markers",
+        fill = "tozeroy", connectgaps = TRUE,
+        fillcolor = paste(color = colors[g], 50, sep = ""),
+        line = list(width = 0.1, color = colors[g]),
+        marker = list(size = 3, color = colors[g]),
+        name = g,
+        legendgroup = g,
+        showlegend = showleg[which(leg %in% g)],
+        hoverinfo = "text",
+        hoverlabel = list(bgcolor = colors[g]),
+        text = paste(
+          "</br> name: ", g,
+          "</br> group: ", ft$group,
+          "</br> feature: ", ft$feature,
+          "</br> analysis: ", ft$analysis,
+          "</br> replicate: ", ft$replicate,
+          "</br> <i>m/z</i>: ", round(ft$mz, digits = 4),
+          "</br> rt: ", round(df$rt, digits = 0),
+          "</br> intensity: ", round(df$intensity, digits = 0)
+        )
+      )
+      showleg[which(leg %in% g)] <- FALSE
+    }
+  }
+  
+  plot2 <- plot_ly()
+  
+  for (g in leg) {
+    ft2 <- fts[fts$var == g, ]
+    if (!"filled" %in% colnames(ft2)) ft2$filled <- FALSE
+    
+    ft_nf <- ft2[!ft2$filled, ]
+    
+    if (nrow(ft_nf) > 0) {
+      hT <- .make_features_hover_string(ft_nf)
+      
+      plot2 <- plot2 %>% add_trace(
+        x = ft_nf$rt,
+        y = ft_nf$analysis,
+        type = "scatter",
+        mode = "markers",
+        marker = list(
+          line = list(color = colors[g], width = 3),
+          color = "#000000", size = 10
+        ),
+        error_x = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = ft_nf$rt - ft_nf$rtmin,
+          array = ft_nf$rtmax - ft_nf$rt,
+          color = colors[g],
+          width = 5
+        ),
+        name = g,
+        legendgroup = g,
+        showlegend = FALSE,
+        hoverinfo = "text",
+        hoverlabel = list(bgcolor = colors[g]),
+        text = hT
+      )
+    }
+    
+    ft_f <- ft2[ft2$filled, ]
+    
+    if (nrow(ft_f) > 0) {
+      hT <- .make_features_hover_string(ft_f)
+      
+      plot2 <- plot2 %>% add_trace(
+        x = ft_f$rt,
+        y = ft_f$analysis,
+        type = "scatter",
+        mode = "markers",
+        marker = list(
+          line = list(color = colors[g], width = 3),
+          color = "#f8f8f8",
+          size = 10
+        ),
+        error_x = list(
+          type = "data",
+          symmetric = FALSE,
+          arrayminus = ft_f$rt - ft_f$rtmin,
+          array = ft_f$rtmax - ft_f$rt,
+          color = colors[g],
+          width = 5
+        ),
+        name = g,
+        legendgroup = g,
+        showlegend = FALSE,
+        hoverinfo = "text",
+        hoverlabel = list(bgcolor = colors[g]),
+        text = hT
+      )
+    }
+  }
+  plot2 <- hide_colorbar(plot2)
+  
+  plot3 <- plot_ly(fts, x = sort(unique(fts$analysis)))
+  
+  for (g in leg) {
+    df_3 <- fts[fts$var == g, ]
+    
+    if (correctSuppression) {
+      if ("suppression_factor" %in% colnames(df_3)) {
+        df_3$intensity <- df_3$intensity * df_3$suppression_factor
+      }
+    }
+    
+    if (!all(analyses %in% df_3$analysis)) {
+      extra <- data.frame(
+        "analysis" = analyses[!analyses %in% df_3$analysis],
+        "var" = g,
+        "intensity" = 0
+      )
+      df_3 <- rbind(df_3[, c("analysis", "var", "intensity")], extra)
+    }
+    
+    df_3 <- df_3[order(df_3$analysis), ]
+    
+    plot3 <- plot3 %>% add_trace(
+      df_3,
+      x = df_3$analysis,
+      y = df_3$intensity / max(df_3$intensity),
+      type = "scatter", mode = "lines",
+      line = list(width = 1, color = colors[g]),
+      connectgaps = FALSE,
+      name = g,
+      legendgroup = g,
+      showlegend = FALSE
+    )
+  }
+  
+  xaxis <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Retention time / seconds",
+    titlefont = list(size = 12, color = "black"),
+    range = c(min(eic$rt), max(eic$rt)),
+    autotick = TRUE, ticks = "outside"
+  )
+  
+  yaxis1 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Intensity / counts",
+    titlefont = list(size = 12, color = "black")
+  )
+  
+  yaxis2 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "",
+    titlefont = list(size = 12, color = "black"),
+    tick0 = 0, dtick = 1
+  )
+  
+  xaxis3 <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
+  
+  yaxis3 <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = "Normalized intensity",
+    titlefont = list(size = 12, color = "black"),
+    tick0 = 0, dtick = 0.25, range = c(0, 1.5)
+  )
+  
+  plotList <- list()
+  
+  plot <- plot %>% plotly::layout(xaxis = xaxis3, yaxis = yaxis1)
+  plotList[["plot"]] <- plot
+  
+  plot2 <- plot2 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis2)
+  plotList[["plot2"]] <- plot2
+  
+  plot3 <- plot3 %>% plotly::layout(xaxis = xaxis3, yaxis = yaxis3)
+  
+  plotf <- subplot(
+    plotList,
+    nrows = 2,
+    titleY = TRUE, titleX = TRUE,
+    heights = heights[1:2],
+    margin = 0.01,
+    shareX = TRUE,
+    which_layout = "merge"
+  )
+  
+  plotf_2 <- subplot(
+    list(plotf, plot3),
+    nrows = 2,
+    titleY = TRUE, titleX = TRUE,
+    heights = c(sum(heights[1:2]), heights[3]),
+    margin = 0.01,
+    shareX = FALSE,
+    which_layout = "merge"
+  )
+  
+  if (renderEngine == "webgl") {
+    plotf_2 <- plotly::config(plotf_2, displayModeBar = TRUE)
+  }
+  
+  if (renderEngine %in% "webgl") {
+    # Fix for warnings with hoveron when webgl is used
+    plotf_2$x$attrs <- lapply(plotf_2$x$attrs, function(x) {
+      if (!is.null(x[["hoveron"]])) {
+        x[["hoveron"]] <- NULL
+      }
+      x
+    })
+    
+    plotf_2 <- plotf_2 %>% plotly::toWebGL()
+  }
+  
+  plotf_2
+}
+
+# MARK: plot_groups_profile
+## plot_groups_profile -----
+#' @export
+#' @noRd
+S7::method(plot_groups_profile, NTS) <- function(x,
+                                                 analyses = NULL,
+                                                 groups = NULL,
+                                                 mass = NULL,
+                                                 mz = NULL,
+                                                 rt = NULL,
+                                                 mobility = NULL,
+                                                 ppm = 20,
+                                                 sec = 60,
+                                                 millisec = 5,
+                                                 filtered = FALSE,
+                                                 correctSuppression = TRUE,
+                                                 averaged = FALSE,
+                                                 normalized = TRUE,
+                                                 legendNames = NULL,
+                                                 yLab = NULL,
+                                                 title = NULL,
+                                                 renderEngine = "webgl") {
+  fts <- get_features(x, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+  
+  analyses <- .check_analyses_argument(x, analyses)
+  
+  if (nrow(fts) == 0) {
+    message("\U2717 Features not found for the targets!")
+    return(NULL)
+  }
+  
+  polarities <- x$spectra_polarity
+  
+  if (!"polarity" %in% colnames(fts)) fts$polarity <- polarities[fts$analysis]
+  
+  if (correctSuppression) {
+    if ("suppression_factor" %in% colnames(fts)) {
+      fts$intensity <- fts$intensity * fts$suppression_factor
+    }
+  }
+  
+  if (normalized && "intensity_rel" %in% colnames(fts)) {
+    fts$intensity <- as.numeric(fts$intensity_rel)
+  }
+  
+  if (averaged && x$has_groups) {
+    group_cols <- c("replicate", "group", "polarity")
+    if ("name" %in% colnames(fts)) group_cols <- c(group_cols, "name")
+    intensity <- NULL
+    fts <- fts[, .(intensity = mean(intensity)), by = group_cols]
+    names(polarities) <- x$replicates[names(polarities)]
+    polarities <- polarities[!duplicated(names(polarities))]
+    data.table::setnames(fts, "replicate", "analysis")
+    analyses <- unique(x$replicates[analyses])
+  }
+  
+  if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
+    leg <- legendNames
+    names(leg) <- unique(fts$group)
+    leg <- leg[fts$group]
+    fts$var <- leg[fts$group]
+  } else if (isTRUE(legendNames) & "name" %in% colnames(fts)) {
+    leg <- fts$name
+    fts$var <- fts$name
+  } else {
+    leg <- fts$group
+    fts$var <- fts$group
+  }
+  
+  u_leg <- unique(leg)
+  
+  colors <- .get_colors(u_leg)
+  
+  showLeg <- rep(TRUE, length(u_leg))
+  names(showLeg) <- u_leg
+  
+  rpls <- x$replicates
+  
+  plot <- plot_ly(fts, x = sort(unique(fts$analysis)))
+  
+  for (g in u_leg) {
+    df <- fts[fts$var == g, ]
+    
+    if (!all(analyses %in% df$analysis)) {
+      extra <- data.frame(
+        "analysis" = analyses[!analyses %in% df$analysis],
+        "polarity" = polarities[
+          !names(polarities) %in% df$analysis & names(polarities) %in% analyses
+        ],
+        "var" = g,
+        "intensity" = 0
+      )
+      df <- rbind(df[, c("analysis", "var", "intensity", "polarity")], extra)
+    }
+    
+    df <- df[order(df$analysis), ]
+    
+    if (normalized) {
+      if (length(unique(df$polarity)) > 1) {
+        for (p in unique(df$polarity)) {
+          max_int <- max(df$intensity[df$polarity == p])
+          if (max_int > 0) {
+            df$intensity[df$polarity == p] <- df$intensity[df$polarity == p] / max_int
+          }
+        }
+      } else {
+        max_int <- max(df$intensity)
+        if (max_int > 0) df$intensity <- df$intensity / max_int
+      }
+    }
+    
+    plot <- plot %>% add_trace(
+      df,
+      x = df$analysis,
+      y = df$intensity,
+      type = "scatter", mode = "lines",
+      line = list(width = 0.5, color = colors[g], dash = "dash"),
+      connectgaps = FALSE,
+      name = g,
+      legendgroup = g,
+      showlegend = FALSE
+    )
+    
+    df$replicate <- rpls[df$analysis]
+    
+    for (r in unique(df$replicate)) {
+      df_r <- df[df$replicate %in% r, ]
+      
+      plot <- plot %>% add_trace(
+        df,
+        x = df_r$analysis,
+        y = df_r$intensity,
+        type = "scatter", mode = "lines+markers",
+        line = list(width = 1.5, color = colors[g]),
+        marker = list(size = 5, color = colors[g]),
+        connectgaps = FALSE,
+        name = g,
+        legendgroup = g,
+        showlegend = showLeg[g]
+      )
+      
+      showLeg[g] <- FALSE
+    }
+  }
+  
+  xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
+  
+  if (is.null(yLab)) {
+    if (normalized) {
+      yLab <- "Normalized intensity"
+      range_yaxis <- c(0, max(1.1))
+    } else {
+      yLab <- "Intensity / counts"
+      range_yaxis <- c(min(fts$intensity), max(fts$intensity))
+    }
+  }
+  
+  yaxis <- list(
+    linecolor = toRGB("black"), linewidth = 2,
+    title = yLab,
+    titlefont = list(size = 12, color = "black"),
+    range = range_yaxis
+  )
+  
+  plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
+  
+  if (renderEngine %in% "webgl") {
+    plot <- plot %>% plotly::toWebGL()
+  }
+  
+  plot
+}
+
+# MARK: get_groups_ms1
+## get_groups_ms1 -----
+#' @export
+#' @noRd
+S7::method(get_groups_ms1, NTS) <- function(x,
+                                            groups = NULL,
+                                            mass = NULL,
+                                            mz = NULL,
+                                            rt = NULL,
+                                            mobility = NULL,
+                                            ppm = 20,
+                                            sec = 60,
+                                            millisec = 5,
+                                            rtWindow = c(-2, 2),
+                                            mzWindow = c(-5, 90),
+                                            mzClustFeatures = 0.003,
+                                            presenceFeatures = 0.8,
+                                            minIntensityFeatures = 1000,
+                                            useLoadedData = TRUE,
+                                            mzClust = 0.003,
+                                            presence = 0.8,
+                                            minIntensity = 1000,
+                                            groupBy = "groups",
+                                            filtered = FALSE) {
+  fgs <- get_groups(
+    x, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
+    intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = FALSE
+  )
+  
+  if (nrow(fgs) == 0) {
+    return(data.table::data.table())
+  }
+  
+  fts <- get_features(x, features = fgs$group)
+  
+  if (nrow(fts) == 0) {
+    return(data.table::data.table())
+  }
+  
+  ms1 <- get_features_ms1(
+    x,
+    analyses = unique(fts$analysis),
+    features = fts$feature,
+    rtWindow = rtWindow,
+    mzWindow = mzWindow,
+    mzClust = mzClustFeatures,
+    presence = presenceFeatures,
+    minIntensity = minIntensityFeatures,
+    filtered = filtered,
+    useLoadedData = useLoadedData
+  )
+  
+  ms1 <- ms1[ms1$intensity > minIntensity, ]
+  
+  if (nrow(ms1) == 0) {
+    return(data.table::data.table())
+  }
+  
+  polarities <- unique(fts$polarity)
+  polarities[polarities == 0] <- "unkown"
+  polarities[polarities == 1] <- "positive"
+  polarities[polarities == -1] <- "negative"
+  
+  multiple_polarities <- FALSE
+  
+  # TODO check for polarity switching with comma
+  
+  if (length(polarities) > 1) multiple_polarities <- TRUE
+  
+  if ("groups" %in% groupBy) {
+    if (multiple_polarities) {
+      ms1$unique_id <- paste0(ms1$group, "_", ms1$polarity)
+      ms1$analysis <- NA_character_
+    } else {
+      ms1$unique_id <- ms1$group
+      ms1$analysis <- NA_character_
+    }
+  } else {
+    rpls <- x$replicates
+    ms1$analysis <- rpls[ms1$analysis]
+    
+    if (multiple_polarities) {
+      ms1$unique_id <- paste0(ms1$analysis, "_", ms1$group, "", ms1$polarity)
+    } else {
+      ms1$unique_id <- paste0(ms1$analysis, "_", ms1$group)
+    }
+  }
+  
+  ms1$id <- ms1$group
+  
+  ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, verbose = FALSE)
+  
+  ms1_df <- data.table::rbindlist(ms1_list, fill = TRUE)
+  
+  ms1_df$group <- ms1_df$id
+  
+  ms1_df[["id"]] <- NULL
+  
+  ms1_df <- ms1_df[order(ms1_df$mz), ]
+  
+  ms1_df <- ms1_df[order(ms1_df$group), ]
+  
+  if ("groups" %in% groupBy) {
+    ms1_df[["analysis"]] <- NULL
+  } else {
+    ms1_df <- ms1_df[order(ms1_df$analysis), ]
+    data.table::setnames(ms1_df, "analysis", "replicate")
+  }
+  
+  if ("name" %in% colnames(fts)) {
+    tar_ids <- fts$name
+    names(tar_ids) <- fts$group
+    ms1_df$name <- tar_ids[ms1_df$group]
+  }
+  
+  data.table::copy(ms1_df)
+}
+
+# MARK: get_groups_ms2
+## get_groups_ms2 -----
+#' @export
+#' @noRd
+S7::method(get_groups_ms2, NTS) <- function(x,
+                                            groups = NULL,
+                                            mass = NULL,
+                                            mz = NULL,
+                                            rt = NULL,
+                                            mobility = NULL,
+                                            ppm = 20,
+                                            sec = 60,
+                                            millisec = 5,
+                                            isolationWindow = 1.3,
+                                            mzClustFeatures = 0.003,
+                                            presenceFeatures = 0.8,
+                                            minIntensityFeatures = 100,
+                                            useLoadedData = TRUE,
+                                            mzClust = 0.003,
+                                            presence = 0.8,
+                                            minIntensity = 100,
+                                            groupBy = "groups",
+                                            filtered = FALSE) {
+  fgs <- get_groups(
+    x, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
+    intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = FALSE
+  )
+  
+  if (nrow(fgs) == 0) {
+    return(data.table::data.table())
+  }
+  
+  fts <- get_features(x, features = fgs$group)
+  
+  if (nrow(fts) == 0) {
+    return(data.table::data.table())
+  }
+  
+  ms2 <- get_features_ms2(
+    x,
+    analyses = unique(fts$analysis),
+    features = fts$feature,
+    isolationWindow = isolationWindow,
+    mzClust = mzClustFeatures,
+    presence = presenceFeatures,
+    minIntensity = minIntensityFeatures,
+    filtered = filtered,
+    useLoadedData = useLoadedData
+  )
+  
+  ms2 <- ms2[ms2$intensity > minIntensity, ]
+  
+  if (nrow(ms2) == 0) {
+    return(data.table::data.table())
+  }
+  
+  polarities <- unique(fts$polarity)
+  polarities[polarities == 0] <- "unkown"
+  polarities[polarities == 1] <- "positive"
+  polarities[polarities == -1] <- "negative"
+  
+  multiple_polarities <- FALSE
+  
+  # TODO check for polarity switching with comma
+  
+  if (length(polarities) > 1) multiple_polarities <- TRUE
+  
+  if ("groups" %in% groupBy) {
+    if (multiple_polarities) {
+      ms2$unique_id <- paste0(ms2$group, "_", ms2$polarity)
+      ms2$analysis <- NA_character_
+    } else {
+      ms2$unique_id <- ms2$group
+      ms2$analysis <- NA_character_
+    }
+  } else {
+    rpls <- x$replicates
+    ms2$analysis <- rpls[ms2$analysis]
+    
+    if (multiple_polarities) {
+      ms2$unique_id <- paste0(ms2$analysis, "_", ms2$group, "", ms2$polarity)
+    } else {
+      ms2$unique_id <- paste0(ms2$analysis, "_", ms2$group)
+    }
+  }
+  
+  ms2$id <- ms2$group
+  
+  ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, verbose = FALSE)
+  
+  ms2_df <- data.table::rbindlist(ms2_list, fill = TRUE)
+  
+  ms2_df$group <- ms2_df$id
+  
+  ms2_df[["id"]] <- NULL
+  
+  ms2_df <- ms2_df[order(ms2_df$mz), ]
+  
+  ms2_df <- ms2_df[order(ms2_df$group), ]
+  
+  if ("groups" %in% groupBy) {
+    ms2_df[["analysis"]] <- NULL
+  } else {
+    ms2_df <- ms2_df[order(ms2_df$analysis), ]
+    data.table::setnames(ms2_df, "analysis", "replicate")
+  }
+  
+  if ("name" %in% colnames(fts)) {
+    tar_ids <- fts$name
+    names(tar_ids) <- fts$group
+    ms2_df$name <- tar_ids[ms2_df$group]
+  }
+  
+  data.table::copy(ms2_df)
+}
+
+# MARK: plot_groups_ms1
+## plot_groups_ms1 -----
+#' @export
+#' @noRd
+S7::method(plot_groups_ms1, NTS) <- function(x,
+                                             groups = NULL,
+                                             mass = NULL,
+                                             mz = NULL,
+                                             rt = NULL,
+                                             mobility = NULL,
+                                             ppm = 20,
+                                             sec = 60,
+                                             millisec = 5,
+                                             rtWindow = c(-2, 2),
+                                             mzWindow = c(-5, 90),
+                                             mzClustFeatures = 0.005,
+                                             presenceFeatures = 0.8,
+                                             minIntensityFeatures = 1000,
+                                             useLoadedData = TRUE,
+                                             mzClust = 0.005,
+                                             presence = 0.8,
+                                             minIntensity = 1000,
+                                             groupBy = "groups",
+                                             filtered = FALSE,
+                                             legendNames = NULL,
+                                             xLab = NULL,
+                                             yLab = NULL,
+                                             title = NULL,
+                                             colorBy = "targets",
+                                             showText = FALSE,
+                                             interactive = TRUE) {
+  if (grepl("groups", colorBy) || grepl("targets", colorBy)) {
+    groupBy <- "groups"
+  } else {
+    groupBy <- "replicates"
+  }
+  
+  ms1 <- get_groups_ms1(
+    x, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+    rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
+    useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
+  )
+  
+  if (nrow(ms1) == 0) {
+    message("\U2717 MS1 traces not found for the targets!")
+    return(NULL)
+  }
+  
+  if ("analyses" %in% colorBy) colorBy <- "replicates"
+  if (grepl("analyses", colorBy) && grepl("targets", colorBy)) colorBy <- "replicates+targets"
+  
+  ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
+  
+  ms1$loop <- paste0(ms1$analysis, ms1$replicate, ms1$id, ms1$var)
+  
+  cl <- .get_colors(unique(ms1$var))
+  
+  if (!interactive) {
+    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+    
+    plot <- ggplot2::ggplot(ms1, ggplot2::aes(x = mz, y = intensity, group = loop)) +
+      ggplot2::geom_segment(ggplot2::aes(xend = mz, yend = 0, color = var), linewidth = 1)
+    
+    if (showText) {
+      plot <- plot + ggplot2::geom_text(
+        ggplot2::aes(label = round(mz, 4)),
+        vjust = 0.2, hjust = -0.2, angle = 90, size = 2, show.legend = FALSE
+      )
+    }
+    
+    plot <- plot +
+      ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, max(ms1$intensity) * 1.5)) +
+      ggplot2::labs(title = title, x = xLab, y = yLab) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
+    plot
+    
+  } else {
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+    
+    ticksMin <- plyr::round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
+    ticksMax <- plyr::round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
+    
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    
+    xaxis <- list(
+      linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"),
+      range = c(ticksMin, ticksMax),
+      dtick = round((max(ms1$mz) / 10), -1),
+      ticks = "outside"
+    )
+    
+    yaxis <- list(
+      linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"),
+      range = c(0, max(ms1$intensity) * 1.5)
+    )
+    
+    loop <- NULL
+    
+    plot <- ms1 %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~mz,
+        y = ~intensity,
+        type = "bar",
+        color = ~var,
+        colors = cl,
+        marker = list(line = list(width = 0.01)),
+        text = ~paste0(round(mz, digits = 4), "  "),
+        textposition = "outside",
+        textangle = 90,
+        textfont = list(size = 9)
+      ) %>% plotly::layout(
+        bargap = 1,
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        barmode = "overlay",
+        uniformtext = list(minsize = 6, mode = "show")
+      )
+    
+    plot
+  }
+}
+
+# MARK: plot_groups_ms2
+## plot_groups_ms2 -----
+#' @export
+#' @noRd
+S7::method(plot_groups_ms2, NTS) <- function(x,
+                                             groups = NULL,
+                                             mass = NULL,
+                                             mz = NULL,
+                                             rt = NULL,
+                                             mobility = NULL,
+                                             ppm = 20,
+                                             sec = 60,
+                                             millisec = 5,
+                                             isolationWindow = 1.3,
+                                             mzClustFeatures = 0.003,
+                                             presenceFeatures = 0.8,
+                                             minIntensityFeatures = 100,
+                                             useLoadedData = TRUE,
+                                             mzClust = 0.003,
+                                             presence = TRUE,
+                                             minIntensity = 100,
+                                             groupBy = "groups",
+                                             filtered = FALSE,
+                                             legendNames = NULL,
+                                             xLab = NULL,
+                                             yLab = NULL,
+                                             title = NULL,
+                                             colorBy = "targets",
+                                             showText = TRUE,
+                                             interactive = TRUE) {
+  if (grepl("groups", colorBy) || grepl("targets", colorBy)) {
+    groupBy <- "groups"
+  } else {
+    groupBy <- "replicates"
+  }
+  
+  ms2 <- get_groups_ms2(
+    x, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+    isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
+    useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
+  )
+  
+  if (nrow(ms2) == 0) {
+    message("\U2717 MS2 traces not found for the targets!")
+    return(NULL)
+  }
+  
+  if ("analyses" %in% colorBy) colorBy <- "replicates"
+  if (grepl("analyses", colorBy) && grepl("targets", colorBy)) colorBy <- "replicates+targets"
+  
+  ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
+  
+  ms2$loop <- paste0(ms2$analysis, ms2$replicate, ms2$id, ms2$var)
+  
+  cl <- .get_colors(unique(ms2$var))
+  
+  if (showText) {
+    ms2$text_string <- paste0(round(ms2$mz, 4))
+    ms2$text_string[ms2$is_pre] <- paste0("Pre ", ms2$text_string[ms2$is_pre])
+  } else {
+    ms2$text_string <- ""
+  }
+  
+  if (!interactive) {
+    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+    
+    ms2$linesize <- 1
+    ms2$linesize[ms2$is_pre] <- 2
+    
+    plot <- ggplot2::ggplot(ms2, ggplot2::aes(x = mz, y = intensity, group = loop)) +
+      ggplot2::geom_segment(ggplot2::aes(xend = mz, yend = 0, color = var, linewidth = linesize))
+    
+    if (showText) {
+      plot <- plot + ggplot2::geom_text(
+        ggplot2::aes(label = text_string),
+        vjust = 0.2, hjust = -0.2, angle = 90, size = 2, show.legend = FALSE
+      )
+    }
+    
+    plot <- plot +
+      ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, max(ms2$intensity) * 1.5)) +
+      ggplot2::labs(title = title, x = xLab, y = yLab) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::scale_linewidth_continuous(range = c(1, 2), guide = "none") +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) + 
+      ggplot2::labs(color = colorBy)
+    
+    plot
+    
+  } else {
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+    
+    ms2$linesize <- 0.01
+    ms2$linesize[ms2$is_pre] <- 2
+    
+    ticksMin <- plyr::round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
+    ticksMax <- plyr::round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
+    
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    
+    xaxis <- list(
+      linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"),
+      range = c(ticksMin, ticksMax),
+      dtick = round((max(ms2$mz) / 10), -1),
+      ticks = "outside"
+    )
+    
+    yaxis <- list(
+      linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"),
+      range = c(0, max(ms2$intensity) * 1.5)
+    )
+    
+    loop <- NULL
+    
+    plot <- ms2 %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~mz,
+        y = ~intensity,
+        type = "bar",
+        color = ~var,
+        colors = cl,
+        marker = list(line = list(width = ~linesize)),
+        text = ~paste0(text_string, "  "),
+        textposition = "outside",
+        textangle = 90,
+        textfont = list(size = 9)
+      ) %>% plotly::layout(
+        bargap = 1,
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        barmode = "overlay",
+        uniformtext = list(minsize = 6, mode = "show")
+      )
+    
+    plot
+  }
+}
 
 
 
@@ -1722,4 +3146,93 @@ S7::method(report, NTS) <- function(x,
     warning("No features found! Not done.")
   }
   NTS
+}
+
+# MARk: .make_features_hover_string
+## .make_features_hover_string -----
+#' @noRd
+.make_features_hover_string <- function(pk = data.table::data.table()) {
+  if (nrow(pk) == 0) return("")
+  
+  has_quality <- any(vapply(pk$quality, function(z) nrow(z) > 0, logical(1)))
+  has_annotation <- any(vapply(pk$annotation, function(z) nrow(z) > 0, logical(1)))
+  hT <- paste(
+    "</br> feature: ", pk$feature,
+    ifelse("group" %in% colnames(pk), paste("</br> group: ", pk$group), ""),
+    "</br> analysis: ", pk$analysis,
+    "</br> replicate: ", pk$replicate,
+    "</br> mass: ", round(pk$mass, digits = 4),
+    "</br> <i>m/z</i>: ", round(pk$mz, digits = 4),
+    "</br> dppm: ", round(((pk$mzmax - pk$mzmin) / pk$mz) * 1E6, digits = 0),
+    "</br> rt: ", round(pk$rt, digits = 0),
+    "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
+    "</br> intensity: ", round(pk$intensity, digits = 0),
+    "</br> filtered: ", pk$filtered,
+    "</br> filled: ", pk$filled,
+    if (has_quality) {
+      paste(
+        "</br> noise: ",  vapply(pk$quality, function(z) {
+          if (nrow(z) > 0) round(z$noise, digits = 0) else NA_real_
+        }, NA_real_),
+        "</br> sn: ", vapply(pk$quality, function(z) {
+          if (nrow(z) > 0) round(z$sn, digits = 1) else NA_real_
+        }, NA_real_),
+        "</br> gaufit: ", vapply(pk$quality, function(z) {
+          if (nrow(z) > 0) round(z$gauss_f, digits = 4) else NA_real_
+        }, NA_real_),
+        "</br> A: ", vapply(pk$quality, function(z) {
+          if (nrow(z) > 0) round(z$gauss_a, digits = 2) else NA_real_
+        }, NA_real_),
+        "</br> mu: ", vapply(pk$quality, function(z) {
+          if (nrow(z) > 0)  round(z$gauss_u, digits = 2) else NA_real_
+        }, NA_real_),
+        "</br> sigma: ", vapply(pk$quality, function(z) {
+          if (nrow(z) > 0) round(z$gauss_s, digits = 2) else NA_real_
+        }, NA_real_)
+      )
+    } else {
+      ""
+    },
+    if (has_annotation) {
+      paste(
+        "</br> component: ", vapply(pk$annotation, function(z) {
+          if (nrow(z) > 0) z$component_feature else NA_character_
+        }, NA_character_),
+        "</br> isotope: ", vapply(pk$annotation, function(z) {
+          if (nrow(z) > 0) z$iso_cat else NA_character_
+        }, NA_character_
+        ),
+        "</br> iso_elements: ", vapply(pk$annotation, function(z) {
+          z$iso_isotope
+        }, NA_character_),
+        "</br> iso_number_carbons: ", vapply(pk$annotation, function(z) {
+          if (nrow(z) > 0) round(z$iso_number_carbons, digits = 0) else NA_real_
+        }, NA_real_),
+        "</br> iso_mass_error: ", vapply(pk$annotation, function(z) {
+          if (nrow(z) > 0) round(z$iso_mass_error, digits = 5) else NA_real_
+        }, NA_real_),
+        "</br> iso_time_error: ", vapply(pk$annotation, function(z) {
+          if (nrow(z) > 0) round(z$iso_time_error, digits = 1) else NA_real_
+        }, NA_real_),
+        "</br> adduct: ", vapply(pk$annotation, function(z) {
+          if (nrow(z) > 0) z$adduct_cat else NA_character_
+        }, NA_character_),
+        "</br> adduct_mass_error: ", vapply(pk$annotation, function(z) {
+          if (nrow(z) > 0)  round(z$adduct_mass_error, digits = 5) else NA_real_
+        }, NA_real_),
+        "</br> adduct_time_error: ", vapply(pk$annotation, function(z) {
+          if (nrow(z) > 0) round(z$adduct_time_error, digits = 1) else NA_real_
+        }, NA_real_)
+      )
+    } else {
+      ""
+    }
+    # if ("dqsPeak" %in% colnames(pk)) {
+    #   paste("</br> DQS: ", pk$dqsPeak)
+    # } else {
+    #   ""
+    # },
+  )
+  
+  hT
 }
