@@ -132,55 +132,6 @@ ms$run(
   )
 )
 
-show(ms$NTS)
-nts <- ms$NTS
-
-# nts@number_analyses
-# nts@number_features
-# nts@has_features
-# nts@number_filtered_features
-# nts@has_filtered_features
-# nts@has_groups
-# nts@has_features_eic
-# nts@has_features_ms1
-# nts@has_features_ms2
-# nts@has_features_suspects
-# nts@number_groups
-# nts@group_names
-
-# plot_matrix_suppression(ms$Analyses)
-
-# plot_features_count(nts)
-# get_features(nts, mass = db[2:3, ])
-# get_features_eic(nts, mass = db[2, ])
-# plot_features(nts, mass = db[2, ])
-# plot_features(nts, mass = db[2:3, ], legendNames = TRUE)
-# get_features_ms1(nts, mass = db[2, ])
-# plot_features_ms1(nts, mass = db[2:3, ], legendNames = TRUE)
-# View(get_features_ms2(nts, mass = db[2:3, ]))
-# plot_features_ms2(nts, mass = db[2:3, ], legendNames = TRUE)
-# map_features(nts, mass = db[2:3, ])
-# map_features_intensity(nts, mass = db[2:3, ])
-
-get_groups(nts, mass = db[2:3, ], metadata = TRUE)
-plot_groups(nts, mass = db[2:3, ])
-
-plot_groups_overview(nts, mass = db[2:3, ])
-plot_groups_profile(nts, mass = db[2:3, ])
-
-get_groups_ms1(nts, mass = db[2:3, ])
-plot_groups_ms1(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
-
-get_groups_ms2(nts, mass = db[2:3, ])
-plot_groups_ms2(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
-
-
-
-# ms$clear_cache()
-
-
-
-
 ms$run(
   MassSpecMethod_FilterFeatures_StreamFind(
     minIntensity = 3000
@@ -241,6 +192,59 @@ ms$run(
     istdN = 2
   )
 )
+
+show(ms$NTS)
+nts <- ms$NTS
+
+# nts@number_analyses
+# nts@number_features
+# nts@has_features
+# nts@number_filtered_features
+# nts@has_filtered_features
+# nts@has_groups
+# nts@has_features_eic
+# nts@has_features_ms1
+# nts@has_features_ms2
+# nts@has_features_suspects
+# nts@number_groups
+# nts@group_names
+
+# plot_matrix_suppression(ms$Analyses)
+
+# plot_features_count(nts)
+# get_features(nts, mass = db[2:3, ])
+# get_features_eic(nts, mass = db[2, ])
+# plot_features(nts, mass = db[2, ])
+# plot_features(nts, mass = db[2:3, ], legendNames = TRUE)
+# get_features_ms1(nts, mass = db[2, ])
+# plot_features_ms1(nts, mass = db[2:3, ], legendNames = TRUE)
+# View(get_features_ms2(nts, mass = db[2:3, ]))
+# plot_features_ms2(nts, mass = db[2:3, ], legendNames = TRUE)
+# map_features(nts, mass = db[2:3, ])
+# map_features_intensity(nts, mass = db[2:3, ])
+
+get_groups(nts, mass = db[2:3, ], metadata = TRUE)
+plot_groups(nts, mass = db[2:3, ])
+
+plot_groups_overview(nts, mass = db[2:3, ])
+plot_groups_profile(nts, mass = db[2:3, ])
+
+get_groups_ms1(nts, mass = db[2:3, ])
+plot_groups_ms1(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
+
+get_groups_ms2(nts, mass = db[2:3, ])
+plot_groups_ms2(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
+
+get_components(nts, mass = db[2:3, ])
+
+map_components(nts, mass = db[2:3, ])
+
+# ms$clear_cache()
+
+get_internal_standards(nts, average = TRUE)
+
+plot_internal_standards(nts)
+
 
 ms$run(
   MassSpecMethod_LoadFeaturesMS1_StreamFind(

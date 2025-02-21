@@ -192,7 +192,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       
       if (engine$NTS@has_groups) {
         rpl <- unique(engine$Analyses$replicates)
-        groups <- engine$get_groups(
+        groups <- get_groups(
+          engine$NTS,
           filtered = FALSE,
           intensities = FALSE,
           average = TRUE,
@@ -246,7 +247,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       
       if (engine$NTS@has_groups) {
         rpl <- unique(engine$Analyses$replicates)
-        groups <- engine$get_groups(
+        groups <- get_groups(
+          engine$NTS,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
@@ -294,7 +296,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       if (engine$NTS@has_groups) {
         rpl <- unique(engine$Analyses$replicates)
         rpl <- paste(rpl, "_sd", sep = "")
-        groups <- engine$get_groups(
+        groups <- get_groups(
+          engine$NTS,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
@@ -330,7 +333,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       if (engine$NTS@has_groups) {
         rpl <- unique(engine$Analyses$replicates)
         rpl <- paste(rpl, "_n", sep = "")
-        groups <- engine$get_groups(
+        groups <- get_groups(
+          engine$NTS,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
@@ -376,7 +380,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         
         rpl <- unique(info$replicate[!info$replicate %in% info$blank])
         
-        groups <- engine$get_groups(
+        groups <- get_groups(
+          engine$NTS,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,

@@ -95,7 +95,8 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
     return(FALSE)
   }
 
-  internal_standards <- engine$get_suspects(
+  internal_standards <- get_suspects(
+    engine$NTS,
     database = database,
     ppm = x$parameters$ppm,
     sec = x$parameters$sec,

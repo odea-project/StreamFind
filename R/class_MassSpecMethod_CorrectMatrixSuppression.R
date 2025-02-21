@@ -162,14 +162,14 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
     return(FALSE)
   }
 
-  NTS <- engine$NTS
+  nts <- engine$NTS
 
-  if (!NTS@has_features) {
+  if (!nts@has_features) {
     warning("NTS object does not have features! Not done.")
     return(FALSE)
   }
 
-  feature_list <- NTS$feature_list
+  feature_list <- nts$feature_list
 
   feature_list <- lapply(feature_list, function(z) {
     if (!"quality" %in% colnames(z)) z$quality <- rep(list(), nrow(z))
@@ -197,7 +197,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
 
   if (!"none" %in% parameters$istdAssignment) {
     message("\U2699 Calculating internal standards matrix suppression")
-    istd <- engine$get_internal_standards(average = FALSE)
+    istd <- get_internal_standards(nts, average = FALSE)
 
     if (nrow(istd) == 0) {
       warning("No internal standards available!")

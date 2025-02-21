@@ -1019,9 +1019,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             sec = 60,
                             millisec = 5,
                             filtered = FALSE) {
-      StreamFind::get_features(
-        self$Analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered
-      )
+      if (self$has_results_nts()) {
+        StreamFind::get_features(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     },
     
     # MARK: get_features_eic

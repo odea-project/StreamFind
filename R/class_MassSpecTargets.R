@@ -320,16 +320,30 @@ MassSpecTargets <- S7::new_class(
           
           if ("analysis" %in% colnames(targets)) {
             unique_analyses <- unique(targets$analysis)
+            
             for (i in unique_analyses) {
-              if (any(duplicated(targets$id[targets$analysis == i]))) {
-                if ("polarity" %in% colnames(targets)) {
+              if ("polarity" %in% colnames(targets)) {
+                unique_id_pol <- paste0(
+                  targets$id[targets$analysis == i],
+                  " ",
+                  targets$polarity[targets$analysis == i]
+                )
+                
+                if (any(duplicated(unique_id_pol))) {
                   targets$id[targets$analysis == i] <- paste0(targets$id[targets$analysis == i], " ", targets$polarity[targets$analysis == i])
-                  if (any(duplicated(targets$id[targets$analysis == i]))) {
-                    targets$id[targets$analysis == i] <- paste0(targets$id[targets$analysis == i], " ", seq_len(nrow(targets[targets$analysis == i, ])))
-                  }
-                } else {
+                }
+                
+                unique_id_pol <- paste0(
+                  targets$id[targets$analysis == i],
+                  " ",
+                  targets$polarity[targets$analysis == i]
+                )
+                
+                if (any(duplicated(unique_id_pol))) {
                   targets$id[targets$analysis == i] <- paste0(targets$id[targets$analysis == i], " ", seq_len(nrow(targets[targets$analysis == i, ])))
                 }
+              } else {
+                targets$id[targets$analysis == i] <- paste0(targets$id[targets$analysis == i], " ", seq_len(nrow(targets[targets$analysis == i, ])))
               }
             }
           } else if ("polarity" %in% colnames(targets)) {
