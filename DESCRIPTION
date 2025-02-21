@@ -47,7 +47,8 @@ Imports:
     Rhdf5lib,
     reticulate,
     ggplot2,
-    dplyr
+    dplyr,
+    gridExtra
 Suggests: 
     StreamFindData,
     mzR,
@@ -93,6 +94,7 @@ Collate:
     'utils_general.R'
     'utils_plots.R'
     'utils_fct_assets.R'
+    'fct_get_cache_info.R'
     'fct_clear_cache.R'
     'fct_ms_convert_trim_files.R'
     'class_Config.R'

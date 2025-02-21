@@ -109,16 +109,17 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  nts <- engine$NTS
   
-  if (!NTS@has_features) {
+  if (!nts@has_features) {
     warning("NTS object is empty! Not done.")
     return(FALSE)
   }
   
   parameters <- x@parameters
   
-  suspect_features <- engine$get_suspects(
+  suspect_features <- get_suspects(
+    nts,
     database = parameters$database,
     ppm = parameters$ppm,
     sec = parameters$sec,
@@ -138,7 +139,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     
     suspect_features_l <- split(suspect_features, suspect_features$analysis)
     
-    features <- NTS$feature_list
+    features <- nts$feature_list
     
     sus_col <- lapply(names(features), function(x, features, suspect_features_l, suspect_cols) {
       suspects <- suspect_features_l[[x]]
@@ -172,8 +173,8 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     
     names(sus_col) <- names(features)
     
-    NTS <- .add_features_column(NTS, "suspects", sus_col)
-    engine$NTS <- NTS
+    nts <- .add_features_column(nts, "suspects", sus_col)
+    engine$NTS <- nts
     TRUE
     
   } else {

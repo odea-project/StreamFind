@@ -315,7 +315,7 @@ S7::method(save_cache, ConfigCache) <- function(x, category = NULL, data = NULL,
 
 #' @export
 #' @noRd
-S7::method(clear_cache, ConfigCache) <- function(x, what = NULL) {
+clear_cache.ConfigCache <- function(x, what = NULL) {
   if (x@value) {
     if ("sqlite" %in% x@mode) {
       clear_cache(what, file = x@file)

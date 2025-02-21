@@ -25,6 +25,12 @@ clear_cache <- function(x, ...) {
 
 #' @export
 #' @noRd
+get_cache_info <- function(x) {
+  UseMethod("get_cache_info")
+}
+
+#' @export
+#' @noRd
 get_chromatograms <- S7::new_generic("get_chromatograms", "x")
 
 #' @export

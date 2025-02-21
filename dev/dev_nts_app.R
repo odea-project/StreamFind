@@ -73,6 +73,8 @@ blks <- c(
 ms$add_replicate_names(rpls)
 ms$add_blank_names(blks)
 
+
+
 # ms$run(MassSpecMethod_FindFeatures_xcms3_centwave())
 
 ms$run(
@@ -186,14 +188,43 @@ ms$run(
 
 ms$run(
   MassSpecMethod_CorrectMatrixSuppression_TiChri(
-    mpRtWindow = 10,
+    mpRtWindow = 15,
     istdAssignment = "range",
     istdRtWindow = 50,
     istdN = 2
   )
 )
 
+ms$run(
+  MassSpecMethod_LoadFeaturesMS1_StreamFind(
+    filtered = FALSE
+  )
+)
+
+ms$run(
+  MassSpecMethod_LoadFeaturesMS2_StreamFind(
+    filtered = FALSE
+  )
+)
+
+ms$run(
+  MassSpecMethod_LoadFeaturesEIC_StreamFind(
+    filtered = FALSE
+  )
+)
+
+ms$run(
+  MassSpecMethod_SuspectScreening_StreamFind(
+    database = db_with_ms2,
+    ppm = 10,
+    sec = 15,
+    ppmMS2 = 10,
+    minFragments = 3
+  )
+)
+
 show(ms$NTS)
+
 nts <- ms$NTS
 
 # nts@number_analyses
@@ -237,42 +268,25 @@ plot_groups_ms2(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
 
 get_components(nts, mass = db[2:3, ])
 
-map_components(nts, mass = db[2:3, ])
+map_components(nts, analyses = 11, mass = db, legendNames = TRUE)
 
 # ms$clear_cache()
 
 get_internal_standards(nts, average = TRUE)
-
 plot_internal_standards(nts)
 
+get_suspects(nts)
 
-ms$run(
-  MassSpecMethod_LoadFeaturesMS1_StreamFind(
-    filtered = FALSE
-  )
+
+plot_suspects(nts)
+
+get_fold_change(
+  nts,
+  replicatesIn = "influent_pos",
+  replicatesOut = "effluent_pos"
 )
 
-ms$run(
-  MassSpecMethod_LoadFeaturesMS2_StreamFind(
-    filtered = FALSE
-  )
-)
 
-ms$run(
-  MassSpecMethod_LoadFeaturesEIC_StreamFind(
-    filtered = FALSE
-  )
-)
-
-ms$run(
-  MassSpecMethod_SuspectScreening_StreamFind(
-    database = db_with_ms2,
-    ppm = 10,
-    sec = 15,
-    ppmMS2 = 10,
-    minFragments = 3
-  )
-)
 
 #StreamFind::clear_cache("all")
 

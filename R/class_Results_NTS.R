@@ -317,6 +317,7 @@ S7::method(show, NTS) <- function(x) {
   }
   info <- data.table::data.table(
     "analysis" = x@analyses_info$analysis,
+    "replicate" = x$replicates,
     "features" = x@number_features,
     "filtered" = x@number_filtered_features,
     "groups" = x@number_groups
@@ -613,27 +614,31 @@ S7::method(get_features, NTS) <- function(x,
     for (i in seq_len(nrow(targets))) {
       if ("mobility" %in% colnames(fts)) {
         sel[
-          fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
+          fts$analysis == targets$analysis[i] &
+          fts$polarity == targets$polarity[i] &
           data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
           data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
           data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])
         ] <- TRUE
         
         ids[
-          fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
+          fts$analysis == targets$analysis[i] &
+          fts$polarity == targets$polarity[i] &
           data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
           data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
           data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])
         ] <- targets$id[i]
       } else {
         sel[
-          fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
+          fts$analysis == targets$analysis[i] &
+          fts$polarity == targets$polarity[i] &
           data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
           data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])
         ] <- TRUE
         
         ids[
-          fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
+          fts$analysis == targets$analysis[i] &
+          fts$polarity == targets$polarity[i] &
           data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
           data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])
         ] <- targets$id[i]
@@ -1047,15 +1052,15 @@ S7::method(plot_features, NTS) <- function(x,
     useLoadedData = useLoadedData
   )
   
-  intensity <- NULL
-  cols_by <- c("analysis", "replicate", "polarity", "feature", "rt")
-  eic <- eic[, `:=`(intensity = max(intensity)), by = cols_by]
-  eic <- unique(eic)
-  
   if (nrow(eic) == 0) {
     message("\U2717 Traces not found for the targets!")
     return(NULL)
   }
+  
+  intensity <- NULL
+  cols_by <- c("analysis", "replicate", "polarity", "feature", "rt")
+  eic <- eic[, `:=`(intensity = max(intensity)), by = cols_by]
+  eic <- unique(eic)
   
   fts <- .make_colorBy_varkey(fts, colorBy, legendNames)
   
@@ -1279,6 +1284,11 @@ S7::method(get_features_ms1, NTS) <- function(x,
   }, fts = fts)
   
   ms1 <- data.table::rbindlist(ms1_list, fill = TRUE)
+  
+  if (nrow(ms1) == 0) {
+    return(data.table::data.table())
+  }
+  
   ms1$replicate <- x$replicates[ms1$analysis]
   data.table::setcolorder(ms1, c("analysis", "replicate", "feature"))
   
@@ -1489,6 +1499,11 @@ S7::method(get_features_ms2, NTS) <- function(x,
   }, fts = fts)
   
   ms2 <- data.table::rbindlist(ms2_list, fill = TRUE)
+  
+  if (nrow(ms2) == 0) {
+    return(data.table::data.table())
+  }
+  
   ms2$replicate <- x$replicates[ms2$analysis]
   data.table::setcolorder(ms2, c("analysis", "replicate", "feature"))
   
@@ -1683,6 +1698,7 @@ S7::method(get_groups, NTS) <- function(x,
     fgroups <- data.table::data.table("group" = g_ids)
     
     if (intensities) {
+      
       if (average) {
         intensity <- NULL
         rpls <- x$replicates
@@ -2973,7 +2989,12 @@ S7::method(map_components, NTS) <- function(x,
       ) +
       ggplot2::geom_point(ggplot2::aes(color = factor(var)), size = 2) +
       geom_text(
-        aes(x = rt, y = mz, label = paste0(iso_cat, " ", iso_isotope),color = factor(var)),
+        aes(
+          x = rt,
+          y = mz,
+          label = paste0(iso_cat, " ", iso_isotope, " ", adduct_cat),
+          color = factor(var)
+        ),
         vjust = 0.2, hjust = -0.2, angle = 90, size = 2, show.legend = FALSE
       ) +
       ggplot2::scale_color_manual(values = cl) + 
@@ -3031,10 +3052,10 @@ S7::method(map_components, NTS) <- function(x,
         name = ft$var,
         legendgroup = ft$var,
         showlegend = plotlegend[ft$var],
-        text = paste0(ft$iso_cat, " ", ft$iso_isotope),
+        text = paste0(ft$iso_cat, " ", ft$iso_isotope, " ", ft$adduct_cat),
         textposition = "midle right",
         textfont = list(size = 9, color = cl[ft$var]),
-        hoverinfo = hT
+        hovertemplate = hT
       )
       
       if (isTRUE(plotlegend[ft$var])) {
@@ -3327,7 +3348,7 @@ S7::method(get_suspects, NTS) <- function(x,
     suspects <- data.table::rbindlist(suspects, fill = TRUE)
   }
   
-  if (nrow(suspects) > 0 && !filtered && x$NTS$has_groups && onGroups) {
+  if (nrow(suspects) > 0 && !filtered && x$has_groups && onGroups) {
     if (all(!is.na(suspects$group))) {
       suspects$id_level <- factor(
         suspects$id_level,
@@ -3369,6 +3390,409 @@ S7::method(get_suspects, NTS) <- function(x,
     }
   }
   suspects
+}
+
+# MARK: plot_suspects
+## plot_suspects -----
+#' @export
+#' @noRd
+S7::method(plot_suspects, NTS) <- function(x,
+                                           analyses = NULL,
+                                           database = NULL,
+                                           features = NULL,
+                                           mass = NULL,
+                                           mz = NULL,
+                                           rt = NULL,
+                                           mobility = NULL,
+                                           ppm = 4,
+                                           sec = 10,
+                                           millisec = 5,
+                                           ppmMS2 = 10,
+                                           minFragments = 3,
+                                           isolationWindow = 1.3,
+                                           mzClust = 0.003,
+                                           presence = 0.8,
+                                           minIntensity = 0,
+                                           filtered = FALSE,
+                                           rtExpand = 120,
+                                           mzExpand = 0.005,
+                                           useLoadedData = TRUE,
+                                           legendNames = NULL,
+                                           colorBy = "replicates+targets",
+                                           heights = c(0.5, 0.5),
+                                           interactive = TRUE) {
+  suspects <- get_suspects(
+    x,
+    analyses,
+    database,
+    features,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    ppmMS2,
+    minFragments,
+    isolationWindow,
+    mzClust,
+    presence,
+    minIntensity,
+    filtered,
+    onGroups = FALSE
+  )
+  
+  if (nrow(suspects) == 0) {
+    warning("\U2717 Suspects not found!")
+    return(NULL)
+  }
+  
+  eic <- get_features_eic(
+    x,
+    analyses = unique(suspects$analysis),
+    features = suspects$feature,
+    rtExpand = rtExpand,
+    mzExpand = mzExpand,
+    filtered = filtered,
+    useLoadedData = useLoadedData
+  )
+  
+  if (nrow(eic) == 0) {
+    message("\U2717 Traces and/or features not found for targets!")
+    return(NULL)
+  }
+  
+  suspects <- .make_colorBy_varkey(suspects, colorBy, TRUE)
+  
+  eic$uid <- paste0(eic$feature, "_", eic$analysis)
+  suspects$uid <- paste0(suspects$feature, "_", suspects$analysis)
+  
+  leg <- suspects$var
+  names(leg) <- paste0(suspects$feature, "_", suspects$analysis)
+  
+  eic$var <- leg[eic$uid]
+  
+  leg <- unique(leg)
+  cl <- .get_colors(leg)
+  
+  if (!interactive) {
+    p1 <- ggplot2::ggplot() +
+      ggplot2::geom_line(
+        data = eic,
+        ggplot2::aes(x = rt, y = intensity, group = uid, color = var),
+        linewidth = 0.5
+      ) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::labs(
+        x = "Retention time / seconds",
+        y = "Intensity / counts"
+      ) +
+      ggplot2::theme_classic()
+    
+    for (g in leg) {
+      uid_list <- unique(eic$uid[eic$var == g])
+      
+      for (u in uid_list) {
+        df <- dplyr::filter(eic, uid == u)
+        ft <- dplyr::filter(suspects, uid == u)
+        
+        if (nrow(ft) > 0) {
+          df_filled <- dplyr::filter(df, rt >= ft$rtmin & rt <= ft$rtmax)
+          
+          p1 <- p1 + ggplot2::geom_ribbon(
+            data = df_filled,
+            ggplot2::aes(x = rt, ymin = 0, ymax = intensity),
+            fill = cl[g],
+            alpha = 0.5
+          )
+        }
+      }
+    }
+    
+    data <- suspects$ms2
+    names(data) <- suspects$uid
+    data <- Map(function(i, j) {
+      if (nrow(i) > 0) {
+        i$var <- j
+        i$intensity <- i$intensity / max(i$intensity)
+      }
+      i
+    }, data, suspects$var)
+    data <- data.table::rbindlist(data, idcol = "uid", fill = TRUE)
+    
+    fragments <- suspects$fragments
+    names(fragments) <- suspects$uid
+    
+    fragments <- lapply(fragments, function(z) {
+      if (!is.na(z)) {
+        z <- unlist(strsplit(z, split = "; ", fixed = TRUE))
+        z <- strsplit(z, " ")
+        z <- data.table::data.table(
+          "mz" = vapply(z, function(x) as.numeric(x[1]), NA_real_),
+          "intensity" = vapply(z, function(x) as.numeric(x[2]), NA_real_)
+        )
+        
+        z$intensity <- z$intensity / max(z$intensity)
+        z$intensity <- -z$intensity
+      } else {
+        z <- data.table::data.table()
+      }
+      z
+    })
+    
+    fragments <- Map(function(i, j) {
+      if (nrow(i) > 0) {
+        i$var <- j
+      }
+      i
+    }, fragments, suspects$var)
+    
+    fragments <- data.table::rbindlist(fragments, idcol = "uid", fill = TRUE)
+    
+    all_data <- data.table::rbindlist(list(data, fragments), fill = TRUE)
+    
+    all_data$vpos <- -0.2
+    all_data$vpos[all_data$intensity < 0] <- 1.2
+    
+    p2 <- ggplot2::ggplot(all_data, ggplot2::aes(x = mz, y = intensity, fill = var)) +
+      ggplot2::geom_col(width = 0.5, position = "identity") +
+      ggplot2::scale_fill_manual(values = cl) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::guides(fill = "none") +
+      ggplot2::geom_text(
+        ggplot2::aes(label = round(mz, 4), color = var),
+        vjust = 0.2, hjust = all_data$vpos, angle = 90, size = 2, show.legend = FALSE
+      ) +
+      ggplot2::labs(
+        x = expression(italic("m/z ") / " Da"),
+        y = "Normalized intensity (Exp vs -Database)"
+      ) +
+      ggplot2::theme_classic() +
+      ggplot2::geom_hline(yintercept = 0, linetype = "solid") +
+      ggplot2::annotate(
+        "text",
+        x = max(all_data$mz, na.rm = TRUE) - 0.1, y = 1.25,
+        label = "Experimental spectra",
+        hjust = 1
+      ) +
+      ggplot2::annotate(
+        "text", x = max(all_data$mz, na.rm = TRUE) - 0.1, y = -1.25,
+        label = "Database spectra",
+        hjust = 1
+      ) +
+      ggplot2::scale_y_continuous(
+        limits = c(
+          min(all_data$intensity, na.rm = TRUE) * 1.3, 
+          max(all_data$intensity, na.rm = TRUE) * 1.3
+        )
+      )
+    
+    gridExtra::grid.arrange(p1, p2, ncol = 1)
+    
+  } else {
+    showleg <- rep(TRUE, length(leg))
+    names(showleg) <- leg
+    
+    plot <- plot_ly()
+    
+    for (g in leg) {
+      uid <- unique(suspects$uid[suspects$var %in% g])
+      
+      for (u in uid) {
+        ft <- suspects[suspects$uid == u, ]
+        if (nrow(ft) == 0) next
+        df <- eic[eic$uid == u, ]
+        
+        plot <- plot %>% add_trace(
+          x = df$rt,
+          y = df$intensity,
+          type = "scatter",
+          mode = "lines",
+          line = list(width = 0.5, color = cl[g]),
+          connectgaps = TRUE,
+          name = g,
+          legendgroup = g,
+          showlegend = FALSE
+        )
+        
+        df <- df[df$rt >= ft$rtmin & df$rt <= ft$rtmax, ]
+        hT <- .make_features_hover_string(ft)
+        hT <- paste(
+          "</br> suspect: ", g,
+          "</br> id_level: ", ft$id_level,
+          "</br> error_mass: ", ft$error_mass,
+          "</br> error_rt: ", ft$error_rt,
+          "</br> shared_fragments: ", ft$shared_fragments,
+          hT
+        )
+        
+        plot <- plot %>% add_trace(
+          x = df$rt,
+          y = df$intensity,
+          type = "scatter",
+          mode = "lines+markers",
+          fill = "tozeroy", 
+          connectgaps = TRUE,
+          fillcolor = paste(color = cl[g], 50, sep = ""),
+          line = list(width = 0.1, color = cl[g]),
+          marker = list(size = 3, color = cl[g]),
+          text = hT,
+          hoverinfo = "text",
+          name = g,
+          legendgroup = g,
+          showlegend = showleg[g]
+        )
+        
+        showleg[g] <- FALSE
+      }
+    }
+    
+    max_mz <- 0
+    
+    plot2 <- plot_ly()
+    
+    for (g in leg) {
+      uid <- unique(suspects$uid[suspects$var %in% g])
+      
+      for (u in uid) {
+        data <- suspects$ms2[suspects$uid == u][[1]]
+        fragments <- suspects$fragments[suspects$uid == u]
+        
+        if (!is.null(data) && !is.na(fragments)) {
+          bar_widths <- rep(0.2, nrow(data))
+          data$intensity <- data$intensity / max(data$intensity)
+          
+          temp_max_mz <- max(data$mz)
+          if (temp_max_mz > max_mz) max_mz <- temp_max_mz
+          
+          plot2 <- plot2 %>% add_trace(
+            x = data$mz,
+            y = data$intensity,
+            type = "bar",
+            width = 0.05,
+            marker = list(
+              color = cl[g],
+              line = list(color = cl[g], width = bar_widths)
+            ),
+            text = paste0(round(as.numeric(data$mz), 4), "  "),
+            textposition = "outside",
+            textangle = 90,
+            textfont = list(size = 9),
+            name = g,
+            legendgroup = g,
+            hovertemplate = paste("Exp:", "<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
+            showlegend = FALSE
+          )
+          
+          fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
+          fragments <- strsplit(fragments, " ")
+          fragments <- data.table::data.table(
+            "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
+            "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
+          )
+          
+          fragments$intensity <- fragments$intensity / max(fragments$intensity)
+          fragments$intensity <- -fragments$intensity
+          
+          plot2 <- plot2 %>% add_trace(
+            x = fragments$mz,
+            y = fragments$intensity,
+            type = "bar",
+            width = 0.05,
+            marker = list(
+              color = cl[g],
+              line = list(color = cl[g], width = bar_widths)
+            ),
+            text = paste0(round(as.numeric(fragments$mz), 4), "  "),
+            textposition = "outside",
+            textangle = 90,
+            textfont = list(size = 9),
+            name = g,
+            legendgroup = g,
+            hovertemplate = paste("Database:", "<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
+            showlegend = FALSE
+          )
+          
+          # add annotation text to the plot2 in the max y and max x the text "experimental spectra" and "database spectra" in the max x and min y of the plot region
+        }
+      }
+    }
+    
+    plot2 <- plot2 %>% add_trace(
+      x = max_mz,
+      y = 1.2,
+      type = "scatter",
+      mode = "text",
+      text = "<i>Experimental spectra</i>",
+      textposition = "top left",
+      textfont = list(color = "black"),
+      showlegend = FALSE
+    )
+    
+    plot2 <- plot2 %>% add_trace(
+      x = max_mz,
+      y = -1.2,
+      type = "scatter",
+      mode = "text",
+      text = "<i>Database spectra</i>",
+      textposition = "bottom left",
+      textfont = list(color = "black"),
+      showlegend = FALSE
+    )
+    
+    xaxis1 <- list(
+      linecolor = toRGB("black"), linewidth = 2,
+      title = "Retention time / seconds",
+      titlefont = list(size = 12, color = "black"),
+      autotick = TRUE, ticks = "outside"
+    )
+    
+    xaxis2 <- list(
+      linecolor = toRGB("black"), linewidth = 2,
+      title = "<i>m/z</i> / Da",
+      titlefont = list(size = 12, color = "black"),
+      autotick = TRUE, ticks = "outside"
+    )
+    
+    yaxis1 <- list(
+      linecolor = toRGB("black"), linewidth = 2,
+      title = "Intensity / counts",
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    yaxis2 <- list(
+      linecolor = toRGB("black"), linewidth = 2,
+      title = "Normalized intensity (Exp vs -Database)",
+      range = c(-1.4, 1.4),
+      titlefont = list(size = 12, color = "black")
+    )
+    
+    plotList <- list()
+    
+    plot <- plot %>% plotly::layout(xaxis = xaxis1, yaxis = yaxis1)
+    plotList[["plot"]] <- plot
+    
+    plot2 <- plot2 %>% plotly::layout(
+      xaxis = xaxis2,
+      yaxis = yaxis2,
+      barmode = "overlay",
+      uniformtext = list(minsize = 6, mode = "show")
+    )
+    plotList[["plot2"]] <- plot2
+    
+    plotf <- subplot(
+      plotList,
+      nrows = 2,
+      titleY = TRUE, titleX = TRUE,
+      heights = heights[1:2],
+      margin = 0.03,
+      shareX = FALSE,
+      which_layout = "merge"
+    )
+    
+    plotf
+  }
 }
 
 # MARK: get_internal_standards
@@ -3972,7 +4396,171 @@ S7::method(plot_internal_standards, NTS) <- function(x,
   final_plot
 }
 
-
+# MARK: get_fold_change
+## get_fold_change -----
+#' @export
+#' @noRd
+S7::method(get_fold_change, NTS) <- function(x,
+                                             replicatesIn = NULL,
+                                             replicatesOut = NULL,
+                                             groups = NULL,
+                                             mass = NULL,
+                                             mz = NULL,
+                                             rt = NULL,
+                                             mobility = NULL,
+                                             ppm = 4,
+                                             sec = 10,
+                                             millisec = 5,
+                                             filtered = FALSE,
+                                             constantThreshold = 0.5,
+                                             eliminationThreshold = 0.2,
+                                             correctSuppression = FALSE,
+                                             fillZerosWithLowerLimit = FALSE,
+                                             lowerLimit = NA_real_) {
+  
+  if (!x$has_groups) {
+    warning("\U2717 Feature groups not found!")
+    return(NULL)
+  }
+  
+  rpls <- x$replicates
+  
+  if (is.numeric(replicatesIn)) replicatesIn <- unique(rpls[replicatesIn])
+  if (is.numeric(replicatesOut)) replicatesOut <- unique(rpls[replicatesOut])
+  
+  if (any(is.na(replicatesIn)) || any(is.na(replicatesOut))) {
+    message("\U2717 Replicates not found!")
+    return(NULL)
+  }
+  
+  if (length(replicatesIn) == 1 && length(replicatesOut) > 1) {
+    replicatesIn <- rep(replicatesIn, length(replicatesOut))
+  }
+  
+  groups_dt <- get_groups(
+    x,
+    groups,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    filtered,
+    intensities = TRUE,
+    average = FALSE,
+    sdValues = FALSE,
+    metadata = FALSE,
+    correctSuppression
+  )
+  
+  if (nrow(groups_dt) == 0) {
+    message("\U2717 Feature groups not found for the targets!")
+    return(NULL)
+  }
+  
+  comb <- data.table::data.table()
+  
+  for (rep in seq_len(length(replicatesOut))) {
+    out_temp <- names(x)[x$replicates %in% replicatesOut[rep]]
+    in_temp <- names(x)[x$replicates %in% replicatesIn[rep]]
+    comb_temp <- expand.grid(
+      analysisIn = in_temp,
+      analysisOut = out_temp,
+      replicateIn = replicatesIn[rep],
+      replicateOut = replicatesOut[rep]
+    )
+    comb <- data.table::rbindlist(list(comb, comb_temp), fill = TRUE)
+  }
+  
+  if (nrow(comb) == 0) {
+    warning("\U2717 Combinations could not be made, check replicates IN and OUT!")
+    return(NULL)
+  }
+  
+  browser()
+  browser()
+  
+  fc <- lapply(seq_len(nrow(comb)), function(z, comb, groups_dt, fillZerosWithLowerLimit) {
+    
+    print(z)
+    
+    if (z == 2) browser()
+    
+    anaIn <- comb$analysisIn[z]
+    anaOut <- comb$analysisOut[z]
+    
+    selOut <- colnames(groups_dt) %in% as.character(anaOut)
+    vecOut <- groups_dt[, selOut, with = FALSE][[1]]
+    
+    selIn <- colnames(groups_dt) %in% as.character(anaIn)
+    vecIn <- groups_dt[, selIn, with = FALSE][[1]]
+    
+    if (fillZerosWithLowerLimit) {
+      if (is.na(lowerLimit)) {
+        vecOut[vecOut == 0] <- min(vecOut[vecOut > 0])
+        vecIn[vecIn == 0] <- min(vecIn[vecIn > 0])
+      } else {
+        vecOut[vecOut == 0] <- lowerLimit
+        vecIn[vecIn == 0] <- lowerLimit
+      }
+    }
+    
+    fc_vec <- as.numeric(vecOut) / as.numeric(vecIn)
+    
+    res <- data.table::data.table(
+      "group" = groups_dt$group,
+      "fc" = fc_vec
+    )
+    res$analysis_in <- anaIn
+    res$analysis_out <- anaOut
+    res$replicate_in <- comb$replicateIn[z]
+    res$replicate_out <- comb$replicateOut[z]
+    res$combination <- z
+    res
+  }, comb = comb, groups_dt = groups_dt, fillZerosWithLowerLimit = fillZerosWithLowerLimit)
+  
+  fc <- data.table::rbindlist(fc)
+  
+  browser()
+  
+  sel_nan <- is.nan(fc$fc)
+  
+  fc <- fc[!sel_nan, ]
+  
+  # fc_av <- fc[, .(fc = mean(fc, na.rm = TRUE)), by = c("combination", "group")]
+  
+  fc_category <- list(
+    "Elimination" = c(0, eliminationThreshold),
+    "Decrease" = c(eliminationThreshold, constantThreshold),
+    "Constant" = c(constantThreshold, 1 / constantThreshold),
+    "Increase" = c(1 / constantThreshold, 1 / eliminationThreshold),
+    "Formation" = c(1 / eliminationThreshold, Inf)
+  )
+  
+  fc_boundaries <- c(
+    paste0("(", 0, "-", eliminationThreshold, ")"),
+    paste0("(", eliminationThreshold, "-", constantThreshold, ")"),
+    paste0("(", constantThreshold, "-", 1 / constantThreshold, ")"),
+    paste0("(", 1 / constantThreshold, "-", 1 / eliminationThreshold, ")"),
+    paste0("(", 1 / eliminationThreshold, "-Inf)")
+  )
+  
+  names(fc_boundaries) <- names(fc_category)
+  
+  for (i in seq_along(fc_category)) {
+    fc$category[fc$fc >= fc_category[[i]][1] & fc$fc < fc_category[[i]][2]] <- names(fc_category)[i]
+  }
+  
+  sel_na_category <- is.na(fc$category)
+  
+  fc <- fc[!sel_na_category, ]
+  fc$category <- factor(fc$category, levels = names(fc_category))
+  fc$bondaries <- paste(fc$category, fc_boundaries[fc$category], sep = "\n")
+  fc$bondaries <- factor(fc$bondaries, levels = paste(names(fc_category), fc_boundaries, sep = "\n"))
+  fc
+}
 
 
 

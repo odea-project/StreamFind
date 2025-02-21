@@ -1,3 +1,6 @@
+# MARK: General utility functions
+# General utility functions -----
+
 #' @noRd
 .get_available_engines <- function() {
   StreamFind_env <- as.environment("package:StreamFind")
@@ -109,6 +112,60 @@
 
   tg_df
 }
+
+#' @title .check_analyses_argument
+#' 
+#' @description Checks the analyses argument as a character/integer vector to match analyses names. Returns a
+#' valid character vector with analysis names or `NULL` for non-matching. If `analyses` is `NULL`,
+#' returns all analysis names.
+#' 
+#' @noRd
+.check_analyses_argument <- function(obj, value) {
+  if (is.null(value)) {
+    names(obj)
+  } else {
+    
+    if (is.numeric(value)) {
+      value <- as.integer(value)
+      if (any(value < 1) || any(value > length(names(obj)))) {
+        warning("Invalid analysis index!")
+        return(NULL)
+      }
+      value <- names(obj)[value]
+    }
+    
+    if (!all(value %in% names(obj))) {
+      warning("Defined analyses not found!")
+      NULL
+    } else {
+      value
+    }
+  }
+}
+
+#' @title .convert_to_json
+#' 
+#' @description Converts an object to JSON format.
+#' 
+#' @noRd
+.convert_to_json <- function(x) {
+  jsonlite::toJSON(
+    x,
+    dataframe = "columns",
+    Date = "ISO8601",
+    POSIXt = "string",
+    factor = "string",
+    complex = "string",
+    null = "null",
+    na = "null",
+    digits = 6,
+    pretty = TRUE,
+    force = TRUE
+  )
+}
+
+# MARK: sqlite Cache functions
+# sqlite Cache functions -----
 
 #' @title recursiveApplyDT
 #'
@@ -286,6 +343,136 @@
   .save_cache_sqlite_backend(file, category, data, hash)
 }
 
+#' @title .info_cache_sqlite
+#' 
+#' @description Cache interface adapted from patRoon package.
+#' 
+#' @noRd
+.info_cache_sqlite <- function(file = "cache.sqlite") {
+  if (!file.exists(file)) {
+    message("\U2139 No cache file found!")
+    return(data.table::data.table())
+  } else {
+    db <- .openCacheDBScope(file = file)
+    tables <- DBI::dbListTables(db)
+    tableRows <- unlist(sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))))
+    
+    if (length(tables) == 0) {
+      message("\U2139 Cache file is empty!")
+      return(data.table::data.table())
+    }
+    
+    data.table::data.table(
+      category = tables,
+      size = tableRows
+    )
+    # idx <- seq_len(length(tables))
+    # formatted_strings <- sprintf("%d: %s (%d rows)\n", idx, tables, tableRows)
+    # combined_string <- paste(formatted_strings, collapse = "")
+    # combined_string <- paste(
+    #   combined_string, "all (removes complete cache database)\n",
+    #   sep = ""
+    # )  
+    # combined_string
+  }
+}
+
+#' @title .clear_cache_sqlite
+#' 
+#' @description Cache interface adapted from patRoon package.
+#' 
+#' @noRd
+.clear_cache_sqlite <- function(what = NULL, file = "cache.sqlite") {
+  
+  valid <- any(
+    c(
+      checkmate::test_character(what, null.ok = TRUE),
+      checkmate::test_integer(what, null.ok = TRUE)
+    )
+  )
+  
+  if (!valid) {
+    stop("Invalid input for 'what'. Please provide a character vector or an integer vector.")
+  }
+  
+  if (!file.exists(file)) {
+    message("\U2139 No cache file found, nothing to do.")
+    
+  } else if ("all" %in% x) {
+    
+    if (unlink(file) != 0) {
+      gc()
+      if (unlink(file) != 0) {
+        warning("Could not clear cache file!")
+      } else {
+        message("\U2713 All caches cleared!")
+      }
+    }
+  } else {
+    db <- .openCacheDBScope(file = file)
+    tables <- DBI::dbListTables(db)
+    
+    .get_info_string <- function(tables, db, mode = "message", el = NULL) {
+      tableRows <- unlist(sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))))
+      idx <- seq_len(length(tables))
+      formatted_strings <- sprintf("%d: %s (%d rows)\n", idx, tables, tableRows)
+      combined_string <- paste(formatted_strings, collapse = "")
+      
+      if (mode %in% "message") {
+        combined_string <- paste(
+          "Please specify which cache you want to remove. Available are:\n",
+          combined_string, "all (removes complete cache database)\n",
+          sep = ""
+        )
+      } else {
+        combined_string <- paste(
+          "No cache found that matches ", el , ". Available are:\n",
+          combined_string, "all (removes complete cache database)\n",
+          sep = ""
+        )
+      }
+      
+      combined_string
+    }
+    
+    if (length(tables) == 0) {
+      message("\U2139 Cache file is empty, nothing to do.")
+      
+    } else if (is.null(x)) {
+      message(.get_info_string(tables, db))
+      
+    } else {
+      if (is.integer(what)) {
+        if (any(what < 1) || any(what > length(tables))) {
+          message(.get_info_string(tables, db))
+          return(invisible(NULL))
+        }
+        what <- tables[what]
+      }
+      
+      if (length(what) == 0) {
+        message(.get_info_string(tables, db))
+        return(invisible(NULL))
+      }
+      
+      for (el in what) {
+        matchedTables <- grep(el, tables, value = TRUE)
+        if (length(matchedTables) > 0) {
+          for (tab in matchedTables) DBI::dbExecute(db, sprintf("DROP TABLE IF EXISTS %s", tab))
+          DBI::dbExecute(db, "VACUUM")
+          message("\U2713 Removed caches: ", paste0(matchedTables, collapse = ", "))
+        } else {
+          warning(.get_info_string(tables, db, mode = "warning", el = el))
+        }
+      }
+    }
+  }
+  invisible(NULL)
+}
+
+# MARK: rds Cache functions
+# rds Cache functions -----
+
 #' @title .save_cache_rds
 #'
 #' @description Cache interface for rds files in a given folder.
@@ -356,65 +543,24 @@
     if (length(files) > 0) {
       file.remove(files)
     } else {
-      warning("No files to remove!")
+      warning("No files to remove! Run cache_info() to get an overview.")
     }
   } else if (is.character(what)) {
     files <- list.files(folder, pattern = paste0(what, "_.*.rds$"), full.names = TRUE)
     if (length(files) > 0) {
       file.remove(files)
     } else {
-      warning("No files to remove!")
+      warning("No files to remove! Run cache_info() to get an overview.")
     }
   } else if (is.numeric(what)) {
     files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
     if (length(files) > 0) {
       file.remove(files[what])
     } else {
-      warning("No files to remove!")
+      warning("No files to remove! Run cache_info() to get an overview.")
     }
   } else {
-    warning("Nothing selected to remove!")
+    warning("Nothing selected to remove! Run cache_info() to get an overview.")
   }
   return(invisible(NULL))
-}
-
-#' @title .convert_to_json
-#' 
-#' @description Converts an object to JSON format.
-#' 
-#' @noRd
-.convert_to_json <- function(x) {
-  jsonlite::toJSON(
-    x,
-    dataframe = "columns",
-    Date = "ISO8601",
-    POSIXt = "string",
-    factor = "string",
-    complex = "string",
-    null = "null",
-    na = "null",
-    digits = 6,
-    pretty = TRUE,
-    force = TRUE
-  )
-}
-
-#' @title .check_analyses_argument
-#' 
-#' @description Checks the analyses argument as a character/integer vector to match analyses names. Returns a
-#' valid character vector with analysis names or `NULL` for non-matching. If `analyses` is `NULL`,
-#' returns all analysis names.
-#' 
-#' @noRd
-.check_analyses_argument <- function(obj, value) {
-  if (is.null(value)) {
-    names(obj)
-  } else {
-    if (!all(value %in% names(obj))) {
-      warning("Defined analyses not found!")
-      NULL
-    } else {
-      value
-    }
-  }
 }

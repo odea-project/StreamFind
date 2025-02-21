@@ -17,160 +17,60 @@
 #'
 clear_cache.character <- function(x, file = "cache.sqlite") {
   
-  if (!checkmate::test_character(x, null.ok = TRUE)) {
-    stop("Invalid input for 'x'. Please provide a character vector or an integer vector.")
+  caching_mode <- getOption("StreamFind_cache_mode")
+  
+  if (is.null(caching_mode)) {
+    warning(
+      "No caching mode set in options!",
+      " Use `set_cache_mode` to set the caching mode to rds or sqlite."
+    )
+    return(invisible(NULL))
   }
   
-  if (!file.exists(file)) {
-    message("\U2139 No cache file found, nothing to do.")
-    
-  } else if ("all" %in% x) {
-    
-    if (unlink(file) != 0) {
-      gc()
-      if (unlink(file) != 0) {
-        warning("Could not clear cache file!")
-      } else {
-        message("\U2713 All caches cleared!")
-      }
-    }
-  } else {
-    db <- .openCacheDBScope(file = file)
-    tables <- DBI::dbListTables(db)
-    
-    .get_info_string <- function(tables, db, mode = "message", el = NULL) {
-      tableRows <- unlist(sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))))
-      idx <- seq_len(length(tables))
-      formatted_strings <- sprintf("%d: %s (%d rows)\n", idx, tables, tableRows)
-      combined_string <- paste(formatted_strings, collapse = "")
-      
-      if (mode %in% "message") {
-        combined_string <- paste(
-          "Please specify which cache you want to remove. Available are:\n",
-          combined_string, "all (removes complete cache database)\n",
-          sep = ""
-        )
-      } else {
-        combined_string <- paste(
-          "No cache found that matches ", el , ". Available are:\n",
-          combined_string, "all (removes complete cache database)\n",
-          sep = ""
-        )
-      }
-      
-      combined_string
-    }
-    
-    if (length(tables) == 0) {
-      message("\U2139 Cache file is empty, nothing to do.")
-      
-    } else if (is.null(x)) {
-      message(.get_info_string(tables, db))
-      
-    } else {
-      if (length(x) == 0) {
-        message(.get_info_string(tables, db))
-        return(invisible(NULL))
-      }
-      
-      for (el in x) {
-        matchedTables <- grep(el, tables, value = TRUE)
-        if (length(matchedTables) > 0) {
-          for (tab in matchedTables) DBI::dbExecute(db, sprintf("DROP TABLE IF EXISTS %s", tab))
-          DBI::dbExecute(db, "VACUUM")
-          message("\U2713 Removed caches: ", paste0(matchedTables, collapse = ", "))
-        } else {
-          warning(.get_info_string(tables, db, mode = "warning", el = el))
-        }
-      }
-    }
+  checkmate::assert_choice(caching_mode, c("rds", "sqlite"))
+  
+  info <- get_cache_info(file)
+  
+  if (nrow(info) == 0) {
+    warning("No cache categories found!")
   }
-  invisible(NULL)
+  
+  if (caching_mode == "rds") {
+    .clear_cache_rds(x, file)
+  } else if (caching_mode == "sqlite") {
+    .clear_cache_sqlite(x, file)
+  } else {
+    stop("Unknown caching mode!")
+  }
 }
 
 #' @export
 #' @noRd
 clear_cache.numeric <- function(x, file = "cache.sqlite") {
   
-  x <- as.integer(x)
+  caching_mode <- getOption("StreamFind_cache_mode")
   
-  if (!checkmate::test_integer(x, null.ok = TRUE)) {
-    stop("Invalid input for 'x'. Please provide a character vector or an integer vector.")
+  if (is.null(caching_mode)) {
+    warning(
+      "No caching mode set in options!",
+      " Use `set_cache_mode` to set the caching mode to rds or sqlite."
+    )
+    return(invisible(NULL))
   }
   
-  if (!file.exists(file)) {
-    message("\U2139 No cache file found, nothing to do.")
-    
-  } else if ("all" %in% x) {
-    
-    if (unlink(file) != 0) {
-      gc()
-      if (unlink(file) != 0) {
-        warning("Could not clear cache file!")
-      } else {
-        message("\U2713 All caches cleared!")
-      }
-    }
+  checkmate::assert_choice(caching_mode, c("rds", "sqlite"))
+  
+  info <- get_cache_info(file)
+  
+  if (nrow(info) == 0) {
+    warning("No cache categories found!")
+  }
+  
+  if (caching_mode == "rds") {
+    .clear_cache_rds(x, file)
+  } else if (caching_mode == "sqlite") {
+    .clear_cache_sqlite(x, file)
   } else {
-    db <- .openCacheDBScope(file = file)
-    tables <- DBI::dbListTables(db)
-    
-    .get_info_string <- function(tables, db, mode = "message", el = NULL) {
-      tableRows <- unlist(sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))))
-      idx <- seq_len(length(tables))
-      formatted_strings <- sprintf("%d: %s (%d rows)\n", idx, tables, tableRows)
-      combined_string <- paste(formatted_strings, collapse = "")
-      
-      if (mode %in% "message") {
-        combined_string <- paste(
-          "Please specify which cache you want to remove. Available are:\n",
-          combined_string, "all (removes complete cache database)\n",
-          sep = ""
-        )
-      } else {
-        combined_string <- paste(
-          "No cache found that matches ", el , ". Available are:\n",
-          combined_string, "all (removes complete cache database)\n",
-          sep = ""
-        )
-      }
-      
-      combined_string
-    }
-    
-    if (length(tables) == 0) {
-      message("\U2139 Cache file is empty, nothing to do.")
-      
-    } else if (is.null(x)) {
-      message(.get_info_string(tables, db))
-      
-    } else {
-      if (is.integer(x)) {
-        if (any(x < 1) || any(x > length(tables))) {
-          message(.get_info_string(tables, db))
-          return(invisible(NULL))
-        }
-        x <- tables[x]
-      } else {
-        x <- integer()
-      }
-      
-      if (length(x) == 0) {
-        message(.get_info_string(tables, db))
-        return(invisible(NULL))
-      }
-      
-      for (el in x) {
-        matchedTables <- grep(el, tables, value = TRUE)
-        if (length(matchedTables) > 0) {
-          for (tab in matchedTables) DBI::dbExecute(db, sprintf("DROP TABLE IF EXISTS %s", tab))
-          DBI::dbExecute(db, "VACUUM")
-          message("\U2713 Removed caches: ", paste0(matchedTables, collapse = ", "))
-        } else {
-          warning(.get_info_string(tables, db, mode = "warning", el = el))
-        }
-      }
-    }
+    stop("Unknown caching mode!")
   }
-  invisible(NULL)
 }

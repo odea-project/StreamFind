@@ -358,6 +358,9 @@ MassSpecTargets <- S7::new_class(
       }
     }
     
+    browser()
+    browser()
+    
     if (is.null(targets)) targets <- data.table::data.table(
       "id" = 0,
       "mz" = 0,

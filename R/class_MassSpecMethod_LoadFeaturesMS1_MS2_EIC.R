@@ -77,24 +77,32 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS1_StreamFind) <- function(x, engine
     return(FALSE)
   }
   
-  if (!engine$has_features()) {
-    warning("There are no features! Not done.")
+  if (!engine$has_results_nts()) {
+    warning("No NTS object available! Not done.")
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  nts <- engine$NTS
   
-  feature_list <- NTS$feature_list
+  if (!nts$has_features) {
+    warning("NTS object does not have features! Not done.")
+    return(FALSE)
+  }
+  
+  feature_list <- nts$feature_list
   
   feature_list <- lapply(feature_list, function(z) {
-    if (!"ms1" %in% colnames(z)) z$ms1 <- rep(list(), nrow(z))
+    if (!"ms1" %in% colnames(z)) z$ms1 <- list(rep(data.table::data.table(), nrow(z)))
     z
   })
   
   parameters <- x$parameters
+  ana_info <- nts$analyses_info
   
   feature_list <- rcpp_ms_load_features_ms1(
-    analyses = engine$Analyses$analyses,
+    analyses_names = ana_info$analysis,
+    analyses_files = ana_info$file,
+    headers = nts$spectra_headers,
     features = feature_list,
     filtered = parameters$filtered,
     rtWindow = parameters$rtWindow,
@@ -194,19 +202,27 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS2_StreamFind) <- function(x, engine
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  nts <- engine$NTS
   
-  feature_list <- NTS$feature_list
+  if (!nts$has_features) {
+    warning("NTS object does not have features! Not done.")
+    return(FALSE)
+  }
+  
+  feature_list <- nts$feature_list
   
   feature_list <- lapply(feature_list, function(z) {
-    if (!"ms2" %in% colnames(z)) z$ms2 <- rep(list(), nrow(z))
+    if (!"ms2" %in% colnames(z)) z$ms2 <- list(rep(data.table::data.table(), nrow(z)))
     z
   })
   
   parameters <- x$parameters
+  ana_info <- nts$analyses_info
   
   feature_list <- rcpp_ms_load_features_ms2(
-    analyses = engine$Analyses$analyses,
+    analyses_names = ana_info$analysis,
+    analyses_files = ana_info$file,
+    headers = nts$spectra_headers,
     features = feature_list,
     filtered = parameters$filtered,
     minTracesIntensity = parameters$minIntensity,
@@ -300,24 +316,27 @@ S7::method(run, MassSpecMethod_LoadFeaturesEIC_StreamFind) <- function(x, engine
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  nts <- engine$NTS
 
-  if (!NTS@has_features) {
+  if (!nts$has_features) {
     warning("NTS object does not have features! Not done.")
     return(FALSE)
   }
   
-  feature_list <- NTS$feature_list
+  feature_list <- nts$feature_list
   
   feature_list <- lapply(feature_list, function(z) {
-    if (!"eic" %in% colnames(z)) z$eic <- rep(list(), nrow(z))
+    if (!"eic" %in% colnames(z)) z$eic <- list(rep(data.table::data.table(), nrow(z)))
     z
   })
     
   parameters <- x$parameters
+  ana_info <- nts$analyses_info
   
   feature_list <- rcpp_ms_load_features_eic(
-    engine$Analyses$analyses,
+    analyses_names = ana_info$analysis,
+    analyses_files = ana_info$file,
+    headers = nts$spectra_headers,
     feature_list,
     parameters$filtered,
     parameters$rtExpand,

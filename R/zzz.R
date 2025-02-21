@@ -2,16 +2,23 @@
   
   S7::methods_register()
   
-  if (!is.null(getOption("StreamFind_cache_mode"))) {
+  if (is.null(getOption("StreamFind_cache_mode"))) {
+    message("Setting cache mode to 'rds'.")
     options("StreamFind_cache_mode" = "rds")
   }
   
-  if (!is.null(getOption("StreamFind_cache_dir"))) {
-    options("StreamFind_cache_dir" = "cache")
+  if (is.null(getOption("StreamFind_cache_dir"))) {
+    if (getOption("StreamFind_cache_mode") %in% "rds") {
+      message("Setting cache directory to 'cache'.")
+      options("StreamFind_cache_dir" = "cache")
+    }
   }
   
-  if (!is.null(getOption("StreamFind_cache_file"))) {
-    options("StreamFind_cache_file" = "cache.sqlite")
+  if (is.null(getOption("StreamFind_cache_file"))) {
+    if (getOption("StreamFind_cache_mode") %in% "sqlite") {
+      message("Setting cache file to 'cache.sqlite'.")
+      options("StreamFind_cache_file" = "cache.sqlite")
+    }
   }
   
   if (!reticulate::virtualenv_exists("r-StreamFind")) {
