@@ -310,11 +310,15 @@ MassSpecTargets <- S7::new_class(
           }
         }
         
-        cols <- c("id", "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax", "analysis", "polarity")
+        cols <- c(
+          "id", "mz", "rt", "mobility", "mzmin", "mzmax",
+          "rtmin", "rtmax", "mobilitymin", "mobilitymax",
+          "analysis", "polarity"
+        )
         
         targets <- targets[, cols[cols %in% colnames(targets)], with = FALSE]
         
-        data.table::setcolorder(targets, c("id", "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax"))
+        data.table::setcolorder(targets, cols[1:10])
         
         if (any(duplicated(targets$id))) {
           
@@ -330,7 +334,11 @@ MassSpecTargets <- S7::new_class(
                 )
                 
                 if (any(duplicated(unique_id_pol))) {
-                  targets$id[targets$analysis == i] <- paste0(targets$id[targets$analysis == i], " ", targets$polarity[targets$analysis == i])
+                  targets$id[targets$analysis == i] <- paste0(
+                    targets$id[targets$analysis == i],
+                    " ",
+                    targets$polarity[targets$analysis == i]
+                  )
                 }
                 
                 unique_id_pol <- paste0(
@@ -340,10 +348,18 @@ MassSpecTargets <- S7::new_class(
                 )
                 
                 if (any(duplicated(unique_id_pol))) {
-                  targets$id[targets$analysis == i] <- paste0(targets$id[targets$analysis == i], " ", seq_len(nrow(targets[targets$analysis == i, ])))
+                  targets$id[targets$analysis == i] <- paste0(
+                    targets$id[targets$analysis == i],
+                    " ",
+                    seq_len(nrow(targets[targets$analysis == i, ]))
+                  )
                 }
               } else {
-                targets$id[targets$analysis == i] <- paste0(targets$id[targets$analysis == i], " ", seq_len(nrow(targets[targets$analysis == i, ])))
+                targets$id[targets$analysis == i] <- paste0(
+                  targets$id[targets$analysis == i],
+                  " ",
+                  seq_len(nrow(targets[targets$analysis == i, ]))
+                )
               }
             }
           } else if ("polarity" %in% colnames(targets)) {
@@ -358,29 +374,32 @@ MassSpecTargets <- S7::new_class(
       }
     }
     
-    browser()
-    browser()
-    
-    if (is.null(targets)) targets <- data.table::data.table(
-      "id" = 0,
-      "mz" = 0,
-      "rt" = 0,
-      "mobility" = 0,
-      "mzmin" = 0,
-      "mzmax" = 0,
-      "rtmin" = 0,
-      "rtmax" = 0,
-      "mobilitymin" = 0,
-      "mobilitymax" = 0,
-      "analysis" = analyses,
-      "polarity" = polarities
-    )
+    if (is.null(targets)) {
+      targets <- data.table::data.table(
+        "id" = 0,
+        "mz" = 0,
+        "rt" = 0,
+        "mobility" = 0,
+        "mzmin" = 0,
+        "mzmax" = 0,
+        "rtmin" = 0,
+        "rtmax" = 0,
+        "mobilitymin" = 0,
+        "mobilitymax" = 0,
+        "analysis" = analyses,
+        "polarity" = polarities
+      )
+    }
     
     S7::new_object(S7::S7_object(), targets = targets)
   },
     
   validator = function(self) {
-    cols <- c("id", "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax", "analysis", "polarity")
+    cols <- c(
+      "id", "mz", "rt", "mobility", "mzmin", "mzmax",
+      "rtmin", "rtmax", "mobilitymin", "mobilitymax",
+      "analysis", "polarity"
+    )
     checkmate::assert_data_frame(self@targets)
     checkmate::assert_true(all(cols %in% colnames(self@targets)))
     NULL

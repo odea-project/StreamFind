@@ -232,7 +232,9 @@
 #' @description From patRoon package to use within the CoreEngine.
 #'
 #' @noRd
-.openCacheDBScope <- withr::local_(function(x, file) .openCacheDB(file), function(x) .closeCacheDB(x))
+.openCacheDBScope <- withr::local_(
+  function(x, file) .openCacheDB(file), function(x) .closeCacheDB(x)
+)
 
 #' @title .save_cache_data
 #'
@@ -279,13 +281,28 @@
   df <- data.frame(d = I(list(fst::compress_fst(serialize(data, NULL, xdr = FALSE)))))
 
   .dbWithWriteTransaction(db, {
-    DBI::dbExecute(db, sprintf("CREATE TABLE IF NOT EXISTS %s (hash TEXT UNIQUE, data BLOB)", category))
+    DBI::dbExecute(
+      db,
+      sprintf("CREATE TABLE IF NOT EXISTS %s (hash TEXT UNIQUE, data BLOB)", category)
+    )
 
-    DBI::dbExecute(db, sprintf("INSERT OR IGNORE INTO %s VALUES ('%s', :d)", category, hash), params = df)
-    DBI::dbExecute(db, sprintf("UPDATE %s SET data=(:d) WHERE changes()=0 AND hash='%s'", category, hash), params = df)
+    DBI::dbExecute(
+      db,
+      sprintf("INSERT OR IGNORE INTO %s VALUES ('%s', :d)", category, hash),
+      params = df
+    )
+    
+    DBI::dbExecute(
+      db,
+      sprintf("UPDATE %s SET data=(:d) WHERE changes()=0 AND hash='%s'", category, hash),
+      params = df
+    )
 
     if (DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", category))[[1]] > 100000) {
-      DBI::dbExecute(db, sprintf("DELETE FROM %s WHERE ROWID in (SELECT min(ROWID) FROM %s)", category, category))
+      DBI::dbExecute(
+        db,
+        sprintf("DELETE FROM %s WHERE ROWID in (SELECT min(ROWID) FROM %s)", category, category)
+      )
     }
   })
 }
@@ -300,12 +317,25 @@
   db <- .openCacheDBScope(file = file)
   RSQLite::sqliteSetBusyHandler(db, 300 * 1000)
   ret <- NULL
-  if (nrow(DBI::dbGetQuery(db, sprintf("SELECT 1 FROM sqlite_master WHERE type='table' AND name='%s'", category))) > 0) {
+  size_db <- nrow(
+    DBI::dbGetQuery(
+      db,
+      sprintf("SELECT 1 FROM sqlite_master WHERE type='table' AND name='%s'", category)
+    )
+  ) 
+  if (size_db > 0) {
     if (length(hashes) == 1) {
       df <- DBI::dbGetQuery(db, sprintf("SELECT data FROM %s WHERE hash='%s'", category, hashes))
       if (nrow(df) > 0) ret <- lapply(df$data, function(x) unserialize(fst::decompress_fst(x)))
     } else {
-      df <- DBI::dbGetQuery(db, sprintf("SELECT hash,data FROM %s WHERE hash IN (%s)", category, paste0(sprintf("'%s'", hashes), collapse = ",")))
+      df <- DBI::dbGetQuery(
+        db,
+        sprintf(
+          "SELECT hash,data FROM %s WHERE hash IN (%s)",
+          category,
+          paste0(sprintf("'%s'", hashes), collapse = ",")
+        )
+      )
       if (nrow(df) > 0) {
         ret <- lapply(df$data, function(x) unserialize(fst::decompress_fst(x)))
         if (length(ret) > 0) {
@@ -355,7 +385,9 @@
   } else {
     db <- .openCacheDBScope(file = file)
     tables <- DBI::dbListTables(db)
-    tableRows <- unlist(sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))))
+    tableRows <- unlist(
+      sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab)))
+    )
     
     if (length(tables) == 0) {
       message("\U2139 Cache file is empty!")
@@ -398,7 +430,7 @@
   if (!file.exists(file)) {
     message("\U2139 No cache file found, nothing to do.")
     
-  } else if ("all" %in% x) {
+  } else if ("all" %in% what) {
     
     if (unlink(file) != 0) {
       gc()
@@ -413,7 +445,9 @@
     tables <- DBI::dbListTables(db)
     
     .get_info_string <- function(tables, db, mode = "message", el = NULL) {
-      tableRows <- unlist(sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))))
+      tableRows <- unlist(
+        sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab)))
+      )
       idx <- seq_len(length(tables))
       formatted_strings <- sprintf("%d: %s (%d rows)\n", idx, tables, tableRows)
       combined_string <- paste(formatted_strings, collapse = "")
@@ -438,7 +472,7 @@
     if (length(tables) == 0) {
       message("\U2139 Cache file is empty, nothing to do.")
       
-    } else if (is.null(x)) {
+    } else if (is.null(what)) {
       message(.get_info_string(tables, db))
       
     } else {
@@ -543,24 +577,24 @@
     if (length(files) > 0) {
       file.remove(files)
     } else {
-      warning("No files to remove! Run cache_info() to get an overview.")
+      warning("No files to remove! Run get_cache_info() to get an overview.")
     }
   } else if (is.character(what)) {
     files <- list.files(folder, pattern = paste0(what, "_.*.rds$"), full.names = TRUE)
     if (length(files) > 0) {
       file.remove(files)
     } else {
-      warning("No files to remove! Run cache_info() to get an overview.")
+      warning("No files to remove! Run get_cache_info() to get an overview.")
     }
   } else if (is.numeric(what)) {
     files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
     if (length(files) > 0) {
       file.remove(files[what])
     } else {
-      warning("No files to remove! Run cache_info() to get an overview.")
+      warning("No files to remove! Run get_cache_info() to get an overview.")
     }
   } else {
-    warning("Nothing selected to remove! Run cache_info() to get an overview.")
+    warning("Nothing selected to remove! Run get_cache_info() to get an overview.")
   }
   return(invisible(NULL))
 }

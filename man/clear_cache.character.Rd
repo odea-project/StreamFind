@@ -4,7 +4,7 @@
 \alias{clear_cache.character}
 \title{clear_cache}
 \usage{
-\method{clear_cache}{character}(x, file = "cache.sqlite")
+\method{clear_cache}{character}(x, file = getOption("StreamFind_cache_path"))
 }
 \arguments{
 \item{x}{A character vector with the names of the cache categories to clear. An integer

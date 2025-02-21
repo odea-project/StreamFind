@@ -7,17 +7,17 @@
     options("StreamFind_cache_mode" = "rds")
   }
   
-  if (is.null(getOption("StreamFind_cache_dir"))) {
+  if (is.null(getOption("StreamFind_cache_path"))) {
     if (getOption("StreamFind_cache_mode") %in% "rds") {
       message("Setting cache directory to 'cache'.")
-      options("StreamFind_cache_dir" = "cache")
+      options("StreamFind_cache_path" = "cache")
     }
   }
   
-  if (is.null(getOption("StreamFind_cache_file"))) {
+  if (is.null(getOption("StreamFind_cache_path"))) {
     if (getOption("StreamFind_cache_mode") %in% "sqlite") {
       message("Setting cache file to 'cache.sqlite'.")
-      options("StreamFind_cache_file" = "cache.sqlite")
+      options("StreamFind_cache_path" = "cache.sqlite")
     }
   }
   

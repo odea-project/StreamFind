@@ -15,7 +15,7 @@
 #'
 #' @export
 #'
-clear_cache.character <- function(x, file = "cache.sqlite") {
+clear_cache.character <- function(x, file = getOption("StreamFind_cache_path")) {
   
   caching_mode <- getOption("StreamFind_cache_mode")
   
@@ -46,7 +46,7 @@ clear_cache.character <- function(x, file = "cache.sqlite") {
 
 #' @export
 #' @noRd
-clear_cache.numeric <- function(x, file = "cache.sqlite") {
+clear_cache.numeric <- function(x, file = getOption("StreamFind_cache_path")) {
   
   caching_mode <- getOption("StreamFind_cache_mode")
   

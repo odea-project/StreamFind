@@ -579,11 +579,7 @@ S7::method(get_features, NTS) <- function(x,
     return(data.table::data.table())
   }
   
-  polarities <- unique(fts$polarity)
-  polarities[polarities == 0] <- "unkown"
-  polarities[polarities == 1] <- "positive"
-  polarities[polarities == -1] <- "negative"
-  
+  polarities <- x$spectra_polarity
   id <- NULL
   
   targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
@@ -4396,6 +4392,85 @@ S7::method(plot_internal_standards, NTS) <- function(x,
   final_plot
 }
 
+# MARK: get_compounds
+## get_compounds -----
+#' @export
+#' @noRd
+S7::method(get_compounds, NTS) <- function(x,
+                                           analyses = NULL,
+                                           features = NULL,
+                                           mass = NULL,
+                                           mz = NULL,
+                                           rt = NULL,
+                                           mobility = NULL,
+                                           ppm = 20,
+                                           sec = 60,
+                                           millisec = 5,
+                                           filtered = FALSE,
+                                           averaged = TRUE) {
+  if (!x$has_features) {
+    warning("Features not found!")
+    return(data.table::data.table())
+  }
+  
+  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
+  
+  if (nrow(fts) == 0) {
+    message("\U2717 Features not found for targets!")
+    return(data.table::data.table())
+  }
+  
+  compounds <- fts$compounds
+  
+  if (!averaged && x$has_groups) {
+    compounds <- Map(function(z, y) {
+      if (nrow(z) > 0) z$analysis <- y
+      z
+    }, compounds, fts$analysis)
+    
+    compounds <- Map(function(z, y) {
+      if (nrow(z) > 0) z$feature <- y
+      z
+    }, compounds, fts$feature)
+  }
+  
+  compounds <- Map(function(z, y) {
+    if (nrow(z) > 0) z$polarity <- y
+    z
+  }, compounds, fts$polarity)
+  
+  compounds <- Map(function(z, y) {
+    if (nrow(z) > 0) z$rt <- y
+    z
+  }, compounds, fts$rt)
+  
+  compounds <- Map(function(z, y) {
+    if (nrow(z) > 0) z$mass <- y
+    z
+  }, compounds, fts$mass)
+  
+  compounds <- Map(function(z, y) {
+    if (nrow(z) > 0) z$group <- y
+    z
+  }, compounds, fts$group)
+  
+  compounds <- compounds[vapply(compounds, function(z) nrow(z) > 0, FALSE)]
+  
+  compounds <- data.table::rbindlist(compounds, fill = TRUE)
+  
+  if (nrow(compounds) > 0) {
+    if (averaged && x$NTS$has_groups) {
+      data.table::setcolorder(compounds, c("group", "rt", "mass", "polarity", "compoundName"))
+      duplos <- duplicated(paste0(compounds$group, compounds$compoundName, compounds$polarity))
+      compounds <- compounds[!duplos]
+    } else {
+      cols_order <- c("analysis", "feature", "group", "rt", "mass", "polarity", "compoundName")
+      data.table::setcolorder(compounds, cols_order)
+    }
+  }
+  compounds
+}
+
 # MARK: get_fold_change
 ## get_fold_change -----
 #' @export
@@ -4479,14 +4554,7 @@ S7::method(get_fold_change, NTS) <- function(x,
     return(NULL)
   }
   
-  browser()
-  browser()
-  
   fc <- lapply(seq_len(nrow(comb)), function(z, comb, groups_dt, fillZerosWithLowerLimit) {
-    
-    print(z)
-    
-    if (z == 2) browser()
     
     anaIn <- comb$analysisIn[z]
     anaOut <- comb$analysisOut[z]
@@ -4522,8 +4590,6 @@ S7::method(get_fold_change, NTS) <- function(x,
   }, comb = comb, groups_dt = groups_dt, fillZerosWithLowerLimit = fillZerosWithLowerLimit)
   
   fc <- data.table::rbindlist(fc)
-  
-  browser()
   
   sel_nan <- is.nan(fc$fc)
   
@@ -4562,10 +4628,152 @@ S7::method(get_fold_change, NTS) <- function(x,
   fc
 }
 
-
-
-
-
+# MARK: plot_fold_change
+## plot_fold_change -----
+#' @export
+#' @noRd
+S7::method(plot_fold_change, NTS) <- function(x,
+                                              replicatesIn = NULL,
+                                              replicatesOut = NULL,
+                                              groups = NULL,
+                                              mass = NULL,
+                                              mz = NULL,
+                                              rt = NULL,
+                                              mobility = NULL,
+                                              ppm = 4,
+                                              sec = 10,
+                                              millisec = 5,
+                                              filtered = FALSE,
+                                              constantThreshold = 0.5,
+                                              eliminationThreshold = 0.2,
+                                              correctSuppression = FALSE,
+                                              fillZerosWithLowerLimit = FALSE,
+                                              lowerLimit = NA_real_,
+                                              normalized = TRUE,
+                                              yLab = NULL,
+                                              title = NULL,
+                                              interactive = TRUE,
+                                              showLegend = TRUE) {
+  fc <- get_fold_change(
+    x,
+    replicatesIn,
+    replicatesOut,
+    groups,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    filtered,
+    constantThreshold,
+    eliminationThreshold,
+    correctSuppression,
+    fillZerosWithLowerLimit,
+    lowerLimit
+  )
+  
+  if (is.null(fc)) {
+    return(NULL)
+  }
+  
+  if (nrow(fc) == 0) {
+    return(NULL)
+  }
+  
+  fc_summary_count <- fc[, .(count = .N), by = c("combination", "bondaries", "replicate_out")]
+  
+  if (is.null(yLab)) {
+    yLab <- "Number of feature groups (out / in)"
+  }
+  
+  if (!interactive) {
+    fc_summary_count$bondaries <- paste(
+      fc_summary_count$replicate_out,
+      fc_summary_count$bondaries,
+      sep = "\n"
+    )
+    
+    fc_summary_count$bondaries <- factor(
+      fc_summary_count$bondaries,
+      levels = unique(fc_summary_count$bondaries)
+    )
+    replicate_out <- NULL
+    bondaries <- NULL
+    fc_levels <- fc_summary_count[, .(replicate_out, bondaries)]
+    fc_levels <- unique(fc_levels)
+    
+    colours <- .get_colors(unique(fc_levels$replicate_out))
+    colours_key <- colours[fc_levels$replicate_out]
+    
+    if (normalized) {
+      fc_summary_count$uid <- paste0(
+        fc_summary_count$replicate_out, "_", fc_summary_count$combination
+      )
+      for (i in unique(fc_summary_count$uid)) {
+        sel <- fc_summary_count$uid %in% i
+        fc_summary_count$count[sel] <- fc_summary_count$count[sel] / sum(fc_summary_count$count[sel])
+      }
+    }
+    
+    graphics::boxplot(
+      fc_summary_count$count ~ fc_summary_count$bondaries,
+      data = fc_summary_count,
+      col = paste0(colours_key, "50"),
+      border = colours_key,
+      main = title,
+      xlab = NULL,
+      ylab = yLab,
+      outline = TRUE,
+      ylim = c(0, max(fc_summary_count$count) + 1)
+    )
+    # outliers <- graphics::boxplot(
+    #   fc_summary_count$count ~ fc_summary_count$bondaries,
+    #   data = fc_summary_count,
+    #   plot = FALSE
+    # )
+    # if (length(outliers$out) > 0) {
+    #   points(outliers$group, outliers$out, col = "red", pch = 4)
+    # }
+    if (showLegend) {
+      legend(
+        "topright",
+        legend = names(colours),
+        fill = colours
+      )
+    }
+    
+  } else {
+    
+    if (normalized) {
+      fc_summary_count$uid <- paste0(
+        fc_summary_count$replicate_out, "_", fc_summary_count$combination
+      )
+      for (i in unique(fc_summary_count$uid)) {
+        sel <- fc_summary_count$uid %in% i
+        fc_summary_count$count[sel] <- fc_summary_count$count[sel] / sum(fc_summary_count$count[sel])
+      }
+    }
+    
+    fig <- plotly::plot_ly(
+      data = fc_summary_count,
+      x = ~bondaries,
+      y = ~count,
+      color = ~replicate_out,
+      colors = .get_colors(unique(fc_summary_count$replicate_out)),
+      type = "box",
+      jitter = 0.03,
+      showlegend = showLegend
+    )
+    fig <- fig %>% plotly::layout(
+      title = title,
+      xaxis = list(title = ""),
+      yaxis = list(title = yLab, range = c(0, max(fc_summary_count$count) + 1))
+    )
+    fig
+  }
+}
 
 # MARK: patRoon Objects
 # patRoon Objects -----

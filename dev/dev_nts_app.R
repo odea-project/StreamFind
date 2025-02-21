@@ -73,8 +73,6 @@ blks <- c(
 ms$add_replicate_names(rpls)
 ms$add_blank_names(blks)
 
-
-
 # ms$run(MassSpecMethod_FindFeatures_xcms3_centwave())
 
 ms$run(
@@ -285,6 +283,21 @@ get_fold_change(
   replicatesIn = "influent_pos",
   replicatesOut = "effluent_pos"
 )
+
+plot_fold_change(
+  nts,
+  replicatesIn = "influent_pos",
+  replicatesOut = "effluent_pos",
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.25,
+  correctSuppression = TRUE,
+  fillZerosWithLowerLimit = TRUE,
+  lowerLimit = NA_real_,
+  normalized = TRUE,
+  showLegend = TRUE
+)
+
+get_compounds(nts)
 
 
 

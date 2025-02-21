@@ -4,7 +4,7 @@
 \alias{get_cache_info.character}
 \title{get_cache_info}
 \usage{
-\method{get_cache_info}{character}(x = "cache")
+\method{get_cache_info}{character}(x = getOption("StreamFind_cache_path"))
 }
 \arguments{
 \item{x}{A character string specifying the cache file or path to use. Default is a relative

@@ -14,7 +14,7 @@
 #'
 #' @export
 #'
-get_cache_info.character <- function(x = "cache") {
+get_cache_info.character <- function(x = getOption("StreamFind_cache_path")) {
   
   caching_mode <- getOption("StreamFind_cache_mode")
   
@@ -33,6 +33,48 @@ get_cache_info.character <- function(x = "cache") {
     .info_cache_rds(x)
   } else if (caching_mode == "sqlite") {
     .info_cache_sqlite(x)
+  } else {
+    stop("Unknown caching mode!")
+  }
+}
+
+#' @noRd
+.get_cache_info_missing <- function() {
+  caching_mode <- getOption("StreamFind_cache_mode")
+  
+  if (is.null(caching_mode)) {
+    warning(
+      "No caching mode set in options!",
+      " Use options('StreamFind_cache_mode' = 'rds') to set the caching mode to rds or ",
+      "options('StreamFind_cache_mode' = 'sqlite') to set the caching mode to sqlite."
+    )
+    return(invisible(NULL))
+  }
+  
+  checkmate::assert_choice(caching_mode, c("rds", "sqlite"))
+  
+  caching_path <- getOption("StreamFind_cache_path")
+  
+  if (is.null(caching_path)) {
+    stop("No cache path set in options!")
+  }
+  
+  if (caching_mode == "rds") {
+    
+    if (!dir.exists(caching_path)) {
+      stop("Cache path does not exist!")
+    }
+    
+    .info_cache_rds(caching_path)
+    
+  } else if (caching_mode == "sqlite") {
+    
+    if (!file.exists(caching_path)) {
+      stop("Cache file does not exist!")
+    }
+    
+    .info_cache_sqlite(caching_path)
+    
   } else {
     stop("Unknown caching mode!")
   }

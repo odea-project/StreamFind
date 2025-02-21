@@ -25,7 +25,10 @@ clear_cache <- function(x, ...) {
 
 #' @export
 #' @noRd
-get_cache_info <- function(x) {
+get_cache_info <- function(x, ...) {
+  if (missing(x)) {
+    return(.get_cache_info_missing())
+  }
   UseMethod("get_cache_info")
 }
 
