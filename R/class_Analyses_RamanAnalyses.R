@@ -1364,16 +1364,38 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
         message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
         format <- tools::file_ext(x)
         
+        if (format %in% c("sif", "json", "wdf", "sdf", "csv", "txt")) {
+          format <- "orpl_format"
+        }
+        
         switch(format,
 
           "asc" = {
             ana <- rcpp_parse_asc_file(x)
           },
 
-          "sif" = {
+          "orpl_format" = {
+            
             if (!reticulate::py_module_available("orpl")) {
-              warning("Python module 'orpl' not available for reading .sif files!")
-              return(NULL)
+              if (!reticulate::virtualenv_exists("r-StreamFind")) {
+                warning("Python virtual environment 'r-StreamFind' not found!")
+                return(NULL)
+              }
+              
+              tryCatch(
+                {
+                  reticulate::py_install("orpl", envname = "r-StreamFind")
+                },
+                error = function(e) {
+                  warning("Error installing Python module 'orpl'! The error is ", e)
+                  return(NULL)
+                }
+              )
+              
+              if (!reticulate::py_module_available("orpl")) {
+                warning("Python module 'orpl' not available for reading .sif files!")
+                return(NULL)
+              }
             }
 
             tryCatch(
@@ -1442,74 +1464,8 @@ S7::method(plot_chromatograms_peaks, RamanAnalyses) <- function(x,
           },
 
           "default" = {
-            if (!reticulate::py_module_available("orpl")) {
-              warning("Python module 'orpl' not available for reading data files!")
-              return(NULL)
-            }
-            
-            tryCatch(
-              {
-                orpl_module <- reticulate::import("orpl")
-                orlp_file_io <- orpl_module$file_io
-                sif_file <- orlp_file_io$load_file(x)
-                sif_file_name <- basename(tools::file_path_sans_ext(x))
-                
-                spectra <- sif_file$accumulations
-                detector_dimension <- nrow(spectra)
-                pixels <- seq_len(detector_dimension)
-                calibration_data <- sif_file$metadata$details[["Calibration_data"]]
-                ex_wavelength <- sif_file$metadata$details[["RamanExWavelength"]]
-                calibration_nm <- rep(NA_real_, detector_dimension)
-                
-                if (calibration_data[1] == 0) {
-                  calibration_data[1] <- ex_wavelength
-                }
-                
-                for (i in seq_len(detector_dimension)) {
-                  calibration_nm[i] <- calibration_data[1]
-                  for (j in 2:length(calibration_data)) {
-                    if (calibration_data[j] > 0) {
-                      calibration_nm[i] <- calibration_nm[i] + calibration_data[j] * pixels[i]^(j - 1)
-                    }
-                  }
-                }
-                
-                shifts <- ((1 / ex_wavelength) - (1 / calibration_nm)) * 1e7
-                shifts <- round(shifts, digits = 0)
-                
-                exposure_time <- as.numeric(sif_file$metadata$exposure_time)
-                
-                spectra <- lapply(seq_len(ncol(spectra)), function(x, shifts, exposure_time) {
-                  data.table::data.table(
-                    "rt" = x * exposure_time,
-                    "shift" = shifts,
-                    "intensity" = rev(spectra[, x])
-                  )
-                }, shifts = shifts, exposure_time = exposure_time)
-                
-                spectra <- data.table::rbindlist(spectra)
-                
-                metadata <- reticulate::py_to_r(sif_file$metadata)
-                
-                ana <- list(
-                  "name" = sif_file_name,
-                  "replicate" = sif_file_name,
-                  "blank" = NA_character_,
-                  "concentration" = NA_real_,
-                  "reference" = NA_character_,
-                  "file" = x,
-                  "type" = "Raman",
-                  "metadata" = metadata,
-                  "spectra" = spectra
-                )
-                
-                class(ana) <- c("RamanAnalysis", "Analysis")
-              },
-              error = function(e) {
-                warning("Error loading file! \n", e)
-                return(NULL)
-              }
-            )
+            warning("File format not supported!")
+            return(NULL)
           }
         )
 

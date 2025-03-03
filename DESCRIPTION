@@ -80,19 +80,12 @@ SystemRequirements: GNU make, C++17
 LinkingTo: Rhdf5lib, Rcpp
 RdMacros: 
     Rdpack
-Config/reticulate:
-  list(
-    packages = list(
-      list(package = "orplib")
-    )
-  )
 Collate: 
     'global_import_namespace.R'
     'RcppExports.R'
     'generics.R'
     'utils_pipe.R'
     'utils_general.R'
-    'utils_plots.R'
     'utils_fct_assets.R'
     'fct_get_cache_info.R'
     'fct_clear_cache.R'

@@ -1002,8 +1002,45 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
     },
     
-    # MARK: NTS Methods
-    # NTS Methods -----
+    # MARK: NTS
+    # NTS -----
+    
+    # MARK: get_features_count
+    ## get_features_count -----
+    #' @description Gets a data.table with the features count from NTS results.
+    get_features_count = function(analyses = NULL, filtered = FALSE) {
+      if (self$has_results_nts()) {
+        StreamFind::get_features_count(
+          self$NTS, analyses, filtered
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
+    # MARK: plot_features_count
+    ## plot_features_count -----
+    #' @description Plots the features count from NTS results.
+    #' 
+    #' @param showHoverText Logical (length 1). Set to \code{TRUE} to show hover text.
+    #' 
+    plot_features_count = function(analyses = NULL,
+                                   filtered = FALSE,
+                                   yLab = NULL,
+                                   title = NULL,
+                                   colorBy = "analyses",
+                                   showLegend = TRUE,
+                                   showHoverText = TRUE) {
+      if (self$has_results_nts()) {
+        StreamFind::plot_features_count(
+          self$NTS, analyses, filtered, yLab, title, colorBy, showLegend, showHoverText
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
+    },
     
     # MARK: get_features
     ## get_features -----
@@ -1025,6 +1062,72 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
         )
       } else {
         warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
+    # MARK: map_features
+    ## map_features -----
+    #' @description Plots a map of the retention time vs \emph{m/z} of features from analyses.
+    #' 
+    #' @param neutral_mass Logical (length 1). Set to \code{TRUE} to use neutral mass.
+    #' 
+    map_features = function(analyses = NULL,
+                            features = NULL,
+                            mass = NULL,
+                            mz = NULL,
+                            rt = NULL,
+                            mobility = NULL,
+                            ppm = 20,
+                            sec = 60,
+                            millisec = 5,
+                            neutral_mass = TRUE,
+                            filtered = FALSE,
+                            legendNames = NULL,
+                            xLab = NULL,
+                            yLab = NULL,
+                            title = NULL,
+                            colorBy = "replicates+targets",
+                            showLegend = TRUE,
+                            interactive = TRUE,
+                            renderEngine = "webgl") {
+      if (self$has_results_nts()) {
+        StreamFind::map_features(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, neutral_mass,
+          filtered, legendNames, xLab, yLab, title, colorBy, showLegend, interactive, renderEngine
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: map_features_intensity
+    ## map_features_intensity -----
+    #' @description Plots a map of the retention time vs \emph{m/z} of features from analyses.
+    map_features_intensity = function(analyses = NULL,
+                                      features = NULL,
+                                      mass = NULL,
+                                      mz = NULL,
+                                      rt = NULL,
+                                      mobility = NULL,
+                                      ppm = 20,
+                                      sec = 60,
+                                      millisec = 5,
+                                      filtered = FALSE,
+                                      legendNames = NULL,
+                                      xLab = NULL,
+                                      yLab = NULL,
+                                      title = NULL,
+                                      colorBy = "replicates+targets",
+                                      renderEngine = "webgl") {
+      if (self$has_results_nts()) {
+        StreamFind::map_features_intensity(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          filtered, legendNames, xLab, yLab, title, colorBy, renderEngine
+        )
+      } else {
+        warning("No NTS results available! Not done.")
         return(NULL)
       }
     },
@@ -1041,15 +1144,54 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 ppm = 20,
                                 sec = 60,
                                 millisec = 5,
-                                rtExpand = 120,
-                                mzExpand = NULL,
+                                rtExpand = 0,
+                                mzExpand = 0,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      StreamFind::get_features_eic(
-        self$Analyses,
-        analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
-        rtExpand, mzExpand, filtered, useLoadedData
-      )
+      if (self$has_results_nts()) {
+        StreamFind::get_features_eic(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          rtExpand, mzExpand, filtered, useLoadedData
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
+    # MARK: plot_features
+    ## plot_features -----
+    #' @description Plots features from analyses.
+    plot_features = function(analyses = NULL,
+                             features = NULL,
+                             mass = NULL,
+                             mz = NULL,
+                             rt = NULL,
+                             mobility = NULL,
+                             ppm = 20,
+                             sec = 60,
+                             millisec = 5,
+                             rtExpand = 120,
+                             mzExpand = 0.001,
+                             useLoadedData = TRUE,
+                             filtered = FALSE,
+                             legendNames = NULL,
+                             xLab = NULL,
+                             yLab = NULL,
+                             title = NULL,
+                             colorBy = "targets",
+                             interactive = TRUE,
+                             renderEngine = "webgl") {
+      if (self$has_results_nts()) {
+        StreamFind::plot_features(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          rtExpand, mzExpand, useLoadedData, filtered, legendNames, xLab, yLab, title, colorBy,
+          interactive, renderEngine
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     },
     
     # MARK: get_features_ms1
@@ -1072,11 +1214,53 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 minIntensity = 1000,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      StreamFind::get_features_ms1(
-        self$Analyses,
-        analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
-        rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData
-      )
+      if (self$has_results_nts()) {
+        StreamFind::get_features_ms1(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
+    # MARK: plot_features_ms1
+    ## plot_features_ms1 -----
+    #' @description Plots level 1 spectra from features in the analyses.
+    plot_features_ms1 = function(analyses = NULL,
+                                 features = NULL,
+                                 mass = NULL,
+                                 mz = NULL,
+                                 rt = NULL,
+                                 mobility = NULL,
+                                 ppm = 20,
+                                 sec = 60,
+                                 millisec = 5,
+                                 rtWindow = c(-2, 2),
+                                 mzWindow = c(-5, 100),
+                                 mzClust = 0.003,
+                                 presence = 0.8,
+                                 minIntensity = 1000,
+                                 filtered = FALSE,
+                                 useLoadedData = TRUE,
+                                 legendNames = NULL,
+                                 xLab = NULL,
+                                 yLab = NULL,
+                                 title = NULL,
+                                 colorBy = "targets",
+                                 showText = FALSE,
+                                 interactive = TRUE) {
+      if (self$has_results_nts()) {
+        StreamFind::plot_features_ms1(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow,
+          mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData, legendNames,
+          xLab, yLab, title, colorBy, showText, interactive
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     },
     
     # MARK: get_features_ms2
@@ -1098,11 +1282,52 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 minIntensity = 0,
                                 filtered = FALSE,
                                 useLoadedData = TRUE) {
-      StreamFind::get_features_ms2(
-        self$Analyses, analyses,
-        features, mass, mz, rt, mobility, ppm, sec, millisec,
-        isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData
-      )
+      if (self$has_results_nts()) {
+        StreamFind::get_features_ms2(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
+    # MARK: plot_features_ms2
+    ## plot_features_ms2 -----
+    #' @description Plots level 2 spectra from features in the analyses.
+    plot_features_ms2 = function(analyses = NULL,
+                                 features = NULL,
+                                 mass = NULL,
+                                 mz = NULL,
+                                 rt = NULL,
+                                 mobility = NULL,
+                                 ppm = 20,
+                                 sec = 60,
+                                 millisec = 5,
+                                 isolationWindow = 1.3,
+                                 mzClust = 0.005,
+                                 presence = 0.8,
+                                 minIntensity = 0,
+                                 filtered = FALSE,
+                                 useLoadedData = TRUE,
+                                 legendNames = NULL,
+                                 xLab = NULL,
+                                 yLab = NULL,
+                                 title = NULL,
+                                 colorBy = "targets",
+                                 showText = TRUE,
+                                 interactive = TRUE) {
+      if (self$has_results_nts()) {
+        StreamFind::plot_features_ms2(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
+          mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab, title,
+          colorBy, showText, interactive
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     },
     
     # MARK: get_groups
@@ -1128,12 +1353,122 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                           sdValues = FALSE,
                           metadata = FALSE,
                           correctSuppression = FALSE) {
-      StreamFind::get_groups(
-        self$Analyses,
-        groups, mass, mz, rt, mobility, ppm, sec, millisec,
-        filtered, intensities, average, sdValues, metadata,
-        correctSuppression
-      )
+      if (self$has_results_nts()) {
+        StreamFind::get_groups(
+          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          filtered, intensities, average, sdValues, metadata, correctSuppression
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
+    # MARK: plot_groups
+    ## plot_groups -----
+    #' @description Plots feature groups EIC.
+    plot_groups = function(groups = NULL,
+                           mass = NULL,
+                           mz = NULL,
+                           rt = NULL,
+                           mobility = NULL,
+                           ppm = 20,
+                           sec = 60,
+                           millisec = 5,
+                           rtExpand = 15,
+                           mzExpand = 0.001,
+                           filtered = FALSE,
+                           legendNames = NULL,
+                           xLab = NULL,
+                           yLab = NULL,
+                           title = NULL,
+                           colorBy = "targets",
+                           interactive = TRUE,
+                           renderEngine = "webgl") {
+      if (self$has_results_nts()) {
+        StreamFind::plot_groups(
+          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand,
+          filtered, legendNames, xLab, yLab, title, colorBy, interactive, renderEngine
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: plot_groups_overview
+    ## plot_groups_overview -----
+    #' @description Method to give an overview of the EIC, alignment and intensity variance from
+    #' features within target feature groups.
+    #'
+    #' @param correctSuppression Logical (length 1). When `TRUE` and suppression factor is available 
+    #' the intensities are corrected for suppression.
+    #' @param heights A numeric vector of length 3 to control the height of the first, second and
+    #' third plot, respectively.
+    #'
+    plot_groups_overview = function(analyses = NULL,
+                                    groups = NULL,
+                                    mass = NULL,
+                                    mz = NULL,
+                                    rt = NULL,
+                                    mobility = NULL,
+                                    ppm = 20,
+                                    sec = 60,
+                                    millisec = 5,
+                                    rtExpand = 120,
+                                    mzExpand = 0.005,
+                                    useLoadedData = TRUE,
+                                    correctSuppression = TRUE,
+                                    filtered = FALSE,
+                                    legendNames = NULL,
+                                    title = NULL,
+                                    heights = c(0.35, 0.5, 0.15),
+                                    renderEngine = "webgl") {
+      if (self$has_results_nts()) {
+        StreamFind::plot_groups_overview(
+          self$NTS, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand,
+          mzExpand, useLoadedData, correctSuppression, filtered, legendNames, title, heights,
+          renderEngine
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: plot_groups_profile
+    ## plot_groups_profile -----
+    #' @description Method to plot the intensity profile of feature groups across the analyses.
+    #' 
+    #' @param averaged Logical (length 1). When `TRUE` the profile intensities are averaged.
+    #' @param normalized Logical (length 1). When `TRUE` the profile intensities are normalized.
+    #'
+    plot_groups_profile = function(analyses = NULL,
+                                   groups = NULL,
+                                   mass = NULL,
+                                   mz = NULL,
+                                   rt = NULL,
+                                   mobility = NULL,
+                                   ppm = 20,
+                                   sec = 60,
+                                   millisec = 5,
+                                   filtered = FALSE,
+                                   correctSuppression = TRUE,
+                                   averaged = FALSE,
+                                   normalized = TRUE,
+                                   legendNames = NULL,
+                                   yLab = NULL,
+                                   title = NULL,
+                                   renderEngine = "webgl") {
+      if (self$has_results_nts()) {
+        StreamFind::plot_groups_profile(
+          self$NTS, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
+          correctSuppression, normalized, legendNames, yLab, title, renderEngine
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     },
     
     # MARK: get_groups_ms1
@@ -1158,465 +1493,20 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               minIntensity = 1000,
                               groupBy = "groups",
                               filtered = FALSE) {
-      StreamFind::get_groups_ms1(
-        self$Analyses,
-        groups, mass, mz, rt, mobility, ppm, sec, millisec,
-        rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
-        useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
-      )
-    },
-    
-    # MARK: get_groups_ms2
-    ## get_groups_ms2 -----
-    #' @description Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
-    get_groups_ms2 = function(groups = NULL,
-                              mass = NULL,
-                              mz = NULL,
-                              rt = NULL,
-                              mobility = NULL,
-                              ppm = 20,
-                              sec = 60,
-                              millisec = 5,
-                              isolationWindow = 1.3,
-                              mzClustFeatures = 0.003,
-                              presenceFeatures = 0.8,
-                              minIntensityFeatures = 100,
-                              useLoadedData = TRUE,
-                              mzClust = 0.003,
-                              presence = 0.8,
-                              minIntensity = 100,
-                              groupBy = "groups",
-                              filtered = FALSE) {
-      StreamFind::get_groups_ms2(
-        self$Analyses,
-        groups, mass, mz, rt, mobility, ppm, sec, millisec,
-        isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
-        useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
-      )
-    },
-    
-    # MARK: get_MSPeakLists
-    ## get_MSPeakLists -----
-    #' @description Creates S4 class `MSPeakLists`. Note that feature groups are required. The MS and MSMS spectra
-    #' of each feature are then average by \pkg{patRoon} to produce the feature group spectra using the parameters
-    #' of the function \link[patRoon]{getDefAvgPListParams}.
-    #'
-    #' @param useLoadedData Logical of length one. When `TRUE` and both MS1 and MS2 are loaded to features,
-    #' these are used otherwise the native function `generateMSPeakLists` from \pkg{patRoon} is used instead.
-    #' @param maxMSRtWindow Maximum chromatographic peak window used for spectrum
-    #' averaging (in seconds, +/- retention time). If NULL all spectra from a feature
-    #' will be taken into account. Lower to decrease processing time.
-    #' @param precursorMzWindow The m/z window (in Da) to find MS/MS spectra of a precursor.
-    #' This is typically used for Data-Dependent like MS/MS data and should correspond to the
-    #' isolation m/z window (i.e. +/- the precursor m/z) that was used to collect the data.
-    #' For Data-Independent MS/MS experiments, where precursor ions are not isolated prior to
-    #' fragmentation (e.g. bbCID, MSe, all-ion, ...) the value should be NULL.
-    #' @param clusterMzWindow m/z window (in Da) used for clustering m/z values
-    #' when spectra are averaged. For method="hclust" this corresponds to the
-    #' cluster height, while for method="distance" this value is used to find
-    #' nearby masses (+/- window). Too small windows will prevent clustering
-    #' m/z values (thus erroneously treating equal masses along spectra as
-    #' different), whereas too big windows may cluster unrelated m/z values
-    #' from different or even the same spectrum together.
-    #' @param topMost Only retain this maximum number of MS peaks when generating
-    #' averaged spectra. Lowering this number may exclude more irrelevant (noisy)
-    #' MS peaks and decrease processing time, whereas higher values may avoid
-    #' excluding lower intense MS peaks that may still be of interest.
-    #' @param minIntensityPre MS peaks with intensities below this value will
-    #' be removed (applied prior to selection by `topMost`) before averaging.
-    #' @param minIntensityPost MS peaks with intensities below this value will
-    #' be removed after averaging.
-    #' @param avgFun Function that is used to calculate average m/z values.
-    #' @param method Method used for producing averaged MS spectra. Valid
-    #' values are "hclust", used for hierarchical clustering (using the
-    #' fastcluster package), and "distance", to use the between peak distance.
-    #' The latter method may reduces processing time and memory requirements,
-    #' at the potential cost of reduced accuracy.
-    #' @param pruneMissingPrecursorMS For MS data only: if TRUE then peak lists
-    #' without a precursor peak are removed. Note that even when this is set to
-    #' FALSE, functionality that relies on MS (not MS/MS) peak lists (e.g.
-    #' formulae calculation) will still skip calculation if a precursor is not
-    #' found.
-    #' @param retainPrecursorMSMS For MS/MS data only: if TRUE then always
-    #' retain the precursor mass peak even if is not among the `topMost` peaks.
-    #' Note that MS precursor mass peaks are always kept. Furthermore, note
-    #' that precursor peaks in both MS and MS/MS data may still be removed by
-    #' intensity thresholds (this is unlike the filter method function).
-    #'
-    get_MSPeakLists = function(useLoadedData = TRUE,
-                               maxMSRtWindow = 10,
-                               precursorMzWindow = 4,
-                               clusterMzWindow = 0.005,
-                               topMost = 100,
-                               minIntensityPre = 10,
-                               minIntensityPost = 10,
-                               avgFun = mean,
-                               method = "distance",
-                               retainPrecursorMSMS = TRUE) {
-      if (!requireNamespace("patRoon", quietly = TRUE)) {
-        warning("Package patRoon is not installed! Install it via https://github.com/rickhelmus/patRoon.")
-        return(NULL)
-      }
-
-      if (!useLoadedData) {
-        if (!self$has_groups()) {
-          warning("Feature groups not found! Not loaded.")
-          return(NULL)
-        }
-
-        av_args <- list(
-          clusterMzWindow = clusterMzWindow,
-          topMost = topMost,
-          minIntensityPre = minIntensityPre,
-          minIntensityPost = minIntensityPost,
-          avgFun = avgFun,
-          method = method,
-          pruneMissingPrecursorMS = TRUE,
-          retainPrecursorMSMS = retainPrecursorMSMS
+      if (self$has_results_nts()) {
+        StreamFind::get_groups_ms1(
+          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
+          useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
         )
-
-        mspl <- patRoon::generateMSPeakLists(
-          self$NTS$features,
-          algorithm = "mzr",
-          maxMSRtWindow = maxMSRtWindow,
-          precursorMzWindow = precursorMzWindow,
-          topMost = topMost,
-          avgFeatParams = av_args,
-          avgFGroupParams = av_args
-        )
-
-        return(mspl)
-      }
-
-      if (!any(c(self$has_loaded_features_ms1(), self$has_loaded_features_ms2()))) {
-        warning("Features MS1 and/or MS2 not loaded! Not done.")
-        return(NULL)
-      }
-
-      if (self$has_groups()) {
-        parameters <- list(
-          clusterMzWindow = clusterMzWindow,
-          topMost = topMost,
-          minIntensityPre = minIntensityPre,
-          minIntensityPost = minIntensityPost,
-          avgFun = avgFun,
-          method = method
-        )
-
-        plfinal <- .convert_ms1_ms2_columns_to_MSPeakLists(self, parameters)
-
-        plfinal
       } else {
-        warning("No feature groups found to make the MSPeakLists!")
-        NULL
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
       }
-    },
-
-    # MARK: get_components
-    ## get_components -----
-    #' @description Gets feature components (i.e., isotope and adduct related to a main feature) in the analyses.
-    get_components = function(analyses = NULL,
-                              features = NULL,
-                              mass = NULL,
-                              mz = NULL,
-                              rt = NULL,
-                              mobility = NULL,
-                              ppm = 20,
-                              sec = 60,
-                              millisec = 5,
-                              filtered = FALSE) {
-      StreamFind::get_components(self$Analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-    },
-
-    # MARK: get_suspects
-    ## get_suspects -----
-    #' @description Gets a data.table of suspects from features according to a defined database and mass (`ppm`)
-    #' and time (`sec`) deviations.
-    #'
-    #' @param database A data.frame with at least the columns name and mass, indicating the name and neutral
-    #' monoisotopic mass of the suspect targets.
-    #'
-    #' @details The `ppm` and `sec` which indicate the mass (im ppm) and time (in seconds) deviations applied during
-    #' the screening.
-    #'
-    get_suspects = function(analyses = NULL,
-                            database = NULL,
-                            features = NULL,
-                            mass = NULL,
-                            mz = NULL,
-                            rt = NULL,
-                            mobility = NULL,
-                            ppm = 5,
-                            sec = 10,
-                            millisec = 5,
-                            ppmMS2 = 10,
-                            minFragments = 3,
-                            isolationWindow = 1.3,
-                            mzClust = 0.003,
-                            presence = 0.8,
-                            minIntensity = 0,
-                            filtered = FALSE,
-                            onGroups = TRUE) {
-      StreamFind::get_suspects(
-        self$Analyses,
-        analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
-        ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, onGroups
-      )
-    },
-
-    # MARK: get_internal_standards
-    ## get_internal_standards -----
-    #' @description Gets a data.table with internal standards found by the `find_internal_standards` module.
-    #'
-    #' @param average Logical of length one. When `TRUE` and groups are present, internal standards are averaged per
-    #' analysis replicate group.
-    #'
-    get_internal_standards = function(average = TRUE) {
-      StreamFind::get_internal_standards(self$Analyses, average)
     },
     
-    # MARK: get_fold_change
-    ## get_fold_change -----
-    #' @description Gets a data.table with fold-change analysis between the `replicatesIn` and `replicatesOut`.
-    #' 
-    #' @param replicatesIn Character vector with the names of the replicates to be considered as the denominator.
-    #' @param replicatesOut Character vector with the names of the replicates to be considered as the numerator.
-    #' @param constantThreshold Numeric of length one. The threshold to consider a feature as constant.
-    #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as eliminated.
-    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when available) is used to 
-    #' correct the intensity before fold-change analysis.
-    #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled with the lower limit.
-    #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
-    #' 
-    get_fold_change = function(replicatesIn = NULL,
-                               replicatesOut = NULL,
-                               groups = NULL,
-                               mass = NULL,
-                               mz = NULL,
-                               rt = NULL,
-                               mobility = NULL,
-                               ppm = 4,
-                               sec = 10,
-                               millisec = 5,
-                               filtered = FALSE,
-                               constantThreshold = 0.5,
-                               eliminationThreshold = 0.2,
-                               correctSuppression = FALSE,
-                               fillZerosWithLowerLimit = FALSE,
-                               lowerLimit = NA_real_) {
-      StreamFind::get_fold_change(
-        self$Analyses,
-        replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
-        filtered, constantThreshold, eliminationThreshold, correctSuppression,
-        fillZerosWithLowerLimit, lowerLimit
-      )
-    },
-
-    # MARK: has_features
-    ## _has_features -----
-    #' @description Checks if there are features from NTS results, returning `TRUE` or `FALSE`.
-    has_features = function() {
-      if (self$has_results_nts()) {
-        if (self$NTS$has_features) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
-    # MARK: has_groups
-    ## _has_groups -----
-    #' @description Checks if there are feature groups from NTS results, returning `TRUE` or `FALSE`.
-    has_groups = function() {
-      if (self$has_results_nts()) {
-        if (self$NTS$has_groups) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
-    # MARK: has_formulas
-    ## _has_formulas -----
-    #' @description Checks if there are formulas assigned to feature groups, returning `TRUE` or `FALSE`.
-    has_formulas = function() {
-      if (self$has_results_nts()) {
-        if (length(self$NTS$formulas) > 0) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
-    # MARK: has_compounds
-    ## _has_compounds -----
-    #' @description Checks if there are compounds assigned to feature groups, returning `TRUE` or `FALSE`.
-    has_compounds = function() {
-      if (self$has_results_nts()) {
-        if (length(self$NTS$compounds) > 0) {
-          return(TRUE)
-        }
-      }
-      FALSE
-    },
-
-    # MARK: plot_features
-    ## _plot_features -----
-    #' @description Plots features from analyses.
-    plot_features = function(analyses = NULL,
-                             features = NULL,
-                             mass = NULL,
-                             mz = NULL,
-                             rt = NULL,
-                             mobility = NULL,
-                             ppm = 20,
-                             sec = 60,
-                             millisec = 5,
-                             rtExpand = 120,
-                             mzExpand = 0.001,
-                             useLoadedData = TRUE,
-                             filtered = FALSE,
-                             legendNames = NULL,
-                             xLab = NULL,
-                             yLab = NULL,
-                             title = NULL,
-                             colorBy = "targets",
-                             showLegend = TRUE,
-                             xlim = NULL,
-                             ylim = NULL,
-                             cex = 0.6,
-                             interactive = TRUE) {
-      StreamFind::plot_features(
-        self$Analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand,
-        useLoadedData, filtered, legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex,
-        interactive
-      )
-    },
-
-    # MARK: map_features
-    ## _map_features -----
-    #' @description Plots a map of the retention time vs \emph{m/z} of features from analyses.
-    map_features = function(analyses = NULL,
-                            features = NULL,
-                            mass = NULL,
-                            mz = NULL,
-                            rt = NULL,
-                            mobility = NULL,
-                            ppm = 20,
-                            sec = 60,
-                            millisec = 5,
-                            filtered = FALSE,
-                            legendNames = NULL,
-                            xLab = NULL,
-                            yLab = NULL,
-                            title = NULL,
-                            colorBy = "targets",
-                            showLegend = TRUE,
-                            xlim = 30,
-                            ylim = 0.05,
-                            cex = 0.6,
-                            interactive = TRUE) {
-      StreamFind::map_features(
-        self$Analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-        legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive
-      )
-    },
-
-    # MARK: plot_features_ms1
-    ## _plot_features_ms1 -----
-    #' @description Plots level 1 spectra from features in the analyses.
-    plot_features_ms1 = function(analyses = NULL,
-                                 features = NULL,
-                                 mass = NULL,
-                                 mz = NULL,
-                                 rt = NULL,
-                                 mobility = NULL,
-                                 ppm = 20,
-                                 sec = 60,
-                                 millisec = 5,
-                                 rtWindow = c(-2, 2),
-                                 mzWindow = c(-5, 100),
-                                 mzClust = 0.003,
-                                 presence = 0.8,
-                                 minIntensity = 1000,
-                                 filtered = FALSE,
-                                 useLoadedData = TRUE,
-                                 legendNames = NULL,
-                                 xLab = NULL,
-                                 yLab = NULL,
-                                 title = NULL,
-                                 colorBy = "targets",
-                                 interactive = TRUE) {
-      StreamFind::plot_features_ms1(
-        self$Analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow,
-        mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab,
-        title, colorBy, interactive
-      )
-    },
-
-    # MARK: plot_features_ms2
-    ## _plot_features_ms2 -----
-    #' @description Plots level 2 spectra from features in the analyses.
-    plot_features_ms2 = function(analyses = NULL,
-                                 features = NULL,
-                                 mass = NULL,
-                                 mz = NULL,
-                                 rt = NULL,
-                                 mobility = NULL,
-                                 ppm = 20,
-                                 sec = 60,
-                                 millisec = 5,
-                                 isolationWindow = 1.3,
-                                 mzClust = 0.005,
-                                 presence = 0.8,
-                                 minIntensity = 0,
-                                 filtered = FALSE,
-                                 useLoadedData = TRUE,
-                                 legendNames = NULL,
-                                 xLab = NULL,
-                                 yLab = NULL,
-                                 title = NULL,
-                                 colorBy = "targets",
-                                 interactive = TRUE) {
-      StreamFind::plot_features_ms2(
-        self$Analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
-        mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab, title,
-        colorBy, interactive
-      )
-    },
-
-    # MARK: plot_groups
-    ## _plot_groups -----
-    #' @description Plots feature groups EIC.
-    plot_groups = function(groups = NULL,
-                           mass = NULL,
-                           mz = NULL,
-                           rt = NULL,
-                           mobility = NULL,
-                           ppm = 20,
-                           sec = 60,
-                           millisec = 5,
-                           rtExpand = 15,
-                           mzExpand = 0.001,
-                           filtered = FALSE,
-                           legendNames = NULL,
-                           xLab = NULL,
-                           yLab = NULL,
-                           title = NULL,
-                           colorBy = "targets",
-                           showLegend = TRUE,
-                           xlim = NULL,
-                           ylim = NULL,
-                           cex = 0.6,
-                           interactive = TRUE) {
-      StreamFind::plot_groups(
-        self$Analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand, filtered,
-        legendNames, xLab, yLab, title, colorBy, showLegend, xlim, ylim, cex, interactive
-      )
-    },
-
     # MARK: plot_groups_ms1
-    ## _plot_groups_ms1 -----
+    ## plot_groups_ms1 -----
     #' @description Plots level 1 spectra from feature groups in the analyses.
     plot_groups_ms1 = function(groups = NULL,
                                mass = NULL,
@@ -1642,16 +1532,56 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                yLab = NULL,
                                title = NULL,
                                colorBy = "targets",
+                               showText = FALSE,
                                interactive = TRUE) {
-      StreamFind::plot_groups_ms1(
-        self$Analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow,
-        mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence,
-        minIntensity, groupBy, filtered, legendNames, xLab, yLab, title, colorBy, interactive
-      )
+      if (self$has_results_nts()) {
+        StreamFind::plot_groups_ms1(
+          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow,
+          mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData,
+          mzClust, presence, minIntensity, groupBy, filtered, legendNames,
+          xLab, yLab, title, colorBy, showText, interactive
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     },
-
+    
+    # MARK: get_groups_ms2
+    ## get_groups_ms2 -----
+    #' @description Gets a data.table of averaged MS2 spectrum for feature groups in the analyses.
+    get_groups_ms2 = function(groups = NULL,
+                              mass = NULL,
+                              mz = NULL,
+                              rt = NULL,
+                              mobility = NULL,
+                              ppm = 20,
+                              sec = 60,
+                              millisec = 5,
+                              isolationWindow = 1.3,
+                              mzClustFeatures = 0.003,
+                              presenceFeatures = 0.8,
+                              minIntensityFeatures = 100,
+                              useLoadedData = TRUE,
+                              mzClust = 0.003,
+                              presence = 0.8,
+                              minIntensity = 100,
+                              groupBy = "groups",
+                              filtered = FALSE) {
+      if (self$has_results_nts()) {
+        StreamFind::get_groups_ms2(
+          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
+          useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
     # MARK: plot_groups_ms2
-    ## _plot_groups_ms2 -----
+    ## plot_groups_ms2 -----
     #' @description Plots level 1 spectra from feature groups in the analyses.
     plot_groups_ms2 = function(groups = NULL,
                                mass = NULL,
@@ -1676,75 +1606,47 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                yLab = NULL,
                                title = NULL,
                                colorBy = "targets",
+                               showText = TRUE,
                                interactive = TRUE) {
-      StreamFind::plot_groups_ms2(
-        self$Analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
-        mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence,
-        minIntensity, groupBy, filtered, legendNames, xLab, yLab, title, colorBy, interactive
-      )
+      if (self$has_results_nts()) {
+        StreamFind::plot_groups_ms2(
+          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
+          mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData,
+          mzClust, presence, minIntensity, groupBy, filtered, legendNames,
+          xLab, yLab, title, colorBy, showText, interactive
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     },
-
-    # MARK: plot_groups_overview
-    ## _plot_groups_overview -----
-    #' @description Method to give an overview of the EIC, alignment and intensity variance from features within
-    #' target feature groups.
-    #'
-    #' @param correctSuppression Logical (length 1). When `TRUE` and suppression factor is available 
-    #' the intensities are corrected for suppression.
-    #' @param heights A numeric vector of length 3 to control the height of the first, second and third plot, respectively.
-    #'
-    plot_groups_overview = function(analyses = NULL,
-                                    groups = NULL,
-                                    mass = NULL,
-                                    mz = NULL,
-                                    rt = NULL,
-                                    mobility = NULL,
-                                    ppm = 20,
-                                    sec = 60,
-                                    millisec = 5,
-                                    rtExpand = 120,
-                                    mzExpand = 0.001,
-                                    useLoadedData = TRUE,
-                                    correctSuppression = TRUE,
-                                    filtered = FALSE,
-                                    legendNames = NULL,
-                                    title = NULL,
-                                    heights = c(0.35, 0.5, 0.15)) {
-      StreamFind::plot_groups_overview(
-        self$Analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand,
-        mzExpand, useLoadedData, correctSuppression, filtered, legendNames, title, heights
-      )
+    
+    # MARK: get_components
+    ## get_components -----
+    #' @description Gets feature components (i.e., isotope and adduct related to a main feature)
+    #' in the analyses.
+    get_components = function(analyses = NULL,
+                              features = NULL,
+                              mass = NULL,
+                              mz = NULL,
+                              rt = NULL,
+                              mobility = NULL,
+                              ppm = 20,
+                              sec = 60,
+                              millisec = 5,
+                              filtered = FALSE) {
+      if (self$has_results_nts()) {
+        StreamFind::get_components(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
     },
-
-    # MARK: plot_groups_profile
-    ## _plot_groups_profile -----
-    #' @description Method to plot the intensity profile of feature groups across the analyses.
-    #'
-    #' @param normalized Logical (length 1). When `TRUE` the profile intensities are normalized.
-    #'
-    plot_groups_profile = function(analyses = NULL,
-                                   groups = NULL,
-                                   mass = NULL,
-                                   mz = NULL,
-                                   rt = NULL,
-                                   mobility = NULL,
-                                   ppm = 20,
-                                   sec = 60,
-                                   millisec = 5,
-                                   filtered = FALSE,
-                                   correctSuppression = TRUE,
-                                   normalized = TRUE,
-                                   legendNames = NULL,
-                                   yLab = NULL,
-                                   title = NULL) {
-      StreamFind::plot_groups_profile(
-        self$Analyses, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-        correctSuppression, normalized, legendNames, yLab, title
-      )
-    },
-
+    
     # MARK: map_components
-    ## _map_components -----
+    ## map_components -----
     #' @description Maps feature components in the analyses.
     map_components = function(analyses = NULL,
                               features = NULL,
@@ -1756,43 +1658,76 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               sec = 60,
                               millisec = 5,
                               filtered = FALSE,
-                              xlim = 30,
-                              ylim = 0.05,
-                              showLegend = TRUE,
                               legendNames = NULL,
                               xLab = NULL,
                               yLab = NULL,
                               title = NULL,
                               colorBy = "targets",
-                              interactive = TRUE) {
-      StreamFind::map_components(
-        self$Analyses, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered, xlim,
-        ylim, showLegend, legendNames, xLab, yLab, title, colorBy, interactive
-      )
+                              interactive = TRUE,
+                              showLegend = TRUE,
+                              renderEngine = "webgl") {
+      if (self$has_results_nts()) {
+        StreamFind::map_components(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
+          legendNames, xLab, yLab, title, colorBy, interactive, showLegend, renderEngine
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     },
-
-    # MARK: plot_internal_standards
-    ## _plot_internal_standards -----
-    #' @description Plots the quality control assessment of the internal standards.
+    
+    # MARK: get_suspects
+    ## get_suspects -----
+    #' @description Gets a data.table of suspects from features according to a defined database and
+    #' mass (`ppm`) and time (`sec`) deviations.
     #'
-    #' @param presence Logical (length 1). When `TRUE` the presence of the internal standards is plotted.
-    #' @param recovery Logical (length 1). When `TRUE` the recovery of the internal standards is plotted.
-    #' @param deviations Logical (length 1). When `TRUE` the deviations of the internal standards is plotted.
-    #' @param widths Logical (length 1). When `TRUE` the widths of the internal standards is plotted.
+    #' @param database A data.frame with at least the columns name and mass, indicating the name
+    #' and neutral monoisotopic mass of the suspect targets.
     #'
-    plot_internal_standards = function(analyses = NULL, presence = TRUE, recovery = TRUE, deviations = TRUE, widths = TRUE) {
-      StreamFind::plot_internal_standards(self$Analyses, analyses)
+    #' @details The `ppm` and `sec` which indicate the mass (im ppm) and time (in seconds)
+    #' deviations applied during the screening.
+    #'
+    get_suspects = function(analyses = NULL,
+                            database = NULL,
+                            features = NULL,
+                            mass = NULL,
+                            mz = NULL,
+                            rt = NULL,
+                            mobility = NULL,
+                            ppm = 5,
+                            sec = 10,
+                            millisec = 5,
+                            ppmMS2 = 10,
+                            minFragments = 3,
+                            isolationWindow = 1.3,
+                            mzClust = 0.003,
+                            presence = 0.8,
+                            minIntensity = 0,
+                            filtered = FALSE,
+                            onGroups = TRUE) {
+      if (self$has_results_nts()) {
+        StreamFind::get_suspects(
+          self$NTS, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, onGroups
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
     },
-
+    
     # MARK: plot_suspects
-    ## _plot_suspects -----
+    ## plot_suspects -----
     #' @description Plots suspects.
     #'
-    #' @param database A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic
-    #' mass of the suspect targets.
+    #' @param database A data.frame with at least the columns name and mass, indicating the name
+    #' and neutral monoisotopic mass of the suspect targets.
+    #' @param heights A numeric vector of length 2 to control the height of the first and second
+    #' plot, respectively.
     #'
-    #' @details The `ppm` and `sec` which indicate the mass (im ppm) and time (in seconds) deviations applied during the
-    #' screening.
+    #' @details The `ppm` and `sec` which indicate the mass (im ppm) and time (in seconds)
+    #' deviations applied during the screening.
     #'
     plot_suspects = function(analyses = NULL,
                              database = NULL,
@@ -1814,26 +1749,131 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              rtExpand = 120,
                              mzExpand = 0.005,
                              useLoadedData = TRUE,
-                             colorBy = "targets",
+                             legendNames = NULL,
+                             colorBy = "replicates+targets",
+                             heights = c(0.5, 0.5),
                              interactive = TRUE) {
-      StreamFind::plot_suspects(
-        self$Analyses, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec, ppmMS2,
-        minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, rtExpand, mzExpand,
-        useLoadedData, colorBy, interactive
-      )
+      if (self$has_results_nts()) {
+        StreamFind::plot_suspects(
+          self$NTS, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered,
+          rtExpand, mzExpand, useLoadedData, legendNames, colorBy, heights, interactive
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: get_internal_standards
+    ## get_internal_standards -----
+    #' @description Gets a data.table with internal standards found by the `FindInternalStandards`
+    #' processing method.
+    #'
+    #' @param average Logical of length one. When `TRUE` and groups are present, internal standards
+    #' are averaged per analysis replicate group.
+    #'
+    get_internal_standards = function(average = TRUE) {
+      if (self$has_results_nts()) {
+        StreamFind::get_internal_standards(self$NTS, average)
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
+    # MARK: plot_internal_standards
+    ## plot_internal_standards -----
+    #' @description Plots the quality control assessment of the internal standards.
+    #'
+    #' @param presence Logical (length 1). When `TRUE` the presence of the internal standards is
+    #' plotted.
+    #' @param recovery Logical (length 1). When `TRUE` the recovery of the internal standards is
+    #' plotted.
+    #' @param deviations Logical (length 1). When `TRUE` the deviations of the internal standards
+    #' is plotted.
+    #' @param widths Logical (length 1). When `TRUE` the widths of the internal standards is
+    #' plotted.
+    #'
+    plot_internal_standards = function(analyses = NULL,
+                                       presence = TRUE,
+                                       recovery = TRUE,
+                                       deviations = TRUE,
+                                       widths = TRUE,
+                                       renderEngine = "webgl") {
+      if (self$has_results_nts()) {
+        StreamFind::plot_internal_standards(
+          self$NTS, analyses, presence, recovery, deviations, widths, renderEngine
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: get_fold_change
+    ## get_fold_change -----
+    #' @description Gets a data.table with fold-change analysis between the `replicatesIn` and
+    #' `replicatesOut`.
+    #' 
+    #' @param replicatesIn Character vector with the names of the replicates to be considered as
+    #' the denominator.
+    #' @param replicatesOut Character vector with the names of the replicates to be considered as
+    #' the numerator.
+    #' @param constantThreshold Numeric of length one. The threshold to consider a feature as
+    #' constant.
+    #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as
+    #' eliminated.
+    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when
+    #' available) is used to correct the intensity before fold-change analysis.
+    #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled
+    #' with the lower limit.
+    #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
+    #' 
+    get_fold_change = function(replicatesIn = NULL,
+                               replicatesOut = NULL,
+                               groups = NULL,
+                               mass = NULL,
+                               mz = NULL,
+                               rt = NULL,
+                               mobility = NULL,
+                               ppm = 4,
+                               sec = 10,
+                               millisec = 5,
+                               filtered = FALSE,
+                               constantThreshold = 0.5,
+                               eliminationThreshold = 0.2,
+                               correctSuppression = FALSE,
+                               fillZerosWithLowerLimit = FALSE,
+                               lowerLimit = NA_real_) {
+      if (self$has_results_nts()) {
+        StreamFind::get_fold_change(
+          self$NTS, replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          filtered, constantThreshold, eliminationThreshold, correctSuppression,
+          fillZerosWithLowerLimit, lowerLimit
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
     },
     
     # MARK: plot_fold_change
-    ## _plot_fold_change -----
+    ## plot_fold_change -----
     #' @description Plots the fold-change analysis between the `replicatesIn` and `replicatesOut`.
     #' 
-    #' @param replicatesIn Character vector with the names of the replicates to be considered as the denominator.
-    #' @param replicatesOut Character vector with the names of the replicates to be considered as the numerator.
-    #' @param constantThreshold Numeric of length one. The threshold to consider a feature as constant.
-    #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as eliminated.
-    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when available) is used to 
-    #' correct the intensity before fold-change analysis.
-    #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled with the lower limit.
+    #' @param replicatesIn Character vector with the names of the replicates to be considered as
+    #' the denominator.
+    #' @param replicatesOut Character vector with the names of the replicates to be considered as
+    #' the numerator.
+    #' @param constantThreshold Numeric of length one. The threshold to consider a feature as
+    #' constant.
+    #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as
+    #' eliminated.
+    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when
+    #' available) is used to correct the intensity before fold-change analysis.
+    #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled
+    #' with the lower limit.
     #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
     #' @param normalized Logical of length one. When `TRUE` the fold-change values are normalized.
     #' 
@@ -1858,97 +1898,105 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 title = NULL,
                                 interactive = TRUE,
                                 showLegend = TRUE) {
-      StreamFind::plot_fold_change(
-        self$Analyses,
-        replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-        constantThreshold, eliminationThreshold, correctSuppression, fillZerosWithLowerLimit, lowerLimit,
-        normalized, yLab, title, interactive, showLegend
-      )
+      if (self$has_results_nts()) {
+        StreamFind::plot_fold_change(
+          self$NTS, replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          filtered, constantThreshold, eliminationThreshold, correctSuppression,
+          fillZerosWithLowerLimit, lowerLimit, normalized, yLab, title, interactive, showLegend
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
     },
-
-    # MARK: report_nts
-    ## _report_nts -----
-    #' @description Saves the HTML report from the function \link[patRoon]{report} from the package \pkg{patRoon}.
-    #' The interface is exactly the same and the arguments description are taken from the documentation in \pkg{patRoon}.
-    #' Therefore, for further information, we recommend to consult directly the function \link[patRoon]{report} in
-    #' \pkg{patRoon}.
+    
+    # MARK: get_compounds
+    ## get_compounds -----
+    #' @description Gets a data.table with compounds from the analyses.
+    #' 
+    #' @param averaged Logical of length one. When `TRUE` the compounds are averaged per analysis
+    #' replicate group.
+    #'  
+    get_compounds = function(analyses = NULL,
+                             features = NULL,
+                             mass = NULL,
+                             mz = NULL,
+                             rt = NULL,
+                             mobility = NULL,
+                             ppm = 20,
+                             sec = 60,
+                             millisec = 5,
+                             filtered = FALSE,
+                             averaged = TRUE) {
+      if (self$has_results_nts()) {
+        StreamFind::get_compounds(
+          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          filtered, averaged
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(data.table::data.table())
+      }
+    },
+    
+    # MARK: get_patRoon_features
+    ## get_patRoon_features -----
+    #' @description Creates an S4 class `features` or `featureGroups`from the \pkg{patRoon} package.
+    #' 
+    #' @param featureGroups Logical of length one. When `TRUE` the `featureGroups` class is
+    #' returned.
     #'
-    #' @param path Character (length 1) with the path to the report destination.
-    #' @param settingsFile The path to the report settings file used for report configuration (see Report settings in
-    #' \link[patRoon]{report}).
-    #' @param eicRtWindow Retention time (in seconds) that will be subtracted/added to respectively the minimum and
-    #' maximum retention time of the feature. Thus, setting this value to ‘⁠>0⁠’ will 'zoom out' on the retention time axis.
-    #' @param eicTopMost Only create EICs for this number of top most intense features. If NULL then EICs are created
-    #' for all features.
-    #' @param eicTopMostByRGroup If set to TRUE and topMost is set: only create EICs for the top most features in each
-    #' replicate group. For instance, when topMost=1 and topMostByRGroup=TRUE, then EICs will be plotted for the most
-    #' intense feature of each replicate group.
-    #' @param eicOnlyPresent If TRUE then EICs are created only for analyses in which a feature was detected. If
-    #' onlyPresent=FALSE then EICs are generated for all analyses. The latter is handy to evaluate if a peak was
-    #' 'missed' during feature detection or removed during e.g. filtering.
-    #' @param eicMzExpWindow If eicOnlyPresent is TRUE, to create EICs for analyses in which no feature was found, the
-    #' m/z value is derived from the min/max values of all features in the feature group. The value of mzExpWindow
-    #' further expands this window.
-    #' @param adductPos In sets workflows the adduct must be known to calculate the ionized m/z. If a feature is
-    #' completely absent in a particular set then it follows no adduct annotations are available and the value of
-    #' adductPos (positive ionization data) or adductNeg (negative ionization data) will be used instead.
-    #' @param adductNeg as adductPos.
-    #' @param specSimMethod The similarity method: either "cosine" or "jaccard".
-    #' @param specSimRemovePrecursor If TRUE then precursor peaks (i.e. the mass peak corresponding to the feature) are
-    #' removed prior to similarity calculation.
-    #' @param specSimMzWeight Mass weights used for cosine calculation.
-    #' @param specSimIntWeight Intensity weights used for cosine calculation.
-    #' @param specSimAbsMzDev Maximum absolute m/z deviation between mass peaks, used for binning spectra.
-    #' @param specSimRelMinIntensity The minimum relative intensity for mass peaks (‘⁠0-1⁠’). Peaks with lower intensities
-    #' are not considered for similarity calculation. The relative intensities are called after the precursor peak is
-    #' removed when removePrecursor=TRUE.
-    #' @param specSimMinPeaks Only consider spectra that have at least this amount of peaks (after the spectrum is
-    #' filtered).
-    #' @param specSimShift If and how shifting is applied prior to similarity calculation. Valid options are: "none"
-    #' (no shifting), "precursor" (all mass peaks of the second spectrum are shifted by the mass difference between the
-    #' precursors of both spectra) or "both" (the spectra are first binned without shifting, and peaks still unaligned
-    #' are then shifted as is done when shift="precursor").
-    #' @param specSimCombineMethod Determines how spectral similarities from different sets are combined. Possible
-    #' values are "mean", "min" or "max", which calculates the combined value as the mean, minimum or maximum value,
-    #' respectively. NA values (e.g. if a set does not have peak list data to combine) are removed in advance.
-    #' @param clearPath If TRUE then the report destination path will be (recursively) removed prior to reporting.
-    #' @param openReport If set to TRUE then the output report file will be opened with the system browser.
-    #' @param parallel If set to TRUE then code is executed in parallel.
-    #' @param overrideSettings A list with settings that override those from the report settings file. See
-    #' \link[patRoon]{report}.
+    get_patRoon_features = function(filtered = FALSE, featureGroups = TRUE) {
+      if (self$has_results_nts()) {
+        StreamFind::get_patRoon_features( self$NTS, filtered, featureGroups)
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
+    },
+    
+    # MARK: get_patRoon_MSPeakLists
+    ## get_patRoon_MSPeakLists -----
+    #' @description Creates S4 class `MSPeakLists`. Note that feature groups are required. The MS
+    #' and MSMS spectra of each feature are then average by \pkg{patRoon} to produce the feature
+    #' group spectra using the parameters of the function \link[patRoon]{getDefAvgPListParams}.
     #'
-    #' @return An interactive HTML report from the package \pkg{patRoon}.
+    #' @param clusterMzWindow m/z window (in Da) used for clustering m/z values
+    #' when spectra are averaged. For method="hclust" this corresponds to the
+    #' cluster height, while for method="distance" this value is used to find
+    #' nearby masses (+/- window). Too small windows will prevent clustering
+    #' m/z values (thus erroneously treating equal masses along spectra as
+    #' different), whereas too big windows may cluster unrelated m/z values
+    #' from different or even the same spectrum together.
+    #' @param topMost Only retain this maximum number of MS peaks when generating
+    #' averaged spectra. Lowering this number may exclude more irrelevant (noisy)
+    #' MS peaks and decrease processing time, whereas higher values may avoid
+    #' excluding lower intense MS peaks that may still be of interest.
+    #' @param minIntensityPre MS peaks with intensities below this value will
+    #' be removed (applied prior to selection by `topMost`) before averaging.
+    #' @param minIntensityPost MS peaks with intensities below this value will
+    #' be removed after averaging.
+    #' @param avgFun Function that is used to calculate average m/z values.
+    #' @param method Method used for producing averaged MS spectra. Valid
+    #' values are "hclust", used for hierarchical clustering (using the
+    #' fastcluster package), and "distance", to use the between peak distance.
+    #' The latter method may reduces processing time and memory requirements,
+    #' at the potential cost of reduced accuracy.
     #'
-    report_nts = function(path = paste0(getwd(), "/report"),
-                          filtered = FALSE,
-                          settingsFile = system.file("report", "settings.yml", package = "patRoon"),
-                          eicRtWindow = 30,
-                          eicTopMost = 1,
-                          eicTopMostByRGroup = TRUE,
-                          eicOnlyPresent = TRUE,
-                          eicMzExpWindow = 0.001,
-                          adductPos = "[M+H]+",
-                          adductNeg = "[M-H]-",
-                          specSimMethod = "cosine",
-                          specSimRemovePrecursor = FALSE,
-                          specSimMzWeight = 0,
-                          specSimIntWeight = 1,
-                          specSimAbsMzDev = 0.005,
-                          specSimRelMinIntensity = 0.05,
-                          specSimMinPeaks = 1,
-                          specSimShift = "none",
-                          specSimCombineMethod = "mean",
-                          clearPath = FALSE,
-                          openReport = TRUE,
-                          parallel = TRUE) {
-      StreamFind::report(
-        self$NTS, path, filtered, settingsFile, eicRtWindow, eicTopMost, eicTopMostByRGroup, eicOnlyPresent,
-        eicMzExpWindow, adductPos, adductNeg, specSimMethod, specSimRemovePrecursor, specSimMzWeight,
-        specSimIntWeight, specSimAbsMzDev, specSimRelMinIntensity, specSimMinPeaks, specSimShift,
-        specSimCombineMethod, clearPath, openReport, parallel
-      )
-
-      invisible(self)
+    get_patRoon_MSPeakLists = function(clusterMzWindow = 0.005,
+                                       topMost = 100,
+                                       minIntensityPre = 50,
+                                       minIntensityPost = 50,
+                                       avgFun = "mean",
+                                       method = "distance") {
+      if (self$has_results_nts()) {
+        StreamFind::get_patRoon_MSPeakLists(
+          self$NTS, clusterMzWindow, topMost, minIntensityPre, minIntensityPost, avgFun, method
+        )
+      } else {
+        warning("No NTS results available! Not done.")
+        return(NULL)
+      }
     }
   )
 )

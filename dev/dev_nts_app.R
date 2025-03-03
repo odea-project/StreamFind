@@ -223,7 +223,9 @@ ms$run(
 
 show(ms$NTS)
 
+# Access NTS object and print to console
 nts <- ms$NTS
+show(nts)
 
 # nts@number_analyses
 # nts@number_features
@@ -240,7 +242,7 @@ nts <- ms$NTS
 
 # plot_matrix_suppression(ms$Analyses)
 
-# plot_features_count(nts)
+# plot_features_count(nts, colorBy = "replicates")
 # get_features(nts, mass = db[2:3, ])
 # get_features_eic(nts, mass = db[2, ])
 # plot_features(nts, mass = db[2, ])
@@ -251,84 +253,49 @@ nts <- ms$NTS
 # plot_features_ms2(nts, mass = db[2:3, ], legendNames = TRUE)
 # map_features(nts, mass = db[2:3, ])
 # map_features_intensity(nts, mass = db[2:3, ])
+# get_groups(nts, mass = db[2:3, ], metadata = TRUE)
+# plot_groups(nts, mass = db[2:3, ])
+# plot_groups_overview(nts, mass = db[2:3, ])
+# plot_groups_profile(nts, mass = db[2:3, ])
+# get_groups_ms1(nts, mass = db[2:3, ])
+# plot_groups_ms1(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
+# get_groups_ms2(nts, mass = db[2:3, ])
+# plot_groups_ms2(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
+# get_components(nts, mass = db[2:3, ])
+# map_components(nts, analyses = 11, mass = db, legendNames = TRUE)
+# get_internal_standards(nts, average = TRUE)
+# plot_internal_standards(nts)
+# get_suspects(nts)
+# plot_suspects(nts)
 
-get_groups(nts, mass = db[2:3, ], metadata = TRUE)
-plot_groups(nts, mass = db[2:3, ])
+# get_fold_change(
+#   nts,
+#   replicatesIn = "influent_pos",
+#   replicatesOut = "effluent_pos"
+# )
 
-plot_groups_overview(nts, mass = db[2:3, ])
-plot_groups_profile(nts, mass = db[2:3, ])
+# plot_fold_change(
+#   nts,
+#   replicatesIn = "influent_pos",
+#   replicatesOut = "effluent_pos",
+#   constantThreshold = 0.5,
+#   eliminationThreshold = 0.25,
+#   correctSuppression = TRUE,
+#   fillZerosWithLowerLimit = TRUE,
+#   lowerLimit = NA_real_,
+#   normalized = TRUE,
+#   showLegend = TRUE
+# )
 
-get_groups_ms1(nts, mass = db[2:3, ])
-plot_groups_ms1(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
-
-get_groups_ms2(nts, mass = db[2:3, ])
-plot_groups_ms2(nts, mass = db[2:3, ], legendNames = TRUE, interactive = T)
-
-get_components(nts, mass = db[2:3, ])
-
-map_components(nts, analyses = 11, mass = db, legendNames = TRUE)
-
-# ms$clear_cache()
-
-get_internal_standards(nts, average = TRUE)
-plot_internal_standards(nts)
-
-get_suspects(nts)
-
-
-plot_suspects(nts)
-
-get_fold_change(
-  nts,
-  replicatesIn = "influent_pos",
-  replicatesOut = "effluent_pos"
-)
-
-plot_fold_change(
-  nts,
-  replicatesIn = "influent_pos",
-  replicatesOut = "effluent_pos",
-  constantThreshold = 0.5,
-  eliminationThreshold = 0.25,
-  correctSuppression = TRUE,
-  fillZerosWithLowerLimit = TRUE,
-  lowerLimit = NA_real_,
-  normalized = TRUE,
-  showLegend = TRUE
-)
-
-get_compounds(nts)
-
-
+# get_compounds(nts)
 
 #StreamFind::clear_cache("all")
 
-# Access NTS object and print to console
-#show(ms$NTS)
-
 # Access feature_list
 #names(ms$NTS$feature_list)
-
 #fts <- ms$NTS$feature_list
 
-# Access properties
-#NTS <- ms$NTS
-#NTS@number_features
-#NTS@analyses_info
-
-
-#show(ms$Analyses)
-
-#show(ms$Analyses$results$NTS)
-
-#plot_features_count(ms$Analyses)
-
-#map_features(ms$Analyses, analyses = 6:7)
-
-#plot_features(ms$Analyses, analyses = 7, features = 1:5)
-
 ms$save("ms.rds")
-
 ms$run_app()
 
 

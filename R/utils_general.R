@@ -5,7 +5,11 @@
 .get_available_engines <- function() {
   StreamFind_env <- as.environment("package:StreamFind")
   available_engines <- ls(envir = StreamFind_env, pattern = "Engine")
-  available_engines <- available_engines[sapply(available_engines, function(x) "R6ClassGenerator" %in% is(get(x, envir = .GlobalEnv)))]
+  available_engines <- available_engines[
+    sapply(available_engines, function(x) {
+      "R6ClassGenerator" %in% is(get(x, envir = .GlobalEnv))
+    })
+  ]
   available_engines <- available_engines[!available_engines %in% "CoreEngine"]
   available_engines
 }
@@ -35,11 +39,14 @@
 #' @param a A vector with minimum values to evaluate `v`.
 #' @param b A vector with maximum values to evaluate `v`.
 #'
-#' @return A logical vector with the same length as `v` with \code{TRUE} for regions between `a` and `b` value pairs.
+#' @return A logical vector with the same length as `v` with \code{TRUE} for regions between `a`
+#' and `b` value pairs.
 #'
 #' @noRd
 #'
-.trim_vector <- function(v, a, b) rowSums(as.matrix(mapply(function(a, b) v >= a & v <= b, a = a, b = b))) > 0
+.trim_vector <- function(v, a, b) {
+  rowSums(as.matrix(mapply(function(a, b) v >= a & v <= b, a = a, b = b))) > 0
+}
 
 #' .trim_spectra_targets
 #'
@@ -115,9 +122,9 @@
 
 #' @title .check_analyses_argument
 #' 
-#' @description Checks the analyses argument as a character/integer vector to match analyses names. Returns a
-#' valid character vector with analysis names or `NULL` for non-matching. If `analyses` is `NULL`,
-#' returns all analysis names.
+#' @description Checks the analyses argument as a character/integer vector to match analyses names.
+#' Returns a valid character vector with analysis names or `NULL` for non-matching. If `analyses`
+#' is `NULL`, returns all analysis names.
 #' 
 #' @noRd
 .check_analyses_argument <- function(obj, value) {
@@ -164,12 +171,162 @@
   )
 }
 
+#' @noRd
+.get_colors <- function(obj) {
+  colors <- c(
+    brewer.pal(8, "Greys")[6],
+    brewer.pal(8, "Greens")[6],
+    brewer.pal(8, "Blues")[6],
+    brewer.pal(8, "Oranges")[6],
+    brewer.pal(8, "Purples")[6],
+    brewer.pal(8, "PuRd")[6],
+    brewer.pal(8, "YlOrRd")[6],
+    brewer.pal(8, "PuBuGn")[6],
+    brewer.pal(8, "GnBu")[6],
+    brewer.pal(8, "BuPu")[6],
+    brewer.pal(8, "Dark2")
+  )
+  
+  Ncol <- length(unique(obj))
+  
+  if (Ncol > 18) {
+    colors <- colorRampPalette(colors)(Ncol)
+  }
+  
+  if (length(unique(obj)) < length(obj)) {
+    Vcol <- colors[seq_len(Ncol)]
+    Ncol <- length(obj)
+    char <- NULL
+    df <- data.frame(n = seq_len(Ncol), char = obj)
+    count <- table(df$char)
+    count <- as.data.frame(count)
+    Vcol <- rep(Vcol, times = count[, "Freq"])
+    names(Vcol) <- obj
+  } else {
+    Vcol <- colors[seq_len(Ncol)]
+    names(Vcol) <- obj
+  }
+  
+  Vcol
+}
+
+#' @noRd
+.make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL) {
+  
+  if (!"id" %in% colnames(data)) {
+    if ("feature" %in% colnames(data)) {
+      data$id <- data$feature
+    } else if ("group" %in% colnames(data)) {
+      data$id <- data$group
+    } else {
+      data$id <- ""
+    }
+  }
+  
+  if (!"analysis" %in% colnames(data)) data$analysis <- ""
+  
+  data$id <- factor(data$id)
+  
+  data$analysis <- factor(data$analysis)
+  
+  if ("level" %in% colnames(data)) {
+    if (!is.character(data$level)) {
+      data$level <- paste("MS", data$level, sep = "")
+    }
+    data$level <- factor(data$level)
+  }
+  
+  if ("polarity" %in% colnames(data)) {
+    if (!is.character(data$polarity)) {
+      pol_key <- c("positive", "negative", "not defined")
+      names(pol_key) <- c("1", "-1", "0")
+      data$polarity <- as.character(data$polarity)
+      data$polarity <- pol_key[data$polarity]
+    }
+  }
+  
+  if ("analyses" %in% colorBy) {
+    varkey <- data$analysis
+  } else if (
+    ("targets+analyses" %in% colorBy || "analyses+targets" %in% colorBy) && 
+    "analysis" %in% colnames(data)) {
+    
+    if ("name" %in% colnames(data) & isTRUE(legendNames)) {
+      varkey <- paste0(data$name, " - ", data$analysis)
+    } else {
+      varkey <- paste0(data$id, " - ", data$analysis)
+    }
+    
+  } else if ("replicates" %in% colorBy && "replicate" %in% colnames(data)) {
+    varkey <- data$replicate
+    
+  } else if (
+    ("targets+replicates" %in% colorBy || "replicates+targets" %in% colorBy) &&
+    "replicate" %in% colnames(data)) {
+    
+    if ("name" %in% colnames(data) & isTRUE(legendNames)) {
+      varkey <- paste0(data$name, " - ", data$replicate)
+    } else {
+      varkey <- paste0(data$id, " - ", data$replicate)
+    }
+    
+  } else if ("polarities" %in% colorBy && "polarity" %in% colnames(data)) {
+    varkey <- data$polarity
+    
+  } else if (
+    ("targets+polarities" %in% colorBy || "polarities+targets" %in% colorBy) &&
+    "polarity" %in% colnames(data)) {
+    
+    if ("name" %in% colnames(data) & isTRUE(legendNames)) {
+      varkey <- paste0(data$name, " - ", data$polarity)
+    } else {
+      varkey <- paste0(data$id, " - ", data$polarity)
+    }
+    
+  } else if (
+    ("analyses+polarities" %in% colorBy || "polarities+analyses" %in% colorBy) &&
+    "polarity" %in% colnames(data)) {
+    
+    varkey <- paste0(data$analysis, " - ", data$polarity)
+    
+  } else if (
+    ("replicates+polarities" %in% colorBy || "polarities+replicates" %in% colorBy) &&
+    "polarity" %in% colnames(data)) {
+    
+    varkey <- paste0(data$replicate, " - ", data$polarity)
+    
+  } else if ("levels" %in% colorBy && "level" %in% colnames(data)) {
+    varkey <- data$level
+    
+  } else if (
+    ("levels+polarities" %in% colorBy || "polarities+levels" %in% colorBy) &&
+    "polarity" %in% colnames(data) && "level" %in% colnames(data)) {
+    
+    varkey <- paste0(data$level, " - ", data$polarity)
+    
+  } else if (is.character(legendNames) && length(legendNames) == length(unique(data$id))) {
+    leg <- legendNames
+    names(leg) <- unique(data$id)
+    varkey <- leg[data$id]
+    
+  } else if ("name" %in% colnames(data) && isTRUE(legendNames)) {
+    varkey <- data$name
+    
+  } else {
+    varkey <- data$id
+  }
+  data$var <- varkey
+  data
+}
+
+
 # MARK: sqlite Cache functions
 # sqlite Cache functions -----
 
 #' @title recursiveApplyDT
 #'
-#' @description Recursive apply function for data.tables from patRoon package to use within the CoreEngine.
+#' @description Recursive apply function for data.tables from patRoon package to use within the
+#' CoreEngine.
 #'
 #' @noRd
 .recursiveApplyDT <- function(l, f, appl = lapply, ...) {

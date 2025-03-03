@@ -579,7 +579,7 @@ S7::method(get_features, NTS) <- function(x,
     return(data.table::data.table())
   }
   
-  polarities <- x$spectra_polarity
+  polarities <- x$spectra_polarity[analyses]
   id <- NULL
   
   targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
@@ -3674,7 +3674,7 @@ S7::method(plot_suspects, NTS) <- function(x,
             text = paste0(round(as.numeric(data$mz), 4), "  "),
             textposition = "outside",
             textangle = 90,
-            textfont = list(size = 9),
+            textfont = list(size = 9, color = cl[g]),
             name = g,
             legendgroup = g,
             hovertemplate = paste("Exp:", "<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
@@ -3703,7 +3703,7 @@ S7::method(plot_suspects, NTS) <- function(x,
             text = paste0(round(as.numeric(fragments$mz), 4), "  "),
             textposition = "outside",
             textangle = 90,
-            textfont = list(size = 9),
+            textfont = list(size = 9, color = cl[g]),
             name = g,
             legendgroup = g,
             hovertemplate = paste("Database:", "<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),

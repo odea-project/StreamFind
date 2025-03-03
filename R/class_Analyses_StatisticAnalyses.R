@@ -2,8 +2,10 @@
 # StatisticAnalyses -----
 #' @export
 #' @noRd
-StatisticAnalyses <- S7::new_class("StatisticAnalyses",
-  package = "StreamFind", parent = Analyses,
+StatisticAnalyses <- S7::new_class(
+  name = "StatisticAnalyses",
+  package = "StreamFind",
+  parent = Analyses,
   properties = list(
 
     # MARK: analyses
