@@ -6,9 +6,9 @@
 #' engines. Users should not use this class directly as core method are available from the specific
 #' data engines.
 #'  
-#' @template arg-core-Metadata
-#' @template arg-core-Workflow
-#' @template arg-core-Analyses
+#' @template arg-core-metadata
+#' @template arg-core-workflow
+#' @template arg-core-analyses
 #'
 #' @export
 #' 

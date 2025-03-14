@@ -1,15 +1,186 @@
 #' @noRd
 S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
-  ns2 <- shiny::NS(id)
+  ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))  # Fix: Use full namespace from ms$run_app()
   
-  # shiny::fluidRow(
-  #   shiny::column(12, DT::dataTableOutput(ns(ns2("spectraAnalysesTable")))),
-  #   shiny::column(12, shiny::uiOutput(ns(ns2("spectra_plot_controls")))),
-  #   shiny::column(12, shiny::uiOutput(ns(ns2("spectra_plot_ui"))))
-  # )
-  
-  shiny::fluidRow()
-  
+  shiny::fluidRow(
+    shinydashboard::tabBox(
+      width = 12,
+      shiny::tabPanel(
+        title = "Overview",
+        # Metrics and status in a single row, 50/50 split
+        shiny::fluidRow(
+          # Left half: Four blue boxes (50% of the width)
+          shiny::column(
+            width = 6,  # 6/12 = 50% of the row
+            shiny::fluidRow(
+              shiny::column(
+                width = 3,  # Each blue box takes 3/12 of the left half (so 4 boxes fit)
+                shiny::div(
+                  class = "info-box",
+                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px;",
+                  shiny::div(
+                    style = "text-align: center; font-size: 16px; margin-bottom: 10px;",
+                    "Total Analysis"
+                  ),
+                  shiny::div(
+                    style = "font-size: 36px; text-align: center; font-weight: bold;",
+                    shiny::textOutput(ns_full("total_analyses"))
+                  )
+                )
+              ),
+              shiny::column(
+                width = 3,
+                shiny::div(
+                  class = "info-box",
+                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px;",
+                  shiny::div(
+                    style = "text-align: center; font-size: 16px; margin-bottom: 10px;",
+                    "Total Features"
+                  ),
+                  shiny::div(
+                    style = "font-size: 36px; text-align: center; font-weight: bold;",
+                    shiny::textOutput(ns_full("total_features"))
+                  )
+                )
+              ),
+              shiny::column(
+                width = 3,
+                shiny::div(
+                  class = "info-box",
+                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px;",
+                  shiny::div(
+                    style = "text-align: center; font-size: 16px; margin-bottom: 10px;",
+                    "Filtered Features Count"
+                  ),
+                  shiny::div(
+                    style = "font-size: 36px; text-align: center; font-weight: bold;",
+                    shiny::textOutput(ns_full("filtered_features_count"))
+                  )
+                )
+              ),
+              shiny::column(
+                width = 3,
+                shiny::div(
+                  class = "info-box",
+                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px;",
+                  shiny::div(
+                    style = "text-align: center; font-size: 16px; margin-bottom: 10px;",
+                    "Total Groups"
+                  ),
+                  shiny::div(
+                    style = "font-size: 36px; text-align: center; font-weight: bold;",
+                    shiny::textOutput(ns_full("total_groups"))
+                  )
+                )
+              )
+            )
+          ),
+          # Right half: Grey box (50% of the width)
+          shiny::column(
+            width = 6,  # 6/12 = 50% of the row
+            shiny::div(
+              style = "background-color: #e0e0e0; border-radius: 10px; padding: 20px; margin-bottom: 20px;",
+              shiny::fluidRow(
+                # Left column of status indicators
+                shiny::column(
+                  width = 6,
+                  shiny::tags$div(
+                    shiny::tags$div(
+                      style = "margin-bottom: 10px;",
+                      shiny::tags$span("Has Features?", style = "font-weight: normal;"),
+                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features"), inline = TRUE))
+                    ),
+                    shiny::tags$div(
+                      style = "margin-bottom: 10px;",
+                      shiny::tags$span("Has Filtered Features?", style = "font-weight: normal;"),
+                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_filtered_features"), inline = TRUE))
+                    ),
+                    shiny::tags$div(
+                      style = "margin-bottom: 10px;",
+                      shiny::tags$span("Has Groups?", style = "font-weight: normal;"),
+                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features_eic"), inline = TRUE))
+                    ),
+                    shiny::tags$div(
+                      style = "margin-bottom: 10px;",
+                      shiny::tags$span("Has EIC Features?", style = "font-weight: normal;"),
+                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_groups"), inline = TRUE))
+                    )
+                  )
+                ),
+                # Right column of status indicators
+                shiny::column(
+                  width = 6,
+                  shiny::tags$div(
+                    shiny::tags$div(
+                      style = "margin-bottom: 10px;",
+                      shiny::tags$span("Has MS1 Features?", style = "font-weight: normal;"),
+                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features_ms1"), inline = TRUE))
+                    ),
+                    shiny::tags$div(
+                      style = "margin-bottom: 10px;",
+                      shiny::tags$span("Has MS2 Features?", style = "font-weight: normal;"),
+                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features_ms2"), inline = TRUE))
+                    ),
+                    shiny::tags$div(
+                      style = "margin-bottom: 10px;",
+                      shiny::tags$span("Has Suspect Features?", style = "font-weight: normal;"),
+                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features_suspects"), inline = TRUE))
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+        
+        # Chart section (on a new row)
+        shiny::fluidRow(
+          shiny::column(
+            width = 12,
+            plotly::plotlyOutput(ns_full("features_chart"), height = "600px")
+          )
+        )
+      ),
+      
+      # Other tabs
+      shiny::tabPanel(
+        title = "Features",
+        shiny::fluidRow(
+          shiny::column(
+            width = 12,
+            DT::dataTableOutput(ns_full("features_table"))
+          )
+        )
+      ),
+      shiny::tabPanel(
+        title = "Groups",
+        shiny::fluidRow(
+          shiny::column(
+            width = 12,
+            DT::dataTableOutput(ns_full("groups_table"))
+          )
+        )
+      ),
+      shiny::tabPanel(
+        title = "Subjects",
+        shiny::fluidRow(
+          shiny::column(
+            width = 12,
+            shiny::h4("Subject data will be displayed here")
+          )
+        )
+      ),
+      shiny::tabPanel(
+        title = "Fold Change",
+        shiny::fluidRow(
+          shiny::column(
+            width = 12,
+            shiny::h4("Fold change data will be displayed here")
+          )
+        )
+      )
+    )
+  )
 }
 
 #' @noRd
@@ -20,161 +191,68 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
                                                                   reactive_volumes,
                                                                   reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
-    ns2 <- shiny::NS(id)
+    # Reactive values to store NTS data
+    nts_data <- shiny::reactive({
+      shiny::validate(need(!is.null(x), "NTS data is not available"))
+      x
+    })
     
+    # Calculate summary metrics
+    output$total_analyses <- shiny::renderText({
+      as.character(nts_data()@number_analyses)
+    })
     
+    output$total_features <- shiny::renderText({
+      features <- nts_data()@number_features
+      total <- sum(features[features > 0])
+      as.character(total)
+    })
     
+    output$filtered_features_count <- shiny::renderText({
+      filtered_features <- nts_data()@number_filtered_features
+      total <- sum(filtered_features)
+      as.character(total)
+    })
+    
+    output$total_groups <- shiny::renderText({
+      groups <- nts_data()@number_groups
+      total <- sum(groups[groups > 0])
+      as.character(total)
+    })
+    
+    # Status indicators
+    output$has_features <- shiny::renderText({
+      ifelse(nts_data()@has_features, "YES", "NO")
+    })
+    
+    output$has_filtered_features <- shiny::renderText({
+      ifelse(nts_data()@has_filtered_features, "YES", "NO")
+    })
+    
+    output$has_groups <- shiny::renderText({
+      ifelse(nts_data()@has_groups, "YES", "NO")
+    })
+    
+    output$has_features_eic <- shiny::renderText({
+      ifelse(nts_data()@has_features_eic, "YES", "NO")
+    })
+    
+    output$has_features_ms1 <- shiny::renderText({
+      ifelse(nts_data()@has_features_ms1, "YES", "NO")
+    })
+    
+    output$has_features_ms2 <- shiny::renderText({
+      ifelse(nts_data()@has_features_ms2, "YES", "NO")
+    })
+    
+    output$has_features_suspects <- shiny::renderText({
+      ifelse(nts_data()@has_features_suspects, "YES", "NO")
+    })
+    # Features chart using plot_features_count
+    output$features_chart <- plotly::renderPlotly({
+      nts <- nts_data()
+      plot_features_count(nts, colorBy = "replicates")  # Use StreamFind function
+    })
 
-    # shinyFiles::shinyFileSave(
-    #   input,
-    #   "spectra_plot_save",
-    #   roots = reactive_volumes(),
-    #   defaultRoot = "wd",
-    #   session = session
-    # )
-    # 
-    # # out spectra plot UI -----
-    # output$spectra_plot_ui <- shiny::renderUI({
-    #   if (length(reactive_analyses()) == 0) {
-    #     htmltools::div(style = "margin-top: 20px;", htmltools::h4("No Spectra found!"))
-    #   } else if (!is.null(input$spectra_plot_interactive)) {
-    #     if (input$spectra_plot_interactive) {
-    #       shinycssloaders::withSpinner(
-    #         plotly::plotlyOutput(ns(ns2("spectra_plotly")), height = "600px"), color = "black"
-    #       )
-    #     } else {
-    #       shinycssloaders::withSpinner(
-    #         shiny::plotOutput(ns(ns2("spectra_plot")), height = "600px"), color = "black"
-    #       )
-    #     }
-    #   }
-    # })
-    # 
-    # # out spectra controls -----
-    # output$spectra_plot_controls <- shiny::renderUI({
-    #   if (length(reactive_analyses()) == 0) {
-    #     return()
-    #   }
-    #   htmltools::div(
-    #     style = "display: flex; align-items: center;",
-    #     htmltools::div(
-    #       style = "margin-left: 20px;",
-    #       shiny::checkboxInput(
-    #         ns(ns2("spectra_plot_interactive")),
-    #         label = "Interactive",
-    #         value = TRUE,
-    #         width = 100
-    #       )
-    #     ),
-    #     htmltools::div(
-    #       style = "margin-left: 20px;",
-    #       shiny::selectInput(
-    #         ns(ns2("spectra_plot_colorby")),
-    #         label = "Color by",
-    #         choices = c("analyses", "replicates"),
-    #         selected = "analyses",
-    #         width = 100
-    #       )
-    #     ),
-    #     htmltools::div(
-    #       style = "margin-left: 20px;",
-    #       shiny::checkboxInput(
-    #         ns(ns2("spectra_plot_raw")),
-    #         label = "Raw Spectra",
-    #         value = TRUE,
-    #         width = 100
-    #       )
-    #     ),
-    #     htmltools::div(
-    #       style = "margin-left: 20px;",
-    #       shinyFiles::shinySaveButton(
-    #         ns(ns2("spectra_plot_save")),
-    #         "Save Plot Data (.csv)",
-    #         "Save Plot Data (.csv)",
-    #         filename = "spectra_spectra_data",
-    #         filetype = list(csv = "csv")
-    #       )
-    #     ),
-    #     htmltools::div(style = "margin-bottom: 20px;")
-    #   )
-    # })
-    # 
-    # # out spectra analyses table -----
-    # output$spectraAnalysesTable <- DT::renderDT({
-    #   analyses <- reactive_analyses()
-    #   if (length(analyses) == 0) {
-    #     return()
-    #   }
-    #   info <- analyses$info[, c("analysis", "replicate", "blank"), with = FALSE]
-    #   sel_analyses_names <- vapply(analyses$results$spectra$spectra, function(z) nrow(z) > 0, FALSE)
-    #   analyses_names <- names(analyses$results$spectra$spectra[sel_analyses_names])
-    #   if (x$is_averaged) {
-    #     info <- info[info$replicate %in% analyses_names, ]
-    #   } else {
-    #     info <- info[info$analysis %in% analyses_names, ]
-    #   }
-    #   DT::datatable(
-    #     info,
-    #     selection = list(mode = "multiple", selected = 1, target = "row"),
-    #     options = list(pageLength = 10)
-    #   )
-    # })
-    # 
-    # # out spectra plotly -----
-    # output$spectra_plotly <- plotly::renderPlotly({
-    #   if (length(reactive_analyses()) == 0) {
-    #     return()
-    #   }
-    #   selected <- input$spectraAnalysesTable_rows_selected
-    #   if (length(selected) == 0) {
-    #     return()
-    #   }
-    #   plot_spectra(
-    #     reactive_analyses(),
-    #     analyses = selected,
-    #     colorBy = input$spectra_plot_colorby,
-    #     interactive = input$spectra_plot_interactive,
-    #     useRawData = FALSE
-    #   )
-    # })
-    # 
-    # # out spectra plot -----
-    # output$spectra_plot <- shiny::renderPlot({
-    #   if (length(reactive_analyses()) == 0) {
-    #     return()
-    #   }
-    #   selected <- input$spectraAnalysesTable_rows_selected
-    #   if (length(selected) == 0) {
-    #     return()
-    #   }
-    #   plot_spectra(
-    #     reactive_analyses(),
-    #     analyses = selected,
-    #     colorBy = input$spectra_plot_colorby,
-    #     interactive = input$spectra_plot_interactive,
-    #     useRawData = FALSE
-    #   )
-    # })
-    # 
-    # # event Summary plot export -----
-    # shiny::observeEvent(input$spectra_plot_save, {
-    #   if (length(reactive_analyses()) == 0) {
-    #     msg <- "No analyses found!"
-    #     shiny::showNotification(msg, duration = 5, type = "warning")
-    #     return()
-    #   }
-    #   if (!is.null(input$spectra_plot_interactive)) {
-    #     selected <- input$spectraAnalysesTable_rows_selected
-    #     if (length(selected) == 0) {
-    #       return()
-    #     }
-    #     csv <- get_spectra(reactive_analyses(), analyses = selected, useRawData = FALSE)
-    #     fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$spectra_plot_save)
-    #     if (nrow(fileinfo) > 0) {
-    #       write.csv(csv, fileinfo$datapath, row.names = FALSE)
-    #       shiny::showNotification("File saved successfully!", duration = 5, type = "message")
-    #     }
-    #   }
-    # })
   })
 }

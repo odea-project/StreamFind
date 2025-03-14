@@ -394,57 +394,61 @@
       .mod_WorkflowAssembler_workflow_UI("workflow", ns)
     })
     
-    # _Results -----
-    output$results_ui <- shiny::renderUI({
-      if (reactive_engine_type() %in% "CoreEngine") {
+# _Results -----
+output$results_ui <- shiny::renderUI({
+  if (reactive_engine_type() %in% "CoreEngine") {
+    shiny::showNotification(
+      "Results not implemented for CoreEngine",
+      duration = 5,
+      type = "warning"
+    )
+    return(htmltools::div(" "))
+  }
+  res <- reactive_results()
+  
+  if (length(res) > 0) {
+    result_methods <- capture.output(.mod_WorkflowAssembler_Result_Server)
+    tab_list <- list()
+    for (i in seq_along(res)) {
+      has_result_method <- any(
+        vapply(result_methods, function(z) grepl(class(res[[1]])[1], z), FALSE)
+      )
+      
+      if (has_result_method) {
+        .mod_WorkflowAssembler_Result_Server(
+          res[[i]], paste0("tab_", names(res)[i]),
+          ns,
+          reactive_analyses,
+          reactive_volumes,
+          reactive_config
+        )
+        
+        # Remove the tabPanel wrapper and directly add the Result_UI content
+        tab_list[[i]] <- .mod_WorkflowAssembler_Result_UI(
+          res[[i]], paste0("tab_", names(res)[i]), ns
+        )
+      } else {
         shiny::showNotification(
-          "Results not implemented for CoreEngine",
+          paste("No results method for", names(res)[i], "!"),
           duration = 5,
           type = "warning"
         )
-        return(htmltools::div(" "))
+        tab_list[[i]] <- shiny::div(
+          htmltools::div(paste0(" ", i, ": ", names(res)[i]))
+        )
       }
-      res <- reactive_results()
-      
-      if (length(res) > 0) {
-        result_methods <- capture.output(.mod_WorkflowAssembler_Result_Server)
-        tab_list <- list()
-        for (i in seq_along(res)) {
-          has_result_method <- any(
-            vapply(result_methods, function(z) grepl(class(res[[1]])[1], z), FALSE)
-          )
-          
-          if (has_result_method) {
-            
-            .mod_WorkflowAssembler_Result_Server(
-              res[[i]], paste0("tab_", names(res)[i]),
-              ns,
-              reactive_analyses,
-              reactive_volumes,
-              reactive_config
-            )
-            
-            tab_list[[i]] <- shiny::tabPanel(
-              title = names(res)[i],
-              .mod_WorkflowAssembler_Result_UI(res[[i]], paste0("tab_", names(res)[i]), ns)
-            )
-          } else {
-            shiny::showNotification(
-              paste("No results method for", names(res)[i], "!"),
-              duration = 5,
-              type = "warning"
-            )
-            tab_list[[i]] <- shiny::tabPanel(
-              title = class(res[[i]])[1],
-              htmltools::div(paste0(" ", i, ": ", names(res)[i]))
-            )
-          }
-        }
-        do.call(shinydashboard::tabBox, c(list(width = 12), tab_list))
-      } else {
-        htmltools::div(htmltools::h4("No results found!"))
-      }
-    })
+    }
+    # Wrap the content directly in a div instead of a tabBox with titles
+    shiny::fluidRow(
+      shiny::column(
+        width = 12,
+        do.call(shiny::tagList, tab_list)  # Combine all results without tab headers
+      )
+    )
+  } else {
+    htmltools::div(htmltools::h4("No results found!"))
+  }
+})
     
     # _Audit -----
     output$audit_ui <- DT::renderDT({

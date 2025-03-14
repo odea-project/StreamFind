@@ -1,4 +1,4 @@
-
+devtools::load_all()
 library(StreamFind)
 
 all_files <- StreamFindData::get_ms_file_paths()
@@ -73,34 +73,7 @@ blks <- c(
 ms$add_replicate_names(rpls)
 ms$add_blank_names(blks)
 
-# ms$run(MassSpecMethod_FindFeatures_xcms3_centwave())
-
-ms$run(
-  MassSpecMethod_FindFeatures_openms(
-    noiseThrInt = 1000,
-    chromSNR = 3,
-    chromFWHM = 7,
-    mzPPM = 15,
-    reEstimateMTSD = TRUE,
-    traceTermCriterion = "sample_rate",
-    traceTermOutliers = 5,
-    minSampleRate = 1,
-    minTraceLength = 4,
-    maxTraceLength = 70,
-    widthFiltering = "fixed",
-    minFWHM = 4,
-    maxFWHM = 35,
-    traceSNRFiltering = TRUE,
-    localRTRange = 0,
-    localMZRange = 0,
-    isotopeFilteringModel = "none",
-    MZScoring13C = FALSE,
-    useSmoothedInts = FALSE,
-    intSearchRTWindow = 3,
-    useFFMIntensities = FALSE,
-    verbose = FALSE
-  )
-)
+ms$run(MassSpecMethod_FindFeatures_xcms3_centwave())
 
 ms$run(
   MassSpecMethod_AnnotateFeatures_StreamFind(
@@ -118,36 +91,11 @@ ms$run(
   )
 )
 
-# ms$run(MassSpecMethod_GroupFeatures_xcms3_peakdensity()
-
-ms$run(
-  MassSpecMethod_GroupFeatures_openms(
-    rtalign = FALSE,
-    QT = FALSE,
-    maxAlignRT = 5,
-    maxAlignMZ = 0.008,
-    maxGroupRT = 5,
-    maxGroupMZ = 0.008,
-    verbose = FALSE
-  )
-)
+ms$run(MassSpecMethod_GroupFeatures_xcms3_peakdensity())
 
 ms$run(
   MassSpecMethod_FilterFeatures_StreamFind(
     minIntensity = 3000
-  )
-)
-
-ms$run(
-  MassSpecMethod_FillFeatures_StreamFind(
-    withinReplicate = FALSE,
-    rtExpand = 2,
-    mzExpand = 0.0005,
-    minTracesIntensity = 1000,
-    minNumberTraces = 6,
-    baseCut = 0.3,
-    minSignalToNoiseRatio = 3,
-    minGaussianFit = 0.2
   )
 )
 
@@ -227,23 +175,22 @@ show(ms$NTS)
 nts <- ms$NTS
 show(nts)
 
-# nts@number_analyses
-# nts@number_features
-# nts@has_features
-# nts@number_filtered_features
-# nts@has_filtered_features
-# nts@has_groups
-# nts@has_features_eic
-# nts@has_features_ms1
-# nts@has_features_ms2
-# nts@has_features_suspects
-# nts@number_groups
-# nts@group_names
+nts@number_analyses
+nts@number_features
+nts@has_features
+nts@number_filtered_features
+nts@has_filtered_features
+nts@has_groups
+nts@has_features_eic
+nts@has_features_ms1
+nts@has_features_ms2
+nts@has_features_suspects
+nts@number_groups
+nts@group_names
 
 # plot_matrix_suppression(ms$Analyses)
-
-# plot_features_count(nts, colorBy = "replicates")
-# get_features(nts, mass = db[2:3, ])
+# plot_features_count(nts, colorBy = "replicates") #imp
+# View(get_features(nts, mass = db[2:3, ]))
 # get_features_eic(nts, mass = db[2, ])
 # plot_features(nts, mass = db[2, ])
 # plot_features(nts, mass = db[2:3, ], legendNames = TRUE)
@@ -265,7 +212,7 @@ show(nts)
 # map_components(nts, analyses = 11, mass = db, legendNames = TRUE)
 # get_internal_standards(nts, average = TRUE)
 # plot_internal_standards(nts)
-# get_suspects(nts)
+# View(get_suspects(nts))
 # plot_suspects(nts)
 
 # get_fold_change(
@@ -296,6 +243,5 @@ show(nts)
 #fts <- ms$NTS$feature_list
 
 ms$save("ms.rds")
+options(shiny.launch.browser = FALSE)
 ms$run_app()
-
-
