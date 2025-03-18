@@ -243,5 +243,7 @@ nts@group_names
 #fts <- ms$NTS$feature_list
 
 ms$save("ms.rds")
+
+devtools::load_all()
 options(shiny.launch.browser = FALSE)
 ms$run_app()

@@ -1,30 +1,34 @@
 #' @noRd
 S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
-  ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))  # Fix: Use full namespace from ms$run_app()
+  ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))
   
   shiny::fluidRow(
     shinydashboard::tabBox(
       width = 12,
       shiny::tabPanel(
         title = "Overview",
-        # Metrics and status in a single row, 50/50 split
+        # 50/50 split
         shiny::fluidRow(
-          # Left half: Four blue boxes (50% of the width)
           shiny::column(
-            width = 6,  # 6/12 = 50% of the row
+            width = 6,
             shiny::fluidRow(
               shiny::column(
-                width = 3,  # Each blue box takes 3/12 of the left half (so 4 boxes fit)
+                width = 3, 
                 shiny::div(
                   class = "info-box",
-                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px;",
+                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
+                  # Icon
                   shiny::div(
-                    style = "text-align: center; font-size: 16px; margin-bottom: 10px;",
-                    "Total Analysis"
+                    style = "position: absolute; top: 10px; left: 10px;",
+                    shiny::icon("chart-line", style = "font-size: 16px;")
                   ),
                   shiny::div(
-                    style = "font-size: 36px; text-align: center; font-weight: bold;",
+                    style = "font-size: 36px; text-align: center; font-weight: bold; margin-top: 17px;",
                     shiny::textOutput(ns_full("total_analyses"))
+                  ),
+                  shiny::div(
+                    style = "text-align: center; font-size: 16px; margin-top: 7px;",
+                    "Total Analysis"
                   )
                 )
               ),
@@ -32,14 +36,19 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                 width = 3,
                 shiny::div(
                   class = "info-box",
-                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px;",
+                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
+                  # Icon
                   shiny::div(
-                    style = "text-align: center; font-size: 16px; margin-bottom: 10px;",
-                    "Total Features"
+                    style = "position: absolute; top: 10px; left: 10px;",
+                    shiny::icon("gears", style = "font-size: 16px;")
                   ),
                   shiny::div(
-                    style = "font-size: 36px; text-align: center; font-weight: bold;",
+                    style = "font-size: 36px; text-align: center; font-weight: bold; margin-top: 17px;",
                     shiny::textOutput(ns_full("total_features"))
+                  ),
+                  shiny::div(
+                    style = "text-align: center; font-size: 16px; margin-top: 7px;",
+                    "Total Features"
                   )
                 )
               ),
@@ -47,14 +56,19 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                 width = 3,
                 shiny::div(
                   class = "info-box",
-                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px;",
+                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
+                  # Icon
                   shiny::div(
-                    style = "text-align: center; font-size: 16px; margin-bottom: 10px;",
-                    "Filtered Features Count"
+                    style = "position: absolute; top: 10px; left: 10px;",
+                    shiny::icon("filter", style = "font-size: 16px;")
                   ),
                   shiny::div(
-                    style = "font-size: 36px; text-align: center; font-weight: bold;",
+                    style = "font-size: 36px; text-align: center; font-weight: bold; margin-top: 17px;",
                     shiny::textOutput(ns_full("filtered_features_count"))
+                  ),
+                  shiny::div(
+                    style = "text-align: center; font-size: 16px; margin-top: 7px;",
+                    "Filtered Features Count"
                   )
                 )
               ),
@@ -62,26 +76,31 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                 width = 3,
                 shiny::div(
                   class = "info-box",
-                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px;",
+                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
+                  # Icon
                   shiny::div(
-                    style = "text-align: center; font-size: 16px; margin-bottom: 10px;",
-                    "Total Groups"
+                    style = "position: absolute; top: 10px; left: 10px;",
+                    shiny::icon("network-wired", style = "font-size: 16px;")
                   ),
                   shiny::div(
-                    style = "font-size: 36px; text-align: center; font-weight: bold;",
+                    style = "font-size: 36px; text-align: center; font-weight: bold; margin-top: 17px;",
                     shiny::textOutput(ns_full("total_groups"))
+                  ),
+                  shiny::div(
+                    style = "text-align: center; font-size: 16px; margin-top: 7px;",
+                    "Total Groups"
                   )
                 )
               )
             )
           ),
-          # Right half: Grey box (50% of the width)
+          # Right half: Grey box
           shiny::column(
-            width = 6,  # 6/12 = 50% of the row
+            width = 6,  #  50% of the row
             shiny::div(
               style = "background-color: #e0e0e0; border-radius: 10px; padding: 20px; margin-bottom: 20px;",
               shiny::fluidRow(
-                # Left column of status indicators
+                # Left column
                 shiny::column(
                   width = 6,
                   shiny::tags$div(
@@ -107,7 +126,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     )
                   )
                 ),
-                # Right column of status indicators
+                # Right column
                 shiny::column(
                   width = 6,
                   shiny::tags$div(
@@ -132,8 +151,16 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
             )
           )
         ),
+
+        # chart title
+        shiny::fluidRow(
+          shiny::column(
+            width = 12,
+            shiny::h2("Features Count", style = "margin-left: 15px; margin-bottom: 10px; font-size: 36px; font-weight: bold;")
+          )
+        ),
         
-        # Chart section (on a new row)
+        # feature count plot
         shiny::fluidRow(
           shiny::column(
             width = 12,
@@ -142,7 +169,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
         )
       ),
       
-      # Other tabs
+      # tabs
       shiny::tabPanel(
         title = "Features",
         shiny::fluidRow(
@@ -220,7 +247,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       as.character(total)
     })
     
-    # Status indicators
+    # Yes/No
     output$has_features <- shiny::renderText({
       ifelse(nts_data()@has_features, "YES", "NO")
     })
@@ -251,7 +278,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
     # Features chart using plot_features_count
     output$features_chart <- plotly::renderPlotly({
       nts <- nts_data()
-      plot_features_count(nts, colorBy = "replicates")  # Use StreamFind function
+      plot_features_count(nts, colorBy = "replicates")
     })
 
   })
