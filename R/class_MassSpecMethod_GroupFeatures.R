@@ -120,7 +120,7 @@
   fl <- NTS@feature_list
 
   fl <- Map(function(x, y) {
-    x$group[x$feature %in% y$ID] <- y$group
+    x$group[match(x$feature, y$ID)] <- y$group[match(y$ID, x$feature)]
     x
   }, fl, pat_fl)
 

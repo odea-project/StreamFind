@@ -342,10 +342,9 @@ S7::method(`[`, NTS) <- function(x, i, j) {
     warning("No features found to subset!")
     return(x)
   }
-  if (!missing(j)) {
+  if (!missing(i)) {
     x@analyses_info <- x@analyses_info[i, ]
     x@feature_list <- x@feature_list[i]
-    return(x)
   }
   if (!missing(j)) {
     if (!x$has_groups) {
@@ -1140,7 +1139,11 @@ S7::method(plot_features, NTS) <- function(x,
         type = "scatter",
         mode = "markers",
         marker = list(color = cl[ft_var], size = 5),
-        text = hT,
+        text = paste(
+          hT,
+          "<br>x: ", temp$rt,
+          "<br>y: ", temp$intensity
+        ),
         hoverinfo = "text",
         name = ft_var,
         legendgroup = ft_var,
@@ -1154,7 +1157,11 @@ S7::method(plot_features, NTS) <- function(x,
         ymax = ~intensity,
         line = list(color = cl[ft_var], width = 1.5),
         fillcolor = cl50[ft_var],
-        text = hT,
+        text = paste(
+          hT,
+          "<br>x: ", temp$rt,
+          "<br>y: ", temp$intensity
+        ),
         hoverinfo = "text",
         name = ft_var,
         legendgroup = ft_var,
@@ -1773,6 +1780,15 @@ S7::method(get_groups, NTS) <- function(x,
           ),
           digits = 1
         ),
+        gauss_f = round(
+          max(
+            vapply(quality, function(z) {
+              if (length(z) > 0) z$gauss_f else 0
+            }, 0),
+            na.rm = TRUE
+          ),
+          digits = 4
+        ),
         iso = min(
           vapply(annotation, function(z) if (length(z) > 0) z$iso_step else 0, 0),
           na.rm = TRUE
@@ -1957,7 +1973,12 @@ S7::method(plot_groups_overview, NTS) <- function(x,
         hoverinfo = "text",
         hoverlabel = list(bgcolor = colors[g]),
         text = paste(
-          "</br> name: ", g,
+          if ("var" %in% colnames(ft)) {
+            paste("</br> ", ft$var)
+          } else {
+            ""
+          },
+          # "</br> name: ", g,
           "</br> group: ", ft$group,
           "</br> feature: ", ft$feature,
           "</br> analysis: ", ft$analysis,
@@ -2137,21 +2158,21 @@ S7::method(plot_groups_overview, NTS) <- function(x,
     which_layout = "merge"
   )
   
-  if (renderEngine == "webgl") {
-    plotf_2 <- plotly::config(plotf_2, displayModeBar = TRUE)
-  }
-  
-  if (renderEngine %in% "webgl") {
-    # Fix for warnings with hoveron when webgl is used
-    plotf_2$x$attrs <- lapply(plotf_2$x$attrs, function(x) {
-      if (!is.null(x[["hoveron"]])) {
-        x[["hoveron"]] <- NULL
-      }
-      x
-    })
-    
-    plotf_2 <- plotf_2 %>% plotly::toWebGL()
-  }
+  # if (renderEngine == "webgl") {
+  #   #plotf_2 <- plotly::config(plotf_2, displayModeBar = TRUE)
+  # }
+  # 
+  # if (renderEngine %in% "webgl") {
+  #   # Fix for warnings with hoveron when webgl is used
+  #   plotf_2$x$attrs <- lapply(plotf_2$x$attrs, function(x) {
+  #     if (!is.null(x[["hoveron"]])) {
+  #       x[["hoveron"]] <- NULL
+  #     }
+  #     x
+  #   })
+  #   
+  #   plotf_2 <- plotf_2 %>% plotly::toWebGL()
+  # }
   
   plotf_2
 }
@@ -2177,6 +2198,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
                                                  legendNames = NULL,
                                                  yLab = NULL,
                                                  title = NULL,
+                                                 showLegend = TRUE,
                                                  renderEngine = "webgl") {
   fts <- get_features(x, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
   
@@ -2205,7 +2227,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
     group_cols <- c("replicate", "group", "polarity")
     if ("name" %in% colnames(fts)) group_cols <- c(group_cols, "name")
     intensity <- NULL
-    fts <- fts[, .(intensity = mean(intensity)), by = group_cols]
+    fts <- fts[, .(intensity = mean(intensity), intensity_sd = sd(intensity)), by = group_cols]
     names(polarities) <- x$replicates[names(polarities)]
     polarities <- polarities[!duplicated(names(polarities))]
     data.table::setnames(fts, "replicate", "analysis")
@@ -2229,7 +2251,12 @@ S7::method(plot_groups_profile, NTS) <- function(x,
   
   colors <- .get_colors(u_leg)
   
-  showLeg <- rep(TRUE, length(u_leg))
+  if (showLegend) {
+    showLeg <- rep(TRUE, length(u_leg))
+  } else {
+    showLeg <- rep(FALSE, length(u_leg))
+  }
+  
   names(showLeg) <- u_leg
   
   rpls <- x$replicates
@@ -2248,7 +2275,16 @@ S7::method(plot_groups_profile, NTS) <- function(x,
         "var" = g,
         "intensity" = 0
       )
-      df <- rbind(df[, c("analysis", "var", "intensity", "polarity")], extra)
+      
+      extra$polarity[extra$polarity %in% "positive"] <- 1
+      extra$polarity[extra$polarity %in% "negative"] <- -1
+      
+      if (averaged && x$has_groups) {
+        extra$intensity_sd <- 0
+        df <- rbind(df[, c("analysis", "var", "intensity", "intensity_sd", "polarity")], extra)
+      } else {
+        df <- rbind(df[, c("analysis", "var", "intensity", "polarity")], extra)
+      }
     }
     
     df <- df[order(df$analysis), ]
@@ -2259,11 +2295,19 @@ S7::method(plot_groups_profile, NTS) <- function(x,
           max_int <- max(df$intensity[df$polarity == p])
           if (max_int > 0) {
             df$intensity[df$polarity == p] <- df$intensity[df$polarity == p] / max_int
+            if (averaged && x$has_groups) {
+              df$intensity_sd[df$polarity == p] <- df$intensity_sd[df$polarity == p] / max_int
+            }
           }
         }
       } else {
         max_int <- max(df$intensity)
-        if (max_int > 0) df$intensity <- df$intensity / max_int
+        if (max_int > 0) {
+          df$intensity <- df$intensity / max_int
+          if (averaged && x$has_groups) {
+            df$intensity_sd <- df$intensity_sd / max_int
+          }
+        }
       }
     }
     
@@ -2284,19 +2328,39 @@ S7::method(plot_groups_profile, NTS) <- function(x,
     for (r in unique(df$replicate)) {
       df_r <- df[df$replicate %in% r, ]
       
-      plot <- plot %>% add_trace(
-        df,
-        x = df_r$analysis,
-        y = df_r$intensity,
-        type = "scatter", mode = "lines+markers",
-        line = list(width = 1.5, color = colors[g]),
-        marker = list(size = 5, color = colors[g]),
-        connectgaps = FALSE,
-        name = g,
-        legendgroup = g,
-        showlegend = showLeg[g]
-      )
-      
+      if (averaged && x$has_groups) {
+        plot <- plot %>% add_trace(
+          df_r,
+          x = df_r$analysis,
+          y = df_r$intensity,
+          error_y = list(
+            type = "data",
+            array = df_r$intensity_sd,
+            visible = TRUE,
+            color = colors[g],
+            width = 1
+          ),
+          type = "scatter", mode = "lines",
+          line = list(width = 1.5, color = colors[g]),
+          connectgaps = FALSE,
+          name = g,
+          legendgroup = g,
+          showlegend = showLeg[g]
+        )
+      } else {
+        plot <- plot %>% add_trace(
+          df,
+          x = df_r$analysis,
+          y = df_r$intensity,
+          type = "scatter", mode = "lines+markers",
+          line = list(width = 1.5, color = colors[g]),
+          marker = list(size = 5, color = colors[g]),
+          connectgaps = FALSE,
+          name = g,
+          legendgroup = g,
+          showlegend = showLeg[g]
+        )
+      }
       showLeg[g] <- FALSE
     }
   }
@@ -2898,7 +2962,6 @@ S7::method(get_components, NTS) <- function(x,
     annotation <- data.table::rbindlist(annotation)
     feature <- NULL
     z <- z[annotation, on = .(feature)]
-    z$annotation <- NULL
     z <- z[order(z$component_feature), ]
     z
   })
@@ -3282,8 +3345,13 @@ S7::method(get_suspects, NTS) <- function(x,
           
           if (temp$exp_rt > 0) temp$id_level <- "3b"
           
-          if ("fragments" %in% colnames(suspect_db)) {
-            fragments <- suspect_db$fragments
+          if ("fragments" %in% colnames(suspect_db) || "fragments_mz" %in% colnames(suspect_db)) {
+            
+            if ("fragments" %in% colnames(suspect_db)) {
+              fragments <- suspect_db$fragments
+            } else {
+              fragments <- suspect_db$fragments_mz
+            }
             
             if (!is.na(fragments)) {
               ms2 <- data.table::data.table()
@@ -3306,12 +3374,22 @@ S7::method(get_suspects, NTS) <- function(x,
               }
               
               if (nrow(ms2) > 0) {
-                fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
-                fragments <- strsplit(fragments, " ")
-                fragments <- data.table::data.table(
-                  "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
-                  "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
-                )
+                
+                if ("fragments" %in% colnames(suspect_db)) {
+                  fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
+                  fragments <- strsplit(fragments, " ")
+                  fragments <- data.table::data.table(
+                    "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
+                    "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
+                  )
+                } else {
+                  fragments <- unlist(strsplit(fragments, split = ";", fixed = TRUE))
+                  fragments_int <- unlist(strsplit(suspect_db$fragments_int, split = ";", fixed = TRUE))
+                  fragments <- data.table::data.table(
+                    "mz" = as.numeric(fragments),
+                    "intensity" = as.numeric(fragments_int)
+                  )
+                }
                 
                 mzr <- fragments$mz * ppm / 1E6
                 fragments$mzmin <- fragments$mz - mzr
@@ -3323,9 +3401,17 @@ S7::method(get_suspects, NTS) <- function(x,
                 
                 temp$shared_fragments <- sum(fragments$shared)
                 
-                if (temp$shared_fragments > 3) {
-                  temp$fragments <- suspect_db$fragments
-                  
+                if (temp$shared_fragments > minFragments) {
+                  frag_string <- character()
+                  for (j in seq_len(nrow(fragments))) {
+                    tmp_frag_string <- paste(
+                      round(fragments$mz[j], digits = 4),
+                      round(fragments$intensity[j], digits = 0),
+                      collapse = " "
+                    )
+                    frag_string <- c(frag_string, tmp_frag_string)
+                  }
+                  temp$fragments <- paste(frag_string, collapse = "; ")
                   if (temp$id_level == "3b") {
                     temp$id_level <- "1"
                   } else if (temp$id_level == "4") {
@@ -3885,7 +3971,7 @@ S7::method(get_internal_standards, NTS) <- function(x, average = TRUE) {
         iso_c <- NULL
         
         istd <- istd[, `:=`(
-          freq = length(area),
+          freq = length(intensity),
           rt = round(mean(rt, na.rm = TRUE), digits = 0),
           mass = round(mean(mass, na.rm = TRUE), digits = 4),
           intensity = round(mean(intensity, na.rm = TRUE), digits = 0),
@@ -4459,7 +4545,7 @@ S7::method(get_compounds, NTS) <- function(x,
   compounds <- data.table::rbindlist(compounds, fill = TRUE)
   
   if (nrow(compounds) > 0) {
-    if (averaged && x$NTS$has_groups) {
+    if (averaged && x$has_groups) {
       data.table::setcolorder(compounds, c("group", "rt", "mass", "polarity", "compoundName"))
       duplos <- duplicated(paste0(compounds$group, compounds$compoundName, compounds$polarity))
       compounds <- compounds[!duplos]
@@ -4682,10 +4768,43 @@ S7::method(plot_fold_change, NTS) <- function(x,
     return(NULL)
   }
   
-  fc_summary_count <- fc[, .(count = .N), by = c("combination", "bondaries", "replicate_out")]
+  fc_summary_count <- fc[, .(count = .N), by = c("combination", "bondaries", "replicate_out", "replicate_in")]
+  
+  all_fts <- get_features_count(x)
+  all_fts <- all_fts[all_fts$replicate %in% replicatesIn, ]
+  
+  unique_combinations_max <- unique(
+    fc_summary_count[, c("combination", "replicate_out", "replicate_in"), with = FALSE]
+  )
+  
+  unique_combinations_min <- unique_combinations_max
+  
+  unique_combinations_max$count <- vapply(unique_combinations_max$replicate_in, function(z, all_fts) {
+    max(all_fts$groups[all_fts$replicate == z])
+  }, all_fts = all_fts, 0)
+
+  unique_combinations_min$count <- vapply(unique_combinations_min$replicate_in, function(z, all_fts) {
+    min(all_fts$groups[all_fts$replicate == z])
+  }, all_fts = all_fts, 0)
+    
+  unique_combinations_max$bondaries <- "Total\nfeatures in"
+  unique_combinations_min$bondaries <- "Total\nfeatures in"
+  
+  fc_summary_count <- data.table::rbindlist(
+    list(
+      unique_combinations_max,
+      unique_combinations_min,
+      fc_summary_count
+    ),
+    use.names = TRUE
+  )
   
   if (is.null(yLab)) {
-    yLab <- "Number of feature groups (out / in)"
+    yLab <- "Number of feature groups"
+    
+    if (normalized) {
+      yLab <- "Relative number of feature groups"
+    }
   }
   
   if (!interactive) {
@@ -4711,9 +4830,10 @@ S7::method(plot_fold_change, NTS) <- function(x,
       fc_summary_count$uid <- paste0(
         fc_summary_count$replicate_out, "_", fc_summary_count$combination
       )
+      
       for (i in unique(fc_summary_count$uid)) {
         sel <- fc_summary_count$uid %in% i
-        fc_summary_count$count[sel] <- fc_summary_count$count[sel] / sum(fc_summary_count$count[sel])
+        fc_summary_count$count[sel] <- fc_summary_count$count[sel] / max(fc_summary_count$count[sel])
       }
     }
     
@@ -4752,7 +4872,7 @@ S7::method(plot_fold_change, NTS) <- function(x,
       )
       for (i in unique(fc_summary_count$uid)) {
         sel <- fc_summary_count$uid %in% i
-        fc_summary_count$count[sel] <- fc_summary_count$count[sel] / sum(fc_summary_count$count[sel])
+        fc_summary_count$count[sel] <- fc_summary_count$count[sel] / max(fc_summary_count$count[sel])
       }
     }
     
@@ -4769,7 +4889,7 @@ S7::method(plot_fold_change, NTS) <- function(x,
     fig <- fig %>% plotly::layout(
       title = title,
       xaxis = list(title = ""),
-      yaxis = list(title = yLab, range = c(0, max(fc_summary_count$count) + 1))
+      yaxis = list(title = yLab, range = c(0, max(fc_summary_count$count) * 1.1))
     )
     fig
   }
@@ -4921,8 +5041,7 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
         analysisInfo = pat@analysisInfo,
         groupInfo = groups_info,
         features = pat,
-        ftindex = ftindex,
-        groupAlgo = "openms"
+        ftindex = ftindex
       )
       
       return(fg)
@@ -5095,10 +5214,15 @@ S7::method(report, NTS) <- function(x,
 #' @noRd
 .make_features_hover_string <- function(pk = data.table::data.table()) {
   if (nrow(pk) == 0) return("")
-  
   has_quality <- any(vapply(pk$quality, function(z) nrow(z) > 0, logical(1)))
   has_annotation <- any(vapply(pk$annotation, function(z) nrow(z) > 0, logical(1)))
+  
   hT <- paste(
+    if ("var" %in% colnames(pk)) {
+      paste("</br> ", pk$var)
+    } else {
+      ""
+    },
     "</br> feature: ", pk$feature,
     ifelse("group" %in% colnames(pk), paste("</br> group: ", pk$group), ""),
     "</br> analysis: ", pk$analysis,
@@ -5110,6 +5234,7 @@ S7::method(report, NTS) <- function(x,
     "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
     "</br> intensity: ", round(pk$intensity, digits = 0),
     "</br> filtered: ", pk$filtered,
+    "</br> filtered: ", pk$filter,
     "</br> filled: ", pk$filled,
     if (has_quality) {
       paste(

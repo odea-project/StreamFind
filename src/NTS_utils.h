@@ -12,6 +12,7 @@
 #include <omp.h>
 #include <cmath>
 #include <filesystem>
+#include <limits>
 #include "StreamCraft_lib.h"
 
 namespace NTS
@@ -553,7 +554,7 @@ namespace NTS
         MS_ADDUCT("Na", 1, "[M+Na]+", 22.989218, 1),
         MS_ADDUCT("K", 1, "[M+K]+", 38.963158, 1),
         MS_ADDUCT("NH4", 1, "[M+NH4]+", 18.033823, 1),
-        MS_ADDUCT("CH3OH", 1, "[M+CH3OH+H]+", 33.033489, 1), // Methanol
+        // MS_ADDUCT("CH3OH", 1, "[M+CH3OH+H]+", 33.033489, 1), // Methanol
         MS_ADDUCT("DMSO", 1, "[M+DMSO+H]+", 79.02122, 1),    // Dimethyl sulfoxide
         MS_ADDUCT("CH3CN", 1, "[M+CH3CN+H]+", 42.033823, 1), // Acetonitrile
 
@@ -598,12 +599,25 @@ namespace NTS
   float standard_deviation(const std::vector<float> &v, float mean_val);
 
   size_t find_max_index(const std::vector<float> &v);
+  
+  size_t find_central_max_index(
+    const std::vector<float> &rt,
+    const std::vector<float> &intensity,
+    const float &rt_mean,
+    const float &rtWindow
+  );
 
   size_t find_min_index(const std::vector<float> &v);
+  
+  void applyMovingAverage(std::vector<float>& x, const size_t &start, const size_t &end, const int &windowSize);
+  
+  void smoothSides(std::vector<float>& data, const size_t &max_position, const int &windowSize);
 
   void merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity);
 
-  void trim_to_equal_length_around_max_position(std::vector<float> &x, const size_t max_position);
+  void trim_to_equal_length_around_max_position(std::vector<float> &x, const size_t max_position, const int minDiffSize, const int minTraces);
+  
+  void trim_peak_base(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity, size_t &max_position, const float curRatio);
 
   float trapezoidal_area(const std::vector<float> &x, const std::vector<float> &intensity);
 
@@ -611,28 +625,37 @@ namespace NTS
 
   float fit_gaussian_cost_function(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma);
 
-  void fit_gaussian(const std::vector<float> &x, const std::vector<float> &y, float &A_fitted, float &mu_fitted, float &sigma_fitted);
+  void fit_gaussian(const std::vector<float> &x, const std::vector<float> &y, float &A, float &mu, float &sigma);
 
   float calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma);
 
-  Rcpp::List calculate_gaussian_fit(const std::string &ft, const std::vector<float> &rt, const std::vector<float> &intensity, const float &baseCut);
+  Rcpp::List calculate_gaussian_fit(
+    const std::string &ft,
+    const float &rt_mean,
+    std::vector<float> &mz,
+    std::vector<float> &rt,
+    std::vector<float> &intensity,
+    const float &baseCut,
+    const float &rtWindow
+  );
 
   std::vector<int> find_isotopic_candidates(
-      const int &number_features,
-      const std::vector<std::string> &features,
-      const std::vector<float> &mzs,
-      const std::vector<float> &rts,
-      const std::vector<int> &pols,
-      const int &pol,
-      const std::string &feature,
-      const float &mz,
-      const float &mzmin,
-      const float &mzmax,
-      const float &rt,
-      float &rtmin,
-      float &rtmax,
-      const float &rtWindowAlignment,
-      const float &max_mz_chain);
+    const int &number_features,
+    const std::vector<std::string> &features,
+    const std::vector<float> &mzs,
+    const std::vector<float> &rts,
+    const std::vector<int> &pols,
+    const int &pol,
+    const std::string &feature,
+    const float &mz,
+    const float &mzmin,
+    const float &mzmax,
+    const float &rt,
+    float &rtmin,
+    float &rtmax,
+    const float &rtWindowAlignment,
+    const float &max_mz_chain
+  );
 
   bool is_max_gap_reached(const int &s, const int &maxGaps, const std::vector<int> &steps);
 

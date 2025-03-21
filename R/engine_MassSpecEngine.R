@@ -1459,11 +1459,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    legendNames = NULL,
                                    yLab = NULL,
                                    title = NULL,
+                                   showLegend = TRUE,
                                    renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::plot_groups_profile(
           self$NTS, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-          correctSuppression, normalized, legendNames, yLab, title, renderEngine
+          correctSuppression, normalized, legendNames, yLab, title, showLegend, renderEngine
         )
       } else {
         warning("No NTS results available! Not done.")

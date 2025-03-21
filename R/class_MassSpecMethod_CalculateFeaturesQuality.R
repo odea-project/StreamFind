@@ -6,6 +6,8 @@
 #' @template arg-ms-filtered
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
+#' @param minPeakWidth Numeric of length one with the minimum peak width centered on the maximum
+#' for extracting the feature IEC.
 #' @param minTraces Numeric of length 1 with the minimum number traces for calculating feature
 #' quality.
 #' @param minIntensity Numeric of length 1 with the minimum intensity of spectra traces for
@@ -24,6 +26,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
   constructor = function(filtered = FALSE,
                          rtExpand = 0,
                          mzExpand = 0,
+                         minPeakWidth = 6,
                          minTracesIntensity = 0,
                          minNumberTraces = 6,
                          baseCut = 0) {
@@ -37,6 +40,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
           "filtered" = as.logical(filtered),
           "rtExpand" = as.numeric(rtExpand),
           "mzExpand" = as.numeric(mzExpand),
+          "minPeakWidth" = as.numeric(minPeakWidth),
           "minTracesIntensity" = as.numeric(minTracesIntensity),
           "minNumberTraces" = as.numeric(minNumberTraces),
           "baseCut" = as.numeric(baseCut)
@@ -59,6 +63,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
     checkmate::assert_logical(self@parameters$filtered, max.len = 1)
     checkmate::assert_number(self@parameters$rtExpand)
     checkmate::assert_number(self@parameters$mzExpand)
+    checkmate::assert_number(self@parameters$minPeakWidth)
     checkmate::assert_integer(as.integer(self@parameters$minNUmberTraces))
     checkmate::assert_number(self@parameters$minTracesIntensity)
     checkmate::assert_number(self@parameters$baseCut)
@@ -103,7 +108,7 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
   
   ana_info <- engine$NTS$analyses_info
   headers <- engine$NTS$spectra_headers
-
+  
   feature_list <- rcpp_ms_calculate_features_quality(
     ana_info$analysis,
     ana_info$file,
@@ -112,6 +117,7 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
     parameters$filtered,
     parameters$rtExpand,
     parameters$mzExpand,
+    parameters$minPeakWidth,
     parameters$minTracesIntensity,
     parameters$minNumberTraces,
     parameters$baseCut

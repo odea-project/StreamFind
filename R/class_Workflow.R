@@ -329,3 +329,9 @@ S7::method(show, Workflow) <- function(x, ...) {
     cat("empty")
   }
 }
+
+#' @export
+#' @noRd
+S7::method(print, Workflow) <- function(x) {
+  show(x)
+}

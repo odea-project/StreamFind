@@ -165,7 +165,7 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
       internal_standards$rec <- NA_real_
     }
   }
-
+  
   if (nrow(internal_standards) > 0) {
     istd_analyses <- unique(internal_standards$analysis)
     for (a in istd_analyses) {
@@ -175,25 +175,32 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
         duplicated_isdt <- unique(temp$name[duplicated(temp$name)])
         for (d in duplicated_isdt) {
           temp2 <- temp[temp$name == d, ]
-          if (any(!is.na(temp2$group))) {
+          
+          if (any(is.na(temp2$group))) {
             temp2 <- temp2[!is.na(temp2$group), ]
           }
+          
           if (nrow(temp2) > 1) {
             temp2 <- temp2[which(abs(temp2$error_mass) == min(abs(temp2$error_mass))), ]
           }
+          
           if (nrow(temp2) > 1) {
             temp2 <- temp2[which(abs(temp2$error_rt) == min(abs(temp2$error_rt))), ]
           }
+          
           fts_rem <- temp[temp$name %in% d & !temp$feature %in% temp2$feature, ]
-          internal_standards <- internal_standards[
-            !(internal_standards$feature == fts_rem$feature & internal_standards$analysis == a),
-          ]
+          
+          if (nrow(fts_rem) > 0) {
+            internal_standards <- internal_standards[
+              !(internal_standards$feature == fts_rem$feature & internal_standards$analysis == a),
+            ]
+          }
         }
       }
     }
     
     internal_standards_l <- split(internal_standards, internal_standards$analysis)
-
+    
     features <- NTS$feature_list
 
     istd_col <- lapply(names(features), function(x, features, internal_standards_l) {
@@ -233,7 +240,7 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
     }, features, istd_col)
 
     NTS$feature_list <- features
-
+    
     engine$NTS <- NTS
 
     message(

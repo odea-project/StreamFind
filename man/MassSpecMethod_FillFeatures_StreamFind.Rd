@@ -8,9 +8,12 @@ MassSpecMethod_FillFeatures_StreamFind(
   withinReplicate = TRUE,
   rtExpand = 0,
   mzExpand = 0,
+  minPeakWidth = 6,
   minTracesIntensity = 1000,
   minNumberTraces = 5,
+  minIntensity = 5000,
   baseCut = 0.3,
+  maxSearchWindow = 5,
   minSignalToNoiseRatio = 3,
   minGaussianFit = 0.2
 )
@@ -24,18 +27,28 @@ retention time range.}
 \item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
+\item{minPeakWidth}{Numeric of length one with the minimum peak width for building feature
+extraction targets.}
+
+\item{minTracesIntensity}{Numeric of length one with the minimum intensity to collect spectra
+data for extracted ion chromatograms.}
+
 \item{minNumberTraces}{Integer of length one with the minimum number of traces to consider a
 feature.}
 
+\item{minIntensity}{Numeric of length one with the minimum intensity to consider a feature.
+Meaning that the maximum intensity of the extracted ion chromatogram must be greater than the
+defined value.}
+
 \item{baseCut}{Numeric of length one with the base cut for building Gaussian model.}
+
+\item{maxSearchWindow}{Numeric of length one with maximum time search window (seconds) from the
+averaged group retention time. Default to 5 seconds.}
 
 \item{minSignalToNoiseRatio}{Numeric of length one with the minimum signal to noise ratio to
 consider a feature.}
 
 \item{minGaussianFit}{Numeric of length one with the minimum Gaussian fit to consider a feature.}
-
-\item{minIntenisty}{Numeric of length one with the minimum intensity to collect spectra data for
-extracted ion chromatograms.}
 }
 \value{
 A MassSpecMethod_FillFeatures_StreamFind class object.

@@ -8,6 +8,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind(
   filtered = FALSE,
   rtExpand = 0,
   mzExpand = 0,
+  minPeakWidth = 6,
   minTracesIntensity = 0,
   minNumberTraces = 6,
   baseCut = 0
@@ -21,6 +22,9 @@ retention time range.}
 
 \item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
+
+\item{minPeakWidth}{Numeric of length one with the minimum peak width centered on the maximum
+for extracting the feature IEC.}
 
 \item{baseCut}{Numeric of length 1 with the base cut for calculating feature Gaussian fit.}
 

@@ -53,11 +53,127 @@ size_t NTS::find_max_index(const std::vector<float> &v)
   return std::max_element(v.begin(), v.end()) - v.begin();
 };
 
+// MARK: FIND_CENTRAL_MAX_INDEX
+size_t NTS::find_central_max_index(const std::vector<float> &rt,
+                                   const std::vector<float> &intensity,
+                                   const float &rt_mean,
+                                   const float &rtWindow)
+{
+  
+  int total_points = intensity.size();
+  
+  if (total_points < 5) return 0;
+  
+  float max_intensity = intensity[0];
+  int max_index = 0;
+  
+  for (int i = 0; i < total_points; ++i) {
+    const float &intensity_i = intensity[i];
+    const float &rt_i = rt[i];
+    
+    if (rtWindow > 0 && (rt_i < rt_mean - rtWindow || rt_i > rt_mean + rtWindow)) {
+      continue;
+    }
+    
+    if (intensity_i > max_intensity) {
+      max_intensity = intensity_i;
+      max_index = i;
+    }
+  }
+  
+  return max_index;
+  
+  // 
+  // size_t total_points = intensity.size();
+  // if (total_points < 4) {
+  //   return 0; 
+  // }
+  // 
+  // size_t exclude_count = std::round(total_points * exclude_percentage);
+  // 
+  // if (exclude_count > 3) {
+  //   exclude_count = 3;
+  // }
+  // 
+  // size_t start_index = exclude_count;
+  // size_t end_index = total_points - exclude_count;
+  // 
+  // if (start_index >= end_index) {
+  //   return 0;
+  // }
+  // 
+  // float max_intensity = 0;
+  // size_t max_index = start_index;
+  // 
+  // for (size_t i = start_index + 1; i < end_index; ++i) {
+  //   float intensity_i = intensity[i];
+  //   float rt_i = rt[i];
+  //   if (rtWindow > 0)
+  //   {
+  //     if (rt_i < rt_mean - rtWindow || rt_i > rt_mean + rtWindow) {
+  //       continue;
+  //     }
+  //   }
+  //   if (intensity_i > max_intensity) {
+  //     max_intensity = intensity_i;
+  //     max_index = i;
+  //   }
+  // }
+  // 
+  // return max_index;
+};
+
 // MARK: FIND_MIN_INDEX
 size_t NTS::find_min_index(const std::vector<float> &v)
 {
   return std::min_element(v.begin(), v.end()) - v.begin();
 };
+
+// MARK: applyMovingAverage
+void NTS::applyMovingAverage(std::vector<float>& x,const size_t &start, const size_t &end, const int &windowSize) {
+  int xWindowSize = end - start + 1;
+  if (xWindowSize < windowSize) return;
+  std::vector<float> smoothed = x;
+  int halfWindow = windowSize / 2;
+  
+  for (size_t i = start + 1; i < end; ++i) { // does not include start nor end
+    int count = 0;
+    float sum = 0.0;
+    
+    size_t left = i - halfWindow;
+    if (left < 0) left = 0;
+    size_t right = i + halfWindow;
+    if (right > end) right = end;
+    
+    for (size_t j = left; j <= right; ++j) {
+      if (j >= start && j <= end) {
+        sum += x[j];
+        count++;
+      }
+    }
+    smoothed[i] = sum / count;
+  }
+  for (size_t i = start + 1; i < end; ++i) {
+    x[i] = smoothed[i];
+  }
+}
+
+// MARK: smoothSides 
+void NTS::smoothSides(std::vector<float>& x, const size_t &max_position, const int &windowSize) {
+  size_t leftStart = 0;
+  size_t leftEnd = max_position;
+  size_t rightStart = max_position;
+  size_t rightEnd = x.size() - 1;
+  int size_left = leftEnd + 1;
+  int size_right = rightEnd - rightStart + 1;
+  
+  if (size_left >= windowSize) {
+    applyMovingAverage(x, leftStart, leftEnd, windowSize);
+  }
+  if (size_right >= windowSize) {
+    applyMovingAverage(x, rightStart, rightEnd, windowSize);
+  }
+}
 
 // MARK: MERGE_TRACES_WITHIN_RT
 void NTS::merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity)
@@ -90,17 +206,217 @@ void NTS::merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz,
 };
 
 // MARK: TRIM_TO_EQUAL_LENGTH_AROUND_MAX_POSITION
-void NTS::trim_to_equal_length_around_max_position(std::vector<float> &x, const size_t max_position)
+void NTS::trim_to_equal_length_around_max_position(std::vector<float> &x,
+                                                   const size_t max_position,
+                                                   const int minDiffSize,
+                                                   const int minTraces)
 {
-  const int n = x.size();
-  std::vector<float> x_out(n);
-  size_t n_points = std::min(max_position, x.size() - max_position - 1);
-  x_out.resize(2 * n_points + 1);
-  for (size_t i = 0; i < x_out.size(); ++i)
-  {
-    x_out[i] = x[max_position - n_points + i];
+  
+  if (max_position <= 1 || max_position >= x.size()) {
+    return;
   }
-  x = x_out;
+  
+  std::vector<float> left(x.begin(), x.begin() + max_position);
+  std::vector<float> right(x.begin() + max_position + 1, x.end());
+  
+  int left_size = left.size();
+  int right_size = right.size();
+  
+  if (left_size == 0 || right_size == 0) {
+    return;
+  }
+  
+  if (left_size > right_size + minDiffSize) {
+    
+    if (right_size > minTraces) {
+      while (right_size > minTraces) {
+        right.pop_back();
+        right_size = right.size();
+      }
+    }
+    
+    while (left_size > right_size + minDiffSize) {
+      left.erase(left.begin());
+      left_size = left.size();
+    }
+  }
+  
+  if (right_size > left_size + minDiffSize) {
+    
+    if (left_size > minTraces) {
+      while (left_size > minTraces) {
+        left.erase(left.begin());
+        left_size = left.size();
+      }
+    }
+    
+    while (right_size > left_size + minDiffSize) {
+      right.pop_back();
+      right_size = right.size();
+    }
+  }
+  
+  if (left_size == 0 || right_size == 0) {
+    return;
+  }
+  
+  x.clear();
+  
+  for (int i = 0; i < left_size; ++i) {
+    x.push_back(left[i]);
+  }
+  
+  x.push_back(x[max_position]);
+  
+  for (int i = 0; i < right_size; ++i) {
+    x.push_back(right[i]);
+  }
+  
+  // const int n = x.size();
+  // 
+  // int left_size = max_position;
+  // int right_size = n - max_position - 1;
+  // 
+  // if (std::abs(left_size - right_size) > 5)
+  // {
+  //   int n_points = std::min(left_size, right_size);
+  //   n_points = std::min(n_points, 12);
+  //   
+  //   std::vector<float> x_out(2 * n_points + 1);
+  //   
+  //   for (size_t i = 0; i < x_out.size(); ++i)
+  //   {
+  //     x_out[i] = x[max_position - n_points + i];
+  //   }
+  //   
+  //   x = x_out;
+  // }
+};
+
+// MARK: TRIM_TO_EQUAL_LENGTH_AROUND_MAX_POSITION
+void NTS::trim_peak_base(std::vector<float> &rt,
+                         std::vector<float> &mz,
+                         std::vector<float> &intensity,
+                         size_t &max_position,
+                         const float cutRatio)
+{
+  
+  if (max_position <= 1 || max_position >= rt.size()) {
+    return;
+  }
+  
+  const float max_intensity = intensity[max_position];
+  
+  std::vector<float> left(rt.begin(), rt.begin() + max_position);
+  std::vector<float> right(rt.begin() + max_position + 1, rt.end());
+  int left_size = left.size();
+  int right_size = right.size();
+  
+  const float low_cut = max_intensity * cutRatio;
+  
+  const int n = rt.size();
+  
+  std::vector<float> mz_trimmed(n);
+  std::vector<float> rt_trimmed(n);
+  std::vector<float> int_trimmed(n);
+  
+  for (int z = 0; z < n; z++)
+  {
+    int_trimmed[z] = intensity[z];
+    mz_trimmed[z] = mz[z];
+    rt_trimmed[z] = rt[z];
+  }
+  
+  auto it_mz_trimmed = mz_trimmed.begin();
+  auto it_int_trimmed = int_trimmed.begin();
+  auto it_rt_trimmed = rt_trimmed.begin();
+  
+  while (it_int_trimmed != int_trimmed.end())
+  {
+    if (*it_int_trimmed <= low_cut)
+    {
+      if (it_rt_trimmed <= rt_trimmed.begin() + max_position)
+      {
+        if (left_size > 3)
+        {
+          it_mz_trimmed = mz_trimmed.erase(it_mz_trimmed);
+          it_int_trimmed = int_trimmed.erase(it_int_trimmed);
+          it_rt_trimmed = rt_trimmed.erase(it_rt_trimmed);
+          left_size--;
+        }
+        else
+        {
+          ++it_mz_trimmed;
+          ++it_int_trimmed;
+          ++it_rt_trimmed;
+        }
+      }
+      else if (it_rt_trimmed >= rt_trimmed.begin() + max_position + 1)
+      {
+        if (right_size > 3)
+        {
+          it_mz_trimmed = mz_trimmed.erase(it_mz_trimmed);
+          it_int_trimmed = int_trimmed.erase(it_int_trimmed);
+          it_rt_trimmed = rt_trimmed.erase(it_rt_trimmed);
+          right_size--;
+        }
+        else
+        {
+          ++it_mz_trimmed;
+          ++it_int_trimmed;
+          ++it_rt_trimmed;
+        }
+      }
+      else
+      {
+        ++it_mz_trimmed;
+        ++it_int_trimmed;
+        ++it_rt_trimmed;
+      }
+    }
+    else
+    {
+      ++it_mz_trimmed;
+      ++it_int_trimmed;
+      ++it_rt_trimmed;
+    }
+  }
+  
+  while (left_size > 6) {
+    mz_trimmed.erase(mz_trimmed.begin());
+    int_trimmed.erase(int_trimmed.begin());
+    rt_trimmed.erase(rt_trimmed.begin());
+    left_size--;
+  }
+  
+  while (right_size > 6) {
+    mz_trimmed.pop_back();
+    int_trimmed.pop_back();
+    rt_trimmed.pop_back();
+    right_size--;
+  }
+  
+  if (int_trimmed[0] > int_trimmed[int_trimmed.size() - 1]) {
+    int_trimmed[0] = int_trimmed[int_trimmed.size() - 1];
+  } else {
+    int_trimmed[int_trimmed.size() - 1] = int_trimmed[0];
+  }
+  
+  int n_trimmed = int_trimmed.size();
+  
+  if (n_trimmed < 3)
+    return;
+  
+  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, rt[max_position], 0);
+  
+  if (max_position <= 1 || max_position >= int_trimmed.size())
+  {
+    return;
+  }
+  
+  rt = rt_trimmed;
+  mz = mz_trimmed;
+  intensity = int_trimmed;
 };
 
 // MARK: TRAPEZOIDAL_AREA
@@ -130,6 +446,22 @@ float NTS::gaussian(const float &A, const float &mu, const float &sigma, const f
   return A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
 };
 
+// MARK: CALCULATE_GAUSSIAN_RSQUARED
+float NTS::calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
+{
+  float ss_total = 0.0;
+  float ss_residual = 0.0;
+  float mean_y = accumulate(y.begin(), y.end(), 0.0) / y.size();
+  
+  for (size_t i = 0; i < x.size(); ++i)
+  {
+    float y_pred = NTS::gaussian(A, mu, sigma, x[i]);
+    ss_residual += pow(y[i] - y_pred, 2);
+    ss_total += pow(y[i] - mean_y, 2);
+  }
+  return 1 - (ss_residual / ss_total);
+};
+
 // MARK: FIT_GAUSSIAN_COST_FUNCTION
 float NTS::fit_gaussian_cost_function(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
 {
@@ -143,66 +475,133 @@ float NTS::fit_gaussian_cost_function(const std::vector<float> &x, const std::ve
 };
 
 // MARK: FIT_GAUSSIAN
-void NTS::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y, float &A_fitted, float &mu_fitted, float &sigma_fitted)
+void NTS::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y, float &A, float &mu, float &sigma)
 {
+  // Based on Adam Optimizer: https://www.geeksforgeeks.org/adam-optimizer/
+  
+  const float alpha = 0.01;  // Learning rate
+  const float beta1 = 0.9;  // smoothing factor which controls how much past gradients matter.
+  const float beta2 = 0.999; // determines how much past squared gradients contribute
+  const float epsilon = 1e-8; // small value to prevent division by zero
+  const int max_iterations = 300;
 
-  // Optimization parameters
-  const float learning_rate = 0.001;
-  const int max_iterations = 10000;
-  const float tolerance = 1e-08;
-
-  for (int iter = 0; iter < max_iterations; ++iter)
+  float m_A = 0, v_A = 0, m_mu = 0, v_mu = 0, m_sigma = 0, v_sigma = 0;
+  
+  // Rcpp::Rcout << std::endl;
+  
+  for (int iter = 1; iter <= max_iterations; ++iter)
   {
-    float current_cost = fit_gaussian_cost_function(x, y, A_fitted, mu_fitted, sigma_fitted);
+    float grad_A = 0, grad_mu = 0, grad_sigma = 0;
 
-    // Numerical gradient calculation
-    float grad_A = (fit_gaussian_cost_function(x, y, A_fitted + tolerance, mu_fitted, sigma_fitted) - current_cost) / tolerance;
-    float grad_mu = (fit_gaussian_cost_function(x, y, A_fitted, mu_fitted + tolerance, sigma_fitted) - current_cost) / tolerance;
-    float grad_sigma = (fit_gaussian_cost_function(x, y, A_fitted, mu_fitted, sigma_fitted + tolerance) - current_cost) / tolerance;
-
-    // Update parameters using gradient descent
-    A_fitted -= learning_rate * grad_A;
-    mu_fitted -= learning_rate * grad_mu;
-    sigma_fitted -= learning_rate * grad_sigma;
-
-    if (sigma_fitted <= 0)
+    for (size_t i = 0; i < x.size(); ++i)
     {
-      sigma_fitted = 2; // Set to a small positive number if non-positive
-    }
-    if (sigma_fitted > 1e6)
-    { // Arbitrary upper bound for sigma
-      sigma_fitted = 10;
+      float exp_term = exp(-pow(x[i] - mu, 2) / (2 * pow(sigma, 2)));
+      float y_pred = A * exp_term;
+      float error = y[i] - y_pred;
+      
+      grad_A += -2 * error * exp_term;
+      grad_mu += -2 * error * A * exp_term * (x[i] - mu) / pow(sigma, 2);
+      grad_sigma += -2 * error * A * exp_term * pow(x[i] - mu, 2) / pow(sigma, 3);
     }
 
-    // Check convergence
-    if (abs(grad_A) < tolerance && abs(grad_mu) < tolerance && abs(grad_sigma) < tolerance)
-    {
-      break;
-    }
+    // Adam update step with bias correction
+    
+    // moving averages of the gradients
+    m_A = beta1 * m_A + (1 - beta1) * grad_A;
+    // moving averages of the squared gradients  (similar to variance)
+    v_A = beta2 * v_A + (1 - beta2) * grad_A * grad_A;
+    
+    // bias correction
+    float A_hat = m_A / (1 - pow(beta1, iter));
+    float v_A_hat = v_A / (1 - pow(beta2, iter));
+
+    A -= alpha * A_hat / (sqrt(v_A_hat) + epsilon);
+
+    // Repeat for mu
+    m_mu = beta1 * m_mu + (1 - beta1) * grad_mu;
+    v_mu = beta2 * v_mu + (1 - beta2) * grad_mu * grad_mu;
+    float mu_hat = m_mu / (1 - pow(beta1, iter));
+    float v_mu_hat = v_mu / (1 - pow(beta2, iter));
+
+    mu -= alpha * mu_hat / (sqrt(v_mu_hat) + epsilon);
+
+    // Repeat for sigma
+    m_sigma = beta1 * m_sigma + (1 - beta1) * grad_sigma;
+    v_sigma = beta2 * v_sigma + (1 - beta2) * grad_sigma * grad_sigma;
+    float sigma_hat = m_sigma / (1 - pow(beta1, iter));
+    float v_sigma_hat = v_sigma / (1 - pow(beta2, iter));
+
+    sigma -= alpha * sigma_hat / (sqrt(v_sigma_hat) + epsilon);
+
+    // Prevent sigma from going negative or excessively large
+    sigma = std::max(sigma, 2.0f);
+    sigma = std::min(sigma, 10.0f);
+
+    // Rcpp::Rcout << iter << " A: " << A << " u: " << mu << " s: " << sigma <<
+    //   " gA: " << grad_A << " gu: " << grad_mu << " gs: " << grad_sigma <<
+    //   " r: " << calculate_gaussian_rsquared(x, y, A, mu, sigma) << std::endl;
+
+    // Early stopping condition: Check if gradients are very small, never happens in practice
+    // Parameters need update with actual gradient values
+    // if (fabs(grad_A) < 1 && fabs(grad_mu) < 100 && fabs(grad_sigma) < 100)
+    // {
+    //   Rcpp::Rcout << "Converged at iteration: " << iter << std::endl;
+    //   break;
+    // }
   }
-};
 
-// MARK: CALCULATE_GAUSSIAN_RSQUARED
-float NTS::calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
-{
-  float ss_total = 0.0;
-  float ss_residual = 0.0;
-  float mean_y = accumulate(y.begin(), y.end(), 0.0) / y.size();
-
-  for (size_t i = 0; i < x.size(); ++i)
-  {
-    float y_pred = NTS::gaussian(A, mu, sigma, x[i]);
-    ss_residual += pow(y[i] - y_pred, 2);
-    ss_total += pow(y[i] - mean_y, 2);
-  }
-  return 1 - (ss_residual / ss_total);
+  // Rcpp::Rcout << std::endl;
+  // Rcpp::Rcout << "Final values:" << std::endl;
+  // Rcpp::Rcout << " A: " << A << std::endl;
+  // Rcpp::Rcout << " mu: " << mu << std::endl;
+  // Rcpp::Rcout << " sigma: " << sigma << std::endl;
+  // Rcpp::Rcout << " R^2: " << calculate_gaussian_rsquared(x, y, A, mu, sigma) << std::endl;
+  // Rcpp::Rcout << std::endl;
+  
+  // // Optimization parameters
+  // const float learning_rate = 0.001;
+  // const int max_iterations = 10000;
+  // const float tolerance = 1e-08;
+  // 
+  // for (int iter = 0; iter < max_iterations; ++iter)
+  // {
+  //   float current_cost = fit_gaussian_cost_function(x, y, A_fitted, mu_fitted, sigma_fitted);
+  // 
+  //   // Numerical gradient calculation
+  //   float grad_A = (fit_gaussian_cost_function(x, y, A_fitted + tolerance, mu_fitted, sigma_fitted) - current_cost) / tolerance;
+  //   float grad_mu = (fit_gaussian_cost_function(x, y, A_fitted, mu_fitted + tolerance, sigma_fitted) - current_cost) / tolerance;
+  //   float grad_sigma = (fit_gaussian_cost_function(x, y, A_fitted, mu_fitted, sigma_fitted + tolerance) - current_cost) / tolerance;
+  // 
+  //   // Update parameters using gradient descent
+  //   A_fitted -= learning_rate * grad_A;
+  //   mu_fitted -= learning_rate * grad_mu;
+  //   sigma_fitted -= learning_rate * grad_sigma;
+  // 
+  //   if (sigma_fitted <= 0)
+  //   {
+  //     sigma_fitted = 2; // Set to a small positive number if non-positive
+  //   }
+  //   if (sigma_fitted > 1e6)
+  //   { // Arbitrary upper bound for sigma
+  //     sigma_fitted = 10;
+  //   }
+  // 
+  //   // Check convergence
+  //   if (abs(grad_A) < tolerance && abs(grad_mu) < tolerance && abs(grad_sigma) < tolerance)
+  //   {
+  //     break;
+  //   }
+  // }
 };
 
 // MARK: CALCULATE_GAUSSIAN_FIT
 Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
-                                       const std::vector<float> &rt,
-                                       const std::vector<float> &intensity,
-                                       const float &baseCut)
+                                       const float &rt_mean,
+                                       std::vector<float> &mz,
+                                       std::vector<float> &rt,
+                                       std::vector<float> &intensity,
+                                       const float &baseCut,
+                                       const float &rtWindow)
 {
 
   float noise = 0;
@@ -221,14 +620,14 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
       Rcpp::Named("gauss_s") = sigma_fitted,
       Rcpp::Named("gauss_f") = r_squared);
   
-  if (intensity.empty())
+  if (intensity.size() < 5)
   {
     return quality;
   }
 
-  size_t max_position = NTS::find_max_index(intensity);
+  size_t max_position = NTS::find_central_max_index(rt, intensity, rt_mean, rtWindow);
   
-  if (max_position == 0 || max_position >= intensity.size())
+  if (max_position < 1 || max_position >= intensity.size() - 1)
   {
     return quality;
   }
@@ -236,25 +635,58 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
   const float max_intensity = intensity[max_position];
   
   const std::vector<float> left_intensity = std::vector<float>(intensity.begin(), intensity.begin() + max_position);
+  if (left_intensity.empty()) return quality;
   const size_t min_left_position = NTS::find_min_index(left_intensity);
   const float noise_left = left_intensity[min_left_position];
   const float sn_left = max_intensity / noise_left;
   
-  const std::vector<float> right_intensity = std::vector<float>(intensity.begin() + max_position, intensity.end());
+  const std::vector<float> right_intensity = std::vector<float>(intensity.begin() + max_position + 1, intensity.end());
+  if (right_intensity.empty()) return quality;
   const size_t min_right_position = NTS::find_min_index(right_intensity);
   const float noise_right = right_intensity[min_right_position];
   const float sn_right = max_intensity / noise_right;
   
   if (sn_left > sn_right)
   {
-    noise = noise_right;
-    sn = sn_right;
-  }
-  else
-  {
     noise = noise_left;
     sn = sn_left;
   }
+  else
+  {
+    noise = noise_right;
+    sn = sn_right;
+  }
+  
+  if (min_left_position > 0) {
+    for (size_t i = 0; i < min_left_position - 1; ++i)
+    {
+      intensity[i] = 0;
+    }
+  }
+  
+  if (intensity.size() > max_position + min_right_position + 2) {
+    for (size_t i = max_position + min_right_position + 2; i < intensity.size(); ++i)
+    {
+      intensity[i] = 0;
+    }
+  }
+  
+  // std::string print_ft = "F924_MZ268_RT921";
+  // 
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "min_left_position: " << min_left_position << std::endl;
+  //   Rcpp::Rcout << "min_right_position: " << min_right_position << std::endl;
+  //   Rcpp::Rcout << "noise_left: " << noise_left << std::endl;
+  //   Rcpp::Rcout << "noise_right: " << noise_right << std::endl;
+  //   Rcpp::Rcout << "sn_left: " << sn_left << std::endl;
+  //   Rcpp::Rcout << "sn_right: " << sn_right << std::endl;
+  //   for (size_t i = 0; i < intensity.size(); ++i)
+  //   {
+  //     Rcpp::Rcout <<  rt[i] << " " << mz[i] << " " << intensity[i] << std::endl;
+  //   }
+  // }
   
   noise = round(noise);
   sn = round(sn * 10) / 10;
@@ -265,53 +697,125 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
 
   const int n = rt.size();
 
+  std::vector<float> mz_trimmed(n);
   std::vector<float> rt_trimmed(n);
   std::vector<float> int_trimmed(n);
 
   for (int z = 0; z < n; z++)
   {
-    int_trimmed[z] = intensity[z] - low_cut;
+    int_trimmed[z] = intensity[z];
+    mz_trimmed[z] = mz[z];
     rt_trimmed[z] = rt[z];
   }
-
+  
+  auto it_mz_trimmed = mz_trimmed.begin();
   auto it_int_trimmed = int_trimmed.begin();
   auto it_rt_trimmed = rt_trimmed.begin();
 
   while (it_int_trimmed != int_trimmed.end())
   {
-    if (*it_int_trimmed <= 0)
+    if (*it_int_trimmed <= low_cut)
     {
+      it_mz_trimmed = mz_trimmed.erase(it_mz_trimmed);
       it_int_trimmed = int_trimmed.erase(it_int_trimmed);
       it_rt_trimmed = rt_trimmed.erase(it_rt_trimmed);
     }
     else
     {
+      ++it_mz_trimmed;
       ++it_int_trimmed;
       ++it_rt_trimmed;
     }
   }
+  
+  // auto remove_condition = [](float intensity_value) { return intensity_value <= 0; };
+  // 
+  // // Use a single loop with `std::remove_if` while keeping all vectors in sync
+  // size_t write_index = 0;
+  // for (size_t read_index = 0; read_index < int_trimmed.size(); ++read_index) {
+  //   if (!remove_condition(int_trimmed[read_index])) {  // Keep values > 0
+  //     mz_trimmed[write_index] = mz_trimmed[read_index];
+  //     rt_trimmed[write_index] = rt_trimmed[read_index];
+  //     int_trimmed[write_index] = int_trimmed[read_index];
+  //     ++write_index;
+  //   }
+  // }
+  // 
+  // // Now erase the extra elements at the end of each vector
+  // mz_trimmed.resize(write_index);
+  // rt_trimmed.resize(write_index);
+  // int_trimmed.resize(write_index);
 
   int n_trimmed = int_trimmed.size();
 
-  if (n_trimmed < 3)
+  if (n_trimmed < 5)
     return quality;
-
-  max_position = NTS::find_max_index(int_trimmed);
-
-  trim_to_equal_length_around_max_position(rt_trimmed, max_position);
-  trim_to_equal_length_around_max_position(int_trimmed, max_position);
+  
+  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, rt_mean, 0);
+  
+  if (max_position < 1 || max_position >= int_trimmed.size() - 1)
+  {
+    return quality;
+  }
+  
+  trim_to_equal_length_around_max_position(mz_trimmed, max_position, 5, 20);
+  trim_to_equal_length_around_max_position(rt_trimmed, max_position, 5, 20);
+  trim_to_equal_length_around_max_position(int_trimmed, max_position, 5, 20);
 
   n_trimmed = rt_trimmed.size();
 
+  if (n_trimmed < 5)
+    return quality;
+  
+  mz = mz_trimmed;
+  rt = rt_trimmed;
+  intensity = int_trimmed;
+  
+  // trim_to_equal_length_around_max_position(mz_trimmed, max_position, 0, 7);
+  // trim_to_equal_length_around_max_position(rt_trimmed, max_position, 0, 7);
+  // trim_to_equal_length_around_max_position(int_trimmed, max_position, 0, 7);
+  
+  trim_peak_base(rt_trimmed, mz_trimmed, int_trimmed, max_position, 0.3);
+  
+  n_trimmed = rt_trimmed.size();
+  
   if (n_trimmed < 3)
     return quality;
-
-  max_position = NTS::find_max_index(int_trimmed);
-
+  
+  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, rt_mean, 0);
+  
+  if (max_position < 1 || max_position >= int_trimmed.size() - 1)
+  {
+    return quality;
+  }
+  
+  smoothSides(int_trimmed, max_position, 3);
+  
+  // mz = mz_trimmed;
+  // rt = rt_trimmed;
+  // intensity = int_trimmed;
+  
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
+  //   {
+  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
+  //   }
+  // }
+  
   A_fitted = int_trimmed[max_position];
   mu_fitted = rt_trimmed[max_position];
   sigma_fitted = (rt_trimmed.back() - rt_trimmed.front()) / 4.0;
 
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "A: " << A_fitted << std::endl;
+  //   Rcpp::Rcout << "mu: " << mu_fitted << std::endl;
+  //   Rcpp::Rcout << "sigma: " << sigma_fitted << std::endl;
+  //   Rcpp::Rcout << "r: " << r_squared << std::endl;
+  // }
+  
   fit_gaussian(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
 
   r_squared = calculate_gaussian_rsquared(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
@@ -320,6 +824,14 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
   mu_fitted = round(mu_fitted * 10) / 10;
   sigma_fitted = round(sigma_fitted * 10) / 10;
   r_squared = round(r_squared * 10000) / 10000;
+  
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "A_fitted: " << A_fitted << std::endl;
+  //   Rcpp::Rcout << "mu_fitted: " << mu_fitted << std::endl;
+  //   Rcpp::Rcout << "sigma_fitted: " << sigma_fitted << std::endl;
+  //   Rcpp::Rcout << "r_squared: " << r_squared << std::endl;
+  // }
 
   quality["gauss_a"] = A_fitted;
   quality["gauss_u"] = mu_fitted;

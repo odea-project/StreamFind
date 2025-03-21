@@ -254,6 +254,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
     length(feature_list),
     " analyses"
   )
+  
   feature_list <- lapply(names(feature_list), function(z,
                                                        feature_list,
                                                        ticMp,
@@ -273,6 +274,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
     rpl <- rpls[z]
 
     message("\U2699 Correcting matrix suppression for ", nrow(fts), " features in ", z)
+    
     suppresion_factor <- vapply(seq_len(nrow(fts)), function(i, z, rpl, fts, mp, istd, parameters) {
       ft <- fts[i, ]
       if (is.null(parameters$mpRtWindow)) {

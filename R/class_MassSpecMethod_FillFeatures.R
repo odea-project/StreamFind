@@ -5,11 +5,18 @@
 #' @param withinReplicate Logical of length one to fill within replicates not global.
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
-#' @param minIntenisty Numeric of length one with the minimum intensity to collect spectra data for
-#' extracted ion chromatograms.
+#' @param minPeakWidth Numeric of length one with the minimum peak width for building feature
+#' extraction targets.
+#' @param minTracesIntensity Numeric of length one with the minimum intensity to collect spectra
+#' data for extracted ion chromatograms.
 #' @param baseCut Numeric of length one with the base cut for building Gaussian model.
+#' @param maxSearchWindow Numeric of length one with maximum time search window (seconds) from the
+#' averaged group retention time. Default to 5 seconds.
 #' @param minNumberTraces Integer of length one with the minimum number of traces to consider a
 #' feature.
+#' @param minIntensity Numeric of length one with the minimum intensity to consider a feature.
+#' Meaning that the maximum intensity of the extracted ion chromatogram must be greater than the
+#' defined value.
 #' @param minSignalToNoiseRatio Numeric of length one with the minimum signal to noise ratio to
 #' consider a feature.
 #' @param minGaussianFit Numeric of length one with the minimum Gaussian fit to consider a feature.
@@ -25,9 +32,12 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
   constructor = function(withinReplicate = TRUE,
                          rtExpand = 0,
                          mzExpand = 0,
+                         minPeakWidth = 6,
                          minTracesIntensity = 1000,
                          minNumberTraces = 5,
+                         minIntensity = 5000,
                          baseCut = 0.3,
+                         maxSearchWindow = 5,
                          minSignalToNoiseRatio = 3,
                          minGaussianFit = 0.2) {
     S7::new_object(
@@ -40,9 +50,12 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
           withinReplicate = as.logical(withinReplicate),
           rtExpand = as.numeric(rtExpand),
           mzExpand = as.numeric(mzExpand),
+          minPeakWidth = as.numeric(minPeakWidth),
           minTracesIntensity = as.numeric(minTracesIntensity),
           minNumberTraces = as.numeric(minNumberTraces),
+          minIntensity = as.numeric(minIntensity),
           baseCut = as.numeric(baseCut),
+          maxSearchWindow = as.numeric(maxSearchWindow),
           minSignalToNoiseRatio = as.numeric(minSignalToNoiseRatio),
           minGaussianFit = as.numeric(minGaussianFit)
         ),
@@ -63,9 +76,12 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
     checkmate::assert_logical(self@parameters$withinReplicate, len = 1)
     checkmate::assert_numeric(self@parameters$rtExpand, len = 1)
     checkmate::assert_numeric(self@parameters$mzExpand, len = 1)
+    checkmate::assert_numeric(self@parameters$minPeakWidth, len = 1)
     checkmate::assert_integer(as.integer(self@parameters$minNumberTraces), len = 1)
     checkmate::assert_numeric(self@parameters$minTracesIntensity, len = 1)
+    checkmate::assert_numeric(self@parameters$minIntensity, len = 1)
     checkmate::assert_numeric(self@parameters$baseCut, len = 1)
+    checkmate::assert_numeric(self@parameters$maxSearchWindow, len = 1)
     checkmate::assert_numeric(self@parameters$minSignalToNoiseRatio, len = 1)
     checkmate::assert_numeric(self@parameters$minGaussianFit, len = 1)
     NULL
@@ -100,11 +116,11 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
   parameters <- x$parameters
   analyses_list <- engine$Analyses$analyses
   feature_list <- engine$NTS$feature_list
-  feature_list <- data.table::rbindlist(feature_list, idcol = "analysis", fill = TRUE)
+  
+  features_dt <- data.table::rbindlist(feature_list, idcol = "analysis", fill = TRUE)
   rpls <- engine$Analyses$replicates
-  feature_list$replicate <- rpls[feature_list$analysis]
-  feature_list_nf <- data.table::copy(feature_list)
-  feature_list_nf$group[is.na(feature_list_nf$group)] <- ""
+  features_dt$replicate <- rpls[features_dt$analysis]
+  features_dt$group[is.na(features_dt$group)] <- ""
   
   ana_info <- engine$NTS$analyses_info
   headers <- engine$NTS$spectra_headers
@@ -114,13 +130,16 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
     ana_info$replicate,
     ana_info$file,
     headers,
-    feature_list_nf,
+    features_dt,
     parameters$withinReplicate,
     parameters$rtExpand,
     parameters$mzExpand,
+    parameters$minPeakWidth,
     parameters$minTracesIntensity,
     as.integer(parameters$minNumberTraces),
+    parameters$minIntensity,
     parameters$baseCut,
+    parameters$maxSearchWindow,
     parameters$minSignalToNoiseRatio,
     parameters$minGaussianFit
   )
@@ -130,18 +149,28 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
     if (nrow(temp) > 0) temp <- temp[!duplicated(temp$group), ]
     temp
   })
-
-  res <- data.table::rbindlist(res, fill = TRUE)
-
-  all_fts <- data.table::rbindlist(list(feature_list, res), fill = TRUE)
-  all_fts$filled[is.na(all_fts$filled)] <- FALSE
-  all_fts_analysis <- all_fts$analysis
-  all_fts$analysis <- NULL
-  all_fts$replicate <- NULL
-  all_fts <- split(all_fts, all_fts_analysis)
   
-  all_fts <- lapply(all_fts, function(z) {
+  res <- data.table::rbindlist(res, fill = TRUE)
+  res[["filled"]] <- TRUE
+  res_analysis <- res$analysis
+  res[["analysis"]] <- NULL
+  res[["replicate"]] <- NULL
+  res <- split(res, res_analysis)
+  
+  analyses_names <- names(feature_list)
+  
+  feature_list <- lapply(analyses_names, function(z, feature_list, res) {
+    
+    filled_fts <- res[[z]]
+    
+    if (is.null(filled_fts)) return(feature_list[[z]])
+    
+    if (nrow(filled_fts) == 0) return(feature_list[[z]])
+    
+    z <- data.table::rbindlist(list(feature_list[[z]], filled_fts), fill = TRUE)
+    
     duplos <- unique(z$feature[duplicated(z$feature)])
+    
     if (length(duplos) > 0) {
       for (duplo in duplos) {
         temp <- z[z$feature %in% duplo, ]
@@ -152,10 +181,13 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
         }
       }
     }
+    
     z
-  })
+  }, feature_list = feature_list, res = res)
   
-  NTS$feature_list <- all_fts
+  names(feature_list) <- analyses_names
+  
+  NTS$feature_list <- feature_list
   engine$NTS <- NTS
   TRUE
 }

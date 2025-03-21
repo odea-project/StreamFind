@@ -331,10 +331,13 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
 
     const std::vector<int> df_polarity = targets["polarity"];
     const std::vector<bool> df_precursor = targets["precursor"];
+    const std::vector<float> df_mz = targets["mz"];
     const std::vector<float> df_mzmin = targets["mzmin"];
     const std::vector<float> df_mzmax = targets["mzmax"];
+    const std::vector<float> df_rt = targets["rt"];
     const std::vector<float> df_rtmin = targets["rtmin"];
     const std::vector<float> df_rtmax = targets["rtmax"];
+    const std::vector<float> df_mobility = targets["mobility"];
     const std::vector<float> df_mobilitymin = targets["mobilitymin"];
     const std::vector<float> df_mobilitymax = targets["mobilitymax"];
 
@@ -344,10 +347,13 @@ Rcpp::List rcpp_parse_ms_spectra(Rcpp::List analysis,
         df_level,
         df_polarity,
         df_precursor,
+        df_mz,
         df_mzmin,
         df_mzmax,
+        df_rt,
         df_rtmin,
         df_rtmax,
+        df_mobility,
         df_mobilitymin,
         df_mobilitymax};
 
@@ -1208,14 +1214,24 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
                                  bool withinReplicate = false,
                                  float rtExpand = 0,
                                  float mzExpand = 0,
+                                 float minPeakWidth = 6,
                                  float minTracesIntensity = 0,
-                                 float minNumberTraces = 5,
+                                 float minNumberTraces = 4,
+                                 float minIntensity = 0,
                                  float baseCut = 0,
+                                 float maxSearchWindow = 5,
                                  float minSignalToNoiseRatio = 3,
                                  float minGaussianFit = 0.5)
 {
 
   Rcpp::List out;
+  
+  if (minNumberTraces < 5)
+  {
+    minNumberTraces = 5;
+  }
+  
+  const float minHalfPeakWidth = minPeakWidth / 2;
 
   const int number_analyses = analyses_names.size();
 
@@ -1395,19 +1411,38 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
       fts_replicates_k[i] = fts_replicates[indices[i]];
       fts_analysis_k[i] = fts_analysis[indices[i]];
       fts_mass_k[i] = fts_mass[indices[i]];
-      fts_mz_k[i] = fts_mz[indices[i]];
-      fts_mzmin_k[i] = fts_mzmin[indices[i]];
-      fts_mzmax_k[i] = fts_mzmax[indices[i]];
-      fts_rt_k[i] = fts_rt[indices[i]];
-      fts_rtmin_k[i] = fts_rtmin[indices[i]] - rtExpand;
-      fts_rtmax_k[i] = fts_rtmax[indices[i]] + rtExpand;
+      
+      const float &mz_k = fts_mz[indices[i]];
+      float mzmin_k = fts_mzmin[indices[i]];
+      float mzmax_k = fts_mzmax[indices[i]];
+      fts_mz_k[i] = mz_k;
+      fts_mzmin_k[i] = mzmin_k;
+      fts_mzmax_k[i] = mzmax_k;
+      fts_mzmin_side_k[i] = mz_k - mzmin_k;
+      fts_mzmax_side_k[i] = mzmax_k - mz_k;
+      
+      const float &rt_k = fts_rt[indices[i]];
+      float rtmin_k = fts_rtmin[indices[i]];
+      float rtmax_k = fts_rtmax[indices[i]];
+      fts_rt_k[i] = rt_k;
+      
+      if (rt_k - rtmin_k < minHalfPeakWidth)
+      {
+        rtmin_k = rt_k - minHalfPeakWidth;
+      }
+      
+      if (rtmax_k - rt_k < minHalfPeakWidth)
+      {
+        rtmax_k = rt_k + minHalfPeakWidth;
+      }
+      
+      fts_rtmin_k[i] = rtmin_k - rtExpand;
+      fts_rtmax_k[i] = rtmax_k + rtExpand;
       fts_intensity_k[i] = fts_intensity[indices[i]];
-
-      fts_mzmin_side_k[i] = fts_mz[indices[i]] - fts_mzmin[indices[i]];
-      fts_mzmax_side_k[i] = fts_mzmax[indices[i]] - fts_mz[indices[i]];
     }
 
     const float mean_mass = std::accumulate(fts_mass_k.begin(), fts_mass_k.end(), 0.0) / fts_mass_k.size();
+    const float mean_rt = std::accumulate(fts_rt_k.begin(), fts_rt_k.end(), 0.0) / fts_rt_k.size();
     const float max_mzmin_side = *std::max_element(fts_mzmin_side_k.begin(), fts_mzmin_side_k.end());
     const float max_mzmax_side = *std::max_element(fts_mzmax_side_k.begin(), fts_mzmax_side_k.end());
     const float min_rtmin = *std::min_element(fts_rtmin_k.begin(), fts_rtmin_k.end());
@@ -1450,8 +1485,10 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
         ana_targets[j].level.push_back(1);
         ana_targets[j].polarity.push_back(pols[p]);
         ana_targets[j].precursor.push_back(false);
+        ana_targets[j].mz.push_back(mz);
         ana_targets[j].mzmin.push_back(mzmin);
         ana_targets[j].mzmax.push_back(mzmax);
+        ana_targets[j].rt.push_back(mean_rt);
         ana_targets[j].rtmin.push_back(min_rtmin);
         ana_targets[j].rtmax.push_back(max_rtmax);
         ana_targets[j].mobilitymin.push_back(0);
@@ -1463,7 +1500,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
   }
 
   Rcpp::Rcout << "Done!" << std::endl;
-
+  
   for (int j = 0; j < number_analyses; j++)
   {
 
@@ -1472,9 +1509,14 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
     int n_j_targets = ana_targets[j].id.size();
 
     if (n_j_targets == 0)
+    {
+      out.push_back(out_analyses);
       continue;
+    }
     
-    Rcpp::Rcout << "Checking if there are already corresponding features in " << analyses_names[j] << "...";
+    Rcpp::Rcout << "Processing analyses " << analyses_names[j] << ":" << std::endl;
+    
+    Rcpp::Rcout << "    Checking if there are already corresponding features" << "...";
     
     for (int i = n_j_targets - 1; i >= 0; --i)
     {
@@ -1546,8 +1588,10 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
         ana_targets[j].level.erase(ana_targets[j].level.begin() + i);
         ana_targets[j].polarity.erase(ana_targets[j].polarity.begin() + i);
         ana_targets[j].precursor.erase(ana_targets[j].precursor.begin() + i);
+        ana_targets[j].mz.erase(ana_targets[j].mz.begin() + i);
         ana_targets[j].mzmin.erase(ana_targets[j].mzmin.begin() + i);
         ana_targets[j].mzmax.erase(ana_targets[j].mzmax.begin() + i);
+        ana_targets[j].rt.erase(ana_targets[j].rt.begin() + i);
         ana_targets[j].rtmin.erase(ana_targets[j].rtmin.begin() + i);
         ana_targets[j].rtmax.erase(ana_targets[j].rtmax.begin() + i);
         ana_targets[j].mobilitymin.erase(ana_targets[j].mobilitymin.begin() + i);
@@ -1559,7 +1603,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
     
     Rcpp::Rcout << "Done!" << std::endl;
 
-    Rcpp::Rcout << "Extracting " << ana_targets[j].id.size() << " EICs from analysis " << analyses_names[j] << "...";
+    Rcpp::Rcout << "    Extracting " << ana_targets[j].id.size() << " EICs...";
 
     const Rcpp::List &hd = headers[j];
     
@@ -1577,45 +1621,73 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
     const int n_traces = res.id.size();
 
     Rcpp::Rcout << " Done! " << std::endl;
-
+    
+    Rcpp::Rcout << "    Filtering " << n_traces << " spectra traces...";
+    
     for (int i = n_j_targets - 1; i >= 0; --i)
     {
 
       const std::string &id_i = ana_targets[j].id[i];
+      
+      // if (id_i == "M268_R916_1302") {
+      //   Rcpp::Rcout << std::endl;
+      //   for (int z = 0; z < n_traces; z++)
+      //     if (res.id[z] == id_i)
+      //       Rcpp::Rcout <<  res.rt[z] << " " << res.mz[z] << " " << res.intensity[z] << std::endl;
+      //   Rcpp::Rcout << std::endl;
+      // }
 
       int count = 0;
+      float max_intensity = 0;
 
       for (int z = 0; z < n_traces; z++)
-        if (res.id[z] == id_i)
-          count++;
-
-      if (count < minNumberTraces)
       {
-        ana_targets[j].index.erase(ana_targets[j].index.begin() + i);
-        ana_targets[j].id.erase(ana_targets[j].id.begin() + i);
-        ana_targets[j].level.erase(ana_targets[j].level.begin() + i);
-        ana_targets[j].polarity.erase(ana_targets[j].polarity.begin() + i);
-        ana_targets[j].precursor.erase(ana_targets[j].precursor.begin() + i);
-        ana_targets[j].mzmin.erase(ana_targets[j].mzmin.begin() + i);
-        ana_targets[j].mzmax.erase(ana_targets[j].mzmax.begin() + i);
-        ana_targets[j].rtmin.erase(ana_targets[j].rtmin.begin() + i);
-        ana_targets[j].rtmax.erase(ana_targets[j].rtmax.begin() + i);
-        ana_targets[j].mobilitymin.erase(ana_targets[j].mobilitymin.begin() + i);
-        ana_targets[j].mobilitymax.erase(ana_targets[j].mobilitymax.begin() + i);
-        ana_targets_groups[j].erase(ana_targets_groups[j].begin() + i);
-        ana_targets_replicates[j].erase(ana_targets_replicates[j].begin() + i);
+        if (res.id[z] == id_i)
+        {
+          count++;
+          if (res.intensity[z] > max_intensity)
+            max_intensity = res.intensity[z];
+        }
       }
+
+      if (count >= minNumberTraces && max_intensity >= minIntensity)
+      {
+        continue;
+      }
+      
+      ana_targets[j].index.erase(ana_targets[j].index.begin() + i);
+      ana_targets[j].id.erase(ana_targets[j].id.begin() + i);
+      ana_targets[j].level.erase(ana_targets[j].level.begin() + i);
+      ana_targets[j].polarity.erase(ana_targets[j].polarity.begin() + i);
+      ana_targets[j].precursor.erase(ana_targets[j].precursor.begin() + i);
+      ana_targets[j].mz.erase(ana_targets[j].mz.begin() + i);
+      ana_targets[j].mzmin.erase(ana_targets[j].mzmin.begin() + i);
+      ana_targets[j].mzmax.erase(ana_targets[j].mzmax.begin() + i);
+      ana_targets[j].rt.erase(ana_targets[j].rt.begin() + i);
+      ana_targets[j].rtmin.erase(ana_targets[j].rtmin.begin() + i);
+      ana_targets[j].rtmax.erase(ana_targets[j].rtmax.begin() + i);
+      ana_targets[j].mobilitymin.erase(ana_targets[j].mobilitymin.begin() + i);
+      ana_targets[j].mobilitymax.erase(ana_targets[j].mobilitymax.begin() + i);
+      ana_targets_groups[j].erase(ana_targets_groups[j].begin() + i);
+      ana_targets_replicates[j].erase(ana_targets_replicates[j].begin() + i);
+      
     }
 
     n_j_targets = ana_targets[j].id.size();
+    
+    Rcpp::Rcout << " Done! " << std::endl;
 
-    Rcpp::Rcout << "Filling " << n_j_targets << " features from analysis " << analyses_names[j] << "...";
+    Rcpp::Rcout << "    Filling " << n_j_targets << " features...";
 
     const std::vector<std::string> tg_id = ana_targets[j].id;
+    const std::vector<float> tg_rt = ana_targets[j].rt;
+    
+    int filled_counter = 0;
 
     for (int i = 0; i < n_j_targets; i++)
     {
       const std::string &id_i = tg_id[i];
+      const float &tg_rt_i = tg_rt[i];
 
       sc::MS_TARGETS_SPECTRA res_i = res[id_i];
 
@@ -1627,8 +1699,10 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
       }
 
       NTS::merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
-
-      Rcpp::List quality = NTS::calculate_gaussian_fit(id_i, res_i.rt, res_i.intensity, baseCut);
+      
+      Rcpp::List quality = NTS::calculate_gaussian_fit(
+        id_i, tg_rt_i, res_i.mz, res_i.rt, res_i.intensity, baseCut, maxSearchWindow
+      );
 
       const float &sn = quality["sn"];
 
@@ -1646,7 +1720,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
 
       const float area_i = NTS::trapezoidal_area(res_i.rt, res_i.intensity);
 
-      const size_t max_position = NTS::find_max_index(res_i.intensity);
+      const size_t max_position = NTS::find_central_max_index(res_i.rt, res_i.intensity, tg_rt_i, 0);
 
       const float rt_i = res_i.rt[max_position];
 
@@ -1672,11 +1746,13 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
 
       const int n = res_i.rt.size();
       const std::vector<std::string> id_vec = std::vector<std::string>(n, feature);
+      const std::vector<int> polarity_vec = std::vector<int>(n, res_i.polarity[0]);
+      const std::vector<int> level_vec = std::vector<int>(n, res_i.level[0]);
 
       Rcpp::List eic = Rcpp::List::create(
           Rcpp::Named("feature") = id_vec,
-          Rcpp::Named("polarity") = res_i.polarity,
-          Rcpp::Named("level") = res_i.level,
+          Rcpp::Named("polarity") = polarity_vec,
+          Rcpp::Named("level") = level_vec,
           Rcpp::Named("rt") = res_i.rt,
           Rcpp::Named("mz") = res_i.mz,
           Rcpp::Named("intensity") = res_i.intensity);
@@ -1723,11 +1799,15 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
       out_targets.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
       out_analyses[feature] = out_targets;
+      
+      filled_counter++;
     }
 
     out.push_back(out_analyses);
 
     Rcpp::Rcout << " Done! " << std::endl;
+    
+    Rcpp::Rcout << "    Filled " << filled_counter << " features!" << std::endl;
   }
 
   out.names() = analyses_names;
@@ -1744,6 +1824,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
                                               bool filtered = false,
                                               float rtExpand = 0,
                                               float mzExpand = 0,
+                                              float minPeakWidth = 6,
                                               float minTracesIntensity = 0,
                                               float minNumberTraces = 5,
                                               float baseCut = 0)
@@ -1758,22 +1839,29 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
 
   if (number_features_analyses != number_analyses)
     return features;
+  
+  if (minNumberTraces < 5)
+  {
+    minNumberTraces = 5;
+  }
+  
+  const float minHalfPeakWidth = minPeakWidth / 2;
 
   std::vector<std::string> features_analyses_names = features.names();
 
   for (int i = 0; i < number_analyses; i++)
   {
     if (features_analyses_names[i] != analyses_names[i])
-      return features;
+      continue;
 
     Rcpp::List features_i = features[i];
-
+    
     const std::vector<std::string> &features_i_names = features_i.names();
 
     const int n_features_i_names = features_i_names.size();
 
     if (n_features_i_names == 0)
-      return features;
+      continue;
 
     std::vector<std::string> must_have_names = {
         "feature", "rt", "rtmax", "rtmin", "mz", "mzmax", "mzmin", "polarity", "filtered", "quality", "eic"};
@@ -1790,34 +1878,40 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
           has_must_have_names[j] = true;
       }
     }
+    
+    bool has_all_must_have_names = true;
 
     for (bool value : has_must_have_names)
     {
       if (!value)
       {
-        return features;
+        has_all_must_have_names = false;
       }
     }
+    
+    if (!has_all_must_have_names)
+      continue;
 
     const std::vector<std::string> &fts_id = features_i["feature"];
     const std::vector<bool> &fts_filtered = features_i["filtered"];
     const std::vector<int> &fts_polarity = features_i["polarity"];
     const std::vector<float> &fts_rt = features_i["rt"];
-    const std::vector<float> &fts_rtmin = features_i["rtmin"];
-    const std::vector<float> &fts_rtmax = features_i["rtmax"];
+    std::vector<float> fts_rtmin = features_i["rtmin"];
+    std::vector<float> fts_rtmax = features_i["rtmax"];
     const std::vector<float> &fts_mz = features_i["mz"];
-    const std::vector<float> &fts_mzmin = features_i["mzmin"];
-    const std::vector<float> &fts_mzmax = features_i["mzmax"];
+    std::vector<float> fts_mzmin = features_i["mzmin"];
+    std::vector<float> fts_mzmax = features_i["mzmax"];
     const std::vector<float> &fts_intensity = features_i["intensity"];
-
     std::vector<Rcpp::List> fts_quality = features_i["quality"];
     std::vector<Rcpp::List> fts_eic = features_i["eic"];
 
     const int n_features = fts_id.size();
 
     if (n_features == 0)
-      return features;
-
+      continue;
+    
+    Rcpp::Rcout << "Processing " << n_features << " features in analyses " << analyses_names[i] << "...";
+    
     sc::MS_TARGETS targets;
 
     std::vector<bool> has_quality(n_features, false);
@@ -1832,7 +1926,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
 
       const int n_quality = quality.size();
 
-      if (n_quality > 0)
+      if (n_quality > 1)
       {
         has_quality[j] = true;
         continue;
@@ -1858,17 +1952,26 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
       targets.level.push_back(1);
       targets.polarity.push_back(fts_polarity[j]);
       targets.precursor.push_back(false);
+      targets.mz.push_back(fts_mz[j]);
       targets.mzmin.push_back(fts_mzmin[j] - mzExpand);
       targets.mzmax.push_back(fts_mzmax[j] + mzExpand);
-      targets.rtmin.push_back(fts_rtmin[j] - rtExpand);
-      targets.rtmax.push_back(fts_rtmax[j] + rtExpand);
+      const float &rt_j = fts_rt[j]; 
+      float rtmin_j = fts_rtmin[j];
+      float rtmax_j = fts_rtmax[j];
+      if (rt_j - rtmin_j < minHalfPeakWidth) rtmin_j = rt_j - minHalfPeakWidth;
+      if (rtmax_j - rt_j < minHalfPeakWidth) rtmax_j = rt_j + minHalfPeakWidth;
+      targets.rt.push_back(rt_j);
+      targets.rtmin.push_back(rtmin_j - rtExpand);
+      targets.rtmax.push_back(rtmax_j + rtExpand);
       targets.mobilitymin.push_back(0);
       targets.mobilitymax.push_back(0);
     }
 
     if (targets.id.size() == 0)
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
       continue;
-
+    }
     
     const Rcpp::List &hd = headers[i];
     
@@ -1877,7 +1980,10 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
     const std::string file = analyses_files[i];
 
     if (!std::filesystem::exists(file))
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
       continue;
+    }
 
     sc::MS_FILE ana(file);
 
@@ -1894,20 +2000,71 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
           continue;
 
       const std::string &id_j = fts_id[j];
-
+      const float &rt_j = fts_rt[j];
+      
       std::vector<float> rt;
       std::vector<float> mz;
       std::vector<float> intensity;
+      
+      Rcpp::List quality = Rcpp::List::create(
+        Rcpp::Named("feature") = id_j,
+        Rcpp::Named("noise") = 0,
+        Rcpp::Named("sn") = 0,
+        Rcpp::Named("gauss_a") = 0,
+        Rcpp::Named("gauss_u") = 0,
+        Rcpp::Named("gauss_s") = 0,
+        Rcpp::Named("gauss_f") = 0);
 
       if (has_eic[j])
       {
         const Rcpp::List &eic = fts_eic[j];
+        const std::vector<std::string> &feature_ref = eic["feature"];
+        const std::vector<int> &pol_ref = eic["polarity"];
+        const std::vector<int> &level_ref = eic["level"];
         const std::vector<float> &rt_ref = eic["rt"];
         const std::vector<float> &mz_ref = eic["mz"];
         const std::vector<float> &intensity_ref = eic["intensity"];
         rt = rt_ref;
         mz = mz_ref;
         intensity = intensity_ref;
+        
+        int n = rt.size();
+        
+        if (n > minNumberTraces)
+        {
+          quality = NTS::calculate_gaussian_fit(id_j, rt_j, mz, rt, intensity, baseCut, 0);
+          
+          n = rt.size();
+          
+          std::vector<std::string> feature_vec(n, id_j);
+          std::vector<int> pol_vec(n, pol_ref[0]);
+          std::vector<int> level_vec(n, level_ref[0]);
+          
+          float mzmin = *std::min_element(mz.begin(), mz.end());
+          float mzmax = *std::max_element(mz.begin(), mz.end());
+          float rtmin = *std::min_element(rt.begin(), rt.end());
+          float rtmax = *std::max_element(rt.begin(), rt.end());
+
+          if (mzmin != fts_mzmin[j] || mzmax != fts_mzmax[j] || rtmin != fts_rtmin[j] || rtmax != fts_rtmax[j])
+          {
+            fts_mzmin[j] = mzmin;
+            fts_mzmax[j] = mzmax;
+            fts_rtmin[j] = rtmin;
+            fts_rtmax[j] = rtmax;
+          }
+          
+          Rcpp::List eic = Rcpp::List::create(
+            Rcpp::Named("feature") = feature_vec,
+            Rcpp::Named("polarity") = pol_vec,
+            Rcpp::Named("level") = level_vec,
+            Rcpp::Named("rt") = rt,
+            Rcpp::Named("mz") = mz,
+            Rcpp::Named("intensity") = intensity);
+          
+          eic.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+          
+          fts_eic[j] = eic;
+        }
       }
       else
       {
@@ -1916,39 +2073,56 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
         mz = res_j.mz;
         intensity = res_j.intensity;
         NTS::merge_traces_within_rt(rt, mz, intensity);
+        
+        int n = rt.size();
+        
+        if (n > minNumberTraces)
+        {
+          quality = NTS::calculate_gaussian_fit(id_j, rt_j, mz, rt, intensity, baseCut, 0);
+          n = rt.size();
+          
+          float mzmin = *std::min_element(mz.begin(), mz.end());
+          float mzmax = *std::max_element(mz.begin(), mz.end());
+          float rtmin = *std::min_element(rt.begin(), rt.end());
+          float rtmax = *std::max_element(rt.begin(), rt.end());
+          
+          if (mzmin != fts_mzmin[j] || mzmax != fts_mzmax[j] || rtmin != fts_rtmin[j] || rtmax != fts_rtmax[j])
+          {
+            fts_mzmin[j] = mzmin;
+            fts_mzmax[j] = mzmax;
+            fts_rtmin[j] = rtmin;
+            fts_rtmax[j] = rtmax;
+          }
+        }
+        
+        std::vector<std::string> feature_vec(n, id_j);
+        std::vector<int> pol_vec(n, res_j.polarity[0]);
+        std::vector<int> level_vec(n, res_j.level[0]);
+        
         Rcpp::List eic = Rcpp::List::create(
-            Rcpp::Named("feature") = id_j,
-            Rcpp::Named("polarity") = res_j.polarity,
-            Rcpp::Named("level") = res_j.level,
-            Rcpp::Named("rt") = rt,
-            Rcpp::Named("mz") = mz,
-            Rcpp::Named("intensity") = intensity);
+          Rcpp::Named("feature") = feature_vec,
+          Rcpp::Named("polarity") = pol_vec,
+          Rcpp::Named("level") = level_vec,
+          Rcpp::Named("rt") = rt,
+          Rcpp::Named("mz") = mz,
+          Rcpp::Named("intensity") = intensity);
         eic.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
         fts_eic[j] = eic;
       }
 
-      Rcpp::List quality = Rcpp::List::create(
-          Rcpp::Named("feature") = id_j,
-          Rcpp::Named("noise") = 0,
-          Rcpp::Named("sn") = 0,
-          Rcpp::Named("gauss_a") = 0,
-          Rcpp::Named("gauss_u") = 0,
-          Rcpp::Named("gauss_s") = 0,
-          Rcpp::Named("gauss_f") = 0);
-
-      const int n = rt.size();
-
-      if (n > minNumberTraces)
-        quality = NTS::calculate_gaussian_fit(id_j, rt, intensity, baseCut);
-
       quality.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
       fts_quality[j] = quality;
     }
-
+  
+    features_i["mzmin"] = fts_mzmin;
+    features_i["mzmax"] = fts_mzmax;
+    features_i["rtmin"] = fts_rtmin;
+    features_i["rtmax"] = fts_rtmax;
     features_i["eic"] = fts_eic;
     features_i["quality"] = fts_quality;
     features[i] = features_i;
+    
+    Rcpp::Rcout << "Done!" << std::endl;
   }
 
   return features;

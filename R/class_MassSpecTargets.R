@@ -189,6 +189,13 @@ MassSpecTargets <- S7::new_class(
           warning("Polarity could not be defined!")
           targets <- data.table::data.table()
         }
+      } else {
+        if ("polarity" %in% colnames(targets) && nrow(targets) > 0) {
+          for (i in seq_len(nrow(targets))) {
+            if (targets$polarity[i] == 1) targets$polarity[i] <- "positive"
+            if (targets$polarity[i] == -1) targets$polarity[i] <- "negative"
+          }
+        }
       }
       
       if (!all(grepl("positive|negative", targets$polarity))) {

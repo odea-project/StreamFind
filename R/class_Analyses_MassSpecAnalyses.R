@@ -920,7 +920,7 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
         }
       }
       
-      spec <- rcpp_parse_ms_spectra(a, levels, no_cached_targets, minIntensityMS1, minIntensityMS2)
+      spec <- rcpp_parse_ms_spectra(a, levels, no_cached_targets[1, ], minIntensityMS1, minIntensityMS2)
       
       message(" Done!")
       
@@ -2158,8 +2158,16 @@ S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
                                                                   legendNames = NULL,
                                                                   downsize = 1,
                                                                   interactive = TRUE,
+                                                                  showLegend = TRUE,
                                                                   renderEngine = "webgl") {
+  analyses <- .check_analyses_argument(x, analyses)
   mp <- get_matrix_suppression(x, rtWindow)
+  if (nrow(mp) == 0) {
+    message("\U2717 TIC matrix suppression not found for the analyses!")
+    return(NULL)
+  }
+  sel <- mp$analysis %in% analyses
+  mp <- mp[sel, ]
   if (nrow(mp) == 0) {
     message("\U2717 TIC matrix suppression not found for the analyses!")
     return(NULL)
@@ -2196,9 +2204,9 @@ S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
         type = "scatter",
         color = ~var,
         colors = cl,
-        mode = "lines+markers",
-        line = list(width = 0.5),
-        marker = list(size = 2),
+        mode = "lines", #+markers
+        line = list(width = 2),
+        # marker = list(size = 2.5),
         text = ~paste(
           "<br>analysis: ", analysis,
           "<br>replicate: ", replicate,
@@ -2208,7 +2216,8 @@ S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
           "<br>rt: ", rt,
           "<br>suppression: ", intensity
         ),
-        hoverinfo = "text"
+        hoverinfo = "text",
+        showlegend = showLegend
       ) %>% plotly::layout(
         xaxis = xaxis,
         yaxis = yaxis,

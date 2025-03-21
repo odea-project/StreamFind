@@ -7,13 +7,14 @@
 MassSpecMethod_FilterFeatures_StreamFind(
   correctSuppression = TRUE,
   minSnRatio = NA_real_,
+  minGaussianFit = NA_real_,
   excludeIsotopes = FALSE,
   excludeAdducts = FALSE,
   minIntensity = NA_real_,
   maxDeviationInReplicate = NA_real_,
   minAbundanceInReplicate = NA_real_,
   blankThreshold = NA_real_,
-  blankSubtractionConservative = TRUE,
+  conservative = TRUE,
   onlyWithMS2 = FALSE
 )
 }
@@ -24,6 +25,8 @@ the processing method \code{CorrectMatrixSuppression} must be present. When not 
 correction is ignored even if set to \code{TRUE}.}
 
 \item{minSnRatio}{Numeric (length 1) with the minimum signal-to-noise ratio.}
+
+\item{minGaussianFit}{Numeric (length 1) with the minimum Gaussian fit.}
 
 \item{excludeIsotopes}{Logical (length 1) with \code{TRUE} for filtering annotated isotopes
 (only prevails the monoisotopic features).}
@@ -43,10 +46,10 @@ group. The filter is applied if the maximum abundance from all replicates is bel
 threshold. The filter is applied if the maximum mean intensity from all non-blank replicates
 is below the correspondent blank intensity times the multiplier.}
 
-\item{blankSubtractionConservative}{Logical (length 1) with \code{TRUE} for conservative blank
-subtraction. The filter is applied if the maximum mean intensity from all non-blank replicates
-is below the correspondent blank intensity times the multiplier. When set to \code{FALSE} the filter
-is applied per replicate.}
+\item{conservative}{Logical (length 1) with \code{TRUE} for conservative filtering. The filters are
+applied on a feature group basis. If \code{FALSE}, the filters are applied on a feature basis. This
+means that when \code{TRUE} a feature is only filtered if all features within a feature group comply
+with the filter.}
 
 \item{onlyWithMS2}{Logical (length 1) with \code{TRUE} for filtering features without MS2 spectra.}
 }

@@ -3413,6 +3413,7 @@ Method to plot the intensity profile of feature groups across the analyses.
   legendNames = NULL,
   yLab = NULL,
   title = NULL,
+  showLegend = TRUE,
   renderEngine = "webgl"
 )}\if{html}{\out{</div>}}
 }
@@ -3476,6 +3477,8 @@ the added targets as legend of the plot.}
 \item{\code{yLab}}{A string with the title for the y axis.}
 
 \item{\code{title}}{A string with the title.}
+
+\item{\code{showLegend}}{Logical (length 1). Set to \code{TRUE} to show legend.}
 
 \item{\code{renderEngine}}{The engine to render the data. The default is "webgl".}
 }

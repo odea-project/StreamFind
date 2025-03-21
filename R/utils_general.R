@@ -729,7 +729,7 @@
     return(invisible(NULL))
   }
   
-  if (what == "all") {
+  if ("all" %in% what) {
     files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
     if (length(files) > 0) {
       file.remove(files)
@@ -737,9 +737,14 @@
       warning("No files to remove! Run get_cache_info() to get an overview.")
     }
   } else if (is.character(what)) {
-    files <- list.files(folder, pattern = paste0(what, "_.*.rds$"), full.names = TRUE)
-    if (length(files) > 0) {
-      file.remove(files)
+    all_files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
+    remove_files <- character()
+    for (i in what) {
+      remove_files <- c(remove_files, all_files[grepl(i, all_files)])
+    }
+    
+    if (length(remove_files) > 0) {
+      file.remove(remove_files)
     } else {
       warning("No files to remove! Run get_cache_info() to get an overview.")
     }
