@@ -192,7 +192,7 @@ nts@group_names
 # plot_features_count(nts, colorBy = "replicates") #imp
 # View(get_features(nts, mass = db[2:3, ]))
 # get_features_eic(nts, mass = db[2, ])
-# plot_features(nts, mass = db[2, ])
+# plot_features(nts, features=data.frame(analysis="02_tof_ww_is_pos_influent-r001",feature="F43_MZ277_RT914"))
 # plot_features(nts, mass = db[2:3, ], legendNames = TRUE)
 # get_features_ms1(nts, mass = db[2, ])
 # plot_features_ms1(nts, mass = db[2:3, ], legendNames = TRUE)
