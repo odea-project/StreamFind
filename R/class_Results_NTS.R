@@ -285,15 +285,17 @@ NTS <- S7::new_class(
       checkmate::assert_true(identical(self$analyses_info$analysis, names(self@feature_list)))
       checkmate::assert_true(identical(self$analyses_info$analysis, names(self@spectra_headers)))
       fp <- c(
-        "feature", "rt", "mz", "area", "intensity",
+        "feature", "group", "rt", "mz", "intensity", "area",
         "rtmin", "rtmax", "mzmin", "mzmax", "mass",
-        "polarity", "adduct", "filtered", "filter", "filled", "group",
-        "quality", "annotation", "istd", "ms1", "ms2", "eic",
+        "polarity", "adduct", "filtered", "filter", "filled",
+        "eic", "ms1", "ms2", "quality", "annotation", "istd",
         "suspects", "formulas", "compounds"
       )
       for (x in self@feature_list) {
         checkmate::assert_data_table(x)
-        checkmate::assert_true(all(fp %in% colnames(x)))
+        if (nrow(x) > 0) {
+          checkmate::assert_true(all(fp %in% colnames(x)))
+        }
       }
     }
     NULL
@@ -5219,7 +5221,7 @@ S7::method(report, NTS) <- function(x,
   
   hT <- paste(
     if ("var" %in% colnames(pk)) {
-      paste("</br> ", pk$var)
+      paste("</br>", pk$var)
     } else {
       ""
     },
@@ -5234,26 +5236,27 @@ S7::method(report, NTS) <- function(x,
     "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
     "</br> intensity: ", round(pk$intensity, digits = 0),
     "</br> filtered: ", pk$filtered,
-    "</br> filtered: ", pk$filter,
+    "</br> filter: ", pk$filter,
     "</br> filled: ", pk$filled,
     if (has_quality) {
       paste(
-        "</br> noise: ",  vapply(pk$quality, function(z) {
+        "</br></br> Quality: ",
+        "</br>   noise: ",  vapply(pk$quality, function(z) {
           if (nrow(z) > 0) round(z$noise, digits = 0) else NA_real_
         }, NA_real_),
-        "</br> sn: ", vapply(pk$quality, function(z) {
+        "</br>   sn: ", vapply(pk$quality, function(z) {
           if (nrow(z) > 0) round(z$sn, digits = 1) else NA_real_
         }, NA_real_),
-        "</br> gaufit: ", vapply(pk$quality, function(z) {
+        "</br>   gaufit: ", vapply(pk$quality, function(z) {
           if (nrow(z) > 0) round(z$gauss_f, digits = 4) else NA_real_
         }, NA_real_),
-        "</br> A: ", vapply(pk$quality, function(z) {
+        "</br>   A: ", vapply(pk$quality, function(z) {
           if (nrow(z) > 0) round(z$gauss_a, digits = 2) else NA_real_
         }, NA_real_),
-        "</br> mu: ", vapply(pk$quality, function(z) {
+        "</br>   mu: ", vapply(pk$quality, function(z) {
           if (nrow(z) > 0)  round(z$gauss_u, digits = 2) else NA_real_
         }, NA_real_),
-        "</br> sigma: ", vapply(pk$quality, function(z) {
+        "</br>   sigma: ", vapply(pk$quality, function(z) {
           if (nrow(z) > 0) round(z$gauss_s, digits = 2) else NA_real_
         }, NA_real_)
       )
@@ -5262,38 +5265,40 @@ S7::method(report, NTS) <- function(x,
     },
     if (has_annotation) {
       paste(
-        "</br> component: ", vapply(pk$annotation, function(z) {
+        "</br></br> Annotation: ",
+        "</br>   component: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0) z$component_feature else NA_character_
         }, NA_character_),
-        "</br> isotope: ", vapply(pk$annotation, function(z) {
+        "</br>   isotope: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0) z$iso_cat else NA_character_
         }, NA_character_
         ),
-        "</br> iso_elements: ", vapply(pk$annotation, function(z) {
+        "</br>   elements: ", vapply(pk$annotation, function(z) {
           z$iso_isotope
         }, NA_character_),
-        "</br> iso_number_carbons: ", vapply(pk$annotation, function(z) {
+        "</br>   number_carbons: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0) round(z$iso_number_carbons, digits = 0) else NA_real_
         }, NA_real_),
-        "</br> iso_mass_error: ", vapply(pk$annotation, function(z) {
+        "</br>   iso_mass_error: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0) round(z$iso_mass_error, digits = 5) else NA_real_
         }, NA_real_),
-        "</br> iso_time_error: ", vapply(pk$annotation, function(z) {
+        "</br>   iso_time_error: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0) round(z$iso_time_error, digits = 1) else NA_real_
         }, NA_real_),
-        "</br> adduct: ", vapply(pk$annotation, function(z) {
+        "</br>   adduct: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0) z$adduct_cat else NA_character_
         }, NA_character_),
-        "</br> adduct_mass_error: ", vapply(pk$annotation, function(z) {
+        "</br>   adduct_mass_error: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0)  round(z$adduct_mass_error, digits = 5) else NA_real_
         }, NA_real_),
-        "</br> adduct_time_error: ", vapply(pk$annotation, function(z) {
+        "</br>   adduct_time_error: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0) round(z$adduct_time_error, digits = 1) else NA_real_
         }, NA_real_)
       )
     } else {
       ""
-    }
+    },
+    "</br>"
     # if ("dqsPeak" %in% colnames(pk)) {
     #   paste("</br> DQS: ", pk$dqsPeak)
     # } else {

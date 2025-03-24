@@ -144,48 +144,38 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
     parameters$minGaussianFit
   )
   
+  message("Adding filled features to NTS object...", appendLF = FALSE)
+  
   res <- lapply(res, function(z) {
-    temp <- data.table::rbindlist(z, fill = TRUE)
-    if (nrow(temp) > 0) temp <- temp[!duplicated(temp$group), ]
-    temp
+    data.table::rbindlist(z, fill = TRUE)
   })
   
   res <- data.table::rbindlist(res, fill = TRUE)
-  res[["filled"]] <- TRUE
   res_analysis <- res$analysis
   res[["analysis"]] <- NULL
   res[["replicate"]] <- NULL
   res <- split(res, res_analysis)
   
+  res <- lapply(res, function(z) {
+    if (nrow(z) > 0) z <- z[!duplicated(z$group), ]
+  })
+  
   analyses_names <- names(feature_list)
   
   feature_list <- lapply(analyses_names, function(z, feature_list, res) {
-    
     filled_fts <- res[[z]]
-    
     if (is.null(filled_fts)) return(feature_list[[z]])
-    
     if (nrow(filled_fts) == 0) return(feature_list[[z]])
-    
-    z <- data.table::rbindlist(list(feature_list[[z]], filled_fts), fill = TRUE)
-    
-    duplos <- unique(z$feature[duplicated(z$feature)])
-    
-    if (length(duplos) > 0) {
-      for (duplo in duplos) {
-        temp <- z[z$feature %in% duplo, ]
-        grp <- temp$group[!is.na(temp$group)]
-        if (length(grp) > 0) {
-          z$group[z$feature %in% duplo] <- grp[1]
-          z <- z[!(z$feature %in% duplo & z$adduct %in% "" & z$mass %in% 0), ]
-        }
-      }
-    }
-    
+    org_fts <- feature_list[[z]]
+    if (nrow(org_fts) > 0) org_fts <- org_fts[!org_fts$feature %in% filled_fts$feature, ]
+    z <- data.table::rbindlist(list(org_fts, filled_fts), fill = TRUE)
+    z <- z[!duplicated(z$group), ]
     z
   }, feature_list = feature_list, res = res)
   
   names(feature_list) <- analyses_names
+  
+  message("Done!")
   
   NTS$feature_list <- feature_list
   engine$NTS <- NTS

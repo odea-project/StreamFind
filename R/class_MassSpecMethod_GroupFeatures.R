@@ -120,7 +120,19 @@
   fl <- NTS@feature_list
 
   fl <- Map(function(x, y) {
-    x$group[match(x$feature, y$ID)] <- y$group[match(y$ID, x$feature)]
+    
+    x_na <- x[!x$feature %in% y$ID, ]
+    
+    if (any(!x_na$filtered)) {
+      x_na$filtered[!x_na$filtered] <- TRUE
+      x_na$filter[!x_na$filtered] <- "GroupFeatures"
+    }
+    
+    x <- x[x$feature %in% y$ID, ]
+    
+    x$group[match(y$ID, x$feature)] <- y$group[match(x$feature, y$ID)]
+    
+    x <- data.table::rbindlist(list(x, x_na))
     x
   }, fl, pat_fl)
 

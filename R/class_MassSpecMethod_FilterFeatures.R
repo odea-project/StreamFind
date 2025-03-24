@@ -146,7 +146,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           }, 0)
           sel <- iso > 0
           x$filtered[sel] <- TRUE
-          x$filter[sel] <- "excludeIsotopes"
+          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " excludeIsotopes"))
         }
         x
       })
@@ -176,7 +176,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           }, "")
           sel <- res != ""
           x$filtered[sel] <- TRUE
-          x$filter[sel] <- "excludeAdducts"
+          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " excludeAdducts"))
         }
         x
       })
@@ -187,7 +187,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
     }
   }
 
-  .filter_minSnRatio <- function(value = 3, conservative, engine) {
+  .filter_minSnRatio <- function(value = 3, conservative = FALSE, engine) {
     if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
@@ -211,7 +211,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           feature_list <- lapply(feature_list, function(x, groups) {
             sel <- x$group %in% groups
             x$filtered[sel] <- TRUE
-            x$filter[sel] <- "minSnRatio"
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minSnRatio"))
             x
           }, groups = groups)
           engine$NTS$feature_list <- feature_list
@@ -232,7 +232,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
             qlt[is.na(qlt)] <- 0
             sel <- qlt <= value
             x$filtered[sel] <- TRUE
-            x$filter[sel] <- "minSnRatio"
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minSnRatio"))
           }
           x
         })
@@ -243,7 +243,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
     }
   }
   
-  .filter_minGaussianFit <- function(value = 0.3, conservative, engine) {
+  .filter_minGaussianFit <- function(value = 0.3, conservative = FALSE, engine) {
     if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
@@ -266,7 +266,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           feature_list <- lapply(feature_list, function(x, groups) {
             sel <- x$group %in% groups
             x$filtered[sel] <- TRUE
-            x$filter[sel] <- "minGaussianFit"
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minGaussianFit"))
             x
           }, groups = groups)
           engine$NTS$feature_list <- feature_list
@@ -287,7 +287,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
             qlt[is.na(qlt)] <- 0
             sel <- qlt <= value
             x$filtered[sel] <- TRUE
-            x$filter[sel] <- "minGaussianFit"
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minGaussianFit"))
           }
           x
         })
@@ -325,7 +325,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         feature_list <- lapply(feature_list, function(x, groups) {
           sel <- x$group %in% groups
           x$filtered[sel] <- TRUE
-          x$filter[sel] <- "minIntensity"
+          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minIntensity"))
           x
         }, groups = groups)
         engine$NTS$feature_list <- feature_list
@@ -342,7 +342,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           }
           sel <- intensity_vector <= value
           x$filtered[sel] <- TRUE
-          x$filter[sel] <- "minIntensity"
+          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minIntensity"))
           x
         }, correctSuppression = correctSuppression)
         engine$NTS$feature_list <- feature_list
@@ -378,7 +378,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         feature_list <- lapply(feature_list, function(x, groups) {
           sel <- x$group %in% groups
           x$filtered[sel] <- TRUE
-          x$filter[sel] <- "maxDeviationInReplicate"
+          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " maxDeviationInReplicate"))
           x
         }, groups = groups)
         engine$NTS$feature_list <- feature_list
@@ -415,7 +415,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         feature_list <- lapply(feature_list, function(x, groups) {
           sel <- x$group %in% groups
           x$filtered[sel] <- TRUE
-          x$filter[sel] <- "minAbundanceInReplicate"
+          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minAbundanceInReplicate"))
           x
         }, groups = groups)
         engine$NTS$feature_list <- feature_list
@@ -489,7 +489,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           feature_list <- lapply(feature_list, function(x, groups) {
             sel <- x$group %in% groups
             x$filtered[sel] <- TRUE
-            x$filter[sel] <- "blankThreshold"
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " blankThreshold"))
             x
           }, groups = groups)
         } else {
@@ -510,7 +510,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           feature_list <- Map(function(x, y) {
             sel <- x$group %in% y
             x$filtered[sel] <- TRUE
-            x$filter[sel] <- "blankThreshold"
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " blankThreshold"))
             x
           }, feature_list, feature_groups_list)
           
@@ -543,7 +543,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
             }
           }, FALSE)
           x$filtered[sel] <- TRUE
-          x$filter[sel] <- "onlyWithMS2"
+          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " onlyWithMS2"))
         }
         x
       })
@@ -561,28 +561,28 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
     
     switch(
       filters[i],
+      excludeIsotopes = .filter_excludeIsotopes(parameters[[filters[i]]], engine),
+      excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine),
       minIntensity = .filter_minIntensity(
         parameters[[filters[i]]],
         correctSuppression,
         conservative,
         engine
       ),
-      minSnRatio = .filter_minSnRatio(parameters[[filters[i]]], conservative, engine),
-      minGaussianFit = .filter_minGaussianFit(parameters[[filters[i]]], conservative, engine),
-      maxDeviationInReplicate = .filter_maxDeviationInReplicate(
-        parameters[[filters[i]]],
-        correctSuppression,
-        engine
-      ),
-      minAbundanceInReplicate = .filter_minAbundanceInReplicate(parameters[[filters[i]]], engine),
       blankThreshold = .filter_blankThreshold(
         parameters[[filters[i]]],
         conservative,
         correctSuppression,
         engine
       ),
-      excludeIsotopes = .filter_excludeIsotopes(parameters[[filters[i]]], engine),
-      excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine),
+      maxDeviationInReplicate = .filter_maxDeviationInReplicate(
+        parameters[[filters[i]]],
+        correctSuppression,
+        engine
+      ),
+      minSnRatio = .filter_minSnRatio(parameters[[filters[i]]], conservative, engine),
+      minGaussianFit = .filter_minGaussianFit(parameters[[filters[i]]], conservative, engine),
+      minAbundanceInReplicate = .filter_minAbundanceInReplicate(parameters[[filters[i]]], engine),
       onlyWithMS2 = .filter_onlyWithMS2(parameters[[filters[i]]], engine)
     )
   }

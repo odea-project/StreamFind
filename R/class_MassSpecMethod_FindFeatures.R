@@ -192,6 +192,18 @@
   headers <- engine$Analyses$spectra_headers[analyses_info$analysis]
 
   feature_list <- feature_list[analyses_info$analysis]
+  
+  fp <- c(
+    "feature", "group", "rt", "mz", "intensity", "area",
+    "rtmin", "rtmax", "mzmin", "mzmax", "mass",
+    "polarity", "adduct", "filtered", "filter", "filled",
+    "eic", "ms1", "ms2", "quality", "annotation", "istd",
+    "suspects", "formulas", "compounds"
+  )
+  
+  feature_list <- lapply(feature_list, function(z, fp) {
+    z[, fp, with = FALSE]
+  }, fp = fp)
 
   nts <- NTS(analyses_info, headers, feature_list)
 

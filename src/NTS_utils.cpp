@@ -1,6 +1,6 @@
 #include "NTS_utils.h"
 
-// MARK: GET_MS_ANALYSIS_LIST_HEADERS
+// MARK: as_MS_SPECTRA_HEADERS
 sc::MS_SPECTRA_HEADERS NTS::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
 {
   sc::MS_SPECTRA_HEADERS headers;

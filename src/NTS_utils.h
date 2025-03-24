@@ -17,7 +17,374 @@
 
 namespace NTS
 {
-
+// MARK: MS_FEATURE_EIC
+  struct MS_FEATURE_EIC
+  {
+    std::string feature;
+    int polarity;
+    int level;
+    std::vector<float> rt;
+    std::vector<float> mz;
+    std::vector<float> intensity;
+    bool extracted = false;
+    
+    int size()
+    {
+      return rt.size();
+    };
+    
+    Rcpp::List to_list_dt()
+    {
+      std::vector<std::string> feature_v(rt.size(), feature);
+      std::vector<int> polarity_v(rt.size(), polarity);
+      std::vector<int> level_v(rt.size(), level);
+      
+      Rcpp::List out = Rcpp::List::create(
+        Rcpp::Named("feature") = feature_v,
+        Rcpp::Named("polarity") = polarity_v,
+        Rcpp::Named("level") = level_v,
+        Rcpp::Named("rt") = rt,
+        Rcpp::Named("mz") = mz,
+        Rcpp::Named("intensity") = intensity
+      );
+      
+      out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      
+      out = Rcpp::List::create(out);
+      
+      return out;
+    };
+    
+  };
+  
+  // MARK: MS_FEATURE_QUALITY
+  struct MS_FEATURE_QUALITY
+  {
+    std::string feature = "";
+    float noise = 0.0f;
+    float sn = 0.0f;
+    float gauss_a = 0.0f;
+    float gauss_u = 0.0f;
+    float gauss_s = 0.0f;
+    float gauss_f = 0.0f;
+    bool is_calculated = false;
+    
+    Rcpp::List to_list_dt()
+    {
+      Rcpp::List out = Rcpp::List::create(
+        Rcpp::Named("feature") = feature,
+        Rcpp::Named("noise") = noise,
+        Rcpp::Named("sn") = sn,
+        Rcpp::Named("gauss_a") = gauss_a,
+        Rcpp::Named("gauss_u") = gauss_u,
+        Rcpp::Named("gauss_s") = gauss_s,
+        Rcpp::Named("gauss_f") = gauss_f
+      );
+      
+      out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      
+      out = Rcpp::List::create(out);
+      
+      return out;
+    };
+  };
+  
+  // MARK: MS_FEATURE_ANNOTATION 
+  struct MS_FEATURE_ANNOTATION
+  {
+    std::string feature;
+    std::string component_feature;
+    int iso_size;
+    int iso_charge;
+    int iso_step;
+    std::string iso_cat;
+    std::string iso_isotope;
+    float iso_mzr;
+    float iso_relative_intensity;
+    float iso_theoretical_min_relative_intensity;
+    float iso_theoretical_max_relative_intensity;
+    float iso_mass_distance;
+    float iso_theoretical_mass_distance;
+    float iso_mass_distance_error;
+    float iso_time_error;
+    float iso_number_carbons;
+    std::string adduct_element;
+    std::string adduct_cat;
+    float adduct_time_error;
+    float adduct_mass_error;
+    
+    MS_FEATURE_ANNOTATION(std::string feature = "",
+                          std::string component_feature = "",
+                          int iso_size = 0,
+                          int iso_charge = 0,
+                          int iso_step = 0,
+                          std::string iso_cat = "",
+                          std::string iso_isotope = "",
+                          float iso_mzr = 0.0f,
+                          float iso_relative_intensity = 0.0f,
+                          float iso_theoretical_min_relative_intensity = 0.0f,
+                          float iso_theoretical_max_relative_intensity = 0.0f,
+                          float iso_mass_distance = 0.0f,
+                          float iso_theoretical_mass_distance = 0.0f,
+                          float iso_mass_distance_error = 0.0f,
+                          float iso_time_error = 0.0f,
+                          float iso_number_carbons = 0.0f,
+                          std::string adduct_element = "",
+                          std::string adduct_cat = "",
+                          float adduct_time_error = 0.0f,
+                          float adduct_mass_error = 0.0f) :
+      feature(feature),
+      component_feature(component_feature),
+      iso_size(iso_size),
+      iso_charge(iso_charge),
+      iso_step(iso_step),
+      iso_cat(iso_cat),
+      iso_isotope(iso_isotope),
+      iso_mzr(iso_mzr),
+      iso_relative_intensity(iso_relative_intensity),
+      iso_theoretical_min_relative_intensity(iso_theoretical_min_relative_intensity),
+      iso_theoretical_max_relative_intensity(iso_theoretical_max_relative_intensity),
+      iso_mass_distance(iso_mass_distance),
+      iso_theoretical_mass_distance(iso_theoretical_mass_distance),
+      iso_mass_distance_error(iso_mass_distance_error),
+      iso_time_error(iso_time_error),
+      iso_number_carbons(iso_number_carbons),
+      adduct_element(adduct_element),
+      adduct_cat(adduct_cat),
+      adduct_time_error(adduct_time_error),
+      adduct_mass_error(adduct_mass_error) {};
+    
+    Rcpp::List to_list_dt()
+    {
+      Rcpp::List out = Rcpp::List::create(
+        Rcpp::Named("feature") = feature,
+        Rcpp::Named("component_feature") = component_feature,
+        Rcpp::Named("iso_size") = iso_size,
+        Rcpp::Named("iso_charge") = iso_charge,
+        Rcpp::Named("iso_step") = iso_step,
+        Rcpp::Named("iso_cat") = iso_cat,
+        Rcpp::Named("iso_isotope") = iso_isotope,
+        Rcpp::Named("iso_mzr") = iso_mzr,
+        Rcpp::Named("iso_relative_intensity") = iso_relative_intensity,
+        Rcpp::Named("iso_theoretical_min_relative_intensity") = iso_theoretical_min_relative_intensity,
+        Rcpp::Named("iso_theoretical_max_relative_intensity") = iso_theoretical_max_relative_intensity,
+        Rcpp::Named("iso_mass_distance") = iso_mass_distance,
+        Rcpp::Named("iso_theoretical_mass_distance") = iso_theoretical_mass_distance,
+        Rcpp::Named("iso_mass_distance_error") = iso_mass_distance_error,
+        Rcpp::Named("iso_time_error") = iso_time_error,
+        Rcpp::Named("iso_number_carbons") = iso_number_carbons,
+        Rcpp::Named("adduct_element") = adduct_element,
+        Rcpp::Named("adduct_cat") = adduct_cat,
+        Rcpp::Named("adduct_time_error") = adduct_time_error,
+        Rcpp::Named("adduct_mass_error") = adduct_mass_error
+      );
+      
+      out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      
+      out = Rcpp::List::create(out);
+      
+      return out;
+    }
+  };
+  
+  // MARK: MS_FEATURES
+  struct MS_FEATURES
+  {
+    std::string analysis;
+    std::vector<std::string> feature;
+    std::vector<std::string> group;
+    std::vector<float> rt;
+    std::vector<float> mz;
+    std::vector<float> intensity;
+    std::vector<float> area;
+    std::vector<float> rtmin;
+    std::vector<float> rtmax;
+    std::vector<float> mzmin;
+    std::vector<float> mzmax;
+    std::vector<float> mass;
+    std::vector<int> polarity;
+    std::vector<std::string> adduct;
+    std::vector<bool> filtered;
+    std::vector<std::string> filter;
+    std::vector<bool> filled;
+    std::vector<MS_FEATURE_EIC> eic;
+    std::vector<Rcpp::List> ms1;
+    std::vector<Rcpp::List> ms2;
+    std::vector<MS_FEATURE_QUALITY> quality;
+    std::vector<Rcpp::List> annotation;
+    std::vector<Rcpp::List> istd;
+    std::vector<Rcpp::List> suspects;
+    std::vector<Rcpp::List> formulas;
+    std::vector<Rcpp::List> compounds;
+    
+    MS_FEATURES(const std::string &analysis, const Rcpp::List &features) : analysis(analysis)
+    {
+      std::vector<std::string> must_have_names = {
+        "feature", "group", "rt", "mz", "intensity", "area", "rtmin",  "rtmax", "mzmin", "mzmax",
+        "mass", "polarity", "adduct", "filtered", "filter", "filled", "eic", "ms1", "ms2",
+        "quality", "annotation", "istd", "suspects", "formulas", "compounds"
+      };
+      
+      const int must_have_names_size = must_have_names.size();
+      
+      std::vector<std::string> names_features = features.names();
+      const int names_features_size = names_features.size();
+      
+      if (names_features_size == 0) return;
+      
+      std::vector<bool> has_must_have_names(must_have_names_size, false);
+      
+      for (int i = 0; i < must_have_names_size; ++i)
+      {
+        for (int j = 0; j < names_features_size; ++j)
+        {
+          if (must_have_names[i] == names_features[j])
+            has_must_have_names[i] = true;
+        }
+      }
+      
+      for (bool value : has_must_have_names)
+      {
+        if (!value)
+        {
+          return;
+        }
+      }
+      
+      const std::vector<std::string> &rf_feature = features["feature"];
+      const std::vector<std::string> &rf_group = features["group"];
+      const std::vector<float> &rf_rt = features["rt"];
+      const std::vector<float> &rf_mz = features["mz"];
+      const std::vector<float> &rf_intensity = features["intensity"];
+      const std::vector<float> &rf_area = features["area"];
+      const std::vector<float> &rf_rtmin = features["rtmin"];
+      const std::vector<float> &rf_rtmax = features["rtmax"];
+      const std::vector<float> &rf_mzmin = features["mzmin"];
+      const std::vector<float> &rf_mzmax = features["mzmax"];
+      const std::vector<float> &rf_mass = features["mass"];
+      const std::vector<int> &rf_polarity = features["polarity"];
+      const std::vector<std::string> &rf_adduct = features["adduct"];
+      const std::vector<bool> &rf_filtered = features["filtered"];
+      const std::vector<std::string> &rf_filter = features["filter"];
+      const std::vector<bool> &rf_filled = features["filled"];
+      const std::vector<Rcpp::List> &rf_eic = features["eic"];
+      const std::vector<Rcpp::List> &rf_ms1 = features["ms1"];
+      const std::vector<Rcpp::List> &rf_ms2 = features["ms2"];
+      const std::vector<Rcpp::List> &rf_quality = features["quality"];
+      const std::vector<Rcpp::List> &rf_annotation = features["annotation"];
+      const std::vector<Rcpp::List> &rf_istd = features["istd"];
+      const std::vector<Rcpp::List> &rf_suspects = features["suspects"];
+      const std::vector<Rcpp::List> &rf_formulas = features["formulas"];
+      const std::vector<Rcpp::List> &rf_compounds = features["compounds"];
+      
+      const int n = rf_feature.size();
+      
+      feature.resize(n);
+      group.resize(n);
+      rt.resize(n);
+      mz.resize(n);
+      intensity.resize(n);
+      area.resize(n);
+      rtmin.resize(n);
+      rtmax.resize(n);
+      mzmin.resize(n);
+      mzmax.resize(n);
+      mass.resize(n);
+      polarity.resize(n);
+      adduct.resize(n);
+      filtered.resize(n);
+      filter.resize(n);
+      filled.resize(n);
+      eic.resize(n);
+      ms1.resize(n);
+      ms2.resize(n);
+      quality.resize(n);
+      annotation.resize(n);
+      istd.resize(n);
+      suspects.resize(n);
+      formulas.resize(n);
+      compounds.resize(n);
+      
+      feature = rf_feature;
+      group = rf_group;
+      rt = rf_rt;
+      mz = rf_mz;
+      intensity = rf_intensity;
+      area = rf_area;
+      rtmin = rf_rtmin;
+      rtmax = rf_rtmax;
+      mzmin = rf_mzmin;
+      mzmax = rf_mzmax;
+      mass = rf_mass;
+      polarity = rf_polarity;
+      adduct = rf_adduct;
+      filtered = rf_filtered;
+      filter = rf_filter;
+      filled = rf_filled;
+      
+      for (int i = 0; i < n; i++)
+      {
+        const Rcpp::List &eic_list = rf_eic[i];
+        const Rcpp::List &ms1_list = rf_ms1[i];
+        const Rcpp::List &ms2_list = rf_ms2[i];
+        const Rcpp::List &quality_list = rf_quality[i];
+        const Rcpp::List &annotation_list = rf_annotation[i];
+        const Rcpp::List &istd_list = rf_istd[i];
+        const Rcpp::List &suspects_list = rf_suspects[i];
+        const Rcpp::List &formulas_list = rf_formulas[i];
+        const Rcpp::List &compounds_list = rf_compounds[i];
+        
+        MS_FEATURE_EIC eic_i;
+        eic_i.feature = rf_feature[i];
+        eic_i.polarity = rf_polarity[i];
+        eic_i.level = 1;
+        if (eic_list.size() > 1)
+        {
+          eic_i.extracted = true;
+          const std::vector<int> &level = eic_list["level"];
+          const std::vector<float> &rt = eic_list["rt"];
+          const std::vector<float> &mz = eic_list["mz"];
+          const std::vector<float> &intensity = eic_list["intensity"];
+          eic_i.rt = rt;
+          eic_i.mz = mz;
+          eic_i.intensity = intensity;
+        } else {
+          eic_i.extracted = false;
+        }
+        eic[i] = eic_i;
+        
+        MS_FEATURE_QUALITY quality_i;
+        quality_i.feature = rf_feature[i];
+        if (quality_list.size() > 1)
+        {
+          quality_i.is_calculated = true;
+          quality_i.noise = quality_list["noise"];
+          quality_i.sn = quality_list["sn"];
+          quality_i.gauss_a = quality_list["gauss_a"];
+          quality_i.gauss_u = quality_list["gauss_u"];
+          quality_i.gauss_s = quality_list["gauss_s"];
+          quality_i.gauss_f = quality_list["gauss_f"];
+        } else {
+          quality_i.is_calculated = false;
+        }
+        quality[i] = quality_i;
+        
+        ms1[i] = ms1_list;
+        ms2[i] = ms2_list;
+        annotation[i] = annotation_list;
+        istd[i] = istd_list;
+        suspects[i] = suspects_list;
+        formulas[i] = formulas_list;
+        compounds[i] = compounds_list;
+      }
+    };
+    
+    int size()
+    {
+      return feature.size();
+    };
+  };
+  
   // MARK: MS_FEATURES_MZ_SORTED
   struct MS_FEATURES_MZ_SORTED
   {
