@@ -763,7 +763,7 @@ S7::method(plot_spectra_3d, RamanAnalyses) <- function(x,
       plotly::add_lines(
         color = ~var,
         colors = colors_var,
-        line = list(width = 0.5),
+        line = list(width = 1),
         hoverinfo = "text",
         text = hover_text,
         line = list(width = 4)

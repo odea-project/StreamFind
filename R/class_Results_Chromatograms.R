@@ -202,6 +202,7 @@ S7::method(plot_chromatograms, Chromatograms) <- function(x,
                                                           rtmin = 0,
                                                           rtmax = 0,
                                                           minIntensity = NULL,
+                                                          normalized = TRUE,
                                                           xLab = NULL,
                                                           yLab = NULL,
                                                           title = NULL,
@@ -234,6 +235,12 @@ S7::method(plot_chromatograms, Chromatograms) <- function(x,
   chroms <- .make_colorBy_varkey(chroms, colorBy, legendNames)
   
   chroms$loop <- paste0(chroms$analysis, chroms$replicate, chroms$id, chroms$var)
+  
+  if (normalized) {
+    chroms <- chroms %>%
+      dplyr::group_by(loop) %>%
+      dplyr::mutate(intensity = intensity / max(intensity))
+  }
   
   cl <- .get_colors(unique(chroms$var))
   

@@ -553,7 +553,10 @@ S7::method(get_features, NTS) <- function(x,
           fts$name <- ids[fts$feature]
         }
         
+        fts$replicate <- x$replicates[fts$analysis]
+        
         return(fts)
+        
       } else if ("group" %in% colnames(target_id)) {
         sel <- rep(FALSE, nrow(fts))
         
