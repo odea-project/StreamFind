@@ -1540,7 +1540,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
     
     for (int i = n_j_targets - 1; i >= 0; --i)
     {
-      const std::string &id_i = ana_targets[j].id[i];
+      // const std::string &id_i = ana_targets[j].id[i];
       const int polarity_i = ana_targets[j].polarity[i];
       // const float mz_i = ana_targets[j].mz[i];
       const float mzmin_i = ana_targets[j].mzmin[i];
@@ -1620,7 +1620,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
                   out_targets["polarity"] = fts_polarity[k];
                   out_targets["adduct"] = fts_adduct[k];
                   out_targets["filtered"] = false;
-                  out_targets["filter"] = fts_filter[k] + " recovered " + id_i;
+                  out_targets["filter"] = fts_filter[k] + " recovered ";
                   out_targets["filled"] = false;
                   out_targets["eic"] = eic_k_l;
                   out_targets["ms1"] = ms1_k_l;
