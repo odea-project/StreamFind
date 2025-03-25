@@ -285,57 +285,54 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       plot_features_count(nts, colorBy = "replicates")
     })
     
-    # Features table for the Features tab
+    # features table for the Features tab
     output$features_table <- DT::renderDT({
-      # features data
+      # fetch features data
       features <- get_features(nts_data())
       
-      # checking feature data is not empty
-      shiny::validate(
-        need(!is.null(features), "Features data is not available"),
-        need(nrow(features) > 0, "No features found")
-      )
-      
-      # Remove nested columns
-      nested_cols <- c("quality", "annotation", "eic", "ms1", "ms2", "istd", "suspects", "formulas", "compounds")
+      # nested columns
+      nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
       features <- features[, !nested_cols, with = FALSE]
       
-      # Round numeric columns for better readability
-      features[, `:=`(
-        mz = round(mz, 4),
-        mzmin = round(mzmin, 4),
-        mzmax = round(mzmax, 4),
-        rt = round(rt, 2),
-        rtmin = round(rtmin, 2),
-        rtmax = round(rtmax, 2),
-        intensity = round(intensity, 0),
-        area = round(area, 0),
-        sn = round(sn, 0),
-        polarity = round(polarity, 0),
-        mass = round(mass, 4),
-        suppression_factor = round(suppression_factor, 2)
-      )]
-      
-      # Rename columns for better readability
-      setnames(features,
-               old = names(features),
-               new = c(
-                 "Analysis", "MZ", "MZ Min", "MZ Max", "RT", "RT Min", "RT Max",
-                 "Intensity", "Area", "S/N", "Feature", "Polarity", "Mass",
-                 "Adduct", "Filtered", "Filter", "Filled", "Group",
-                 "Suppression Factor", "Name", "Replicate"
-               ))
-      
-      # DataTable
+      # rounding numeric columns to 4 decimal places for readability
+      numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
+      for (col in numeric_cols) {
+        features[[col]] <- round(features[[col]], 4)
+      }
       DT::datatable(
         features,
         options = list(
-          pageLength = 10,  # 10 rows per page
-          scrollX = TRUE,
-          autoWidth = FALSE
+          pageLength = 5,
+          scrollX = TRUE,   # horizontal scrolling
+          autoWidth = FALSE,
+          columnDefs = list(
+            list(width = "200px", targets = c(0, 1, 2)),
+            list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
+            list(width = "80px", targets = c(12)),
+            list(width = "100px", targets = c(13)),
+            list(width = "80px", targets = c(14, 15, 16)),
+            list(width = "150px", targets = c(17)),
+            list(width = "80px", targets = c(18)),
+            list(width = "120px", targets = c(19)),
+            list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
+            list(className = "dt-left", targets = c(0, 1, 2, 13, 14, 15, 16, 18, 19))
+          ),
+          # custom styling
+          dom = "lfrtip",  # Layout: length, filter, table, info, pagination
+          lengthMenu = c(5 ,10, 25, 50, 100),
+          ordering = TRUE,  # column sorting
+          searching = TRUE  # search bar
         ),
-        rownames = FALSE  # Hide row numbers
-      )
+        style = "bootstrap",  # for a cleaner look
+        class = "table table-bordered table-hover",  # borders and hover effects
+        rownames = FALSE
+      ) %>%
+        # custom CSS for better padding and font
+        DT::formatStyle(
+          columns = names(features),
+          fontSize = "14px",
+          padding = "5px 10px"
+        )
     })
   })
 }
