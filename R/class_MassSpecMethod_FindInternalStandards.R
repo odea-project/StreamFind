@@ -181,11 +181,11 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
           }
           
           if (nrow(temp2) > 1) {
-            temp2 <- temp2[which(abs(temp2$error_mass) == min(abs(temp2$error_mass))), ]
+            temp2 <- temp2[which(abs(temp2$error_rt) == min(abs(temp2$error_rt))), ]
           }
           
           if (nrow(temp2) > 1) {
-            temp2 <- temp2[which(abs(temp2$error_rt) == min(abs(temp2$error_rt))), ]
+            temp2 <- temp2[which(abs(temp2$error_mass) == min(abs(temp2$error_mass))), ]
           }
           
           fts_rem <- temp[temp$name %in% d & !temp$feature %in% temp2$feature, ]

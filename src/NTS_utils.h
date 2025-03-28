@@ -982,7 +982,15 @@ namespace NTS
 
   void merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity);
 
-  void trim_to_equal_length_around_max_position(std::vector<float> &x, const size_t max_position, const int minDiffSize, const int minTraces);
+  void trim_to_equal_length_around_max_position(
+    std::vector<float> &rt,
+    std::vector<float> &mz,
+    std::vector<float> &intensity,
+    const size_t max_position,
+    const int minDiffSize,
+    const int minTraces,
+    const float maxTimeHalfWidth
+  );
   
   void trim_peak_base(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity, size_t &max_position, const float curRatio);
 
@@ -1003,7 +1011,8 @@ namespace NTS
     std::vector<float> &rt,
     std::vector<float> &intensity,
     const float &baseCut,
-    const float &rtWindow
+    const float &rtWindow,
+    const float &maxTimeHalfWidth
   );
 
   std::vector<int> find_isotopic_candidates(

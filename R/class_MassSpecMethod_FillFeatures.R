@@ -7,6 +7,8 @@
 #' @template arg-ms-mzExpand
 #' @param minPeakWidth Numeric of length one with the minimum peak width for building feature
 #' extraction targets.
+#' @param maxPeakWidth Numeric of length one with the maximum peak width for building feature
+#' extraction targets.
 #' @param minTracesIntensity Numeric of length one with the minimum intensity to collect spectra
 #' data for extracted ion chromatograms.
 #' @param baseCut Numeric of length one with the base cut for building Gaussian model.
@@ -33,6 +35,7 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
                          rtExpand = 0,
                          mzExpand = 0,
                          minPeakWidth = 6,
+                         maxPeakWidth = 30,
                          minTracesIntensity = 1000,
                          minNumberTraces = 5,
                          minIntensity = 5000,
@@ -51,6 +54,7 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
           rtExpand = as.numeric(rtExpand),
           mzExpand = as.numeric(mzExpand),
           minPeakWidth = as.numeric(minPeakWidth),
+          maxPeakWidth = as.numeric(maxPeakWidth),
           minTracesIntensity = as.numeric(minTracesIntensity),
           minNumberTraces = as.numeric(minNumberTraces),
           minIntensity = as.numeric(minIntensity),
@@ -77,6 +81,7 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
     checkmate::assert_numeric(self@parameters$rtExpand, len = 1)
     checkmate::assert_numeric(self@parameters$mzExpand, len = 1)
     checkmate::assert_numeric(self@parameters$minPeakWidth, len = 1)
+    checkmate::assert_numeric(self@parameters$maxPeakWidth, len = 1)
     checkmate::assert_integer(as.integer(self@parameters$minNumberTraces), len = 1)
     checkmate::assert_numeric(self@parameters$minTracesIntensity, len = 1)
     checkmate::assert_numeric(self@parameters$minIntensity, len = 1)
@@ -135,6 +140,7 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
     parameters$rtExpand,
     parameters$mzExpand,
     parameters$minPeakWidth,
+    parameters$maxPeakWidth,
     parameters$minTracesIntensity,
     as.integer(parameters$minNumberTraces),
     parameters$minIntensity,
@@ -158,6 +164,7 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
   
   res <- lapply(res, function(z) {
     if (nrow(z) > 0) z <- z[!duplicated(z$group), ]
+    z
   })
   
   analyses_names <- names(feature_list)

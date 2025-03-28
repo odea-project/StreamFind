@@ -119,21 +119,24 @@
 
   fl <- NTS@feature_list
 
-  fl <- Map(function(x, y) {
+  fl <- Map(function(z, y) {
     
-    x_na <- x[!x$feature %in% y$ID, ]
+    z_na <- z[!z$feature %in% y$ID, ]
     
-    if (any(!x_na$filtered)) {
-      x_na$filtered[!x_na$filtered] <- TRUE
-      x_na$filter[!x_na$filtered] <- "GroupFeatures"
+    if (any(!z_na$filtered)) {
+      z_na$filtered[!z_na$filtered] <- TRUE
+      z_na$filter[!z_na$filtered] <- "GroupFeatures"
     }
     
-    x <- x[x$feature %in% y$ID, ]
+    z <- z[z$feature %in% y$ID, ]
     
-    x$group[match(y$ID, x$feature)] <- y$group[match(x$feature, y$ID)]
+    ID_grps <- y$group
+    names(ID_grps) <- y$ID
     
-    x <- data.table::rbindlist(list(x, x_na))
-    x
+    z$group <- ID_grps[z$feature]
+    
+    z <- data.table::rbindlist(list(z, z_na))
+    z
   }, fl, pat_fl)
 
   names(fl) <- NTS@analyses_info$analysis

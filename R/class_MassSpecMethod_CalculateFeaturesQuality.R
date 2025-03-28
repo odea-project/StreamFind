@@ -7,7 +7,9 @@
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
 #' @param minPeakWidth Numeric of length one with the minimum peak width centered on the maximum
-#' for extracting the feature IEC.
+#' for extracting the feature EIC.
+#' @param maxPeakWidth Numeric of length one with the maximum peak width centered on the maximum
+#' for reconstructing the feature EIC.
 #' @param minTraces Numeric of length 1 with the minimum number traces for calculating feature
 #' quality.
 #' @param minIntensity Numeric of length 1 with the minimum intensity of spectra traces for
@@ -27,6 +29,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
                          rtExpand = 0,
                          mzExpand = 0,
                          minPeakWidth = 6,
+                         maxPeakWidth = 30,
                          minTracesIntensity = 0,
                          minNumberTraces = 6,
                          baseCut = 0) {
@@ -41,6 +44,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
           "rtExpand" = as.numeric(rtExpand),
           "mzExpand" = as.numeric(mzExpand),
           "minPeakWidth" = as.numeric(minPeakWidth),
+          "maxPeakWidth" = as.numeric(maxPeakWidth),
           "minTracesIntensity" = as.numeric(minTracesIntensity),
           "minNumberTraces" = as.numeric(minNumberTraces),
           "baseCut" = as.numeric(baseCut)
@@ -64,6 +68,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
     checkmate::assert_number(self@parameters$rtExpand)
     checkmate::assert_number(self@parameters$mzExpand)
     checkmate::assert_number(self@parameters$minPeakWidth)
+    checkmate::assert_number(self@parameters$maxPeakWidth)
     checkmate::assert_integer(as.integer(self@parameters$minNUmberTraces))
     checkmate::assert_number(self@parameters$minTracesIntensity)
     checkmate::assert_number(self@parameters$baseCut)
@@ -118,6 +123,7 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
     parameters$rtExpand,
     parameters$mzExpand,
     parameters$minPeakWidth,
+    parameters$maxPeakWidth,
     parameters$minTracesIntensity,
     parameters$minNumberTraces,
     parameters$baseCut

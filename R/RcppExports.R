@@ -45,12 +45,12 @@ rcpp_ms_load_features_ms2 <- function(analyses_names, analyses_files, headers, f
     .Call(`_StreamFind_rcpp_ms_load_features_ms2`, analyses_names, analyses_files, headers, features, filtered, minTracesIntensity, isolationWindow, mzClust, presence)
 }
 
-rcpp_ms_fill_features <- function(analyses_names, analyses_replicates, analyses_files, headers, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, minTracesIntensity = 0, minNumberTraces = 4, minIntensity = 0, baseCut = 0, maxSearchWindow = 5, minSignalToNoiseRatio = 3, minGaussianFit = 0.5) {
-    .Call(`_StreamFind_rcpp_ms_fill_features`, analyses_names, analyses_replicates, analyses_files, headers, features, withinReplicate, rtExpand, mzExpand, minPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, baseCut, maxSearchWindow, minSignalToNoiseRatio, minGaussianFit)
+rcpp_ms_fill_features <- function(analyses_names, analyses_replicates, analyses_files, headers, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, maxPeakWidth = 30, minTracesIntensity = 0, minNumberTraces = 4, minIntensity = 0, baseCut = 0, maxSearchWindow = 5, minSignalToNoiseRatio = 3, minGaussianFit = 0.5) {
+    .Call(`_StreamFind_rcpp_ms_fill_features`, analyses_names, analyses_replicates, analyses_files, headers, features, withinReplicate, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, baseCut, maxSearchWindow, minSignalToNoiseRatio, minGaussianFit)
 }
 
-rcpp_ms_calculate_features_quality <- function(analyses_names, analyses_files, headers, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0) {
-    .Call(`_StreamFind_rcpp_ms_calculate_features_quality`, analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minPeakWidth, minTracesIntensity, minNumberTraces, baseCut)
+rcpp_ms_calculate_features_quality <- function(analyses_names, analyses_files, headers, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, maxPeakWidth = 30, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0) {
+    .Call(`_StreamFind_rcpp_ms_calculate_features_quality`, analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut)
 }
 
 rcpp_ms_group_features <- function(features, rt_dev = 10, verbose = FALSE) {

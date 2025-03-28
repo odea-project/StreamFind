@@ -298,10 +298,63 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
     }
   }
   
-  .filter_minIntensity <- function(value = 0,
-                                   correctSuppression,
-                                   conservative,
-                                   engine) {
+  .filter_minRtMuDistance <- function(value = 2, conservative = FALSE, engine) {
+    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
+      
+      if (is.na(value) || value == 0) {
+        return()
+      }
+      
+      if (engine$NTS@has_groups && conservative) {
+        rpl <- unique(engine$Analyses$replicates)
+        groups <- get_groups(
+          engine$NTS,
+          filtered = FALSE,
+          intensities = FALSE,
+          average = TRUE,
+          metadata = TRUE
+        )
+        if (any(!is.na(groups$gauss_f))) {
+          groups_sel <- groups$gauss_f < value
+          groups <- groups$group[groups_sel]
+          feature_list <- engine$NTS$feature_list
+          feature_list <- lapply(feature_list, function(x, groups) {
+            sel <- x$group %in% groups & !x$filtered
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minRtMuDistance"))
+            x
+          }, groups = groups)
+          engine$NTS$feature_list <- feature_list
+        } else {
+          warning("There are no signal-to-noise ratio values in features!")
+        }
+      } else {
+        features <- engine$NTS$feature_list
+        features <- lapply(features, function(x) {
+          if ("quality" %in% colnames(x)) {
+            mu <- vapply(x$quality, function(z) {
+              if (length(z) == 0) {
+                NA_real_
+              } else {
+                z[["gauss_u"]]
+              }
+            }, NA_real_)
+            mu[is.na(mu)] <- 0
+            distance_mu <- abs(mu - x$rt)
+            sel <- distance_mu > value & !x$filtered
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minRtMuDistance"))
+          }
+          x
+        })
+        engine$NTS$feature_list <- features
+      }
+    } else {
+      warning("There are no features in the MassSpecEngine!")
+    }
+  }
+  
+  .filter_minIntensity <- function(value = 0, correctSuppression, conservative, engine) {
     if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {

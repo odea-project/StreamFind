@@ -206,91 +206,96 @@ void NTS::merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz,
 };
 
 // MARK: TRIM_TO_EQUAL_LENGTH_AROUND_MAX_POSITION
-void NTS::trim_to_equal_length_around_max_position(std::vector<float> &x,
+void NTS::trim_to_equal_length_around_max_position(std::vector<float> &rt,
+                                                   std::vector<float> &mz,
+                                                   std::vector<float> &intensity,
                                                    const size_t max_position,
                                                    const int minDiffSize,
-                                                   const int minTraces)
+                                                   const int minTraces,
+                                                   const float maxTimeHalfWidth)
 {
   
-  if (max_position <= 1 || max_position >= x.size()) {
+  if (max_position <= 1 || max_position >= rt.size()) {
     return;
   }
   
-  std::vector<float> left(x.begin(), x.begin() + max_position);
-  std::vector<float> right(x.begin() + max_position + 1, x.end());
+  std::vector<float> rt_left(rt.begin(), rt.begin() + max_position);
+  std::vector<float> rt_right(rt.begin() + max_position + 1, rt.end());
   
-  int left_size = left.size();
-  int right_size = right.size();
+  std::vector<float> mz_left(mz.begin(), mz.begin() + max_position);
+  std::vector<float> mz_right(mz.begin() + max_position + 1, mz.end());
+  
+  std::vector<float> intensity_left(intensity.begin(), intensity.begin() + max_position);
+  std::vector<float> intensity_right(intensity.begin() + max_position + 1, intensity.end());
+  
+  int left_size = rt_left.size();
+  int right_size = rt_right.size();
   
   if (left_size == 0 || right_size == 0) {
     return;
   }
   
-  if (left_size > right_size + minDiffSize) {
-    
-    if (right_size > minTraces) {
-      while (right_size > minTraces) {
-        right.pop_back();
-        right_size = right.size();
-      }
-    }
-    
-    while (left_size > right_size + minDiffSize) {
-      left.erase(left.begin());
-      left_size = left.size();
-    }
+  const float mid_rt = rt[max_position];
+  float rt_window_left = mid_rt - rt[0];
+  float rt_window_right = rt[rt.size() - 1] - mid_rt;
+  
+  while (rt_window_right > maxTimeHalfWidth) {
+    if (right_size <= minTraces) break;
+    rt_right.pop_back();
+    mz_right.pop_back();
+    intensity_right.pop_back();
+    right_size = rt_right.size();
+    rt_window_right = rt_right[rt_right.size() - 1] - mid_rt;
   }
   
-  if (right_size > left_size + minDiffSize) {
-    
-    if (left_size > minTraces) {
-      while (left_size > minTraces) {
-        left.erase(left.begin());
-        left_size = left.size();
-      }
-    }
-    
-    while (right_size > left_size + minDiffSize) {
-      right.pop_back();
-      right_size = right.size();
-    }
+  while (rt_window_left > maxTimeHalfWidth) {
+    if (left_size <= minTraces) break;
+    rt_left.erase(rt_left.begin());
+    mz_left.erase(mz_left.begin());
+    intensity_left.erase(intensity_left.begin());
+    left_size = rt_left.size();
+    rt_window_left = mid_rt - rt_left[0];
   }
   
+  while (left_size > right_size + minDiffSize) {
+    if (left_size <= minTraces) break;
+    rt_left.erase(rt_left.begin());
+    mz_left.erase(mz_left.begin());
+    intensity_left.erase(intensity_left.begin());
+    left_size = rt_left.size();
+  }
+  
+  while (right_size > left_size + minDiffSize) {
+    if (right_size <= minTraces) break;
+    rt_right.pop_back();
+    mz_right.pop_back();
+    intensity_right.pop_back();
+    right_size = rt_right.size();
+  }
+
   if (left_size == 0 || right_size == 0) {
     return;
   }
   
-  x.clear();
+  rt.clear();
+  mz.clear();
+  intensity.clear();
   
   for (int i = 0; i < left_size; ++i) {
-    x.push_back(left[i]);
+    rt.push_back(rt_left[i]);
+    mz.push_back(mz_left[i]);
+    intensity.push_back(intensity_left[i]);
   }
   
-  x.push_back(x[max_position]);
+  rt.push_back(rt[max_position]);
+  mz.push_back(mz[max_position]);
+  intensity.push_back(intensity[max_position]);
   
   for (int i = 0; i < right_size; ++i) {
-    x.push_back(right[i]);
+    rt.push_back(rt_right[i]);
+    mz.push_back(mz_right[i]);
+    intensity.push_back(intensity_right[i]);
   }
-  
-  // const int n = x.size();
-  // 
-  // int left_size = max_position;
-  // int right_size = n - max_position - 1;
-  // 
-  // if (std::abs(left_size - right_size) > 5)
-  // {
-  //   int n_points = std::min(left_size, right_size);
-  //   n_points = std::min(n_points, 12);
-  //   
-  //   std::vector<float> x_out(2 * n_points + 1);
-  //   
-  //   for (size_t i = 0; i < x_out.size(); ++i)
-  //   {
-  //     x_out[i] = x[max_position - n_points + i];
-  //   }
-  //   
-  //   x = x_out;
-  // }
 };
 
 // MARK: TRIM_TO_EQUAL_LENGTH_AROUND_MAX_POSITION
@@ -601,7 +606,8 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
                                        std::vector<float> &rt,
                                        std::vector<float> &intensity,
                                        const float &baseCut,
-                                       const float &rtWindow)
+                                       const float &rtWindow,
+                                       const float &maxTimeHalfWidth)
 {
 
   float noise = 0;
@@ -671,11 +677,12 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
     }
   }
   
-  // std::string print_ft = "F924_MZ268_RT921";
+  // std::string print_ft = "F2002_MZ752_RT1036";
   // 
   // if (ft == print_ft) {
   //   Rcpp::Rcout << std::endl;
   //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "rt :" << rt[max_position] << std::endl;
   //   Rcpp::Rcout << "min_left_position: " << min_left_position << std::endl;
   //   Rcpp::Rcout << "min_right_position: " << min_right_position << std::endl;
   //   Rcpp::Rcout << "noise_left: " << noise_left << std::endl;
@@ -716,9 +723,9 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
   {
     if (*it_int_trimmed <= low_cut)
     {
-      it_mz_trimmed = mz_trimmed.erase(it_mz_trimmed);
-      it_int_trimmed = int_trimmed.erase(it_int_trimmed);
-      it_rt_trimmed = rt_trimmed.erase(it_rt_trimmed);
+      mz_trimmed.erase(it_mz_trimmed);
+      int_trimmed.erase(it_int_trimmed);
+      rt_trimmed.erase(it_rt_trimmed);
     }
     else
     {
@@ -727,24 +734,6 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
       ++it_rt_trimmed;
     }
   }
-  
-  // auto remove_condition = [](float intensity_value) { return intensity_value <= 0; };
-  // 
-  // // Use a single loop with `std::remove_if` while keeping all vectors in sync
-  // size_t write_index = 0;
-  // for (size_t read_index = 0; read_index < int_trimmed.size(); ++read_index) {
-  //   if (!remove_condition(int_trimmed[read_index])) {  // Keep values > 0
-  //     mz_trimmed[write_index] = mz_trimmed[read_index];
-  //     rt_trimmed[write_index] = rt_trimmed[read_index];
-  //     int_trimmed[write_index] = int_trimmed[read_index];
-  //     ++write_index;
-  //   }
-  // }
-  // 
-  // // Now erase the extra elements at the end of each vector
-  // mz_trimmed.resize(write_index);
-  // rt_trimmed.resize(write_index);
-  // int_trimmed.resize(write_index);
 
   int n_trimmed = int_trimmed.size();
 
@@ -758,22 +747,44 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
     return quality;
   }
   
-  trim_to_equal_length_around_max_position(mz_trimmed, max_position, 5, 20);
-  trim_to_equal_length_around_max_position(rt_trimmed, max_position, 5, 20);
-  trim_to_equal_length_around_max_position(int_trimmed, max_position, 5, 20);
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
+  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
+  //   {
+  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
+  //   }
+  // }
+  
+  trim_to_equal_length_around_max_position(
+    rt_trimmed,
+    mz_trimmed,
+    int_trimmed,
+    max_position,
+    3,
+    8,
+    maxTimeHalfWidth
+  );
 
   n_trimmed = rt_trimmed.size();
 
   if (n_trimmed < 5)
     return quality;
   
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
+  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
+  //   {
+  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
+  //   }
+  // }
+  
   mz = mz_trimmed;
   rt = rt_trimmed;
   intensity = int_trimmed;
-  
-  // trim_to_equal_length_around_max_position(mz_trimmed, max_position, 0, 7);
-  // trim_to_equal_length_around_max_position(rt_trimmed, max_position, 0, 7);
-  // trim_to_equal_length_around_max_position(int_trimmed, max_position, 0, 7);
   
   trim_peak_base(rt_trimmed, mz_trimmed, int_trimmed, max_position, 0.3);
   
@@ -798,6 +809,7 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
   // if (ft == print_ft) {
   //   Rcpp::Rcout << std::endl;
   //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
   //   for (size_t i = 0; i < int_trimmed.size(); ++i)
   //   {
   //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;

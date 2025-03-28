@@ -1215,6 +1215,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
                                  float rtExpand = 0,
                                  float mzExpand = 0,
                                  float minPeakWidth = 6,
+                                 float maxPeakWidth = 30,
                                  float minTracesIntensity = 0,
                                  float minNumberTraces = 4,
                                  float minIntensity = 0,
@@ -1232,6 +1233,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
   }
   
   const float minHalfPeakWidth = minPeakWidth / 2;
+  const float maxHalfPeakWidth = maxPeakWidth / 2; 
 
   const int number_analyses = analyses_names.size();
 
@@ -1463,8 +1465,8 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
     const float min_rtmin = *std::min_element(fts_rtmin_k.begin(), fts_rtmin_k.end());
     const float max_rtmax = *std::max_element(fts_rtmax_k.begin(), fts_rtmax_k.end());
     
-    const float sd_mass = std::sqrt(std::inner_product(fts_mass_k.begin(), fts_mass_k.end(), fts_mass_k.begin(), 0.0) / fts_mass_k.size() - mean_mass * mean_mass);
-    const float sd_rt = std::sqrt(std::inner_product(fts_rt_k.begin(), fts_rt_k.end(), fts_rt_k.begin(), 0.0) / fts_rt_k.size() - mean_rt * mean_rt);
+    const float sd_mass = NTS::standard_deviation(fts_mass_k, mean_mass);
+    const float sd_rt = NTS::standard_deviation(fts_rt_k, mean_rt);
     
     for (int j = 0; j < number_analyses; j++)
     {
@@ -1542,20 +1544,15 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
     {
       // const std::string &id_i = ana_targets[j].id[i];
       const int polarity_i = ana_targets[j].polarity[i];
-      // const float mz_i = ana_targets[j].mz[i];
       const float mzmin_i = ana_targets[j].mzmin[i];
       const float mzmax_i = ana_targets[j].mzmax[i];
       const float rt_i = ana_targets[j].rt[i];
       const float rtmin_i = ana_targets[j].rtmin[i];
       const float rtmax_i = ana_targets[j].rtmax[i];
-      // float sd_mass_i = ana_targets_sd_mass[j][i];
       float sd_rt_i = ana_targets_sd_rt[j][i];
-      // if (sd_mass_i == 0) sd_mass_i = (mz_i - mzmin_i) / 2;
-      if (sd_rt_i == 0) sd_rt_i = (rtmax_i - rtmin_i) / 2;
-      // const float sd_mass_min = mz_i - (sd_mass_i * 2);
-      // const float sd_mass_max = mz_i + (sd_mass_i * 2);
-      const float sd_rt_min = rt_i - (sd_rt_i * 2);
-      const float sd_rt_max = rt_i + (sd_rt_i * 2);
+      if (sd_rt_i == 0) sd_rt_i = (rtmax_i - rtmin_i) / 4;
+      const float sd_rt_min = rt_i - (sd_rt_i * 1.5);
+      const float sd_rt_max = rt_i + (sd_rt_i * 1.5);
       
       bool has_feature = false;
       
@@ -1563,7 +1560,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
       {
         if (fts_analysis[k] == analyses_names[j])
         {
-          if (!process_feature[k])
+          if (!process_feature[k]) //(fts_group[k] == id_i || fts_group[k] == "") && 
           {
             if (fts_polarity[k] == polarity_i)
             {
@@ -1784,7 +1781,7 @@ Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
       NTS::merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
       
       Rcpp::List quality = NTS::calculate_gaussian_fit(
-        id_i, tg_rt_i, res_i.mz, res_i.rt, res_i.intensity, baseCut, maxSearchWindow
+        id_i, tg_rt_i, res_i.mz, res_i.rt, res_i.intensity, baseCut, maxSearchWindow, maxHalfPeakWidth
       );
 
       const float &sn = quality["sn"];
@@ -1908,6 +1905,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
                                               float rtExpand = 0,
                                               float mzExpand = 0,
                                               float minPeakWidth = 6,
+                                              float maxPeakWidth = 30,
                                               float minTracesIntensity = 0,
                                               float minNumberTraces = 5,
                                               float baseCut = 0)
@@ -1929,6 +1927,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
   }
   
   const float minHalfPeakWidth = minPeakWidth / 2;
+  const float maxHalfPeakWidth = maxPeakWidth / 2;
 
   std::vector<std::string> features_analyses_names = features.names();
 
@@ -2116,7 +2115,9 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
         
         if (n > minNumberTraces)
         {
-          quality = NTS::calculate_gaussian_fit(id_j, rt_j, mz, rt, intensity, baseCut, 0);
+          quality = NTS::calculate_gaussian_fit(
+            id_j, rt_j, mz, rt, intensity, baseCut, 0, maxHalfPeakWidth
+          );
           
           n = rt.size();
           
@@ -2128,14 +2129,11 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
           float mzmax = *std::max_element(mz.begin(), mz.end());
           float rtmin = *std::min_element(rt.begin(), rt.end());
           float rtmax = *std::max_element(rt.begin(), rt.end());
-
-          if (mzmin != fts_mzmin[j] || mzmax != fts_mzmax[j] || rtmin != fts_rtmin[j] || rtmax != fts_rtmax[j])
-          {
-            fts_mzmin[j] = mzmin;
-            fts_mzmax[j] = mzmax;
-            fts_rtmin[j] = rtmin;
-            fts_rtmax[j] = rtmax;
-          }
+          
+          fts_mzmin[j] = mzmin;
+          fts_mzmax[j] = mzmax;
+          fts_rtmin[j] = rtmin;
+          fts_rtmax[j] = rtmax;
           
           Rcpp::List eic = Rcpp::List::create(
             Rcpp::Named("feature") = feature_vec,
@@ -2162,21 +2160,20 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
         
         if (n > minNumberTraces)
         {
-          quality = NTS::calculate_gaussian_fit(id_j, rt_j, mz, rt, intensity, baseCut, 0);
+          quality = NTS::calculate_gaussian_fit(
+            id_j, rt_j, mz, rt, intensity, baseCut, 0, maxHalfPeakWidth
+          );
           n = rt.size();
           
           float mzmin = *std::min_element(mz.begin(), mz.end());
           float mzmax = *std::max_element(mz.begin(), mz.end());
           float rtmin = *std::min_element(rt.begin(), rt.end());
           float rtmax = *std::max_element(rt.begin(), rt.end());
+          fts_mzmin[j] = mzmin;
+          fts_mzmax[j] = mzmax;
+          fts_rtmin[j] = rtmin;
+          fts_rtmax[j] = rtmax;
           
-          if (mzmin != fts_mzmin[j] || mzmax != fts_mzmax[j] || rtmin != fts_rtmin[j] || rtmax != fts_rtmax[j])
-          {
-            fts_mzmin[j] = mzmin;
-            fts_mzmax[j] = mzmax;
-            fts_rtmin[j] = rtmin;
-            fts_rtmax[j] = rtmax;
-          }
         }
         
         std::vector<std::string> feature_vec(n, id_j);

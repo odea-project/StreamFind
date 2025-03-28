@@ -465,8 +465,8 @@ S7::method(plot_features_count, NTS) <- function(x,
     name = names(colors_tag),
     showlegend = showLegend
   ) %>% plotly::layout(
-    xaxis = list(title = NULL),
-    yaxis = list(title = yLab)
+    xaxis = list(title = NULL, tickfont = list(size = 14)), 
+    yaxis = list(title = yLab, tickfont = list(size = 14), titlefont = list(size = 18))
   )
   
   plot
@@ -5229,7 +5229,11 @@ S7::method(report, NTS) <- function(x,
       ""
     },
     "</br> feature: ", pk$feature,
-    ifelse("group" %in% colnames(pk), paste("</br> group: ", pk$group), ""),
+    if ("group" %in% colnames(pk)) {
+      paste("</br> group: ", pk$group)
+    } else {
+      ""
+    },
     "</br> analysis: ", pk$analysis,
     "</br> replicate: ", pk$replicate,
     "</br> mass: ", round(pk$mass, digits = 4),
