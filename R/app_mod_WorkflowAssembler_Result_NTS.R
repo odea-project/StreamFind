@@ -1,24 +1,24 @@
 #' @noRd
 S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
-  ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))  # Fix: Use full namespace from ms$run_app()
+  ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))
   
   shiny::fluidRow(
     shinydashboard::tabBox(
       width = 12,
       shiny::tabPanel(
         title = "Overview",
-        # Metrics and status in a single row, 50/50 split
+        # 50/50 split
         shiny::fluidRow(
-          # Left half: Four blue boxes (50% of the width)
+          # Left half
           shiny::column(
-            width = 6,  # 6/12 = 50% of the row
+            width = 6,
             shiny::fluidRow(
               shiny::column(
-                width = 3,  # Each blue box takes 3/12 of the left half (so 4 boxes fit)
+                width = 3,
                 shiny::div(
                   class = "info-box",
                   style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
-                  # Icon in top-left corner
+                  # Icon
                   shiny::div(
                     style = "position: absolute; top: 10px; left: 10px;",
                     shiny::icon("chart-line", style = "font-size: 16px;")
@@ -38,7 +38,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                 shiny::div(
                   class = "info-box",
                   style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
-                  # Icon in top-left corner
+                  # Icon
                   shiny::div(
                     style = "position: absolute; top: 10px; left: 10px;",
                     shiny::icon("gears", style = "font-size: 16px;")
@@ -58,7 +58,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                 shiny::div(
                   class = "info-box",
                   style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
-                  # Icon in top-left corner
+                  # Icon
                   shiny::div(
                     style = "position: absolute; top: 10px; left: 10px;",
                     shiny::icon("filter", style = "font-size: 16px;")
@@ -78,7 +78,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                 shiny::div(
                   class = "info-box",
                   style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
-                  # Icon in top-left corner
+                  # Icon
                   shiny::div(
                     style = "position: absolute; top: 10px; left: 10px;",
                     shiny::icon("network-wired", style = "font-size: 16px;")
@@ -95,13 +95,12 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
               )
             )
           ),
-          # Right half: Grey box (50% of the width)
+          # Right half
           shiny::column(
-            width = 6,  # 6/12 = 50% of the row
+            width = 6,
             shiny::div(
               style = "background-color: #e0e0e0; border-radius: 10px; padding: 20px; margin-bottom: 20px;",
               shiny::fluidRow(
-                # Left column of status indicators
                 shiny::column(
                   width = 6,
                   shiny::tags$div(
@@ -127,7 +126,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     )
                   )
                 ),
-                # Right column of status indicators
                 shiny::column(
                   width = 6,
                   shiny::tags$div(
@@ -153,7 +151,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
           )
         ),
         
-        # Title for the chart
         shiny::fluidRow(
           shiny::column(
             width = 12,
@@ -161,7 +158,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
           )
         ),
         
-        # Chart section (on a new row)
         shiny::fluidRow(
           shiny::column(
             width = 12,
@@ -173,10 +169,22 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
       # Features tab
       shiny::tabPanel(
         title = "Features",
+        # Table
         shiny::fluidRow(
           shiny::column(
             width = 12,
-            DT::dataTableOutput(ns_full("features_table"))
+            shiny::div(
+              style = "margin-bottom: 20px;",
+              DT::dataTableOutput(ns_full("features_table"))
+            )
+          )
+        ),
+        # Plot
+        shiny::fluidRow(
+          shiny::column(
+            width = 12,
+            shiny::h4("Feature Peaks", style = "margin-left: 15px; margin-top: 0px; margin-bottom: 10px;"),
+            plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "300px", width = "50%")
           )
         )
       ),
@@ -285,26 +293,29 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       plot_features_count(nts, colorBy = "replicates")
     })
     
-    # features table for the Features tab
+    # Features table for the Features tab
     output$features_table <- DT::renderDT({
-      # fetch features data
+      # Fetch features data
       features <- get_features(nts_data())
       
-      # nested columns
+      # Remove nested columns
       nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
       features <- features[, !nested_cols, with = FALSE]
       
-      # rounding numeric columns to 4 decimal places for readability
+      # Round numeric columns to 4 decimal places for readability
       numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
       for (col in numeric_cols) {
         features[[col]] <- round(features[[col]], 4)
       }
+      
+      # Render the DataTable
       DT::datatable(
         features,
         options = list(
           pageLength = 5,
-          scrollX = TRUE,   # horizontal scrolling
-          autoWidth = FALSE,
+          scrollX = TRUE,
+          scrollY = "250px",
+          scrollCollapse = TRUE,
           columnDefs = list(
             list(width = "200px", targets = c(0, 1, 2)),
             list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
@@ -317,22 +328,49 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
             list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
             list(className = "dt-left", targets = c(0, 1, 2, 13, 14, 15, 16, 18, 19))
           ),
-          # custom styling
-          dom = "lfrtip",  # Layout: length, filter, table, info, pagination
-          lengthMenu = c(5 ,10, 25, 50, 100),
-          ordering = TRUE,  # column sorting
-          searching = TRUE  # search bar
+          selection = list(mode = "multiple", selected = NULL),
+          dom = "lfrtip",
+          lengthMenu = c(5, 10, 25, 50, 100),
+          ordering = TRUE,
+          searching = TRUE  # Search bar
         ),
-        style = "bootstrap",  # for a cleaner look
-        class = "table table-bordered table-hover",  # borders and hover effects
-        rownames = FALSE
+        style = "bootstrap",
+        class = "table table-bordered table-hover",
       ) %>%
-        # custom CSS for better padding and font
+        # Custom CSS
         DT::formatStyle(
           columns = names(features),
           fontSize = "14px",
           padding = "5px 10px"
         )
+    })
+    
+    # Reactive value to store selected features
+    selected_features <- shiny::reactive({
+      selected_rows <- input$features_table_rows_selected
+      
+      # Fetch features data
+      features <- get_features(nts_data())
+      if (is.null(selected_rows) || length(selected_rows) == 0) {
+        return(NULL)
+      }
+      
+      # data frame with analysis and feature columns for the selected rows
+      selected_data <- features[selected_rows, .(analysis, feature)]
+      
+      # Convert to data frame
+      as.data.frame(selected_data)
+    })
+    
+    # feature peaks plot
+    output$feature_peaks_plot <- plotly::renderPlotly({
+      shiny::validate(
+        need(!is.null(selected_features()), "Please select one or more features from the table to display the plot.")
+      )
+      
+      # Generate the plot using plot_features
+      nts <- nts_data()
+      plot_features(nts, features = selected_features())
     })
   })
 }
