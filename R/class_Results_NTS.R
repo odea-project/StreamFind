@@ -1239,6 +1239,7 @@ S7::method(get_features_ms1, NTS) <- function(x,
                                               mzClust = 0.003,
                                               presence = 0.8,
                                               minIntensity = 1000,
+                                              normalized = TRUE,
                                               filtered = FALSE,
                                               useLoadedData = TRUE) {
   fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
@@ -1291,6 +1292,20 @@ S7::method(get_features_ms1, NTS) <- function(x,
     temp_ms
   }, fts = fts)
   
+  if (normalized) {
+    ms1_list <- lapply(ms1_list, function(z) {
+      if (!is.null(z)) {
+        if (nrow(z) > 0) {
+          max_intensity <- max(z$intensity)
+          if (max_intensity > 0) {
+            z$intensity <- z$intensity / max_intensity
+          }
+        }
+      }
+      z
+    })
+  }
+  
   ms1 <- data.table::rbindlist(ms1_list, fill = TRUE)
   
   if (nrow(ms1) == 0) {
@@ -1339,6 +1354,7 @@ S7::method(plot_features_ms1, NTS) <- function(x,
                                                mzClust = 0.003,
                                                presence = 0.8,
                                                minIntensity = 1000,
+                                               normalized = TRUE,
                                                filtered = FALSE,
                                                useLoadedData = TRUE,
                                                legendNames = NULL,
@@ -1350,7 +1366,7 @@ S7::method(plot_features_ms1, NTS) <- function(x,
                                                interactive = TRUE) {
   ms1 <- get_features_ms1(
     x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
-    rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData
+    rtWindow, mzWindow, mzClust, presence, minIntensity, normalized, filtered, useLoadedData
   )
   
   if (nrow(ms1) == 0) {
@@ -1455,6 +1471,7 @@ S7::method(get_features_ms2, NTS) <- function(x,
                                               mzClust = 0.003,
                                               presence = 0.8,
                                               minIntensity = 0,
+                                              normalized = TRUE,
                                               filtered = FALSE,
                                               useLoadedData = TRUE) {
   fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
@@ -1506,6 +1523,20 @@ S7::method(get_features_ms2, NTS) <- function(x,
     temp_ms
   }, fts = fts)
   
+  if (normalized) {
+    ms2_list <- lapply(ms2_list, function(z) {
+      if (!is.null(z)) {
+        if (nrow(z) > 0) {
+          max_intensity <- max(z$intensity)
+          if (max_intensity > 0) {
+            z$intensity <- z$intensity / max_intensity
+          }
+        }
+      }
+      z
+    })
+  }
+  
   ms2 <- data.table::rbindlist(ms2_list, fill = TRUE)
   
   if (nrow(ms2) == 0) {
@@ -1553,6 +1584,7 @@ S7::method(plot_features_ms2, NTS) <- function(x,
                                                mzClust = 0.005,
                                                presence = 0.8,
                                                minIntensity = 0,
+                                               normalized = TRUE,
                                                filtered = FALSE,
                                                useLoadedData = TRUE,
                                                legendNames = NULL,
@@ -1564,7 +1596,7 @@ S7::method(plot_features_ms2, NTS) <- function(x,
                                                interactive = TRUE) {
   ms2 <- get_features_ms2(
     x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
-    isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData
+    isolationWindow, mzClust, presence, minIntensity, normalized, filtered, useLoadedData
   )
   
   if (nrow(ms2) == 0) {
@@ -1827,6 +1859,7 @@ S7::method(get_groups, NTS) <- function(x,
 #' @export
 #' @noRd
 S7::method(plot_groups, NTS) <- function(x,
+                                         analyses = NULL,
                                          groups = NULL,
                                          mass = NULL,
                                          mz = NULL,
@@ -1846,7 +1879,7 @@ S7::method(plot_groups, NTS) <- function(x,
                                          interactive = TRUE,
                                          renderEngine = "webgl") {
   fts <- get_features(
-    x, analyses = NULL, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered
+    x, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered
   )
   
   if (grepl("targets", colorBy) & !isTRUE(legendNames)) {
@@ -2420,6 +2453,8 @@ S7::method(get_groups_ms1, NTS) <- function(x,
                                             mzClust = 0.003,
                                             presence = 0.8,
                                             minIntensity = 1000,
+                                            top = 25,
+                                            normalized = TRUE,
                                             groupBy = "groups",
                                             filtered = FALSE) {
   fgs <- get_groups(
@@ -2446,6 +2481,7 @@ S7::method(get_groups_ms1, NTS) <- function(x,
     mzClust = mzClustFeatures,
     presence = presenceFeatures,
     minIntensity = minIntensityFeatures,
+    normalized = normalized,
     filtered = filtered,
     useLoadedData = useLoadedData
   )
@@ -2489,6 +2525,17 @@ S7::method(get_groups_ms1, NTS) <- function(x,
   ms1$id <- ms1$group
   
   ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, verbose = FALSE)
+  
+  ms1_list <- lapply(ms1_list, function(z) {
+    if (!is.null(z)) {
+      if (nrow(z) > 0) {
+        z <- z[order(z$intensity, decreasing = TRUE), ]
+        z <- z[seq_len(min(nrow(x), top)), ]
+        z <- z[order(z$mz), ]
+      }
+    }
+    z
+  })
   
   ms1_df <- data.table::rbindlist(ms1_list, fill = TRUE)
   
@@ -2537,6 +2584,8 @@ S7::method(get_groups_ms2, NTS) <- function(x,
                                             mzClust = 0.003,
                                             presence = 0.8,
                                             minIntensity = 100,
+                                            top = 25,
+                                            normalized = TRUE,
                                             groupBy = "groups",
                                             filtered = FALSE) {
   fgs <- get_groups(
@@ -2562,6 +2611,7 @@ S7::method(get_groups_ms2, NTS) <- function(x,
     mzClust = mzClustFeatures,
     presence = presenceFeatures,
     minIntensity = minIntensityFeatures,
+    normalized = normalized,
     filtered = filtered,
     useLoadedData = useLoadedData
   )
@@ -2605,6 +2655,17 @@ S7::method(get_groups_ms2, NTS) <- function(x,
   ms2$id <- ms2$group
   
   ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, verbose = FALSE)
+  
+  ms2_list <- lapply(ms2_list, function(z) {
+    if (!is.null(z)) {
+      if (nrow(z) > 0) {
+        z <- z[order(z$intensity, decreasing = TRUE), ]
+        z <- z[seq_len(min(nrow(x), top)), ]
+        z <- z[order(z$mz), ]
+      }
+    }
+    z
+  })
   
   ms2_df <- data.table::rbindlist(ms2_list, fill = TRUE)
   
@@ -2654,6 +2715,8 @@ S7::method(plot_groups_ms1, NTS) <- function(x,
                                              mzClust = 0.005,
                                              presence = 0.8,
                                              minIntensity = 1000,
+                                             top = 25,
+                                             normalized = TRUE,
                                              groupBy = "groups",
                                              filtered = FALSE,
                                              legendNames = NULL,
@@ -2672,7 +2735,7 @@ S7::method(plot_groups_ms1, NTS) <- function(x,
   ms1 <- get_groups_ms1(
     x, groups, mass, mz, rt, mobility, ppm, sec, millisec,
     rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
-    useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
+    useLoadedData, mzClust, presence, minIntensity, top, normalized, groupBy, filtered
   )
   
   if (nrow(ms1) == 0) {
@@ -2783,6 +2846,8 @@ S7::method(plot_groups_ms2, NTS) <- function(x,
                                              mzClust = 0.003,
                                              presence = TRUE,
                                              minIntensity = 100,
+                                             top = 25,
+                                             normalized = TRUE,
                                              groupBy = "groups",
                                              filtered = FALSE,
                                              legendNames = NULL,
@@ -2801,7 +2866,7 @@ S7::method(plot_groups_ms2, NTS) <- function(x,
   ms2 <- get_groups_ms2(
     x, groups, mass, mz, rt, mobility, ppm, sec, millisec,
     isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
-    useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
+    useLoadedData, mzClust, presence, minIntensity, top, normalized, groupBy, filtered
   )
   
   if (nrow(ms2) == 0) {
@@ -3166,13 +3231,10 @@ S7::method(get_suspects, NTS) <- function(x,
                                           sec = 10,
                                           millisec = 5,
                                           ppmMS2 = 10,
+                                          mzrMS2 = 0.008,
+                                          minCusiness = 0.7,
                                           minFragments = 3,
-                                          isolationWindow = 1.3,
-                                          mzClust = 0.003,
-                                          presence = 0.8,
-                                          minIntensity = 0,
-                                          filtered = FALSE,
-                                          onGroups = TRUE) {
+                                          filtered = FALSE) {
   if (!x$has_features) {
     warning("Features not found!")
     return(data.table::data.table())
@@ -3319,7 +3381,11 @@ S7::method(get_suspects, NTS) <- function(x,
           suspect_db <- database[vapply(database$name, function(j) grepl(j, suspect_name), FALSE)]
           suspect_db <- suspect_db[1, ]
           
-          temp <- data.table::data.table("analysis" = suspect_analysis, "feature" = suspect_feature)
+          temp <- data.table::data.table(
+            "analysis" = suspect_analysis,
+            "feature" = suspect_feature
+          )
+          
           if ("group" %in% colnames(z)) temp$group <- z$group[i]
           temp$name <- suspect_name
           
@@ -3339,12 +3405,10 @@ S7::method(get_suspects, NTS) <- function(x,
           temp$rt <- suspect_rt
           temp$exp_rt <- suspect_db$rt
           temp$error_rt <- round(temp$rt - temp$exp_rt, digits = 1)
-          
           temp$id_level <- "4"
-          
           temp$shared_fragments <- 0
-          temp$fragments <- NA_character_
-          
+          temp$cusiness <- 0
+          temp$fragments <- list(data.table::data.table())
           temp$intensity <- suspect_intensity
           temp$area <- suspect_area
           
@@ -3366,57 +3430,87 @@ S7::method(get_suspects, NTS) <- function(x,
                 if (length(ms2) == 0) ms2 <- data.table::data.table()
               }
               
-              if (nrow(ms2) == 0) {
-                ms2 <- get_features_ms2(
-                  x,
-                  z$analysis[i],
-                  z$feature[i],
-                  isolationWindow = isolationWindow,
-                  mzClust = mzClust,
-                  presence = presence,
-                  minIntensity = minIntensity
-                )
-              }
-              
               if (nrow(ms2) > 0) {
-                
                 if ("fragments" %in% colnames(suspect_db)) {
                   fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
                   fragments <- strsplit(fragments, " ")
                   fragments <- data.table::data.table(
+                    "formula" = vapply(fragments, function(x) x[1], NA_character_),
                     "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
                     "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
                   )
                 } else {
                   fragments <- unlist(strsplit(fragments, split = ";", fixed = TRUE))
                   fragments_int <- unlist(strsplit(suspect_db$fragments_int, split = ";", fixed = TRUE))
+                  if ("fragments_formula" %in% colnames(suspect_db)) {
+                    fragments_formula <- unlist(
+                      strsplit(suspect_db$fragments_formula, split = ";", fixed = TRUE)
+                    )
+                  } else {
+                    fragments_formula <- rep(NA_character_, length(fragments))
+                  }
+                  
                   fragments <- data.table::data.table(
+                    "formula" = fragments_formula,
                     "mz" = as.numeric(fragments),
                     "intensity" = as.numeric(fragments_int)
                   )
                 }
                 
                 mzr <- fragments$mz * ppm / 1E6
+                mzr[mzr < mzrMS2] <- mzrMS2
                 fragments$mzmin <- fragments$mz - mzr
                 fragments$mzmax <- fragments$mz + mzr
                 
-                fragments$shared <- apply(fragments, 1, function(x) {
-                  any(ms2$mz >= x[3] & ms2$mz <= x[4])
-                })
-                
-                temp$shared_fragments <- sum(fragments$shared)
-                
-                if (temp$shared_fragments > minFragments) {
-                  frag_string <- character()
-                  for (j in seq_len(nrow(fragments))) {
-                    tmp_frag_string <- paste(
-                      round(fragments$mz[j], digits = 4),
-                      round(fragments$intensity[j], digits = 0),
-                      collapse = " "
-                    )
-                    frag_string <- c(frag_string, tmp_frag_string)
+                fragments$exp_idx <- vapply(seq_len(nrow(fragments)), function(z, ms2, fragments) {
+                  idx <- which(ms2$mz >= fragments$mzmin[z] & ms2$mz <= fragments$mzmax[z])
+                  if (length(idx) == 0) {
+                    NA_integer_
+                  } else {
+                    if (length(idx) > 1) {
+                      candidates <- ms2$mz[idx]
+                      mz_error <- abs(candidates - fragments$mz[z])
+                      idx <- idx[which.min(mz_error)]
+                      idx <- idx[1]
+                    }
+                    as.integer(idx)
                   }
-                  temp$fragments <- paste(frag_string, collapse = "; ")
+                }, ms2 = ms2, fragments = fragments, integer(1))
+                
+                number_shared_fragments <- length(fragments$exp_idx[!is.na(fragments$exp_idx)])
+                
+                if (number_shared_fragments > 0) {
+                  fragments$exp_mz <- ms2$mz[fragments$exp_idx]
+                  fragments$mass_error <- round(fragments$mz - fragments$exp_mz, digits = 4)
+                  fragments$exp_intensity <- ms2$intensity[fragments$exp_idx]
+                  fragments$exp_intensity[is.na(fragments$exp_intensity)] <- 0
+                  sel <- fragments$exp_intensity > 0
+                  intensity <- fragments$intensity[sel]
+                  intensity <- intensity / max(intensity)
+                  intensity_exp <- fragments$exp_intensity[sel]
+                  intensity_exp <- intensity_exp / max(intensity_exp)
+                  dot_pro <- intensity * intensity_exp
+                  dot_pro <- sum(dot_pro)
+                  mag_int <- sqrt(sum(intensity^2))
+                  mag_exp_int <- sqrt(sum(intensity_exp^2))
+                  cusiness <- round(dot_pro / (mag_int * mag_exp_int), digits = 4)
+                  
+                  ms2_unknown <- ms2[-fragments$exp_idx[!is.na(fragments$exp_idx)], c("mz", "intensity"), with = FALSE]
+                  if (nrow(ms2_unknown) > 1) {
+                    ms2_unknown$formula <- "unkown"
+                    data.table::setnames(ms2_unknown, c("mz", "intensity"), c("exp_mz", "exp_intensity"))
+                    fragments <- data.table::rbindlist(list(fragments, ms2_unknown), fill = TRUE)
+                  }
+                } else {
+                  cusiness <- 0
+                }
+                
+                temp$shared_fragments <- number_shared_fragments
+                temp$cusiness <- cusiness
+                temp$epx_ms2_size <- nrow(ms2)
+                
+                if (number_shared_fragments >= minFragments || cusiness >= minCusiness) {
+                  temp$fragments <- list(fragments)
                   if (temp$id_level == "3b") {
                     temp$id_level <- "1"
                   } else if (temp$id_level == "4") {
@@ -3435,47 +3529,47 @@ S7::method(get_suspects, NTS) <- function(x,
     suspects <- data.table::rbindlist(suspects, fill = TRUE)
   }
   
-  if (nrow(suspects) > 0 && !filtered && x$has_groups && onGroups) {
-    if (all(!is.na(suspects$group))) {
-      suspects$id_level <- factor(
-        suspects$id_level,
-        levels = c("1", "2", "3a", "3b", "4"),
-        ordered = TRUE
-      )
-      
-      id_level <- NULL
-      error_mass <- NULL
-      error_rt <- NULL
-      shared_fragments <- NULL
-      name <- NULL
-      
-      temp_vals <- suspects[, .(
-        name = unique(name),
-        id_level = min(id_level),
-        error_mass = min(abs(error_mass)),
-        error_rt = min(abs(error_rt)),
-        shared_fragments = max(shared_fragments)
-      ), by = "group"]
-      
-      temp_vals <- unique(temp_vals)
-      groups_df <- get_groups(
-        x,
-        groups = unique(suspects$group),
-        intensities = TRUE,
-        average = TRUE,
-        sdValues = FALSE,
-        metadata = FALSE
-      )
-      group <- NULL
-      groups_df <- groups_df[temp_vals, on = .(group)]
-      data.table::setkey(groups_df, group)
-      groups_df <- groups_df[unique(group), mult = "first"]
-      cols_by <- c("group", "name", "id_level", "error_mass", "error_rt", "shared_fragments")
-      data.table::setcolorder(groups_df, cols_by)
-      data.table::setkey(groups_df, NULL)
-      return(groups_df)
-    }
-  }
+  # if (nrow(suspects) > 0 && !filtered && x$has_groups && onGroups) {
+  #   if (all(!is.na(suspects$group))) {
+  #     suspects$id_level <- factor(
+  #       suspects$id_level,
+  #       levels = c("1", "2", "3a", "3b", "4"),
+  #       ordered = TRUE
+  #     )
+  #     
+  #     id_level <- NULL
+  #     error_mass <- NULL
+  #     error_rt <- NULL
+  #     shared_fragments <- NULL
+  #     name <- NULL
+  #     
+  #     temp_vals <- suspects[, .(
+  #       name = unique(name),
+  #       id_level = min(id_level),
+  #       error_mass = min(abs(error_mass)),
+  #       error_rt = min(abs(error_rt)),
+  #       shared_fragments = max(shared_fragments)
+  #     ), by = "group"]
+  #     
+  #     temp_vals <- unique(temp_vals)
+  #     groups_df <- get_groups(
+  #       x,
+  #       groups = unique(suspects$group),
+  #       intensities = TRUE,
+  #       average = TRUE,
+  #       sdValues = FALSE,
+  #       metadata = FALSE
+  #     )
+  #     group <- NULL
+  #     groups_df <- groups_df[temp_vals, on = .(group)]
+  #     data.table::setkey(groups_df, group)
+  #     groups_df <- groups_df[unique(group), mult = "first"]
+  #     cols_by <- c("group", "name", "id_level", "error_mass", "error_rt", "shared_fragments")
+  #     data.table::setcolorder(groups_df, cols_by)
+  #     data.table::setkey(groups_df, NULL)
+  #     return(groups_df)
+  #   }
+  # }
   suspects
 }
 
@@ -5081,31 +5175,279 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
 #' @export
 #' @noRd
 S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
-                                                     clusterMzWindow = 0.005,
-                                                     topMost = 100,
-                                                     minIntensityPre = 50,
-                                                     minIntensityPost = 50,
-                                                     avgFun = "mean",
-                                                     method = "distance") {
+                                                     mzClust = 0.005,
+                                                     minIntensity = 10,
+                                                     presence = 0.7,
+                                                     top = 25,
+                                                     normalized = TRUE) {
   if (!x$has_features) {
     warning("No features found to get!")
     return(NULL)
   }
+  
+  if (!x$has_features_ms2) {
+    warning("No MS2 features found to get!")
+    return(NULL)
+  }
+  
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
     return(FALSE)
   }
+  
   parameters <- list(
-    clusterMzWindow = clusterMzWindow,
-    topMost = topMost,
-    minIntensityPre = minIntensityPre,
-    minIntensityPost = minIntensityPost,
-    avgFun = avgFun,
-    method = method
+    clusterMzWindow = mzClust,
+    topMost = 100,
+    minIntensityPre = minIntensity,
+    minIntensityPost = minIntensity,
+    avgFun = "mean",
+    method = "distance"
   )
+  
   parameters$avgFun <- get(parameters$avgFun)
-  mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(x, parameters)
-  mspl
+  
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
+  correct_spectrum <- function(s, t, out) {
+    
+    if (length(s) > 1) s <- s[1]
+    
+    names(s) <- t
+    
+    if (length(s[[1]]) > 0) {
+      n_traces <- nrow(s[[1]])
+      
+      if (n_traces > 0) {
+        s[[1]]$id <- seq_len(n_traces)
+        if (!"is_pre" %in% colnames(s[[1]])) s[[1]]$is_pre <- rep(FALSE, n_traces)
+        cols_to_keep <- c("id", "mz", "intensity", "is_pre")
+        s[[1]] <- s[[1]][, cols_to_keep, with = FALSE]
+        colnames(s[[1]]) <- c("ID", "mz", "intensity", "precursor")
+      } else {
+        s <- NULL
+      }
+    } else {
+      s <- NULL
+    }
+    
+    out <- c(out, s)
+    out
+  }
+    
+  feature_list <- x$feature_list
+    
+  plist <- lapply(feature_list, function(z, correct_spectrum) {
+    features <- z[!z$filtered, ]
+    groups <- unique(features$group)
+    groups <- groups[!is.na(groups)]
+    if (length(groups) == 0) return(NULL)
+    glist <- lapply(groups, function(z2, features, correct_spectrum) {
+      out <- list()
+      MS <- features$ms1[features$group %in% z2]
+      if (length(MS) > 1) MS <- MS[1]
+      if (!is.null(MS[[1]])) {
+        if (!"is_pre" %in% colnames(MS[[1]])) MS[[1]]$is_pre <- rep(FALSE, nrow(MS[[1]]))
+        t_mz_min <- features$mzmin[features$group %in% z2]
+        t_mz_max <- features$mzmax[features$group %in% z2]
+        
+        MS[[1]]$is_pre <- vapply(MS[[1]]$mz, function(z3, t_mz_min, t_mz_max) {
+          z3 >= t_mz_min - (mzClust / 2) & z3 <= t_mz_max + (mzClust / 2)
+        }, t_mz_min = t_mz_min, t_mz_max = t_mz_max, FALSE)
+      }
+      MSMS <- features$ms2[features$group %in% z2]
+      out <- correct_spectrum(MS, "MS", out)
+      out <- correct_spectrum(MSMS, "MSMS", out)
+      out
+    }, features = features, correct_spectrum = correct_spectrum)
+    
+    names(glist) <- groups
+    glist = glist[order(names(glist))]
+    glist
+  }, correct_spectrum = correct_spectrum)
+    
+  names(plist) <- x$analyses_info$analysis
+  plist <- plist[vapply(plist, function(x) length(x) > 0, FALSE)]
+  
+  run_list <- lapply(x$analyses_info$file, function(z) rcpp_parse_ms_spectra_headers(z))
+    
+  mlist <- Map(function(z, y) {
+    features <- z[!z$filtered, ]
+    groups <- unique(features$group)
+    groups <- groups[!is.na(groups)]
+    pol_col <- as.character(y$polarity)
+    pol_key = c(1, 0, -1)
+    names(pol_key) <- c("1", "-1", "0")
+    y$polarity <- pol_key[pol_col]
+    setnames(
+      y,
+      c("index", "level", "ce", "pre_mz"),
+      c("seqNum", "msLevel", "collisionEnergy", "precursorMZ"),
+      skip_absent = TRUE
+    )
+    
+    glist <- lapply(groups, function(z2, features, y) {
+      out <- list()
+      ft <- features[features$group %in% z2, ]
+      if (nrow(ft) > 0) {
+        MS <- y[y$rt >= ft$rtmin & y$rt <= ft$rtmax & y$msLevel == 1, ]
+        if (nrow(MS) > 0) out[["MS"]] <- MS
+        MSMS <- y[y$rt >= ft$rtmin & y$rt <= ft$rtmax & y$precursorMZ >= ft$mzmin - 1.3/2 & y$precursorMZ <= ft$mzmax + 1.3/2 & y$msLevel == 2, ]
+        if (nrow(MSMS) > 0) out[["MSMS"]] <- MSMS
+      }
+      out
+    }, features = features, y = y)
+    
+    names(glist) <- groups
+    glist = glist[order(names(glist))]
+    glist
+  }, feature_list, run_list)
+    
+  names(mlist) <- x$analyses_info$analysis
+  mlist <- mlist[vapply(mlist, function(x) length(x) > 0, FALSE)]
+  mlist <- mlist[names(plist)]
+    
+  groups <- lapply(feature_list[names(plist)], function(z) z$group[!z$filtered])
+  groups <- unique(unlist(groups))
+  groups <- groups[!is.na(groups)]
+  
+  av_ms1 <- get_groups_ms1(
+    x,
+    groups = groups,
+    useLoadedData = FALSE,
+    mzClust = mzClust,
+    presence = presence,
+    minIntensity = minIntensity,
+    top = top,
+    normalized = normalized
+  )
+  
+  av_ms2 <- get_groups_ms2(
+    x,
+    groups = groups,
+    useLoadedData = FALSE,
+    mzClust = mzClust,
+    presence = presence,
+    minIntensity = minIntensity,
+    top = top,
+    normalized = normalized
+  )
+
+  av_plist <- lapply(groups, function(z, av_ms2) {
+    out <- list()
+    
+    if (nrow(av_ms1) == 0) {
+      out[["MS"]] <- NULL
+    } else {
+      temp_ms1 <- av_ms1[av_ms1$group %in% z, ]
+      if (nrow(temp_ms1) == 0) {
+        out[["MS"]] <- NULL
+      } else {
+        temp_ms1$ID <- seq_len(nrow(temp_ms1))
+        data.table::setnames(temp_ms1, "is_pre", "precursor")
+        temp_ms1 <- temp_ms1[, c("ID", "mz", "intensity", "precursor"), with = FALSE]
+        out[["MS"]] <- temp_ms1
+      }
+    }
+    
+    if (nrow(av_ms2) == 0) {
+      out[["MSMS"]] <- NULL
+    } else {
+      temp_ms2 <- av_ms2[av_ms2$group %in% z, ]
+      if (nrow(temp_ms2) == 0) {
+        out[["MSMS"]] <- NULL
+      } else {
+        temp_ms2$ID <- seq_len(nrow(temp_ms2))
+        data.table::setnames(temp_ms2, "is_pre", "precursor")
+        temp_ms2 <- temp_ms2[, c("ID", "mz", "intensity", "precursor"), with = FALSE]
+        out[["MSMS"]] <- temp_ms2
+      }
+    }
+    
+    out
+  }, av_ms2 = av_ms2)
+  
+  names(av_plist) <- groups
+  
+  pat_param <- list(
+    "clusterMzWindow" = parameters$clusterMzWindow,
+    "topMost" = parameters$topMost,
+    "minIntensityPre" = parameters$minIntensityPre,
+    "minIntensityPost" = parameters$minIntensityPost,
+    "avgFun" = parameters$avgFun,
+    "method" = parameters$method,
+    "pruneMissingPrecursorMS" = FALSE,
+    "retainPrecursorMSMS" = TRUE
+  )
+
+  ana_info <- x$analyses_info[x$analyses_info$analysis %in% names(plist), ]
+  pol <- ana_info$polarity
+  ana_info$path <- dirname(ana_info$file)
+  data.table::setnames(ana_info, "replicate", "group", skip_absent = TRUE)
+  ana_info$set <- ana_info$polarity
+  ana_info$polarity <- NULL
+  data.table::setcolorder(ana_info, c("path", "analysis", "group", "blank", "set"))
+  
+  if (length(unique(pol)) > 1) {
+    
+    warning("Different polarities found in the analyses. Conversion not yet implemented!")
+    return(NULL)
+    
+    plist_pos <- plist[pol %in% "positive"]
+    mlist_pos <- mlist[pol %in% "positive"]
+    groups_pos <- unique(unlist(lapply(plist_pos, function(x) names(x))))
+    
+    pl_pos <- new(
+      "MSPeakLists",
+      peakLists = plist_pos,
+      metadata = mlist_pos,
+      avgPeakListArgs = pat_param,
+      origFGNames = groups_pos,
+      algorithm = "mzr"
+    )
+    
+    plist_neg <- plist[pol %in% "negative"]
+    mlist_neg <- mlist[pol %in% "negative"]
+    groups_neg <- unique(unlist(lapply(plist_neg, function(x) names(x))))
+    
+    pl_neg <- new(
+      "MSPeakLists",
+      peakLists = plist_neg,
+      metadata = mlist_neg,
+      avgPeakListArgs = pat_param,
+      origFGNames = groups_neg,
+      algorithm = "mzr"
+    )
+    
+    plistComb <- Reduce(modifyList, lapply(list("positive" = pl_pos, "negative" = pl_neg), patRoon::peakLists))
+    
+    plfinal <- new(
+      "MSPeakListsSet",
+      analysisInfo = ana_info,
+      peakLists = plist,
+      metadata = mlist,
+      avgPeakListArgs = pat_param,
+      origFGNames = unique(groups),
+      algorithm = "mzr-set",
+      setObjects = list("positive" = pl_pos, "negative" = pl_neg)
+    )
+    
+  } else {
+    plfinal <- new(
+      "MSPeakLists",
+      doAverage = FALSE,
+      peakLists = plist,
+      metadata = mlist,
+      averagedPeakLists = av_plist,
+      avgPeakListArgs = pat_param,
+      origFGNames = groups,
+      algorithm = "mzr"
+    )
+  }
+  
+  plfinal
 }
 
 # MARK: report

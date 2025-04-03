@@ -135,6 +135,7 @@ Collate:
     'class_MassSpecMethod_LoadChromatograms.R'
     'class_MassSpecMethod_QuantifyChromatographicPeaks.R'
     'class_MassSpecMethod_LoadFeaturesMS1_MS2_EIC.R'
+    'class_MassSpecMethod_FilterFeaturesMS2.R'
     'class_MassSpecMethod_LoadMSPeakLists.R'
     'class_MassSpecMethod_LoadSpectra.R'
     'class_MassSpecMethod_NormalizeSpectra.R'

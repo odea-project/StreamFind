@@ -1005,6 +1005,7 @@ Rcpp::List rcpp_ms_load_features_ms1(std::vector<std::string> analyses_names,
           continue;
 
       const std::string &id_j = fts_id[j];
+      const float &mz_j = fts_mz[j];
 
       sc::MS_TARGETS_SPECTRA res_j = res[id_j];
 
@@ -1014,12 +1015,13 @@ Rcpp::List rcpp_ms_load_features_ms1(std::vector<std::string> analyses_names,
         continue;
 
       const std::vector<std::string> id_vec = std::vector<std::string>(n_res_j, id_j);
+      const std::vector<float> mz_vec = std::vector<float>(n_res_j, mz_j);
 
       const Rcpp::List ms1 = Rcpp::List::create(
           Rcpp::Named("feature") = id_vec,
           Rcpp::Named("polarity") = res_j.polarity,
           Rcpp::Named("level") = res_j.level,
-          Rcpp::Named("pre_mz") = res_j.pre_mz,
+          Rcpp::Named("pre_mz") = mz_vec,
           Rcpp::Named("pre_ce") = res_j.pre_ce,
           Rcpp::Named("rt") = res_j.rt,
           Rcpp::Named("mz") = res_j.mz,
@@ -2207,4 +2209,131 @@ Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_
   }
 
   return features;
+};
+
+// MARK: rcpp_ms_calculate_features_quality
+// [[Rcpp::export]]
+Rcpp::List rcpp_ms_calculate_features_quality_v2(std::vector<std::string> analyses_names,
+                                                 std::vector<std::string> analyses_files,
+                                                 Rcpp::List spectra_headers,
+                                                 Rcpp::List feature_list,
+                                                 bool filtered = false,
+                                                 float rtExpand = 0,
+                                                 float mzExpand = 0,
+                                                 float minPeakWidth = 6,
+                                                 float maxPeakWidth = 30,
+                                                 float minTracesIntensity = 0,
+                                                 float minNumberTraces = 5,
+                                                 float baseCut = 0)
+{
+  
+  NTS::NTS_DATA data(analyses_names, analyses_files, spectra_headers, feature_list);
+  
+  if (!data.valid)
+  {
+    Rcpp::Rcout << "Error: Invalid NTS data!" << std::endl;
+    return feature_list;
+  }
+  
+  if (minNumberTraces < 5)
+    minNumberTraces = 5;
+  
+  const float minHalfPeakWidth = minPeakWidth / 2;
+  const float maxHalfPeakWidth = maxPeakWidth / 2;
+  
+  for (int i = 0; i < data.size(); i++)
+  {
+    NTS::FEATURES &fts_i = data.features[i];
+    
+    if (fts_i.size() == 0)
+      continue;
+    
+    Rcpp::Rcout << "Processing " << fts_i.size() << " features in analyses " << data.analyses[i] << "...";
+    
+    sc::MS_TARGETS targets;
+    int counter = 0;
+    
+    for (int j = 0; j < fts_i.size(); j++)
+    {
+      const NTS::FEATURE &ft_j = fts_i.get_feature(j);
+      
+      if (ft_j.quality.is_calculated)
+        continue;
+      
+      if (ft_j.filtered && !filtered)
+        continue;
+      
+      if (!ft_j.eic.is_extracted)
+      {
+        targets.index.push_back(counter);
+        counter++;
+        targets.id.push_back(ft_j.feature);
+        targets.level.push_back(1);
+        targets.polarity.push_back(ft_j.polarity);
+        targets.precursor.push_back(false);
+        targets.mz.push_back(ft_j.mz);
+        targets.mzmin.push_back(ft_j.mzmin - mzExpand);
+        targets.mzmax.push_back(ft_j.mzmax + mzExpand);
+        const float &rt_j = ft_j.rt;
+        float rtmin_j = ft_j.rtmin;
+        float rtmax_j = ft_j.rtmax;
+        if (rt_j - rtmin_j < minHalfPeakWidth) rtmin_j = rt_j - minHalfPeakWidth;
+        if (rtmax_j - rt_j < minHalfPeakWidth) rtmax_j = rt_j + minHalfPeakWidth;
+        targets.rt.push_back(rt_j);
+        targets.rtmin.push_back(rtmin_j - rtExpand);
+        targets.rtmax.push_back(rtmax_j + rtExpand);
+        targets.mobilitymin.push_back(0);
+        targets.mobilitymax.push_back(0);
+      }
+    }
+    
+    if (targets.id.size() == 0)
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
+      continue;
+    }
+    
+    const sc::MS_SPECTRA_HEADERS &header_i = data.headers[i];
+    const std::string &file_i = data.files[i];
+    
+    if (!std::filesystem::exists(file_i))
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
+      continue;
+    }
+    
+    sc::MS_FILE ana(file_i);
+    
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, minTracesIntensity, 0);
+    
+    for (int j = 0; j < fts_i.size(); j++)
+    {
+      NTS::FEATURE ft_j = fts_i.get_feature(j);
+      
+      if (ft_j.quality.is_calculated)
+        continue;
+      
+      if (ft_j.filtered && !filtered)
+        continue;
+      
+      if (!ft_j.eic.is_extracted) {
+        const sc::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
+        ft_j.eic.import_from_ms_targets_spectra(res_j);
+      }
+      
+      ft_j.calculate_quality(baseCut, 0, maxHalfPeakWidth);
+      
+      if (ft_j.quality.is_calculated)
+      {
+        ft_j.update_properties();
+        fts_i.set_feature(j, ft_j);
+      }
+    }
+    
+    data.features[i] = fts_i;
+    
+    Rcpp::Rcout << "Done!" << std::endl;
+  }
+  
+  return data.features_as_list_of_dt();
 };

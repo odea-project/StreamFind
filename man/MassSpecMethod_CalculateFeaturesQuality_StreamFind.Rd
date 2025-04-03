@@ -9,6 +9,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind(
   rtExpand = 0,
   mzExpand = 0,
   minPeakWidth = 6,
+  maxPeakWidth = 30,
   minTracesIntensity = 0,
   minNumberTraces = 6,
   baseCut = 0
@@ -24,7 +25,10 @@ retention time range.}
 right the mass range.}
 
 \item{minPeakWidth}{Numeric of length one with the minimum peak width centered on the maximum
-for extracting the feature IEC.}
+for extracting the feature EIC.}
+
+\item{maxPeakWidth}{Numeric of length one with the maximum peak width centered on the maximum
+for reconstructing the feature EIC.}
 
 \item{baseCut}{Numeric of length 1 with the base cut for calculating feature Gaussian fit.}
 

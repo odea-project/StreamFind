@@ -9,6 +9,7 @@ MassSpecMethod_FillFeatures_StreamFind(
   rtExpand = 0,
   mzExpand = 0,
   minPeakWidth = 6,
+  maxPeakWidth = 30,
   minTracesIntensity = 1000,
   minNumberTraces = 5,
   minIntensity = 5000,
@@ -28,6 +29,9 @@ retention time range.}
 right the mass range.}
 
 \item{minPeakWidth}{Numeric of length one with the minimum peak width for building feature
+extraction targets.}
+
+\item{maxPeakWidth}{Numeric of length one with the maximum peak width for building feature
 extraction targets.}
 
 \item{minTracesIntensity}{Numeric of length one with the minimum intensity to collect spectra

@@ -7,11 +7,11 @@
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
 #' @template arg-ms-ppmMS2
+#' @param mzrMS2 Numeric length 1 with the absolute m/z range window for matching MS2 fragments with
+#' experimental MS2 traces.
 #' @template arg-ms-minFragments
-#' @template arg-ms-isolationWindow
-#' @template arg-ms-mzClust
-#' @template arg-ms-presence
-#' @template arg-ms-minIntensity
+#' @param minCusiness Numeric length 1 with the minimum cusiness value of the experimental and
+#' database fragments for a feature to be considered a suspect.
 #' @template arg-ms-filtered
 #'
 #' @return A `MassSpecMethod_SuspectScreening_StreamFind` object.
@@ -31,11 +31,9 @@ MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
                          ppm = 5,
                          sec = 10,
                          ppmMS2 = 10,
+                         mzrMS2 = 0.008,
+                         minCusiness = 0.5,
                          minFragments = 3,
-                         isolationWindow = 1.3,
-                         mzClust = 0.003,
-                         presence = 0.8,
-                         minIntensity = 0,
                          filtered = FALSE) {
     
     S7::new_object(
@@ -49,11 +47,9 @@ MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
           "ppm" = as.numeric(ppm),
           "sec" = as.numeric(sec),
           "ppmMS2" = as.numeric(ppmMS2),
+          "mzrMS2" = as.numeric(mzrMS2),
+          "minCusiness" = as.numeric(minCusiness),
           "minFragments" = as.numeric(minFragments),
-          "isolationWindow" = as.numeric(isolationWindow),
-          "mzClust" = as.numeric(mzClust),
-          "presence" = as.numeric(presence),
-          "minIntensity" = as.numeric(minIntensity),
           "filtered" = as.logical(filtered)
         ),
         number_permitted = 1,
@@ -74,11 +70,9 @@ MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
     checkmate::assert_number(self@parameters$ppm)
     checkmate::assert_number(self@parameters$sec)
     checkmate::assert_number(self@parameters$ppmMS2)
+    checkmate::assert_number(self@parameters$mzrMS2)
+    checkmate::assert_number(self@parameters$minCusiness)
     checkmate::assert_number(self@parameters$minFragments)
-    checkmate::assert_number(self@parameters$isolationWindow)
-    checkmate::assert_number(self@parameters$mzClust)
-    checkmate::assert_number(self@parameters$presence)
-    checkmate::assert_number(self@parameters$minIntensity)
     checkmate::assert_logical(self@parameters$filtered, max.len = 1)
     checkmate::assert_data_table(self@parameters$database)
     checkmate::assert_true(
@@ -124,13 +118,10 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     ppm = parameters$ppm,
     sec = parameters$sec,
     ppmMS2 = parameters$ppmMS2,
+    mzrMS2 = parameters$mzrMS2,
+    minCusiness = parameters$minCusiness,
     minFragments = parameters$minFragments,
-    isolationWindow = parameters$isolationWindow,
-    mzClust = parameters$mzClust,
-    presence = parameters$presence,
-    minIntensity = parameters$minIntensity,
-    filtered = parameters$filtered,
-    onGroups = FALSE
+    filtered = parameters$filtered
   )
   
   if (nrow(suspect_features) > 0) {

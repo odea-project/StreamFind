@@ -431,6 +431,25 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
   groups <- unique(unlist(groups))
   groups <- groups[!is.na(groups)]
   
+  browser()
+  browser()
+  browser()
+  
+  av_ms2 <- get_groups_ms2(
+    NTS,
+    groups = groups,
+    isolationWindow = 1.3,
+    mzClustFeatures = 0.003,
+    presenceFeatures = 0.7,
+    minIntensityFeatures = 100,
+    useLoadedData = FALSE,
+    mzClust = 0.003,
+    presence = 0.7,
+    minIntensity = 100
+  )
+  
+  av_plist <- 
+  
   pat_param <- list(
     "clusterMzWindow" = parameters$clusterMzWindow,
     "topMost" = parameters$topMost,
@@ -494,6 +513,7 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
   } else {
     plfinal <- new(
       "MSPeakLists",
+      doAverage = FALSE,
       peakLists = plist,
       metadata = mlist,
       avgPeakListArgs = pat_param,

@@ -53,6 +53,10 @@ rcpp_ms_calculate_features_quality <- function(analyses_names, analyses_files, h
     .Call(`_StreamFind_rcpp_ms_calculate_features_quality`, analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut)
 }
 
+rcpp_ms_calculate_features_quality_v2 <- function(analyses_names, analyses_files, spectra_headers, feature_list, filtered = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, maxPeakWidth = 30, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0) {
+    .Call(`_StreamFind_rcpp_ms_calculate_features_quality_v2`, analyses_names, analyses_files, spectra_headers, feature_list, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut)
+}
+
 rcpp_ms_group_features <- function(features, rt_dev = 10, verbose = FALSE) {
     .Call(`_StreamFind_rcpp_ms_group_features`, features, rt_dev, verbose)
 }

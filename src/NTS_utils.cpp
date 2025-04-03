@@ -14,10 +14,8 @@ sc::MS_SPECTRA_HEADERS NTS::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
   const std::vector<float> &hd_pre_mz_high = hd["pre_mzhigh"];
   const std::vector<float> &hd_pre_ce = hd["pre_ce"];
   const std::vector<float> &hd_mobility = hd["mobility"];
-
   const int number_spectra = hd_index.size();
   headers.resize_all(number_spectra);
-
   headers.index = hd_index;
   headers.rt = hd_rt;
   headers.polarity = hd_polarity;
@@ -26,157 +24,13 @@ sc::MS_SPECTRA_HEADERS NTS::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
   headers.precursor_mz = hd_pre_mz;
   headers.activation_ce = hd_pre_ce;
   headers.mobility = hd_mobility;
-
   return headers;
 };
 
-// MARK: MEAN
-float NTS::mean(const std::vector<float> &v)
-{
-  return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
-};
-
-// MARK: STANDARD_DEVIATION
-float NTS::standard_deviation(const std::vector<float> &v, float mean_val)
-{
-  float sum = 0.0;
-  for (float num : v)
-  {
-    sum += pow(num - mean_val, 2);
-  }
-  return sqrt(sum / v.size());
-};
-
-// MARK: FIND_MAX_INDEX
-size_t NTS::find_max_index(const std::vector<float> &v)
-{
-  return std::max_element(v.begin(), v.end()) - v.begin();
-};
-
-// MARK: FIND_CENTRAL_MAX_INDEX
-size_t NTS::find_central_max_index(const std::vector<float> &rt,
-                                   const std::vector<float> &intensity,
-                                   const float &rt_mean,
-                                   const float &rtWindow)
-{
-  
-  int total_points = intensity.size();
-  
-  if (total_points < 5) return 0;
-  
-  float max_intensity = intensity[0];
-  int max_index = 0;
-  
-  for (int i = 0; i < total_points; ++i) {
-    const float &intensity_i = intensity[i];
-    const float &rt_i = rt[i];
-    
-    if (rtWindow > 0 && (rt_i < rt_mean - rtWindow || rt_i > rt_mean + rtWindow)) {
-      continue;
-    }
-    
-    if (intensity_i > max_intensity) {
-      max_intensity = intensity_i;
-      max_index = i;
-    }
-  }
-  
-  return max_index;
-  
-  // 
-  // size_t total_points = intensity.size();
-  // if (total_points < 4) {
-  //   return 0; 
-  // }
-  // 
-  // size_t exclude_count = std::round(total_points * exclude_percentage);
-  // 
-  // if (exclude_count > 3) {
-  //   exclude_count = 3;
-  // }
-  // 
-  // size_t start_index = exclude_count;
-  // size_t end_index = total_points - exclude_count;
-  // 
-  // if (start_index >= end_index) {
-  //   return 0;
-  // }
-  // 
-  // float max_intensity = 0;
-  // size_t max_index = start_index;
-  // 
-  // for (size_t i = start_index + 1; i < end_index; ++i) {
-  //   float intensity_i = intensity[i];
-  //   float rt_i = rt[i];
-  //   if (rtWindow > 0)
-  //   {
-  //     if (rt_i < rt_mean - rtWindow || rt_i > rt_mean + rtWindow) {
-  //       continue;
-  //     }
-  //   }
-  //   if (intensity_i > max_intensity) {
-  //     max_intensity = intensity_i;
-  //     max_index = i;
-  //   }
-  // }
-  // 
-  // return max_index;
-};
-
-// MARK: FIND_MIN_INDEX
-size_t NTS::find_min_index(const std::vector<float> &v)
-{
-  return std::min_element(v.begin(), v.end()) - v.begin();
-};
-
-// MARK: applyMovingAverage
-void NTS::applyMovingAverage(std::vector<float>& x,const size_t &start, const size_t &end, const int &windowSize) {
-  int xWindowSize = end - start + 1;
-  if (xWindowSize < windowSize) return;
-  std::vector<float> smoothed = x;
-  int halfWindow = windowSize / 2;
-  
-  for (size_t i = start + 1; i < end; ++i) { // does not include start nor end
-    int count = 0;
-    float sum = 0.0;
-    
-    size_t left = i - halfWindow;
-    if (left < 0) left = 0;
-    size_t right = i + halfWindow;
-    if (right > end) right = end;
-    
-    for (size_t j = left; j <= right; ++j) {
-      if (j >= start && j <= end) {
-        sum += x[j];
-        count++;
-      }
-    }
-    smoothed[i] = sum / count;
-  }
-  for (size_t i = start + 1; i < end; ++i) {
-    x[i] = smoothed[i];
-  }
-}
-
-// MARK: smoothSides 
-void NTS::smoothSides(std::vector<float>& x, const size_t &max_position, const int &windowSize) {
-  size_t leftStart = 0;
-  size_t leftEnd = max_position;
-  size_t rightStart = max_position;
-  size_t rightEnd = x.size() - 1;
-  int size_left = leftEnd + 1;
-  int size_right = rightEnd - rightStart + 1;
-  
-  if (size_left >= windowSize) {
-    applyMovingAverage(x, leftStart, leftEnd, windowSize);
-  }
-  if (size_right >= windowSize) {
-    applyMovingAverage(x, rightStart, rightEnd, windowSize);
-  }
-}
-
-// MARK: MERGE_TRACES_WITHIN_RT
-void NTS::merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity)
+// MARK: merge_traces_within_rt
+void NTS::merge_traces_within_rt(std::vector<float> &rt,
+                                 std::vector<float> &mz,
+                                 std::vector<float> &intensity)
 {
   std::vector<float> rt_out;
   std::vector<float> mz_out;
@@ -205,7 +59,77 @@ void NTS::merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz,
   intensity = intensity_out;
 };
 
-// MARK: TRIM_TO_EQUAL_LENGTH_AROUND_MAX_POSITION
+// MARK: find_central_max_index
+size_t NTS::find_central_max_index(const std::vector<float> &rt,
+                                   const std::vector<float> &intensity,
+                                   const float &rt_mean,
+                                   const float &rtWindow)
+{
+  int total_points = intensity.size();
+  if (total_points < 5) return 0;
+  float max_intensity = intensity[0];
+  int max_index = 0;
+  for (int i = 0; i < total_points; ++i)
+  {
+    const float &intensity_i = intensity[i];
+    const float &rt_i = rt[i];
+    if (rtWindow > 0 && (rt_i < rt_mean - rtWindow || rt_i > rt_mean + rtWindow))
+    {
+      continue;
+    }
+    if (intensity_i > max_intensity)
+    {
+      max_intensity = intensity_i;
+      max_index = i;
+    }
+  }
+  return max_index;
+};
+
+// MARK: trim_eic_by_low_cut
+void NTS::trim_eic_by_low_cut(std::vector<float> &rt,
+                              std::vector<float> &mz,
+                              std::vector<float> &intensity,
+                              const float &low_cut)
+{
+  const int n = rt.size();
+  std::vector<float> mz_trimmed(n);
+  std::vector<float> rt_trimmed(n);
+  std::vector<float> int_trimmed(n);
+  
+  for (int z = 0; z < n; z++)
+  {
+    int_trimmed[z] = intensity[z];
+    mz_trimmed[z] = mz[z];
+    rt_trimmed[z] = rt[z];
+  }
+  
+  auto it_mz_trimmed = mz_trimmed.begin();
+  auto it_int_trimmed = int_trimmed.begin();
+  auto it_rt_trimmed = rt_trimmed.begin();
+  
+  while (it_int_trimmed != int_trimmed.end())
+  {
+    if (*it_int_trimmed <= low_cut)
+    {
+      mz_trimmed.erase(it_mz_trimmed);
+      int_trimmed.erase(it_int_trimmed);
+      rt_trimmed.erase(it_rt_trimmed);
+    }
+    else
+    {
+      ++it_mz_trimmed;
+      ++it_int_trimmed;
+      ++it_rt_trimmed;
+    }
+  }
+  
+  rt = rt_trimmed;
+  mz = mz_trimmed;
+  intensity = int_trimmed;
+};
+
+// MARK: trim_to_equal_length_around_max_position
 void NTS::trim_to_equal_length_around_max_position(std::vector<float> &rt,
                                                    std::vector<float> &mz,
                                                    std::vector<float> &intensity,
@@ -272,7 +196,7 @@ void NTS::trim_to_equal_length_around_max_position(std::vector<float> &rt,
     intensity_right.pop_back();
     right_size = rt_right.size();
   }
-
+  
   if (left_size == 0 || right_size == 0) {
     return;
   }
@@ -298,7 +222,7 @@ void NTS::trim_to_equal_length_around_max_position(std::vector<float> &rt,
   }
 };
 
-// MARK: TRIM_TO_EQUAL_LENGTH_AROUND_MAX_POSITION
+// MARK: trim_peak_base
 void NTS::trim_peak_base(std::vector<float> &rt,
                          std::vector<float> &mz,
                          std::vector<float> &intensity,
@@ -424,63 +348,84 @@ void NTS::trim_peak_base(std::vector<float> &rt,
   intensity = int_trimmed;
 };
 
-// MARK: TRAPEZOIDAL_AREA
-float NTS::trapezoidal_area(const std::vector<float> &x, const std::vector<float> &intensity)
-{
-  if (x.size() != intensity.size() || x.size() < 2)
-  {
-    throw std::invalid_argument("Vectors must have the same size and contain at least two elements.");
-  }
-
-  float area = 0.0;
-
-  // Iterate over the x and intensity vectors and apply the trapezoidal rule
-  for (std::size_t i = 1; i < x.size(); ++i)
-  {
-    float dx = x[i] - x[i - 1];                                    // Difference between consecutive x values
-    float avg_intensity = (intensity[i] + intensity[i - 1]) / 2.0; // Average of consecutive intensities
-    area += dx * avg_intensity;                                    // Trapezoid area for this segment
-  }
-
-  return area;
-};
-
-// MARK: GAUSSIAN
-float NTS::gaussian(const float &A, const float &mu, const float &sigma, const float &x)
-{
-  return A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
-};
-
-// MARK: CALCULATE_GAUSSIAN_RSQUARED
-float NTS::calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
-{
-  float ss_total = 0.0;
-  float ss_residual = 0.0;
-  float mean_y = accumulate(y.begin(), y.end(), 0.0) / y.size();
+// MARK: apply_moving_average
+void NTS::apply_moving_average(std::vector<float>& x,
+                             const size_t &start,
+                             const size_t &end,
+                             const int &windowSize) {
+  int xWindowSize = end - start + 1;
+  if (xWindowSize < windowSize) return;
+  std::vector<float> smoothed = x;
+  int halfWindow = windowSize / 2;
   
-  for (size_t i = 0; i < x.size(); ++i)
-  {
-    float y_pred = NTS::gaussian(A, mu, sigma, x[i]);
-    ss_residual += pow(y[i] - y_pred, 2);
-    ss_total += pow(y[i] - mean_y, 2);
+  for (size_t i = start + 1; i < end; ++i)
+  { // does not include start nor end
+    int count = 0;
+    float sum = 0.0;
+    size_t left = i - halfWindow;
+    if (left < 0) left = 0;
+    size_t right = i + halfWindow;
+    if (right > end) right = end;
+    for (size_t j = left; j <= right; ++j)
+    {
+      if (j >= start && j <= end)
+      {
+        sum += x[j];
+        count++;
+      }
+    }
+    smoothed[i] = sum / count;
   }
-  return 1 - (ss_residual / ss_total);
+  for (size_t i = start + 1; i < end; ++i)
+  {
+    x[i] = smoothed[i];
+  }
+}
+
+// MARK: smooth_eic_sides
+void NTS::smooth_eic_sides(std::vector<float>& x,
+                           const size_t &max_position,
+                           const int &windowSize)
+{
+  size_t leftStart = 0;
+  size_t leftEnd = max_position;
+  size_t rightStart = max_position;
+  size_t rightEnd = x.size() - 1;
+  int size_left = leftEnd + 1;
+  int size_right = rightEnd - rightStart + 1;
+  
+  if (size_left >= windowSize)
+  {
+    apply_moving_average(x, leftStart, leftEnd, windowSize);
+  }
+  if (size_right >= windowSize)
+  {
+    apply_moving_average(x, rightStart, rightEnd, windowSize);
+  }
 };
 
 // MARK: FIT_GAUSSIAN_COST_FUNCTION
-float NTS::fit_gaussian_cost_function(const std::vector<float> &x, const std::vector<float> &y, float A, float mu, float sigma)
+float NTS::fit_gaussian_cost_function(const std::vector<float> &x,
+                                      const std::vector<float> &y,
+                                      const float &A,
+                                      const float &mu,
+                                      const float &sigma)
 {
   float cost = 0.0;
   for (size_t i = 0; i < x.size(); ++i)
   {
-    float y_pred = NTS::gaussian(A, mu, sigma, x[i]);
+    float y_pred = NTS::gaussian_function(A, mu, sigma, x[i]);
     cost += pow(y[i] - y_pred, 2);
   }
   return cost;
 };
 
-// MARK: FIT_GAUSSIAN
-void NTS::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y, float &A, float &mu, float &sigma)
+// MARK: fit_gaussian
+void NTS::fit_gaussian(const std::vector<float> &x,
+                       const std::vector<float> &y,
+                       float &A,
+                       float &mu,
+                       float &sigma)
 {
   // Based on Adam Optimizer: https://www.geeksforgeeks.org/adam-optimizer/
   
@@ -597,6 +542,222 @@ void NTS::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y,
   //     break;
   //   }
   // }
+};
+
+// MARK: CALCULATE_GAUSSIAN_RSQUARED
+float NTS::calculate_gaussian_rsquared(const std::vector<float> &x,
+                                       const std::vector<float> &y,
+                                       const float &A,
+                                       const float &mu,
+                                       const float &sigma)
+{
+  float ss_total = 0.0;
+  float ss_residual = 0.0;
+  float mean_y = accumulate(y.begin(), y.end(), 0.0) / y.size();
+  
+  for (size_t i = 0; i < x.size(); ++i)
+  {
+    float y_pred = NTS::gaussian_function(A, mu, sigma, x[i]);
+    ss_residual += pow(y[i] - y_pred, 2);
+    ss_total += pow(y[i] - mean_y, 2);
+  }
+  return 1 - (ss_residual / ss_total);
+};
+
+// MARK: FEATURE::calculate_quality
+void NTS::FEATURE::calculate_quality(const float &baseCut,
+                                     const float &rtWindow,
+                                     const float &maxTimeHalfWidth)
+{
+  quality.feature = feature;
+  
+  if (eic.size() < 5)
+    return;
+  
+  size_t max_position = find_central_max_index(eic.rt, eic.intensity, rt, rtWindow);
+  
+  if (max_position < 1 || max_position >= eic.rt.size() - 1)
+    return;
+  
+  const float max_intensity = eic.intensity[max_position];
+  
+  const std::vector<float> left_intensity = std::vector<float>(eic.intensity.begin(), eic.intensity.begin() + max_position);
+  
+  if (left_intensity.empty())
+    return;
+  
+  const size_t min_left_position = find_min_index(left_intensity);
+  const float noise_left = left_intensity[min_left_position];
+  const float sn_left = max_intensity / noise_left;
+  
+  const std::vector<float> right_intensity = std::vector<float>(eic.intensity.begin() + max_position + 1, eic.intensity.end());
+  
+  if (right_intensity.empty())
+    return;
+  
+  const size_t min_right_position = find_min_index(right_intensity);
+  const float noise_right = right_intensity[min_right_position];
+  const float sn_right = max_intensity / noise_right;
+  
+  if (sn_left > sn_right)
+  {
+    quality.noise = noise_left;
+    quality.sn = sn_left;
+  }
+  else
+  {
+    quality.noise = noise_right;
+    quality.sn = sn_right;
+  }
+  
+  quality.noise = round(quality.noise);
+  quality.sn = round(quality.sn * 10) / 10;
+  
+  if (min_left_position > 0) {
+    for (size_t i = 0; i < min_left_position - 1; ++i)
+    {
+      eic.intensity[i] = 0;
+    }
+  }
+  
+  if (eic.intensity.size() > max_position + min_right_position + 2) {
+    for (size_t i = max_position + min_right_position + 2; i < eic.intensity.size(); ++i)
+    {
+      eic.intensity[i] = 0;
+    }
+  }
+  
+  // std::string print_ft = "F2002_MZ752_RT1036";
+  // 
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "rt :" << rt[max_position] << std::endl;
+  //   Rcpp::Rcout << "min_left_position: " << min_left_position << std::endl;
+  //   Rcpp::Rcout << "min_right_position: " << min_right_position << std::endl;
+  //   Rcpp::Rcout << "noise_left: " << noise_left << std::endl;
+  //   Rcpp::Rcout << "noise_right: " << noise_right << std::endl;
+  //   Rcpp::Rcout << "sn_left: " << sn_left << std::endl;
+  //   Rcpp::Rcout << "sn_right: " << sn_right << std::endl;
+  //   for (size_t i = 0; i < intensity.size(); ++i)
+  //   {
+  //     Rcpp::Rcout <<  rt[i] << " " << mz[i] << " " << intensity[i] << std::endl;
+  //   }
+  // }
+  
+  const float low_cut = max_intensity * baseCut;
+  
+  trim_eic_by_low_cut(eic.rt, eic.mz, eic.intensity, low_cut);
+  
+  if (eic.size() < 5)
+    return;
+  
+  max_position = find_central_max_index(eic.rt, eic.intensity, this->rt, 0);
+  
+  if (max_position < 1 || max_position >= eic.rt.size() - 1)
+    return;
+  
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
+  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
+  //   {
+  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
+  //   }
+  // }
+  
+  trim_to_equal_length_around_max_position(
+    eic.rt,
+    eic.mz,
+    eic.intensity,
+    max_position,
+    3,
+    8,
+    maxTimeHalfWidth
+  );
+  
+  if (eic.size() < 5)
+    return;
+  
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
+  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
+  //   {
+  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
+  //   }
+  // }
+  
+  std::vector<float> mz_trimmed = eic.rt;
+  std::vector<float> rt_trimmed = eic.mz;
+  std::vector<float> int_trimmed = eic.intensity;
+  
+  trim_peak_base(rt_trimmed, mz_trimmed, int_trimmed, max_position, 0.3);
+  
+  int n_trimmed = rt_trimmed.size();
+  
+  if (n_trimmed < 3)
+    return;
+  
+  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, this->rt, 0);
+  
+  if (max_position < 1 || max_position >= eic.rt.size() - 1)
+    return;
+  
+  smooth_eic_sides(int_trimmed, max_position, 3);
+  
+  // mz = mz_trimmed;
+  // rt = rt_trimmed;
+  // intensity = int_trimmed;
+  
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
+  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
+  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
+  //   {
+  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
+  //   }
+  // }
+  
+  float &A_fitted = quality.gauss_a;
+  float &mu_fitted = quality.gauss_u;
+  float &sigma_fitted = quality.gauss_s;
+  float &r_squared = quality.gauss_f;
+  
+  A_fitted = int_trimmed[max_position];
+  mu_fitted = rt_trimmed[max_position];
+  sigma_fitted = (rt_trimmed.back() - rt_trimmed.front()) / 4.0;
+  
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "A: " << A_fitted << std::endl;
+  //   Rcpp::Rcout << "mu: " << mu_fitted << std::endl;
+  //   Rcpp::Rcout << "sigma: " << sigma_fitted << std::endl;
+  //   Rcpp::Rcout << "r: " << r_squared << std::endl;
+  // }
+  
+  fit_gaussian(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
+  
+  r_squared = calculate_gaussian_rsquared(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
+  
+  A_fitted = round(A_fitted);
+  mu_fitted = round(mu_fitted * 10) / 10;
+  sigma_fitted = round(sigma_fitted * 10) / 10;
+  r_squared = round(r_squared * 10000) / 10000;
+  
+  // if (ft == print_ft) {
+  //   Rcpp::Rcout << std::endl;
+  //   Rcpp::Rcout << "A_fitted: " << A_fitted << std::endl;
+  //   Rcpp::Rcout << "mu_fitted: " << mu_fitted << std::endl;
+  //   Rcpp::Rcout << "sigma_fitted: " << sigma_fitted << std::endl;
+  //   Rcpp::Rcout << "r_squared: " << r_squared << std::endl;
+  // }
+  
+  quality.is_calculated = true;
+  return;
 };
 
 // MARK: CALCULATE_GAUSSIAN_FIT
@@ -800,7 +961,7 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
     return quality;
   }
   
-  smoothSides(int_trimmed, max_position, 3);
+  smooth_eic_sides(int_trimmed, max_position, 3);
   
   // mz = mz_trimmed;
   // rt = rt_trimmed;
@@ -851,6 +1012,22 @@ Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
   quality["gauss_f"] = r_squared;
 
   return quality;
+};
+
+// MARK: TRAPEZOIDAL_AREA
+float NTS::trapezoidal_area(const std::vector<float> &x, const std::vector<float> &intensity)
+{
+  float area = 0.0;
+  
+  // Iterate over the x and intensity vectors and apply the trapezoidal rule
+  for (std::size_t i = 1; i < x.size(); ++i)
+  {
+    float dx = x[i] - x[i - 1]; // Difference between consecutive x values
+    float avg_intensity = (intensity[i] + intensity[i - 1]) / 2.0; // Average of consecutive intensities
+    area += dx * avg_intensity; // Trapezoid area for this segment
+  }
+  
+  return area;
 };
 
 // MARK: FIND_ISOTOPIC_CANDIDATES
