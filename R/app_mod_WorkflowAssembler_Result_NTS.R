@@ -179,12 +179,32 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
             )
           )
         ),
-        # Plot
+        # Plots and Nested Data (50/50 split)
         shiny::fluidRow(
+          # Left: Feature Peaks
           shiny::column(
-            width = 12,
+            width = 6,
             shiny::h4("Feature Peaks", style = "margin-left: 15px; margin-top: 0px; margin-bottom: 10px;"),
-            plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "300px", width = "50%")
+            plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "300px")
+          ),
+          # Right: Nested Data Tabs (MS1, MS2, Quality)
+          shiny::column(
+            width = 6,
+            shinydashboard::tabBox(
+              width = 12,
+              shiny::tabPanel(
+                title = "MS1",
+                plotly::plotlyOutput(ns_full("ms1_plot"), height = "300px")
+              ),
+              shiny::tabPanel(
+                title = "MS2",
+                plotly::plotlyOutput(ns_full("ms2_plot"), height = "300px")
+              ),
+              shiny::tabPanel(
+                title = "Quality",
+                DT::dataTableOutput(ns_full("quality_table"))
+              )
+            )
           )
         )
       ),
@@ -314,8 +334,6 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
         options = list(
           pageLength = 5,
           scrollX = TRUE,
-          scrollY = "250px",
-          scrollCollapse = TRUE,
           columnDefs = list(
             list(width = "200px", targets = c(0, 1, 2)),
             list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
@@ -332,7 +350,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
           dom = "lfrtip",
           lengthMenu = c(5, 10, 25, 50, 100),
           ordering = TRUE,
-          searching = TRUE  # Search bar
+          searching = TRUE
         ),
         style = "bootstrap",
         class = "table table-bordered table-hover",
@@ -355,14 +373,88 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
         return(NULL)
       }
       
-      # data frame with analysis and feature columns for the selected rows
+      # Data frame with analysis and feature columns for the selected rows
       selected_data <- features[selected_rows, .(analysis, feature)]
       
       # Convert to data frame
       as.data.frame(selected_data)
     })
     
-    # feature peaks plot
+    # Reactive value to store selected features with mass for MS1/MS2 plots
+    selected_features_with_mass <- shiny::reactive({
+      selected_rows <- input$features_table_rows_selected
+      
+      # Fetch features data (including nested columns)
+      features <- get_features(nts_data())
+      if (is.null(selected_rows) || length(selected_rows) == 0) {
+        return(NULL)
+      }
+      
+      # Extract mass for the selected rows
+      selected_data <- features[selected_rows, .(mass)]
+      
+      # Convert to data frame
+      as.data.frame(selected_data)
+    })
+    
+    # Reactive value to store quality data for selected features
+    selected_quality_data <- shiny::reactive({
+      selected_rows <- input$features_table_rows_selected
+      
+      # Fetch features data (including nested columns)
+      features <- get_features(nts_data())
+      if (is.null(selected_rows) || length(selected_rows) == 0) {
+        return(NULL)
+      }
+      
+      # Debug: Print the structure of the entire quality column
+      message("Structure of features$quality:")
+      print(str(features$quality))
+      
+      # Extract quality data for the selected rows
+      quality_list <- features[selected_rows, "quality", with = FALSE]$quality
+      
+      # Debug: Print the structure of quality_list
+      message("Structure of quality_list:")
+      print(str(quality_list))
+      
+      # Check if quality_list is empty or NULL
+      if (length(quality_list) == 0 || all(sapply(quality_list, is.null))) {
+        return(data.frame(message = "No quality data available"))
+      }
+      
+      # Flatten the quality data (assuming each element is a named vector)
+      quality_data <- do.call(rbind, lapply(seq_along(quality_list), function(i) {
+        q <- quality_list[[i]]
+        if (is.null(q) || length(q) == 0) {
+          return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
+                            message = "No quality data"))
+        }
+        if (is.list(q) || is.vector(q)) {
+          # Convert named vector/list to data frame
+          df <- as.data.frame(t(unlist(q)))
+          # Add feature column
+          df$feature <- features[selected_rows[i], "feature", with = FALSE]$feature
+          return(df)
+        } else {
+          # If it's not a list or vector, return a placeholder
+          return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
+                            message = "Invalid quality data"))
+        }
+      }))
+      
+      # If the result is empty, return a placeholder
+      if (nrow(quality_data) == 0) {
+        return(data.frame(message = "No quality data available"))
+      }
+      
+      # Reorder columns to put feature first
+      quality_data <- quality_data[, c("feature", setdiff(names(quality_data), "feature"))]
+      
+      return(quality_data)
+    })
+    
+    # Feature peaks plot
     output$feature_peaks_plot <- plotly::renderPlotly({
       shiny::validate(
         need(!is.null(selected_features()), "Please select one or more features from the table to display the plot.")
@@ -371,6 +463,71 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       # Generate the plot using plot_features
       nts <- nts_data()
       plot_features(nts, features = selected_features())
+    })
+    
+    # MS1 plot
+    output$ms1_plot <- plotly::renderPlotly({
+      shiny::validate(
+        need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS1 plot.")
+      )
+      
+      # Generate the MS1 plot
+      nts <- nts_data()
+      mass_data <- selected_features_with_mass()
+      plot_features_ms1(nts, mass = mass_data, legendNames = TRUE)
+    })
+    
+    # MS2 plot
+    output$ms2_plot <- plotly::renderPlotly({
+      shiny::validate(
+        need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS2 plot.")
+      )
+      
+      # Generate the MS2 plot
+      nts <- nts_data()
+      mass_data <- selected_features_with_mass()
+      plot_features_ms2(nts, mass = mass_data, legendNames = TRUE)
+    })
+    
+    # Quality table
+    output$quality_table <- DT::renderDT({
+      shiny::validate(
+        need(!is.null(selected_quality_data()), "Please select one or more features from the table to display the quality data.")
+      )
+      
+      # Fetch quality data
+      quality_data <- selected_quality_data()
+      
+      # Check if the data is a placeholder
+      if ("message" %in% names(quality_data)) {
+        return(DT::datatable(
+          quality_data,
+          options = list(
+            dom = "t",
+            ordering = FALSE
+          ),
+          style = "bootstrap",
+          class = "table table-bordered table-hover"
+        ))
+      }
+      
+      # Render the DataTable
+      DT::datatable(
+        quality_data,
+        options = list(
+          pageLength = 5,
+          scrollX = TRUE,
+          dom = "t",
+          ordering = TRUE
+        ),
+        style = "bootstrap",
+        class = "table table-bordered table-hover"
+      ) %>%
+        DT::formatStyle(
+          columns = names(quality_data),
+          fontSize = "14px",
+          padding = "5px 10px"
+        )
     })
   })
 }
