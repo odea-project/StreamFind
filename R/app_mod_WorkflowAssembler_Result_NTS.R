@@ -342,6 +342,12 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                         "Export to CSV",
                         icon = shiny::icon("file-csv"),
                         class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_selected_features_csv"),
+                        "Export Selected to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
                       )
                     )
                   ),
@@ -740,6 +746,28 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
         
         # Export to CSV
         write.csv(export_features, file, row.names = FALSE)
+      }
+    )
+
+    # Handler for export to CSV for selected features
+    output$export_selected_features_csv <- shiny::downloadHandler(
+      filename = function() {
+        paste0("selected_features_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+      },
+      content = function(file) {
+        selected_rows <- input$features_table_rows_selected
+        features <- get_features(nts_data())
+
+        # Remove nested columns
+        nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
+
+        if (!is.null(selected_rows) && length(selected_rows) > 0) {
+          selected_features <- features[selected_rows, !nested_cols, with = FALSE]
+          write.csv(selected_features, file, row.names = FALSE)
+        } else {
+          # If no selection, export empty file or a message
+          write.csv(data.frame(Message = "No features selected"), file, row.names = FALSE)
+        }
       }
     )
 
