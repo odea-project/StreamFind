@@ -324,13 +324,33 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     class = "card-header d-flex justify-content-between align-items-center",
                     shiny::span(shiny::icon("table", class = "mr-2"), "Features Data")
                   ),
+                shiny::div(
+                  class = "card-body p-0",
+                  # Desselect and Export to CSV buttons
                   shiny::div(
-                    class = "card-body p-0",
-                    DT::dataTableOutput(ns_full("features_table"))
-                  )
+                    class = "d-flex justify-content-between align-items-center p-3",
+                    shiny::div(
+                      class = "btn-group",
+                      shiny::actionButton(
+                        ns_full("deselect_all_features"),
+                        "Deselect All", 
+                        icon = shiny::icon("times-circle"),
+                        class = "btn btn-outline-secondary btn-sm"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_features_csv"),
+                        "Export to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      )
+                    )
+                  ),
+                  # DataTable output
+                  DT::dataTableOutput(ns_full("features_table"))
                 )
-              )
-            ),
+                      )
+                    )
+                  ),
             
             # Feature Details Row
             shiny::fluidRow(
@@ -700,7 +720,29 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
           backgroundPosition = "center"
         )
     })
-    
+
+    shiny::observeEvent(input$deselect_all_features, {
+      DT::selectRows(DT::dataTableProxy("features_table"), NULL)
+    })
+
+    # Handler for export to CSV
+    output$export_features_csv <- shiny::downloadHandler(
+      filename = function() {
+        paste0("features_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+      },
+      content = function(file) {
+        # Get all features data
+        features <- get_features(nts_data())
+        
+        # Remove nested columns for CSV export
+        nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
+        export_features <- features[, !nested_cols, with = FALSE]
+        
+        # Export to CSV
+        write.csv(export_features, file, row.names = FALSE)
+      }
+    )
+
     # Reactive value to store selected features
     selected_features <- shiny::reactive({
       selected_rows <- input$features_table_rows_selected
