@@ -2,147 +2,388 @@
 S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
   ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))
   
-  shiny::fluidRow(
-    shinydashboard::tabBox(
-      width = 12,
-      shiny::tabPanel(
-        title = "Overview",
-        # 50/50 split
-        shiny::fluidRow(
-          # Left half
-          shiny::column(
-            width = 6,
+  # Custom CSS for consistent styling
+  custom_css <- shiny::tags$style(HTML("
+    .metric-card {
+      border-radius: 8px;
+      padding: 20px;
+      height: 140px;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .metric-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    .metric-icon {
+      position: absolute;
+      top: 15px;
+      left: 15px;
+      opacity: 0.8;
+    }
+    .metric-value {
+      font-size: 42px;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 10px;
+      line-height: 1;
+    }
+    .metric-label {
+      text-align: center;
+      font-size: 16px;
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+    .status-panel {
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 20px;
+      height: 100%;
+    }
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .status-item:last-child {
+      border-bottom: none;
+    }
+    .status-label {
+      font-weight: 400;
+    }
+    .status-value {
+      font-weight: 600;
+    }
+    .status-yes {
+      color: #28a745;
+    }
+    .status-no {
+      color: #dc3545;
+    }
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 15px 0;
+      padding-left: 15px;
+      border-left: 4px solid #4e73df;
+    }
+    .tab-content {
+      padding: 20px 0;
+    }
+    .nav-tabs {
+      border-bottom: 2px solid #e3e6f0;
+    }
+    .nav-tabs .nav-link.active {
+      border-color: transparent;
+      border-bottom: 3px solid #4e73df;
+      font-weight: 600;
+    }
+    .nav-tabs .nav-link {
+      border: none;
+      color: #5a5c69;
+      padding: 10px 15px;
+    }
+    .nav-tabs .nav-link:hover {
+      border-color: transparent;
+      border-bottom: 3px solid #a2aecf;
+    }
+    .plot-container {
+      border-radius: 8px;
+      background-color: white;
+      padding: 15px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    }
+    .dataTables_wrapper .dataTables_length, 
+    .dataTables_wrapper .dataTables_filter {
+      margin-bottom: 15px;
+    }
+    .dataTables_wrapper .dataTables_info, 
+    .dataTables_wrapper .dataTables_paginate {
+      margin-top: 15px;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+      background: #4e73df !important;
+      color: white !important;
+      border: none !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+      background: #a2aecf !important;
+      color: white !important;
+      border: none !important;
+    }
+    .card-header {
+      background-color: #f8f9fa;
+      padding: 15px 20px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      font-weight: 600;
+    }
+    .card-body {
+      padding: 20px;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6c757d;
+    }
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 20px;
+      opacity: 0.5;
+    }
+  "))
+  
+  # Color palette for metrics
+  metric_colors <- list(
+    analysis = "#4e73df",
+    features = "#1cc88a", 
+    filtered = "#36b9cc",
+    groups = "#f6c23e"
+  )
+  
+  shiny::tagList(
+    custom_css,
+    shiny::fluidRow(
+      shinydashboard::tabBox(
+        id = ns_full("main_tabs"),
+        width = 12,
+        height = "auto",
+        
+        # Overview Tab
+        shiny::tabPanel(
+          title = shiny::tagList(shiny::icon("chart-pie", class = "mr-2"), "Overview"),
+          
+          shiny::div(class = "tab-content",
+            # Metrics Row
+            shiny::fluidRow(
+              # Total Analysis
+              shiny::column(
+                width = 3,
+                shiny::div(
+                  class = "metric-card",
+                  style = paste0("background-color: ", metric_colors$analysis, "; color: white;"),
+                  shiny::div(class = "metric-icon", shiny::icon("chart-line", class = "fa-2x")),
+                  shiny::div(class = "metric-value", shiny::textOutput(ns_full("total_analyses"))),
+                  shiny::div(class = "metric-label", "Total Analysis")
+                )
+              ),
+              # Total Features
+              shiny::column(
+                width = 3,
+                shiny::div(
+                  class = "metric-card",
+                  style = paste0("background-color: ", metric_colors$features, "; color: white;"),
+                  shiny::div(class = "metric-icon", shiny::icon("gears", class = "fa-2x")),
+                  shiny::div(class = "metric-value", shiny::textOutput(ns_full("total_features"))),
+                  shiny::div(class = "metric-label", "Total Features")
+                )
+              ),
+              # Filtered Features
+              shiny::column(
+                width = 3,
+                shiny::div(
+                  class = "metric-card",
+                  style = paste0("background-color: ", metric_colors$filtered, "; color: white;"),
+                  shiny::div(class = "metric-icon", shiny::icon("filter", class = "fa-2x")),
+                  shiny::div(class = "metric-value", shiny::textOutput(ns_full("filtered_features_count"))),
+                  shiny::div(class = "metric-label", "Filtered Features")
+                )
+              ),
+              # Total Groups
+              shiny::column(
+                width = 3,
+                shiny::div(
+                  class = "metric-card",
+                  style = paste0("background-color: ", metric_colors$groups, "; color: white;"),
+                  shiny::div(class = "metric-icon", shiny::icon("network-wired", class = "fa-2x")),
+                  shiny::div(class = "metric-value", shiny::textOutput(ns_full("total_groups"))),
+                  shiny::div(class = "metric-label", "Total Groups")
+                )
+              )
+            ),
+            
+            # Status Panel and Chart Row
+            shiny::fluidRow(
+              # Status Panel
+              shiny::column(
+                width = 4,
+                shiny::div(
+                  class = "status-panel",
+                  shiny::h4("Analysis Status", class = "mb-4"),
+                  
+                  # Features Status
+                  shiny::div(class = "status-item",
+                    shiny::span(class = "status-label", shiny::icon("check-circle", class = "mr-2"), "Has Features?"),
+                    shiny::span(class = "status-value", 
+                      shiny::uiOutput(ns_full("has_features_ui"), inline = TRUE)
+                    )
+                  ),
+                  
+                  # Filtered Features Status
+                  shiny::div(class = "status-item",
+                    shiny::span(class = "status-label", shiny::icon("filter", class = "mr-2"), "Has Filtered Features?"),
+                    shiny::span(class = "status-value", 
+                      shiny::uiOutput(ns_full("has_filtered_features_ui"), inline = TRUE)
+                    )
+                  ),
+                  
+                  # Groups Status
+                  shiny::div(class = "status-item",
+                    shiny::span(class = "status-label", shiny::icon("object-group", class = "mr-2"), "Has Groups?"),
+                    shiny::span(class = "status-value", 
+                      shiny::uiOutput(ns_full("has_groups_ui"), inline = TRUE)
+                    )
+                  ),
+                  
+                  # EIC Features Status
+                  shiny::div(class = "status-item",
+                    shiny::span(class = "status-label", shiny::icon("wave-square", class = "mr-2"), "Has EIC Features?"),
+                    shiny::span(class = "status-value", 
+                      shiny::uiOutput(ns_full("has_features_eic_ui"), inline = TRUE)
+                    )
+                  ),
+                  
+                  # MS1 Features Status
+                  shiny::div(class = "status-item",
+                    shiny::span(class = "status-label", shiny::icon("chart-bar", class = "mr-2"), "Has MS1 Features?"),
+                    shiny::span(class = "status-value", 
+                      shiny::uiOutput(ns_full("has_features_ms1_ui"), inline = TRUE)
+                    )
+                  ),
+                  
+                  # MS2 Features Status
+                  shiny::div(class = "status-item",
+                    shiny::span(class = "status-label", shiny::icon("chart-area", class = "mr-2"), "Has MS2 Features?"),
+                    shiny::span(class = "status-value", 
+                      shiny::uiOutput(ns_full("has_features_ms2_ui"), inline = TRUE)
+                    )
+                  ),
+                  
+                  # Suspect Features Status
+                  shiny::div(class = "status-item",
+                    shiny::span(class = "status-label", shiny::icon("search", class = "mr-2"), "Has Suspect Features?"),
+                    shiny::span(class = "status-value", 
+                      shiny::uiOutput(ns_full("has_features_suspects_ui"), inline = TRUE)
+                    )
+                  )
+                )
+              ),
+              
+              # Features Chart
+              shiny::column(
+                width = 8,
+                shiny::div(
+                  class = "plot-container",
+                  shiny::div(
+                    class = "card-header d-flex justify-content-between align-items-center",
+                    shiny::span(shiny::icon("chart-column", class = "mr-2"), "Features Distribution"),
+                    shiny::div(
+                      class = "btn-group btn-group-sm",
+                      shiny::tags$button(
+                        class = "btn btn-outline-primary active",
+                        `data-value` = "replicates",
+                        `data-toggle` = "button",
+                        onclick = paste0("Shiny.setInputValue('", ns_full("chart_color_by"), "', 'replicates')"),
+                        "By Replicates"
+                      ),
+                      shiny::tags$button(
+                        class = "btn btn-outline-primary",
+                        `data-value` = "analysis",
+                        `data-toggle` = "button",
+                        onclick = paste0("Shiny.setInputValue('", ns_full("chart_color_by"), "', 'analysis')"),
+                        "By Analysis"
+                      )
+                    )
+                  ),
+                  shiny::div(
+                    class = "card-body p-0",
+                    plotly::plotlyOutput(ns_full("features_chart"), height = "450px")
+                  )
+                )
+              )
+            )
+          )
+        ),
+        
+        # Features Tab
+        shiny::tabPanel(
+          title = shiny::tagList(shiny::icon("table", class = "mr-2"), "Features"),
+          
+          shiny::div(class = "tab-content",
+            # Features Table
             shiny::fluidRow(
               shiny::column(
-                width = 3,
+                width = 12,
                 shiny::div(
-                  class = "info-box",
-                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
-                  # Icon
+                  class = "plot-container mb-4",
                   shiny::div(
-                    style = "position: absolute; top: 10px; left: 10px;",
-                    shiny::icon("chart-line", style = "font-size: 16px;")
+                    class = "card-header d-flex justify-content-between align-items-center",
+                    shiny::span(shiny::icon("table", class = "mr-2"), "Features Data")
                   ),
                   shiny::div(
-                    style = "font-size: 36px; text-align: center; font-weight: bold; margin-top: 17px;",
-                    shiny::textOutput(ns_full("total_analyses"))
-                  ),
-                  shiny::div(
-                    style = "text-align: center; font-size: 16px; margin-top: 7px;",
-                    "Total Analysis"
-                  )
-                )
-              ),
-              shiny::column(
-                width = 3,
-                shiny::div(
-                  class = "info-box",
-                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
-                  # Icon
-                  shiny::div(
-                    style = "position: absolute; top: 10px; left: 10px;",
-                    shiny::icon("gears", style = "font-size: 16px;")
-                  ),
-                  shiny::div(
-                    style = "font-size: 36px; text-align: center; font-weight: bold; margin-top: 17px;",
-                    shiny::textOutput(ns_full("total_features"))
-                  ),
-                  shiny::div(
-                    style = "text-align: center; font-size: 16px; margin-top: 7px;",
-                    "Total Features"
-                  )
-                )
-              ),
-              shiny::column(
-                width = 3,
-                shiny::div(
-                  class = "info-box",
-                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
-                  # Icon
-                  shiny::div(
-                    style = "position: absolute; top: 10px; left: 10px;",
-                    shiny::icon("filter", style = "font-size: 16px;")
-                  ),
-                  shiny::div(
-                    style = "font-size: 36px; text-align: center; font-weight: bold; margin-top: 17px;",
-                    shiny::textOutput(ns_full("filtered_features_count"))
-                  ),
-                  shiny::div(
-                    style = "text-align: center; font-size: 16px; margin-top: 7px;",
-                    "Filtered Features Count"
-                  )
-                )
-              ),
-              shiny::column(
-                width = 3,
-                shiny::div(
-                  class = "info-box",
-                  style = "background-color: #a8d1f0; color: #000; border-radius: 10px; padding: 15px; margin-bottom: 20px; height: 120px; position: relative;",
-                  # Icon
-                  shiny::div(
-                    style = "position: absolute; top: 10px; left: 10px;",
-                    shiny::icon("network-wired", style = "font-size: 16px;")
-                  ),
-                  shiny::div(
-                    style = "font-size: 36px; text-align: center; font-weight: bold; margin-top: 17px;",
-                    shiny::textOutput(ns_full("total_groups"))
-                  ),
-                  shiny::div(
-                    style = "text-align: center; font-size: 16px; margin-top: 7px;",
-                    "Total Groups"
+                    class = "card-body p-0",
+                    DT::dataTableOutput(ns_full("features_table"))
                   )
                 )
               )
-            )
-          ),
-          # Right half
-          shiny::column(
-            width = 6,
-            shiny::div(
-              style = "background-color: #e0e0e0; border-radius: 10px; padding: 20px; margin-bottom: 20px;",
-              shiny::fluidRow(
-                shiny::column(
-                  width = 6,
-                  shiny::tags$div(
-                    shiny::tags$div(
-                      style = "margin-bottom: 10px;",
-                      shiny::tags$span("Has Features?", style = "font-weight: normal;"),
-                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features"), inline = TRUE))
-                    ),
-                    shiny::tags$div(
-                      style = "margin-bottom: 10px;",
-                      shiny::tags$span("Has Filtered Features?", style = "font-weight: normal;"),
-                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_filtered_features"), inline = TRUE))
-                    ),
-                    shiny::tags$div(
-                      style = "margin-bottom: 10px;",
-                      shiny::tags$span("Has Groups?", style = "font-weight: normal;"),
-                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_groups"), inline = TRUE))
-                    ),
-                    shiny::tags$div(
-                      style = "margin-bottom: 10px;",
-                      shiny::tags$span("Has EIC Features?", style = "font-weight: normal;"),
-                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features_eic"), inline = TRUE))
-                    )
+            ),
+            
+            # Feature Details Row
+            shiny::fluidRow(
+              # Feature Peaks Plot
+              shiny::column(
+                width = 6,
+                shiny::div(
+                  class = "plot-container",
+                  shiny::div(
+                    class = "card-header",
+                    shiny::icon("wave-square", class = "mr-2"), "Feature Peaks"
+                  ),
+                  shiny::div(
+                    class = "card-body p-0",
+                    plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "350px")
                   )
-                ),
-                shiny::column(
-                  width = 6,
-                  shiny::tags$div(
-                    shiny::tags$div(
-                      style = "margin-bottom: 10px;",
-                      shiny::tags$span("Has MS1 Features?", style = "font-weight: normal;"),
-                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features_ms1"), inline = TRUE))
+                )
+              ),
+              
+              # Feature Details Tabs
+              shiny::column(
+                width = 6,
+                shiny::div(
+                  class = "plot-container p-0",
+                  shiny::tabsetPanel(
+                    id = ns_full("feature_details_tabs"),
+                    type = "tabs",
+                    
+                    # MS1 Tab
+                    shiny::tabPanel(
+                      title = "MS1",
+                      shiny::div(
+                        class = "p-3",
+                        plotly::plotlyOutput(ns_full("ms1_plot"), height = "350px")
+                      )
                     ),
-                    shiny::tags$div(
-                      style = "margin-bottom: 10px;",
-                      shiny::tags$span("Has MS2 Features?", style = "font-weight: normal;"),
-                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features_ms2"), inline = TRUE))
+                    
+                    # MS2 Tab
+                    shiny::tabPanel(
+                      title = "MS2",
+                      shiny::div(
+                        class = "p-3",
+                        plotly::plotlyOutput(ns_full("ms2_plot"), height = "350px")
+                      )
                     ),
-                    shiny::tags$div(
-                      style = "margin-bottom: 10px;",
-                      shiny::tags$span("Has Suspect Features?", style = "font-weight: normal;"),
-                      shiny::tags$span(style = "float: right; font-weight: bold;", shiny::textOutput(ns_full("has_features_suspects"), inline = TRUE))
+                    
+                    # Quality Tab
+                    shiny::tabPanel(
+                      title = "Quality",
+                      shiny::div(
+                        class = "p-3",
+                        DT::dataTableOutput(ns_full("quality_table"))
+                      )
                     )
                   )
                 )
@@ -151,89 +392,57 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
           )
         ),
         
-        shiny::fluidRow(
-          shiny::column(
-            width = 12,
-            shiny::h4("Features Count", style = "margin-left: 15px; margin-bottom: 10px;")
-          )
-        ),
-        
-        shiny::fluidRow(
-          shiny::column(
-            width = 12,
-            plotly::plotlyOutput(ns_full("features_chart"), height = "600px")
-          )
-        )
-      ),
-      
-      # Features tab
-      shiny::tabPanel(
-        title = "Features",
-        # Table
-        shiny::fluidRow(
-          shiny::column(
-            width = 12,
-            shiny::div(
-              style = "margin-bottom: 20px;",
-              DT::dataTableOutput(ns_full("features_table"))
-            )
-          )
-        ),
-        # Plots and Nested Data (50/50 split)
-        shiny::fluidRow(
-          # Left: Feature Peaks
-          shiny::column(
-            width = 6,
-            shiny::h4("Feature Peaks", style = "margin-left: 15px; margin-top: 0px; margin-bottom: 10px;"),
-            plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "300px")
-          ),
-          # Right: Nested Data Tabs (MS1, MS2, Quality)
-          shiny::column(
-            width = 6,
-            shinydashboard::tabBox(
-              width = 12,
-              shiny::tabPanel(
-                title = "MS1",
-                plotly::plotlyOutput(ns_full("ms1_plot"), height = "300px")
-              ),
-              shiny::tabPanel(
-                title = "MS2",
-                plotly::plotlyOutput(ns_full("ms2_plot"), height = "300px")
-              ),
-              shiny::tabPanel(
-                title = "Quality",
-                DT::dataTableOutput(ns_full("quality_table"))
+        # Groups Tab
+        shiny::tabPanel(
+          title = shiny::tagList(shiny::icon("object-group", class = "mr-2"), "Groups"),
+          
+          shiny::div(class = "tab-content",
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                shiny::div(
+                  class = "plot-container empty-state",
+                  shiny::div(class = "empty-state-icon", shiny::icon("object-group")),
+                  shiny::h4("Groups data will be displayed here", class = "text-muted")
+                )
               )
             )
           )
-        )
-      ),
-      
-      # Other tabs
-      shiny::tabPanel(
-        title = "Groups",
-        shiny::fluidRow(
-          shiny::column(
-            width = 12,
-            DT::dataTableOutput(ns_full("groups_table"))
+        ),
+        
+        # Subjects Tab
+        shiny::tabPanel(
+          title = shiny::tagList(shiny::icon("users", class = "mr-2"), "Subjects"),
+          
+          shiny::div(class = "tab-content",
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                shiny::div(
+                  class = "plot-container empty-state",
+                  shiny::div(class = "empty-state-icon", shiny::icon("users")),
+                  shiny::h4("Subject data will be displayed here", class = "text-muted")
+                )
+              )
+            )
           )
-        )
-      ),
-      shiny::tabPanel(
-        title = "Subjects",
-        shiny::fluidRow(
-          shiny::column(
-            width = 12,
-            shiny::h4("Subject data will be displayed here")
-          )
-        )
-      ),
-      shiny::tabPanel(
-        title = "Fold Change",
-        shiny::fluidRow(
-          shiny::column(
-            width = 12,
-            shiny::h4("Fold change data will be displayed here")
+        ),
+        
+        # Fold Change Tab
+        shiny::tabPanel(
+          title = shiny::tagList(shiny::icon("chart-line", class = "mr-2"), "Fold Change"),
+          
+          shiny::div(class = "tab-content",
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                shiny::div(
+                  class = "plot-container empty-state",
+                  shiny::div(class = "empty-state-icon", shiny::icon("chart-line")),
+                  shiny::h4("Fold change data will be displayed here", class = "text-muted")
+                )
+              )
+            )
           )
         )
       )
@@ -253,6 +462,14 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
     nts_data <- shiny::reactive({
       shiny::validate(need(!is.null(x), "NTS data is not available"))
       x
+    })
+    
+    # Chart color by input (default: replicates)
+    chart_color_by <- shiny::reactiveVal("replicates")
+    
+    # Update chart_color_by when buttons are clicked
+    shiny::observeEvent(input$chart_color_by, {
+      chart_color_by(input$chart_color_by)
     })
     
     # Calculate summary metrics for the Overview tab
@@ -278,42 +495,145 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       as.character(total)
     })
     
-    # Status indicators
-    output$has_features <- shiny::renderText({
-      ifelse(nts_data()@has_features, "YES", "NO")
+    # Status indicators with UI formatting
+    output$has_features_ui <- shiny::renderUI({
+      value <- nts_data()@has_features
+      if (value) {
+        shiny::tags$span(class = "status-yes", "YES")
+      } else {
+        shiny::tags$span(class = "status-no", "NO")
+      }
     })
     
-    output$has_filtered_features <- shiny::renderText({
-      ifelse(nts_data()@has_filtered_features, "YES", "NO")
+    output$has_filtered_features_ui <- shiny::renderUI({
+      value <- nts_data()@has_filtered_features
+      if (value) {
+        shiny::tags$span(class = "status-yes", "YES")
+      } else {
+        shiny::tags$span(class = "status-no", "NO")
+      }
     })
     
-    output$has_groups <- shiny::renderText({
-      ifelse(nts_data()@has_groups, "YES", "NO")
+    output$has_groups_ui <- shiny::renderUI({
+      value <- nts_data()@has_groups
+      if (value) {
+        shiny::tags$span(class = "status-yes", "YES")
+      } else {
+        shiny::tags$span(class = "status-no", "NO")
+      }
     })
     
-    output$has_features_eic <- shiny::renderText({
-      ifelse(nts_data()@has_features_eic, "YES", "NO")
+    output$has_features_eic_ui <- shiny::renderUI({
+      value <- nts_data()@has_features_eic
+      if (value) {
+        shiny::tags$span(class = "status-yes", "YES")
+      } else {
+        shiny::tags$span(class = "status-no", "NO")
+      }
     })
     
-    output$has_features_ms1 <- shiny::renderText({
-      ifelse(nts_data()@has_features_ms1, "YES", "NO")
+    output$has_features_ms1_ui <- shiny::renderUI({
+      value <- nts_data()@has_features_ms1
+      if (value) {
+        shiny::tags$span(class = "status-yes", "YES")
+      } else {
+        shiny::tags$span(class = "status-no", "NO")
+      }
     })
     
-    output$has_features_ms2 <- shiny::renderText({
-      ifelse(nts_data()@has_features_ms2, "YES", "NO")
+    output$has_features_ms2_ui <- shiny::renderUI({
+      value <- nts_data()@has_features_ms2
+      if (value) {
+        shiny::tags$span(class = "status-yes", "YES")
+      } else {
+        shiny::tags$span(class = "status-no", "NO")
+      }
     })
     
-    output$has_features_suspects <- shiny::renderText({
-      ifelse(nts_data()@has_features_suspects, "YES", "NO")
+    output$has_features_suspects_ui <- shiny::renderUI({
+      value <- nts_data()@has_features_suspects
+      if (value) {
+        shiny::tags$span(class = "status-yes", "YES")
+      } else {
+        shiny::tags$span(class = "status-no", "NO")
+      }
     })
     
-    # Features chart using plot_features_count
+    # Enhanced Features chart using plot_features_count with Plotly
     output$features_chart <- plotly::renderPlotly({
       nts <- nts_data()
-      plot_features_count(nts, colorBy = "replicates")
+      
+      # Get the color by parameter
+      color_by <- chart_color_by()
+      
+      # Call the base plot function
+      p <- plot_features_count(nts, colorBy = color_by)
+      
+      # Enhance the plotly object
+      p <- plotly::layout(p,
+        # Improved layout
+        margin = list(l = 60, r = 40, t = 40, b = 60),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        
+        # Better title and axis labels
+        title = list(
+          text = paste0("Feature Distribution by ", ifelse(color_by == "replicates", "Replicates", "Analysis")),
+          font = list(size = 18, color = "#333")
+        ),
+        
+        xaxis = list(
+          title = list(
+            text = "Sample",
+            font = list(size = 14, color = "#555")
+          ),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        
+        yaxis = list(
+          title = list(
+            text = "Number of Features",
+            font = list(size = 14, color = "#555")
+          ),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        
+        # Improved legend
+        legend = list(
+          orientation = "h",
+          xanchor = "center",
+          x = 0.5,
+          y = -0.15,
+          bgcolor = "rgba(255,255,255,0.8)",
+          bordercolor = "rgba(0,0,0,0.1)",
+          borderwidth = 1
+        ),
+        
+        # Hover template
+        hoverlabel = list(
+          bgcolor = "white",
+          bordercolor = "#333",
+          font = list(size = 12, color = "#333")
+        )
+      )
+      
+      # Add interactive features
+      p <- plotly::config(p, 
+        displayModeBar = TRUE,
+        modeBarButtonsToRemove = c(
+          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+          "hoverCompareCartesian", "lasso2d", "select2d"
+        ),
+        displaylogo = FALSE,
+        responsive = TRUE
+      )
+      
+      return(p)
     })
     
-    # Features table for the Features tab
+    # Enhanced Features table for the Features tab
     output$features_table <- DT::renderDT({
       # Fetch features data
       features <- get_features(nts_data())
@@ -325,15 +645,18 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       # Round numeric columns to 4 decimal places for readability
       numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
       for (col in numeric_cols) {
-        features[[col]] <- round(features[[col]], 4)
+        if (col %in% names(features)) {
+          features[[col]] <- round(features[[col]], 4)
+        }
       }
       
-      # Render the DataTable
+      # Render the DataTable with enhanced styling
       DT::datatable(
         features,
         options = list(
-          pageLength = 5,
+          pageLength = 10,
           scrollX = TRUE,
+          scrollY = "400px",
           columnDefs = list(
             list(width = "200px", targets = c(0, 1, 2)),
             list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
@@ -346,20 +669,35 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
             list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
             list(className = "dt-left", targets = c(0, 1, 2, 13, 14, 15, 16, 18, 19))
           ),
-          selection = list(mode = "multiple", selected = NULL),
-          dom = "lfrtip",
+          selection = list(mode = "multiple", selected = NULL, target = "row"),
+          dom = '<"top"lf>rt<"bottom"ip>',
           lengthMenu = c(5, 10, 25, 50, 100),
           ordering = TRUE,
-          searching = TRUE
+          searching = TRUE,
+          searchHighlight = TRUE
         ),
         style = "bootstrap",
-        class = "table table-bordered table-hover",
+        class = "table table-striped table-hover",
+        rownames = FALSE,
+        filter = "top",
+        selection = "multiple"
       ) %>%
         # Custom CSS
         DT::formatStyle(
           columns = names(features),
           fontSize = "14px",
-          padding = "5px 10px"
+          padding = "8px 12px"
+        ) %>%
+        # Highlight numeric columns
+        DT::formatStyle(
+          columns = intersect(numeric_cols, names(features)),
+          background = DT::styleColorBar(
+            range(features[, intersect(numeric_cols, names(features)), with = FALSE], na.rm = TRUE),
+            "rgba(78, 115, 223, 0.1)"
+          ),
+          backgroundSize = "98% 88%",
+          backgroundRepeat = "no-repeat",
+          backgroundPosition = "center"
         )
     })
     
@@ -407,16 +745,8 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
         return(NULL)
       }
       
-      # Debug: Print the structure of the entire quality column
-      message("Structure of features$quality:")
-      print(str(features$quality))
-      
       # Extract quality data for the selected rows
       quality_list <- features[selected_rows, "quality", with = FALSE]$quality
-      
-      # Debug: Print the structure of quality_list
-      message("Structure of quality_list:")
-      print(str(quality_list))
       
       # Check if quality_list is empty or NULL
       if (length(quality_list) == 0 || all(sapply(quality_list, is.null))) {
@@ -454,7 +784,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       return(quality_data)
     })
     
-    # Feature peaks plot
+    # Enhanced Feature peaks plot with Plotly
     output$feature_peaks_plot <- plotly::renderPlotly({
       shiny::validate(
         need(!is.null(selected_features()), "Please select one or more features from the table to display the plot.")
@@ -462,10 +792,70 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       
       # Generate the plot using plot_features
       nts <- nts_data()
-      plot_features(nts, features = selected_features())
+      p <- plot_features(nts, features = selected_features())
+      
+      # Enhance the plotly object
+      p <- plotly::layout(p,
+        # Improved layout
+        margin = list(l = 50, r = 30, t = 30, b = 50),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        
+        # Better axis labels
+        xaxis = list(
+          title = list(
+            text = "Retention Time (RT)",
+            font = list(size = 14, color = "#555")
+          ),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        
+        yaxis = list(
+          title = list(
+            text = "Intensity",
+            font = list(size = 14, color = "#555")
+          ),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        
+        # Improved legend
+        legend = list(
+          orientation = "v",
+          xanchor = "right",
+          yanchor = "top",
+          x = 0.98,
+          y = 0.98,
+          bgcolor = "rgba(255,255,255,0.8)",
+          bordercolor = "rgba(0,0,0,0.1)",
+          borderwidth = 1,
+          font = list(size = 12)
+        ),
+        
+        # Hover template
+        hoverlabel = list(
+          bgcolor = "white",
+          bordercolor = "#333",
+          font = list(size = 12, color = "#333")
+        )
+      )
+      
+      # Add interactive features
+      p <- plotly::config(p, 
+        displayModeBar = TRUE,
+        modeBarButtonsToRemove = c(
+          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+          "hoverCompareCartesian", "lasso2d", "select2d"
+        ),
+        displaylogo = FALSE,
+        responsive = TRUE
+      )
+      
+      return(p)
     })
     
-    # MS1 plot
+    # Enhanced MS1 plot with Plotly
     output$ms1_plot <- plotly::renderPlotly({
       shiny::validate(
         need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS1 plot.")
@@ -474,10 +864,63 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       # Generate the MS1 plot
       nts <- nts_data()
       mass_data <- selected_features_with_mass()
-      plot_features_ms1(nts, mass = mass_data, legendNames = TRUE)
+      p <- plot_features_ms1(nts, mass = mass_data, legendNames = TRUE)
+      
+      # Enhance the plotly object
+      p <- plotly::layout(p,
+        # Improved layout
+        margin = list(l = 50, r = 30, t = 30, b = 50),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        
+        # Better axis labels
+        xaxis = list(
+          title = list(
+            text = "m/z",
+            font = list(size = 14, color = "#555")
+          ),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        
+        yaxis = list(
+          title = list(
+            text = "Intensity",
+            font = list(size = 14, color = "#555")
+          ),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        
+        # Improved legend
+        legend = list(
+          orientation = "v",
+          xanchor = "right",
+          yanchor = "top",
+          x = 0.98,
+          y = 0.98,
+          bgcolor = "rgba(255,255,255,0.8)",
+          bordercolor = "rgba(0,0,0,0.1)",
+          borderwidth = 1,
+          font = list(size = 12)
+        )
+      )
+      
+      # Add interactive features
+      p <- plotly::config(p, 
+        displayModeBar = TRUE,
+        modeBarButtonsToRemove = c(
+          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+          "hoverCompareCartesian", "lasso2d", "select2d"
+        ),
+        displaylogo = FALSE,
+        responsive = TRUE
+      )
+      
+      return(p)
     })
     
-    # MS2 plot
+    # Enhanced MS2 plot with Plotly
     output$ms2_plot <- plotly::renderPlotly({
       shiny::validate(
         need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS2 plot.")
@@ -486,10 +929,63 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       # Generate the MS2 plot
       nts <- nts_data()
       mass_data <- selected_features_with_mass()
-      plot_features_ms2(nts, mass = mass_data, legendNames = TRUE)
+      p <- plot_features_ms2(nts, mass = mass_data, legendNames = TRUE)
+      
+      # Enhance the plotly object
+      p <- plotly::layout(p,
+        # Improved layout
+        margin = list(l = 50, r = 30, t = 30, b = 50),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)",
+        
+        # Better axis labels
+        xaxis = list(
+          title = list(
+            text = "m/z",
+            font = list(size = 14, color = "#555")
+          ),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        
+        yaxis = list(
+          title = list(
+            text = "Intensity / Counts",
+            font = list(size = 14, color = "#555")
+          ),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        
+        # Improved legend
+        legend = list(
+          orientation = "v",
+          xanchor = "right",
+          yanchor = "top",
+          x = 0.98,
+          y = 0.98,
+          bgcolor = "rgba(255,255,255,0.8)",
+          bordercolor = "rgba(0,0,0,0.1)",
+          borderwidth = 1,
+          font = list(size = 12)
+        )
+      )
+      
+      # Add interactive features
+      p <- plotly::config(p, 
+        displayModeBar = TRUE,
+        modeBarButtonsToRemove = c(
+          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+          "hoverCompareCartesian", "lasso2d", "select2d"
+        ),
+        displaylogo = FALSE,
+        responsive = TRUE
+      )
+      
+      return(p)
     })
     
-    # Quality table
+    # Enhanced Quality table
     output$quality_table <- DT::renderDT({
       shiny::validate(
         need(!is.null(selected_quality_data()), "Please select one or more features from the table to display the quality data.")
@@ -499,35 +995,70 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       quality_data <- selected_quality_data()
       
       # Check if the data is a placeholder
-      if ("message" %in% names(quality_data)) {
+      if ("message" %in% names(quality_data) && ncol(quality_data) == 1) {
         return(DT::datatable(
           quality_data,
           options = list(
             dom = "t",
-            ordering = FALSE
+            ordering = FALSE,
+            paging = FALSE
           ),
           style = "bootstrap",
-          class = "table table-bordered table-hover"
+          class = "table table-bordered table-hover",
+          rownames = FALSE
         ))
       }
       
-      # Render the DataTable
+      # Render the DataTable with enhanced styling
       DT::datatable(
         quality_data,
         options = list(
           pageLength = 5,
           scrollX = TRUE,
-          dom = "t",
-          ordering = TRUE
+          dom = "lfrtp",
+          ordering = TRUE,
+          lengthMenu = c(5, 10, 25),
+          columnDefs = list(
+            list(className = "dt-center", targets = "_all")
+          )
         ),
         style = "bootstrap",
-        class = "table table-bordered table-hover"
+        class = "table table-striped table-hover",
+        rownames = FALSE
       ) %>%
         DT::formatStyle(
           columns = names(quality_data),
           fontSize = "14px",
-          padding = "5px 10px"
+          padding = "8px 12px"
         )
     })
+    
+    # JavaScript for enhancing UI interactions
+    shiny::observeEvent(1, {
+      # Initialize tooltips
+      shiny::insertUI(
+        selector = "head",
+        where = "beforeEnd",
+        ui = shiny::tags$script(HTML("
+          $(document).ready(function(){
+            // Initialize tooltips
+            $('[data-toggle=\"tooltip\"]').tooltip();
+            
+            // Make status panel items clickable
+            $('.status-item').css('cursor', 'pointer').click(function(){
+              // Toggle active class
+              $('.status-item').removeClass('active');
+              $(this).addClass('active');
+            });
+            
+            // Enhance button group behavior
+            $('.btn-group .btn').click(function(){
+              $(this).siblings().removeClass('active');
+              $(this).addClass('active');
+            });
+          });
+        "))
+      )
+    }, once = TRUE)
   })
 }
