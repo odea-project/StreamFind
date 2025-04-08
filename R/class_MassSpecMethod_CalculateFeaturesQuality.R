@@ -114,9 +114,8 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
   ana_info <- engine$NTS$analyses_info
   headers <- engine$NTS$spectra_headers
   
-  feature_list <- rcpp_ms_calculate_features_quality_v2(
-    ana_info$analysis,
-    ana_info$file,
+  feature_list <- rcpp_ms_calculate_features_quality(
+    ana_info,
     headers,
     feature_list,
     parameters$filtered,
@@ -129,11 +128,6 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
     parameters$baseCut
   )
   
-  browser()
-  browser()
-  browser()
-  
-
   tryCatch(
     {
       engine$NTS$feature_list <- feature_list

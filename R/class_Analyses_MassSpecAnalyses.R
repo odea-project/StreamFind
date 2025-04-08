@@ -689,7 +689,6 @@ S7::method(`[[<-`, MassSpecAnalyses) <- function(x, i, value) {
 S7::method(as.list, MassSpecAnalyses) <- function(x) {
   if (length(x@results) > 0) {
     # TODO make as.list method for each MassSpecAnalyses results
-    browser()
   }
   list("analyses" = x@analyses, "results" = x@results)
 }

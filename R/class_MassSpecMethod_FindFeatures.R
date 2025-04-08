@@ -156,9 +156,10 @@
     pat@features[[a]]$area <- round(pat@features[[a]]$area, 2)
 
     pat@features[[a]]$filtered <- FALSE
-    pat@features[[a]]$filter <- NA_character_
+    pat@features[[a]]$filter <- ""
     pat@features[[a]]$filled <- FALSE
-    pat@features[[a]]$group <- NA_character_
+    pat@features[[a]]$correction <- 1
+    pat@features[[a]]$group <- ""
     pat@features[[a]]$quality <- empty_dt_list
     pat@features[[a]]$annotation <- empty_dt_list
     pat@features[[a]]$eic <- empty_dt_list
@@ -194,10 +195,14 @@
   feature_list <- feature_list[analyses_info$analysis]
   
   fp <- c(
-    "feature", "group", "rt", "mz", "intensity", "area",
-    "rtmin", "rtmax", "mzmin", "mzmax", "mass",
-    "polarity", "adduct", "filtered", "filter", "filled",
-    "eic", "ms1", "ms2", "quality", "annotation", "istd",
+    "feature", "group",
+    "rt", "mz",
+    "intensity", "area",
+    "rtmin", "rtmax", "mzmin", "mzmax",
+    "mass", "polarity", "adduct",
+    "filtered", "filter", "filled", "correction",
+    "eic", "ms1", "ms2",
+    "quality", "annotation", "istd",
     "suspects", "formulas", "compounds"
   )
   

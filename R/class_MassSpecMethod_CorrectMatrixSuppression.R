@@ -72,7 +72,7 @@
 #' calculates the matrix profile for the total ion chromatogram (TIC) and corrects the matrix
 #' suppression for features. Internal standards can be assigned to improve the correction. The
 #' `suppression_factor` is added to the feature list and can be used to correct the features
-#' intensity. The argument/parameter `correctSuppression` is available in plotting and processing
+#' intensity. The argument/parameter `correctIntensity` is available in plotting and processing
 #' methods and when `TRUE`, the suppression factor is used to correct the feature intensity for
 #' better comparison across analyses with different matrix suppression.
 #'
@@ -275,7 +275,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
 
     message("\U2699 Correcting matrix suppression for ", nrow(fts), " features in ", z)
     
-    suppresion_factor <- vapply(seq_len(nrow(fts)), function(i, z, rpl, fts, mp, istd, parameters) {
+    suppression_factor <- vapply(seq_len(nrow(fts)), function(i, z, rpl, fts, mp, istd, parameters) {
       ft <- fts[i, ]
       if (is.null(parameters$mpRtWindow)) {
         parameters$mpRtWindow <- (ft[["rtmax"]] - ft[["rtmin"]]) / 2
@@ -330,7 +330,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
       }
     }, z = z, rpl = rpl, fts = fts, mp = mp, istd = istd, parameters = parameters, 0)
 
-    fts$suppression_factor <- suppresion_factor
+    fts$correction <- suppression_factor
     fts
   }, feature_list = feature_list, ticMp = ticMp, rpls = rpls, istd = istd, parameters = parameters)
 

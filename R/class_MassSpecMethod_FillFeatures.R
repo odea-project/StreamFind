@@ -3,6 +3,7 @@
 #' @description Settings for filling missing values in features.
 #'
 #' @param withinReplicate Logical of length one to fill within replicates not global.
+#' @param filtered Logical of length one to consider filtered features or not.
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
 #' @param minPeakWidth Numeric of length one with the minimum peak width for building feature
@@ -32,6 +33,7 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
   parent = ProcessingStep,
   package = "StreamFind",
   constructor = function(withinReplicate = TRUE,
+                         filtered = TRUE,
                          rtExpand = 0,
                          mzExpand = 0,
                          minPeakWidth = 6,
@@ -51,6 +53,7 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
         algorithm = "StreamFind",
         parameters = list(
           withinReplicate = as.logical(withinReplicate),
+          filtered = as.logical(filtered),
           rtExpand = as.numeric(rtExpand),
           mzExpand = as.numeric(mzExpand),
           minPeakWidth = as.numeric(minPeakWidth),
@@ -78,6 +81,7 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
     checkmate::assert_choice(self@method, "FillFeatures")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_logical(self@parameters$withinReplicate, len = 1)
+    checkmate::assert_logical(self@parameters$filtered, len = 1)
     checkmate::assert_numeric(self@parameters$rtExpand, len = 1)
     checkmate::assert_numeric(self@parameters$mzExpand, len = 1)
     checkmate::assert_numeric(self@parameters$minPeakWidth, len = 1)
@@ -119,24 +123,13 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
   }
 
   parameters <- x$parameters
-  analyses_list <- engine$Analyses$analyses
-  feature_list <- engine$NTS$feature_list
   
-  features_dt <- data.table::rbindlist(feature_list, idcol = "analysis", fill = TRUE)
-  rpls <- engine$Analyses$replicates
-  features_dt$replicate <- rpls[features_dt$analysis]
-  features_dt$group[is.na(features_dt$group)] <- ""
-  
-  ana_info <- engine$NTS$analyses_info
-  headers <- engine$NTS$spectra_headers
-  
-  res <- rcpp_ms_fill_features(
-    ana_info$analysis,
-    ana_info$replicate,
-    ana_info$file,
-    headers,
-    features_dt,
+  feature_list <- rcpp_ms_fill_features(
+    engine$NTS$analyses_info,
+    engine$NTS$spectra_headers,
+    engine$NTS$feature_list,
     parameters$withinReplicate,
+    parameters$filtered,
     parameters$rtExpand,
     parameters$mzExpand,
     parameters$minPeakWidth,
@@ -149,40 +142,6 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
     parameters$minSignalToNoiseRatio,
     parameters$minGaussianFit
   )
-  
-  message("Adding filled features to NTS object...", appendLF = FALSE)
-  
-  res <- lapply(res, function(z) {
-    data.table::rbindlist(z, fill = TRUE)
-  })
-  
-  res <- data.table::rbindlist(res, fill = TRUE)
-  res_analysis <- res$analysis
-  res[["analysis"]] <- NULL
-  res[["replicate"]] <- NULL
-  res <- split(res, res_analysis)
-  
-  res <- lapply(res, function(z) {
-    if (nrow(z) > 0) z <- z[!duplicated(z$group), ]
-    z
-  })
-  
-  analyses_names <- names(feature_list)
-  
-  feature_list <- lapply(analyses_names, function(z, feature_list, res) {
-    filled_fts <- res[[z]]
-    if (is.null(filled_fts)) return(feature_list[[z]])
-    if (nrow(filled_fts) == 0) return(feature_list[[z]])
-    org_fts <- feature_list[[z]]
-    if (nrow(org_fts) > 0) org_fts <- org_fts[!org_fts$feature %in% filled_fts$feature, ]
-    z <- data.table::rbindlist(list(org_fts, filled_fts), fill = TRUE)
-    z <- z[!duplicated(z$group), ]
-    z
-  }, feature_list = feature_list, res = res)
-  
-  names(feature_list) <- analyses_names
-  
-  message("Done!")
   
   NTS$feature_list <- feature_list
   engine$NTS <- NTS

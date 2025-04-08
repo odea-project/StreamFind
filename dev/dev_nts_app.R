@@ -280,7 +280,7 @@ show(nts)
 #   replicatesOut = "effluent_pos",
 #   constantThreshold = 0.5,
 #   eliminationThreshold = 0.25,
-#   correctSuppression = TRUE,
+#   correctIntensity = TRUE,
 #   fillZerosWithLowerLimit = TRUE,
 #   lowerLimit = NA_real_,
 #   normalized = TRUE,

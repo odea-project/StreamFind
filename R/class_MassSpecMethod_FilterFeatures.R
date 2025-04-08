@@ -2,7 +2,7 @@
 #'
 #' @description Settings for filtering of features and feature groups.
 #'
-#' @template arg-ms-correctSuppression
+#' @template arg-ms-correctIntensity
 #' @param minSnRatio Numeric (length 1) with the minimum signal-to-noise ratio.
 #' @param minGaussianFit Numeric (length 1) with the minimum Gaussian fit.
 #' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering annotated isotopes
@@ -31,7 +31,7 @@ MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
   name = "MassSpecMethod_FilterFeatures_StreamFind",
   parent = ProcessingStep,
   package = "StreamFind",
-  constructor = function(correctSuppression = TRUE,
+  constructor = function(correctIntensity = TRUE,
                          minSnRatio = NA_real_,
                          minGaussianFit = NA_real_,
                          excludeIsotopes = FALSE,
@@ -49,7 +49,7 @@ MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
         required = "FindFeatures",
         algorithm = "StreamFind",
         parameters = list(
-          correctSuppression = as.logical(correctSuppression),
+          correctIntensity = as.logical(correctIntensity),
           minSnRatio = as.numeric(minSnRatio),
           minGaussianFit = as.numeric(minGaussianFit),
           excludeIsotopes = as.logical(excludeIsotopes),
@@ -75,7 +75,7 @@ MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
     checkmate::assert_choice(self@engine, "MassSpec")
     checkmate::assert_choice(self@method, "FilterFeatures")
     checkmate::assert_choice(self@algorithm, "StreamFind")
-    checkmate::assert_logical(self@parameters$correctSuppression, len = 1)
+    checkmate::assert_logical(self@parameters$correctIntensity, len = 1)
     checkmate::assert_numeric(self@parameters$minSnRatio, len = 1)
     checkmate::assert_numeric(self@parameters$minGaussianFit, len = 1)
     checkmate::assert_logical(self@parameters$excludeIsotopes, len = 1)
@@ -119,8 +119,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   }
 
   parameters <- x$parameters
-  correctSuppression <- parameters$correctSuppression
-  parameters$correctSuppression <- NULL
+  correctIntensity <- parameters$correctIntensity
+  parameters$correctIntensity <- NULL
   conservative <- parameters$conservative
   parameters$conservative <- NULL
   
@@ -202,7 +202,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           intensities = FALSE,
           average = TRUE,
           metadata = TRUE,
-          correctSuppression = FALSE
+          correctIntensity = FALSE
         )
         if (any(!is.na(groups$sn))) {
           groups_sel <- groups$sn < value
@@ -354,7 +354,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   #   }
   # }
   
-  .filter_minIntensity <- function(value = 0, correctSuppression, conservative, engine) {
+  .filter_minIntensity <- function(value = 0, correctIntensity, conservative, engine) {
     if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
@@ -369,7 +369,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           intensities = TRUE,
           average = TRUE,
           metadata = FALSE,
-          correctSuppression = correctSuppression
+          correctIntensity = correctIntensity
         )
         rpl <- rpl[rpl %in% colnames(groups)]
         groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) max(x) <= value)
@@ -384,11 +384,11 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         engine$NTS$feature_list <- feature_list
       } else {
         feature_list <- engine$NTS$feature_list
-        feature_list <- lapply(feature_list, function(x, correctSuppression) {
+        feature_list <- lapply(feature_list, function(x, correctIntensity) {
           
           intensity_vector <- x$intensity
           
-          if (correctSuppression) {
+          if (correctIntensity) {
             if ("suppression_factor" %in% colnames(x)) {
               intensity_vector <- intensity_vector * x$suppression_factor
             }
@@ -397,7 +397,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           x$filtered[sel] <- TRUE
           x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minIntensity"))
           x
-        }, correctSuppression = correctSuppression)
+        }, correctIntensity = correctIntensity)
         engine$NTS$feature_list <- feature_list
       }
     } else {
@@ -405,7 +405,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
     }
   }
   
-  .filter_maxDeviationInReplicate <- function(value = 100, correctSuppression, engine) {
+  .filter_maxDeviationInReplicate <- function(value = 100, correctIntensity, engine) {
     if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 100) {
@@ -422,7 +422,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           average = TRUE,
           sdValues = TRUE,
           metadata = FALSE,
-          correctSuppression = correctSuppression
+          correctIntensity = correctIntensity
         )
         rpl <- rpl[rpl %in% colnames(groups)]
         groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) min(x) > value)
@@ -482,7 +482,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   
   .filter_blankThreshold <- function(value = 3,
                                      conservative,
-                                     correctSuppression,
+                                     correctIntensity,
                                      engine) {
     if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
       
@@ -508,7 +508,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           average = TRUE,
           sdValues = FALSE,
           metadata = FALSE,
-          correctSuppression = correctSuppression
+          correctIntensity = correctIntensity
         )
         
         rpl <- rpl[rpl %in% colnames(groups)]
@@ -619,19 +619,19 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine),
       minIntensity = .filter_minIntensity(
         parameters[[filters[i]]],
-        correctSuppression,
+        correctIntensity,
         conservative,
         engine
       ),
       blankThreshold = .filter_blankThreshold(
         parameters[[filters[i]]],
         conservative,
-        correctSuppression,
+        correctIntensity,
         engine
       ),
       maxDeviationInReplicate = .filter_maxDeviationInReplicate(
         parameters[[filters[i]]],
-        correctSuppression,
+        correctIntensity,
         engine
       ),
       minSnRatio = .filter_minSnRatio(parameters[[filters[i]]], conservative, engine),

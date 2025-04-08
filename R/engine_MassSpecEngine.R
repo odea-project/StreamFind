@@ -65,7 +65,7 @@
 #' @template arg-xlim-ylim
 #' @template arg-showText
 #' @template arg-settings
-#' @template arg-ms-correctSuppression
+#' @template arg-ms-correctIntensity
 #' @template arg-renderEngine
 #'
 #' @references
@@ -1352,11 +1352,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                           average = FALSE,
                           sdValues = FALSE,
                           metadata = FALSE,
-                          correctSuppression = FALSE) {
+                          correctIntensity = FALSE) {
       if (self$has_results_nts()) {
         StreamFind::get_groups(
           self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec,
-          filtered, intensities, average, sdValues, metadata, correctSuppression
+          filtered, intensities, average, sdValues, metadata, correctIntensity
         )
       } else {
         warning("No NTS results available! Not done.")
@@ -1401,7 +1401,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Method to give an overview of the EIC, alignment and intensity variance from
     #' features within target feature groups.
     #'
-    #' @param correctSuppression Logical (length 1). When `TRUE` and suppression factor is available 
+    #' @param correctIntensity Logical (length 1). When `TRUE` and suppression factor is available 
     #' the intensities are corrected for suppression.
     #' @param heights A numeric vector of length 3 to control the height of the first, second and
     #' third plot, respectively.
@@ -1418,7 +1418,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     rtExpand = 120,
                                     mzExpand = 0.005,
                                     useLoadedData = TRUE,
-                                    correctSuppression = TRUE,
+                                    correctIntensity = TRUE,
                                     filtered = FALSE,
                                     legendNames = NULL,
                                     title = NULL,
@@ -1427,7 +1427,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (self$has_results_nts()) {
         StreamFind::plot_groups_overview(
           self$NTS, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand,
-          mzExpand, useLoadedData, correctSuppression, filtered, legendNames, title, heights,
+          mzExpand, useLoadedData, correctIntensity, filtered, legendNames, title, heights,
           renderEngine
         )
       } else {
@@ -1453,7 +1453,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    sec = 60,
                                    millisec = 5,
                                    filtered = FALSE,
-                                   correctSuppression = TRUE,
+                                   correctIntensity = TRUE,
                                    averaged = FALSE,
                                    normalized = TRUE,
                                    legendNames = NULL,
@@ -1464,7 +1464,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (self$has_results_nts()) {
         StreamFind::plot_groups_profile(
           self$NTS, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-          correctSuppression, normalized, legendNames, yLab, title, showLegend, renderEngine
+          correctIntensity, normalized, legendNames, yLab, title, showLegend, renderEngine
         )
       } else {
         warning("No NTS results available! Not done.")
@@ -1825,7 +1825,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' constant.
     #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as
     #' eliminated.
-    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when
+    #' @param correctIntensity Logical of length one. When `TRUE` the suppression factor (when
     #' available) is used to correct the intensity before fold-change analysis.
     #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled
     #' with the lower limit.
@@ -1844,13 +1844,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                filtered = FALSE,
                                constantThreshold = 0.5,
                                eliminationThreshold = 0.2,
-                               correctSuppression = FALSE,
+                               correctIntensity = FALSE,
                                fillZerosWithLowerLimit = FALSE,
                                lowerLimit = NA_real_) {
       if (self$has_results_nts()) {
         StreamFind::get_fold_change(
           self$NTS, replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
-          filtered, constantThreshold, eliminationThreshold, correctSuppression,
+          filtered, constantThreshold, eliminationThreshold, correctIntensity,
           fillZerosWithLowerLimit, lowerLimit
         )
       } else {
@@ -1871,7 +1871,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' constant.
     #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as
     #' eliminated.
-    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when
+    #' @param correctIntensity Logical of length one. When `TRUE` the suppression factor (when
     #' available) is used to correct the intensity before fold-change analysis.
     #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled
     #' with the lower limit.
@@ -1891,7 +1891,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 filtered = FALSE,
                                 constantThreshold = 0.5,
                                 eliminationThreshold = 0.2,
-                                correctSuppression = FALSE,
+                                correctIntensity = FALSE,
                                 fillZerosWithLowerLimit = FALSE,
                                 lowerLimit = NA_real_,
                                 normalized = TRUE,
@@ -1902,7 +1902,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (self$has_results_nts()) {
         StreamFind::plot_fold_change(
           self$NTS, replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
-          filtered, constantThreshold, eliminationThreshold, correctSuppression,
+          filtered, constantThreshold, eliminationThreshold, correctIntensity,
           fillZerosWithLowerLimit, lowerLimit, normalized, yLab, title, interactive, showLegend
         )
       } else {

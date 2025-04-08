@@ -143,7 +143,7 @@ ms$run(
 run(MassSpecMethod_CorrectMatrixSuppression_TiChri(), ms)
 
 get_features(ms$analyses, mass = dbis$mass[1])
-plot_groups_profile(ms$analyses, mass = dbis, correctSuppression = FALSE)
+plot_groups_profile(ms$analyses, mass = dbis, correctIntensity = FALSE)
 
 ms$get_internal_standards(average = TRUE)
 

@@ -99,21 +99,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_ms_annotate_features
-Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list, double rtWindowAlignment, int maxIsotopes, int maxCharge, int maxGaps);
-RcppExport SEXP _StreamFind_rcpp_ms_annotate_features(SEXP feature_listSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP maxGapsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
-    Rcpp::traits::input_parameter< double >::type rtWindowAlignment(rtWindowAlignmentSEXP);
-    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
-    Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
-    Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotate_features(feature_list, rtWindowAlignment, maxIsotopes, maxCharge, maxGaps));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_ms_load_features_eic
 Rcpp::List rcpp_ms_load_features_eic(std::vector<std::string> analyses_names, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::List features, bool filtered, float rtExpand, float mzExpand, float minTracesIntensity);
 RcppExport SEXP _StreamFind_rcpp_ms_load_features_eic(SEXP analyses_namesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP) {
@@ -171,18 +156,53 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_ms_fill_features
-Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names, std::vector<std::string> analyses_replicates, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::DataFrame features, bool withinReplicate, float rtExpand, float mzExpand, float minPeakWidth, float maxPeakWidth, float minTracesIntensity, float minNumberTraces, float minIntensity, float baseCut, float maxSearchWindow, float minSignalToNoiseRatio, float minGaussianFit);
-RcppExport SEXP _StreamFind_rcpp_ms_fill_features(SEXP analyses_namesSEXP, SEXP analyses_replicatesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP withinReplicateSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minPeakWidthSEXP, SEXP maxPeakWidthSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP minIntensitySEXP, SEXP baseCutSEXP, SEXP maxSearchWindowSEXP, SEXP minSignalToNoiseRatioSEXP, SEXP minGaussianFitSEXP) {
+// rcpp_ms_calculate_features_quality
+Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, bool filtered, float rtExpand, float mzExpand, float minPeakWidth, float maxPeakWidth, float minTracesIntensity, float minNumberTraces, float baseCut);
+RcppExport SEXP _StreamFind_rcpp_ms_calculate_features_quality(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minPeakWidthSEXP, SEXP maxPeakWidthSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP baseCutSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_replicates(analyses_replicatesSEXP);
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type headers(headersSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
+    Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
+    Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
+    Rcpp::traits::input_parameter< float >::type minPeakWidth(minPeakWidthSEXP);
+    Rcpp::traits::input_parameter< float >::type maxPeakWidth(maxPeakWidthSEXP);
+    Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
+    Rcpp::traits::input_parameter< float >::type minNumberTraces(minNumberTracesSEXP);
+    Rcpp::traits::input_parameter< float >::type baseCut(baseCutSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_calculate_features_quality(info, spectra_headers, feature_list, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_ms_annotate_features
+Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list, double rtWindowAlignment, int maxIsotopes, int maxCharge, int maxGaps);
+RcppExport SEXP _StreamFind_rcpp_ms_annotate_features(SEXP feature_listSEXP, SEXP rtWindowAlignmentSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP maxGapsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< double >::type rtWindowAlignment(rtWindowAlignmentSEXP);
+    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
+    Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
+    Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_annotate_features(feature_list, rtWindowAlignment, maxIsotopes, maxCharge, maxGaps));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_ms_fill_features
+Rcpp::List rcpp_ms_fill_features(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, bool withinReplicate, bool filtered, float rtExpand, float mzExpand, float minPeakWidth, float maxPeakWidth, float minTracesIntensity, float minNumberTraces, float minIntensity, float baseCut, float maxSearchWindow, float minSignalToNoiseRatio, float minGaussianFit);
+RcppExport SEXP _StreamFind_rcpp_ms_fill_features(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP withinReplicateSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minPeakWidthSEXP, SEXP maxPeakWidthSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP minIntensitySEXP, SEXP baseCutSEXP, SEXP maxSearchWindowSEXP, SEXP minSignalToNoiseRatioSEXP, SEXP minGaussianFitSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
     Rcpp::traits::input_parameter< bool >::type withinReplicate(withinReplicateSEXP);
+    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
     Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
     Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
     Rcpp::traits::input_parameter< float >::type minPeakWidth(minPeakWidthSEXP);
@@ -194,51 +214,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< float >::type maxSearchWindow(maxSearchWindowSEXP);
     Rcpp::traits::input_parameter< float >::type minSignalToNoiseRatio(minSignalToNoiseRatioSEXP);
     Rcpp::traits::input_parameter< float >::type minGaussianFit(minGaussianFitSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_fill_features(analyses_names, analyses_replicates, analyses_files, headers, features, withinReplicate, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, baseCut, maxSearchWindow, minSignalToNoiseRatio, minGaussianFit));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_calculate_features_quality
-Rcpp::List rcpp_ms_calculate_features_quality(std::vector<std::string> analyses_names, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::List features, bool filtered, float rtExpand, float mzExpand, float minPeakWidth, float maxPeakWidth, float minTracesIntensity, float minNumberTraces, float baseCut);
-RcppExport SEXP _StreamFind_rcpp_ms_calculate_features_quality(SEXP analyses_namesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minPeakWidthSEXP, SEXP maxPeakWidthSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP baseCutSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type headers(headersSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type features(featuresSEXP);
-    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
-    Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
-    Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
-    Rcpp::traits::input_parameter< float >::type minPeakWidth(minPeakWidthSEXP);
-    Rcpp::traits::input_parameter< float >::type maxPeakWidth(maxPeakWidthSEXP);
-    Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
-    Rcpp::traits::input_parameter< float >::type minNumberTraces(minNumberTracesSEXP);
-    Rcpp::traits::input_parameter< float >::type baseCut(baseCutSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_calculate_features_quality(analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_calculate_features_quality_v2
-Rcpp::List rcpp_ms_calculate_features_quality_v2(std::vector<std::string> analyses_names, std::vector<std::string> analyses_files, Rcpp::List spectra_headers, Rcpp::List feature_list, bool filtered, float rtExpand, float mzExpand, float minPeakWidth, float maxPeakWidth, float minTracesIntensity, float minNumberTraces, float baseCut);
-RcppExport SEXP _StreamFind_rcpp_ms_calculate_features_quality_v2(SEXP analyses_namesSEXP, SEXP analyses_filesSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minPeakWidthSEXP, SEXP maxPeakWidthSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP baseCutSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
-    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
-    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
-    Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
-    Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
-    Rcpp::traits::input_parameter< float >::type minPeakWidth(minPeakWidthSEXP);
-    Rcpp::traits::input_parameter< float >::type maxPeakWidth(maxPeakWidthSEXP);
-    Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
-    Rcpp::traits::input_parameter< float >::type minNumberTraces(minNumberTracesSEXP);
-    Rcpp::traits::input_parameter< float >::type baseCut(baseCutSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_calculate_features_quality_v2(analyses_names, analyses_files, spectra_headers, feature_list, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut));
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_fill_features(info, spectra_headers, feature_list, withinReplicate, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, baseCut, maxSearchWindow, minSignalToNoiseRatio, minGaussianFit));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -321,13 +297,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_parse_ms_chromatograms_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers, 1},
     {"_StreamFind_rcpp_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra, 5},
     {"_StreamFind_rcpp_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms, 2},
-    {"_StreamFind_rcpp_ms_annotate_features", (DL_FUNC) &_StreamFind_rcpp_ms_annotate_features, 5},
     {"_StreamFind_rcpp_ms_load_features_eic", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_eic, 8},
     {"_StreamFind_rcpp_ms_load_features_ms1", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms1, 10},
     {"_StreamFind_rcpp_ms_load_features_ms2", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms2, 9},
-    {"_StreamFind_rcpp_ms_fill_features", (DL_FUNC) &_StreamFind_rcpp_ms_fill_features, 17},
-    {"_StreamFind_rcpp_ms_calculate_features_quality", (DL_FUNC) &_StreamFind_rcpp_ms_calculate_features_quality, 12},
-    {"_StreamFind_rcpp_ms_calculate_features_quality_v2", (DL_FUNC) &_StreamFind_rcpp_ms_calculate_features_quality_v2, 12},
+    {"_StreamFind_rcpp_ms_calculate_features_quality", (DL_FUNC) &_StreamFind_rcpp_ms_calculate_features_quality, 11},
+    {"_StreamFind_rcpp_ms_annotate_features", (DL_FUNC) &_StreamFind_rcpp_ms_annotate_features, 5},
+    {"_StreamFind_rcpp_ms_fill_features", (DL_FUNC) &_StreamFind_rcpp_ms_fill_features, 16},
     {"_StreamFind_rcpp_ms_group_features", (DL_FUNC) &_StreamFind_rcpp_ms_group_features, 3},
     {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
     {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},

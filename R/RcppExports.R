@@ -29,10 +29,6 @@ rcpp_parse_ms_chromatograms <- function(analysis, idx) {
     .Call(`_StreamFind_rcpp_parse_ms_chromatograms`, analysis, idx)
 }
 
-rcpp_ms_annotate_features <- function(feature_list, rtWindowAlignment = 0.3, maxIsotopes = 5L, maxCharge = 1L, maxGaps = 1L) {
-    .Call(`_StreamFind_rcpp_ms_annotate_features`, feature_list, rtWindowAlignment, maxIsotopes, maxCharge, maxGaps)
-}
-
 rcpp_ms_load_features_eic <- function(analyses_names, analyses_files, headers, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0) {
     .Call(`_StreamFind_rcpp_ms_load_features_eic`, analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minTracesIntensity)
 }
@@ -45,16 +41,16 @@ rcpp_ms_load_features_ms2 <- function(analyses_names, analyses_files, headers, f
     .Call(`_StreamFind_rcpp_ms_load_features_ms2`, analyses_names, analyses_files, headers, features, filtered, minTracesIntensity, isolationWindow, mzClust, presence)
 }
 
-rcpp_ms_fill_features <- function(analyses_names, analyses_replicates, analyses_files, headers, features, withinReplicate = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, maxPeakWidth = 30, minTracesIntensity = 0, minNumberTraces = 4, minIntensity = 0, baseCut = 0, maxSearchWindow = 5, minSignalToNoiseRatio = 3, minGaussianFit = 0.5) {
-    .Call(`_StreamFind_rcpp_ms_fill_features`, analyses_names, analyses_replicates, analyses_files, headers, features, withinReplicate, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, baseCut, maxSearchWindow, minSignalToNoiseRatio, minGaussianFit)
+rcpp_ms_calculate_features_quality <- function(info, spectra_headers, feature_list, filtered = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, maxPeakWidth = 30, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0) {
+    .Call(`_StreamFind_rcpp_ms_calculate_features_quality`, info, spectra_headers, feature_list, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut)
 }
 
-rcpp_ms_calculate_features_quality <- function(analyses_names, analyses_files, headers, features, filtered = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, maxPeakWidth = 30, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0) {
-    .Call(`_StreamFind_rcpp_ms_calculate_features_quality`, analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut)
+rcpp_ms_annotate_features <- function(feature_list, rtWindowAlignment = 0.3, maxIsotopes = 5L, maxCharge = 1L, maxGaps = 1L) {
+    .Call(`_StreamFind_rcpp_ms_annotate_features`, feature_list, rtWindowAlignment, maxIsotopes, maxCharge, maxGaps)
 }
 
-rcpp_ms_calculate_features_quality_v2 <- function(analyses_names, analyses_files, spectra_headers, feature_list, filtered = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, maxPeakWidth = 30, minTracesIntensity = 0, minNumberTraces = 5, baseCut = 0) {
-    .Call(`_StreamFind_rcpp_ms_calculate_features_quality_v2`, analyses_names, analyses_files, spectra_headers, feature_list, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, baseCut)
+rcpp_ms_fill_features <- function(info, spectra_headers, feature_list, withinReplicate = FALSE, filtered = FALSE, rtExpand = 0, mzExpand = 0, minPeakWidth = 6, maxPeakWidth = 30, minTracesIntensity = 0, minNumberTraces = 4, minIntensity = 0, baseCut = 0, maxSearchWindow = 5, minSignalToNoiseRatio = 3, minGaussianFit = 0.5) {
+    .Call(`_StreamFind_rcpp_ms_fill_features`, info, spectra_headers, feature_list, withinReplicate, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, baseCut, maxSearchWindow, minSignalToNoiseRatio, minGaussianFit)
 }
 
 rcpp_ms_group_features <- function(features, rt_dev = 10, verbose = FALSE) {

@@ -5,7 +5,7 @@
 \title{\strong{MassSpecMethod_FilterFeatures_StreamFind}}
 \usage{
 MassSpecMethod_FilterFeatures_StreamFind(
-  correctSuppression = TRUE,
+  correctIntensity = TRUE,
   minSnRatio = NA_real_,
   minGaussianFit = NA_real_,
   excludeIsotopes = FALSE,
@@ -19,7 +19,7 @@ MassSpecMethod_FilterFeatures_StreamFind(
 )
 }
 \arguments{
-\item{correctSuppression}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
+\item{correctIntensity}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
 suppression before applying intensity based filters. Note that suppression factor as obtained by
 the processing method \code{CorrectMatrixSuppression} must be present. When not available the
 correction is ignored even if set to \code{TRUE}.}

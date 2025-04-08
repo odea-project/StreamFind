@@ -29,7 +29,11 @@ format:
     toc-location: left
 execute:
   warning: false
+editor_options: 
+  chunk_output_type: console
 ---
+
+# Setup
 
 ```{r}
 #| include: false
@@ -51,6 +55,8 @@ library(ggplot2)
 library(plotly)
 library(StreamFind)
 ```
+
+# Resources
 
 ```{r}
 #| include: false
@@ -86,49 +92,276 @@ path <- "C:/Users/apoli/Documents/example_ms_files"
 ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 ```
 
-# Analyses
+# Engine
 
 ```{r}
 #| code-fold: show
 ms <- MassSpecEngine$new(analyses = ms_files)
-```
-
-```{r}
-DT::datatable(ms$analyses$info)
+ms$Metadata["name"] <- "nts_dev"
 ```
 
 # Workflow
 
-## Find features
-
 ```{r}
-ms$run(
-  MassSpecMethod_FindFeatures_openms(
+nta_workflow <- list(
+  StreamFind::MassSpecMethod_FindFeatures_openms(
     noiseThrInt = 1000,
-    chromSNR = 5,
-    chromFWHM = 7,
+    chromSNR = 4,
+    chromFWHM = 8,
     mzPPM = 15,
-    reEstimateMTSD = TRUE,
+    reEstimateMTSD = FALSE,
     traceTermCriterion = "sample_rate",
-    traceTermOutliers = 5,
-    minSampleRate = 1,
-    minTraceLength = 4,
-    maxTraceLength = 40,
-    widthFiltering = "fixed",
-    minFWHM = 4,
-    maxFWHM = 30,
+    traceTermOutliers = 10,
+    minSampleRate = 0.4,
+    minTraceLength = 5,
+    maxTraceLength = -1,
+    widthFiltering = "auto", #auto
+    minFWHM = 3,
+    maxFWHM = 35,
     traceSNRFiltering = TRUE,
-    localRTRange = 0,
+    localRTRange = 4,
     localMZRange = 0,
     isotopeFilteringModel = "none",
     MZScoring13C = FALSE,
     useSmoothedInts = FALSE,
-    extraOpts = NULL,
     intSearchRTWindow = 3,
     useFFMIntensities = FALSE,
     verbose = FALSE
+  ),
+  StreamFind::MassSpecMethod_CalculateFeaturesQuality_StreamFind(
+    filtered = FALSE,
+    rtExpand = 4,
+    mzExpand = 0.002,
+    minPeakWidth = 10,
+    maxPeakWidth = 25,
+    minTracesIntensity = 500,
+    minNumberTraces = 5,
+    baseCut = 0
+  ),
+  StreamFind::MassSpecMethod_AnnotateFeatures_StreamFind(
+    rtWindowAlignment = 0.3,
+    maxIsotopes = 8,
+    maxCharge = 2,
+    maxGaps = 1
+  ),
+  StreamFind::MassSpecMethod_GroupFeatures_openms(
+    rtalign = FALSE,
+    maxAlignRT = 10,
+    maxAlignMZ = 0.008,
+    maxGroupRT = 10,
+    maxGroupMZ = 0.008
+  ),
+  StreamFind::MassSpecMethod_FilterFeatures_StreamFind(
+    excludeIsotopes = TRUE,
+    excludeAdducts = TRUE
+  ),
+  StreamFind::MassSpecMethod_FilterFeatures_StreamFind(
+    minSnRatio = 4,
+    minGaussianFit = 0.4,
+    conservative = TRUE
+  ),
+  StreamFind::MassSpecMethod_FillFeatures_StreamFind(
+    withinReplicate = FALSE,
+    filtered = FALSE,
+    rtExpand = 2,
+    mzExpand = 0.005,
+    minPeakWidth = 10,
+    maxPeakWidth = 25,
+    minTracesIntensity = 500,
+    minNumberTraces = 5,
+    minIntensity = 4000,
+    baseCut = 0.01,
+    maxSearchWindow = 4,
+    minSignalToNoiseRatio = 4,
+    minGaussianFit = 0.4
+  ),
+  StreamFind::MassSpecMethod_FindInternalStandards_StreamFind(
+    database = dbis,
+    ppm = 15,
+    sec = 15
+  ),
+  StreamFind::MassSpecMethod_CorrectMatrixSuppression_TiChri(
+    mpRtWindow = 10,
+    istdAssignment = "nearest",
+    istdRtWindow = 50,
+    istdN = 2
+  ),
+  StreamFind::MassSpecMethod_FilterFeatures_StreamFind(
+    correctIntensity = TRUE,
+    blankThreshold = 5,
+    conservative = FALSE
+  ),
+  StreamFind::MassSpecMethod_FilterFeatures_StreamFind(
+    minSnRatio = 4,
+    minGaussianFit = 0.4,
+    conservative = FALSE,
+  ),
+  StreamFind::MassSpecMethod_FilterFeatures_StreamFind(
+    correctIntensity = TRUE,
+    minIntensity = 4000,
+    conservative = FALSE,
+  ),
+  StreamFind::MassSpecMethod_FilterFeatures_StreamFind(
+    correctIntensity = TRUE,
+    maxDeviationInReplicate = 30,
+    minAbundanceInReplicate = 3
+  ),
+  StreamFind::MassSpecMethod_LoadFeaturesMS1_StreamFind(
+    rtWindow = c(-2, 2),
+    mzWindow = c(-1, 6),
+    mzClust = 0.008,
+    presence = 0.8,
+    minIntensity = 250,
+    filtered = FALSE
+  ),
+  StreamFind::MassSpecMethod_LoadFeaturesMS2_StreamFind(
+    isolationWindow = 1.3,
+    mzClust = 0.008,
+    presence = 0.3,
+    minIntensity = 10,
+    filtered = TRUE
+  ),
+  StreamFind::MassSpecMethod_FilterFeaturesMS2_native(
+    top = 25,
+    relMinIntensity = 0.05,
+    blankClean = TRUE,
+    mzClust = 0.008,
+    blankPresenceThreshold = 0.8,
+    globalPresenceThreshold = 0.3
+  ),
+  StreamFind::MassSpecMethod_SuspectScreening_StreamFind(
+    database = dbsus,
+    ppm = 10,
+    sec = 15,
+    ppmMS2 = 20,
+    mzrMS2 = 0.008,
+    minCusiness = 0.7,
+    minFragments = 3,
+    filtered = FALSE
+  ),
+  StreamFind::MassSpecMethod_GenerateCompounds_metfrag(
+    MSPeakListsClusterMzWindow = 0.005,
+    MSPeakListsTopMost = 100,
+    MSPeakListsMinIntensityPre = 50,
+    MSPeakListsMinIntensityPost = 50,
+    MSPeakListsAvgFun = "mean",
+    MSPeakListsMethod = "distance",
+    method = "CL",
+    timeout = 300,
+    timeoutRetries = 5,
+    errorRetries = 5,
+    topMost = 5,
+    dbRelMzDev = 10,
+    fragRelMzDev = 20,
+    fragAbsMzDev = 0.008,
+    adduct = character(),
+    database = "comptox",
+    extendedPubChem = "auto",
+    chemSpiderToken = "",
+    scoreTypes = patRoon::compoundScorings("metfrag", "comptox", onlyDefault = TRUE)$name,
+    scoreWeights = 1,
+    preProcessingFilters = c("UnconnectedCompoundFilter", "IsotopeFilter"),
+    postProcessingFilters = c("InChIKeyFilter"),
+    maxCandidatesToStop = 100
   )
 )
+
+nta_workflow <- Workflow(nta_workflow)
+```
+
+# Run Workflow
+
+```{r}
+ms$Workflow <- nta_workflow[1:7]
+
+cache_cats <- .info_cache_rds()$category
+cache_cats <- cache_cats[grepl("Fill", cache_cats)]
+.clear_cache_rds(cache_cats)
+
+ms$run_workflow()
+```
+
+# Dev
+
+```{r}
+
+ms$NTS$feature_list[[1]]
+
+View(fl[, c("feature", "annotation")])
+
+
+plot_groups_overview(ms$NTS, mass = dbis, legendNames = TRUE)
+
+
+
+plot_features(ms$NTS, analyses = 4, mass = dbis, legendNames = TRUE)
+
+map_components(ms$NTS, analyses = 4, mass = dbis, legendNames = TRUE)
+
+
+get_features(ms$NTS, analyses = 4, mass = dbis)
+
+
+fl_temp <- ms$NTS$feature_list[4:5]
+fl_temp <- lapply(fl_temp, function(z) z[order(mz, decreasing = TRUE), ])
+
+
+res <- rcpp_ms_fill_features(
+  ms$NTS$analyses_info,
+  ms$NTS$spectra_headers,
+  ms$NTS$feature_list,
+  withinReplicate = FALSE,
+  filtered = FALSE,
+  rtExpand = 2,
+  mzExpand = 0.005,
+  minPeakWidth = 10,
+  maxPeakWidth = 25,
+  minTracesIntensity = 500,
+  minNumberTraces = 5,
+  minIntensity = 4000,
+  baseCut = 0.01,
+  maxSearchWindow = 4,
+  minSignalToNoiseRatio = 4,
+  minGaussianFit = 0.4
+)
+
+
+
+
+
+
+
+fl <- rcpp_ms_annotate_features(
+  fl_temp,
+  rtWindowAlignment = 0.3,
+  maxIsotopes = 8,
+  maxCharge = 2,
+  maxGaps = 1
+)
+
+identical(fl_temp, fl)
+
+View(rbindlist(fl$`01_tof_ww_is_pos_blank-r001`$annotation))
+
+# fl <- rcpp_ms_calculate_features_quality_v2(
+#   ms$get_analysis_names()[1:2],
+#   ms$get_files()[1:2],
+#   ms$NTS@spectra_headers[1:2],
+#   ms$NTS$feature_list[1:2],
+#   TRUE,
+#   rtExpand = 2,
+#   mzExpand = 0.002,
+#   minPeakWidth = 10,
+#   maxPeakWidth = 25,
+#   minTracesIntensity = 500,
+#   minNumberTraces = 5,
+#   baseCut = 0
+# )
+
+
+
+
+
 ```
 
 

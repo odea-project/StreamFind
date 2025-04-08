@@ -557,11 +557,11 @@ float NTS::calculate_gaussian_rsquared(const std::vector<float> &x,
   
   for (size_t i = 0; i < x.size(); ++i)
   {
-    float y_pred = NTS::gaussian_function(A, mu, sigma, x[i]);
+    float y_pred = A * exp(-pow(x[i] - mu, 2) / (2 * pow(sigma, 2)));
     ss_residual += pow(y[i] - y_pred, 2);
     ss_total += pow(y[i] - mean_y, 2);
   }
-  return 1 - (ss_residual / ss_total);
+  return 1.0f - (ss_residual / ss_total);
 };
 
 // MARK: FEATURE::calculate_quality
@@ -571,7 +571,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
 {
   quality.feature = feature;
   
-  if (eic.size() < 5)
+  if (eic.rt.size() < 5)
     return;
   
   size_t max_position = find_central_max_index(eic.rt, eic.intensity, rt, rtWindow);
@@ -627,21 +627,21 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
     }
   }
   
-  // std::string print_ft = "F2002_MZ752_RT1036";
+  // std::string print_ft = "F276_MZ275_RT915";
   // 
-  // if (ft == print_ft) {
+  // if (feature == print_ft) {
   //   Rcpp::Rcout << std::endl;
   //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
-  //   Rcpp::Rcout << "rt :" << rt[max_position] << std::endl;
+  //   Rcpp::Rcout << "rt :" << eic.rt[max_position] << std::endl;
   //   Rcpp::Rcout << "min_left_position: " << min_left_position << std::endl;
   //   Rcpp::Rcout << "min_right_position: " << min_right_position << std::endl;
   //   Rcpp::Rcout << "noise_left: " << noise_left << std::endl;
   //   Rcpp::Rcout << "noise_right: " << noise_right << std::endl;
   //   Rcpp::Rcout << "sn_left: " << sn_left << std::endl;
   //   Rcpp::Rcout << "sn_right: " << sn_right << std::endl;
-  //   for (size_t i = 0; i < intensity.size(); ++i)
+  //   for (size_t i = 0; i < eic.intensity.size(); ++i)
   //   {
-  //     Rcpp::Rcout <<  rt[i] << " " << mz[i] << " " << intensity[i] << std::endl;
+  //     Rcpp::Rcout <<  eic.rt[i] << " " << eic.mz[i] << " " << eic.intensity[i] << std::endl;
   //   }
   // }
   
@@ -649,21 +649,21 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   
   trim_eic_by_low_cut(eic.rt, eic.mz, eic.intensity, low_cut);
   
-  if (eic.size() < 5)
+  if (eic.rt.size() < 5)
     return;
   
-  max_position = find_central_max_index(eic.rt, eic.intensity, this->rt, 0);
+  max_position = find_central_max_index(eic.rt, eic.intensity, rt, 0);
   
   if (max_position < 1 || max_position >= eic.rt.size() - 1)
     return;
   
-  // if (ft == print_ft) {
+  // if (feature == print_ft) {
   //   Rcpp::Rcout << std::endl;
   //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
-  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
-  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
+  //   Rcpp::Rcout << "rt :" << eic.rt[max_position] << std::endl;
+  //   for (size_t i = 0; i < eic.intensity.size(); ++i)
   //   {
-  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
+  //     Rcpp::Rcout <<  eic.rt[i] << " " << eic.mz[i] << " " << eic.intensity[i] << std::endl;
   //   }
   // }
   
@@ -672,26 +672,26 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
     eic.mz,
     eic.intensity,
     max_position,
-    3,
-    8,
+    3, // minDiffSize between sides
+    8, // minTraces in each side
     maxTimeHalfWidth
   );
   
-  if (eic.size() < 5)
+  if (eic.rt.size() < 5)
     return;
   
-  // if (ft == print_ft) {
+  // if (feature == print_ft) {
   //   Rcpp::Rcout << std::endl;
   //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
-  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
-  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
+  //   Rcpp::Rcout << "rt :" << eic.rt[max_position] << std::endl;
+  //   for (size_t i = 0; i < eic.intensity.size(); ++i)
   //   {
-  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
+  //     Rcpp::Rcout <<  eic.rt[i] << " " << eic.mz[i] << " " << eic.intensity[i] << std::endl;
   //   }
   // }
   
-  std::vector<float> mz_trimmed = eic.rt;
-  std::vector<float> rt_trimmed = eic.mz;
+  std::vector<float> rt_trimmed = eic.rt;
+  std::vector<float> mz_trimmed = eic.mz;
   std::vector<float> int_trimmed = eic.intensity;
   
   trim_peak_base(rt_trimmed, mz_trimmed, int_trimmed, max_position, 0.3);
@@ -701,7 +701,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   if (n_trimmed < 3)
     return;
   
-  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, this->rt, 0);
+  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, rt, 0);
   
   if (max_position < 1 || max_position >= eic.rt.size() - 1)
     return;
@@ -712,7 +712,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   // rt = rt_trimmed;
   // intensity = int_trimmed;
   
-  // if (ft == print_ft) {
+  // if (feature == print_ft) {
   //   Rcpp::Rcout << std::endl;
   //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
   //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
@@ -731,7 +731,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   mu_fitted = rt_trimmed[max_position];
   sigma_fitted = (rt_trimmed.back() - rt_trimmed.front()) / 4.0;
   
-  // if (ft == print_ft) {
+  // if (feature == print_ft) {
   //   Rcpp::Rcout << std::endl;
   //   Rcpp::Rcout << "A: " << A_fitted << std::endl;
   //   Rcpp::Rcout << "mu: " << mu_fitted << std::endl;
@@ -748,7 +748,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   sigma_fitted = round(sigma_fitted * 10) / 10;
   r_squared = round(r_squared * 10000) / 10000;
   
-  // if (ft == print_ft) {
+  // if (feature == print_ft) {
   //   Rcpp::Rcout << std::endl;
   //   Rcpp::Rcout << "A_fitted: " << A_fitted << std::endl;
   //   Rcpp::Rcout << "mu_fitted: " << mu_fitted << std::endl;
@@ -756,6 +756,10 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   //   Rcpp::Rcout << "r_squared: " << r_squared << std::endl;
   // }
   
+  // quality.gauss_a = A_fitted;
+  // quality.gauss_u = mu_fitted;
+  // quality.gauss_s = sigma_fitted;
+  // quality.gauss_f = r_squared;
   quality.is_calculated = true;
   return;
 };
@@ -1030,46 +1034,6 @@ float NTS::trapezoidal_area(const std::vector<float> &x, const std::vector<float
   return area;
 };
 
-// MARK: FIND_ISOTOPIC_CANDIDATES
-std::vector<int> NTS::find_isotopic_candidates(
-    const int &number_features,
-    const std::vector<std::string> &features,
-    const std::vector<float> &mzs,
-    const std::vector<float> &rts,
-    const std::vector<int> &pols,
-    const int &pol,
-    const std::string &feature,
-    const float &mz,
-    const float &mzmin,
-    const float &mzmax,
-    const float &rt,
-    float &rtmin,
-    float &rtmax,
-    const float &rtWindowAlignment,
-    const float &max_mz_chain)
-{
-  std::vector<int> candidates;
-
-  const float left_rt = rt - rtmin;
-  const float right_rt = rtmax - rt;
-  float rtW = right_rt;
-  if (left_rt < right_rt)
-    rtW = left_rt;
-  rtW = rtW * rtWindowAlignment;
-  rtmin = rt - rtW;
-  rtmax = rt + rtW;
-
-  for (int z = 0; z < number_features; ++z)
-  {
-    if (rts[z] >= rtmin && rts[z] <= rtmax && mzs[z] > mz && mzs[z] <= max_mz_chain && pols[z] == pol && features[z] != feature)
-    {
-      candidates.push_back(z);
-    }
-  }
-
-  return candidates;
-};
-
 // MARK: IS_MAX_GAP_REACHED
 bool NTS::is_max_gap_reached(const int &s, const int &maxGaps, const std::vector<int> &steps)
 {
@@ -1085,217 +1049,215 @@ bool NTS::is_max_gap_reached(const int &s, const int &maxGaps, const std::vector
   return false;
 };
 
-// MARK: ANNOTATE_ISOTOPES
-void NTS::annotate_isotopes(MS_ANNOTATION &af,
-                            const MS_ISOTOPE_COMBINATIONS &combinations,
-                            const MS_CANDIDATE_CHAIN &candidates_chain,
-                            const int &maxIsotopes,
-                            const int &maxCharge,
-                            const int &maxGaps)
+// MARK: ANNOTATION_CANDIDATE_CHAIN::ANNOTATE_ISOTOPES
+void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE_COMBINATIONS &combinations,
+                                                        const int &maxIsotopes,
+                                                        const int &maxCharge,
+                                                        const int &maxGaps)
 {
-
+  
   bool is_Mplus = false;
-
-  double mzr = *std::max_element(candidates_chain.mzr.begin(), candidates_chain.mzr.end());
-
-  const int number_candidates = candidates_chain.length;
-
-  const std::string &mono_feature = candidates_chain.feature[0];
-  const int &mono_index = candidates_chain.index[0];
-  const float &mono_mz = candidates_chain.mz[0];
-  const float &mono_rt = candidates_chain.rt[0];
-  const float &mono_intensity = candidates_chain.intensity[0];
-  const float &mono_mzr = candidates_chain.mzr[0];
-
-  std::vector<NTS::MS_ISOTOPE_CHAIN> isotopic_chains = {MS_ISOTOPE_CHAIN(1, mono_index, mono_feature, mono_mz, mono_mzr, mono_rt)};
-
+  float mzr = this->get_max_mzr();
+  const int number_candidates = chain.size();
+  FEATURE mono_ion = chain[0];
+  
+  std::vector<NTS::ANNOTATION_ISOTOPE_CHAIN> isotopic_chains;
+  isotopic_chains.push_back(NTS::ANNOTATION_ISOTOPE_CHAIN(1, mono_ion, mzr));
+  
   if (maxCharge > 1)
   {
     for (int z = 2; z <= maxCharge; z++)
     {
-      isotopic_chains.push_back(NTS::MS_ISOTOPE_CHAIN(z, mono_index, mono_feature, mono_mz, mono_mzr, mono_rt));
+      isotopic_chains.push_back(NTS::ANNOTATION_ISOTOPE_CHAIN(z, mono_ion, mzr));
     }
   }
-
+  
   const int number_charges = isotopic_chains.size();
-
+  
   for (int z = 0; z < number_charges; z++)
   {
-
-    NTS::MS_ISOTOPE_CHAIN &iso_chain = isotopic_chains[z];
-
+    NTS::ANNOTATION_ISOTOPE_CHAIN iso_chain = isotopic_chains[z];
     const int charge = iso_chain.charge[0];
-
     const int number_steps = maxIsotopes + 1;
-
+    
     for (int s = 1; s < number_steps; ++s)
     {
-
+      
       if (NTS::is_max_gap_reached(s, maxGaps, iso_chain.step))
         break;
-
+      
       std::vector<int> which_combinations;
-
+      
       for (int c = 0; c < combinations.length; ++c)
+      {
         if (combinations.step[c] == s)
           which_combinations.push_back(c);
-
+      }
+        
       const int number_combinations = which_combinations.size();
-
+        
       std::vector<float> mass_distances(number_combinations);
-
+        
       for (int c = 0; c < number_combinations; ++c)
       {
         mass_distances[c] = combinations.mass_distances[which_combinations[c]];
         mass_distances[c] = mass_distances[c] / charge;
       }
-
+        
       const float mass_distance_max = *std::max_element(mass_distances.begin(), mass_distances.end());
       const float mass_distance_min = *std::min_element(mass_distances.begin(), mass_distances.end());
-
-      for (int candidate = 1; candidate < number_candidates; ++candidate)
+      
+      for (int candidate_idx = 1; candidate_idx < number_candidates; ++candidate_idx)
       {
-
-        const std::string &feature = candidates_chain.feature[candidate];
-        const int &index = candidates_chain.index[candidate];
-        const float &mz = candidates_chain.mz[candidate];
-        const float &rt = candidates_chain.rt[candidate];
-        const float &intensity = candidates_chain.intensity[candidate];
-        const bool &was_annotated = af.iso_step[index] > 0;
-
-        float candidate_mass_distance = mz - mono_mz;
-        float candidate_time_error = std::abs(rt - mono_rt);
+        
+        const FEATURE candidate = chain[candidate_idx];
+        const float mz = candidate.mz;
+        const float rt = candidate.rt;
+        const float intensity = candidate.intensity;
+        const bool was_annotated = candidate.annotation.iso_cat != "";
+        
+        float candidate_mass_distance = mz - mono_ion.mz;
+        float candidate_time_error = std::abs(rt - mono_ion.rt);
         float candidate_mass_distance_min = candidate_mass_distance - mzr;
         float candidate_mass_distance_max = candidate_mass_distance + mzr;
-
+        
         // M-ION Check ///////////////////////////////////////////////////////////////////////////////////////////////
         // Check for molecular ion (M) with distance 1.007276 and much higher intensity, for now set to x5
         if (s == 1)
         {
-
+          
           if (candidate_mass_distance_min < 1.007276 &&
               candidate_mass_distance_max > 1.007276 &&
-              (intensity / mono_intensity) > 5)
+              (intensity / mono_ion.intensity) > 5)
           {
-
+            
             // TODO this will also capture 2H loss and mark it as M+
             // the mass error might give an indication to check
-
-            af.index[mono_index] = mono_index;
-            af.feature[mono_index] = mono_feature;
-            af.component_feature[mono_index] = feature;
-            af.iso_step[mono_index] = -1;
-            af.iso_cat[mono_index] = "M+";
-            af.iso_isotope[mono_index] = "";
-            af.iso_charge[mono_index] = charge;
-            af.iso_mzr[mono_index] = mzr;
-            af.iso_mass_distance[mono_index] = candidate_mass_distance;
-            af.iso_theoretical_mass_distance[mono_index] = 0;
-            af.iso_mass_distance_error[mono_index] = std::abs(candidate_mass_distance - 1.007276);
-            af.iso_time_error[mono_index] = candidate_time_error;
-            af.iso_relative_intensity[mono_index] = mono_intensity / intensity;
-            af.iso_theoretical_min_relative_intensity[mono_index] = 0;
-            af.iso_theoretical_max_relative_intensity[mono_index] = 0;
-            af.iso_size[mono_index] = 0;
-            af.iso_number_carbons[mono_index] = 0;
-
+            
+            NTS::FEATURE_ANNOTATION mono_ion_anno = mono_ion.annotation;
+            mono_ion_anno.feature = mono_ion.feature;
+            mono_ion_anno.component_feature = candidate.feature;
+            mono_ion_anno.iso_step = -1;
+            mono_ion_anno.iso_cat = "M+";
+            mono_ion_anno.iso_isotope = "";
+            mono_ion_anno.iso_charge = charge;
+            mono_ion_anno.iso_mzr = mzr;
+            mono_ion_anno.iso_mass_distance = candidate_mass_distance;
+            mono_ion_anno.iso_theoretical_mass_distance = 0;
+            mono_ion_anno.iso_mass_distance_error = std::abs(candidate_mass_distance - 1.007276);
+            mono_ion_anno.iso_time_error = candidate_time_error;
+            mono_ion_anno.iso_relative_intensity = mono_ion.intensity / intensity;
+            mono_ion_anno.iso_theoretical_min_relative_intensity = 0;
+            mono_ion_anno.iso_theoretical_max_relative_intensity = 0;
+            mono_ion_anno.iso_number_carbons = 0;
+            mono_ion_anno.iso_size = 0;
+            mono_ion_anno.is_annotated = true;
+            mono_ion.annotation = mono_ion_anno;
+            chain[0] = mono_ion;
             is_Mplus = true;
             break;
           }
         }
-
+        
         // ISOTOPE Check /////////////////////////////////////////////////////////////////////////////////////////////
         double combination_mass_error = 10; // is updated on the first hit
-
+        
         // when candidate is inside of the mass distance for isotopic step mass distances
         if (mass_distance_min - mzr < candidate_mass_distance && mass_distance_max + mzr > candidate_mass_distance)
         {
-
+          
           // selects the combinations within the mass distance, when duplicated mass distances, the first hit is the one stored
           for (int c = 0; c < number_combinations; c++)
           {
-
+            
             const float candidate_mass_distance_error = abs(mass_distances[c] - candidate_mass_distance);
             const std::vector<std::string> &combination = combinations.tensor_combinations[which_combinations[c]];
-
+            
             float min_rel_int = 1;
             float max_rel_int = 1;
-
+            
             std::unordered_map<std::string, int> isotope_map;
-
+            
             for (size_t e = 0; e < combination.size(); ++e)
             {
               std::string e_el = combination[e];
               isotope_map[e_el]++;
             }
-
+            
             for (const auto &pair : isotope_map)
             {
               std::string iso = pair.first;
               int iso_n = pair.second;
-
-              const int iso_idx = std::distance(combinations.isotopes_str.begin(), std::find(combinations.isotopes_str.begin(), combinations.isotopes_str.end(), iso));
-
+              
+              const int iso_idx = std::distance(
+                combinations.isotopes_str.begin(),
+                std::find(
+                  combinations.isotopes_str.begin(),
+                  combinations.isotopes_str.end(),
+                  iso
+                )
+              );
+              
               const float iso_ab = combinations.abundances[iso_idx];
               const float mono_ab = combinations.abundances_monoisotopic[iso_idx];
               float min_el_num = combinations.min[iso_idx];
               float max_el_num = combinations.max[iso_idx];
-
+              
               // narrows the range for n carbons based on estimation
               if (iso_n == 1 && iso == "13C" && s == 1)
               {
-                iso_chain.number_carbons = intensity / (iso_ab * mono_intensity);
+                iso_chain.number_carbons = intensity / (iso_ab * mono_ion.intensity);
                 min_el_num = iso_chain.number_carbons * 0.8;
                 max_el_num = iso_chain.number_carbons * 1.2;
               }
-
+              
               if (iso == "13C" && s > 2)
               {
                 min_el_num = iso_chain.number_carbons * 0.8;
                 max_el_num = iso_chain.number_carbons * 1.2;
               }
-
+              
               // when only one isotope atom, mostly for M+1 or M+2 in case of Cl, Br, Si and S
               if (iso_n == 1)
               {
                 double min_coef = (min_el_num * std::pow(mono_ab, min_el_num - iso_n) * iso_ab) / std::pow(mono_ab, min_el_num);
                 double max_coef = (max_el_num * std::pow(mono_ab, max_el_num - iso_n) * iso_ab) / std::pow(mono_ab, max_el_num);
-
+                
                 min_rel_int = min_rel_int * min_coef;
                 max_rel_int = max_rel_int * max_coef;
-
+                
                 // when second time isotope, mostly for M+n, with n > 1
               }
               else
               {
-
+                
                 unsigned int fact = 1;
                 for (int a = 1; a <= iso_n; ++a)
                   fact *= a;
-
+                
                 double min_coef = (std::pow(mono_ab, min_el_num - iso_n) * std::pow(iso_ab, iso_n)) / fact;
                 double max_coef = (std::pow(mono_ab, max_el_num - iso_n) * std::pow(iso_ab, iso_n)) / fact;
-
+                
                 min_coef = min_coef / std::pow(mono_ab, min_el_num);
                 max_coef = max_coef / std::pow(mono_ab, max_el_num);
-
+                
                 min_coef = min_coef * min_el_num * (min_el_num - 1);
                 max_coef = max_coef * max_el_num * (max_el_num - 1);
-
+                
                 for (int t = 2; t <= iso_n - 1; ++t)
                 {
                   min_coef = min_coef * (min_el_num - t);
                   max_coef = max_coef * (max_el_num - t);
                 }
-
+                
                 min_rel_int = min_rel_int * min_coef;
                 max_rel_int = max_rel_int * max_coef;
               }
-
+              
             } // loop for each unique element in hit md
-
-            const float rel_int = intensity / mono_intensity;
-
+            
+            const float rel_int = intensity / mono_ion.intensity;
+            
             // selection criteria for best isotope combination for candidate and updates isotopic chain
             // if next combination or candidate is better than previous replaces it
             if (candidate_mass_distance_error < combination_mass_error &&
@@ -1303,52 +1265,68 @@ void NTS::annotate_isotopes(MS_ANNOTATION &af,
                 rel_int >= min_rel_int * 0.7 &&
                 rel_int <= max_rel_int * 1.3)
             {
-
+              
               if (was_annotated)
-                if (af.iso_mass_distance_error[index] <= candidate_mass_distance_error)
+              {
+                if (candidate.annotation.iso_mass_distance_error <= candidate_mass_distance_error)
+                {
                   continue;
+                }
+              }
 
               combination_mass_error = candidate_mass_distance_error;
-
+              
+              // check if the feature was already added to the isotopic chain
               bool is_in_chain = false;
-
-              for (size_t t = 1; t < iso_chain.feature.size(); ++t)
-                if (iso_chain.feature[t] == feature)
+              size_t is_in_chain_idx = 0;
+              for (size_t t = 1; t < iso_chain.chain.size(); ++t)
+              {
+                if (iso_chain.chain[t].feature == candidate.feature)
+                {
                   is_in_chain = true;
-
+                  is_in_chain_idx = t;
+                  break;
+                }
+              }
+              
+              // if the feature is already in the chain, update it
               if (is_in_chain)
               {
-                const int i = std::distance(iso_chain.feature.begin(), std::find(iso_chain.feature.begin(), iso_chain.feature.end(), feature));
                 std::string concat_combination = combination[0];
                 for (size_t e = 1; e < combination.size(); ++e)
+                {
                   concat_combination += "/" + combination[e];
-                iso_chain.feature[i] = feature;
-                iso_chain.index[i] = index;
-                iso_chain.step[i] = i;
-                iso_chain.mz[i] = mz;
-                iso_chain.mzr[i] = mzr;
-                iso_chain.rt[i] = rt;
-                iso_chain.isotope[i] = concat_combination;
-                iso_chain.mass_distance[i] = candidate_mass_distance;
-                iso_chain.theoretical_mass_distance[i] = mass_distances[c];
-                iso_chain.mass_distance_error[i] = candidate_mass_distance_error;
-                iso_chain.time_error[i] = candidate_time_error;
-                iso_chain.abundance[i] = rel_int;
-                iso_chain.theoretical_abundance_min[i] = min_rel_int;
-                iso_chain.theoretical_abundance_max[i] = max_rel_int;
+                }
+                iso_chain.chain[is_in_chain_idx] = candidate;
+                iso_chain.candidate_indices[is_in_chain_idx] = candidate_idx;
+                iso_chain.charge[is_in_chain_idx] = charge;
+                iso_chain.step[is_in_chain_idx] = s;
+                iso_chain.mz[is_in_chain_idx] = mz;
+                iso_chain.rt[is_in_chain_idx] = rt;
+                iso_chain.mzr[is_in_chain_idx] = mzr;
+                iso_chain.isotope[is_in_chain_idx] = concat_combination;
+                iso_chain.mass_distance[is_in_chain_idx] = candidate_mass_distance;
+                iso_chain.theoretical_mass_distance[is_in_chain_idx] = mass_distances[c];
+                iso_chain.mass_distance_error[is_in_chain_idx] = candidate_mass_distance_error;
+                iso_chain.time_error[is_in_chain_idx] = candidate_time_error;
+                iso_chain.abundance[is_in_chain_idx] = rel_int;
+                iso_chain.theoretical_abundance_min[is_in_chain_idx] = min_rel_int;
+                iso_chain.theoretical_abundance_max[is_in_chain_idx] = max_rel_int;
               }
-              else
+              else // 
               {
                 std::string concat_combination = combination[0];
                 for (size_t e = 1; e < combination.size(); ++e)
+                {
                   concat_combination += "/" + combination[e];
-                iso_chain.feature.push_back(feature);
-                iso_chain.index.push_back(index);
-                iso_chain.step.push_back(s);
+                }
+                iso_chain.chain.push_back(candidate);
+                iso_chain.candidate_indices.push_back(candidate_idx);
                 iso_chain.charge.push_back(charge);
+                iso_chain.step.push_back(s);
                 iso_chain.mz.push_back(mz);
-                iso_chain.mzr.push_back(mzr);
                 iso_chain.rt.push_back(rt);
+                iso_chain.mzr.push_back(mzr);
                 iso_chain.isotope.push_back(concat_combination);
                 iso_chain.mass_distance.push_back(candidate_mass_distance);
                 iso_chain.theoretical_mass_distance.push_back(mass_distances[c]);
@@ -1363,165 +1341,129 @@ void NTS::annotate_isotopes(MS_ANNOTATION &af,
           } // c loop for each combination within the mass distance
         } // if candidate is within the mass distance
       } // candidate loop
-
+      
       if (is_Mplus)
         break;
-
+      
     } // isotopic step loop
-
+    
     if (is_Mplus)
       break;
-
+    
+    isotopic_chains[z] = iso_chain;
   } // charge loop
-
+  
   if (!is_Mplus)
   {
-
     int best_chain = 0;
-
+    
     for (int z = 0; z < number_charges; z++)
-      if (isotopic_chains[z].length > isotopic_chains[best_chain].length)
-        best_chain = z;
-
-    MS_ISOTOPE_CHAIN &iso_chain = isotopic_chains[best_chain];
-
-    af.index[mono_index] = mono_index;
-    af.feature[mono_index] = mono_feature;
-    af.component_feature[mono_index] = mono_feature;
-    af.iso_step[mono_index] = 0;
-    af.iso_cat[mono_index] = "M+0";
-    af.iso_isotope[mono_index] = "";
-    af.iso_charge[mono_index] = iso_chain.charge[0];
-    af.iso_mzr[mono_index] = std::round(iso_chain.mzr[0] * 100000.0) / 100000.0;
-    af.iso_mass_distance[mono_index] = 0;
-    af.iso_theoretical_mass_distance[mono_index] = 0;
-    af.iso_mass_distance_error[mono_index] = 0;
-    af.iso_time_error[mono_index] = 0;
-    af.iso_relative_intensity[mono_index] = 1;
-    af.iso_theoretical_min_relative_intensity[mono_index] = 0;
-    af.iso_theoretical_max_relative_intensity[mono_index] = 0;
-    af.iso_size[mono_index] = iso_chain.length;
-    iso_chain.number_carbons = std::round(iso_chain.number_carbons);
-    af.iso_number_carbons[mono_index] = iso_chain.number_carbons;
-
-    if (iso_chain.length > 1)
     {
-      for (int i = 1; i < iso_chain.length; i++)
+      if (isotopic_chains[z].length > isotopic_chains[best_chain].length)
       {
-        const int iso_index = iso_chain.index[i];
-        af.index[iso_index] = iso_index;
-        af.feature[iso_index] = iso_chain.feature[i];
-        af.component_feature[iso_index] = mono_feature;
-        af.iso_step[iso_index] = iso_chain.step[i];
-        af.iso_cat[iso_index] = "M+" + std::to_string(iso_chain.step[i]);
-        af.iso_charge[iso_index] = iso_chain.charge[i];
-        af.iso_mzr[iso_index] = std::round(iso_chain.mzr[i] * 100000.0) / 100000.0;
-        af.iso_mass_distance[iso_index] = std::round(iso_chain.mass_distance[i] * 100000.0) / 100000.0;
-        af.iso_theoretical_mass_distance[iso_index] = std::round(iso_chain.theoretical_mass_distance[i] * 100000.0) / 100000.0;
-        af.iso_mass_distance_error[iso_index] = std::round(iso_chain.mass_distance_error[i] * 100000.0) / 100000.0;
-        af.iso_time_error[iso_index] = std::round(iso_chain.time_error[i] * 10.0) / 10.0;
-        af.iso_relative_intensity[iso_index] = std::round(iso_chain.abundance[i] * 100000.0) / 100000.0;
-        af.iso_theoretical_min_relative_intensity[iso_index] = std::round(iso_chain.theoretical_abundance_min[i] * 100000.0) / 100000.0;
-        af.iso_theoretical_max_relative_intensity[iso_index] = std::round(iso_chain.theoretical_abundance_max[i] * 100000.0) / 100000.0;
-        af.iso_size[iso_index] = iso_chain.length;
-        af.iso_number_carbons[iso_index] = iso_chain.number_carbons;
-        af.iso_isotope[iso_index] = iso_chain.isotope[i];
-
-        af.iso_isotope[mono_index] += " " + iso_chain.isotope[i];
+        best_chain = z;
       }
     }
-  }
-};
-
-// MARK: FIND_ADDUCT_CANDIDATES
-std::vector<int> NTS::find_adduct_candidates(
-    const int &number_features,
-    const std::vector<float> &mzs,
-    const std::vector<float> &rts,
-    const std::vector<int> &pols,
-    const std::vector<int> &iso_step,
-    const int &pol,
-    const float &mz,
-    const float &mzmin,
-    const float &mzmax,
-    const float &rt,
-    float &rtmin,
-    float &rtmax,
-    const float &rtWindowAlignment,
-    const float &max_mz_adducts)
-{
-  std::vector<int> candidates;
-
-  const float left_rt = rt - rtmin;
-  const float right_rt = rtmax - rt;
-  float rtW = right_rt;
-  if (left_rt < right_rt)
-    rtW = left_rt;
-  rtW = rtW * rtWindowAlignment;
-  rtmin = rt - rtW;
-  rtmax = rt + rtW;
-
-  for (int z = 0; z < number_features; ++z)
-  {
-    if (rts[z] >= rtmin && rts[z] <= rtmax && mzs[z] > mz && mzs[z] <= max_mz_adducts && pols[z] == pol && iso_step[z] == 0)
+    
+    ANNOTATION_ISOTOPE_CHAIN &sel_iso_chain = isotopic_chains[best_chain];
+    
+    NTS::FEATURE_ANNOTATION mono_ion_anno = mono_ion.annotation;
+    mono_ion_anno.feature = mono_ion.feature;
+    mono_ion_anno.component_feature = mono_ion.feature;
+    mono_ion_anno.iso_step = 0;
+    mono_ion_anno.iso_cat = "M+0";
+    mono_ion_anno.iso_isotope = "";
+    mono_ion_anno.iso_charge = sel_iso_chain.charge[0];
+    mono_ion_anno.iso_mzr = std::round(sel_iso_chain.mzr[0] * 100000.0) / 100000.0;
+    mono_ion_anno.iso_mass_distance = 0;
+    mono_ion_anno.iso_theoretical_mass_distance = 0;
+    mono_ion_anno.iso_mass_distance_error = 0;
+    mono_ion_anno.iso_time_error = 0;
+    mono_ion_anno.iso_relative_intensity = 1;
+    mono_ion_anno.iso_theoretical_min_relative_intensity = 0;
+    mono_ion_anno.iso_theoretical_max_relative_intensity = 0;
+    mono_ion_anno.iso_size = sel_iso_chain.length;
+    sel_iso_chain.number_carbons = std::round(sel_iso_chain.number_carbons);
+    mono_ion_anno.iso_number_carbons = sel_iso_chain.number_carbons;
+    mono_ion_anno.is_annotated = true;
+    
+    if (sel_iso_chain.length > 1)
     {
-      candidates.push_back(z);
+      for (size_t i = 1; i < sel_iso_chain.chain.size(); i++)
+      {
+        const int candidate_idx = sel_iso_chain.candidate_indices[i];
+        FEATURE temp_candidate = chain[candidate_idx];
+        NTS::FEATURE_ANNOTATION temp_candidate_anno = temp_candidate.annotation;
+        temp_candidate_anno.feature = sel_iso_chain.chain[i].feature;
+        temp_candidate_anno.component_feature = mono_ion.feature;
+        temp_candidate_anno.iso_step = sel_iso_chain.step[i];
+        temp_candidate_anno.iso_cat = "M+" + std::to_string(sel_iso_chain.step[i]);
+        temp_candidate_anno.iso_charge = sel_iso_chain.charge[i];
+        temp_candidate_anno.iso_mzr = std::round(sel_iso_chain.mzr[i] * 100000.0) / 100000.0;
+        temp_candidate_anno.iso_mass_distance = std::round(sel_iso_chain.mass_distance[i] * 100000.0) / 100000.0;
+        temp_candidate_anno.iso_theoretical_mass_distance = std::round(sel_iso_chain.theoretical_mass_distance[i] * 100000.0) / 100000.0;
+        temp_candidate_anno.iso_mass_distance_error = std::round(sel_iso_chain.mass_distance_error[i] * 100000.0) / 100000.0;
+        temp_candidate_anno.iso_time_error = std::round(sel_iso_chain.time_error[i] * 10.0) / 10.0;
+        temp_candidate_anno.iso_relative_intensity = std::round(sel_iso_chain.abundance[i] * 100000.0) / 100000.0;
+        temp_candidate_anno.iso_theoretical_min_relative_intensity = std::round(sel_iso_chain.theoretical_abundance_min[i] * 100000.0) / 100000.0;
+        temp_candidate_anno.iso_theoretical_max_relative_intensity = std::round(sel_iso_chain.theoretical_abundance_max[i] * 100000.0) / 100000.0;
+        temp_candidate_anno.iso_size = sel_iso_chain.length;
+        temp_candidate_anno.iso_number_carbons = sel_iso_chain.number_carbons;
+        temp_candidate_anno.iso_isotope = sel_iso_chain.isotope[i];
+        temp_candidate_anno.is_annotated = true;
+        temp_candidate.annotation = temp_candidate_anno;
+        chain[candidate_idx] = temp_candidate;
+        mono_ion_anno.iso_isotope = mono_ion_anno.iso_isotope + " " + sel_iso_chain.isotope[i];
+      }
     }
+    mono_ion.annotation = mono_ion_anno;
+    chain[0] = mono_ion;
   }
-
-  return candidates;
 };
 
 // MARK: ANNOTATE_ADDUCTS
-void NTS::annotate_adducts(MS_ANNOTATION &af, const MS_CANDIDATE_CHAIN &candidates_chain, const int &pol)
+void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_adducts()
 {
 
-  NTS::MS_ADDUCT_SET all_adducts;
-
+  NTS::ANNOTATION_ADDUCT_SET all_adducts;
+  const int &pol = chain[0].polarity;
   const float neutralizer = all_adducts.neutralizer(pol);
-
-  std::vector<MS_ADDUCT> adducts = all_adducts.adducts(pol);
-
-  const int number_candidates = candidates_chain.length;
-
-  const std::string &mion_feature = candidates_chain.feature[0];
-  const float &mion_mz = candidates_chain.mz[0];
-  const float &mion_rt = candidates_chain.rt[0];
-  const float &mion_mzr = candidates_chain.mzr[0];
+  std::vector<ANNOTATION_ADDUCT> adducts = all_adducts.adducts(pol);
+  const int number_candidates = chain.size();
+  const std::vector<float> &mzr = this->get_chain_mzr();
+  const std::string &mion_feature = chain[0].feature;
+  const float &mion_mz = chain[0].mz;
+  const float &mion_rt = chain[0].rt;
+  const float &mion_mzr = mzr[0];
 
   for (size_t a = 0; a < adducts.size(); ++a)
   {
 
-    const MS_ADDUCT &adduct = adducts[a];
-
+    const ANNOTATION_ADDUCT &adduct = adducts[a];
     const std::string &adduct_element = adduct.element;
     const std::string &adduct_cat = adduct.cat;
     const float &adduct_mass_distance = adduct.mass_distance;
 
     for (int c = 1; c < number_candidates; ++c)
     {
-
-      const int &index = candidates_chain.index[c];
-
-      if (af.adduct_cat[index] != "")
+      // already adduct
+      if (chain[c].annotation.adduct_cat != "")
+      {
         continue;
-
-      const std::string &feature = candidates_chain.feature[c];
-      const float &mz = candidates_chain.mz[c];
-      const float &rt = candidates_chain.rt[c];
+      }
+      const float &mz = chain[c].mz;
+      const float &rt = chain[c].rt;
       const float exp_mass_distance = mz - (mion_mz + neutralizer);
       const float time_error = std::abs(rt - mion_rt);
       const float mass_error = abs(exp_mass_distance - adduct_mass_distance);
 
       if (mass_error < mion_mzr)
       {
-        af.index[index] = index;
-        af.feature[index] = feature;
-        af.component_feature[index] = mion_feature;
-        af.adduct_cat[index] = adduct_cat;
-        af.adduct_element[index] = adduct_element;
-        af.adduct_time_error[index] = std::round(time_error * 10.0) / 10.0;
-        af.adduct_mass_error[index] = std::round(mass_error * 100000.0) / 100000.0;
+        chain[c].annotation.component_feature = mion_feature;
+        chain[c].annotation.adduct_cat = adduct_cat;
+        chain[c].annotation.adduct_element = adduct_element;
+        chain[c].annotation.adduct_time_error = std::round(time_error * 10.0) / 10.0;
+        chain[c].annotation.adduct_mass_error = std::round(mass_error * 100000.0) / 100000.0;
         break;
       }
     }

@@ -3134,7 +3134,7 @@ Gets a data.table with feature groups from the analyses.
   average = FALSE,
   sdValues = FALSE,
   metadata = FALSE,
-  correctSuppression = FALSE
+  correctIntensity = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -3190,7 +3190,7 @@ the intensity within analysis replicates.}
 \item{\code{metadata}}{Logical (length 1). Set to \code{TRUE} for returning extra metadata from feature
 groups (e.g., presence in each analysis replicate and mass and time widths).}
 
-\item{\code{correctSuppression}}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
+\item{\code{correctIntensity}}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
 suppression before applying intensity based filters. Note that suppression factor as obtained by
 the processing method \code{CorrectMatrixSuppression} must be present. When not available the
 correction is ignored even if set to \code{TRUE}.}
@@ -3312,7 +3312,7 @@ features within target feature groups.
   rtExpand = 120,
   mzExpand = 0.005,
   useLoadedData = TRUE,
-  correctSuppression = TRUE,
+  correctIntensity = TRUE,
   filtered = FALSE,
   legendNames = NULL,
   title = NULL,
@@ -3372,7 +3372,7 @@ right the mass range.}
 \item{\code{useLoadedData}}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
 from files.}
 
-\item{\code{correctSuppression}}{Logical (length 1). When \code{TRUE} and suppression factor is available
+\item{\code{correctIntensity}}{Logical (length 1). When \code{TRUE} and suppression factor is available
 the intensities are corrected for suppression.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
@@ -3407,7 +3407,7 @@ Method to plot the intensity profile of feature groups across the analyses.
   sec = 60,
   millisec = 5,
   filtered = FALSE,
-  correctSuppression = TRUE,
+  correctIntensity = TRUE,
   averaged = FALSE,
   normalized = TRUE,
   legendNames = NULL,
@@ -3462,7 +3462,7 @@ in milliseconds.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{\code{correctSuppression}}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
+\item{\code{correctIntensity}}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
 suppression before applying intensity based filters. Note that suppression factor as obtained by
 the processing method \code{CorrectMatrixSuppression} must be present. When not available the
 correction is ignored even if set to \code{TRUE}.}
@@ -4404,7 +4404,7 @@ Gets a data.table with fold-change analysis between the \code{replicatesIn} and
   filtered = FALSE,
   constantThreshold = 0.5,
   eliminationThreshold = 0.2,
-  correctSuppression = FALSE,
+  correctIntensity = FALSE,
   fillZerosWithLowerLimit = FALSE,
   lowerLimit = NA_real_
 )}\if{html}{\out{</div>}}
@@ -4463,7 +4463,7 @@ constant.}
 \item{\code{eliminationThreshold}}{Numeric of length one. The threshold to consider a feature as
 eliminated.}
 
-\item{\code{correctSuppression}}{Logical of length one. When \code{TRUE} the suppression factor (when
+\item{\code{correctIntensity}}{Logical of length one. When \code{TRUE} the suppression factor (when
 available) is used to correct the intensity before fold-change analysis.}
 
 \item{\code{fillZerosWithLowerLimit}}{Logical of length one. When \code{TRUE} the zero values are filled
@@ -4494,7 +4494,7 @@ Plots the fold-change analysis between the \code{replicatesIn} and \code{replica
   filtered = FALSE,
   constantThreshold = 0.5,
   eliminationThreshold = 0.2,
-  correctSuppression = FALSE,
+  correctIntensity = FALSE,
   fillZerosWithLowerLimit = FALSE,
   lowerLimit = NA_real_,
   normalized = TRUE,
@@ -4558,7 +4558,7 @@ constant.}
 \item{\code{eliminationThreshold}}{Numeric of length one. The threshold to consider a feature as
 eliminated.}
 
-\item{\code{correctSuppression}}{Logical of length one. When \code{TRUE} the suppression factor (when
+\item{\code{correctIntensity}}{Logical of length one. When \code{TRUE} the suppression factor (when
 available) is used to correct the intensity before fold-change analysis.}
 
 \item{\code{fillZerosWithLowerLimit}}{Logical of length one. When \code{TRUE} the zero values are filled

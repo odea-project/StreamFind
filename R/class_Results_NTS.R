@@ -285,10 +285,14 @@ NTS <- S7::new_class(
       checkmate::assert_true(identical(self$analyses_info$analysis, names(self@feature_list)))
       checkmate::assert_true(identical(self$analyses_info$analysis, names(self@spectra_headers)))
       fp <- c(
-        "feature", "group", "rt", "mz", "intensity", "area",
-        "rtmin", "rtmax", "mzmin", "mzmax", "mass",
-        "polarity", "adduct", "filtered", "filter", "filled",
-        "eic", "ms1", "ms2", "quality", "annotation", "istd",
+        "feature", "group",
+        "rt", "mz",
+        "intensity", "area",
+        "rtmin", "rtmax", "mzmin", "mzmax",
+        "mass", "polarity", "adduct",
+        "filtered", "filter", "filled", "correction",
+        "eic", "ms1", "ms2",
+        "quality", "annotation", "istd",
         "suspects", "formulas", "compounds"
       )
       for (x in self@feature_list) {
@@ -651,9 +655,6 @@ S7::method(get_features, NTS) <- function(x,
     
     return(fts[sel])
   }
-  
-  browser()
-  browser()
   
   fts$replicate <- x$replicates[fts$analysis]
   
@@ -1715,7 +1716,7 @@ S7::method(get_groups, NTS) <- function(x,
                                         average = FALSE,
                                         sdValues = FALSE,
                                         metadata = FALSE,
-                                        correctSuppression = FALSE) {
+                                        correctIntensity = FALSE) {
   
   if (!x$has_groups) {
     return(data.table::data.table())
@@ -1727,7 +1728,7 @@ S7::method(get_groups, NTS) <- function(x,
     filtered = filtered
   )
   
-  if (correctSuppression) {
+  if (correctIntensity) {
     if ("suppression_factor" %in% colnames(fts)) {
       fts$intensity <- fts$intensity * fts$suppression_factor
     }
@@ -1920,7 +1921,7 @@ S7::method(plot_groups_overview, NTS) <- function(x,
                                                   rtExpand = 120,
                                                   mzExpand = 0.005,
                                                   useLoadedData = TRUE,
-                                                  correctSuppression = TRUE,
+                                                  correctIntensity = TRUE,
                                                   filtered = FALSE,
                                                   legendNames = NULL,
                                                   title = NULL,
@@ -2106,7 +2107,7 @@ S7::method(plot_groups_overview, NTS) <- function(x,
   for (g in leg) {
     df_3 <- fts[fts$var == g, ]
     
-    if (correctSuppression) {
+    if (correctIntensity) {
       if ("suppression_factor" %in% colnames(df_3)) {
         df_3$intensity <- df_3$intensity * df_3$suppression_factor
       }
@@ -2230,7 +2231,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
                                                  sec = 60,
                                                  millisec = 5,
                                                  filtered = FALSE,
-                                                 correctSuppression = TRUE,
+                                                 correctIntensity = TRUE,
                                                  averaged = FALSE,
                                                  normalized = TRUE,
                                                  legendNames = NULL,
@@ -2251,7 +2252,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
   
   if (!"polarity" %in% colnames(fts)) fts$polarity <- polarities[fts$analysis]
   
-  if (correctSuppression) {
+  if (correctIntensity) {
     if ("suppression_factor" %in% colnames(fts)) {
       fts$intensity <- fts$intensity * fts$suppression_factor
     }
@@ -4674,7 +4675,7 @@ S7::method(get_fold_change, NTS) <- function(x,
                                              filtered = FALSE,
                                              constantThreshold = 0.5,
                                              eliminationThreshold = 0.2,
-                                             correctSuppression = FALSE,
+                                             correctIntensity = FALSE,
                                              fillZerosWithLowerLimit = FALSE,
                                              lowerLimit = NA_real_) {
   
@@ -4712,7 +4713,7 @@ S7::method(get_fold_change, NTS) <- function(x,
     average = FALSE,
     sdValues = FALSE,
     metadata = FALSE,
-    correctSuppression
+    correctIntensity
   )
   
   if (nrow(groups_dt) == 0) {
@@ -4831,7 +4832,7 @@ S7::method(plot_fold_change, NTS) <- function(x,
                                               filtered = FALSE,
                                               constantThreshold = 0.5,
                                               eliminationThreshold = 0.2,
-                                              correctSuppression = FALSE,
+                                              correctIntensity = FALSE,
                                               fillZerosWithLowerLimit = FALSE,
                                               lowerLimit = NA_real_,
                                               normalized = TRUE,
@@ -4854,7 +4855,7 @@ S7::method(plot_fold_change, NTS) <- function(x,
     filtered,
     constantThreshold,
     eliminationThreshold,
-    correctSuppression,
+    correctIntensity,
     fillZerosWithLowerLimit,
     lowerLimit
   )
@@ -5629,7 +5630,7 @@ S7::method(report, NTS) <- function(x,
           if (nrow(z) > 0) round(z$iso_number_carbons, digits = 0) else NA_real_
         }, NA_real_),
         "</br>   iso_mass_error: ", vapply(pk$annotation, function(z) {
-          if (nrow(z) > 0) round(z$iso_mass_error, digits = 5) else NA_real_
+          if (nrow(z) > 0) round(z$iso_mass_distance_error, digits = 5) else NA_real_
         }, NA_real_),
         "</br>   iso_time_error: ", vapply(pk$annotation, function(z) {
           if (nrow(z) > 0) round(z$iso_time_error, digits = 1) else NA_real_

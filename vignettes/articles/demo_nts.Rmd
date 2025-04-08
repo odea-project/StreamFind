@@ -457,7 +457,7 @@ ms$plot_fold_change(
   filtered = FALSE,
   constantThreshold = 0.5,
   eliminationThreshold = 0.2,
-  correctSuppression = TRUE,
+  correctIntensity = TRUE,
   fillZerosWithLowerLimit = FALSE, # set to TRUE for filling zeros with lower limit argument
   lowerLimit = 200
 )
