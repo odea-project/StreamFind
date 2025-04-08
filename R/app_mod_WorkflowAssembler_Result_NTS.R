@@ -145,8 +145,18 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
     groups = "#f6c23e"
   )
   
+  # plot maximize functions
+  source_functions <- list(
+    create_maximize_button = create_maximize_button,
+    create_plot_modal = create_plot_modal,
+    plot_maximize_js = plot_maximize_js
+  )
+  
   shiny::tagList(
     custom_css,
+    plot_maximize_js(),  # JavaScript functions
+    create_plot_modal(ns_full),  # Modal container
+    
     shiny::fluidRow(
       shinydashboard::tabBox(
         id = ns_full("main_tabs"),
@@ -300,7 +310,9 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     )
                   ),
                   shiny::div(
-                    class = "card-body p-0",
+                    class = "card-body p-0 position-relative",
+                    # maximize button
+                    create_maximize_button("features_chart", ns_full),
                     plotly::plotlyOutput(ns_full("features_chart"), height = "450px")
                   )
                 )
@@ -370,7 +382,9 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     shiny::icon("wave-square", class = "mr-2"), "Feature Peaks"
                   ),
                   shiny::div(
-                    class = "card-body p-0",
+                    class = "card-body p-0 position-relative",
+                    # maximize button
+                    create_maximize_button("feature_peaks_plot", ns_full),
                     plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "350px")
                   )
                 )
@@ -389,7 +403,9 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     shiny::tabPanel(
                       title = "MS1",
                       shiny::div(
-                        class = "p-3",
+                        class = "p-3 position-relative",
+                        # maximize button
+                        create_maximize_button("ms1_plot", ns_full),
                         plotly::plotlyOutput(ns_full("ms1_plot"), height = "350px")
                       )
                     ),
@@ -398,7 +414,9 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     shiny::tabPanel(
                       title = "MS2",
                       shiny::div(
-                        class = "p-3",
+                        class = "p-3 position-relative",
+                        # maximize button
+                        create_maximize_button("ms2_plot", ns_full),
                         plotly::plotlyOutput(ns_full("ms2_plot"), height = "350px")
                       )
                     ),
@@ -475,7 +493,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
     )
   )
 }
-
 #' @noRd
 S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
                                                                   id,
@@ -659,7 +676,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       return(p)
     })
     
-    # Enhanced Features table for the Features tab
+    # Features table for the Features tab
     output$features_table <- DT::renderDT({
       # Fetch features data
       features <- get_features(nts_data())
@@ -823,7 +840,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
         return(data.frame(message = "No quality data available"))
       }
       
-      # Flatten the quality data (assuming each element is a named vector)
+      # Flatten the quality data
       quality_data <- do.call(rbind, lapply(seq_along(quality_list), function(i) {
         q <- quality_list[[i]]
         if (is.null(q) || length(q) == 0) {
@@ -854,7 +871,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       return(quality_data)
     })
     
-    # Enhanced Feature peaks plot with Plotly
+    # Feature peaks plot with Plotly
     output$feature_peaks_plot <- plotly::renderPlotly({
       shiny::validate(
         need(!is.null(selected_features()), "Please select one or more features from the table to display the plot.")
@@ -864,14 +881,14 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       nts <- nts_data()
       p <- plot_features(nts, features = selected_features())
       
-      # Enhance the plotly object
+      # plotly object
       p <- plotly::layout(p,
-        # Improved layout
+        # layout
         margin = list(l = 50, r = 30, t = 30, b = 50),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
         
-        # Better axis labels
+        # axis labels
         xaxis = list(
           title = list(
             text = "Retention Time (RT)",
@@ -890,7 +907,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
           gridcolor = "#eee"
         ),
         
-        # Improved legend
+        # legend
         legend = list(
           orientation = "v",
           xanchor = "right",
@@ -925,7 +942,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       return(p)
     })
     
-    # Enhanced MS1 plot with Plotly
+    # MS1 plot with Plotly
     output$ms1_plot <- plotly::renderPlotly({
       shiny::validate(
         need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS1 plot.")
@@ -936,14 +953,14 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       mass_data <- selected_features_with_mass()
       p <- plot_features_ms1(nts, mass = mass_data, legendNames = TRUE)
       
-      # Enhance the plotly object
+      # plotly object
       p <- plotly::layout(p,
-        # Improved layout
+        # layout
         margin = list(l = 50, r = 30, t = 30, b = 50),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
         
-        # Better axis labels
+        # axis labels
         xaxis = list(
           title = list(
             text = "m/z",
@@ -962,7 +979,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
           gridcolor = "#eee"
         ),
         
-        # Improved legend
+        # legend
         legend = list(
           orientation = "v",
           xanchor = "right",
@@ -990,7 +1007,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       return(p)
     })
     
-    # Enhanced MS2 plot with Plotly
+    # MS2 plot with Plotly
     output$ms2_plot <- plotly::renderPlotly({
       shiny::validate(
         need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS2 plot.")
@@ -1001,14 +1018,14 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       mass_data <- selected_features_with_mass()
       p <- plot_features_ms2(nts, mass = mass_data, legendNames = TRUE)
       
-      # Enhance the plotly object
+      # plotly object
       p <- plotly::layout(p,
-        # Improved layout
+        # layout
         margin = list(l = 50, r = 30, t = 30, b = 50),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
         
-        # Better axis labels
+        # axis labels
         xaxis = list(
           title = list(
             text = "m/z",
@@ -1027,7 +1044,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
           gridcolor = "#eee"
         ),
         
-        # Improved legend
+        # legend
         legend = list(
           orientation = "v",
           xanchor = "right",
@@ -1055,7 +1072,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       return(p)
     })
     
-    # Enhanced Quality table
+    # Quality table
     output$quality_table <- DT::renderDT({
       shiny::validate(
         need(!is.null(selected_quality_data()), "Please select one or more features from the table to display the quality data.")
@@ -1079,7 +1096,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
         ))
       }
       
-      # Render the DataTable with enhanced styling
+      # Render the DataTable
       DT::datatable(
         quality_data,
         options = list(
@@ -1103,7 +1120,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
         )
     })
     
-    # JavaScript for enhancing UI interactions
+    # JavaScript for UI interactions
     shiny::observeEvent(1, {
       # Initialize tooltips
       shiny::insertUI(
