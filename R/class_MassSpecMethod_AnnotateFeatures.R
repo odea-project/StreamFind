@@ -96,7 +96,7 @@ S7::method(run, MassSpecMethod_AnnotateFeatures_StreamFind) <- function(x, engin
   
   tryCatch({
     
-    feature_list <- rcpp_ms_annotate_features(
+    feature_list <- rcpp_nts_annotate_features(
       feature_list,
       rtWindowAlignment = parameters$rtWindowAlignment,
       maxIsotopes = as.integer(parameters$maxIsotopes),

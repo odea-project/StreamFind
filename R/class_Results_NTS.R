@@ -3586,15 +3586,13 @@ S7::method(plot_suspects, NTS) <- function(x,
                                            mz = NULL,
                                            rt = NULL,
                                            mobility = NULL,
-                                           ppm = 4,
+                                           ppm = 5,
                                            sec = 10,
                                            millisec = 5,
                                            ppmMS2 = 10,
+                                           mzrMS2 = 0.008,
+                                           minCusiness = 0.7,
                                            minFragments = 3,
-                                           isolationWindow = 1.3,
-                                           mzClust = 0.003,
-                                           presence = 0.8,
-                                           minIntensity = 0,
                                            filtered = FALSE,
                                            rtExpand = 120,
                                            mzExpand = 0.005,
@@ -3616,13 +3614,10 @@ S7::method(plot_suspects, NTS) <- function(x,
     sec,
     millisec,
     ppmMS2,
+    mzrMS2,
+    minCusiness,
     minFragments,
-    isolationWindow,
-    mzClust,
-    presence,
-    minIntensity,
-    filtered,
-    onGroups = FALSE
+    filtered
   )
   
   if (nrow(suspects) == 0) {
@@ -3697,7 +3692,7 @@ S7::method(plot_suspects, NTS) <- function(x,
     data <- Map(function(i, j) {
       if (nrow(i) > 0) {
         i$var <- j
-        i$intensity <- i$intensity / max(i$intensity)
+        i$intensity <- i$intensity / max(i$intensity, na.rm = TRUE)
       }
       i
     }, data, suspects$var)
@@ -3715,7 +3710,7 @@ S7::method(plot_suspects, NTS) <- function(x,
           "intensity" = vapply(z, function(x) as.numeric(x[2]), NA_real_)
         )
         
-        z$intensity <- z$intensity / max(z$intensity)
+        z$intensity <- z$intensity / max(z$intensity, na.rm = TRUE)
         z$intensity <- -z$intensity
       } else {
         z <- data.table::data.table()
@@ -3839,64 +3834,67 @@ S7::method(plot_suspects, NTS) <- function(x,
       
       for (u in uid) {
         data <- suspects$ms2[suspects$uid == u][[1]]
-        fragments <- suspects$fragments[suspects$uid == u]
+        fragments <- suspects$fragments[suspects$uid == u][[1]]
         
-        if (!is.null(data) && !is.na(fragments)) {
+        if (!is.null(data) && !is.null(fragments)) {
+          
           bar_widths <- rep(0.2, nrow(data))
-          data$intensity <- data$intensity / max(data$intensity)
           
-          temp_max_mz <- max(data$mz)
-          if (temp_max_mz > max_mz) max_mz <- temp_max_mz
+          if (nrow(data) > 0) {
+            data$intensity <- data$intensity / max(data$intensity, na.rm = TRUE)
+            
+            temp_max_mz <- max(data$mz, na.rm = TRUE)
+            if (temp_max_mz > max_mz) max_mz <- temp_max_mz
+            
+            plot2 <- plot2 %>% add_trace(
+              x = data$mz,
+              y = data$intensity,
+              type = "bar",
+              width = 0.05,
+              marker = list(
+                color = cl[g],
+                line = list(color = cl[g], width = bar_widths)
+              ),
+              text = paste0(round(as.numeric(data$mz), 4), "  "),
+              textposition = "outside",
+              textangle = 90,
+              textfont = list(size = 9, color = cl[g]),
+              name = g,
+              legendgroup = g,
+              hovertemplate = paste("Exp:", "<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
+              showlegend = FALSE
+            )
+          }
           
-          plot2 <- plot2 %>% add_trace(
-            x = data$mz,
-            y = data$intensity,
-            type = "bar",
-            width = 0.05,
-            marker = list(
-              color = cl[g],
-              line = list(color = cl[g], width = bar_widths)
-            ),
-            text = paste0(round(as.numeric(data$mz), 4), "  "),
-            textposition = "outside",
-            textangle = 90,
-            textfont = list(size = 9, color = cl[g]),
-            name = g,
-            legendgroup = g,
-            hovertemplate = paste("Exp:", "<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
-            showlegend = FALSE
-          )
-          
-          fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
-          fragments <- strsplit(fragments, " ")
-          fragments <- data.table::data.table(
-            "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
-            "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
-          )
-          
-          fragments$intensity <- fragments$intensity / max(fragments$intensity)
-          fragments$intensity <- -fragments$intensity
-          
-          plot2 <- plot2 %>% add_trace(
-            x = fragments$mz,
-            y = fragments$intensity,
-            type = "bar",
-            width = 0.05,
-            marker = list(
-              color = cl[g],
-              line = list(color = cl[g], width = bar_widths)
-            ),
-            text = paste0(round(as.numeric(fragments$mz), 4), "  "),
-            textposition = "outside",
-            textangle = 90,
-            textfont = list(size = 9, color = cl[g]),
-            name = g,
-            legendgroup = g,
-            hovertemplate = paste("Database:", "<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
-            showlegend = FALSE
-          )
-          
-          # add annotation text to the plot2 in the max y and max x the text "experimental spectra" and "database spectra" in the max x and min y of the plot region
+          if (nrow(fragments) > 0) {
+            fragments <- fragments[!is.na(fragments$intensity), ]
+            fragments$intensity <- fragments$intensity / max(fragments$intensity, na.rm = TRUE)
+            fragments$intensity <- -fragments$intensity
+            
+            temp_max_mz <- max(fragments$mz, na.rm = TRUE)
+            if (temp_max_mz > max_mz) max_mz <- temp_max_mz
+            
+            plot2 <- plot2 %>% add_trace(
+              x = fragments$mz,
+              y = fragments$intensity,
+              type = "bar",
+              width = 0.05,
+              marker = list(
+                color = cl[g],
+                line = list(color = cl[g], width = bar_widths)
+              ),
+              text = paste0(round(as.numeric(fragments$mz), 4), "  "),
+              textposition = "outside",
+              textangle = 90,
+              textfont = list(size = 9, color = cl[g]),
+              name = g,
+              legendgroup = g,
+              hovertemplate = paste("Database:", "<br><i>m/z</i>: %{x:.4f}", "<br>intensity: %{y:.0f}"),
+              showlegend = FALSE
+            )
+            
+            # add annotation text to the plot2 in the max y and max x the text "experimental spectra" and "database spectra" in the max x and min y of the plot region
+          }
         }
       }
     }

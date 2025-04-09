@@ -164,10 +164,14 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     
     names(sus_col) <- names(features)
     
-    nts <- .add_features_column(nts, "suspects", sus_col)
+    features <- Map(function(fts, i) {
+      fts$suspects <- i
+      fts
+    }, features, sus_col)
+    
+    nts$feature_list <- features
     engine$NTS <- nts
     TRUE
-    
   } else {
     message("\U26a0 No suspects found!")
     FALSE

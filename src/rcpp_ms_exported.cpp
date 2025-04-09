@@ -501,170 +501,101 @@ Rcpp::List rcpp_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx
   return out;
 };
 
-// MARK: rcpp_ms_load_features_eic
+// MARK: rcpp_nts_load_features_eic
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_load_features_eic(std::vector<std::string> analyses_names,
-                                     std::vector<std::string> analyses_files,
-                                     Rcpp::List headers,
-                                     Rcpp::List features,
-                                     bool filtered = false,
-                                     float rtExpand = 0,
-                                     float mzExpand = 0,
-                                     float minTracesIntensity = 0)
+Rcpp::List rcpp_nts_load_features_eic(Rcpp::List info,
+                                      Rcpp::List spectra_headers,
+                                      Rcpp::List feature_list,
+                                      bool filtered = false,
+                                      float rtExpand = 0,
+                                      float mzExpand = 0,
+                                      float minTracesIntensity = 0)
 {
-
-  const int number_analyses = analyses_names.size();
-
-  if (number_analyses == 0)
-    return features;
-
-  const int number_features_analyses = features.size();
-
-  if (number_features_analyses != number_analyses)
-    return features;
-
-  std::vector<std::string> features_analyses_names = features.names();
-
-  for (int i = 0; i < number_analyses; i++)
+  
+  NTS::NTS_DATA data(info, spectra_headers, feature_list);
+  
+  if (!data.valid)
   {
-
-    if (features_analyses_names[i] != analyses_names[i])
-      return features;
-
-    Rcpp::List features_i = features[i];
-
-    const std::vector<std::string> &features_i_names = features_i.names();
-
-    const int n_features_i_names = features_i_names.size();
-
-    if (n_features_i_names == 0)
-      return features;
-
-    std::vector<std::string> must_have_names = {
-        "feature", "rt", "rtmax", "rtmin", "mz", "mzmax", "mzmin", "polarity", "filtered", "eic"};
-
-    const int n_must_have_names = must_have_names.size();
-
-    std::vector<bool> has_must_have_names(n_must_have_names, false);
-
-    for (int j = 0; j < n_must_have_names; ++j)
-    {
-      for (int k = 0; k < n_features_i_names; ++k)
-      {
-        if (must_have_names[j] == features_i_names[k])
-          has_must_have_names[j] = true;
-      }
-    }
-
-    for (bool value : has_must_have_names)
-    {
-      if (!value)
-      {
-        return features;
-      }
-    }
-
-    const std::vector<std::string> &fts_id = features_i["feature"];
-    const std::vector<bool> &fts_filtered = features_i["filtered"];
-    const std::vector<int> &fts_polarity = features_i["polarity"];
-    const std::vector<float> &fts_rt = features_i["rt"];
-    const std::vector<float> &fts_rtmin = features_i["rtmin"];
-    const std::vector<float> &fts_rtmax = features_i["rtmax"];
-    const std::vector<float> &fts_mz = features_i["mz"];
-    const std::vector<float> &fts_mzmin = features_i["mzmin"];
-    const std::vector<float> &fts_mzmax = features_i["mzmax"];
-    const std::vector<float> &fts_intensity = features_i["intensity"];
-    std::vector<Rcpp::List> fts_eic = features_i["eic"];
-
-    const int n_features = fts_id.size();
-
-    if (n_features == 0)
-      return features;
-
-    sc::MS_TARGETS targets;
-
-    int counter = 0;
-    for (int j = 0; j < n_features; j++)
-    {
-
-      if (!filtered)
-        if (fts_filtered[j])
-          continue;
-
-      const int eic_size = fts_eic[j].size();
-      if (eic_size > 0)
-        continue;
-
-      targets.index.push_back(counter);
-      counter++;
-      targets.id.push_back(fts_id[j]);
-      targets.level.push_back(1);
-      targets.polarity.push_back(fts_polarity[j]);
-      targets.precursor.push_back(false);
-      targets.mzmin.push_back(fts_mzmin[j] - mzExpand);
-      targets.mzmax.push_back(fts_mzmax[j] + mzExpand);
-      targets.rtmin.push_back(fts_rtmin[j] - rtExpand);
-      targets.rtmax.push_back(fts_rtmax[j] + rtExpand);
-      targets.mobilitymin.push_back(0);
-      targets.mobilitymax.push_back(0);
-    }
-
-    if (targets.id.size() == 0)
-      continue;
-
-    // const Rcpp::List &analysis = analyses[i];
-    // 
-    // sc::MS_SPECTRA_HEADERS headers = NTS::get_ms_analysis_list_headers(analysis);
-
-    const std::string file = analyses_files[i];
-
-    if (!std::filesystem::exists(file))
-      continue;
-
-    sc::MS_FILE ana(file);
-    
-    const Rcpp::List &hd = headers[i];
-    
-    const sc::MS_SPECTRA_HEADERS header = NTS::as_MS_SPECTRA_HEADERS(hd);
-
-    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header, minTracesIntensity, 0);
-
-    for (int j = 0; j < n_features; j++)
-    {
-
-      if (!filtered)
-        if (fts_filtered[j])
-          continue;
-
-      const std::string &id_j = fts_id[j];
-
-      sc::MS_TARGETS_SPECTRA res_j = res[id_j];
-
-      NTS::merge_traces_within_rt(res_j.rt, res_j.mz, res_j.intensity);
-
-      const int n = res_j.rt.size();
-      const std::vector<std::string> id_vec = std::vector<std::string>(n, id_j);
-      const std::vector<int> level_vec = std::vector<int>(n, res_j.level[0]);
-      const std::vector<int> polarity_vec = std::vector<int>(n, res_j.polarity[0]);
-
-      Rcpp::List eic = Rcpp::List::create(
-          Rcpp::Named("feature") = id_vec,
-          Rcpp::Named("polarity") = polarity_vec,
-          Rcpp::Named("level") = level_vec,
-          Rcpp::Named("rt") = res_j.rt,
-          Rcpp::Named("mz") = res_j.mz,
-          Rcpp::Named("intensity") = res_j.intensity);
-
-      eic.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
-      fts_eic[j] = eic;
-    }
-
-    features_i["eic"] = fts_eic;
-    features[i] = features_i;
+    Rcpp::Rcout << "Error: Invalid NTS data!" << std::endl;
+    return feature_list;
   }
-
-  return features;
+  
+  for (int i = 0; i < data.size(); i++)
+  {
+    NTS::FEATURES &fts_i = data.features[i];
+    
+    if (fts_i.size() == 0)
+      continue;
+    
+    Rcpp::Rcout << "Loading EIC for " << fts_i.size() << " features in analyses " << data.analyses[i] << "...";
+    
+    sc::MS_TARGETS targets;
+    int counter = 0;
+    
+    for (int j = 0; j < fts_i.size(); j++)
+    {
+      const NTS::FEATURE &ft_j = fts_i.get_feature(j);
+      
+      if (ft_j.filtered && !filtered)
+        continue;
+      
+      if (ft_j.eic.rt.size() == 0 || ft_j.eic.feature == "")
+      {
+        targets.index.push_back(counter);
+        counter++;
+        targets.id.push_back(ft_j.feature);
+        targets.level.push_back(1);
+        targets.polarity.push_back(ft_j.polarity);
+        targets.precursor.push_back(false);
+        targets.mz.push_back(ft_j.mz);
+        targets.mzmin.push_back(ft_j.mzmin - mzExpand);
+        targets.mzmax.push_back(ft_j.mzmax + mzExpand);
+        targets.rt.push_back(ft_j.rt);
+        targets.rtmin.push_back(ft_j.rtmin - rtExpand);
+        targets.rtmax.push_back(ft_j.rtmax + rtExpand);
+        targets.mobilitymin.push_back(0);
+        targets.mobilitymax.push_back(0);
+      }
+    }
+    
+    if (targets.id.size() == 0)
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
+      continue;
+    }
+    
+    const sc::MS_SPECTRA_HEADERS &header_i = data.headers[i];
+    const std::string &file_i = data.files[i];
+    
+    if (!std::filesystem::exists(file_i))
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
+      continue;
+    }
+    
+    sc::MS_FILE ana(file_i);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, minTracesIntensity, 0);
+    
+    for (int j = 0; j < fts_i.size(); j++)
+    {
+      NTS::FEATURE ft_j = fts_i.get_feature(j);
+      
+      if (ft_j.filtered && !filtered)
+        continue;
+      
+      if (ft_j.eic.rt.size() == 0 || ft_j.eic.feature == "") {
+        const sc::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
+        ft_j.eic.import_from_ms_targets_spectra(res_j);
+        fts_i.set_feature(j, ft_j);
+      }
+    }
+    
+    data.features[i] = fts_i;
+    
+    Rcpp::Rcout << "Done!" << std::endl;
+  }
+  
+  return data.features_as_list_of_dt();
 }
 
 // MARK: rcpp_ms_load_features_ms1
@@ -837,6 +768,111 @@ Rcpp::List rcpp_ms_load_features_ms1(std::vector<std::string> analyses_names,
   return features;
 }
 
+// MARK: rcpp_ms_load_features_ms1
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
+                                      Rcpp::List spectra_headers,
+                                      Rcpp::List feature_list,
+                                      bool filtered,
+                                      std::vector<float> rtWindow,
+                                      std::vector<float> mzWindow,
+                                      float minTracesIntensity,
+                                      float mzClust,
+                                      float presence)
+{
+  NTS::NTS_DATA data(info, spectra_headers, feature_list);
+  
+  if (!data.valid)
+  {
+    Rcpp::Rcout << "Error: Invalid NTS data!" << std::endl;
+    return feature_list;
+  }
+  
+  for (int i = 0; i < data.size(); i++)
+  {
+    NTS::FEATURES &fts_i = data.features[i];
+    
+    if (fts_i.size() == 0)
+      continue;
+    
+    Rcpp::Rcout << "Loading MS1 for " << fts_i.size() << " features in analyses " << data.analyses[i] << "...";
+    
+    sc::MS_TARGETS targets;
+    int counter = 0;
+    
+    int rtWindowMax_idx = NTS::find_max_index(rtWindow);
+    int rtWindowMin_idx = NTS::find_min_index(rtWindow);
+    int mzWindowMax_idx = NTS::find_max_index(mzWindow);
+    int mzWindowMin_idx = NTS::find_min_index(mzWindow);
+    
+    for (int j = 0; j < fts_i.size(); j++)
+    {
+      const NTS::FEATURE &ft_j = fts_i.get_feature(j);
+      
+      if (ft_j.filtered && !filtered)
+        continue;
+      
+      if (ft_j.ms1.rt.size() == 0 || ft_j.ms1.feature == "")
+      {
+        targets.index.push_back(counter);
+        counter++;
+        targets.id.push_back(ft_j.feature);
+        targets.level.push_back(1);
+        targets.polarity.push_back(ft_j.polarity);
+        targets.precursor.push_back(false);
+        targets.mz.push_back(ft_j.mz);
+        targets.mzmin.push_back(ft_j.mz + mzWindow[mzWindowMin_idx]);
+        targets.mzmax.push_back(ft_j.mz + mzWindow[mzWindowMax_idx]);
+        targets.rt.push_back(ft_j.rt);
+        targets.rtmin.push_back(ft_j.rt + rtWindow[rtWindowMin_idx]);
+        targets.rtmax.push_back(ft_j.rt + rtWindow[rtWindowMax_idx]);
+        targets.mobilitymin.push_back(0);
+        targets.mobilitymax.push_back(0);
+      }
+    }
+    
+    if (targets.id.size() == 0)
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
+      continue;
+    }
+    
+    const sc::MS_SPECTRA_HEADERS &header_i = data.headers[i];
+    const std::string &file_i = data.files[i];
+    
+    if (!std::filesystem::exists(file_i))
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
+      continue;
+    }
+    
+    sc::MS_FILE ana(file_i);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, minTracesIntensity, 0);
+    
+    for (int j = 0; j < fts_i.size(); j++)
+    {
+      NTS::FEATURE ft_j = fts_i.get_feature(j);
+      
+      if (ft_j.filtered && !filtered)
+        continue;
+      
+      if (ft_j.ms1.rt.size() == 0 || ft_j.ms1.feature == "") {
+        const sc::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
+        ft_j.ms1.import_from_ms_targets_spectra(res_j);
+        ft_j.ms1.set_precursor_mz(ft_j.mz);
+        ft_j.ms1.cluster(mzClust, presence);
+        fts_i.set_feature(j, ft_j);
+      }
+    }
+    
+    data.features[i] = fts_i;
+    
+    Rcpp::Rcout << "Done!" << std::endl;
+  }
+  
+  return data.features_as_list_of_dt();
+}
+
 // MARK: rcpp_ms_load_features_ms2
 // [[Rcpp::export]]
 Rcpp::List rcpp_ms_load_features_ms2(std::vector<std::string> analyses_names,
@@ -1002,710 +1038,117 @@ Rcpp::List rcpp_ms_load_features_ms2(std::vector<std::string> analyses_names,
   return features;
 }
 
-// // MARK: rcpp_ms_fill_features
-// // [[Rcpp::export]]
-// Rcpp::List rcpp_ms_fill_features(std::vector<std::string> analyses_names,
-//                                  std::vector<std::string> analyses_replicates,
-//                                  std::vector<std::string> analyses_files,
-//                                  Rcpp::List headers,
-//                                  Rcpp::DataFrame features,
-//                                  bool withinReplicate = false,
-//                                  float rtExpand = 0,
-//                                  float mzExpand = 0,
-//                                  float minPeakWidth = 6,
-//                                  float maxPeakWidth = 30,
-//                                  float minTracesIntensity = 0,
-//                                  float minNumberTraces = 4,
-//                                  float minIntensity = 0,
-//                                  float baseCut = 0,
-//                                  float maxSearchWindow = 5,
-//                                  float minSignalToNoiseRatio = 3,
-//                                  float minGaussianFit = 0.5)
-// {
-// 
-//   Rcpp::List out;
-//   
-//   if (minNumberTraces < 5)
-//   {
-//     minNumberTraces = 5;
-//   }
-//   
-//   const float minHalfPeakWidth = minPeakWidth / 2;
-//   const float maxHalfPeakWidth = maxPeakWidth / 2; 
-// 
-//   const int number_analyses = analyses_names.size();
-// 
-//   if (number_analyses == 0)
-//     return out;
-// 
-//   std::vector<std::vector<int>> analyses_polarities(number_analyses);
-// 
-//   for (int i = 0; i < number_analyses; i++)
-//   {
-//     const Rcpp::List &hd_i = headers[i];
-//     std::vector<int> pols = hd_i["polarity"];
-//     std::set<int> pols_set(pols.begin(), pols.end());
-//     std::vector<int> pols_unique(pols_set.begin(), pols_set.end());
-//     analyses_polarities[i] = pols_unique;
-//   }
-// 
-//   int max_presence = number_analyses;
-// 
-//   const int number_features = features.nrow();
-// 
-//   if (number_features == 0)
-//     return out;
-// 
-//   std::vector<std::string> features_cols = features.names();
-// 
-//   const int ncol_features = features_cols.size();
-// 
-//   if (ncol_features == 0)
-//     return out;
-// 
-//   std::vector<std::string> must_have_names = {
-//       "feature", "analysis", "rt", "rtmax", "rtmin",
-//       "mz", "mzmax", "mzmin", "intensity", "group"};
-// 
-//   std::vector<bool> has_must_have_names(10, false);
-// 
-//   for (size_t i = 0; i < must_have_names.size(); ++i)
-//   {
-//     for (size_t j = 0; j < features_cols.size(); ++j)
-//     {
-//       if (must_have_names[i] == features_cols[j])
-//         has_must_have_names[i] = true;
-//     }
-//   }
-// 
-//   for (bool value : has_must_have_names)
-//   {
-//     if (!value)
-//     {
-//       return out;
-//     }
-//   }
-// 
-//   const std::vector<std::string> &fts_feature = features["feature"];
-//   const std::vector<std::string> &fts_group = features["group"];
-//   const std::vector<std::string> &fts_replicates = features["replicate"];
-//   const std::vector<std::string> &fts_analysis = features["analysis"];
-//   const std::vector<float> &fts_mass = features["mass"];
-//   const std::vector<float> &fts_mz = features["mz"];
-//   const std::vector<float> &fts_mzmin = features["mzmin"];
-//   const std::vector<float> &fts_mzmax = features["mzmax"];
-//   const std::vector<float> &fts_rt = features["rt"];
-//   const std::vector<float> &fts_rtmin = features["rtmin"];
-//   const std::vector<float> &fts_rtmax = features["rtmax"];
-//   // const std::vector<float> fts_mobility = features["mobility"];
-//   // const std::vector<float> fts_mobilitymin = features["mobilitymin"];
-//   // const std::vector<float> fts_mobilitymax = features["mobilitymax"];
-//   const std::vector<float> &fts_intensity = features["intensity"];
-//   const std::vector<int> &fts_polarity = features["polarity"];
-//   const std::vector<bool> &fts_filtered = features["filtered"];
-//   const std::vector<std::string> &fts_filter = features["filter"];
-//   const std::vector<std::string> &fts_adduct = features["adduct"];
-//   const std::vector<Rcpp::List> &fts_quality = features["quality"];
-//   const std::vector<Rcpp::List> &fts_annotation = features["annotation"];
-//   const std::vector<Rcpp::List> &fts_eic = features["eic"];
-//   const std::vector<Rcpp::List> &fts_ms1 = features["ms1"];
-//   const std::vector<Rcpp::List> &fts_ms2 = features["ms2"];
-//   const std::vector<Rcpp::List> &fts_istd = features["istd"];
-//   const std::vector<Rcpp::List> &fts_suspects = features["suspects"];
-//   const std::vector<Rcpp::List> &fts_formulas = features["formulas"];
-//   const std::vector<Rcpp::List> &fts_compounds = features["compounds"];
-// 
-//   std::vector<std::string> fts_id = fts_group;
-//   
-//   std::vector<bool> process_feature(number_features, true);
-//   
-//   for (int i = 0; i < number_features; i++)
-//   {
-//     if (fts_filtered[i]) process_feature[i] = false;
-//     if (fts_group[i] == "") process_feature[i] = false;
-//   }
-// 
-//   if (withinReplicate)
-//   {
-// 
-//     std::unordered_map<std::string, int> rpl_sizes;
-// 
-//     for (int i = 0; i < number_analyses; i++)
-//     {
-//       std::string rpl = analyses_replicates[i];
-//       rpl_sizes[rpl]++;
-//     }
-// 
-//     max_presence = 0;
-//     for (const auto &rpl : rpl_sizes)
-//       if (rpl.second > max_presence)
-//         max_presence = rpl.second;
-// 
-//     for (int i = 0; i < number_features; i++)
-//     {
-//       if (process_feature[i])
-//       {
-//         fts_id[i] = fts_id[i] + "_" + fts_replicates[i];
-//       }
-//     }
-//   }
-// 
-//   if (max_presence == 0)
-//     return out;
-// 
-//   std::unordered_map<std::string, int> id_presence;
-//   for (int i = 0; i < number_features; i++)
-//   {
-//     if (process_feature[i])
-//     {
-//       id_presence[fts_group[i]]++;
-//     }
-//   }
-// 
-//   std::vector<std::string> id;
-//   
-//   for (int i = 0; i < number_features; i++)
-//   {
-//     if (process_feature[i])
-//     {
-//       if (id_presence[fts_id[i]] < max_presence)
-//       {
-//         id.push_back(fts_id[i]);
-//       }
-//     }
-//   }
-// 
-//   if (id.empty())
-//     return out;
-// 
-//   std::set<std::string> id_set(id.begin(), id.end());
-// 
-//   std::vector<std::string> unique_id(id_set.begin(), id_set.end());
-// 
-//   const int number_unique_id = unique_id.size();
-// 
-//   std::vector<sc::MS_TARGETS> ana_targets(number_analyses);
-//   std::vector<std::vector<std::string>> ana_targets_groups(number_analyses);
-//   std::vector<std::vector<std::string>> ana_targets_replicates(number_analyses);
-//   std::vector<std::vector<float>> ana_targets_sd_mass(number_analyses);
-//   std::vector<std::vector<float>> ana_targets_sd_rt(number_analyses);
-// 
-//   Rcpp::Rcout << "Building targets for filling " << number_unique_id << " feature groups...";
-// 
-//   for (int k = 0; k < number_unique_id; k++)
-//   {
-// 
-//     std::vector<int> indices;
-//     for (int i = 0; i < number_features; i++)
-//     {
-//       if (fts_id[i] == unique_id[k])
-//       {
-//         indices.push_back(i);
-//       }
-//     }
-// 
-//     if (indices.size() == 0) continue;
-// 
-//     std::vector<std::string> fts_group_k(indices.size());
-//     std::vector<std::string> fts_replicates_k(indices.size());
-//     std::vector<std::string> fts_analysis_k(indices.size());
-//     std::vector<float> fts_mass_k(indices.size());
-//     std::vector<float> fts_mz_k(indices.size());
-//     std::vector<float> fts_mzmin_k(indices.size());
-//     std::vector<float> fts_mzmax_k(indices.size());
-//     std::vector<float> fts_rt_k(indices.size());
-//     std::vector<float> fts_rtmin_k(indices.size());
-//     std::vector<float> fts_rtmax_k(indices.size());
-//     std::vector<float> fts_intensity_k(indices.size());
-//     std::vector<float> fts_mzmin_side_k(indices.size());
-//     std::vector<float> fts_mzmax_side_k(indices.size());
-// 
-//     for (size_t i = 0; i < indices.size(); i++)
-//     {
-//       fts_group_k[i] = fts_group[indices[i]];
-//       fts_replicates_k[i] = fts_replicates[indices[i]];
-//       fts_analysis_k[i] = fts_analysis[indices[i]];
-//       fts_mass_k[i] = fts_mass[indices[i]];
-//       
-//       const float &mz_k = fts_mz[indices[i]];
-//       float mzmin_k = fts_mzmin[indices[i]];
-//       float mzmax_k = fts_mzmax[indices[i]];
-//       fts_mz_k[i] = mz_k;
-//       fts_mzmin_k[i] = mzmin_k;
-//       fts_mzmax_k[i] = mzmax_k;
-//       fts_mzmin_side_k[i] = mz_k - mzmin_k;
-//       fts_mzmax_side_k[i] = mzmax_k - mz_k;
-//       
-//       const float &rt_k = fts_rt[indices[i]];
-//       float rtmin_k = fts_rtmin[indices[i]];
-//       float rtmax_k = fts_rtmax[indices[i]];
-//       fts_rt_k[i] = rt_k;
-//       
-//       if (rt_k - rtmin_k < minHalfPeakWidth)
-//       {
-//         rtmin_k = rt_k - minHalfPeakWidth;
-//       }
-//       
-//       if (rtmax_k - rt_k < minHalfPeakWidth)
-//       {
-//         rtmax_k = rt_k + minHalfPeakWidth;
-//       }
-//       
-//       fts_rtmin_k[i] = rtmin_k - rtExpand;
-//       fts_rtmax_k[i] = rtmax_k + rtExpand;
-//       fts_intensity_k[i] = fts_intensity[indices[i]];
-//     }
-// 
-//     const float mean_mass = std::accumulate(fts_mass_k.begin(), fts_mass_k.end(), 0.0) / fts_mass_k.size();
-//     const float mean_rt = std::accumulate(fts_rt_k.begin(), fts_rt_k.end(), 0.0) / fts_rt_k.size();
-//     const float max_mzmin_side = *std::max_element(fts_mzmin_side_k.begin(), fts_mzmin_side_k.end());
-//     const float max_mzmax_side = *std::max_element(fts_mzmax_side_k.begin(), fts_mzmax_side_k.end());
-//     const float min_rtmin = *std::min_element(fts_rtmin_k.begin(), fts_rtmin_k.end());
-//     const float max_rtmax = *std::max_element(fts_rtmax_k.begin(), fts_rtmax_k.end());
-//     
-//     const float sd_mass = NTS::standard_deviation(fts_mass_k, mean_mass);
-//     const float sd_rt = NTS::standard_deviation(fts_rt_k, mean_rt);
-//     
-//     for (int j = 0; j < number_analyses; j++)
-//     {
-// 
-//       if (withinReplicate)
-//       {
-//         const std::string &rpl = analyses_replicates[j];
-// 
-//         // continues if analysis replicate j is not within the same replicate as the feature group
-//         if (fts_replicates_k[0] != rpl)
-//           continue;
-//       }
-// 
-//       bool has_analysis = false;
-// 
-//       for (size_t i = 0; i < indices.size(); i++)
-//       {
-//         if (fts_analysis_k[i] == analyses_names[j])
-//         {
-//           has_analysis = true;
-//         }
-//       }
-// 
-//       if (has_analysis) continue;
-// 
-//       std::vector<int> pols = analyses_polarities[j];
-// 
-//       for (size_t p = 0; p < pols.size(); p++)
-//       {
-//         float mz = mean_mass + (pols[p] * 1.007276);
-//         float mzmin = mz - max_mzmin_side - mzExpand;
-//         float mzmax = mz + max_mzmax_side + mzExpand;
-// 
-//         const int n_targets = ana_targets[j].index.size();
-//         ana_targets[j].index.push_back(n_targets);
-//         ana_targets[j].id.push_back(unique_id[k]);
-//         ana_targets[j].level.push_back(1);
-//         ana_targets[j].polarity.push_back(pols[p]);
-//         ana_targets[j].precursor.push_back(false);
-//         ana_targets[j].mz.push_back(mz);
-//         ana_targets[j].mzmin.push_back(mzmin);
-//         ana_targets[j].mzmax.push_back(mzmax);
-//         ana_targets[j].rt.push_back(mean_rt);
-//         ana_targets[j].rtmin.push_back(min_rtmin);
-//         ana_targets[j].rtmax.push_back(max_rtmax);
-//         ana_targets[j].mobilitymin.push_back(0);
-//         ana_targets[j].mobilitymax.push_back(0);
-//         ana_targets_groups[j].push_back(fts_group_k[0]);
-//         ana_targets_replicates[j].push_back(fts_replicates_k[0]);
-//         ana_targets_sd_mass[j].push_back(sd_mass);
-//         ana_targets_sd_rt[j].push_back(sd_rt);
-//       }
-//     }
-//   }
-// 
-//   Rcpp::Rcout << "Done!" << std::endl;
-//   
-//   for (int j = 0; j < number_analyses; j++)
-//   {
-//     Rcpp::List out_analyses;
-// 
-//     int n_j_targets = ana_targets[j].id.size();
-// 
-//     if (n_j_targets == 0)
-//     {
-//       out.push_back(out_analyses);
-//       continue;
-//     }
-//     
-//     Rcpp::Rcout << "Processing analyses " << analyses_names[j] << ":" << std::endl;
-//     
-//     Rcpp::Rcout << "    Checking if there are already corresponding features" << "...";
-//     
-//     for (int i = n_j_targets - 1; i >= 0; --i)
-//     {
-//       // const std::string &id_i = ana_targets[j].id[i];
-//       const int polarity_i = ana_targets[j].polarity[i];
-//       const float mzmin_i = ana_targets[j].mzmin[i];
-//       const float mzmax_i = ana_targets[j].mzmax[i];
-//       const float rt_i = ana_targets[j].rt[i];
-//       const float rtmin_i = ana_targets[j].rtmin[i];
-//       const float rtmax_i = ana_targets[j].rtmax[i];
-//       float sd_rt_i = ana_targets_sd_rt[j][i];
-//       if (sd_rt_i == 0) sd_rt_i = (rtmax_i - rtmin_i) / 4;
-//       const float sd_rt_min = rt_i - (sd_rt_i * 1.5);
-//       const float sd_rt_max = rt_i + (sd_rt_i * 1.5);
-//       
-//       bool has_feature = false;
-//       
-//       for (int k = 0; k < number_features; k++)
-//       {
-//         if (fts_analysis[k] == analyses_names[j])
-//         {
-//           if (!process_feature[k]) //(fts_group[k] == id_i || fts_group[k] == "") && 
-//           {
-//             if (fts_polarity[k] == polarity_i)
-//             {
-//               if (fts_mz[k] > mzmin_i && fts_mz[k] < mzmax_i)
-//               {
-//                 if (fts_rt[k] > sd_rt_min && fts_rt[k] < sd_rt_max)
-//                 {
-//                   // Rcpp::List empty_dt = Rcpp::List::create();
-//                   // empty_dt.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   // Rcpp::List empty_list = Rcpp::List::create(empty_dt);
-//                   
-//                   Rcpp::List quality_k = fts_quality[k];
-//                   quality_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   Rcpp::List annotation_k = fts_annotation[k];
-//                   annotation_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   Rcpp::List eic_k = fts_eic[k];
-//                   eic_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   Rcpp::List ms1_k = fts_ms1[k];
-//                   ms1_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   Rcpp::List ms2_k = fts_ms2[k];
-//                   ms2_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   Rcpp::List istd_k = fts_istd[k];
-//                   istd_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   Rcpp::List suspects_k = fts_suspects[k];
-//                   suspects_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   Rcpp::List formulas_k = fts_formulas[k];
-//                   formulas_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   Rcpp::List compounds_k = fts_compounds[k];
-//                   compounds_k.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   
-//                   Rcpp::List quality_k_l = Rcpp::List::create(quality_k);
-//                   Rcpp::List annotation_k_l = Rcpp::List::create(annotation_k);
-//                   Rcpp::List eic_k_l = Rcpp::List::create(eic_k);
-//                   Rcpp::List ms1_k_l = Rcpp::List::create(ms1_k);
-//                   Rcpp::List ms2_k_l = Rcpp::List::create(ms2_k);
-//                   Rcpp::List istd_k_l = Rcpp::List::create(istd_k);
-//                   Rcpp::List suspects_k_l = Rcpp::List::create(suspects_k);
-//                   Rcpp::List formulas_k_l = Rcpp::List::create(formulas_k);
-//                   Rcpp::List compounds_k_l = Rcpp::List::create(compounds_k);
-//                   
-//                   Rcpp::List out_targets;
-//                   out_targets["analysis"] = analyses_names[j];
-//                   out_targets["feature"] = fts_feature[k];
-//                   out_targets["group"] = ana_targets_groups[j][i];
-//                   out_targets["rt"] = fts_rt[k];
-//                   out_targets["mz"] = fts_mz[k];
-//                   out_targets["intensity"] = fts_intensity[k];
-//                   out_targets["area"] = fts_intensity[k];
-//                   out_targets["rtmin"] = fts_rtmin[k];
-//                   out_targets["rtmax"] = fts_rtmax[k];
-//                   out_targets["mzmin"] = fts_mzmin[k];
-//                   out_targets["mzmax"] = fts_mzmax[k];
-//                   out_targets["mass"] = fts_mass[k];
-//                   out_targets["polarity"] = fts_polarity[k];
-//                   out_targets["adduct"] = fts_adduct[k];
-//                   out_targets["filtered"] = false;
-//                   out_targets["filter"] = fts_filter[k] + " recovered ";
-//                   out_targets["filled"] = false;
-//                   out_targets["eic"] = eic_k_l;
-//                   out_targets["ms1"] = ms1_k_l;
-//                   out_targets["ms2"] = ms2_k_l;
-//                   out_targets["quality"] = quality_k_l;
-//                   out_targets["annotation"] = annotation_k_l;
-//                   out_targets["istd"] = istd_k_l;
-//                   out_targets["suspects"] = suspects_k_l;
-//                   out_targets["formulas"] = formulas_k_l;
-//                   out_targets["compounds"] = compounds_k_l;
-//                   out_targets.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//                   out_analyses[fts_feature[k]] = out_targets;
-//                   has_feature = true;
-//                   break;
-//                 }
-//               }
-//             }
-//           }
-//         }
-//       }
-//       
-//       if (has_feature)
-//       {
-//         ana_targets[j].index.erase(ana_targets[j].index.begin() + i);
-//         ana_targets[j].id.erase(ana_targets[j].id.begin() + i);
-//         ana_targets[j].level.erase(ana_targets[j].level.begin() + i);
-//         ana_targets[j].polarity.erase(ana_targets[j].polarity.begin() + i);
-//         ana_targets[j].precursor.erase(ana_targets[j].precursor.begin() + i);
-//         ana_targets[j].mz.erase(ana_targets[j].mz.begin() + i);
-//         ana_targets[j].mzmin.erase(ana_targets[j].mzmin.begin() + i);
-//         ana_targets[j].mzmax.erase(ana_targets[j].mzmax.begin() + i);
-//         ana_targets[j].rt.erase(ana_targets[j].rt.begin() + i);
-//         ana_targets[j].rtmin.erase(ana_targets[j].rtmin.begin() + i);
-//         ana_targets[j].rtmax.erase(ana_targets[j].rtmax.begin() + i);
-//         ana_targets[j].mobilitymin.erase(ana_targets[j].mobilitymin.begin() + i);
-//         ana_targets[j].mobilitymax.erase(ana_targets[j].mobilitymax.begin() + i);
-//         ana_targets_groups[j].erase(ana_targets_groups[j].begin() + i);
-//         ana_targets_replicates[j].erase(ana_targets_replicates[j].begin() + i);
-//       }
-//     }
-//     
-//     Rcpp::Rcout << "recovered " << n_j_targets - ana_targets[j].id.size() << " features!" << std::endl;
-//     
-//     n_j_targets = ana_targets[j].id.size();
-//     
-//     if (n_j_targets == 0)
-//     {
-//       out.push_back(out_analyses);
-//       continue;
-//     }
-// 
-//     Rcpp::Rcout << "    Extracting " << n_j_targets << " EICs...";
-// 
-//     const Rcpp::List &hd = headers[j];
-//     
-//     const sc::MS_SPECTRA_HEADERS header = NTS::as_MS_SPECTRA_HEADERS(hd);
-// 
-//     const std::string file = analyses_files[j];
-// 
-//     if (!std::filesystem::exists(file))
-//       continue;
-// 
-//     sc::MS_FILE ana(file);
-// 
-//     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(ana_targets[j], header, minTracesIntensity, 0);
-// 
-//     const int n_traces = res.id.size();
-// 
-//     Rcpp::Rcout << " Done! " << std::endl;
-//     
-//     if (n_traces == 0)
-//     {
-//       out.push_back(out_analyses);
-//       continue;
-//     }
-//     
-//     Rcpp::Rcout << "    Filtering " << n_traces << " spectra traces...";
-//     
-//     for (int i = n_j_targets - 1; i >= 0; --i)
-//     {
-// 
-//       const std::string &id_i = ana_targets[j].id[i];
-//       
-//       // if (id_i == "M268_R916_1302") {
-//       //   Rcpp::Rcout << std::endl;
-//       //   for (int z = 0; z < n_traces; z++)
-//       //     if (res.id[z] == id_i)
-//       //       Rcpp::Rcout <<  res.rt[z] << " " << res.mz[z] << " " << res.intensity[z] << std::endl;
-//       //   Rcpp::Rcout << std::endl;
-//       // }
-// 
-//       int count = 0;
-//       float max_intensity = 0;
-// 
-//       for (int z = 0; z < n_traces; z++)
-//       {
-//         if (res.id[z] == id_i)
-//         {
-//           count++;
-//           if (res.intensity[z] > max_intensity)
-//           {
-//             max_intensity = res.intensity[z];
-//           }
-//         }
-//       }
-// 
-//       if (count >= minNumberTraces && max_intensity >= minIntensity)
-//       {
-//         continue;
-//       }
-//       
-//       ana_targets[j].index.erase(ana_targets[j].index.begin() + i);
-//       ana_targets[j].id.erase(ana_targets[j].id.begin() + i);
-//       ana_targets[j].level.erase(ana_targets[j].level.begin() + i);
-//       ana_targets[j].polarity.erase(ana_targets[j].polarity.begin() + i);
-//       ana_targets[j].precursor.erase(ana_targets[j].precursor.begin() + i);
-//       ana_targets[j].mz.erase(ana_targets[j].mz.begin() + i);
-//       ana_targets[j].mzmin.erase(ana_targets[j].mzmin.begin() + i);
-//       ana_targets[j].mzmax.erase(ana_targets[j].mzmax.begin() + i);
-//       ana_targets[j].rt.erase(ana_targets[j].rt.begin() + i);
-//       ana_targets[j].rtmin.erase(ana_targets[j].rtmin.begin() + i);
-//       ana_targets[j].rtmax.erase(ana_targets[j].rtmax.begin() + i);
-//       ana_targets[j].mobilitymin.erase(ana_targets[j].mobilitymin.begin() + i);
-//       ana_targets[j].mobilitymax.erase(ana_targets[j].mobilitymax.begin() + i);
-//       ana_targets_groups[j].erase(ana_targets_groups[j].begin() + i);
-//       ana_targets_replicates[j].erase(ana_targets_replicates[j].begin() + i);
-//       
-//     }
-// 
-//     n_j_targets = ana_targets[j].id.size();
-//     
-//     Rcpp::Rcout << " Done! " << std::endl;
-//     
-//     if (n_j_targets == 0)
-//     {
-//       out.push_back(out_analyses);
-//       continue;
-//     }
-// 
-//     Rcpp::Rcout << "    Filling " << n_j_targets << " features...";
-// 
-//     const std::vector<std::string> tg_id = ana_targets[j].id;
-//     const std::vector<float> tg_rt = ana_targets[j].rt;
-//     
-//     int filled_counter = 0;
-// 
-//     for (int i = 0; i < n_j_targets; i++)
-//     {
-//       const std::string &id_i = tg_id[i];
-//       const float &tg_rt_i = tg_rt[i];
-// 
-//       sc::MS_TARGETS_SPECTRA res_i = res[id_i];
-// 
-//       const int n_res_i = res_i.id.size();
-// 
-//       if (n_res_i < minNumberTraces)
-//       {
-//         continue;
-//       }
-// 
-//       NTS::merge_traces_within_rt(res_i.rt, res_i.mz, res_i.intensity);
-//       
-//       Rcpp::List quality = NTS::calculate_gaussian_fit(
-//         id_i, tg_rt_i, res_i.mz, res_i.rt, res_i.intensity, baseCut, maxSearchWindow, maxHalfPeakWidth
-//       );
-// 
-//       const float &sn = quality["sn"];
-// 
-//       const float &gauss_f = quality["gauss_f"];
-// 
-//       if (sn < minSignalToNoiseRatio)
-//       {
-//         continue;
-//       }
-// 
-//       if (gauss_f < minGaussianFit)
-//       {
-//         continue;
-//       }
-// 
-//       const float area_i = NTS::trapezoidal_area(res_i.rt, res_i.intensity);
-// 
-//       const size_t max_position = NTS::find_central_max_index(res_i.rt, res_i.intensity, tg_rt_i, 0);
-// 
-//       const float rt_i = res_i.rt[max_position];
-// 
-//       const float mz_i = NTS::mean(res_i.mz);
-// 
-//       const float mass_i = mz_i - (res_i.polarity[0] * 1.007276);
-// 
-//       const float mzmin_i = *std::min_element(res_i.mz.begin(), res_i.mz.end());
-// 
-//       const float mzmax_i = *std::max_element(res_i.mz.begin(), res_i.mz.end());
-// 
-//       const float rtmin_i = *std::min_element(res_i.rt.begin(), res_i.rt.end());
-// 
-//       const float rtmax_i = *std::max_element(res_i.rt.begin(), res_i.rt.end());
-// 
-//       std::string adduct_i = "[M+H]+";
-//       if (res_i.polarity[0] < 0)
-//         adduct_i = "[M-H]-";
-// 
-//       std::string feature = "FL" + std::to_string(i + 1);
-//       feature += "_MZ" + std::to_string(static_cast<int>(std::round(mz_i)));
-//       feature += "_RT" + std::to_string(static_cast<int>(std::round(rt_i)));
-// 
-//       const int n = res_i.rt.size();
-//       const std::vector<std::string> id_vec = std::vector<std::string>(n, feature);
-//       const std::vector<int> polarity_vec = std::vector<int>(n, res_i.polarity[0]);
-//       const std::vector<int> level_vec = std::vector<int>(n, res_i.level[0]);
-// 
-//       Rcpp::List eic = Rcpp::List::create(
-//           Rcpp::Named("feature") = id_vec,
-//           Rcpp::Named("polarity") = polarity_vec,
-//           Rcpp::Named("level") = level_vec,
-//           Rcpp::Named("rt") = res_i.rt,
-//           Rcpp::Named("mz") = res_i.mz,
-//           Rcpp::Named("intensity") = res_i.intensity);
-// 
-//       eic.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//       Rcpp::List list_eic;
-//       list_eic.push_back(eic);
-// 
-//       Rcpp::List list_quality;
-//       quality["feature"] = feature;
-//       quality.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//       list_quality.push_back(quality);
-// 
-//       Rcpp::List empty_dt = Rcpp::List::create();
-//       empty_dt.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-//       Rcpp::List empty_list = Rcpp::List::create(empty_dt);
-// 
-//       Rcpp::List out_targets;
-//       out_targets["analysis"] = analyses_names[j];
-//       out_targets["feature"] = feature;
-//       out_targets["group"] = ana_targets_groups[j][i];
-//       out_targets["rt"] = rt_i;
-//       out_targets["mz"] = mz_i;
-//       out_targets["intensity"] = res_i.intensity[max_position];
-//       out_targets["area"] = area_i;
-//       out_targets["rtmin"] = rtmin_i;
-//       out_targets["rtmax"] = rtmax_i;
-//       out_targets["mzmin"] = mzmin_i;
-//       out_targets["mzmax"] = mzmax_i;
-//       out_targets["mass"] = mass_i;
-//       out_targets["polarity"] = res_i.polarity[0];
-//       out_targets["adduct"] = adduct_i;
-//       out_targets["filtered"] = false;
-//       out_targets["filled"] = true;
-//       out_targets["eic"] = list_eic;
-//       out_targets["ms1"] = empty_list;
-//       out_targets["ms2"] = empty_list;
-//       out_targets["quality"] = list_quality;
-//       out_targets["annotation"] = empty_list;
-//       out_targets["istd"] = empty_list;
-//       out_targets["suspects"] = empty_list;
-//       out_targets["formulas"] = empty_list;
-//       out_targets["compounds"] = empty_list;
-//       out_targets.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-// 
-//       out_analyses[feature] = out_targets;
-//       
-//       filled_counter++;
-//     }
-// 
-//     out.push_back(out_analyses);
-// 
-//     Rcpp::Rcout << " Done! " << std::endl;
-//     
-//     Rcpp::Rcout << "    Filled " << filled_counter << " features!" << std::endl;
-//   }
-// 
-//   out.names() = analyses_names;
-// 
-//   return out;
-// }
-
-// MARK: rcpp_ms_calculate_features_quality
+// MARK: rcpp_ms_load_features_ms2
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List info,
-                                              Rcpp::List spectra_headers,
-                                              Rcpp::List feature_list,
-                                              bool filtered = false,
-                                              float rtExpand = 0,
-                                              float mzExpand = 0,
-                                              float minPeakWidth = 6,
-                                              float maxPeakWidth = 30,
-                                              float minTracesIntensity = 0,
-                                              float minNumberTraces = 5,
-                                              float baseCut = 0)
+Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
+                                      Rcpp::List spectra_headers,
+                                      Rcpp::List feature_list,
+                                      bool filtered,
+                                      float minTracesIntensity,
+                                      float isolationWindow,
+                                      float mzClust,
+                                      float presence)
+{
+  NTS::NTS_DATA data(info, spectra_headers, feature_list);
+  
+  if (!data.valid)
+  {
+    Rcpp::Rcout << "Error: Invalid NTS data!" << std::endl;
+    return feature_list;
+  }
+  
+  for (int i = 0; i < data.size(); i++)
+  {
+    NTS::FEATURES &fts_i = data.features[i];
+    
+    if (fts_i.size() == 0)
+      continue;
+    
+    Rcpp::Rcout << "Loading MS2 for " << fts_i.size() << " features in analyses " << data.analyses[i] << "...";
+    
+    sc::MS_TARGETS targets;
+    int counter = 0;
+    
+    for (int j = 0; j < fts_i.size(); j++)
+    {
+      const NTS::FEATURE &ft_j = fts_i.get_feature(j);
+      
+      if (ft_j.filtered && !filtered)
+        continue;
+      
+      if (ft_j.ms2.rt.size() == 0 || ft_j.ms2.feature == "")
+      {
+        targets.index.push_back(counter);
+        counter++;
+        targets.id.push_back(ft_j.feature);
+        targets.level.push_back(2);
+        targets.polarity.push_back(ft_j.polarity);
+        targets.precursor.push_back(true);
+        targets.mz.push_back(ft_j.mz);
+        targets.mzmin.push_back(ft_j.mz - (isolationWindow / 2));
+        targets.mzmax.push_back(ft_j.mz + (isolationWindow / 2));
+        targets.rt.push_back(ft_j.rt);
+        targets.rtmin.push_back(ft_j.rt - 2);
+        targets.rtmax.push_back(ft_j.rt + 2);
+        targets.mobilitymin.push_back(0);
+        targets.mobilitymax.push_back(0);
+      }
+    }
+    
+    if (targets.id.size() == 0)
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
+      continue;
+    }
+    
+    const sc::MS_SPECTRA_HEADERS &header_i = data.headers[i];
+    const std::string &file_i = data.files[i];
+    
+    if (!std::filesystem::exists(file_i))
+    {
+      Rcpp::Rcout << "Done!" << std::endl;
+      continue;
+    }
+    
+    sc::MS_FILE ana(file_i);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, minTracesIntensity, 0);
+    
+    for (int j = 0; j < fts_i.size(); j++)
+    {
+      NTS::FEATURE ft_j = fts_i.get_feature(j);
+      
+      if (ft_j.filtered && !filtered)
+        continue;
+      
+      if (ft_j.ms2.rt.size() == 0 || ft_j.ms2.feature == "") {
+        const sc::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
+        ft_j.ms2.import_from_ms_targets_spectra(res_j);
+        ft_j.ms2.cluster(mzClust, presence);
+        fts_i.set_feature(j, ft_j);
+      }
+    }
+    
+    data.features[i] = fts_i;
+    
+    Rcpp::Rcout << "Done!" << std::endl;
+  }
+  
+  return data.features_as_list_of_dt();
+}
+
+// MARK: rcpp_nts_calculate_features_quality
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_calculate_features_quality(Rcpp::List info,
+                                               Rcpp::List spectra_headers,
+                                               Rcpp::List feature_list,
+                                               bool filtered = false,
+                                               float rtExpand = 0,
+                                               float mzExpand = 0,
+                                               float minPeakWidth = 6,
+                                               float maxPeakWidth = 30,
+                                               float minTracesIntensity = 0,
+                                               float minNumberTraces = 5,
+                                               float baseCut = 0)
 {
   
   NTS::NTS_DATA data(info, spectra_headers, feature_list);
@@ -1716,9 +1159,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List info,
     return feature_list;
   }
   
-  if (minNumberTraces < 5)
-    minNumberTraces = 5;
-  
+  if (minNumberTraces < 5) minNumberTraces = 5;
   const float minHalfPeakWidth = minPeakWidth / 2;
   const float maxHalfPeakWidth = maxPeakWidth / 2;
   
@@ -1744,7 +1185,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List info,
       if (ft_j.filtered && !filtered)
         continue;
       
-      if (ft_j.eic.rt.size() == 0)
+      if (ft_j.eic.rt.size() == 0 || ft_j.feature == "")
       {
         targets.index.push_back(counter);
         counter++;
@@ -1796,7 +1237,7 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List info,
       if (ft_j.quality.feature != "")
         continue;
       
-      if (ft_j.eic.rt.size() == 0) {
+      if (ft_j.eic.rt.size() == 0 || ft_j.feature == "") {
         const sc::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
         ft_j.eic.import_from_ms_targets_spectra(res_j);
       }
@@ -1818,9 +1259,9 @@ Rcpp::List rcpp_ms_calculate_features_quality(Rcpp::List info,
   return data.features_as_list_of_dt();
 };
 
-// MARK: rcpp_ms_annotate_features
+// MARK: rcpp_nts_annotate_features
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
+Rcpp::List rcpp_nts_annotate_features(Rcpp::List feature_list,
                                      double rtWindowAlignment = 0.3,
                                      int maxIsotopes = 5,
                                      int maxCharge = 1,
@@ -1882,7 +1323,7 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
 
         for (int c = 1; c < number_candidates; c++)
         {
-          if (candidates_chain.chain[c].annotation.is_annotated)
+          if (candidates_chain.chain[c].annotation.feature != "")
           {
             fts.set_feature(candidates_chain.indices[c], candidates_chain.chain[c]);
           }
@@ -1937,24 +1378,24 @@ Rcpp::List rcpp_ms_annotate_features(Rcpp::List feature_list,
   return feature_list;
 };
 
-// MARK: rcpp_ms_fill_features
+// MARK: rcpp_nts_fill_features
 // [[Rcpp::export]]
-Rcpp::List rcpp_ms_fill_features(Rcpp::List info,
-                                 Rcpp::List spectra_headers,
-                                 Rcpp::List feature_list,
-                                 bool withinReplicate = false,
-                                 bool filtered = false,
-                                 float rtExpand = 0,
-                                 float mzExpand = 0,
-                                 float minPeakWidth = 6,
-                                 float maxPeakWidth = 30,
-                                 float minTracesIntensity = 0,
-                                 float minNumberTraces = 4,
-                                 float minIntensity = 0,
-                                 float baseCut = 0,
-                                 float maxSearchWindow = 5,
-                                 float minSignalToNoiseRatio = 3,
-                                 float minGaussianFit = 0.5)
+Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
+                                  Rcpp::List spectra_headers,
+                                  Rcpp::List feature_list,
+                                  bool withinReplicate = false,
+                                  bool filtered = false,
+                                  float rtExpand = 0,
+                                  float mzExpand = 0,
+                                  float minPeakWidth = 6,
+                                  float maxPeakWidth = 30,
+                                  float minTracesIntensity = 0,
+                                  float minNumberTraces = 4,
+                                  float minIntensity = 0,
+                                  float baseCut = 0,
+                                  float maxSearchWindow = 5,
+                                  float minSignalToNoiseRatio = 3,
+                                  float minGaussianFit = 0.5)
 {
   
   NTS::NTS_DATA data(info, spectra_headers, feature_list);

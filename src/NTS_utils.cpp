@@ -760,262 +760,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   // quality.gauss_u = mu_fitted;
   // quality.gauss_s = sigma_fitted;
   // quality.gauss_f = r_squared;
-  quality.is_calculated = true;
   return;
-};
-
-// MARK: CALCULATE_GAUSSIAN_FIT
-Rcpp::List NTS::calculate_gaussian_fit(const std::string &ft,
-                                       const float &rt_mean,
-                                       std::vector<float> &mz,
-                                       std::vector<float> &rt,
-                                       std::vector<float> &intensity,
-                                       const float &baseCut,
-                                       const float &rtWindow,
-                                       const float &maxTimeHalfWidth)
-{
-
-  float noise = 0;
-  float sn = 0;
-  float A_fitted = 0;
-  float mu_fitted = 0;
-  float sigma_fitted = 0;
-  float r_squared = 0;
-
-  Rcpp::List quality = Rcpp::List::create(
-      Rcpp::Named("feature") = ft,
-      Rcpp::Named("noise") = noise,
-      Rcpp::Named("sn") = sn,
-      Rcpp::Named("gauss_a") = A_fitted,
-      Rcpp::Named("gauss_u") = mu_fitted,
-      Rcpp::Named("gauss_s") = sigma_fitted,
-      Rcpp::Named("gauss_f") = r_squared);
-  
-  if (intensity.size() < 5)
-  {
-    return quality;
-  }
-
-  size_t max_position = NTS::find_central_max_index(rt, intensity, rt_mean, rtWindow);
-  
-  if (max_position < 1 || max_position >= intensity.size() - 1)
-  {
-    return quality;
-  }
-  
-  const float max_intensity = intensity[max_position];
-  
-  const std::vector<float> left_intensity = std::vector<float>(intensity.begin(), intensity.begin() + max_position);
-  if (left_intensity.empty()) return quality;
-  const size_t min_left_position = NTS::find_min_index(left_intensity);
-  const float noise_left = left_intensity[min_left_position];
-  const float sn_left = max_intensity / noise_left;
-  
-  const std::vector<float> right_intensity = std::vector<float>(intensity.begin() + max_position + 1, intensity.end());
-  if (right_intensity.empty()) return quality;
-  const size_t min_right_position = NTS::find_min_index(right_intensity);
-  const float noise_right = right_intensity[min_right_position];
-  const float sn_right = max_intensity / noise_right;
-  
-  if (sn_left > sn_right)
-  {
-    noise = noise_left;
-    sn = sn_left;
-  }
-  else
-  {
-    noise = noise_right;
-    sn = sn_right;
-  }
-  
-  if (min_left_position > 0) {
-    for (size_t i = 0; i < min_left_position - 1; ++i)
-    {
-      intensity[i] = 0;
-    }
-  }
-  
-  if (intensity.size() > max_position + min_right_position + 2) {
-    for (size_t i = max_position + min_right_position + 2; i < intensity.size(); ++i)
-    {
-      intensity[i] = 0;
-    }
-  }
-  
-  // std::string print_ft = "F2002_MZ752_RT1036";
-  // 
-  // if (ft == print_ft) {
-  //   Rcpp::Rcout << std::endl;
-  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
-  //   Rcpp::Rcout << "rt :" << rt[max_position] << std::endl;
-  //   Rcpp::Rcout << "min_left_position: " << min_left_position << std::endl;
-  //   Rcpp::Rcout << "min_right_position: " << min_right_position << std::endl;
-  //   Rcpp::Rcout << "noise_left: " << noise_left << std::endl;
-  //   Rcpp::Rcout << "noise_right: " << noise_right << std::endl;
-  //   Rcpp::Rcout << "sn_left: " << sn_left << std::endl;
-  //   Rcpp::Rcout << "sn_right: " << sn_right << std::endl;
-  //   for (size_t i = 0; i < intensity.size(); ++i)
-  //   {
-  //     Rcpp::Rcout <<  rt[i] << " " << mz[i] << " " << intensity[i] << std::endl;
-  //   }
-  // }
-  
-  noise = round(noise);
-  sn = round(sn * 10) / 10;
-  quality["noise"] = noise;
-  quality["sn"] = sn;
-
-  const float low_cut = max_intensity * baseCut;
-
-  const int n = rt.size();
-
-  std::vector<float> mz_trimmed(n);
-  std::vector<float> rt_trimmed(n);
-  std::vector<float> int_trimmed(n);
-
-  for (int z = 0; z < n; z++)
-  {
-    int_trimmed[z] = intensity[z];
-    mz_trimmed[z] = mz[z];
-    rt_trimmed[z] = rt[z];
-  }
-  
-  auto it_mz_trimmed = mz_trimmed.begin();
-  auto it_int_trimmed = int_trimmed.begin();
-  auto it_rt_trimmed = rt_trimmed.begin();
-
-  while (it_int_trimmed != int_trimmed.end())
-  {
-    if (*it_int_trimmed <= low_cut)
-    {
-      mz_trimmed.erase(it_mz_trimmed);
-      int_trimmed.erase(it_int_trimmed);
-      rt_trimmed.erase(it_rt_trimmed);
-    }
-    else
-    {
-      ++it_mz_trimmed;
-      ++it_int_trimmed;
-      ++it_rt_trimmed;
-    }
-  }
-
-  int n_trimmed = int_trimmed.size();
-
-  if (n_trimmed < 5)
-    return quality;
-  
-  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, rt_mean, 0);
-  
-  if (max_position < 1 || max_position >= int_trimmed.size() - 1)
-  {
-    return quality;
-  }
-  
-  // if (ft == print_ft) {
-  //   Rcpp::Rcout << std::endl;
-  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
-  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
-  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
-  //   {
-  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
-  //   }
-  // }
-  
-  trim_to_equal_length_around_max_position(
-    rt_trimmed,
-    mz_trimmed,
-    int_trimmed,
-    max_position,
-    3,
-    8,
-    maxTimeHalfWidth
-  );
-
-  n_trimmed = rt_trimmed.size();
-
-  if (n_trimmed < 5)
-    return quality;
-  
-  // if (ft == print_ft) {
-  //   Rcpp::Rcout << std::endl;
-  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
-  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
-  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
-  //   {
-  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
-  //   }
-  // }
-  
-  mz = mz_trimmed;
-  rt = rt_trimmed;
-  intensity = int_trimmed;
-  
-  trim_peak_base(rt_trimmed, mz_trimmed, int_trimmed, max_position, 0.3);
-  
-  n_trimmed = rt_trimmed.size();
-  
-  if (n_trimmed < 3)
-    return quality;
-  
-  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, rt_mean, 0);
-  
-  if (max_position < 1 || max_position >= int_trimmed.size() - 1)
-  {
-    return quality;
-  }
-  
-  smooth_eic_sides(int_trimmed, max_position, 3);
-  
-  // mz = mz_trimmed;
-  // rt = rt_trimmed;
-  // intensity = int_trimmed;
-  
-  // if (ft == print_ft) {
-  //   Rcpp::Rcout << std::endl;
-  //   Rcpp::Rcout << "max_position: " << max_position << std::endl;
-  //   Rcpp::Rcout << "rt :" << rt_trimmed[max_position] << std::endl;
-  //   for (size_t i = 0; i < int_trimmed.size(); ++i)
-  //   {
-  //     Rcpp::Rcout <<  rt_trimmed[i] << " " << mz_trimmed[i] << " " << int_trimmed[i] << std::endl;
-  //   }
-  // }
-  
-  A_fitted = int_trimmed[max_position];
-  mu_fitted = rt_trimmed[max_position];
-  sigma_fitted = (rt_trimmed.back() - rt_trimmed.front()) / 4.0;
-
-  // if (ft == print_ft) {
-  //   Rcpp::Rcout << std::endl;
-  //   Rcpp::Rcout << "A: " << A_fitted << std::endl;
-  //   Rcpp::Rcout << "mu: " << mu_fitted << std::endl;
-  //   Rcpp::Rcout << "sigma: " << sigma_fitted << std::endl;
-  //   Rcpp::Rcout << "r: " << r_squared << std::endl;
-  // }
-  
-  fit_gaussian(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
-
-  r_squared = calculate_gaussian_rsquared(rt_trimmed, int_trimmed, A_fitted, mu_fitted, sigma_fitted);
-
-  A_fitted = round(A_fitted);
-  mu_fitted = round(mu_fitted * 10) / 10;
-  sigma_fitted = round(sigma_fitted * 10) / 10;
-  r_squared = round(r_squared * 10000) / 10000;
-  
-  // if (ft == print_ft) {
-  //   Rcpp::Rcout << std::endl;
-  //   Rcpp::Rcout << "A_fitted: " << A_fitted << std::endl;
-  //   Rcpp::Rcout << "mu_fitted: " << mu_fitted << std::endl;
-  //   Rcpp::Rcout << "sigma_fitted: " << sigma_fitted << std::endl;
-  //   Rcpp::Rcout << "r_squared: " << r_squared << std::endl;
-  // }
-
-  quality["gauss_a"] = A_fitted;
-  quality["gauss_u"] = mu_fitted;
-  quality["gauss_s"] = sigma_fitted;
-  quality["gauss_f"] = r_squared;
-
-  return quality;
 };
 
 // MARK: TRAPEZOIDAL_AREA
@@ -1151,7 +896,6 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
             mono_ion_anno.iso_theoretical_max_relative_intensity = 0;
             mono_ion_anno.iso_number_carbons = 0;
             mono_ion_anno.iso_size = 0;
-            mono_ion_anno.is_annotated = true;
             mono_ion.annotation = mono_ion_anno;
             chain[0] = mono_ion;
             is_Mplus = true;
@@ -1385,7 +1129,6 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
     mono_ion_anno.iso_size = sel_iso_chain.length;
     sel_iso_chain.number_carbons = std::round(sel_iso_chain.number_carbons);
     mono_ion_anno.iso_number_carbons = sel_iso_chain.number_carbons;
-    mono_ion_anno.is_annotated = true;
     
     if (sel_iso_chain.length > 1)
     {
@@ -1410,7 +1153,6 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
         temp_candidate_anno.iso_size = sel_iso_chain.length;
         temp_candidate_anno.iso_number_carbons = sel_iso_chain.number_carbons;
         temp_candidate_anno.iso_isotope = sel_iso_chain.isotope[i];
-        temp_candidate_anno.is_annotated = true;
         temp_candidate.annotation = temp_candidate_anno;
         chain[candidate_idx] = temp_candidate;
         mono_ion_anno.iso_isotope = mono_ion_anno.iso_isotope + " " + sel_iso_chain.isotope[i];
@@ -1470,8 +1212,10 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_adducts()
   }
 };
 
-// MARK: CLUSTER_SPECTRA
-Rcpp::List NTS::cluster_spectra(const Rcpp::List &spectra, const float &mzClust = 0.005, const float &presence = 0.8)
+// MARK: cluster_spectra
+Rcpp::List NTS::cluster_spectra(const Rcpp::List &spectra,
+                                const float &mzClust = 0.005,
+                                const float &presence = 0.8)
 {
 
   const std::vector<std::string> &names_spectra = spectra.names();
@@ -1826,4 +1570,228 @@ Rcpp::List NTS::cluster_spectra(const Rcpp::List &spectra, const float &mzClust 
   } // end of while loop
 
   return out;
+};
+
+// MARK: cluster_spectra_internal
+void NTS::cluster_spectra_internal(std::vector<float> &pre_ce,
+                                   std::vector<float> &pre_mz,
+                                   std::vector<float> &rt,
+                                   std::vector<float> &mz,
+                                   std::vector<float> &intensity,
+                                   std::vector<bool> &is_pre,
+                                   const float &mzClust,
+                                   const float &presence)
+{
+  
+  const int n = rt.size();
+  
+  std::set<float> unique_rt_set;
+  for (const float &r : rt) unique_rt_set.insert(r);
+  std::vector<float> unique_rt(unique_rt_set.begin(), unique_rt_set.end());
+  
+  std::set<float> unique_pre_ce_set;
+  for (const float &c : pre_ce) unique_pre_ce_set.insert(c);
+  std::vector<float> unique_pre_ce(unique_pre_ce_set.begin(), unique_pre_ce_set.end());
+  
+  float *rt_ptr = rt.data();
+  float *pre_ce_ptr = pre_ce.data();
+  float *mz_ptr = mz.data();
+  float *intensity_ptr = intensity.data();
+  
+  std::vector<float> mz_diff(n - 1);
+  for (int j = 1; j < n; ++j) mz_diff[j - 1] = mz[j] - mz[j - 1];
+  
+  float itMzClust = mzClust;
+  int counter = 0;
+  bool hasFromSameScan = true;
+  
+  std::vector<float> new_mz;
+  std::vector<float> new_intensity;
+  
+  while (hasFromSameScan)
+  {
+    counter = counter + 1;
+    
+    new_mz.clear();
+    new_intensity.clear();
+    
+    std::vector<int> all_clusters(mz_diff.size(), 0);
+    
+    for (size_t j = 0; j < mz_diff.size(); ++j)
+    {
+      if (mz_diff[j] > itMzClust)
+        all_clusters[j] = 1;
+    }
+    
+    std::partial_sum(all_clusters.begin(), all_clusters.end(), all_clusters.begin());
+    
+    all_clusters.insert(all_clusters.begin(), 0);
+    
+    for (int &val : all_clusters)
+    {
+      val += 1;
+    }
+    
+    int n_all_clusters = all_clusters.size();
+    
+    std::vector<int> idx_clusters(all_clusters.size());
+    std::iota(idx_clusters.begin(), idx_clusters.end(), 0);
+    
+    std::set<int> clusters_set;
+    
+    for (const int &cl : all_clusters)
+    {
+      clusters_set.insert(cl);
+    }
+    
+    std::vector<int> clusters(clusters_set.begin(), clusters_set.end());
+    
+    int n_clusters = clusters.size();
+    
+    std::vector<bool> fromSameScan(n_clusters, true);
+    
+    for (int z = 0; z < n_clusters; ++z)
+    {
+      std::vector<int> temp_idx;
+      
+      for (int j = 0; j < n_all_clusters; ++j)
+      {
+        if (all_clusters[j] == clusters[z])
+          temp_idx.push_back(j);
+      }
+      
+      int n = temp_idx.size();
+      
+      std::vector<float> temp_rt(n);
+      float *temp_rt_ptr = temp_rt.data();
+      
+      std::vector<float> temp_pre_ce(n);
+      float *temp_pre_ce_ptr = temp_pre_ce.data();
+      
+      std::vector<float> temp_mz(n);
+      float *temp_mz_ptr = temp_mz.data();
+      
+      std::vector<float> temp_intensity(n);
+      float *temp_intensity_ptr = temp_intensity.data();
+      
+      for (const int &x : temp_idx)
+      {
+        *(temp_rt_ptr++) = *(rt_ptr + x);
+        *(temp_pre_ce_ptr++) = *(pre_ce_ptr + x);
+        *(temp_mz_ptr++) = *(mz_ptr + x);
+        *(temp_intensity_ptr++) = *(intensity_ptr + x);
+      }
+      
+      std::set<float> unique_temp_rt_set;
+      
+      for (const float &r : temp_rt)
+      {
+        unique_temp_rt_set.insert(r);
+      }
+      
+      std::vector<float> unique_temp_rt(unique_temp_rt_set.begin(), unique_temp_rt_set.end());
+      
+      std::set<float> unique_temp_pre_ce_set;
+      
+      for (const float &r : temp_pre_ce)
+      {
+        unique_temp_pre_ce_set.insert(r);
+      }
+      
+      std::vector<float> unique_temp_pre_ce(unique_temp_pre_ce_set.begin(), unique_temp_pre_ce_set.end());
+      
+      fromSameScan[z] = unique_temp_rt.size() < temp_rt.size();
+      
+      if (counter > 10)
+        fromSameScan[z] = false;
+      
+      if (itMzClust < 0.0001)
+        fromSameScan[z] = false;
+      
+      // when traces are twice in a given scan for cluster breaks the for loop and decreases the itMzClust
+      if (fromSameScan[z])
+      {
+        itMzClust = itMzClust - 0.0001;
+        break;
+      }
+      
+      bool enough_presence = false;
+      
+      if (unique_temp_pre_ce.size() < unique_pre_ce.size())
+      {
+        enough_presence = unique_rt.size() * (unique_temp_pre_ce.size() / unique_pre_ce.size()) * presence <= unique_temp_rt.size();
+      }
+      else
+      {
+        enough_presence = unique_rt.size() * presence <= unique_temp_rt.size();
+      }
+      
+      // when is not enough present skips the m/z cluster
+      if (!enough_presence)
+        continue;
+      
+      auto max_intensity_ptr = std::max_element(temp_intensity.begin(), temp_intensity.end());
+      new_intensity.push_back(*max_intensity_ptr);
+      
+      int size_temp_mz = temp_mz.size();
+      
+      float mz_sum = 0, mz_numWeight = 0;
+      
+      for (int w = 0; w < size_temp_mz; w++)
+      {
+        mz_numWeight = mz_numWeight + temp_mz[w] * temp_intensity[w];
+        mz_sum = mz_sum + temp_intensity[w];
+      }
+      
+      float mean_mz = mz_numWeight / mz_sum;
+      
+      new_mz.push_back(mean_mz);
+      
+    } // end of clusters for loop
+    
+    hasFromSameScan = false;
+    
+    for (const bool &l : fromSameScan)
+    {
+      if (l)
+      {
+        hasFromSameScan = true;
+        break;
+      }
+    }
+  } // end of while loop
+  
+  const int n_new_mz = new_mz.size();
+  
+  if (n_new_mz > 0)
+  {
+    float pre_ce_mean = mean(pre_ce);
+    float pre_mz_mean = mean(pre_mz);
+    float rt_mean = mean(rt);
+    
+    pre_ce.clear();
+    pre_mz.clear();
+    rt.clear();
+    mz.clear();
+    intensity.clear();
+    is_pre.clear();
+    
+    pre_ce.resize(n_new_mz, pre_ce_mean);
+    pre_mz.resize(n_new_mz, pre_mz_mean);
+    rt.resize(n_new_mz, rt_mean);
+    mz.resize(n_new_mz);
+    intensity.resize(n_new_mz);
+    is_pre.resize(n_new_mz, false);
+    
+    for (int p = 0; p < n_new_mz; p++)
+    {
+      mz[p] = new_mz[p];
+      intensity[p] = new_intensity[p];
+      
+      if (mz[p] >= pre_mz_mean - mzClust && mz[p] <= pre_mz_mean + mzClust)
+      {
+        is_pre[p] = true;
+      }
+    }
+  }
 };

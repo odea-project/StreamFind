@@ -97,6 +97,8 @@ ms_files_complete <- list.files(path, pattern = ".mzML", full.names = TRUE)
 ```{r}
 #| code-fold: show
 ms <- MassSpecEngine$new(analyses = ms_files)
+ms$add_replicate_names(ms_files_df$replicate)
+ms$add_blank_names(ms_files_df$blank)
 ms$Metadata["name"] <- "nts_dev"
 ```
 
@@ -221,14 +223,14 @@ nta_workflow <- list(
     minIntensity = 10,
     filtered = TRUE
   ),
-  StreamFind::MassSpecMethod_FilterFeaturesMS2_native(
-    top = 25,
-    relMinIntensity = 0.05,
-    blankClean = TRUE,
-    mzClust = 0.008,
-    blankPresenceThreshold = 0.8,
-    globalPresenceThreshold = 0.3
-  ),
+  # StreamFind::MassSpecMethod_FilterFeaturesMS2_native(
+  #   top = 25,
+  #   relMinIntensity = 0.05,
+  #   blankClean = TRUE,
+  #   mzClust = 0.008,
+  #   blankPresenceThreshold = 0.8,
+  #   globalPresenceThreshold = 0.3
+  # ),
   StreamFind::MassSpecMethod_SuspectScreening_StreamFind(
     database = dbsus,
     ppm = 10,
@@ -272,11 +274,11 @@ nta_workflow <- Workflow(nta_workflow)
 # Run Workflow
 
 ```{r}
-ms$Workflow <- nta_workflow[1:7]
+ms$Workflow <- nta_workflow[1:16]
 
-cache_cats <- .info_cache_rds()$category
-cache_cats <- cache_cats[grepl("Fill", cache_cats)]
-.clear_cache_rds(cache_cats)
+# cache_cats <- .info_cache_rds()$category
+# cache_cats <- cache_cats[grepl("Fill", cache_cats)]
+# .clear_cache_rds(cache_cats)
 
 ms$run_workflow()
 ```
@@ -285,14 +287,31 @@ ms$run_workflow()
 
 ```{r}
 
-ms$NTS$feature_list[[1]]
+ms$NTS$feature_list[[11]]
 
 View(fl[, c("feature", "annotation")])
 
 
+plot_suspects(ms$NTS, analyses = 11)
+
+get_suspects(ms$NTS, analyses = 11)$fragments
+
+
+fl <- rcpp_nts_load_features_ms2(
+  ms$NTS$analyses_info[1, ],
+  ms$NTS$spectra_headers[1],
+  ms$NTS$feature_list[1],
+  filtered = TRUE,
+  minTracesIntensity = 10,
+  isolationWindow = 1.3,
+  mzClust = 0.008,
+  presence = 0.3
+)
+
 plot_groups_overview(ms$NTS, mass = dbis, legendNames = TRUE)
 
 
+plot_features_ms2(ms$NTS, analyses = 11, mass = dbis, legendNames = TRUE, filtered = TRUE)
 
 plot_features(ms$NTS, analyses = 4, mass = dbis, legendNames = TRUE)
 
@@ -306,7 +325,7 @@ fl_temp <- ms$NTS$feature_list[4:5]
 fl_temp <- lapply(fl_temp, function(z) z[order(mz, decreasing = TRUE), ])
 
 
-res <- rcpp_ms_fill_features(
+res <- rcpp_nts_fill_features(
   ms$NTS$analyses_info,
   ms$NTS$spectra_headers,
   ms$NTS$feature_list,
@@ -331,7 +350,7 @@ res <- rcpp_ms_fill_features(
 
 
 
-fl <- rcpp_ms_annotate_features(
+fl <- rcpp_nts_annotate_features(
   fl_temp,
   rtWindowAlignment = 0.3,
   maxIsotopes = 8,
@@ -343,7 +362,7 @@ identical(fl_temp, fl)
 
 View(rbindlist(fl$`01_tof_ww_is_pos_blank-r001`$annotation))
 
-# fl <- rcpp_ms_calculate_features_quality_v2(
+# fl <- rcpp_nts_calculate_features_quality_v2(
 #   ms$get_analysis_names()[1:2],
 #   ms$get_files()[1:2],
 #   ms$NTS@spectra_headers[1:2],

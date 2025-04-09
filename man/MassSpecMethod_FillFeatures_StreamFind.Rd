@@ -6,6 +6,7 @@
 \usage{
 MassSpecMethod_FillFeatures_StreamFind(
   withinReplicate = TRUE,
+  filtered = TRUE,
   rtExpand = 0,
   mzExpand = 0,
   minPeakWidth = 6,
@@ -21,6 +22,8 @@ MassSpecMethod_FillFeatures_StreamFind(
 }
 \arguments{
 \item{withinReplicate}{Logical of length one to fill within replicates not global.}
+
+\item{filtered}{Logical of length one to consider filtered features or not.}
 
 \item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
 retention time range.}

@@ -114,7 +114,7 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
   ana_info <- engine$NTS$analyses_info
   headers <- engine$NTS$spectra_headers
   
-  feature_list <- rcpp_ms_calculate_features_quality(
+  feature_list <- rcpp_nts_calculate_features_quality(
     ana_info,
     headers,
     feature_list,

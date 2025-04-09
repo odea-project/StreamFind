@@ -124,7 +124,7 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
 
   parameters <- x$parameters
   
-  feature_list <- rcpp_ms_fill_features(
+  feature_list <- rcpp_nts_fill_features(
     engine$NTS$analyses_info,
     engine$NTS$spectra_headers,
     engine$NTS$feature_list,

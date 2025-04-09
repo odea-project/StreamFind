@@ -7,7 +7,11 @@
 MassSpecMethod_FilterFeaturesMS2_native(
   top = NULL,
   minIntensity = NULL,
-  relMinIntensity = NULL
+  relMinIntensity = NULL,
+  blankClean = FALSE,
+  mzClust = 0.005,
+  blankPresenceThreshold = 0.8,
+  globalPresenceThreshold = 0.1
 )
 }
 \arguments{
@@ -16,6 +20,16 @@ MassSpecMethod_FilterFeaturesMS2_native(
 \item{minIntensity}{A numeric value specifying the minimum intensity.}
 
 \item{relMinIntensity}{A numeric value specifying the relative minimum intensity.}
+
+\item{blankClean}{A logical value specifying if blank cleaning should be performed. When \code{TRUE}
+MS2 traces present in the blank samples above the defined \code{blankPresenceThreshold} and above the
+\code{globalPresenceThreshold} are excluded.}
+
+\item{mzClust}{A numeric value specifying the m/z clustering threshold.}
+
+\item{blankPresenceThreshold}{A numeric value specifying the blank presence threshold.}
+
+\item{globalPresenceThreshold}{A numeric value specifying the global presence threshold.}
 }
 \value{
 A \code{MassSpecMethod_FilterFeaturesMS2_native} object.

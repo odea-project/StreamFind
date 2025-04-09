@@ -68,7 +68,8 @@ namespace NTS
   };
   
   // MARK: standard_deviation
-  inline float standard_deviation(const std::vector<float> &v, float mean_val)
+  inline float standard_deviation(const std::vector<float> &v,
+                                  float mean_val)
   {
     float sum = 0.0;
     for (float num : v)
@@ -91,7 +92,10 @@ namespace NTS
   };
   
   // MARK: gaussian_function
-  inline float gaussian_function(const float &A, const float &mu, const float &sigma, const float &x)
+  inline float gaussian_function(const float &A,
+                                 const float &mu,
+                                 const float &sigma,
+                                 const float &x)
   {
     return A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
   };
@@ -102,50 +106,102 @@ namespace NTS
   sc::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd);
   
   // MARK: merge_traces_within_rt
-  void merge_traces_within_rt(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity);
+  void merge_traces_within_rt(std::vector<float> &rt,
+                              std::vector<float> &mz,
+                              std::vector<float> &intensity);
   
   // MARK: find_central_max_index
-  size_t find_central_max_index(const std::vector<float> &rt, const std::vector<float> &intensity, const float &rt_mean, const float &rtWindow);
+  size_t find_central_max_index(const std::vector<float> &rt,
+                                const std::vector<float> &intensity,
+                                const float &rt_mean,
+                                const float &rtWindow);
   
   // MARK: trim_eic_by_low_cut
-  void trim_eic_by_low_cut(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity, const float &lowCut);
+  void trim_eic_by_low_cut(std::vector<float> &rt,
+                           std::vector<float> &mz,
+                           std::vector<float> &intensity,
+                           const float &lowCut);
   
   // MARK: trim_to_equal_length_around_max_position
-  void trim_to_equal_length_around_max_position(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity, const size_t max_position, const int minDiffSize, const int minTraces, const float maxTimeHalfWidth);
+  void trim_to_equal_length_around_max_position(std::vector<float> &rt,
+                                                std::vector<float> &mz,
+                                                std::vector<float> &intensity,
+                                                const size_t max_position,
+                                                const int minDiffSize,
+                                                const int minTraces,
+                                                const float maxTimeHalfWidth);
   
   // MARK: trim_peak_base
-  void trim_peak_base(std::vector<float> &rt, std::vector<float> &mz, std::vector<float> &intensity, size_t &max_position, const float curRatio);
+  void trim_peak_base(std::vector<float> &rt,
+                      std::vector<float> &mz,
+                      std::vector<float> &intensity,
+                      size_t &max_position,
+                      const float curRatio);
   
   // MARK: apply_moving_average
-  void apply_moving_average(std::vector<float>& x, const size_t &start, const size_t &end, const int &windowSize);
+  void apply_moving_average(std::vector<float>& x,
+                            const size_t &start,
+                            const size_t &end,
+                            const int &windowSize);
   
   // MARK: smooth_eic_sides
-  void smooth_eic_sides(std::vector<float>& x, const size_t &max_position, const int &windowSize);
+  void smooth_eic_sides(std::vector<float>& x,
+                        const size_t &max_position,
+                        const int &windowSize);
   
   // MARK: fit_gaussian_cost_function
-  float fit_gaussian_cost_function(const std::vector<float> &x, const std::vector<float> &y, const float &A, const float &mu, const float &sigma);
+  float fit_gaussian_cost_function(const std::vector<float> &x,
+                                   const std::vector<float> &y,
+                                   const float &A,
+                                   const float &mu,
+                                   const float &sigma);
   
   // MARK: fit_gaussian
-  void fit_gaussian(const std::vector<float> &x, const std::vector<float> &y, float &A, float &mu, float &sigma);
+  void fit_gaussian(const std::vector<float> &x,
+                    const std::vector<float> &y,
+                    float &A, float &mu,
+                    float &sigma);
   
   // MARK: calculate_gaussian_rsquared
-  float calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y, const float &A, const float &mu, const float &sigma);
+  float calculate_gaussian_rsquared(const std::vector<float> &x,
+                                    const std::vector<float> &y,
+                                    const float &A,
+                                    const float &mu,
+                                    const float &sigma);
   
   // MARK: trapezoidal_area
-  float trapezoidal_area(const std::vector<float> &x, const std::vector<float> &intensity);
+  float trapezoidal_area(const std::vector<float> &x,
+                         const std::vector<float> &intensity);
+  
+  // MARK: is_max_gap_reached
+  bool is_max_gap_reached(const int &s, const int &maxGaps,
+                          const std::vector<int> &steps);
+  
+  // MARK: cluster_spectra
+  Rcpp::List cluster_spectra(const Rcpp::List &spectra,
+                             const float &mzClust, const float &presence);
+  
+  // MARK: cluster_spectra_internal
+  void cluster_spectra_internal(std::vector<float> &pre_ce,
+                                std::vector<float> &pre_mz,
+                                std::vector<float> &rt,
+                                std::vector<float> &mz,
+                                std::vector<float> &intensity,
+                                std::vector<bool> &is_pre,
+                                const float &mzClust,
+                                const float &presence);
   
   // MARK: STRUCTS
   
   // MARK: FEATURE_EIC
   struct FEATURE_EIC
   {
-    std::string feature;
+    std::string feature = "";
     int polarity;
     int level;
     std::vector<float> rt;
     std::vector<float> mz;
     std::vector<float> intensity;
-    bool is_extracted = false;
     
     int size() const
     {
@@ -154,7 +210,7 @@ namespace NTS
     
     Rcpp::List to_list_dt() const
     {
-      if (rt.size() == 0)
+      if (feature == "" || rt.size() == 0)
         return get_empty_dt();
       
       std::vector<std::string> feature_v(rt.size(), feature);
@@ -198,8 +254,7 @@ namespace NTS
       const std::vector<float> &intensity_ref = Rcpp::as<std::vector<float>>(eic_list["intensity"]);
       
       const int n = rt_ref.size();
-      if (n == 0)
-        return;
+      if (n == 0) return;
       
       feature = feature_ref[0];
       polarity = polarity_ref[0];
@@ -207,14 +262,12 @@ namespace NTS
       rt = rt_ref;
       mz = mz_ref;
       intensity = intensity_ref;
-      is_extracted = true;
     };
     
     void import_from_ms_targets_spectra(const sc::MS_TARGETS_SPECTRA &spectra)
     {
       if (spectra.rt.size() > 0)
       {
-        is_extracted = true;
         feature = spectra.id[0];
         polarity = spectra.polarity[0];
         level = spectra.level[0];
@@ -229,15 +282,15 @@ namespace NTS
   // MARK: FEATURE_MS1
   struct FEATURE_MS1
   {
-    std::string feature;
+    std::string feature = "";
     int polarity;
     int level;
+    std::vector<float> pre_ce;
     std::vector<float> pre_mz;
     std::vector<float> rt;
     std::vector<float> mz;
     std::vector<float> intensity;
     std::vector<bool> is_pre;
-    bool extracted = false;
     
     int size() const
     {
@@ -246,7 +299,7 @@ namespace NTS
     
     Rcpp::List to_list_dt() const
     {
-      if (rt.size() == 0)
+      if (feature == "" || rt.size() == 0)
         return get_empty_dt();
       
       std::vector<std::string> feature_v(rt.size(), feature);
@@ -300,27 +353,102 @@ namespace NTS
       feature = feature_ref[0];
       polarity = polarity_ref[0];
       level = level_ref[0];
+      std::vector<float> pre_ce_temp(n, 0.0f);
+      pre_ce = pre_ce_temp;
       pre_mz = pre_mz_ref;
       rt = rt_ref;
       mz = mz_ref;
       intensity = intensity_ref;
       is_pre = is_pre_ref;
-      extracted = true;
+    };
+    
+    void import_from_ms_targets_spectra(const sc::MS_TARGETS_SPECTRA &spectra)
+    {
+      if (spectra.rt.size() > 0)
+      {
+        feature = spectra.id[0];
+        polarity = spectra.polarity[0];
+        level = spectra.level[0];
+        pre_ce = spectra.pre_ce;
+        pre_mz = spectra.pre_mz;
+        rt = spectra.rt;
+        mz = spectra.mz;
+        intensity = spectra.intensity;
+        std::vector<bool> is_pre_temp(spectra.rt.size(), false);
+        is_pre = is_pre_temp;
+      }
+    };
+    
+    void sort_by_mz()
+    {
+      if (rt.size() == 0)
+        return;
+      
+      const int n = rt.size();
+      
+      std::vector<size_t> indices(mz.size());
+      std::iota(indices.begin(), indices.end(), 0);
+      std::sort(indices.begin(), indices.end(), [&](size_t i1, size_t i2) { return mz[i1] < mz[i2]; });
+      
+      std::vector<float> pre_ce_temp(n);
+      std::vector<float> pre_mz_temp(n);
+      std::vector<float> rt_temp(n);
+      std::vector<float> mz_temp(n);
+      std::vector<float> intensity_temp(n);
+      std::vector<bool> is_pre_temp(n);
+      
+      for (size_t i = 0; i < indices.size(); ++i)
+      {
+        pre_ce_temp[i] = pre_ce[indices[i]];
+        pre_mz_temp[i] = pre_mz[indices[i]];
+        rt_temp[i] = rt[indices[i]];
+        mz_temp[i] = mz[indices[i]];
+        intensity_temp[i] = intensity[indices[i]];
+        is_pre_temp[i] = is_pre[indices[i]];
+      }
+      
+      pre_ce = pre_ce_temp;
+      pre_mz = pre_mz_temp;
+      rt = rt_temp;
+      mz = mz_temp;
+      intensity = intensity_temp;
+      is_pre = is_pre_temp;
+    };
+    
+    void set_precursor_mz(const float &val)
+    {
+      if (pre_mz.size() == 0)
+        return;
+      
+      for (size_t i = 0; i < pre_mz.size(); ++i)
+      {
+        if (is_pre[i])
+          pre_mz[i] = val;
+      }
+    };
+    
+    void cluster(const float &mzClust, const float &presence)
+    {
+      if (rt.size() > 0)
+      {
+        this->sort_by_mz();
+        cluster_spectra_internal(pre_ce, pre_mz, rt, mz, intensity, is_pre, mzClust, presence);
+      }
     };
   };
   
   // MARK: FEATURE_MS2
   struct FEATURE_MS2
   {
-    std::string feature;
+    std::string feature = "";
     int polarity;
     int level;
+    std::vector<float> pre_ce;
     std::vector<float> pre_mz;
     std::vector<float> rt;
     std::vector<float> mz;
     std::vector<float> intensity;
     std::vector<bool> is_pre;
-    bool extracted = false;
     
     int size() const
     {
@@ -329,7 +457,7 @@ namespace NTS
     
     Rcpp::List to_list_dt() const
     {
-      if (rt.size() == 0)
+      if (feature == "" || rt.size() == 0)
         return get_empty_dt();
       
       std::vector<std::string> feature_v(rt.size(), feature);
@@ -383,12 +511,87 @@ namespace NTS
       feature = feature_ref[0];
       polarity = polarity_ref[0];
       level = level_ref[0];
+      std::vector<float> pre_ce_temp(n, 0.0f);
+      pre_ce = pre_ce_temp;
       pre_mz = pre_mz_ref;
       rt = rt_ref;
       mz = mz_ref;
       intensity = intensity_ref;
       is_pre = is_pre_ref;
-      extracted = true;
+    };
+    
+    void import_from_ms_targets_spectra(const sc::MS_TARGETS_SPECTRA &spectra)
+    {
+      if (spectra.rt.size() > 0)
+      {
+        feature = spectra.id[0];
+        polarity = spectra.polarity[0];
+        level = spectra.level[0];
+        pre_ce = spectra.pre_ce;
+        pre_mz = spectra.pre_mz;
+        rt = spectra.rt;
+        mz = spectra.mz;
+        intensity = spectra.intensity;
+        std::vector<bool> is_pre_temp(spectra.rt.size(), false);
+        is_pre = is_pre_temp;
+      }
+    };
+    
+    void sort_by_mz()
+    {
+      if (rt.size() == 0)
+        return;
+      
+      const int n = rt.size();
+      
+      std::vector<size_t> indices(mz.size());
+      std::iota(indices.begin(), indices.end(), 0);
+      std::sort(indices.begin(), indices.end(), [&](size_t i1, size_t i2) { return mz[i1] < mz[i2]; });
+      
+      std::vector<float> pre_ce_temp(n);
+      std::vector<float> pre_mz_temp(n);
+      std::vector<float> rt_temp(n);
+      std::vector<float> mz_temp(n);
+      std::vector<float> intensity_temp(n);
+      std::vector<bool> is_pre_temp(n);
+      
+      for (size_t i = 0; i < indices.size(); ++i)
+      {
+        pre_ce_temp[i] = pre_ce[indices[i]];
+        pre_mz_temp[i] = pre_mz[indices[i]];
+        rt_temp[i] = rt[indices[i]];
+        mz_temp[i] = mz[indices[i]];
+        intensity_temp[i] = intensity[indices[i]];
+        is_pre_temp[i] = is_pre[indices[i]];
+      }
+      
+      pre_ce = pre_ce_temp;
+      pre_mz = pre_mz_temp;
+      rt = rt_temp;
+      mz = mz_temp;
+      intensity = intensity_temp;
+      is_pre = is_pre_temp;
+    };
+    
+    void set_precursor_mz(const float &val)
+    {
+      if (pre_mz.size() == 0)
+        return;
+      
+      for (size_t i = 0; i < pre_mz.size(); ++i)
+      {
+        if (is_pre[i])
+          pre_mz[i] = val;
+      }
+    };
+    
+    void cluster(const float &mzClust, const float &presence)
+    {
+      if (rt.size() > 0)
+      {
+        this->sort_by_mz();
+        cluster_spectra_internal(pre_ce, pre_mz, rt, mz, intensity, is_pre, mzClust, presence);
+      }
     };
   };
   
@@ -402,7 +605,6 @@ namespace NTS
     float gauss_u = 0.0f;
     float gauss_s = 0.0f;
     float gauss_f = 0.0f;
-    bool is_calculated = false;
     
     Rcpp::List to_list_dt() const
     {
@@ -458,7 +660,6 @@ namespace NTS
       gauss_u = gauss_u_ref[0];
       gauss_s = gauss_s_ref[0];
       gauss_f = gauss_f_ref[0];
-      is_calculated = true;
     };
   };
   
@@ -485,7 +686,6 @@ namespace NTS
     std::string adduct_cat = "";
     float adduct_time_error = 0.0f;
     float adduct_mass_error = 0.0f;
-    bool is_annotated = false;
     
     void as_only_monoisotopic_ion(const std::string &ft)
     {
@@ -505,7 +705,6 @@ namespace NTS
       iso_theoretical_max_relative_intensity = 0;
       iso_number_carbons = 0;
       iso_size = 0;
-      is_annotated = true;
     };
     
     Rcpp::List to_list_dt() const
@@ -605,7 +804,6 @@ namespace NTS
       adduct_cat = adduct_cat_ref[0];
       adduct_time_error = adduct_time_error_ref[0];
       adduct_mass_error = adduct_mass_error_ref[0];
-      is_annotated = false;
     };
   };
   
@@ -641,11 +839,13 @@ namespace NTS
     Rcpp::List formulas;
     Rcpp::List compounds;
     
-    void calculate_quality(const float &baseCut, const float &rtWindow, const float &maxTimeHalfWidth);
+    void calculate_quality(const float &baseCut,
+                           const float &rtWindow,
+                           const float &maxTimeHalfWidth);
     
     void update_properties()
     {
-      if (eic.is_extracted)
+      if (eic.rt.size() > 0)
       {
         mzmin = *std::min_element(eic.mz.begin(), eic.mz.end());
         mzmax = *std::max_element(eic.mz.begin(), eic.mz.end());
@@ -702,7 +902,9 @@ namespace NTS
       analysis = a;
       
       if (fts.size() == 0)
+      {
         return;
+      }
       
       std::vector<std::string> must_have_names = {
         "feature", "group",
@@ -885,6 +1087,10 @@ namespace NTS
       ms2[i] = feature_i.ms2;
       quality[i] = feature_i.quality;
       annotation[i] = feature_i.annotation;
+      istd[i] = feature_i.istd;
+      suspects[i] = feature_i.suspects;
+      formulas[i] = feature_i.formulas;
+      compounds[i] = feature_i.compounds;
     };
     
     void append_feature(const FEATURE &feature_i) {
@@ -944,9 +1150,13 @@ namespace NTS
         quality_list[i] = quality[i].to_list_dt();
         annotation_list[i] = annotation[i].to_list_dt();
         istd_list[i] = istd[i];
+        istd_list[i].attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
         suspects_list[i] = suspects[i];
+        suspects_list[i].attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
         formulas_list[i] = formulas[i];
+        formulas_list[i].attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
         compounds_list[i] = compounds[i];
+        compounds_list[i].attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
       }
       
       Rcpp::List out = Rcpp::List::create(
@@ -992,7 +1202,9 @@ namespace NTS
       }
       
       if (feature.size() == 0)
+      {
         return;
+      }
       
       std::vector<int> indices(feature.size());
       std::iota(indices.begin(), indices.end(), 0);
@@ -1808,21 +2020,6 @@ namespace NTS
     
     void annotate_adducts();
   };
-
-  Rcpp::List calculate_gaussian_fit(
-    const std::string &ft,
-    const float &rt_mean,
-    std::vector<float> &mz,
-    std::vector<float> &rt,
-    std::vector<float> &intensity,
-    const float &baseCut,
-    const float &rtWindow,
-    const float &maxTimeHalfWidth
-  );
-
-  bool is_max_gap_reached(const int &s, const int &maxGaps, const std::vector<int> &steps);
-
-  Rcpp::List cluster_spectra(const Rcpp::List &spectra, const float &mzClust, const float &presence);
 
 }; // namespace NTS
 

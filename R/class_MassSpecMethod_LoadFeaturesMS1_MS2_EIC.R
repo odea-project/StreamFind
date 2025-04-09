@@ -89,21 +89,12 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS1_StreamFind) <- function(x, engine
     return(FALSE)
   }
   
-  feature_list <- nts$feature_list
-  
-  feature_list <- lapply(feature_list, function(z) {
-    if (!"ms1" %in% colnames(z)) z$ms1 <- list(rep(data.table::data.table(), nrow(z)))
-    z
-  })
-  
   parameters <- x$parameters
-  ana_info <- nts$analyses_info
   
-  feature_list <- rcpp_ms_load_features_ms1(
-    analyses_names = ana_info$analysis,
-    analyses_files = ana_info$file,
-    headers = nts$spectra_headers,
-    features = feature_list,
+  feature_list <- rcpp_nts_load_features_ms1(
+    nts$analyses_info,
+    nts$spectra_headers,
+    nts$feature_list,
     filtered = parameters$filtered,
     rtWindow = parameters$rtWindow,
     mzWindow = parameters$mzWindow,
@@ -209,21 +200,12 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS2_StreamFind) <- function(x, engine
     return(FALSE)
   }
   
-  feature_list <- nts$feature_list
-  
-  feature_list <- lapply(feature_list, function(z) {
-    if (!"ms2" %in% colnames(z)) z$ms2 <- list(rep(data.table::data.table(), nrow(z)))
-    z
-  })
-  
   parameters <- x$parameters
-  ana_info <- nts$analyses_info
   
-  feature_list <- rcpp_ms_load_features_ms2(
-    analyses_names = ana_info$analysis,
-    analyses_files = ana_info$file,
-    headers = nts$spectra_headers,
-    features = feature_list,
+  feature_list <- rcpp_nts_load_features_ms2(
+    nts$analyses_info,
+    nts$spectra_headers,
+    nts$feature_list,
     filtered = parameters$filtered,
     minTracesIntensity = parameters$minIntensity,
     isolationWindow = parameters$isolationWindow,
@@ -322,22 +304,12 @@ S7::method(run, MassSpecMethod_LoadFeaturesEIC_StreamFind) <- function(x, engine
     warning("NTS object does not have features! Not done.")
     return(FALSE)
   }
-  
-  feature_list <- nts$feature_list
-  
-  feature_list <- lapply(feature_list, function(z) {
-    if (!"eic" %in% colnames(z)) z$eic <- list(rep(data.table::data.table(), nrow(z)))
-    z
-  })
-    
   parameters <- x$parameters
-  ana_info <- nts$analyses_info
   
-  feature_list <- rcpp_ms_load_features_eic(
-    analyses_names = ana_info$analysis,
-    analyses_files = ana_info$file,
-    headers = nts$spectra_headers,
-    feature_list,
+  feature_list <- rcpp_nts_load_features_eic(
+    nts$analyses_info,
+    nts$spectra_headers,
+    nts$feature_list,
     parameters$filtered,
     parameters$rtExpand,
     parameters$mzExpand,

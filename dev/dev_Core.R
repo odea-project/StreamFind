@@ -399,7 +399,7 @@ core$load()
 
 
 
-res <- rcpp_ms_calculate_features_quality(
+res <- rcpp_nts_calculate_features_quality(
   ms$analyses$analyses[1:3],
   ms$NTS$feature_list[1:3],
   filtered = FALSE,
@@ -437,7 +437,7 @@ any(duplicated(fts_all$feature))
 any(duplicated(res$feature))
 any(duplicated(res$index))
 
-res <- rcpp_ms_annotate_features(
+res <- rcpp_nts_annotate_features(
   ms$NTS$feature_list[1],
   rtWindowAlignment = 0.3,
   maxIsotopes = 8L,
@@ -479,7 +479,7 @@ View(ms$NTS$feature_list)
 clear_cache("fill_features")
 
 
-res <- rcpp_ms_calculate_features_quality(
+res <- rcpp_nts_calculate_features_quality(
   ms$analyses$analyses[1:3],
   ms$NTS$feature_list[1:3],
   filtered = FALSE,
@@ -680,7 +680,7 @@ View(ms$get_features()[11945])
 ms$get_features()
 
 
-res <- rcpp_ms_fill_features(
+res <- rcpp_nts_fill_features(
   ms$analyses$analyses[1:3],
   ms$get_features(analyses = 1:3),
   withinReplicate = FALSE,

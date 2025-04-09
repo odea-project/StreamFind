@@ -79,9 +79,9 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
     return(FALSE)
   }
 
-  NTS <- engine$NTS
+  nts <- engine$NTS
 
-  if (!NTS$has_features) {
+  if (!nts$has_features) {
     warning("There are no features! Run find_features first!")
     return(FALSE)
   }
@@ -96,12 +96,11 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
   }
 
   internal_standards <- get_suspects(
-    engine$NTS,
+    nts,
     database = database,
     ppm = x$parameters$ppm,
     sec = x$parameters$sec,
-    filtered = TRUE,
-    onGroups = FALSE
+    filtered = TRUE
   )
 
   if (nrow(internal_standards) == 0) {
@@ -128,7 +127,7 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
   } else {
     blks <- engine$Analyses$blanks
 
-    if (any(!is.na(blks)) & NTS$has_groups) {
+    if (any(!is.na(blks)) & nts$has_groups) {
       rpls <- engine$Analyses$replicates
 
       internal_standards$replicate <- rpls[internal_standards$analysis]
@@ -201,16 +200,15 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
     
     internal_standards_l <- split(internal_standards, internal_standards$analysis)
     
-    features <- NTS$feature_list
+    features <- nts$feature_list
 
-    istd_col <- lapply(names(features), function(x, features, internal_standards_l) {
-      istd <- internal_standards_l[[x]]
-
-      fts <- features[[x]]
+    istd_col <- lapply(names(features), function(z, features, internal_standards_l) {
+      istd <- internal_standards_l[[z]]
+      fts <- features[[z]]
 
       if (!is.null(istd)) {
-        istd_l <- lapply(fts$feature, function(z, istd) {
-          istd_idx <- which(istd$feature %in% z)
+        istd_l <- lapply(fts$feature, function(j, istd) {
+          istd_idx <- which(istd$feature %in% j)
 
           if (length(istd_idx) > 0) {
             istd_temp <- istd[istd_idx, ]
@@ -219,29 +217,29 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
             if (nrow(istd_temp) > 0) {
               istd_temp
             } else {
-              NULL
+              data.table::data.table()
             }
           } else {
-            NULL
+            data.table::data.table()
           }
         }, istd = istd)
 
         istd_l
       } else {
-        lapply(fts$feature, function(x) NULL)
+        lapply(fts$feature, function(j) data.table::data.table())
       }
     }, features = features, internal_standards_l = internal_standards_l)
 
     names(istd_col) <- names(features)
 
-    features <- Map(function(x, y) {
-      x[["istd"]] <- y
-      x
+    features <- Map(function(fts, i) {
+      fts$istd <- i
+      fts
     }, features, istd_col)
 
-    NTS$feature_list <- features
+    nts$feature_list <- features
     
-    engine$NTS <- NTS
+    engine$NTS <- nts
 
     message(
       "\U2713 ",
