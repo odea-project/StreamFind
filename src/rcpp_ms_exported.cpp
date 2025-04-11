@@ -821,11 +821,11 @@ Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
         targets.polarity.push_back(ft_j.polarity);
         targets.precursor.push_back(false);
         targets.mz.push_back(ft_j.mz);
-        targets.mzmin.push_back(ft_j.mz + mzWindow[mzWindowMin_idx]);
-        targets.mzmax.push_back(ft_j.mz + mzWindow[mzWindowMax_idx]);
+        targets.mzmin.push_back(ft_j.mzmin + mzWindow[mzWindowMin_idx]);
+        targets.mzmax.push_back(ft_j.mzmax + mzWindow[mzWindowMax_idx]);
         targets.rt.push_back(ft_j.rt);
-        targets.rtmin.push_back(ft_j.rt + rtWindow[rtWindowMin_idx]);
-        targets.rtmax.push_back(ft_j.rt + rtWindow[rtWindowMax_idx]);
+        targets.rtmin.push_back(ft_j.rtmin + rtWindow[rtWindowMin_idx]);
+        targets.rtmax.push_back(ft_j.rtmax + rtWindow[rtWindowMax_idx]);
         targets.mobilitymin.push_back(0);
         targets.mobilitymax.push_back(0);
       }
@@ -1059,7 +1059,7 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
   
   for (int i = 0; i < data.size(); i++)
   {
-    NTS::FEATURES &fts_i = data.features[i];
+    NTS::FEATURES fts_i = data.features[i];
     
     if (fts_i.size() == 0)
       continue;
@@ -1076,7 +1076,7 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
       if (ft_j.filtered && !filtered)
         continue;
       
-      if (ft_j.ms2.rt.size() == 0 || ft_j.ms2.feature == "")
+      if (ft_j.ms2.feature == "")
       {
         targets.index.push_back(counter);
         counter++;
@@ -1084,12 +1084,10 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
         targets.level.push_back(2);
         targets.polarity.push_back(ft_j.polarity);
         targets.precursor.push_back(true);
-        targets.mz.push_back(ft_j.mz);
-        targets.mzmin.push_back(ft_j.mz - (isolationWindow / 2));
-        targets.mzmax.push_back(ft_j.mz + (isolationWindow / 2));
-        targets.rt.push_back(ft_j.rt);
-        targets.rtmin.push_back(ft_j.rt - 2);
-        targets.rtmax.push_back(ft_j.rt + 2);
+        targets.mzmin.push_back(ft_j.mzmin - (isolationWindow / 2));
+        targets.mzmax.push_back(ft_j.mzmax + (isolationWindow / 2));
+        targets.rtmin.push_back(ft_j.rtmin - 1);
+        targets.rtmax.push_back(ft_j.rtmax + 1);
         targets.mobilitymin.push_back(0);
         targets.mobilitymax.push_back(0);
       }
@@ -1111,7 +1109,7 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
     }
     
     sc::MS_FILE ana(file_i);
-    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, minTracesIntensity, 0);
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, 0, minTracesIntensity);
     
     for (int j = 0; j < fts_i.size(); j++)
     {
@@ -1120,7 +1118,7 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
       if (ft_j.filtered && !filtered)
         continue;
       
-      if (ft_j.ms2.rt.size() == 0 || ft_j.ms2.feature == "") {
+      if (ft_j.ms2.feature == "") {
         const sc::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
         ft_j.ms2.import_from_ms_targets_spectra(res_j);
         ft_j.ms2.cluster(mzClust, presence);
@@ -1754,6 +1752,8 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
               if (fts_j.rt[k] > sd_rt_min && fts_j.rt[k] < sd_rt_max)
               {
                 fts_j.group[k] = ana_targets_groups[j][i];
+                fts_j.filtered[k] = false;
+                fts_j.filter[k] = fts_j.filter[k] + " recovered";
                 has_feature = true;
                 break;
               }
@@ -1822,7 +1822,7 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
       
       const std::string &id_i = ana_targets[j].id[i];
       
-      // if (id_i == "M268_R916_1302") {
+      // if (id_i == "M326_R957_2643") {
       //   Rcpp::Rcout << std::endl;
       //   for (int z = 0; z < n_traces; z++)
       //     if (res.id[z] == id_i)
@@ -1897,6 +1897,7 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
       }
       
       NTS::FEATURE ft;
+      ft.feature = id_i;
       ft.rt = tg_rt[i];
       ft.eic.import_from_ms_targets_spectra(res_i);
       ft.calculate_quality(baseCut, maxSearchWindow, maxHalfPeakWidth);

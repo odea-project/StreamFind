@@ -1729,8 +1729,8 @@ S7::method(get_groups, NTS) <- function(x,
   )
   
   if (correctIntensity) {
-    if ("suppression_factor" %in% colnames(fts)) {
-      fts$intensity <- fts$intensity * fts$suppression_factor
+    if ("correction" %in% colnames(fts)) {
+      fts$intensity <- fts$intensity * fts$correction
     }
   }
   
@@ -2108,8 +2108,8 @@ S7::method(plot_groups_overview, NTS) <- function(x,
     df_3 <- fts[fts$var == g, ]
     
     if (correctIntensity) {
-      if ("suppression_factor" %in% colnames(df_3)) {
-        df_3$intensity <- df_3$intensity * df_3$suppression_factor
+      if ("correction" %in% colnames(df_3)) {
+        df_3$intensity <- df_3$intensity * df_3$correction
       }
     }
     
@@ -2253,8 +2253,8 @@ S7::method(plot_groups_profile, NTS) <- function(x,
   if (!"polarity" %in% colnames(fts)) fts$polarity <- polarities[fts$analysis]
   
   if (correctIntensity) {
-    if ("suppression_factor" %in% colnames(fts)) {
-      fts$intensity <- fts$intensity * fts$suppression_factor
+    if ("correction" %in% colnames(fts)) {
+      fts$intensity <- fts$intensity * fts$correction
     }
   }
   
@@ -2531,7 +2531,7 @@ S7::method(get_groups_ms1, NTS) <- function(x,
     if (!is.null(z)) {
       if (nrow(z) > 0) {
         z <- z[order(z$intensity, decreasing = TRUE), ]
-        z <- z[seq_len(min(nrow(x), top)), ]
+        z <- z[seq_len(min(nrow(z), top)), ]
         z <- z[order(z$mz), ]
       }
     }
@@ -2661,7 +2661,7 @@ S7::method(get_groups_ms2, NTS) <- function(x,
     if (!is.null(z)) {
       if (nrow(z) > 0) {
         z <- z[order(z$intensity, decreasing = TRUE), ]
-        z <- z[seq_len(min(nrow(x), top)), ]
+        z <- z[seq_len(min(nrow(z), top)), ]
         z <- z[order(z$mz), ]
       }
     }
@@ -2998,62 +2998,44 @@ S7::method(get_components, NTS) <- function(x,
     return(data.table::data.table())
   }
   
-  fts$uid <- paste0(fts$analysis, "-", fts$feature)
+  fts <- split(fts, fts$analysis)
+  fts_sel <- lapply(x@analyses_info$analysis, function(z, fts) {
+    if (z %in% names(fts)) {
+      return(fts[[z]])
+    } else {
+      data.table::data.table()
+    }
+  }, fts = fts)
   
-  if ("name" %in% colnames(fts)) names_uid <- fts[, c("name", "uid"), with = FALSE]
+  names(fts_sel) <- x@analyses_info$analysis
   
   all_fts <- x$feature_list
   
-  all_fts <- Map(function(x, y) {
-    x$analysis <- y
-    x
-  }, all_fts, names(all_fts))
-  
-  all_fts <- lapply(all_fts, function(z, fts) {
-    sel <- vapply(z[["annotation"]], function(k) nrow(k) > 0, FALSE)
+  all_fts <- Map(function(z, k) {
+    if (nrow(z) == 0) return(data.table::data.table())
+    if (nrow(k) == 0) return(data.table::data.table())
+    sel <- vapply(z[["annotation"]], function(i) nrow(i) > 0, FALSE)
     z <- z[sel, ]
-    cf <- vapply(z[["annotation"]], function(k) k$component_feature, "")
-    z$uid <- paste0(z$analysis, "-", cf)
-    z <- z[z$uid %in% fts$uid | z$feature %in% fts$feature, ]
-    update_fts_uid <- match(z$feature, fts$feature)
-    update_fts_uid <- update_fts_uid[!is.na(update_fts_uid)]
-    z$uid[z$feature %in% fts$feature] <- fts$uid[update_fts_uid]
-    if ("name" %in% colnames(fts)) {
-      z$name <- names_uid$name[match(z$uid, names_uid$uid)]
-    }
-    z$analysis <- NULL
+    cf <- vapply(z[["annotation"]], function(i) i$component_feature, "")
+    z$component_feature <- cf
+    z <- z[cf %in% k$feature | z$feature %in% k$feature, ]
     z
-  }, fts = fts)
+  }, all_fts, fts_sel)
   
   all_fts <- lapply(all_fts, function(z) {
-    if (nrow(z) == 0) {
-      return(data.table::data.table())
-    }
+    if (nrow(z) == 0) return(data.table::data.table())
     annotation <- lapply(z[["annotation"]], function(k) data.table::as.data.table(k))
     annotation <- data.table::rbindlist(annotation)
-    feature <- NULL
-    z <- z[annotation, on = .(feature)]
+    z <- z[annotation, on = "feature"]
     z <- z[order(z$component_feature), ]
     z
   })
   
   all_fts <- data.table::rbindlist(all_fts, idcol = "analysis", fill = TRUE)
-  
   all_fts$replicate <- x$replicates[all_fts$analysis]
-  
   data.table::setnames(all_fts, "component_feature", "component")
+  data.table::setcolorder(all_fts, c("analysis", "replicate", "component", "feature", "group"))
   
-  if ("group" %in% colnames(all_fts)) {
-    groups <- fts$group
-    names(groups) <- fts$uid
-    groups <- groups[!is.na(groups)]
-    all_fts$group <- groups[all_fts$uid]
-    data.table::setcolorder(all_fts, c("analysis", "replicate", "component", "feature", "group"))
-  } else {
-    data.table::setcolorder(all_fts, c("analysis", "replicate", "component", "feature"))
-  }
-  
-  all_fts$uid <- NULL
   all_fts
 }
 
@@ -4711,7 +4693,7 @@ S7::method(get_fold_change, NTS) <- function(x,
     average = FALSE,
     sdValues = FALSE,
     metadata = FALSE,
-    correctIntensity
+    correctIntensity = correctIntensity
   )
   
   if (nrow(groups_dt) == 0) {
@@ -5315,7 +5297,7 @@ S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
   av_ms1 <- get_groups_ms1(
     x,
     groups = groups,
-    useLoadedData = FALSE,
+    useLoadedData = TRUE,
     mzClust = mzClust,
     presence = presence,
     minIntensity = minIntensity,
@@ -5326,7 +5308,7 @@ S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
   av_ms2 <- get_groups_ms2(
     x,
     groups = groups,
-    useLoadedData = FALSE,
+    useLoadedData = TRUE,
     mzClust = mzClust,
     presence = presence,
     minIntensity = minIntensity,
@@ -5583,6 +5565,8 @@ S7::method(report, NTS) <- function(x,
     "</br> rt: ", round(pk$rt, digits = 0),
     "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
     "</br> intensity: ", round(pk$intensity, digits = 0),
+    "</br> area: ", round(pk$area, digits = 0),
+    "</br> correction: ", round(pk$correction, digits = 0),
     "</br> filtered: ", pk$filtered,
     "</br> filter: ", pk$filter,
     "</br> filled: ", pk$filled,

@@ -627,7 +627,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
     }
   }
   
-  // std::string print_ft = "F276_MZ275_RT915";
+  // std::string print_ft = "M326_R957_2643";
   // 
   // if (feature == print_ft) {
   //   Rcpp::Rcout << std::endl;
