@@ -741,14 +741,10 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
           padding = "8px 12px"
         ) %>%
         # Highlight numeric columns
-        # Remove conflicting background formatting on selection
         DT::formatStyle(
           columns = intersect(numeric_cols, names(features)),
-          backgroundColor = DT::styleEqual(
-            unique(features[[1]]),  # You can use any column with unique row IDs
-            rep(NA, length(unique(features[[1]])))  # No forced color
-          ),
-          color = "black"  # Default text color (override white-on-white bug)
+          backgroundColor = NULL,
+          color = NULL
         )
     })
 
@@ -764,9 +760,14 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       content = function(file) {
         # Get all features data
         features <- get_features(nts_data())
+
+        # Replace list-cols with flags because we flattened tghem
+        features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
+        features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
+        features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
         
         # Remove nested columns for CSV export
-        nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
+        nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
         export_features <- features[, !nested_cols, with = FALSE]
         
         # Export to CSV
@@ -783,8 +784,13 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
         selected_rows <- input$features_table_rows_selected
         features <- get_features(nts_data())
 
+        # Replace list-cols with flags because we flattened tghem
+        features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
+        features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
+        features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
+
         # Remove nested columns
-        nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
+        nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
 
         if (!is.null(selected_rows) && length(selected_rows) > 0) {
           selected_features <- features[selected_rows, !nested_cols, with = FALSE]
