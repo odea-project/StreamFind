@@ -681,9 +681,18 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
       # Fetch features data
       features <- get_features(nts_data())
       
-      # Remove nested columns
+      # Store availability flags in temp vars to avoid name conflict with original list-cols
+      features$ms1_flag <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
+      features$ms2_flag <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
+      features$istd_flag <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
+
+      # Remove original nested list-columns
       nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
       features <- features[, !nested_cols, with = FALSE]
+
+      # Rename flags to final column names
+      data.table::setnames(features, old = c("ms1_flag", "ms2_flag", "istd_flag"), new = c("ms1", "ms2", "istd"))
+
       
       # Round numeric columns to 4 decimal places for readability
       numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
@@ -732,15 +741,14 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
           padding = "8px 12px"
         ) %>%
         # Highlight numeric columns
+        # Remove conflicting background formatting on selection
         DT::formatStyle(
           columns = intersect(numeric_cols, names(features)),
-          background = DT::styleColorBar(
-            range(features[, intersect(numeric_cols, names(features)), with = FALSE], na.rm = TRUE),
-            "rgba(78, 115, 223, 0.1)"
+          backgroundColor = DT::styleEqual(
+            unique(features[[1]]),  # You can use any column with unique row IDs
+            rep(NA, length(unique(features[[1]])))  # No forced color
           ),
-          backgroundSize = "98% 88%",
-          backgroundRepeat = "no-repeat",
-          backgroundPosition = "center"
+          color = "black"  # Default text color (override white-on-white bug)
         )
     })
 
