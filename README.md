@@ -8,6 +8,8 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 <img src="man/figures/logos.png" alt="Logo" width="100%" style="display: block; margin: auto;" />
 
+<div style="text-align: justify;">
+
 StreamFind R package is developed within the project [“Flexible data
 analysis and workflow designer to identify chemicals in the water
 cycle”](https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html)
@@ -30,6 +32,8 @@ and its embedded graphical user interface.
 
 The StreamFind development is ongoing, please [contact
 us](mailto:cunha@iuta.de) for questions or collaboration.
+
+</div>
 
 ## Installation
 
