@@ -739,7 +739,10 @@ output$features_table <- DT::renderDT({
   # Reorder columns to place Remove as the second column after analysis
   setcolorder(features, c("analysis", "Remove", setdiff(names(features), c("analysis", "Remove"))))
 
-  # Render the DataTable with enhanced styling
+  # Determine the index of the 'filtered' column (0-based for JavaScript)
+  filtered_col_index <- which(names(features) == "filtered") - 1
+
+  # Render the DataTable with enhanced styling and checkbox rendering
   DT::datatable(
     features,
     escape = FALSE,  # Allow HTML in the Remove column
@@ -760,7 +763,21 @@ output$features_table <- DT::renderDT({
         list(width = "120px", targets = c(19)),
         list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
         list(className = "dt-left", targets = c(0, 2, 13, 14, 15, 16, 18, 19)),
-        list(className = "dt-center", targets = c(1))  # Center the Remove column
+        list(className = "dt-center", targets = c(1)),  # Center the Remove column
+        # Custom rendering for the 'filtered' column
+        list(
+          targets = filtered_col_index,
+          render = DT::JS(
+            "function(data, type, row, meta) {",
+            "  if (type === 'display') {",
+            "    var checked = data === true ? 'checked' : '';",
+            "    return '<input type=\"checkbox\" ' + checked + ' disabled style=\"pointer-events: none;\" />';",
+            "  }",
+            "  return data;",
+            "}"
+          ),
+          className = "dt-center"  # Center the checkboxes
+        )
       ),
       selection = list(mode = "multiple", selected = NULL, target = "row"),
       dom = '<"top"f>rt<"bottom"lip>',
