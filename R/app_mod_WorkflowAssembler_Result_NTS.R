@@ -313,7 +313,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     class = "card-body p-0 position-relative",
                     # maximize button
                     create_maximize_button("features_chart", ns_full),
-                    plotly::plotlyOutput(ns_full("features_chart"), height = "450px")
+                    plotly::plotlyOutput(ns_full("features_chart"), height = "auto")
                   )
                 )
               )
@@ -385,7 +385,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                     class = "card-body p-0 position-relative",
                     # maximize button
                     create_maximize_button("feature_peaks_plot", ns_full),
-                    plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "350px")
+                    plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "auto")
                   )
                 )
               ),
@@ -406,7 +406,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                         class = "p-3 position-relative",
                         # maximize button
                         create_maximize_button("ms1_plot", ns_full),
-                        plotly::plotlyOutput(ns_full("ms1_plot"), height = "350px")
+                        plotly::plotlyOutput(ns_full("ms1_plot"), height = "auto")
                       )
                     ),
                     
@@ -417,7 +417,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                         class = "p-3 position-relative",
                         # maximize button
                         create_maximize_button("ms2_plot", ns_full),
-                        plotly::plotlyOutput(ns_full("ms2_plot"), height = "350px")
+                        plotly::plotlyOutput(ns_full("ms2_plot"), height = "auto")
                       )
                     ),
                     
@@ -603,563 +603,572 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
     })
     
     # Enhanced Features chart using plot_features_count with Plotly
-    output$features_chart <- plotly::renderPlotly({
-      nts <- nts_data()
-      
-      # Get the color by parameter
-      color_by <- chart_color_by()
-      
-      # Call the base plot function
-      p <- plot_features_count(nts, colorBy = color_by)
-      
-      # Enhance the plotly object
-      p <- plotly::layout(p,
-        # Improved layout
-        margin = list(l = 60, r = 40, t = 40, b = 60),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor = "rgba(0,0,0,0)",
-        
-        # Better title and axis labels
-        title = list(
-          text = paste0("Feature Distribution by ", ifelse(color_by == "replicates", "Replicates", "Analysis")),
-          font = list(size = 18, color = "#333")
-        ),
-        
-        xaxis = list(
-          title = list(
-            text = "Sample",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        
-        yaxis = list(
-          title = list(
-            text = "Number of Features",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        
-        # Improved legend
-        legend = list(
-          orientation = "h",
-          xanchor = "center",
-          x = 0.5,
-          y = -0.15,
-          bgcolor = "rgba(255,255,255,0.8)",
-          bordercolor = "rgba(0,0,0,0.1)",
-          borderwidth = 1
-        ),
-        
-        # Hover template
-        hoverlabel = list(
-          bgcolor = "white",
-          bordercolor = "#333",
-          font = list(size = 12, color = "#333")
-        )
-      )
-      
-      # Add interactive features
-      p <- plotly::config(p, 
-        displayModeBar = TRUE,
-        modeBarButtonsToRemove = c(
-          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
-          "hoverCompareCartesian", "lasso2d", "select2d"
-        ),
-        displaylogo = FALSE,
-        responsive = TRUE
-      )
-      
-      return(p)
-    })
+    # Enhanced Features chart using plot_features_count with Plotly
+output$features_chart <- plotly::renderPlotly({
+  nts <- nts_data()
+  
+  # Get the color by parameter
+  color_by <- chart_color_by()
+  
+  # Call the base plot function
+  p <- plot_features_count(nts, colorBy = color_by)
+  
+  # Enhance the plotly object
+  p <- plotly::layout(p,
+    width = NULL,  # Ensure no fixed width
+    autosize = TRUE,  # Enable dynamic resizing
+    margin = list(l = 60, r = 40, t = 40, b = 60),
+    paper_bgcolor = "rgba(0,0,0,0)",
+    plot_bgcolor = "rgba(0,0,0,0)",
     
-    # Features table for the Features tab
-    output$features_table <- DT::renderDT({
-      # Fetch features data
-      features <- get_features(nts_data())
-      
-      # Store availability flags in temp vars to avoid name conflict with original list-cols
-      features$ms1_flag <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
-      features$ms2_flag <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
-      features$istd_flag <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
-
-      # Remove original nested list-columns
-      nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
-      features <- features[, !nested_cols, with = FALSE]
-
-      # Rename flags to final column names
-      data.table::setnames(features, old = c("ms1_flag", "ms2_flag", "istd_flag"), new = c("ms1", "ms2", "istd"))
-
-      
-      # Round numeric columns to 4 decimal places for readability
-      numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
-      for (col in numeric_cols) {
-        if (col %in% names(features)) {
-          features[[col]] <- round(features[[col]], 4)
-        }
-      }
-      
-      # Render the DataTable with enhanced styling
-      DT::datatable(
-        features,
-        options = list(
-          pageLength = 10,
-          scrollX = TRUE,
-          scrollY = "400px",
-          columnDefs = list(
-            list(width = "200px", targets = c(0, 1, 2)),
-            list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
-            list(width = "80px", targets = c(12)),
-            list(width = "100px", targets = c(13)),
-            list(width = "80px", targets = c(14, 15, 16)),
-            list(width = "150px", targets = c(17)),
-            list(width = "80px", targets = c(18)),
-            list(width = "120px", targets = c(19)),
-            list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
-            list(className = "dt-left", targets = c(0, 1, 2, 13, 14, 15, 16, 18, 19))
-          ),
-          selection = list(mode = "multiple", selected = NULL, target = "row"),
-          dom = '<"top"lf>rt<"bottom"ip>',
-          lengthMenu = c(5, 10, 25, 50, 100),
-          ordering = TRUE,
-          searching = TRUE,
-          searchHighlight = TRUE
-        ),
-        style = "bootstrap",
-        class = "table table-striped table-hover",
-        rownames = FALSE,
-        filter = "top",
-        selection = "multiple"
-      ) %>%
-        # Custom CSS
-        DT::formatStyle(
-          columns = names(features),
-          fontSize = "14px",
-          padding = "8px 12px"
-        ) %>%
-        # Highlight numeric columns
-        DT::formatStyle(
-          columns = intersect(numeric_cols, names(features)),
-          backgroundColor = NULL,
-          color = NULL
-        )
-    })
-
-    shiny::observeEvent(input$deselect_all_features, {
-      DT::selectRows(DT::dataTableProxy("features_table"), NULL)
-    })
-
-    # Handler for export to CSV
-    output$export_features_csv <- shiny::downloadHandler(
-      filename = function() {
-        paste0("features_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
-      },
-      content = function(file) {
-        # Get all features data
-        features <- get_features(nts_data())
-
-        # Replace list-cols with flags because we flattened tghem
-        features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
-        features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
-        features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
-        
-        # Remove nested columns for CSV export
-        nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
-        export_features <- features[, !nested_cols, with = FALSE]
-        
-        # Export to CSV
-        write.csv(export_features, file, row.names = FALSE)
-      }
+    # Better title and axis labels
+    title = list(
+      text = paste0("Feature Distribution by ", ifelse(color_by == "replicates", "Replicates", "Analysis")),
+      font = list(size = 18, color = "#333")
+    ),
+    
+    xaxis = list(
+      title = list(
+        text = "Sample",
+        font = list(size = 14, color = "#555")
+      ),
+      tickfont = list(size = 12),
+      gridcolor = "#eee",
+      categoryorder = "total descending"  # Ensure bars are ordered for better spacing
+    ),
+    
+    yaxis = list(
+      title = list(
+        text = "Number of Features",
+        font = list(size = 14, color = "#555")
+      ),
+      tickfont = list(size = 12),
+      gridcolor = "#eee"
+    ),
+    
+    # Adjust bargap to stretch bars across the width
+    bargap = 0.1,
+    
+    # Improved legend
+    legend = list(
+      orientation = "h",
+      xanchor = "center",
+      x = 0.5,
+      y = -0.15,
+      bgcolor = "rgba(255,255,255,0.8)",
+      bordercolor = "rgba(0,0,0,0.1)",
+      borderwidth = 1
+    ),
+    
+    # Hover template
+    hoverlabel = list(
+      bgcolor = "white",
+      bordercolor = "#333",
+      font = list(size = 12, color = "#333")
     )
+  )
+  
+  # Add interactive features
+  p <- plotly::config(p, 
+    displayModeBar = TRUE,
+    modeBarButtonsToRemove = c(
+      "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+      "hoverCompareCartesian", "lasso2d", "select2d"
+    ),
+    displaylogo = FALSE,
+    responsive = TRUE
+  )
+  
+  return(p)
+})
 
-    # Handler for export to CSV for selected features
-    output$export_selected_features_csv <- shiny::downloadHandler(
-      filename = function() {
-        paste0("selected_features_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
-      },
-      content = function(file) {
-        selected_rows <- input$features_table_rows_selected
-        features <- get_features(nts_data())
+# Features table for the Features tab
+output$features_table <- DT::renderDT({
+  # Fetch features data
+  features <- get_features(nts_data())
+  
+  # Store availability flags in temp vars to avoid name conflict with original list-cols
+  features$ms1_flag <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
+  features$ms2_flag <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
+  features$istd_flag <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
 
-        # Replace list-cols with flags because we flattened tghem
-        features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
-        features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
-        features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
+  # Remove original nested list-columns
+  nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
+  features <- features[, !nested_cols, with = FALSE]
 
-        # Remove nested columns
-        nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
+  # Rename flags to final column names
+  data.table::setnames(features, old = c("ms1_flag", "ms2_flag", "istd_flag"), new = c("ms1", "ms2", "istd"))
 
-        if (!is.null(selected_rows) && length(selected_rows) > 0) {
-          selected_features <- features[selected_rows, !nested_cols, with = FALSE]
-          write.csv(selected_features, file, row.names = FALSE)
-        } else {
-          # If no selection, export empty file or a message
-          write.csv(data.frame(Message = "No features selected"), file, row.names = FALSE)
-        }
-      }
+  
+  # Round numeric columns to 4 decimal places for readability
+  numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
+  for (col in numeric_cols) {
+    if (col %in% names(features)) {
+      features[[col]] <- round(features[[col]], 4)
+    }
+  }
+  
+  # Render the DataTable with enhanced styling
+  DT::datatable(
+    features,
+    options = list(
+      pageLength = 10,
+      scrollX = TRUE,
+      scrollY = "400px",
+      columnDefs = list(
+        list(width = "200px", targets = c(0, 1, 2)),
+        list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
+        list(width = "80px", targets = c(12)),
+        list(width = "100px", targets = c(13)),
+        list(width = "80px", targets = c(14, 15, 16)),
+        list(width = "150px", targets = c(17)),
+        list(width = "80px", targets = c(18)),
+        list(width = "120px", targets = c(19)),
+        list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
+        list(className = "dt-left", targets = c(0, 1, 2, 13, 14, 15, 16, 18, 19))
+      ),
+      selection = list(mode = "multiple", selected = NULL, target = "row"),
+      dom = '<"top"lf>rt<"bottom"ip>',
+      lengthMenu = c(5, 10, 25, 50, 100),
+      ordering = TRUE,
+      searching = TRUE,
+      searchHighlight = TRUE
+    ),
+    style = "bootstrap",
+    class = "table table-striped table-hover",
+    rownames = FALSE,
+    filter = "top",
+    selection = "multiple"
+  ) %>%
+    # Custom CSS
+    DT::formatStyle(
+      columns = names(features),
+      fontSize = "14px",
+      padding = "8px 12px"
+    ) %>%
+    # Highlight numeric columns
+    DT::formatStyle(
+      columns = intersect(numeric_cols, names(features)),
+      backgroundColor = NULL,
+      color = NULL
     )
+})
 
-    # Reactive value to store selected features
-    selected_features <- shiny::reactive({
-      selected_rows <- input$features_table_rows_selected
-      
-      # Fetch features data
-      features <- get_features(nts_data())
-      if (is.null(selected_rows) || length(selected_rows) == 0) {
-        return(NULL)
-      }
-      
-      # Data frame with analysis and feature columns for the selected rows
-      selected_data <- features[selected_rows, .(analysis, feature)]
-      
-      # Convert to data frame
-      as.data.frame(selected_data)
-    })
+shiny::observeEvent(input$deselect_all_features, {
+  DT::selectRows(DT::dataTableProxy("features_table"), NULL)
+})
+
+# Handler for export to CSV
+output$export_features_csv <- shiny::downloadHandler(
+  filename = function() {
+    paste0("features_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+  },
+  content = function(file) {
+    # Get all features data
+    features <- get_features(nts_data())
+
+    # Replace list-cols with flags because we flattened them
+    features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
+    features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
+    features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
     
-    # Reactive value to store selected features with mass for MS1/MS2 plots
-    selected_features_with_mass <- shiny::reactive({
-      selected_rows <- input$features_table_rows_selected
-      
-      # Fetch features data (including nested columns)
-      features <- get_features(nts_data())
-      if (is.null(selected_rows) || length(selected_rows) == 0) {
-        return(NULL)
-      }
-      
-      # Extract mass for the selected rows
-      selected_data <- features[selected_rows, .(mass)]
-      
-      # Convert to data frame
-      as.data.frame(selected_data)
-    })
+    # Remove nested columns for CSV export
+    nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
+    export_features <- features[, !nested_cols, with = FALSE]
     
-    # Reactive value to store quality data for selected features
-    selected_quality_data <- shiny::reactive({
-      selected_rows <- input$features_table_rows_selected
-      
-      # Fetch features data (including nested columns)
-      features <- get_features(nts_data())
-      if (is.null(selected_rows) || length(selected_rows) == 0) {
-        return(NULL)
-      }
-      
-      # Extract quality data for the selected rows
-      quality_list <- features[selected_rows, "quality", with = FALSE]$quality
-      
-      # Check if quality_list is empty or NULL
-      if (length(quality_list) == 0 || all(sapply(quality_list, is.null))) {
-        return(data.frame(message = "No quality data available"))
-      }
-      
-      # Flatten the quality data
-      quality_data <- do.call(rbind, lapply(seq_along(quality_list), function(i) {
-        q <- quality_list[[i]]
-        if (is.null(q) || length(q) == 0) {
-          return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
-                            message = "No quality data"))
-        }
-        if (is.list(q) || is.vector(q)) {
-          # Convert named vector/list to data frame
-          df <- as.data.frame(t(unlist(q)))
-          # Add feature column
-          df$feature <- features[selected_rows[i], "feature", with = FALSE]$feature
-          return(df)
-        } else {
-          # If it's not a list or vector, return a placeholder
-          return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
-                            message = "Invalid quality data"))
-        }
-      }))
-      
-      # If the result is empty, return a placeholder
-      if (nrow(quality_data) == 0) {
-        return(data.frame(message = "No quality data available"))
-      }
-      
-      # Reorder columns to put feature first
-      quality_data <- quality_data[, c("feature", setdiff(names(quality_data), "feature"))]
-      
-      return(quality_data)
-    })
+    # Export to CSV
+    write.csv(export_features, file, row.names = FALSE)
+  }
+)
+
+# Handler for export to CSV for selected features
+output$export_selected_features_csv <- shiny::downloadHandler(
+  filename = function() {
+    paste0("selected_features_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+  },
+  content = function(file) {
+    selected_rows <- input$features_table_rows_selected
+    features <- get_features(nts_data())
+
+    # Replace list-cols with flags because we flattened them
+    features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
+    features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
+    features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
+
+    # Remove nested columns
+    nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
+
+    if (!is.null(selected_rows) && length(selected_rows) > 0) {
+      selected_features <- features[selected_rows, !nested_cols, with = FALSE]
+      write.csv(selected_features, file, row.names = FALSE)
+    } else {
+      # If no selection, export empty file or a message
+      write.csv(data.frame(Message = "No features selected"), file, row.names = FALSE)
+    }
+  }
+)
+
+# Reactive value to store selected features
+selected_features <- shiny::reactive({
+  selected_rows <- input$features_table_rows_selected
+  
+  # Fetch features data
+  features <- get_features(nts_data())
+  if (is.null(selected_rows) || length(selected_rows) == 0) {
+    return(NULL)
+  }
+  
+  # Data frame with analysis and feature columns for the selected rows
+  selected_data <- features[selected_rows, .(analysis, feature)]
+  
+  # Convert to data frame
+  as.data.frame(selected_data)
+})
+
+# Reactive value to store selected features with mass for MS1/MS2 plots
+selected_features_with_mass <- shiny::reactive({
+  selected_rows <- input$features_table_rows_selected
+  
+  # Fetch features data (including nested columns)
+  features <- get_features(nts_data())
+  if (is.null(selected_rows) || length(selected_rows) == 0) {
+    return(NULL)
+  }
+  
+  # Extract mass for the selected rows
+  selected_data <- features[selected_rows, .(mass)]
+  
+  # Convert to data frame
+  as.data.frame(selected_data)
+})
+
+# Reactive value to store quality data for selected features
+selected_quality_data <- shiny::reactive({
+  selected_rows <- input$features_table_rows_selected
+  
+  # Fetch features data (including nested columns)
+  features <- get_features(nts_data())
+  if (is.null(selected_rows) || length(selected_rows) == 0) {
+    return(NULL)
+  }
+  
+  # Extract quality data for the selected rows
+  quality_list <- features[selected_rows, "quality", with = FALSE]$quality
+  
+  # Check if quality_list is empty or NULL
+  if (length(quality_list) == 0 || all(sapply(quality_list, is.null))) {
+    return(data.frame(message = "No quality data available"))
+  }
+  
+  # Flatten the quality data
+  quality_data <- do.call(rbind, lapply(seq_along(quality_list), function(i) {
+    q <- quality_list[[i]]
+    if (is.null(q) || length(q) == 0) {
+      return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
+                        message = "No quality data"))
+    }
+    if (is.list(q) || is.vector(q)) {
+      # Convert named vector/list to data frame
+      df <- as.data.frame(t(unlist(q)))
+      # Add feature column
+      df$feature <- features[selected_rows[i], "feature", with = FALSE]$feature
+      return(df)
+    } else {
+      # If it's not a list or vector, return a placeholder
+      return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
+                        message = "Invalid quality data"))
+    }
+  }))
+  
+  # If the result is empty, return a placeholder
+  if (nrow(quality_data) == 0) {
+    return(data.frame(message = "No quality data available"))
+  }
+  
+  # Reorder columns to put feature first
+  quality_data <- quality_data[, c("feature", setdiff(names(quality_data), "feature"))]
+  
+  return(quality_data)
+})
+
+# Feature peaks plot with Plotly
+output$feature_peaks_plot <- plotly::renderPlotly({
+  shiny::validate(
+    need(!is.null(selected_features()), "Please select one or more features from the table to display the plot.")
+  )
+  
+  # Generate the plot using plot_features
+  nts <- nts_data()
+  p <- plot_features(nts, features = selected_features())
+  
+  # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
+  p <- plotly::layout(p,
+    width = NULL,  # Ensure no fixed width
+    autosize = TRUE,  # Enable dynamic resizing
+    margin = list(l = 50, r = 30, t = 30, b = 50),
+    paper_bgcolor = "rgba(0,0,0,0)",
+    plot_bgcolor = "rgba(0,0,0,0)",
     
-    # Feature peaks plot with Plotly
-    output$feature_peaks_plot <- plotly::renderPlotly({
-      shiny::validate(
-        need(!is.null(selected_features()), "Please select one or more features from the table to display the plot.")
-      )
-      
-      # Generate the plot using plot_features
-      nts <- nts_data()
-      p <- plot_features(nts, features = selected_features())
-      
-      # plotly object
-      p <- plotly::layout(p,
-        # layout
-        margin = list(l = 50, r = 30, t = 30, b = 50),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor = "rgba(0,0,0,0)",
-        
-        # axis labels
-        xaxis = list(
-          title = list(
-            text = "Retention Time (RT)",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        
-        yaxis = list(
-          title = list(
-            text = "Intensity",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        
-        # legend
-        legend = list(
-          orientation = "v",
-          xanchor = "right",
-          yanchor = "top",
-          x = 0.98,
-          y = 0.98,
-          bgcolor = "rgba(255,255,255,0.8)",
-          bordercolor = "rgba(0,0,0,0.1)",
-          borderwidth = 1,
-          font = list(size = 12)
-        ),
-        
-        # Hover template
-        hoverlabel = list(
-          bgcolor = "white",
-          bordercolor = "#333",
-          font = list(size = 12, color = "#333")
-        )
-      )
-      
-      # Add interactive features
-      p <- plotly::config(p, 
-        displayModeBar = TRUE,
-        modeBarButtonsToRemove = c(
-          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
-          "hoverCompareCartesian", "lasso2d", "select2d"
-        ),
-        displaylogo = FALSE,
-        responsive = TRUE
-      )
-      
-      return(p)
-    })
+    # Axis labels
+    xaxis = list(
+      title = list(
+        text = "Retention Time (RT)",
+        font = list(size = 14, color = "#555")
+      ),
+      tickfont = list(size = 12),
+      gridcolor = "#eee"
+    ),
     
-    # MS1 plot with Plotly
-    output$ms1_plot <- plotly::renderPlotly({
-      shiny::validate(
-        need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS1 plot.")
-      )
-      
-      # Generate the MS1 plot
-      nts <- nts_data()
-      mass_data <- selected_features_with_mass()
-      p <- plot_features_ms1(nts, mass = mass_data, legendNames = TRUE)
-      
-      # plotly object
-      p <- plotly::layout(p,
-        # layout
-        margin = list(l = 50, r = 30, t = 30, b = 50),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor = "rgba(0,0,0,0)",
-        
-        # axis labels
-        xaxis = list(
-          title = list(
-            text = "m/z",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        
-        yaxis = list(
-          title = list(
-            text = "Intensity",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        
-        # legend
-        legend = list(
-          orientation = "v",
-          xanchor = "right",
-          yanchor = "top",
-          x = 0.98,
-          y = 0.98,
-          bgcolor = "rgba(255,255,255,0.8)",
-          bordercolor = "rgba(0,0,0,0.1)",
-          borderwidth = 1,
-          font = list(size = 12)
-        )
-      )
-      
-      # Add interactive features
-      p <- plotly::config(p, 
-        displayModeBar = TRUE,
-        modeBarButtonsToRemove = c(
-          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
-          "hoverCompareCartesian", "lasso2d", "select2d"
-        ),
-        displaylogo = FALSE,
-        responsive = TRUE
-      )
-      
-      return(p)
-    })
+    yaxis = list(
+      title = list(
+        text = "Intensity",
+        font = list(size = 14, color = "#555")
+      ),
+      tickfont = list(size = 12),
+      gridcolor = "#eee"
+    ),
     
-    # MS2 plot with Plotly
-    output$ms2_plot <- plotly::renderPlotly({
-      shiny::validate(
-        need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS2 plot.")
-      )
-      
-      # Generate the MS2 plot
-      nts <- nts_data()
-      mass_data <- selected_features_with_mass()
-      p <- plot_features_ms2(nts, mass = mass_data, legendNames = TRUE)
-      
-      # plotly object
-      p <- plotly::layout(p,
-        # layout
-        margin = list(l = 50, r = 30, t = 30, b = 50),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor = "rgba(0,0,0,0)",
-        
-        # axis labels
-        xaxis = list(
-          title = list(
-            text = "m/z",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        
-        yaxis = list(
-          title = list(
-            text = "Intensity / Counts",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        
-        # legend
-        legend = list(
-          orientation = "v",
-          xanchor = "right",
-          yanchor = "top",
-          x = 0.98,
-          y = 0.98,
-          bgcolor = "rgba(255,255,255,0.8)",
-          bordercolor = "rgba(0,0,0,0.1)",
-          borderwidth = 1,
-          font = list(size = 12)
-        )
-      )
-      
-      # Add interactive features
-      p <- plotly::config(p, 
-        displayModeBar = TRUE,
-        modeBarButtonsToRemove = c(
-          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
-          "hoverCompareCartesian", "lasso2d", "select2d"
-        ),
-        displaylogo = FALSE,
-        responsive = TRUE
-      )
-      
-      return(p)
-    })
+    # Legend
+    legend = list(
+      orientation = "v",
+      xanchor = "right",
+      yanchor = "top",
+      x = 0.98,
+      y = 0.98,
+      bgcolor = "rgba(255,255,255,0.8)",
+      bordercolor = "rgba(0,0,0,0.1)",
+      borderwidth = 1,
+      font = list(size = 12)
+    ),
     
-    # Quality table
-    output$quality_table <- DT::renderDT({
-      shiny::validate(
-        need(!is.null(selected_quality_data()), "Please select one or more features from the table to display the quality data.")
-      )
-      
-      # Fetch quality data
-      quality_data <- selected_quality_data()
-      
-      # Check if the data is a placeholder
-      if ("message" %in% names(quality_data) && ncol(quality_data) == 1) {
-        return(DT::datatable(
-          quality_data,
-          options = list(
-            dom = "t",
-            ordering = FALSE,
-            paging = FALSE
-          ),
-          style = "bootstrap",
-          class = "table table-bordered table-hover",
-          rownames = FALSE
-        ))
-      }
-      
-      # Render the DataTable
-      DT::datatable(
-        quality_data,
-        options = list(
-          pageLength = 5,
-          scrollX = TRUE,
-          dom = "lfrtp",
-          ordering = TRUE,
-          lengthMenu = c(5, 10, 25),
-          columnDefs = list(
-            list(className = "dt-center", targets = "_all")
-          )
-        ),
-        style = "bootstrap",
-        class = "table table-striped table-hover",
-        rownames = FALSE
-      ) %>%
-        DT::formatStyle(
-          columns = names(quality_data),
-          fontSize = "14px",
-          padding = "8px 12px"
-        )
-    })
+    # Hover template
+    hoverlabel = list(
+      bgcolor = "white",
+      bordercolor = "#333",
+      font = list(size = 12, color = "#333")
+    )
+  )
+  
+  # Add interactive features
+  p <- plotly::config(p, 
+    displayModeBar = TRUE,
+    modeBarButtonsToRemove = c(
+      "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+      "hoverCompareCartesian", "lasso2d", "select2d"
+    ),
+    displaylogo = FALSE,
+    responsive = TRUE
+  )
+  
+  return(p)
+})
+
+# MS1 plot with Plotly
+output$ms1_plot <- plotly::renderPlotly({
+  shiny::validate(
+    need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS1 plot.")
+  )
+  
+  # Generate the MS1 plot
+  nts <- nts_data()
+  mass_data <- selected_features_with_mass()
+  p <- plot_features_ms1(nts, mass = mass_data, legendNames = TRUE)
+  
+  # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
+  p <- plotly::layout(p,
+    width = NULL,  # Ensure no fixed width
+    autosize = TRUE,  # Enable dynamic resizing
+    margin = list(l = 50, r = 30, t = 30, b = 50),
+    paper_bgcolor = "rgba(0,0,0,0)",
+    plot_bgcolor = "rgba(0,0,0,0)",
     
-    # JavaScript for UI interactions
-    shiny::observeEvent(1, {
-      # Initialize tooltips
-      shiny::insertUI(
-        selector = "head",
-        where = "beforeEnd",
-        ui = shiny::tags$script(HTML("
-          $(document).ready(function(){
-            // Initialize tooltips
-            $('[data-toggle=\"tooltip\"]').tooltip();
-            
-            // Make status panel items clickable
-            $('.status-item').css('cursor', 'pointer').click(function(){
-              // Toggle active class
-              $('.status-item').removeClass('active');
-              $(this).addClass('active');
-            });
-            
-            // Enhance button group behavior
-            $('.btn-group .btn').click(function(){
-              $(this).siblings().removeClass('active');
-              $(this).addClass('active');
-            });
-          });
-        "))
+    # Axis labels
+    xaxis = list(
+      title = list(
+        text = "m/z",
+        font = list(size = 14, color = "#555")
+      ),
+      tickfont = list(size = 12),
+      gridcolor = "#eee"
+    ),
+    
+    yaxis = list(
+      title = list(
+        text = "Intensity",
+        font = list(size = 14, color = "#555")
+      ),
+      tickfont = list(size = 12),
+      gridcolor = "#eee"
+    ),
+    
+    # Legend
+    legend = list(
+      orientation = "v",
+      xanchor = "right",
+      yanchor = "top",
+      x = 0.98,
+      y = 0.98,
+      bgcolor = "rgba(255,255,255,0.8)",
+      bordercolor = "rgba(0,0,0,0.1)",
+      borderwidth = 1,
+      font = list(size = 12)
+    )
+  )
+  
+  # Add interactive features
+  p <- plotly::config(p, 
+    displayModeBar = TRUE,
+    modeBarButtonsToRemove = c(
+      "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+      "hoverCompareCartesian", "lasso2d", "select2d"
+    ),
+    displaylogo = FALSE,
+    responsive = TRUE
+  )
+  
+  return(p)
+})
+
+# MS2 plot with Plotly
+output$ms2_plot <- plotly::renderPlotly({
+  shiny::validate(
+    need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS2 plot.")
+  )
+  
+  # Generate the MS2 plot
+  nts <- nts_data()
+  mass_data <- selected_features_with_mass()
+  p <- plot_features_ms2(nts, mass = mass_data, legendNames = TRUE)
+  
+  # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
+  p <- plotly::layout(p,
+    width = NULL,  # Ensure no fixed width
+    autosize = TRUE,  # Enable dynamic resizing
+    margin = list(l = 50, r = 30, t = 30, b = 50),
+    paper_bgcolor = "rgba(0,0,0,0)",
+    plot_bgcolor = "rgba(0,0,0,0)",
+    
+    # Axis labels
+    xaxis = list(
+      title = list(
+        text = "m/z",
+        font = list(size = 14, color = "#555")
+      ),
+      tickfont = list(size = 12),
+      gridcolor = "#eee"
+    ),
+    
+    yaxis = list(
+      title = list(
+        text = "Intensity / Counts",
+        font = list(size = 14, color = "#555")
+      ),
+      tickfont = list(size = 12),
+      gridcolor = "#eee"
+    ),
+    
+    # Legend
+    legend = list(
+      orientation = "v",
+      xanchor = "right",
+      yanchor = "top",
+      x = 0.98,
+      y = 0.98,
+      bgcolor = "rgba(255,255,255,0.8)",
+      bordercolor = "rgba(0,0,0,0.1)",
+      borderwidth = 1,
+      font = list(size = 12)
+    )
+  )
+  
+  # Add interactive features
+  p <- plotly::config(p, 
+    displayModeBar = TRUE,
+    modeBarButtonsToRemove = c(
+      "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+      "hoverCompareCartesian", "lasso2d", "select2d"
+    ),
+    displaylogo = FALSE,
+    responsive = TRUE
+  )
+  
+  return(p)
+})
+
+# Quality table
+output$quality_table <- DT::renderDT({
+  shiny::validate(
+    need(!is.null(selected_quality_data()), "Please select one or more features from the table to display the quality data.")
+  )
+  
+  # Fetch quality data
+  quality_data <- selected_quality_data()
+  
+  # Check if the data is a placeholder
+  if ("message" %in% names(quality_data) && ncol(quality_data) == 1) {
+    return(DT::datatable(
+      quality_data,
+      options = list(
+        dom = "t",
+        ordering = FALSE,
+        paging = FALSE
+      ),
+      style = "bootstrap",
+      class = "table table-bordered table-hover",
+      rownames = FALSE
+    ))
+  }
+  
+  # Render the DataTable
+  DT::datatable(
+    quality_data,
+    options = list(
+      pageLength = 5,
+      scrollX = TRUE,
+      dom = "lfrtp",
+      ordering = TRUE,
+      lengthMenu = c(5, 10, 25),
+      columnDefs = list(
+        list(className = "dt-center", targets = "_all")
       )
-    }, once = TRUE)
+    ),
+    style = "bootstrap",
+    class = "table table-striped table-hover",
+    rownames = FALSE
+  ) %>%
+    DT::formatStyle(
+      columns = names(quality_data),
+      fontSize = "14px",
+      padding = "8px 12px"
+    )
+})
+
+# JavaScript for UI interactions
+shiny::observeEvent(1, {
+  # Initialize tooltips
+  shiny::insertUI(
+    selector = "head",
+    where = "beforeEnd",
+    ui = shiny::tags$script(HTML("
+      $(document).ready(function(){
+        // Initialize tooltips
+        $('[data-toggle=\"tooltip\"]').tooltip();
+        
+        // Make status panel items clickable
+        $('.status-item').css('cursor', 'pointer').click(function(){
+          // Toggle active class
+          $('.status-item').removeClass('active');
+          $(this).addClass('active');
+        });
+        
+        // Enhance button group behavior
+        $('.btn-group .btn').click(function(){
+          $(this).siblings().removeClass('active');
+          $(this).addClass('active');
+        });
+      });
+    "))
+  )
+}, once = TRUE)
   })
 }

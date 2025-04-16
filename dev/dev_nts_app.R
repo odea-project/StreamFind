@@ -240,6 +240,10 @@ nts@group_names
 
 # Access feature_list
 #names(ms$NTS$feature_list)
+
+# modify feature_list
+# ms$NTS$feature_list<-new_feature_list
+
 #fts <- ms$NTS$feature_list
 
 ms$save("ms.rds")

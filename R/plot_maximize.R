@@ -25,7 +25,7 @@ create_plot_modal <- function(ns_full) {
     class = "modal fade",
     tabindex = "-1",
     role = "dialog",
-    `aria-hidden` = "true",
+    'aria-hidden' = "true",
     
     shiny::tags$div(
       class = "modal-dialog modal-lg modal-dialog-centered",
@@ -41,17 +41,17 @@ create_plot_modal <- function(ns_full) {
           shiny::tags$button(
             type = "button",
             class = "close",
-            `data-dismiss` = "modal",
-            `aria-label` = "Close",
-            shiny::tags$span(`aria-hidden` = "true", HTML("&times;"))
+            'data-dismiss' = "modal",
+            'aria-label' = "Close",
+            shiny::tags$span('aria-hidden' = "true", HTML("×"))
           )
         ),
         
         # Modal body
         shiny::tags$div(
           class = "modal-body p-0",
-          id = ns_full("plot_modal_body"),
-          style = "min-height: 800px;"
+          id = ns_full("plot_modal_body")
+          # Removed style = "min-height: 800px;" to let Plotly handle the height
         )
       )
     )
@@ -111,16 +111,40 @@ plot_maximize_js <- function() {
         var newPlotContainer = document.createElement('div');
         newPlotContainer.id = 'modal-' + plotId;
         newPlotContainer.style.width = '100%';
-        newPlotContainer.style.height = '800px';
+        newPlotContainer.style.height = '100%'; // Use 100% height to fill modal body
         modalBody.appendChild(newPlotContainer);
         
-        // Clone the plot to the modal
+        // Clone the plot to the modal with updated layout
+        var newLayout = JSON.parse(JSON.stringify(originalPlot.layout));
+        newLayout.width = null;  // Force Plotly to auto-size to container width
+        newLayout.height = 800; // Match modal body height
+        newLayout.autosize = true; // Ensure Plotly resizes dynamically
+        
+        // Ensure margins allow full width usage
+        newLayout.margin = {
+          l: 50,
+          r: 30,
+          t: 30,
+          b: 50
+        };
+        
+        // Debug: Log the layout to ensure width is null
+        console.log('Cloning plot with layout:', newLayout);
+        
         Plotly.newPlot(
           newPlotContainer.id,
           JSON.parse(JSON.stringify(originalPlot.data)),
-          JSON.parse(JSON.stringify(originalPlot.layout)),
+          newLayout,
           {responsive: true}
         );
+        
+        // Trigger resize after modal is shown with a slight delay
+        $('#' + plotId.replace(/[^-]*$/, 'plot_modal_container')).on('shown.bs.modal', function() {
+          console.log('Modal shown, triggering resize for:', newPlotContainer.id);
+          setTimeout(function() {
+            Plotly.Plots.resize(newPlotContainer.id);
+          }, 100);
+        });
       } else {
         // For other types of plots or content
         var clone = originalPlot.cloneNode(true);
@@ -133,7 +157,7 @@ plot_maximize_js <- function() {
       $('#' + plotId.replace(/[^-]*$/, 'plot_modal_container')).modal('show');
     }
     
-    // custom CSS for the maximize button
+    // Custom CSS for the maximize button and modal body
     document.head.insertAdjacentHTML('beforeend', `
       <style>
         .plot-maximize-btn {
@@ -150,6 +174,14 @@ plot_maximize_js <- function() {
         }
         .plot-container {
           position: relative;
+        }
+        .modal-body {
+          height: 800px; /* Ensure the modal body has a defined height */
+          padding: 0 !important; /* Remove padding to maximize plot space */
+        }
+        .modal-body > div {
+          width: 100% !important;
+          height: 100% !important;
         }
       </style>
     `);
