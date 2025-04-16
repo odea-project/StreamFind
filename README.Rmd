@@ -22,11 +22,11 @@ knitr::opts_chunk$set(
 knitr::include_graphics("man/figures/logos.png")
 ```
 
-<div style="text-align: justify;">
+<p style="text-align: justify;">
 StreamFind R package is developed within the project ["Flexible data analysis and workflow designer to identify chemicals in the water cycle"](https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html) funded by the [German Federal Ministry of Education and Research (BMBF)](https://www.bmbf.de). The development is carried out by the [Institut für Umwelt & Energie, Technik & Analytik e. V. (IUTA)](https://www.iuta.de), the [Forschungszentrum Informatik (FZI)](https://www.fzi.de/) and supporting partners. StreamFind is intended to be a platform for assembling processing workflows for different types of data (e.g. mass spectrometry and spectroscopy) with applications in different fields (e.g. environmental and quality studies of the water cycle and quality control of pharmaceuticals). StreamFind aims to stimulate the use of advanced data analysis (e.g. non-target screening, statistical analysis, etc.) in routine studies, to promote standardization of data structure and processing, and to facilitate retrospective data evaluation. The StreamFind platform is aimed at scientists, but also at technicians due to its comprehensive documentation, its well categorized set of integrated modular functions and its embedded graphical user interface.  
 
 The StreamFind development is ongoing, please [contact us](mailto:cunha@iuta.de) for questions or collaboration.  
-</div>
+</p>
 
 ## Installation
 
