@@ -725,7 +725,6 @@ output$features_table <- DT::renderDT({
   # Rename flags to final column names
   data.table::setnames(features, old = c("ms1_flag", "ms2_flag", "istd_flag"), new = c("ms1", "ms2", "istd"))
 
-  
   # Round numeric columns to 4 decimal places for readability
   numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
   for (col in numeric_cols) {
@@ -733,16 +732,25 @@ output$features_table <- DT::renderDT({
       features[[col]] <- round(features[[col]], 4)
     }
   }
-  
+
+  # Add a new column for remove icons with red trash icon
+  features$Remove <- rep("<i class='fa fa-trash-alt' style='color: red;'></i>", nrow(features))
+
+  # Reorder columns to place Remove as the second column after analysis
+  setcolorder(features, c("analysis", "Remove", setdiff(names(features), c("analysis", "Remove"))))
+
   # Render the DataTable with enhanced styling
   DT::datatable(
     features,
+    escape = FALSE,  # Allow HTML in the Remove column
     options = list(
       pageLength = 10,
       scrollX = TRUE,
       scrollY = "400px",
       columnDefs = list(
-        list(width = "200px", targets = c(0, 1, 2)),
+        list(width = "200px", targets = c(0)),  # analysis column
+        list(width = "50px", targets = c(1)),   # Remove column
+        list(width = "200px", targets = c(2)),  # feature column
         list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
         list(width = "80px", targets = c(12)),
         list(width = "100px", targets = c(13)),
@@ -751,7 +759,8 @@ output$features_table <- DT::renderDT({
         list(width = "80px", targets = c(18)),
         list(width = "120px", targets = c(19)),
         list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
-        list(className = "dt-left", targets = c(0, 1, 2, 13, 14, 15, 16, 18, 19))
+        list(className = "dt-left", targets = c(0, 2, 13, 14, 15, 16, 18, 19)),
+        list(className = "dt-center", targets = c(1))  # Center the Remove column
       ),
       selection = list(mode = "multiple", selected = NULL, target = "row"),
       dom = '<"top"f>rt<"bottom"lip>',
