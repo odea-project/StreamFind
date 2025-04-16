@@ -1,19 +1,10 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<style>
-  p {
-    text-align: justify;
-  }
-</style>
 <!-- badges: start -->
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
-
-<!-- <p align="center" width="100%">
-  <img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
-</p> -->
 
 <img src="man/figures/logos.png" alt="Logo" width="100%" style="display: block; margin: auto;" />
 
@@ -31,10 +22,10 @@ applications in different fields (e.g. environmental and quality studies
 of the water cycle and quality control of pharmaceuticals). StreamFind
 aims to stimulate the use of advanced data analysis (e.g. non-target
 screening, statistical analysis, etc.) in routine studies, to promote
-standardisation of data structure and processing, and to facilitate
+standardization of data structure and processing, and to facilitate
 retrospective data evaluation. The StreamFind platform is aimed at
 scientists, but also at technicians due to its comprehensive
-documentation, its well categorised set of integrated modular functions
+documentation, its well categorized set of integrated modular functions
 and its embedded graphical user interface.
 
 The StreamFind development is ongoing, please [contact
@@ -63,7 +54,7 @@ BiocManager::install("odea-project/StreamFind")
 ## Other dependencies
 
 The StreamFind depends on other open source software to process
-different analytical data. For instance, for non-target screening using
+different analytic data. For instance, for non-target screening using
 mass spectrometry the StreamFind uses the
 [patRoon](https://github.com/rickhelmus/patRoon) R package and its own
 dependencies. Installation instructions for patRoon and its dependencies
