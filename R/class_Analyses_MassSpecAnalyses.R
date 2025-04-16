@@ -919,7 +919,7 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
         }
       }
       
-      spec <- rcpp_parse_ms_spectra(a, levels, no_cached_targets[1, ], minIntensityMS1, minIntensityMS2)
+      spec <- rcpp_parse_ms_spectra(a, levels, no_cached_targets, minIntensityMS1, minIntensityMS2)
       
       message(" Done!")
       

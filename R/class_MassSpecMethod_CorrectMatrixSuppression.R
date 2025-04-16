@@ -320,7 +320,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
 
         # first part of eq. 7 from 10.1021/acs.analchem.1c00357
         if (nrow(valid_istd) == 0) {
-          return(ft$intensity * (-mp_ft + 1))
+          return(-mp_ft + 1)
         }
 
         # eq. 7 from 10.1021/acs.analchem.1c00357

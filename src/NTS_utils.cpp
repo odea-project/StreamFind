@@ -673,7 +673,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
     eic.intensity,
     max_position,
     3, // minDiffSize between sides
-    8, // minTraces in each side
+    2, // minTraces in each side
     maxTimeHalfWidth
   );
   
@@ -694,7 +694,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   std::vector<float> mz_trimmed = eic.mz;
   std::vector<float> int_trimmed = eic.intensity;
   
-  trim_peak_base(rt_trimmed, mz_trimmed, int_trimmed, max_position, 0.3);
+  trim_peak_base(rt_trimmed, mz_trimmed, int_trimmed, max_position, 0.2);
   
   int n_trimmed = rt_trimmed.size();
   

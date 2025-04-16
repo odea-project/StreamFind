@@ -417,13 +417,12 @@ namespace NTS
     
     void set_precursor_mz(const float &val)
     {
-      if (pre_mz.size() == 0)
+      if (rt.size() == 0)
         return;
       
       for (size_t i = 0; i < pre_mz.size(); ++i)
       {
-        if (is_pre[i])
-          pre_mz[i] = val;
+        pre_mz[i] = val;
       }
     };
     
@@ -1810,15 +1809,15 @@ namespace NTS
       ANNOTATION_ADDUCT("K", 1, "[M+K]+", 38.963158, 1),
       ANNOTATION_ADDUCT("NH4", 1, "[M+NH4]+", 18.033823, 1),
       // ANNOTATION_ADDUCT("CH3OH", 1, "[M+CH3OH+H]+", 33.033489, 1), // Methanol
-      ANNOTATION_ADDUCT("DMSO", 1, "[M+DMSO+H]+", 79.02122, 1),    // Dimethyl sulfoxide
-      ANNOTATION_ADDUCT("CH3CN", 1, "[M+CH3CN+H]+", 42.033823, 1), // Acetonitrile
+      // ANNOTATION_ADDUCT("DMSO", 1, "[M+DMSO+H]+", 79.02122, 1),    // Dimethyl sulfoxide
+      // ANNOTATION_ADDUCT("CH3CN", 1, "[M+CH3CN+H]+", 42.033823, 1), // Acetonitrile
       // Negative Adducts
       ANNOTATION_ADDUCT("Cl", -1, "[M+Cl]-", 34.969402, 1),
       ANNOTATION_ADDUCT("Br", -1, "[M+Br]-", 78.918885, 1),
       ANNOTATION_ADDUCT("CHO2", -1, "[M+CHO2]-", 44.998201, 1),     // Formate
-      ANNOTATION_ADDUCT("CH3COO", -1, "[M+CH3COO]-", 59.013851, 1), // Acetate
-      ANNOTATION_ADDUCT("-2H+Na", -1, "[M-2H+Na]-", 20.974666, 1),
-      ANNOTATION_ADDUCT("-2H+K", -1, "[M-2H+K]-", 36.948606, 1)
+      // ANNOTATION_ADDUCT("CH3COO", -1, "[M+CH3COO]-", 59.013851, 1), // Acetate
+      // ANNOTATION_ADDUCT("-2H+Na", -1, "[M-2H+Na]-", 20.974666, 1),
+      // ANNOTATION_ADDUCT("-2H+K", -1, "[M-2H+K]-", 36.948606, 1)
     };
     
     float neutralizer(const int &pol)

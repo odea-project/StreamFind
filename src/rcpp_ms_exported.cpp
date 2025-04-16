@@ -1932,6 +1932,7 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
       ft.feature += "_MZ" + std::to_string(static_cast<int>(std::round(ft.mz)));
       ft.feature += "_RT" + std::to_string(static_cast<int>(std::round(ft.rt)));
       
+      ft.eic.feature = ft.feature;
       ft.quality.feature = ft.feature;
       
       data.features[j].append_feature(ft);

@@ -173,7 +173,7 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
         message("\U26a0 Duplicated internal standards found in analysis ", a, "!")
         duplicated_isdt <- unique(temp$name[duplicated(temp$name)])
         for (d in duplicated_isdt) {
-          temp2 <- temp[temp$name == d, ]
+          temp2 <- temp[temp$name %in% d, ]
           
           if (any(is.na(temp2$group))) {
             temp2 <- temp2[!is.na(temp2$group), ]
@@ -191,7 +191,7 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
           
           if (nrow(fts_rem) > 0) {
             internal_standards <- internal_standards[
-              !(internal_standards$feature == fts_rem$feature & internal_standards$analysis == a),
+              !(internal_standards$feature %in% fts_rem$feature & internal_standards$analysis %in% a),
             ]
           }
         }

@@ -355,11 +355,37 @@ S7::method(`[`, NTS) <- function(x, i, j) {
   if (!missing(j)) {
     if (!x$has_groups) {
       warning("No feature groups found to subset!")
-    } else {
+    } else if (is.character(j) || is.numeric(j)) {
       x@feature_list <- lapply(x@feature_list, function(z) {
         z <- z[z$group %in% j, ]
         z
       })
+    } else if (data.table::is.data.table(j)) {
+      if (all(c("feature", "analysis") %in% colnames(j))) {
+        fts <- x@feature_list
+        fts_names <- names(fts)
+        
+        fts <- Map(function(z, k) {
+          if (nrow(z) > 0) z$analysis <- k
+          z
+        }, fts, fts_names)
+        
+        fts <- lapply(fts, function(z, j) {
+          if (nrow(z) > 0) {
+            z <- z[z$feature %in% j$feature & z$analysis %in% j$analysis, ]
+          }
+          z
+        }, j = j)
+        
+        fts <- lapply(fts, function(z) {
+          if (nrow(z) > 0) z$analysis <- NULL
+          z
+        })
+        
+        names(fts) <- fts_names
+        
+        x@feature_list <- fts
+      }
     }
   }
   x
@@ -5566,7 +5592,7 @@ S7::method(report, NTS) <- function(x,
     "</br> drt: ", round(pk$rtmax - pk$rtmin, digits = 0),
     "</br> intensity: ", round(pk$intensity, digits = 0),
     "</br> area: ", round(pk$area, digits = 0),
-    "</br> correction: ", round(pk$correction, digits = 0),
+    "</br> correction: ", round(pk$correction, digits = 2),
     "</br> filtered: ", pk$filtered,
     "</br> filter: ", pk$filter,
     "</br> filled: ", pk$filled,
