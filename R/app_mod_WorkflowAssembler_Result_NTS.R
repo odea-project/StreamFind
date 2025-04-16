@@ -135,6 +135,35 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
       margin-bottom: 20px;
       opacity: 0.5;
     }
+    .table-wrapper {
+      position: relative;
+    }
+
+    .table-controls-wrapper {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .features-table-container .dataTables_wrapper .dataTables_filter {
+      float: right;
+      margin-bottom: 10px;
+    }
+
+    .features-table-container .dataTables_wrapper .dataTables_filter input {
+      border-radius: 4px;
+      border: 1px solid #ced4da;
+      padding: 5px 10px;
+      font-size: 14px;
+      width: 200px;
+    }
+
+    .table-controls-wrapper .btn-group {
+      display: flex;
+      align-items: center;
+      margin-right: 15px;
+    }
   "))
   
   # Color palette for metrics
@@ -157,7 +186,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
     plot_maximize_js(),  # JavaScript functions
     create_plot_modal(ns_full),  # Modal container
     
-    shiny::fluidRow(
+    shiny::div(style = "margin-top: -20px;",
       shinydashboard::tabBox(
         id = ns_full("main_tabs"),
         width = 12,
@@ -331,46 +360,46 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
               shiny::column(
                 width = 12,
                 shiny::div(
-                  class = "plot-container mb-4",
+                  class = "mb-4",
+                  # Custom wrapper for table and controls
                   shiny::div(
-                    class = "card-header d-flex justify-content-between align-items-center",
-                    shiny::span(shiny::icon("table", class = "mr-2"), "Features Data")
-                  ),
-                shiny::div(
-                  class = "card-body p-0",
-                  # Desselect and Export to CSV buttons
-                  shiny::div(
-                    class = "d-flex justify-content-between align-items-center p-3",
+                    class = "table-wrapper",
+                    # Buttons above the table
                     shiny::div(
-                      class = "btn-group",
-                      shiny::actionButton(
-                        ns_full("deselect_all_features"),
-                        "Deselect All", 
-                        icon = shiny::icon("times-circle"),
-                        class = "btn btn-outline-secondary btn-sm"
-                      ),
-                      shiny::downloadButton(
-                        ns_full("export_features_csv"),
-                        "Export to CSV",
-                        icon = shiny::icon("file-csv"),
-                        class = "btn btn-outline-primary btn-sm ml-2"
-                      ),
-                      shiny::downloadButton(
-                        ns_full("export_selected_features_csv"),
-                        "Export Selected to CSV",
-                        icon = shiny::icon("file-csv"),
-                        class = "btn btn-outline-primary btn-sm ml-2"
+                      class = "table-controls-wrapper d-flex justify-content-end align-items-center mb-2 mt-0",
+                      shiny::div(
+                        class = "btn-group",
+                        shiny::actionButton(
+                          ns_full("deselect_all_features"),
+                          "Deselect All", 
+                          icon = shiny::icon("times-circle"),
+                          class = "btn btn-outline-secondary btn-sm"
+                        ),
+                        shiny::downloadButton(
+                          ns_full("export_features_csv"),
+                          "Export to CSV",
+                          icon = shiny::icon("file-csv"),
+                          class = "btn btn-outline-primary btn-sm ml-2"
+                        ),
+                        shiny::downloadButton(
+                          ns_full("export_selected_features_csv"),
+                          "Export Selected to CSV",
+                          icon = shiny::icon("file-csv"),
+                          class = "btn btn-outline-primary btn-sm ml-2"
+                        )
                       )
+                    ),
+                    # DataTable output with custom class for styling
+                    shiny::div(
+                      class = "features-table-container",
+                      DT::dataTableOutput(ns_full("features_table"))
                     )
-                  ),
-                  # DataTable output
-                  DT::dataTableOutput(ns_full("features_table"))
+                  )
                 )
-                      )
-                    )
-                  ),
+              )
+            ),
             
-            # Feature Details Row
+            # Feature Details Row (unchanged)
             shiny::fluidRow(
               # Feature Peaks Plot
               shiny::column(
@@ -383,7 +412,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                   ),
                   shiny::div(
                     class = "card-body p-0 position-relative",
-                    # maximize button
                     create_maximize_button("feature_peaks_plot", ns_full),
                     plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "auto")
                   )
@@ -404,7 +432,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                       title = "MS1",
                       shiny::div(
                         class = "p-3 position-relative",
-                        # maximize button
                         create_maximize_button("ms1_plot", ns_full),
                         plotly::plotlyOutput(ns_full("ms1_plot"), height = "auto")
                       )
@@ -415,7 +442,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                       title = "MS2",
                       shiny::div(
                         class = "p-3 position-relative",
-                        # maximize button
                         create_maximize_button("ms2_plot", ns_full),
                         plotly::plotlyOutput(ns_full("ms2_plot"), height = "auto")
                       )
@@ -728,7 +754,7 @@ output$features_table <- DT::renderDT({
         list(className = "dt-left", targets = c(0, 1, 2, 13, 14, 15, 16, 18, 19))
       ),
       selection = list(mode = "multiple", selected = NULL, target = "row"),
-      dom = '<"top"lf>rt<"bottom"ip>',
+      dom = '<"top"f>rt<"bottom"lip>',
       lengthMenu = c(5, 10, 25, 50, 100),
       ordering = TRUE,
       searching = TRUE,
