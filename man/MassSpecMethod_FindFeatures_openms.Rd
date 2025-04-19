@@ -103,8 +103,6 @@ experimental, may be less accurate and requires a recent version of OpenMS
 (>=2.7).}
 
 \item{verbose}{Logical of length one. When TRUE adds processing information to the console.}
-
-\item{extraOpts}{= NULL,}
 }
 \value{
 A \code{MassSpecMethod_FindFeatures_openms} object.

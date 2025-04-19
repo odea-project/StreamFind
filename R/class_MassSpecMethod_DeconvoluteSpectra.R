@@ -19,7 +19,7 @@ MassSpecMethod_DeconvoluteSpectra_native <- S7::new_class(
   constructor = function(clustVal = 0.1, window = 20) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "DeconvoluteSpectra",
         required = c("LoadSpectra", "CalculateSpectraCharges"),
         algorithm = "native",
@@ -39,7 +39,7 @@ MassSpecMethod_DeconvoluteSpectra_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "DeconvoluteSpectra")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_number(self@parameters$clustVal)

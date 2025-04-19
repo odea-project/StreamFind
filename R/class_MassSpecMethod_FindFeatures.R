@@ -223,11 +223,11 @@
 #' **MassSpecMethod_FindFeatures_xcms3_centwave**
 #'
 #' @description Method for finding features (i.e., chromatographic peaks) in mass spectrometry files
-#'  using the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
-#'  (version 3) with the algorithm
-#'  \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html}{centWave}. The function uses
-#'  the package \pkg{patRoon} in the background.
-#'
+#' using the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
+#' (version 3) with the algorithm
+#' \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html}{centWave}. The function uses
+#' the package \pkg{patRoon} in the background.
+#' 
 #' @param ppm numeric(1) defining the maximal tolerated m/z deviation in consecutive scans in parts
 #' per million (ppm) for the initial ROI definition.
 #' @param peakwidth numeric(2) with the expected approximate feature width in chromatographic space.
@@ -265,25 +265,25 @@
 #' "open" method to extend the EIC to a integer base-2 length prior to being
 #' passed to convolve rather than the default "reflect" method.
 #' See https://github.com/sneumann/xcms/issues/445 for more information.
-#'
+#' 
 #' @details See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for
 #' more information and requirements.
-#'
+#' 
 #' @return A `MassSpecMethod_FindFeatures_xcms3_centwave` object.
-#'
+#' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
-#'
+#' 
 #' \insertRef{patroon02}{StreamFind}
-#'
+#' 
 #' \insertRef{xcms01}{StreamFind}
-#'
+#' 
 #' \insertRef{xcms02}{StreamFind}
-#'
+#' 
 #' \insertRef{xcms03}{StreamFind}
-#'
+#' 
 #' @export
-#'
+#' 
 MassSpecMethod_FindFeatures_xcms3_centwave <- S7::new_class(
   name = "MassSpecMethod_FindFeatures_xcms3_centwave",
   parent = ProcessingStep,
@@ -302,7 +302,7 @@ MassSpecMethod_FindFeatures_xcms3_centwave <- S7::new_class(
                          extendLengthMSW = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindFeatures",
         required = NA_character_,
         algorithm = "xcms3_centwave",
@@ -331,7 +331,7 @@ MassSpecMethod_FindFeatures_xcms3_centwave <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
     checkmate::assert_choice(self@algorithm, "xcms3_centwave")
     checkmate::assert_numeric(self@parameters$ppm, len = 1)
@@ -360,14 +360,14 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_centwave) <- function(x, engin
 }
 
 #' **MassSpecMethod_FindFeatures_xcms3_matchedfilter**
-#'
+#' 
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
 #' using the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
 #' (version 3) with the algorithm
 #' \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-Chromatogram-MatchedFilter.html}{MatchedFilter},
 #' which is optimal/preferred for low resolution LC-MS data. The function uses the package
 #' \pkg{patRoon} in the background.
-#'
+#' 
 #' @param binSize numeric(1) specifying the width of the bins/slices in m/z dimension.
 #' @param impute Character string specifying the method to be used for missing
 #' value imputation. Allowed values are "none" (no linear interpolation), "lin"
@@ -394,25 +394,25 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_centwave) <- function(x, engin
 #' reduced to the one peak with the largest signal.
 #' @param index logical(1) specifying whether indices should be returned instead of values for m/z
 #' and retention times.
-#'
+#' 
 #' @details See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for
 #' more information and requirements.
-#'
+#' 
 #' @return A `MassSpecMethod_FindFeatures_xcms3_matchedfilter` object.
-#'
+#' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
-#'
+#' 
 #' \insertRef{patroon02}{StreamFind}
-#'
+#' 
 #' \insertRef{xcms01}{StreamFind}
-#'
+#' 
 #' \insertRef{xcms02}{StreamFind}
-#'
+#' 
 #' \insertRef{xcms03}{StreamFind}
-#'
+#' 
 #' @export
-#'
+#' 
 MassSpecMethod_FindFeatures_xcms3_matchedfilter <- S7::new_class(
   name = "MassSpecMethod_FindFeatures_xcms3_matchedfilter",
   parent = ProcessingStep,
@@ -429,7 +429,7 @@ MassSpecMethod_FindFeatures_xcms3_matchedfilter <- S7::new_class(
                          index = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindFeatures",
         required = NA_character_,
         algorithm = "xcms3_matchedfilter",
@@ -458,7 +458,7 @@ MassSpecMethod_FindFeatures_xcms3_matchedfilter <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
     checkmate::assert_choice(self@algorithm, "xcms3_matchedfilter")
     checkmate::assert_numeric(self@parameters$binSize, len = 1)
@@ -482,13 +482,13 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_matchedfilter) <- function(x, 
 }
 
 #' **MassSpecMethod_FindFeatures_openms**
-#'
+#' 
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
 #' using the \href{https://www.openms.org/}{OpenMS}
 #' (\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software with the algorithm
 #' \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/latest/html/TOPP_FeatureFinderMetabo.html}{FeatureFinderMetabo}.
 #' The function uses the package \pkg{patRoon} in the background.
-#'
+#' 
 #' @param noiseThrInt Intensity threshold below which peaks are regarded as noise.
 #' @param chromSNR Minimum signal-to-noise a mass trace should have.
 #' @param chromFWHM Expected chromatographic peak width (in seconds).
@@ -530,7 +530,6 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_matchedfilter) <- function(x, 
 #' lipidomics!). Disable for general metabolites
 #' (as described in Kenar et al. 2014, MCP.).
 #' @param useSmoothedInts Use LOWESS intensities instead of raw intensities.
-#' @param extraOpts = NULL,
 #' @param intSearchRTWindow Retention time window (in seconds, +/- feature
 #' retention time) that is used to find the closest data point to the retention
 #' time to obtain the intensity of a feature (this is needed since OpenMS does
@@ -542,21 +541,21 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_matchedfilter) <- function(x, 
 #' experimental, may be less accurate and requires a recent version of OpenMS
 #' (>=2.7).
 #' @param verbose Logical of length one. When TRUE adds processing information to the console.
-#'
+#' 
 #' @details See the \link[patRoon]{findFeaturesOpenMS} function from the \pkg{patRoon} package for
 #' more information and requirements.
-#'
+#' 
 #' @return A `MassSpecMethod_FindFeatures_openms` object.
-#'
+#' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
-#'
+#' 
 #' \insertRef{patroon02}{StreamFind}
-#'
+#' 
 #' \insertRef{openms01}{StreamFind}
-#'
+#' 
 #' @export
-#'
+#' 
 MassSpecMethod_FindFeatures_openms <- S7::new_class(
   name = "MassSpecMethod_FindFeatures_openms",
   parent = ProcessingStep,
@@ -585,7 +584,7 @@ MassSpecMethod_FindFeatures_openms <- S7::new_class(
                          verbose = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindFeatures",
         required = NA_character_,
         algorithm = "openms",
@@ -624,7 +623,7 @@ MassSpecMethod_FindFeatures_openms <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
     checkmate::assert_choice(self@algorithm, "openms")
     checkmate::assert_numeric(self@parameters$noiseThrInt, len = 1)
@@ -663,11 +662,11 @@ S7::method(run, MassSpecMethod_FindFeatures_openms) <- function(x, engine = NULL
 }
 
 #' **MassSpecMethod_FindFeatures_kpic2**
-#'
+#' 
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
 #' using the package \href{https://github.com/hcji/KPIC2}{KPIC}. The function uses the package
 #' \pkg{patRoon} in thebackground.
-#'
+#' 
 #' @param level Mass traces are only retained if their maximum values are over `level`.
 #' @param mztol The initial m/z tolerance.
 #' @param gap The number of gap points of a mass trace.
@@ -677,21 +676,21 @@ S7::method(run, MassSpecMethod_FindFeatures_openms) <- function(x, engine = NULL
 #' PICs (i.e., features). If `FALSE`, \link[KPIC]{getPIC} is used.
 #' @param alpha If `kmeans` is `TRUE`, alpha is the parameter of forecasting.
 #' If `kmeans` is `FALSE`, alpha is not used.
-#'
+#' 
 #' @details See the \link[patRoon]{findFeaturesKPIC2} function from the \pkg{patRoon} package for
 #' more information and requirements.
-#'
+#' 
 #' @return A `MassSpecMethod_FindFeatures_kpic2` object.
-#'
+#' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
-#'
+#' 
 #' \insertRef{patroon02}{StreamFind}
-#'
+#' 
 #' \insertRef{kpic01}{StreamFind}
-#'
+#' 
 #' @export
-#'
+#' 
 MassSpecMethod_FindFeatures_kpic2 <- S7::new_class(
   name = "MassSpecMethod_FindFeatures_kpic2",
   parent = ProcessingStep,
@@ -705,7 +704,7 @@ MassSpecMethod_FindFeatures_kpic2 <- S7::new_class(
                          alpha = 0.3) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindFeatures",
         required = NA_character_,
         algorithm = "kpic2",
@@ -729,7 +728,7 @@ MassSpecMethod_FindFeatures_kpic2 <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
     checkmate::assert_choice(self@algorithm, "kpic2")
     checkmate::assert_numeric(self@parameters$level, len = 1)
@@ -771,7 +770,7 @@ MassSpecMethod_FindFeatures_qalgorithms <- S7::new_class(
   constructor = function(ppm = 5) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindFeatures",
         required = NA_character_,
         algorithm = "qalgorithms",
@@ -787,7 +786,7 @@ MassSpecMethod_FindFeatures_qalgorithms <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindFeatures")
     checkmate::assert_choice(self@algorithm, "qalgorithms")
     checkmate::assert_numeric(self@parameters$ppm, len = 1)

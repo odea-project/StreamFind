@@ -30,13 +30,13 @@ for extracting the feature EIC.}
 \item{maxPeakWidth}{Numeric of length one with the maximum peak width centered on the maximum
 for reconstructing the feature EIC.}
 
-\item{baseCut}{Numeric of length 1 with the base cut for calculating feature Gaussian fit.}
+\item{minTracesIntensity}{Numeric of length 1 with the minimum intensity of spectra traces for
+calculating feature quality.}
 
-\item{minTraces}{Numeric of length 1 with the minimum number traces for calculating feature
+\item{minNumberTraces}{Numeric of length 1 with the minimum number traces for calculating feature
 quality.}
 
-\item{minIntensity}{Numeric of length 1 with the minimum intensity of spectra traces for
-calculating feature quality.}
+\item{baseCut}{Numeric of length 1 with the base cut for calculating feature Gaussian fit.}
 }
 \value{
 A \code{MassSpecMethod_CalculateFeaturesQuality_StreamFind} object.

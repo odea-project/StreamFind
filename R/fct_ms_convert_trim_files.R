@@ -30,12 +30,12 @@ check_compatible_ms_formats_for_conversion <- function() {
 }
 
 #' Function to convert vendor MS files to *mzML* or *mzXML*
-#'
+#' 
 #' @description Function to convert vendor MS files to *.mzML* or *.mzXML*
 #' using the command line interface of
 #' \href{https://proteowizard.sourceforge.io/download.html}{MSConvert}
 #' from \href{https://proteowizard.sourceforge.io/}{ProteoWizard}.
-#'
+#' 
 #' @param files A vector with file full path/s for conversion.
 #' @param outputFormat A character string with the format of the output file.
 #' Possible values are "mzML" and "mzXML".
@@ -45,29 +45,29 @@ check_compatible_ms_formats_for_conversion <- function() {
 #' conversion tool. See documentation in
 #' \url{https://proteowizard.sourceforge.io/tools/msconvert.html}
 #' for possible commands.
-#'
+#' 
 #' @note When giving paths make sure that single backslash is changed to
 #' double backslash or to single forward slash.
-#'
+#' 
 #' @references
-#'
+#' 
 #' \insertRef{proteo01}{StreamFind}
-#'
+#' 
 #' \insertRef{proteo02}{StreamFind}
-#'
+#' 
 #' @export
-#'
+#' 
 #' @examples
 #' ## The full file path
 #' #> file = E:/ms_file.d
-#'
+#' 
 #' ## Options to centroid MS1 and MS2 data in file
 #' #> optList <- list(filter = "peakPicking vendor msLevel=1-2")
-#'
+#' 
 #' ## Convert to mzML
 #' #> convert_ms_files(file, outfile = "mzML", optList = optList)
-#'
-#'
+#' 
+#' 
 convert_ms_files <- function(files = NULL, outputFormat = "mzML", outputPath = NULL, optList = NULL) {
   # files = "E:\\02_QC_pos-r001.d"
 
@@ -141,10 +141,10 @@ convert_ms_files <- function(files = NULL, outputFormat = "mzML", outputPath = N
 }
 
 #' Function to trim spectra in *mzML* or *mzXML* files
-#'
+#' 
 #' @description Trim spectra in \emph{mzML} or \emph{mzXML} files based on time
 #' (in seconds) and  \emph{m/z} (in Da) ranges, using the \pkg{mzR} package.
-#'
+#' 
 #' @param files A character vector with the full path of the file/s to trim.
 #' @param MS1 Set to TRUE for trimming MS level 1 data.
 #' @param MS2 Set to TRUE for trimming MS level 2 data.
@@ -164,24 +164,24 @@ convert_ms_files <- function(files = NULL, outputFormat = "mzML", outputPath = N
 #' When \code{NULL}, the file directory is used instead.
 #' @param prefix A character string with the name prefix for the new
 #' trimmed file.
-#'
+#' 
 #' @note When giving paths make sure that single backslash is changed to
 #' double backslash of to single forward slash.
-#'
+#' 
 #' @return Saves the trimmed \emph{mzML} or \emph{mzXML} files
 #' in a given path, adding a pre-defined prefix to the file name.
-#'
+#' 
 #' @export
-#'
+#' 
 #' @references
 #' \insertRef{mzr01}{StreamFind}
-#'
+#' 
 #' \insertRef{mzr02}{StreamFind}
-#'
+#' 
 #' \insertRef{mzr03}{StreamFind}
-#'
+#' 
 #' \insertRef{mzr04}{StreamFind}
-#'
+#' 
 trim_ms_files_spectra <- function(files, MS1 = TRUE, MS2 = TRUE,
                                   rtWindow = NULL, mzWindow = NULL,
                                   mzWindow_ms2 = NULL,

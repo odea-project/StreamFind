@@ -15,7 +15,7 @@ MassSpecMethod_NormalizeSpectra_minmax <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "minmax",
@@ -32,7 +32,7 @@ MassSpecMethod_NormalizeSpectra_minmax <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "minmax")
     NULL
@@ -111,7 +111,7 @@ MassSpecMethod_NormalizeSpectra_snv <- S7::new_class(
   
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "snv",
@@ -128,7 +128,7 @@ MassSpecMethod_NormalizeSpectra_snv <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "snv")
     checkmate::assert_logical(self@parameters$liftTozero, max.len = 1)
@@ -214,7 +214,7 @@ MassSpecMethod_NormalizeSpectra_scale <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "scale",
@@ -231,7 +231,7 @@ MassSpecMethod_NormalizeSpectra_scale <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "scale")
     NULL
@@ -308,7 +308,7 @@ MassSpecMethod_NormalizeSpectra_blockweight <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "blockweight",
@@ -325,7 +325,7 @@ MassSpecMethod_NormalizeSpectra_blockweight <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "blockweight")
     NULL
@@ -398,7 +398,7 @@ MassSpecMethod_NormalizeSpectra_meancenter <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "meancenter",
@@ -415,7 +415,7 @@ MassSpecMethod_NormalizeSpectra_meancenter <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "meancenter")
     NULL

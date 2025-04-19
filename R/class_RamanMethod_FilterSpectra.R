@@ -19,7 +19,7 @@ RamanMethod_FilterSpectra_native <- S7::new_class(
   constructor = function(onlyChromPeaksSpectra = FALSE, onlyTopChromPeaksSpectra = 0) {
     
     S7::new_object(ProcessingStep(
-      engine = "Raman",
+      data_type = "Raman",
       method = "FilterSpectra",
       algorithm = "native",
       parameters = list(
@@ -37,7 +37,7 @@ RamanMethod_FilterSpectra_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "FilterSpectra")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_logical(self@parameters$onlyChromPeaksSpectra, max.len = 1)

@@ -84,12 +84,14 @@
     ## obs Clean Start -----
     shiny::observeEvent(reactive_clean_start(), {
       if (reactive_clean_start()) {
+        envSF <- asNamespace("StreamFind")
         engine_type <- reactive_engine_type()
-        engine_call <- get(engine_type, envir = .GlobalEnv)
+        engine_call <- get(engine_type, envir = envSF)
         engine_call_new <- engine_call[["new"]]
         engine <<- suppressMessages(do.call(engine_call_new, list()))
         engine_data_type <- gsub("Engine", "", engine_type)
-        analyses_call <- get(paste0(engine_data_type, "Analyses"), envir = .GlobalEnv)
+        analyses_data_type <- paste0(engine_data_type, "Analyses")
+        analyses_call <- get(analyses_data_type, envir = envSF)
         analyses_class_dummy <<- suppressMessages(do.call(analyses_call, list()))
         
         if (!is.na(reactive_engine_save_file())) {

@@ -24,7 +24,7 @@ RamanMethod_BinScans_native <- S7::new_class(
                          refAnalysis = NA_integer_) {
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "BinScans",
         required = NA_character_,
         algorithm = "native",
@@ -46,7 +46,7 @@ RamanMethod_BinScans_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "BinScans")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_choice(self@parameters$mode, c("scans", "time"))

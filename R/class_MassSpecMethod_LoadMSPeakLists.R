@@ -58,7 +58,7 @@ MassSpecMethod_LoadMSPeakLists_patRoon <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadMSPeakLists",
         required = c("FindFeatures", "GroupFeatures"),
         algorithm = "patRoon",
@@ -85,7 +85,7 @@ MassSpecMethod_LoadMSPeakLists_patRoon <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadMSPeakLists")
     checkmate::assert_choice(self@algorithm, "patRoon")
     checkmate::assert_numeric(self@parameters$maxMSRtWindow, len = 1)
@@ -130,7 +130,9 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_patRoon) <- function(x, engine = 
   
   parameters <- x$parameters
   
-  parameters$avgFun <- get(parameters$avgFun)
+  avgFunName <- parameters$avgFun
+  
+  parameters$avgFun <- get(avgFunName)
   
   av_args <- list(
     clusterMzWindow =  parameters$clusterMzWindow,
@@ -204,7 +206,7 @@ MassSpecMethod_LoadMSPeakLists_StreamFind <- S7::new_class(
    
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadMSPeakLists",
         required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
         algorithm = "StreamFind",
@@ -228,7 +230,7 @@ MassSpecMethod_LoadMSPeakLists_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadMSPeakLists")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_numeric(self@parameters$clusterMzWindow, len = 1)
@@ -274,7 +276,9 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
   
   parameters <- x$parameters
   
-  parameters$avgFun <- get(parameters$avgFun)
+  avgFunName <- parameters$avgFun
+  
+  parameters$avgFun <- get(avgFunName)
   
   mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(NTS, parameters)
   
@@ -393,7 +397,12 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
     
     y$polarity <- pol_key[pol_col]
     
-    setnames(y, c("index", "level", "ce", "pre_mz"), c("seqNum", "msLevel", "collisionEnergy", "precursorMZ"), skip_absent = TRUE)
+    data.table::setnames(
+      y,
+      c("index", "level", "ce", "pre_mz"),
+      c("seqNum", "msLevel", "collisionEnergy", "precursorMZ"),
+      skip_absent = TRUE
+    )
     
     glist <- lapply(groups, function(x2, features, y) {
       

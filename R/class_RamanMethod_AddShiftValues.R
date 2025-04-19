@@ -24,7 +24,7 @@ RamanMethod_AddShiftValues_native <- S7::new_class(
                          shifts = NA_real_) {
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "AddShiftValues",
         algorithm = "native",
         parameters = list(
@@ -43,7 +43,7 @@ RamanMethod_AddShiftValues_native <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "AddShiftValues")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_choice(self@parameters$mode, c("analyses", "custom"))

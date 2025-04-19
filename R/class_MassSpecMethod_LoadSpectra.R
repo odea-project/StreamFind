@@ -31,7 +31,7 @@ MassSpecMethod_LoadSpectra_native <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadSpectra",
         required = NA_character_,
         algorithm = "native",
@@ -57,7 +57,7 @@ MassSpecMethod_LoadSpectra_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadSpectra")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_numeric(self@parameters$levels)
@@ -138,7 +138,7 @@ MassSpecMethod_LoadSpectra_chrompeaks <- S7::new_class(
   constructor = function(levels = 1, mzmin = 0, mzmax = 0, minIntensity = 0) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadSpectra",
         required = "FindChromPeaks",
         algorithm = "chrompeaks",
@@ -160,7 +160,7 @@ MassSpecMethod_LoadSpectra_chrompeaks <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadSpectra")
     checkmate::assert_choice(self@algorithm, "chrompeaks")
     checkmate::assert_numeric(self@parameters$levels)

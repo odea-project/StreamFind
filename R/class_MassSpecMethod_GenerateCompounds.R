@@ -77,7 +77,7 @@ MassSpecMethod_GenerateCompounds_metfrag <- S7::new_class(
                          maxCandidatesToStop = 100) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GenerateCompounds",
         required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
         algorithm = "metfrag",
@@ -111,7 +111,7 @@ MassSpecMethod_GenerateCompounds_metfrag <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GenerateCompounds")
     checkmate::assert_choice(self@algorithm, "metfrag")
     checkmate::assert_choice(self@parameters$method, c("CL", "R"))

@@ -19,7 +19,7 @@ MassSpecMethod_FindChromPeaks_LocalMaxima <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindChromPeaks",
         required = "LoadChromatograms",
         algorithm = "LocalMaxima",
@@ -40,7 +40,7 @@ MassSpecMethod_FindChromPeaks_LocalMaxima <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindChromPeaks")
     checkmate::assert_choice(self@algorithm, "LocalMaxima")
     checkmate::assert_number(self@parameters$minWidth)
@@ -219,7 +219,7 @@ MassSpecMethod_FindChromPeaks_pracma <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindChromPeaks",
         required = "LoadChromatograms",
         algorithm = "pracma",
@@ -244,7 +244,7 @@ MassSpecMethod_FindChromPeaks_pracma <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindChromPeaks")
     checkmate::assert_choice(self@algorithm, "pracma")
     checkmate::assert_logical(self@parameters$merge, max.len = 1)

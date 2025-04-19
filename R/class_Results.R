@@ -1,5 +1,15 @@
+#' @title Results Class
+#' 
+#' @description The Results class is used to store results of data processing in
+#' [StreamFind::Analyses] child classes. Child classes of Results are implemented for diverse types
+#' of results.
+#' 
+#' @param name A character string representing the name of the results.
+#' @param software A character string representing the name of the software used to generate the results.
+#' @param version A character string representing the version of the software used to generate the results. 
+#' 
 #' @export
-#' @noRd
+#' 
 Results <- S7::new_class(
   name = "Results",
   package = "StreamFind",
@@ -19,13 +29,13 @@ Results <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(`$`, Results) <- function(x, i) {
+`$.Results` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-S7::method(`$<-`, Results) <- function(x, i, value) {
+`$<-.Results` <- function(x, i, value) {
   S7::prop(x, i) <- value
   x
 }

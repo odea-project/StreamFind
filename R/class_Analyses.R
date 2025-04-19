@@ -1,5 +1,15 @@
+#' @title Analyses Class
+#' 
+#' @description The Analyses class is used harmonize the interface to data entries or links to raw data files. Analyses child classes are used to enable a specific structure and methods for each type of data.
+#' 
+#' @param analyses A list of analyses, where each element is a data entry or a connection to a raw data file.
+#' @param results A list of results, where each element is specific \code{\link{Results}} child class.
+#' 
+#' @slot possible_formats (getter) A character vector of possible formats for the raw data.
+#' @slot info (getter) A data frame containing information about the analyses.
+#' 
 #' @export
-#' @noRd
+#' 
 Analyses <- S7::new_class(
   name = "Analyses",
   package = "StreamFind",
@@ -59,7 +69,7 @@ S7::method(show, Analyses) <- function(x, ...) {
   } else {
     cat("empty \n")
   }
-  
+
   if (length(x@results) > 0) {
     cat("\n")
     results_class <- vapply(x@results, is, "")
@@ -87,14 +97,13 @@ S7::method(names, Analyses) <- function(x) {
 
 #' @export
 #' @noRd
-S7::method(`[`, Analyses) <- function(x, i) {
-  x@analyses <- x@analyses[i]
-  return(x)
+`[.Analyses` <- function(x, i) {
+  x@analyses[i]
 }
 
 #' @export
 #' @noRd
-S7::method(`[<-`, Analyses) <- function(x, i, value) {
+`[<-.Analyses` <- function(x, i, value) {
   if (is(value, "list")) {
     x@analyses[names(value)] <- value
     if (length(x@results) > 0) {
@@ -107,14 +116,13 @@ S7::method(`[<-`, Analyses) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(`[[`, Analyses) <- function(x, i) {
-  x@analyses <- x@analyses[[i]]
-  return(x)
+`[[.Analyses` <- function(x, i) {
+  x@analyses[[i]]
 }
 
 #' @export
 #' @noRd
-S7::method(`[[<-`, Analyses) <- function(x, i, value) {
+`[[<-.Analyses` <- function(x, i, value) {
   if (is(value, "list")) {
     x@analyses[[names(value)]] <- value
     if (length(x@results) > 0) {
@@ -127,20 +135,20 @@ S7::method(`[[<-`, Analyses) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(`$`, Analyses) <- function(x, i) {
+`$.Analyses` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-S7::method(`$<-`, Analyses) <- function(x, i, value) {
+`$<-.Analyses` <- function(x, i, value) {
   S7::prop(x, i) <- value
   x
 }
 
 #' @export
 #' @noRd
-S7::method(as.list, Analyses) <- function(x) {
+S7::method(as.list, Analyses) <- function(x, ...) {
   list("analyses" = x@analyses, "results" = x@results)
 }
 

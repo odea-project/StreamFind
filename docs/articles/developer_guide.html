@@ -6,17 +6,17 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>StreamFind Developer Guide • StreamFind</title>
-<script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<script src="../lightswitch.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="StreamFind Developer Guide">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top " aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">StreamFind</a>
 
@@ -35,10 +35,6 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
 <li><a class="dropdown-item" href="../articles/app_guide.html">StreamFind App Guide</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Purity Evaluation of Bovine Serum Albumin Products</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_nts.html">Non-target Screening (NTS) Wastewater Treatment Evaluation</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_paracetamol_fusion.html">Detect Pharmaceutical Quality Deviations with MS, Raman and Statistics</a></li>
-    <li><a class="dropdown-item" href="../articles/demo_paracetamol_quantification_mcrals.html">Pharmaceutical API Quantification with Raman and MCR</a></li>
     <li><a class="dropdown-item" href="../articles/developer_guide.html">StreamFind Developer Guide</a></li>
     <li><a class="dropdown-item" href="../articles/general_guide.html">StreamFind General Introduction</a></li>
   </ul>
@@ -49,6 +45,14 @@
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/odea-project/StreamFind/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-lightswitch" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true" aria-label="Light switch"><span class="fa fa-sun"></span></button>
+  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdown-lightswitch">
+<li><button class="dropdown-item" data-bs-theme-value="light"><span class="fa fa-sun"></span> Light</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="dark"><span class="fa fa-moon"></span> Dark</button></li>
+    <li><button class="dropdown-item" data-bs-theme-value="auto"><span class="fa fa-adjust"></span> Auto</button></li>
+  </ul>
+</li>
       </ul>
 </div>
 
@@ -71,7 +75,7 @@ Cunha</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:cunha@iuta.de" class="email">cunha@iuta.de</a>
       
                   
-            <h4 data-toc-skip class="date">29 November, 2024</h4>
+            <h4 data-toc-skip class="date">19 April, 2025</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/vignettes/articles/developer_guide.Rmd" class="external-link"><code>vignettes/articles/developer_guide.Rmd</code></a></small>
       <div class="d-none name"><code>developer_guide.Rmd</code></div>
@@ -147,18 +151,17 @@ data is briefly shown.</p>
 <span><span class="va">ms</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
 <span><span class="co">## MassSpecEngine</span></span>
-<span><span class="co">## File: </span></span>
-<span><span class="co">## NA</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Headers:name: NA</span></span>
+<span><span class="co">## Metadata</span></span>
+<span><span class="co">## name: NA</span></span>
 <span><span class="co">## author: NA</span></span>
-<span><span class="co">## date: 2024-11-29 10:05:01.42179</span></span>
+<span><span class="co">## date: 2025-04-19 11:52:19.90499</span></span>
+<span><span class="co">## file: NA</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## </span></span>
-<span><span class="co">## Workflow: </span></span>
+<span><span class="co">## Workflow</span></span>
 <span><span class="co">## empty</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## Analyses: </span></span>
+<span><span class="co">## Analyses</span></span>
 <span><span class="co">## empty</span></span></code></pre>
 <p>Under development…</p>
 <!-- For implementation of processing methods, the [S7](https://rconsortium.github.io/S7/index.html) class *ProcessingStep*  -->
@@ -223,7 +226,7 @@ data is briefly shown.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

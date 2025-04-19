@@ -31,7 +31,7 @@ knitr::opts_chunk$set(
   fig.align = "center",
   fig.width = 9,
   results = "markup",
-  comment = '',
+  comment = "",
   message = FALSE,
   warning = FALSE
 )
@@ -71,8 +71,8 @@ pre code {
 
 The StreamFind R package is a data agnostic data processing workflow designer. Besides data processing, the package can also be used for data management, visualization and reporting. This guide focuses on describing the general framework of StreamFind. StreamFind is centered around [R6](https://r6.r-lib.org/index.html) classes, serving as data processing engines (used as metaphor) for different types of data (e.g. mass spectrometry (MS) and Raman spectroscopy (RS) data).  
 
-```{r concept-image, fig.cap="StreamFind Concept", out.width="100%", echo=FALSE}
-knitr::include_graphics("figures/StreamFind_Concept.png")
+```{r concept-image, fig.cap="StreamFind Concept", out.width="100%", echo=FALSE, fig.align='center', fig.alt="Concept"}
+knitr::include_graphics("StreamFind_Concept.png")
 ```
 
 Internally, the Engines (R6 classes) use six central [S7](https://github.com/RConsortium/S7) classes: `Metadata`, `Workflow`, `ProcessingStep`, `Analyses`, `Results` and `AuditTrail`. The `Metadata` class flexibly holds project information, such as name, author, date and file.  The `Workflow` class is an ordered list of `ProcessingStep` objects, which are used to harmonize the diversity of processing methods and algorithms available for a given data type. The `ProcessingStep` class is a representation of a processing method/step that transforms the data according to a specific algorithm. The `Analyses` class holds the data to be processed and the `Results` class holds the results of the data processing. The `AuditTrail` class records any modification to the project.
@@ -98,8 +98,8 @@ The `Metadata` S7 class is meant to hold project information, such as descriptio
 ```{r add-metadata}
 # Creates a named list with project metadata
 mtd <- list(
-  name = "Project Example", 
-  author = "Person Name", 
+  name = "Project Example",
+  author = "Person Name",
   description = "Example of project description"
 )
 
@@ -124,7 +124,7 @@ A data processing workflow is represented in StreamFind by the class `Workflow`.
 ProcessingStep()
 ```
 
-A `ProcessingStep` object must always have the engine type, the processing method name, the name of the algorithm to be used, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available. Lastly but not least, the parameters which is a flexible list of conditions to apply the algorithm during data processing.
+A `ProcessingStep` object must always have the data type, the processing method name, the name of the algorithm to be used, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available. Lastly but not least, the parameters which is a flexible list of conditions to apply the algorithm during data processing.
 
 The `ProcessingStep` is a generic parent class which delegates to child classes for specific data processing methods and algorithms. As example, the `ProcessingStep` child class for annotating features within a non-target screening workflow using a native algorithm from StreamFind is shown below. Each `ProcessingStep` child class has a dedicated constructor method with documentation to support the usage. Help pages for processing methods can be obtained with the native R function `?` or `help()`  (e.g., `help(MassSpecMethod_AnnotateFeatures_StreamFind)`).
 
@@ -215,23 +215,23 @@ As above mentioned, a `Workflow` is designed by an ordered list of `ProcessingSt
 ps <- list(
   # averages the spectra for each analysis replicate
   RamanMethod_AverageSpectra_native(),
-  
+
   # simple normalization based on maximum intensity
   RamanMethod_NormalizeSpectra_minmax(),
-  
+
   # background subtraction
   RamanMethod_SubtractBlankSpectra_StreamFind(),
-  
+
   # applies smoothing based on moving average
   RamanMethod_SmoothSpectra_movingaverage(windowSize = 4),
-  
+
   # removes a section from the spectra from -40 to 300
   RamanMethod_DeleteSpectraSection_native(min = -40, max = 300),
-  
+
   # removes a section from the spectra from 2000 to 3000
   RamanMethod_DeleteSpectraSection_native(min = 2000, max = 3000),
- 
-  # performs baseline correction 
+
+  # performs baseline correction
   RamanMethod_CorrectSpectraBaseline_baseline_als(lambda = 3, p = 0.06, maxit = 10)
 )
 ```
@@ -286,7 +286,7 @@ show(raman$Spectra)
 ```
 
 ```{r raman-plot-spectra-results, fig.alt="Spectra Processed"}
-# Processed spectrum, note that the blank was subtracted 
+# Processed spectrum, note that the blank was subtracted
 raman$plot_spectra()
 ```
 

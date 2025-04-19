@@ -44,7 +44,7 @@ MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
                          onlyWithMS2 = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FilterFeatures",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -72,7 +72,7 @@ MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FilterFeatures")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_logical(self@parameters$correctIntensity, len = 1)
@@ -749,7 +749,7 @@ MassSpecMethod_FilterFeatures_patRoon <- S7::new_class(
                          negate = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FilterFeatures",
         required = "FindFeatures",
         algorithm = "patRoon",
@@ -797,7 +797,7 @@ MassSpecMethod_FilterFeatures_patRoon <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FilterFeatures")
     checkmate::assert_choice(self@algorithm, "patRoon")
     checkmate::assert_numeric(self@parameters$absMinIntensity)

@@ -19,23 +19,25 @@ RamanMethod_SmoothSpectra_movingaverage <- S7::new_class("RamanMethod_SmoothSpec
   
   constructor = function(windowSize = 5) {
     
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "SmoothSpectra",
-      algorithm = "movingaverage",
-      parameters = list(windowSize = windowSize),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "SmoothSpectra",
+        algorithm = "movingaverage",
+        parameters = list(windowSize = windowSize),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "SmoothSpectra")
     checkmate::assert_choice(self@algorithm, "movingaverage")
     checkmate::assert_number(self@parameters$windowSize)
@@ -116,27 +118,29 @@ RamanMethod_SmoothSpectra_savgol <- S7::new_class("RamanMethod_SmoothSpectra_sav
   
   constructor = function(fl = 11, forder = 4, dorder = 0) {
     
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "SmoothSpectra",
-      algorithm = "savgol",
-      parameters = list(
-        fl = fl,
-        forder = forder,
-        dorder = dorder
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "pracma",
-      developer = "Hans W. Borchers",
-      contact = NA_character_,
-      link = "https://cran.r-project.org/web/packages/pracma/index.html",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "SmoothSpectra",
+        algorithm = "savgol",
+        parameters = list(
+          fl = fl,
+          forder = forder,
+          dorder = dorder
+        ),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "pracma",
+        developer = "Hans W. Borchers",
+        contact = NA_character_,
+        link = "https://cran.r-project.org/web/packages/pracma/index.html",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "SmoothSpectra")
     checkmate::assert_choice(self@algorithm, "savgol")
     checkmate::assert_number(self@parameters$fl)

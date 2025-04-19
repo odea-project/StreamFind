@@ -1,9 +1,9 @@
-# MARK: Metadata S7 class
+# MARK: Metadata
 # Metadata -----
-#' **Metadata** S7 class constructor
+#' @title Metadata Class
 #'
-#' @description Creates a Metadata S7 class object to flexibly hold information, such as name, date,
-#' author and file, as a named list with elements of length one.
+#' @description The Metadata S7 class holds information, such as name, date, author and file, as a
+#' named list with elements of length one.
 #'
 #' @param entries Named list with metadata entries. Note that all given elements must be named and 
 #' of length one. If an element "name" is given, it must be type character. If an element "date"
@@ -15,7 +15,7 @@
 #' @return A Metadata S7 class object.
 #'
 #' @export
-#' @noRd
+#' 
 Metadata <- S7::new_class(
   name = "Metadata",
   package = "StreamFind",
@@ -135,7 +135,7 @@ S7::method(names, Metadata) <- function(x) {
 
 #' @export
 #' @noRd
-S7::method(`[`, Metadata) <- function(x, i) {
+`[.Metadata` <- function(x, i) {
   entries_list <- x@entries
   if (missing(i)) return(entries_list)
   if (is.numeric(i)) {
@@ -151,7 +151,7 @@ S7::method(`[`, Metadata) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`[<-`, Metadata) <- function(x, i, value) {
+`[<-.Metadata` <- function(x, i, value) {
   entries_list <- x@entries
   if (missing(i)) return(entries_list)
   if (is.numeric(i)) {
@@ -173,7 +173,7 @@ S7::method(`[<-`, Metadata) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(`[[`, Metadata) <- function(x, i) {
+`[[.Metadata` <- function(x, i) {
   entries_list <- x@entries
   if (missing(i)) return(entries_list)
   if (is.numeric(i)) {
@@ -187,25 +187,20 @@ S7::method(`[[`, Metadata) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`[[<-`, Metadata) <- function(x, i, value) {
+`[[<-.StreamFind::Metadata` <- function(x, i, value) {
   entries_list <- x@entries
-  if (missing(i)) return(entries_list)
   if (is.numeric(i)) {
-    entries_list[i] <- value
-    x@entries <- entries_list
-    return(x)
+    warning("Numeric index not permitted!")
   } else if (is.character(i)) {
     entries_list[[i]] <- value
     x@entries <- entries_list
-    return(x)
-  } else {
-    stop("Invalid entries setter type")
   }
+  x
 }
 
 #' @export
 #' @noRd
-S7::method(`$`, Metadata) <- function(x, i) {
+`$.Metadata` <- function(x, i) {
   entries_list <- x@entries
   if (missing(i)) return(entries_list)
   if (is.character(i)) {
@@ -217,7 +212,7 @@ S7::method(`$`, Metadata) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`$<-`, Metadata) <- function(x, i, value) {
+`$<-.Metadata` <- function(x, i, value) {
   entries_list <- x@entries
   if (missing(i)) return(entries_list)
   if (is.character(i)) {
@@ -231,7 +226,7 @@ S7::method(`$<-`, Metadata) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(as.list, Metadata) <- function(x) {
+S7::method(as.list, Metadata) <- function(x, ...) {
   x@entries
 }
 
@@ -279,8 +274,19 @@ S7::method(show, Metadata) <- function(x) {
 
 # MARK: EngineMetadata S7 class
 # EngineMetadata -----
+#' @title EngineMetadata Class
+#' 
+#' @description The EngineMetadata class is a subclass of the Metadata class. It is used to store
+#' metadata of data processing engines.
+#' 
+#' @param entries A named list with metadata entries. Note that all given elements must be named and
+#' of length one. If an element "name" is given, it must be type character. If an element "date"
+#' is given, it must be class `POSIXct` or `POSIXt`. If given "date" is character, conversion to
+#' class `POSIXct` or `POSIXt` is attempted.
+#' @param engine A character string with the name of the engine. Default is "CoreEngine".
+#' 
 #' @export
-#' @noRd
+#' 
 EngineMetadata <-  S7::new_class(
   name = "EngineMetadata",
   package = "StreamFind",

@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# StreamFind -----
-# ______________________________________________________________________________________________________________________
-
 #' **RamanMethod_BinSpectra_StreamFind**
 #'
 #' @description Bins spectral data based on variables.
@@ -30,7 +25,7 @@ RamanMethod_BinSpectra_StreamFind <- S7::new_class("RamanMethod_BinSpectra_Strea
                          refBinAnalysis = NULL) {
     
     S7::new_object(ProcessingStep(
-      engine = "Raman",
+      data_type = "Raman",
       method = "BinSpectra",
       required = NA_character_,
       algorithm = "StreamFind",
@@ -51,7 +46,7 @@ RamanMethod_BinSpectra_StreamFind <- S7::new_class("RamanMethod_BinSpectra_Strea
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "BinSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_character(self@parameters$binNames)

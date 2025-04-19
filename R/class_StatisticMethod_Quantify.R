@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# mcrals -----
-# ______________________________________________________________________________________________________________________
-
 #' **StatisticMethod_Quantify_mcrals**
 #'
 #' @title StatisticMethod_Quantify_mcrals
@@ -23,7 +18,7 @@ StatisticMethod_Quantify_mcrals <- S7::new_class(
   constructor = function(concentrations = NA_real_) {
     S7::new_object(
       ProcessingStep(
-        engine = "Statistic",
+        data_type = "Statistic",
         method = "Quantify",
         required = "MakeModel",
         algorithm = "mcrals",
@@ -41,7 +36,7 @@ StatisticMethod_Quantify_mcrals <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@data_type, "Statistic")
     checkmate::assert_choice(self@method, "Quantify")
     checkmate::assert_choice(self@algorithm, "mcrals")
     checkmate::assert_numeric(self@parameters$concentrations)

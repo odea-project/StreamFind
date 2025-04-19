@@ -260,8 +260,8 @@ PCA <- S7::new_class(
 )
 
 #' @noRd
-S7::method(summary, PCA) <- function(x) {
-  summary(x$model)
+S7::method(summary, PCA) <- function(object, ...) {
+  summary(object$model)
 }
 
 #' @noRd
@@ -1086,8 +1086,8 @@ MCRALS <- S7::new_class(
 )
 
 #' @noRd
-S7::method(summary, MCRALS) <- function(x) {
-  summary(x$model)
+S7::method(summary, MCRALS) <- function(object, ...) {
+  summary(object$model)
 }
 
 #' @noRd
@@ -1432,8 +1432,8 @@ MCRPURE <- S7::new_class(
 )
 
 #' @noRd
-S7::method(summary, MCRPURE) <- function(x) {
-  summary(x$model)
+S7::method(summary, MCRPURE) <- function(object, ...) {
+  summary(object$model)
 }
 
 #' @noRd
@@ -1791,7 +1791,7 @@ KNN <- S7::new_class(
 )
 
 #' @noRd
-S7::method(summary, KNN) <- function(x) {
+S7::method(summary, KNN) <- function(object, ...) {
   NULL
 }
 

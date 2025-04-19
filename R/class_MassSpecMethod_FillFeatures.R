@@ -47,7 +47,7 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
                          minGaussianFit = 0.2) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FillFeatures",
         required = c("FindFeatures", "GroupFeatures"),
         algorithm = "StreamFind",
@@ -77,7 +77,7 @@ MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FillFeatures")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_logical(self@parameters$withinReplicate, len = 1)

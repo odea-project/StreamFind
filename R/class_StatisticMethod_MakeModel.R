@@ -45,7 +45,7 @@ StatisticMethod_MakeModel_pca_mdatools <- S7::new_class(
                          info = "") {
     S7::new_object(
       ProcessingStep(
-        engine = "Statistic",
+        data_type = "Statistic",
         method = "MakeModel",
         required = NA_character_,
         algorithm = "pca_mdatools",
@@ -75,7 +75,7 @@ StatisticMethod_MakeModel_pca_mdatools <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@data_type, "Statistic")
     checkmate::assert_choice(self@method, "MakeModel")
     checkmate::assert_choice(self@algorithm, "pca_mdatools")
     checkmate::assert_logical(self@parameters$center, len = 1)
@@ -184,7 +184,7 @@ StatisticMethod_MakeModel_mcrpure_mdatools <- S7::new_class(
                          info = "") {
     S7::new_object(
       ProcessingStep(
-        engine = "Statistic",
+        data_type = "Statistic",
         method = "MakeModel",
         required = NA_character_,
         algorithm = "mcrpure_mdatools",
@@ -208,7 +208,7 @@ StatisticMethod_MakeModel_mcrpure_mdatools <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@data_type, "Statistic")
     checkmate::assert_choice(self@method, "MakeModel")
     checkmate::assert_choice(self@algorithm, "mcrpure_mdatools")
     checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
@@ -316,7 +316,7 @@ StatisticMethod_MakeModel_mcrals_mdatools <- S7::new_class(
                          info = "") {
     S7::new_object(
       ProcessingStep(
-        engine = "Statistic",
+        data_type = "Statistic",
         method = "MakeModel",
         required = NA_character_,
         algorithm = "mcrals_mdatools",
@@ -345,7 +345,7 @@ StatisticMethod_MakeModel_mcrals_mdatools <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@data_type, "Statistic")
     checkmate::assert_choice(self@method, "MakeModel")
     checkmate::assert_choice(self@algorithm, "mcrals_mdatools")
     checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
@@ -457,7 +457,7 @@ StatisticMethod_MakeModel_knn <- S7::new_class(
   constructor = function(k = 3, l = 0) {
     S7::new_object(
       ProcessingStep(
-        engine = "Statistic",
+        data_type = "Statistic",
         method = "MakeModel",
         required = NA_character_,
         algorithm = "knn",
@@ -478,7 +478,7 @@ StatisticMethod_MakeModel_knn <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Statistic")
+    checkmate::assert_choice(self@data_type, "Statistic")
     checkmate::assert_choice(self@method, "MakeModel")
     checkmate::assert_choice(self@algorithm, "knn")
     checkmate::assert_number(self@parameters$k)

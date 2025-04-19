@@ -167,7 +167,7 @@ CoreEngine <- R6::R6Class(
     
     # MARK: AuditTrail
     #' @field AuditTrail `AuditTrail` S7 class object. No set method available!
-    AuditTrail = function() {
+    AuditTrail = function(value) {
       private$.AuditTrail
     },
     
@@ -518,13 +518,13 @@ CoreEngine <- R6::R6Class(
         warning("ProcessingStep not valid!")
         return(invisible(self))
       }
-      engine <- step$engine
-      if (!checkmate::test_choice(paste0(engine, "Engine"), is(self))) {
-        warning("Engine type ", engine, " not matching with current engine! Not done.")
+      data_type <- step$data_type
+      if (!checkmate::test_choice(paste0(data_type, "Engine"), is(self))) {
+        warning("Data type ", data_type, " not matching with current engine! Not done.")
         return(invisible(self))
       }
       call <- step$call
-      available_processing_steps <- .get_available_processing_methods(step$engine)
+      available_processing_steps <- .get_available_processing_methods(step$data_type)
       if (!call %in% available_processing_steps) {
         warning(paste0(call, " not available!"))
         return(invisible(self))
@@ -576,9 +576,11 @@ CoreEngine <- R6::R6Class(
             },
             warning = function(w) {
               warning(
-                "Warning when adding results from ",
-                step$method, ":\n", w, "\n",
-                "Results deleted from cache!"
+                paste0(
+                  "Warning when adding results from ",
+                  step$method, ":\n", w, "\n",
+                  "Results deleted from cache!"
+                )
               )
               StreamFind::sclear_cache(self$Config$ConfigCache, cache_category)
             }

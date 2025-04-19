@@ -1,7 +1,34 @@
 # MARK: StatisticAnalyses
 # StatisticAnalyses -----
+#' @title StatisticAnalyses Class
+#' 
+#' @description The StatisticAnalyses class is used for statistical analysis of tabular data.
+#' 
+#' @param analyses A `character` vector with full file path to `.csv` file with variable names as
+#' first row and analyses names as first column or a `data.frame` or `matrix` object.
+#' @param classes A `character` vector with the classes of the analyses.
+#' @param concentrations A `numeric` vector with the concentrations of the analyses.
+#' @param ... Additional arguments passed to the constructor.
+#' 
+#' @slot analyses A `data.frame` with the analyses data.
+#' @slot type A `character` vector with the type of analyses.
+#' @slot classes A `character` vector with the classes of the analyses.
+#' @slot concentrations A `numeric` vector with the concentrations of the analyses.
+#' @slot info (getter) A `data.frame` with the information of the analyses.
+#' @slot number_variables (getter) A `numeric` with the number of variables in the analyses.
+#' @slot has_data (getter) A `logical` indicating if the analyses has data.
+#' @slot data (getter/setter) A `list` with the data of the analyses.
+#' @slot has_model (getter) A `logical` indicating if the analyses has a model.
+#' @slot model (getter/setter) A `list` with the model of the analyses.
+#' @slot has_test (getter) A `logical` indicating if the analyses has a test.
+#' @slot test (getter) A `list` with the test of the analyses.
+#' @slot has_prediction (getter) A `logical` indicating if the analyses has a prediction.
+#' @slot prediction (getter) A `list` with the prediction of the analyses.
+#' @slot has_quantification (getter) A `logical` indicating if the analyses has a quantification.
+#' @slot quantification (getter/setter) A `list` with the quantification of the analyses.
+#' 
 #' @export
-#' @noRd
+#' 
 StatisticAnalyses <- S7::new_class(
   name = "StatisticAnalyses",
   package = "StreamFind",
@@ -345,7 +372,7 @@ S7::method(add, StatisticAnalyses) <- function(x, value) {
     x@analyses <- x@analyses[order(rownames(x@analyses)), ]
     x@results <- list()
   }
-  return(x)
+  x
 }
 
 # MARK: remove
@@ -365,7 +392,7 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
       x@results <- list()
     }
   }
-  return(x)
+  x
 }
 
 # MARK: `[`
@@ -373,7 +400,7 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
 
 #' @export
 #' @noRd
-S7::method(`[`, StatisticAnalyses) <- function(x, i) {
+`[.StatisticAnalyses` <- function(x, i) {
   if (is.character(i)) {
     x@analyses <- x@analyses[rownames(x@analyses) %in% i, ]
     x@results <- list()
@@ -383,23 +410,23 @@ S7::method(`[`, StatisticAnalyses) <- function(x, i) {
   } else {
     warning("Index must be character or numeric!")
   }
-  return(x)
+  x
 }
 
 # MARK: `[<-`
 ## `[<-` -----
 #' @export
 #' @noRd
-S7::method(`[<-`, StatisticAnalyses) <- function(x, i, value) {
+`[<-.StatisticAnalyses` <- function(x, i, value) {
   x <- add(x, value)
-  return(x)
+  x
 }
 
 # MARK: `[[`
 ## `[[` -----
 #' @export
 #' @noRd
-S7::method(`[[`, StatisticAnalyses) <- function(x, i) {
+`[[.StatisticAnalyses` <- function(x, i) {
   if (is.character(i)) {
     x@analyses <- x@analyses[rownames(x@analyses) %in% i, ]
     x@results <- list()
@@ -409,16 +436,16 @@ S7::method(`[[`, StatisticAnalyses) <- function(x, i) {
   } else {
     warning("Index must be character or numeric!")
   }
-  return(x)
+  x
 }
 
 # MARK: `[[<-`
 ## `[[<-` -----
 #' @export
 #' @noRd
-S7::method(`[[<-`, StatisticAnalyses) <- function(x, i, value) {
+`[[<-.StatisticAnalyses` <- function(x, i, value) {
   x <- add(x, value)
-  return(x)
+  x
 }
 
 # MARK: predict

@@ -265,7 +265,7 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity <- S7::new_class(
                          maxFeatures = 100) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GroupFeatures",
         required = "FindFeatures",
         algorithm = "xcms3_peakdensity",
@@ -287,7 +287,7 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
     checkmate::assert_choice(self@algorithm, "xcms3_peakdensity")
     checkmate::assert_numeric(self@parameters$bw, len = 1)
@@ -420,7 +420,7 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class(
                          subsetAdjust = "average") {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GroupFeatures",
         required = "FindFeatures",
         algorithm = "xcms3_peakdensity_peakgroups",
@@ -453,7 +453,7 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
     checkmate::assert_choice(self@algorithm, "xcms3_peakdensity_peakgroups")
     checkmate::assert_numeric(self@parameters$bw, len = 1)
@@ -569,7 +569,7 @@ MassSpecMethod_GroupFeatures_openms <- S7::new_class(
                          verbose = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GroupFeatures",
         required = "FindFeatures",
         algorithm = "openms",
@@ -593,7 +593,7 @@ MassSpecMethod_GroupFeatures_openms <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
     checkmate::assert_choice(self@algorithm, "openms")
     checkmate::assert_logical(self@parameters$rtalign, len = 1)

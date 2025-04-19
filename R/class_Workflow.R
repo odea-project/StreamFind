@@ -1,5 +1,17 @@
+# MARK: Workflow
+# Workflow -----
+#' @title Workflow Class
+#' 
+#' @description The Workflow class is used to manage an ordered list of \code{\link{ProcessingStep}}
+#' objects of a specific type of data.
+#' 
+#' @param processing_steps A list of \code{\link{ProcessingStep}} objects.
+#' 
+#' @slot methods (getter) A character vector of the methods of each processing step.
+#' @slot overview (getter) A data frame with an overview of processing steps in the workflow.
+#' 
 #' @export
-#' @noRd
+#' 
 Workflow <- S7::new_class(
   name = "Workflow",
   package = "StreamFind",
@@ -16,7 +28,7 @@ Workflow <- S7::new_class(
       getter = function(self) {
         if (length(self) == 0) return(character())
         vapply(self@processing_steps, function(x) {
-          paste0(x$engine, "Method_", x$method, "_", x$algorithm)
+          paste0(x$data_type, "Method_", x$method, "_", x$algorithm)
         }, NA_character_)
       }
     ),
@@ -74,8 +86,8 @@ Workflow <- S7::new_class(
       w_names <- paste0(w_idx, "_", w_names)
       names(processing_steps) <- w_names
       
-      engine <- vapply(processing_steps, function(z) z$engine, NA_character_)[1]
-      possible_methods <- .get_available_methods(engine)
+      data_type <- vapply(processing_steps, function(z) z$data_type, NA_character_)[1]
+      possible_methods <- .get_available_methods(data_type)
       workflow_methods <- NA_character_
       for (i in names(processing_steps)) {
         
@@ -109,22 +121,22 @@ Workflow <- S7::new_class(
         checkmate::assert_true(is(x, "StreamFind::ProcessingStep"))
       })
       
-      engine <- unique(vapply(self@processing_steps, function(x) x$engine, NA_character_))
-      if (length(engine) > 1) {
-        stop("All processing_steps must have the same engine!")
+      data_type <- unique(vapply(self@processing_steps, function(x) x$data_type, NA_character_))
+      if (length(data_type) > 1) {
+        stop("All ProcessingStep objects must be for the same type of data!")
       }
       
       methods <- self@methods
-      available_methods <- .get_available_processing_methods(engine)
+      available_methods <- .get_available_processing_methods(data_type)
       if (!all(methods %in% available_methods)) {
-        stop("All methods must be available for the engine!")
+        stop("All processing methods must be available for the defined type of data!")
       }
       
       permitted <- vapply(self@processing_steps, function(x) x$number_permitted, NA_real_)
       if (any(permitted == 1)) {
         unique_methods <- unique(methods[permitted == 1])
         if (length(unique_methods) != length(methods[permitted == 1])) {
-          stop("All processing_steps with number_permitted == 1 must be unique!")
+          stop("All ProcessingStep objects with number_permitted == 1 must be unique!")
         }
       }
     }
@@ -146,13 +158,13 @@ S7::method(names, Workflow) <- function(x) {
 
 #' @export
 #' @noRd
-S7::method(`$`, Workflow) <- function(x, i) {
+`$.Workflow` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-S7::method(`[`, Workflow) <- function(x, i) {
+`[.Workflow` <- function(x, i) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[i]
   } else {
@@ -162,7 +174,7 @@ S7::method(`[`, Workflow) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`[<-`, Workflow) <- function(x, i, value) {
+`[<-.Workflow` <- function(x, i, value) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[i] <- value
     
@@ -172,14 +184,14 @@ S7::method(`[<-`, Workflow) <- function(x, i, value) {
       w_names <- paste0(w_idx, "_", w_names)
       names(x@processing_steps) <- w_names
       
-      engine <- vapply(x@processing_steps, function(z) z$engine, NA_character_)[1]
-      possible_methods <- .get_available_methods(engine)
+      data_type <- vapply(x@processing_steps, function(z) z$data_type, NA_character_)[1]
+      possible_methods <- .get_available_methods(data_type)
       workflow_methods <- NA_character_
       for (i in names(x@processing_steps)) {
         
         if (!x@processing_steps[[i]]$method %in% possible_methods) {
           warning(
-            "Method ", x@processing_steps[[i]]$method, " not available for the engine ", engine, "Engine!"
+            "Method ", x@processing_steps[[i]]$method, " not available for ", data_type, " data!"
           )
           x@processing_steps[[i]] <- NULL
           next
@@ -204,7 +216,7 @@ S7::method(`[<-`, Workflow) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(`[[`, Workflow) <- function(x, i) {
+`[[.Workflow` <- function(x, i) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[[i]]
   } else {
@@ -214,7 +226,7 @@ S7::method(`[[`, Workflow) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`[[<-`, Workflow) <- function(x, i, value) {
+`[[<-.Workflow` <- function(x, i, value) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[[i]] <- value
 
@@ -224,14 +236,14 @@ S7::method(`[[<-`, Workflow) <- function(x, i, value) {
       w_names <- paste0(w_idx, "_", w_names)
       names(x@processing_steps) <- w_names
       
-      engine <- vapply(x@processing_steps, function(z) z$engine, NA_character_)[1]
-      possible_methods <- .get_available_methods(engine)
+      data_type <- vapply(x@processing_steps, function(z) z$data_type, NA_character_)[1]
+      possible_methods <- .get_available_methods(data_type)
       workflow_methods <- NA_character_
       for (i in names(x@processing_steps)) {
         
         if (!x@processing_steps[[i]]$method %in% possible_methods) {
           warning(
-            "Method ", x@processing_steps[[i]]$method, " not available for the engine ", engine, "Engine!"
+            "Method ", x@processing_steps[[i]]$method, " not available for ", data_type, " data!"
           )
           x@processing_steps[[i]] <- NULL
           next
@@ -256,7 +268,7 @@ S7::method(`[[<-`, Workflow) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(as.list, Workflow) <- function(x) {
+S7::method(as.list, Workflow) <- function(x, ...) {
   processing_steps <- lapply(x@processing_steps, function(s) as.list(s))
   names(processing_steps) <- names(x@processing_steps)
   processing_steps
@@ -270,7 +282,7 @@ S7::method(save, Workflow) <- function(x, file = "workflow.rds") {
     if (format %in% "json") {
       processing_steps <- lapply(x@processing_steps, function(s) {
         list(
-          engine = s@engine,
+          data_type = s@data_type,
           method = s@method,
           required = s@required,
           algorithm = s@algorithm,
@@ -332,6 +344,6 @@ S7::method(show, Workflow) <- function(x, ...) {
 
 #' @export
 #' @noRd
-S7::method(print, Workflow) <- function(x) {
+S7::method(print, Workflow) <- function(x, ...) {
   show(x)
 }

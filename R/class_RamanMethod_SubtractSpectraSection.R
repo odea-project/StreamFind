@@ -17,7 +17,7 @@ RamanMethod_SubtractSpectraSection_StreamFind <- S7::new_class(
                          sectionWindow = c(10, 200)) {
     
     S7::new_object(ProcessingStep(
-      engine = "Raman",
+      data_type = "Raman",
       method = "SubtractSpectraSection",
       algorithm = "StreamFind",
       parameters = list(
@@ -35,7 +35,7 @@ RamanMethod_SubtractSpectraSection_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "SubtractSpectraSection")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_character(self@parameters$sectionVal, min.len = 1)

@@ -19,7 +19,7 @@ MassSpecMethod_FilterChromPeaks_native <- S7::new_class(
                          retentionTimeRange = c(NA_real_, NA_real_)) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FilterChromPeaks",
         algorithm = "native",
         parameters = list(
@@ -37,7 +37,7 @@ MassSpecMethod_FilterChromPeaks_native <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FilterChromPeaks")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_number(self@parameters$minIntensity)

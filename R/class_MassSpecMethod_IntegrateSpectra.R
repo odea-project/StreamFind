@@ -30,7 +30,7 @@ MassSpecMethod_IntegrateSpectra_StreamFind <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "IntegrateSpectra",
         required = "LoadSpectra",
         algorithm = "StreamFind",
@@ -55,7 +55,7 @@ MassSpecMethod_IntegrateSpectra_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "IntegrateSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_logical(self@parameters$merge, max.len = 1)

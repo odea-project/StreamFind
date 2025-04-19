@@ -18,7 +18,7 @@ RamanMethod_DeleteScansSection_native <- S7::new_class(
   
   constructor = function(min = 0, max = 0) {
     S7::new_object(ProcessingStep(
-      engine = "Raman",
+      data_type = "Raman",
       method = "DeleteScansSection",
       required = NA_character_,
       algorithm = "native",
@@ -37,7 +37,7 @@ RamanMethod_DeleteScansSection_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "DeleteScansSection")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_numeric(self@parameters$min, len = 1)

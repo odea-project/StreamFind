@@ -10,9 +10,9 @@
 #' for extracting the feature EIC.
 #' @param maxPeakWidth Numeric of length one with the maximum peak width centered on the maximum
 #' for reconstructing the feature EIC.
-#' @param minTraces Numeric of length 1 with the minimum number traces for calculating feature
+#' @param minNumberTraces Numeric of length 1 with the minimum number traces for calculating feature
 #' quality.
-#' @param minIntensity Numeric of length 1 with the minimum intensity of spectra traces for
+#' @param minTracesIntensity Numeric of length 1 with the minimum intensity of spectra traces for
 #' calculating feature quality.
 #' @param baseCut Numeric of length 1 with the base cut for calculating feature Gaussian fit.
 #'
@@ -35,7 +35,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
                          baseCut = 0) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "CalculateFeaturesQuality",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -61,7 +61,7 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "CalculateFeaturesQuality")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_logical(self@parameters$filtered, max.len = 1)

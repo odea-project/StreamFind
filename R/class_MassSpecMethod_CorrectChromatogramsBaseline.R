@@ -24,7 +24,7 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- S7::new_class(
                          liftByLowestNegativeToZero = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "CorrectChromatogramsBaseline",
         required = "LoadChromatograms",
         algorithm = "baseline_als",
@@ -46,7 +46,7 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "CorrectChromatogramsBaseline")
     checkmate::assert_choice(self@algorithm, "baseline_als")
     checkmate::assert_number(self@parameters$lambda)
@@ -161,7 +161,7 @@ MassSpecMethod_CorrectChromatogramsBaseline_airpls <- S7::new_class(
                          itermax = 20) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "CorrectChromatogramsBaseline",
         required = "LoadChromatograms",
         algorithm = "airpls",
@@ -182,7 +182,7 @@ MassSpecMethod_CorrectChromatogramsBaseline_airpls <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "CorrectChromatogramsBaseline")
     checkmate::assert_choice(self@algorithm, "airpls")
     checkmate::assert_number(self@parameters$lambda)
@@ -238,7 +238,7 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_airpls) <- function(
           z
         })
         
-        z <- rbindlist(temp_x)
+        z <- data.table::rbindlist(temp_x)
         
       } else {
         baseline_data <- .airPLS_by_zmzhang(z$intensity, lambda, differences, itermax)

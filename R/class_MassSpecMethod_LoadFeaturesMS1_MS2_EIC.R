@@ -27,7 +27,7 @@ MassSpecMethod_LoadFeaturesMS1_StreamFind <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadFeaturesMS1",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -51,7 +51,7 @@ MassSpecMethod_LoadFeaturesMS1_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadFeaturesMS1")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_double(as.numeric(self@parameters$rtWindow), max.len = 2)
@@ -140,7 +140,7 @@ MassSpecMethod_LoadFeaturesMS2_StreamFind <- S7::new_class(
    
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadFeaturesMS2",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -163,7 +163,7 @@ MassSpecMethod_LoadFeaturesMS2_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadFeaturesMS2")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$isolationWindow)
@@ -246,7 +246,7 @@ MassSpecMethod_LoadFeaturesEIC_StreamFind <- S7::new_class(
    
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadFeaturesEIC",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -268,7 +268,7 @@ MassSpecMethod_LoadFeaturesEIC_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadFeaturesEIC")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$rtExpand)

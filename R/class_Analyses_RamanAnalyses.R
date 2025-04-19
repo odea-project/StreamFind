@@ -1,7 +1,29 @@
 # MARK: RamanAnalyses
 # RamanAnalyses -----
+#' @title RamanAnalyses Class
+#' 
+#' @description The RamanAnalyses class is used to store a list of Raman spectra.
+#' 
+#' @param files A `character` vector with full file paths to "asc", "sif", "json", "wdf", "sdf",
+#' "csv" and/or "txt" raman files or a `data.frame` with colnames `file`, `replicate` and `blank`.
+#' The "replicate" column is used to group the analyses and the "blank" column is used to identify
+#' the blank samples. The "file" column is the full to the raman files.
+#' 
+#' @slot analyses A `list` of Raman spectra.
+#' @slot replicates (getter and setter) A `character` vector with the names of the replicates.
+#' @slot blanks (getter and setter) A `character` vector with the names of the blanks.
+#' @slot concentrations (getter and setter) A `numeric` vector with the concentrations of each
+#' analysis.
+#' @slot references (getter and setter) A `character` vector with the names of the reference for
+#' each analysis.
+#' @slot types (getter) A `character` vector with the names of the types of each analysis.
+#' @slot files (getter) A `character` vector with the names of the files of each analysis.
+#' @slot info (getter) A `data.frame` with the information of each analysis.
+#' @slot has_spectra (getter) A `logical` value indicating if the object has spectra.
+#' @slot Spectra (getter and setter) `RamanSpectraResults`.
+#' 
 #' @export
-#' @noRd
+#' 
 RamanAnalyses <- S7::new_class("RamanAnalyses",
   package = "StreamFind", parent = Analyses,
   properties = list(
@@ -232,16 +254,12 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
 # MARK: Methods
 # Methods -----
 
-# MARK: names
-## names -----
 #' @export
 #' @noRd
 S7::method(names, RamanAnalyses) <- function(x) {
   vapply(x@analyses, function(x) x$name, NA_character_)
 }
 
-# MARK: add
-## add -----
 #' @export
 #' @noRd
 S7::method(add, RamanAnalyses) <- function(x, value) {
@@ -295,8 +313,6 @@ S7::method(add, RamanAnalyses) <- function(x, value) {
   x
 }
 
-# MARK: remove
-## remove -----
 #' @export
 #' @noRd
 S7::method(remove, RamanAnalyses) <- function(x, value) {
@@ -323,11 +339,9 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
   x
 }
 
-# MARK: `[`
-## `[` -----
 #' @export
 #' @noRd
-S7::method(`[`, RamanAnalyses) <- function(x, i) {
+`[.RamanAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
   if (!is.null(x$results[["RamanSpectra"]])) {
     spec <- x@results[["RamanSpectra"]]
@@ -344,20 +358,16 @@ S7::method(`[`, RamanAnalyses) <- function(x, i) {
   return(x)
 }
 
-# MARK: `[<-`
-## `[<-` -----
 #' @export
 #' @noRd
-S7::method(`[<-`, RamanAnalyses) <- function(x, i, value) {
+`[<-.RamanAnalyses` <- function(x, i, value) {
   warning("Method not implemented in RamanAnalyses! Use add or remove methods instead.")
   return(x)
 }
 
-# MARK: `[[`
-## `[[` -----
 #' @export
 #' @noRd
-S7::method(`[[`, RamanAnalyses) <- function(x, i) {
+`[[.RamanAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[[i]]
   if (!is.null(x$results[["RamanSpectra"]])) {
     spec <- x@results[["RamanSpectra"]]
@@ -374,17 +384,13 @@ S7::method(`[[`, RamanAnalyses) <- function(x, i) {
   return(x)
 }
 
-# MARK: `[[<-`
-## `[[<-` -----
 #' @export
 #' @noRd
-S7::method(`[[<-`, RamanAnalyses) <- function(x, i, value) {
+`[[<-.RamanAnalyses` <- function(x, i, value) {
   warning("Method not implemented in RamanAnalyses! Use add or remove methods instead.")
   return(x)
 }
 
-# MARK: `c`
-## `c` -----
 #' @export
 #' @noRd
 S7::method(`c`, RamanAnalyses) <- function(x, ...) {

@@ -26,7 +26,7 @@ MassSpecMethod_FindInternalStandards_StreamFind <- S7::new_class(
                          sec = 10) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindInternalStandards",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -46,7 +46,7 @@ MassSpecMethod_FindInternalStandards_StreamFind <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindInternalStandards")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$ppm)

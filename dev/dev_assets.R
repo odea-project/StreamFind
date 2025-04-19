@@ -11,6 +11,11 @@ devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = FALS
 # Builds/Updates the GitHub page
 pkgdown::build_site()
 
+pkgdown::clean_cache()
+pkgdown::clean_site()
+
+pkgdown::build_reference()
+
 # Check the package for conformity
 devtools::check()
 

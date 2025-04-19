@@ -38,7 +38,7 @@ MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SuspectScreening",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -64,7 +64,7 @@ MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SuspectScreening")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$ppm)
@@ -216,7 +216,7 @@ MassSpecMethod_SuspectScreening_forident <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SuspectScreening",
         algorithm = "forident",
         parameters = list(
@@ -237,7 +237,7 @@ MassSpecMethod_SuspectScreening_forident <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SuspectScreening")
     checkmate::assert_choice(self@algorithm, "forident")
     checkmate::assert_true(dir.exists(self@parameters$path))
@@ -445,7 +445,7 @@ MassSpecMethod_SuspectScreening_patRoon <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SuspectScreening",
         algorithm = "patRoon",
         parameters = list(
@@ -466,7 +466,7 @@ MassSpecMethod_SuspectScreening_patRoon <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SuspectScreening")
     checkmate::assert_choice(self@algorithm, "patRoon")
     checkmate::assert_number(self@parameters$rtWindow)

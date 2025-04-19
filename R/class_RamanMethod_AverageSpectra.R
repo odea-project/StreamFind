@@ -17,7 +17,7 @@ RamanMethod_AverageSpectra_native <- S7::new_class(
   constructor = function(by = "replicates") {
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "AverageSpectra",
         required = NA_character_,
         algorithm = "native",
@@ -36,7 +36,7 @@ RamanMethod_AverageSpectra_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "AverageSpectra")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_choice(

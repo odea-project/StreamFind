@@ -112,28 +112,30 @@ MassSpecMethod_CorrectMatrixSuppression_TiChri <- S7::new_class(
       required <- c(required, "FindInternalStandards")
     }
     
-    S7::new_object(ProcessingStep(
-      engine = "MassSpec",
-      method = "CorrectMatrixSuppression",
-      required = required,
-      algorithm = "TiChri",
-      parameters = list(
-        "mpRtWindow" = as.numeric(mpRtWindow),
-        "istdAssignment" = as.character(istdAssignment),
-        "istdRtWindow" = as.numeric(istdRtWindow),
-        "istdN" = as.integer(istdN)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "TiChri",
-      developer = "Selina Tisler",
-      contact = "seti@plen.ku.dk",
-      link = "https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357",
-      doi = "10.1021/acs.analchem.1c00357"
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "MassSpec",
+        method = "CorrectMatrixSuppression",
+        required = required,
+        algorithm = "TiChri",
+        parameters = list(
+          "mpRtWindow" = as.numeric(mpRtWindow),
+          "istdAssignment" = as.character(istdAssignment),
+          "istdRtWindow" = as.numeric(istdRtWindow),
+          "istdN" = as.integer(istdN)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "TiChri",
+        developer = "Selina Tisler",
+        contact = "seti@plen.ku.dk",
+        link = "https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357",
+        doi = "10.1021/acs.analchem.1c00357"
+      )
+    )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "CorrectMatrixSuppression")
     checkmate::assert_choice(self@algorithm, "TiChri")
     checkmate::assert_numeric(self@parameters$mpRtWindow, lower = 0)

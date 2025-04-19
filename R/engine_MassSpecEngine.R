@@ -1,7 +1,7 @@
 # MARK: MassSpecEngine
 # MassSpecEngine -----
 #' **MassSpecEngine** R6 class and methods
-#'
+#' 
 #' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
 #' storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
 #' chromatograms produced by UV detection) can be loaded from mzML. If `msconvert` from 
@@ -10,10 +10,10 @@
 #' Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF / WIFF2)
 #' by direct conversion to mzML. Note that conversion of vendor formats is only possible under
 #' Windows OS.
-#'
+#' 
 #' @details The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
 #' assembly of Non-Target Screening (NTS) data processing workflows.
-#'
+#' 
 #' @template arg-core-metadata
 #' @template arg-core-workflow
 #' @template arg-analyses
@@ -67,20 +67,20 @@
 #' @template arg-settings
 #' @template arg-ms-correctIntensity
 #' @template arg-renderEngine
-#'
+#' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
-#'
+#' 
 #' \insertRef{patroon02}{StreamFind}
-#'
+#' 
 #' \insertRef{pugixml01}{StreamFind}
 #' 
 #' \insertRef{proteo01}{StreamFind}
 #' 
 #' \insertRef{proteo02}{StreamFind}
-#'
+#' 
 #' @export
-#'
+#' 
 MassSpecEngine <- R6::R6Class("MassSpecEngine",
   inherit = CoreEngine,
 

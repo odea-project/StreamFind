@@ -85,7 +85,7 @@ S7::method(show, MassSpecSpectra) <- function(x) {
 ## `[` -----
 #' @export
 #' @noRd
-S7::method(`[`, MassSpecSpectra) <- function(x, i) {
+`[.MassSpecSpectra` <- function(x, i) {
   x@spectra <- x@spectra[i]
   if (x@has_peaks) {
     x@peaks <- x@peaks[i]

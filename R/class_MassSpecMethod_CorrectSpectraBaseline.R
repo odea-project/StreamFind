@@ -18,28 +18,30 @@ MassSpecMethod_CorrectSpectraBaseline_baseline_als <- S7::new_class(
   
   constructor = function(lambda = 5, p = 0.05, maxit = 10) {
     
-    S7::new_object(ProcessingStep(
-      engine = "MassSpec",
-      method = "CorrectSpectraBaseline",
-      required = "LoadSpectra",
-      algorithm = "baseline_als",
-      parameters = list(
-        lambda = lambda,
-        p = p,
-        maxit = maxit
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "baseline",
-      developer = "Kristian Hovde Liland",
-      contact = "kristian.liland@nmbu.no",
-      link = "https://github.com/khliland/baseline/",
-      doi = "10.1366/000370210792434350"
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "MassSpec",
+        method = "CorrectSpectraBaseline",
+        required = "LoadSpectra",
+        algorithm = "baseline_als",
+        parameters = list(
+          lambda = lambda,
+          p = p,
+          maxit = maxit
+        ),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "baseline",
+        developer = "Kristian Hovde Liland",
+        contact = "kristian.liland@nmbu.no",
+        link = "https://github.com/khliland/baseline/",
+        doi = "10.1366/000370210792434350"
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::test_choice(self@engine, "MassSpec")
+    checkmate::test_choice(self@data_type, "MassSpec")
     checkmate::test_choice(self@method, "CorrectSpectraBaseline")
     checkmate::test_choice(self@algorithm, "baseline_als")
     checkmate::assert_number(self@parameters$lambda)
@@ -143,7 +145,7 @@ MassSpecMethod_CorrectSpectraBaseline_airpls <- S7::new_class(
   constructor = function(lambda = 10, differences = 1, itermax = 20) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "CorrectSpectraBaseline",
         required = "LoadSpectra",
         algorithm = "airpls",
@@ -160,7 +162,7 @@ MassSpecMethod_CorrectSpectraBaseline_airpls <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "CorrectSpectraBaseline")
     checkmate::assert_choice(self@algorithm, "airpls")
     checkmate::assert_number(self@parameters$lambda)

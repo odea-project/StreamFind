@@ -1,7 +1,14 @@
 # MARK: ConfigParameter
 # ConfigParameter -----
+#' @title ConfigParameter Class
+#' 
+#' @description Class representing a configuration parameter.
+#' 
+#' @param name Name of the parameter.
+#' @param description Description of the parameter.
+#' 
 #' @export
-#' @noRd
+#' 
 ConfigParameter <- S7::new_class(
   name = "ConfigParameter",
   package = "StreamFind",
@@ -21,21 +28,30 @@ ConfigParameter <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(`$`, ConfigParameter) <- function(x, i) {
+`$.ConfigParameter` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-S7::method(`$<-`, ConfigParameter) <- function(x, i, value) {
+`$<-.ConfigParameter` <- function(x, i, value) {
   S7::prop(x, i) <- value
   x
 }
 
 # MARK: Config
 # Config -----
+#' @title Config Class
+#' 
+#' @description Class representing a configuration object composed of multiple
+#' [StreamFind::ConfigParameter] objects.
+#' 
+#' @param parameters A list of [StreamFind::ConfigParameter] objects.
+#' 
+#' @slot config_frame (getter) A data frame representation of the configuration parameters.
+#' 
 #' @export
-#' @noRd
+#' 
 Config <- S7::new_class(
   name = "Config",
   package = "StreamFind",
@@ -73,13 +89,13 @@ Config <- S7::new_class(
 
 #' @export
 #' @noRd
-S7::method(names, Config) <- function(x) {
+names.Config <- function(x) {
   names(x@parameters)
 }
 
 #' @export
 #' @noRd
-S7::method(`$`, Config) <- function(x, i) {
+`$.Config` <- function(x, i) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.character(i)) {
@@ -91,7 +107,7 @@ S7::method(`$`, Config) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`$<-`, Config) <- function(x, i, value) {
+`$<-.Config` <- function(x, i, value) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.character(i)) {
@@ -105,7 +121,7 @@ S7::method(`$<-`, Config) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(`[`, Config) <- function(x, i) {
+`[.Config` <- function(x, i) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.numeric(i)) {
@@ -121,7 +137,7 @@ S7::method(`[`, Config) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`[<-`, Config) <- function(x, i, value) {
+`[<-.Config` <- function(x, i, value) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.numeric(i)) {
@@ -143,7 +159,7 @@ S7::method(`[<-`, Config) <- function(x, i, value) {
 
 #' @export
 #' @noRd
-S7::method(`[[`, Config) <- function(x, i) {
+`[[.Config` <- function(x, i) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.numeric(i)) {
@@ -157,7 +173,7 @@ S7::method(`[[`, Config) <- function(x, i) {
 
 #' @export
 #' @noRd
-S7::method(`[[<-`, Config) <- function(x, i, value) {
+`[[<-.Config` <- function(x, i, value) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.numeric(i)) {
@@ -178,8 +194,19 @@ S7::method(`[[<-`, Config) <- function(x, i, value) {
 
 # MARK: ConfigCache
 ## ConfigCache -----
+#' @title ConfigCache Class
+#' 
+#' @description Class representing a configuration for the caching behavior.
+#' 
+#' @slot value Logical indicating whether to enable or disable caching.
+#' @slot mode Character indicating the caching mode (e.g., "rds" or "sqlite").
+#' @slot folder Character indicating the folder for caching (for "rds" mode).
+#' @slot file Character indicating the file for caching (for "sqlite" mode).
+#' @slot size (getter) Size of the cache.
+#' @slot info (getter) Information about the cache.
+#' 
 #' @export
-#' @noRd
+#' 
 ConfigCache <- S7::new_class(
   name = "ConfigCache",
   parent = ConfigParameter,
@@ -315,7 +342,7 @@ S7::method(save_cache, ConfigCache) <- function(x, category = NULL, data = NULL,
 
 #' @export
 #' @noRd
-clear_cache.ConfigCache <- function(x, what = NULL) {
+S7::method(clear_cache, ConfigCache) <- function(x, what = NULL, ...) {
   if (x@value) {
     if ("sqlite" %in% x@mode) {
       clear_cache(what, file = x@file)
@@ -333,8 +360,14 @@ clear_cache.ConfigCache <- function(x, what = NULL) {
 
 # MARK: EngineConfig
 ## EngineConfig -----
+#' @title EngineConfig Class
+#' 
+#' @description Class representing the engine configuration, inheriting from [StreamFind::Config].
+#' 
+#' @slot parameters A list of [StreamFind::ConfigParameter] objects.
+#' 
 #' @export
-#' @noRd
+#' 
 EngineConfig <- S7::new_class(
   name = "EngineConfig",
   package = "StreamFind",
@@ -358,8 +391,15 @@ EngineConfig <- S7::new_class(
 
 # MARK: ConfigDurationNotifications
 ## ConfigDurationNotifications -----
+#' @title ConfigDurationNotifications Class
+#' 
+#' @description Class representing a configuration for the duration of pop-up notifications in the
+#' app, inhiberiting from [StreamFind::ConfigParameter].
+#' 
+#' @param value Duration in seconds for pop-up notifications.
+#' 
 #' @export
-#' @noRd
+#' 
 ConfigDurationNotifications <- S7::new_class(
   name = "ConfigDurationNotifications",
   parent = ConfigParameter,
@@ -383,8 +423,15 @@ ConfigDurationNotifications <- S7::new_class(
 
 # MARK: ConfigExtraRoots
 ## ConfigExtraRoots -----
+#' @title ConfigExtraRoots Class
+#' 
+#' @description Class representing a configuration for extra root directories for file selection
+#' in the app, inheriting from [StreamFind::ConfigParameter].
+#' 
+#' @param value Character string representing extra root directories for file selection.
+#' 
 #' @export
-#' @noRd
+#' 
 ConfigExtraRoots <- S7::new_class(
   name = "ConfigExtraRoots",
   parent = ConfigParameter,
@@ -411,8 +458,14 @@ ConfigExtraRoots <- S7::new_class(
 
 # MARK: AppConfig
 ## AppConfig -----
+#' @title AppConfig Class
+#' 
+#' @description Class representing the app configuration, inheriting from [StreamFind::Config].
+#' 
+#' @slot parameters A list of [StreamFind::ConfigParameter] objects.
+#' 
 #' @export
-#' @noRd
+#' 
 AppConfig <- S7::new_class(
   name = "AppConfig",
   package = "StreamFind",

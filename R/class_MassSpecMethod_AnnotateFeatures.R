@@ -33,7 +33,7 @@ MassSpecMethod_AnnotateFeatures_StreamFind <- S7::new_class(
                          maxGaps = 1) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "AnnotateFeatures",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -54,7 +54,7 @@ MassSpecMethod_AnnotateFeatures_StreamFind <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "AnnotateFeatures")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_count(self@parameters$maxIsotopes)
@@ -91,26 +91,27 @@ S7::method(run, MassSpecMethod_AnnotateFeatures_StreamFind) <- function(x, engin
   }
 
   feature_list <- NTS$feature_list
-  
+
   parameters <- x$parameters
-  
-  tryCatch({
-    
-    feature_list <- rcpp_nts_annotate_features(
-      feature_list,
-      rtWindowAlignment = parameters$rtWindowAlignment,
-      maxIsotopes = as.integer(parameters$maxIsotopes),
-      maxCharge = as.integer(parameters$maxCharge),
-      maxGaps = as.integer(parameters$maxGaps)
-    )
-    
-    NTS$feature_list <- feature_list
-    engine$NTS <- NTS
-    message(paste0("\U2713 ", "Features annotated!"))
-    TRUE
-    
-  }, error = function(e) {
-    warning("Error during annotation of features!", "\n", e)
-    return(FALSE)
-  })
+
+  tryCatch(
+    {
+      feature_list <- rcpp_nts_annotate_features(
+        feature_list,
+        rtWindowAlignment = parameters$rtWindowAlignment,
+        maxIsotopes = as.integer(parameters$maxIsotopes),
+        maxCharge = as.integer(parameters$maxCharge),
+        maxGaps = as.integer(parameters$maxGaps)
+      )
+
+      NTS$feature_list <- feature_list
+      engine$NTS <- NTS
+      message(paste0("\U2713 ", "Features annotated!"))
+      TRUE
+    },
+    error = function(e) {
+      warning("Error during annotation of features!", "\n", e)
+      return(FALSE)
+    }
+  )
 }

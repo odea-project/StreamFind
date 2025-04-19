@@ -19,7 +19,7 @@ MassSpecMethod_ClusterSpectra_StreamFind <- S7::new_class(
   constructor = function(val = "mz", clustVal = 0.001, presence = 0.1) {
     S7::new_object(
       StreamFind::ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "ClusterSpectra",
         required = "LoadSpectra",
         algorithm = "StreamFind",
@@ -40,7 +40,7 @@ MassSpecMethod_ClusterSpectra_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "ClusterSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_character(self@parameters$val, min.len = 1)

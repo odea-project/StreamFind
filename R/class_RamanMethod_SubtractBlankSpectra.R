@@ -15,7 +15,7 @@ RamanMethod_SubtractBlankSpectra_StreamFind <- S7::new_class(
   constructor = function(negativeToZero = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "SubtractBlankSpectra",
         algorithm = "StreamFind",
         parameters = list(negativeToZero = negativeToZero),
@@ -30,7 +30,7 @@ RamanMethod_SubtractBlankSpectra_StreamFind <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "SubtractBlankSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_logical(self@parameters$negativeToZero, max.len = 1)

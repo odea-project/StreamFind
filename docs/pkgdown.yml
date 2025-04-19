@@ -1,16 +1,12 @@
 pandoc: '3.2'
-pkgdown: 2.1.0
+pkgdown: 2.1.1
 pkgdown_sha: ~
 articles:
   articles/app_guide: app_guide.html
-  articles/demo_ms_raman_fusion_bsa: demo_ms_raman_fusion_bsa.html
-  articles/demo_nts: demo_nts.html
-  articles/demo_paracetamol_fusion: demo_paracetamol_fusion.html
-  articles/demo_paracetamol_quantification_mcrals: demo_paracetamol_quantification_mcrals.html
   articles/developer_guide: developer_guide.html
   articles/general_guide: general_guide.html
   StreamFind: StreamFind.html
-last_built: 2024-11-29T09:01Z
+last_built: 2025-04-19T09:50Z
 urls:
   reference: https://odea-project.github.io/StreamFind/reference
   article: https://odea-project.github.io/StreamFind/articles
