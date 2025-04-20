@@ -16,6 +16,8 @@ Class representing a configuration object composed of multiple
 \section{Slots}{
 
 \describe{
+\item{\code{parameters}}{(getter/setter) A named list of \link{ConfigParameter} objects.}
+
 \item{\code{config_frame}}{(getter) A data frame representation of the configuration parameters.}
 }}
 

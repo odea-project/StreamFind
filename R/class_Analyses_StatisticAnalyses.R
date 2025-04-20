@@ -400,7 +400,7 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
 
 #' @export
 #' @noRd
-`[.StatisticAnalyses` <- function(x, i) {
+`[.StreamFind::StatisticAnalyses` <- function(x, i) {
   if (is.character(i)) {
     x@analyses <- x@analyses[rownames(x@analyses) %in% i, ]
     x@results <- list()
@@ -417,7 +417,7 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
 ## `[<-` -----
 #' @export
 #' @noRd
-`[<-.StatisticAnalyses` <- function(x, i, value) {
+`[<-.StreamFind::StatisticAnalyses` <- function(x, i, value) {
   x <- add(x, value)
   x
 }
@@ -426,7 +426,7 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
 ## `[[` -----
 #' @export
 #' @noRd
-`[[.StatisticAnalyses` <- function(x, i) {
+`[[.StreamFind::StatisticAnalyses` <- function(x, i) {
   if (is.character(i)) {
     x@analyses <- x@analyses[rownames(x@analyses) %in% i, ]
     x@results <- list()
@@ -443,7 +443,7 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
 ## `[[<-` -----
 #' @export
 #' @noRd
-`[[<-.StatisticAnalyses` <- function(x, i, value) {
+`[[<-.StreamFind::StatisticAnalyses` <- function(x, i, value) {
   x <- add(x, value)
   x
 }

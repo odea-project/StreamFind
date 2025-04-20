@@ -135,72 +135,33 @@ S7::method(names, Metadata) <- function(x) {
 
 #' @export
 #' @noRd
-`[.Metadata` <- function(x, i) {
-  entries_list <- x@entries
-  if (missing(i)) return(entries_list)
-  if (is.numeric(i)) {
-    return(entries_list[i])
-  } else if (is.character(i)) {
-    return(entries_list[i])
-  } else if (is.logical(i)) {
-    return(entries_list[i])
-  } else {
-    stop("Invalid entries subset type")
-  }
+`[.StreamFind::Metadata` <- function(x, i) {
+  x@entries[i]
 }
 
 #' @export
 #' @noRd
-`[<-.Metadata` <- function(x, i, value) {
-  entries_list <- x@entries
-  if (missing(i)) return(entries_list)
-  if (is.numeric(i)) {
-    entries_list[i] <- value
-    x@entries <- entries_list
-    return(x)
-  } else if (is.character(i)) {
-    entries_list[i] <- value
-    x@entries <- entries_list
-    return(x)
-  } else if (is.logical(i)) {
-    entries_list[i] <- value
-    x@entries <- entries_list
-    return(x)
-  } else {
-    stop("Invalid entries setter type")
-  }
-}
-
-#' @export
-#' @noRd
-`[[.Metadata` <- function(x, i) {
-  entries_list <- x@entries
-  if (missing(i)) return(entries_list)
-  if (is.numeric(i)) {
-    return(entries_list[[i]])
-  } else if (is.character(i)) {
-    return(entries_list[[i]])
-  } else {
-    stop("Invalid entries subset type")
-  }
-}
-
-#' @export
-#' @noRd
-`[[<-.StreamFind::Metadata` <- function(x, i, value) {
-  entries_list <- x@entries
-  if (is.numeric(i)) {
-    warning("Numeric index not permitted!")
-  } else if (is.character(i)) {
-    entries_list[[i]] <- value
-    x@entries <- entries_list
-  }
+`[<-.StreamFind::Metadata` <- function(x, i, value) {
+  x@entries[i] <- value
   x
 }
 
 #' @export
 #' @noRd
-`$.Metadata` <- function(x, i) {
+`[[.StreamFind::Metadata` <- function(x, i) {
+  x@entries[[i]]
+}
+
+#' @export
+#' @noRd
+`[[<-.StreamFind::Metadata` <- function(x, i, value) {
+  x@entries[[i]] <- value
+  x
+}
+
+#' @export
+#' @noRd
+`$.StreamFind::Metadata` <- function(x, i) {
   entries_list <- x@entries
   if (missing(i)) return(entries_list)
   if (is.character(i)) {
@@ -212,7 +173,7 @@ S7::method(names, Metadata) <- function(x) {
 
 #' @export
 #' @noRd
-`$<-.Metadata` <- function(x, i, value) {
+`$<-.StreamFind::Metadata` <- function(x, i, value) {
   entries_list <- x@entries
   if (missing(i)) return(entries_list)
   if (is.character(i)) {

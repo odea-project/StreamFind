@@ -17,7 +17,11 @@ The Analyses class is used harmonize the interface to data entries or links to r
 \section{Slots}{
 
 \describe{
-\item{\code{possible_formats}}{(getter) A character vector of possible formats for the raw data.}
+\item{\code{possible_formats}}{(getter/setter) A character vector of possible formats for the raw data.}
+
+\item{\code{analyses}}{(getter/setter) A list of analyses, where each element is a data entry or a connection to a raw data file.}
+
+\item{\code{results}}{(getter/setter) A list of results, where each element is specific \code{\link{Results}} child class.}
 
 \item{\code{info}}{(getter) A data frame containing information about the analyses.}
 }}

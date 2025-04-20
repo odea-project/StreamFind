@@ -102,13 +102,13 @@ as.ProcessingStep <- function(value) {
 
 #' @export
 #' @noRd
-`$.ProcessingStep` <- function(x, i) {
+`$.StreamFind::ProcessingStep` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-`$<-.ProcessingStep` <- function(x, i, value) {
+`$<-.StreamFind::ProcessingStep` <- function(x, i, value) {
   S7::prop(x, i) <- value
   x
 }

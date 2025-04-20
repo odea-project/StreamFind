@@ -158,13 +158,13 @@ S7::method(names, Workflow) <- function(x) {
 
 #' @export
 #' @noRd
-`$.Workflow` <- function(x, i) {
+`$.StreamFind::Workflow` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-`[.Workflow` <- function(x, i) {
+`[.StreamFind::Workflow` <- function(x, i) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[i]
   } else {
@@ -174,7 +174,7 @@ S7::method(names, Workflow) <- function(x) {
 
 #' @export
 #' @noRd
-`[<-.Workflow` <- function(x, i, value) {
+`[<-.StreamFind::Workflow` <- function(x, i, value) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[i] <- value
     
@@ -216,7 +216,7 @@ S7::method(names, Workflow) <- function(x) {
 
 #' @export
 #' @noRd
-`[[.Workflow` <- function(x, i) {
+`[[.StreamFind::Workflow` <- function(x, i) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[[i]]
   } else {
@@ -226,7 +226,7 @@ S7::method(names, Workflow) <- function(x) {
 
 #' @export
 #' @noRd
-`[[<-.Workflow` <- function(x, i, value) {
+`[[<-.StreamFind::Workflow` <- function(x, i, value) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[[i]] <- value
 

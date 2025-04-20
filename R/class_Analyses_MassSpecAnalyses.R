@@ -697,7 +697,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 # MARK: `[`
 #' @export
 #' @noRd
-`[.MassSpecAnalyses` <- function(x, i) {
+`[.StreamFind::MassSpecAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
   if (x@has_results_nts) x@results$NTS <- x@results$NTS[i]
   if (x@has_results_spectra) x@results$Spectra <- x@results$Spectra[i]
@@ -708,7 +708,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 # MARK: `[<-`
 #' @export
 #' @noRd
-`[<-.MassSpecAnalyses` <- function(x, i, value) {
+`[<-.StreamFind::MassSpecAnalyses` <- function(x, i, value) {
   x <- add(x, value)
   x
 }
@@ -716,7 +716,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 # MARK: `[[`
 #' @export
 #' @noRd
-`[[.MassSpecAnalyses` <- function(x, i) {
+`[[.StreamFind::MassSpecAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
   if (x@has_results_nts) x@results$NTS <- x@results$NTS[i]
   if (x@has_results_spectra) x@results$Spectra <- x@results$Spectra[i]
@@ -727,7 +727,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 # MARK: `[[<-`
 #' @export
 #' @noRd
-`[[<-.MassSpecAnalyses` <- function(x, i, value) {
+`[[<-.StreamFind::MassSpecAnalyses` <- function(x, i, value) {
   x <- add(x, value)
   x
 }

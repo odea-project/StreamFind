@@ -343,7 +343,7 @@ S7::method(names, NTS) <- function(x) {
 ## `[` -----
 #' @export
 #' @noRd
-`[.NTS` <- function(x, i, j) {
+`[.StreamFind::NTS` <- function(x, i, j) {
   if (!x$has_features) {
     warning("No features found to subset!")
     return(x)
@@ -395,7 +395,7 @@ S7::method(names, NTS) <- function(x) {
 ## `[[` -----
 #' @export
 #' @noRd
-`[[.NTS` <- function(x, value) {
+`[[.StreamFind::NTS` <- function(x, value) {
   if (!missing(value)) {
     if (!x$has_groups) {
       warning("No feature groups found to subset!")

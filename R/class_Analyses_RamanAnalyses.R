@@ -341,7 +341,7 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
 
 #' @export
 #' @noRd
-`[.RamanAnalyses` <- function(x, i) {
+`[.StreamFind::RamanAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
   if (!is.null(x$results[["RamanSpectra"]])) {
     spec <- x@results[["RamanSpectra"]]
@@ -360,14 +360,14 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
 
 #' @export
 #' @noRd
-`[<-.RamanAnalyses` <- function(x, i, value) {
+`[<-.StreamFind::RamanAnalyses` <- function(x, i, value) {
   warning("Method not implemented in RamanAnalyses! Use add or remove methods instead.")
   return(x)
 }
 
 #' @export
 #' @noRd
-`[[.RamanAnalyses` <- function(x, i) {
+`[[.StreamFind::RamanAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[[i]]
   if (!is.null(x$results[["RamanSpectra"]])) {
     spec <- x@results[["RamanSpectra"]]
@@ -386,7 +386,7 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
 
 #' @export
 #' @noRd
-`[[<-.RamanAnalyses` <- function(x, i, value) {
+`[[<-.StreamFind::RamanAnalyses` <- function(x, i, value) {
   warning("Method not implemented in RamanAnalyses! Use add or remove methods instead.")
   return(x)
 }

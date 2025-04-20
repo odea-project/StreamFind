@@ -5,7 +5,9 @@
 #' @param analyses A list of analyses, where each element is a data entry or a connection to a raw data file.
 #' @param results A list of results, where each element is specific \code{\link{Results}} child class.
 #' 
-#' @slot possible_formats (getter) A character vector of possible formats for the raw data.
+#' @slot possible_formats (getter/setter) A character vector of possible formats for the raw data.
+#' @slot analyses (getter/setter) A list of analyses, where each element is a data entry or a connection to a raw data file.
+#' @slot results (getter/setter) A list of results, where each element is specific \code{\link{Results}} child class.
 #' @slot info (getter) A data frame containing information about the analyses.
 #' 
 #' @export
@@ -97,13 +99,13 @@ S7::method(names, Analyses) <- function(x) {
 
 #' @export
 #' @noRd
-`[.Analyses` <- function(x, i) {
+`[.StreamFind::Analyses` <- function(x, i) {
   x@analyses[i]
 }
 
 #' @export
 #' @noRd
-`[<-.Analyses` <- function(x, i, value) {
+`[<-.StreamFind::Analyses` <- function(x, i, value) {
   if (is(value, "list")) {
     x@analyses[names(value)] <- value
     if (length(x@results) > 0) {
@@ -111,18 +113,18 @@ S7::method(names, Analyses) <- function(x) {
       x@results <- list()
     }
   }
-  return(x)
+  x
 }
 
 #' @export
 #' @noRd
-`[[.Analyses` <- function(x, i) {
+`[[.StreamFind::Analyses` <- function(x, i) {
   x@analyses[[i]]
 }
 
 #' @export
 #' @noRd
-`[[<-.Analyses` <- function(x, i, value) {
+`[[<-.StreamFind::Analyses` <- function(x, i, value) {
   if (is(value, "list")) {
     x@analyses[[names(value)]] <- value
     if (length(x@results) > 0) {
@@ -130,18 +132,18 @@ S7::method(names, Analyses) <- function(x) {
       x@results <- list()
     }
   }
-  return(x)
+  x
 }
 
 #' @export
 #' @noRd
-`$.Analyses` <- function(x, i) {
+`$.StreamFind::Analyses` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-`$<-.Analyses` <- function(x, i, value) {
+`$<-.StreamFind::Analyses` <- function(x, i, value) {
   S7::prop(x, i) <- value
   x
 }

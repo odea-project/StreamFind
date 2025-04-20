@@ -48,6 +48,7 @@ ConfigParameter <- S7::new_class(
 #' 
 #' @param parameters A list of [StreamFind::ConfigParameter] objects.
 #' 
+#' @slot parameters (getter/setter) A named list of [StreamFind::ConfigParameter] objects.
 #' @slot config_frame (getter) A data frame representation of the configuration parameters.
 #' 
 #' @export
@@ -89,13 +90,13 @@ Config <- S7::new_class(
 
 #' @export
 #' @noRd
-names.Config <- function(x) {
+S7::method(names, Config) <- function(x) {
   names(x@parameters)
 }
 
 #' @export
 #' @noRd
-`$.Config` <- function(x, i) {
+`$.StreamFind::Config` <- function(x, i) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.character(i)) {
@@ -107,7 +108,7 @@ names.Config <- function(x) {
 
 #' @export
 #' @noRd
-`$<-.Config` <- function(x, i, value) {
+`$<-.StreamFind::Config` <- function(x, i, value) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.character(i)) {
@@ -121,7 +122,7 @@ names.Config <- function(x) {
 
 #' @export
 #' @noRd
-`[.Config` <- function(x, i) {
+`[.StreamFind::Config` <- function(x, i) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.numeric(i)) {
@@ -137,7 +138,7 @@ names.Config <- function(x) {
 
 #' @export
 #' @noRd
-`[<-.Config` <- function(x, i, value) {
+`[<-.StreamFind::Config` <- function(x, i, value) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.numeric(i)) {
@@ -159,7 +160,7 @@ names.Config <- function(x) {
 
 #' @export
 #' @noRd
-`[[.Config` <- function(x, i) {
+`[[.StreamFind::Config` <- function(x, i) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.numeric(i)) {
@@ -173,7 +174,7 @@ names.Config <- function(x) {
 
 #' @export
 #' @noRd
-`[[<-.Config` <- function(x, i, value) {
+`[[<-.StreamFind::Config` <- function(x, i, value) {
   parameters_list <- x@parameters
   if (missing(i)) return(parameters_list)
   if (is.numeric(i)) {
@@ -291,8 +292,8 @@ ConfigCache <- S7::new_class(
       description = "Enable/disable caching of results between processing steps.",
       value = TRUE,
       mode = "rds",
-      file = "cache.sqlite",
-      folder = "cache"
+      folder = "cache",
+      file = "cache.sqlite"
     )
   },
   validator = function(self) {

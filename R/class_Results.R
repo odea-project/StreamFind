@@ -29,13 +29,13 @@ Results <- S7::new_class(
 
 #' @export
 #' @noRd
-`$.Results` <- function(x, i) {
+`$.StreamFind::Results` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-`$<-.Results` <- function(x, i, value) {
+`$<-.StreamFind::Results` <- function(x, i, value) {
   S7::prop(x, i) <- value
   x
 }

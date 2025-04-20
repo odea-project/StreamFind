@@ -535,7 +535,7 @@ CoreEngine <- R6::R6Class(
       processed <- FALSE
       loaded_cached <- FALSE
       
-      if (self$Config$ConfigCache$value) {
+      if (self$Config[["ConfigCache"]]@value) {
         
         engine_name <- self$Metadata["name"]
         if (is.null(engine_name) || is.na(engine_name)) engine_name <- is(self)
@@ -543,7 +543,7 @@ CoreEngine <- R6::R6Class(
         cache_category <- paste0(engine_name, "_results_", step$method, "_", step$algorithm)
         
         cache <- StreamFind::load_cache(
-          self$Config$ConfigCache,
+          self$Config[["ConfigCache"]],
           category = cache_category,
           as.list(self$Workflow),
           as.list(step),
@@ -594,7 +594,7 @@ CoreEngine <- R6::R6Class(
       
       if (processed) {
         
-        if (self$Config$ConfigCache$value && !loaded_cached) {
+        if (self$Config[["ConfigCache"]]@value && !loaded_cached) {
           if (!is.null(cache$hash)) {
             StreamFind::save_cache(
               self$Config$ConfigCache,
