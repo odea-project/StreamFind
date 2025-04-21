@@ -34,13 +34,13 @@ reference:
   contents:
   - Workflow
   - ProcessingStep
-- subtitle: Mass Spectrometry Methods
+- title: Mass Spectrometry Methods
   contents:
   - starts_with("MassSpecMethod_")
-- subtitle: Raman Spectroscopy Methods
+- title: Raman Spectroscopy Methods
   contents:
   - starts_with("RamanMethod_")
-- subtitle: Statistic Methods
+- title: Statistic Methods
   contents:
   - starts_with("StatisticMethod_")
 - title: Results Classes

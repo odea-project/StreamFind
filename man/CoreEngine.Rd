@@ -2,11 +2,10 @@
 % Please edit documentation in R/engine_CoreEngine.R
 \name{CoreEngine}
 \alias{CoreEngine}
-\title{\strong{CoreEngine} R6 class and methods}
+\title{CoreEngine R6 class and methods}
 \description{
-The \code{CoreEngine} R6 class is used harmonizing method across different data specific
-engines. Users should not use this class directly as core method are available from the specific
-data engines.
+The CoreEngine R6 class is used to harmonize methods across different data specific
+engines. Users should not use this class directly but the data specific engines.
 }
 \note{
 The engine data is saved in an \strong{rds} file and loaded in the app. If save file is
@@ -17,20 +16,15 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{Metadata}}{\code{Metadata} S7 class object. A value argument can be given with a \code{Metadata}
-object or a list with metadata entries.}
+\item{\code{Metadata}}{A \link{Metadata} S7 class object.}
 
-\item{\code{Workflow}}{\code{Workflow} S7 class object. A value argument can be given with a \code{Workflow}
-object, a list with \code{ProcessingStep} objects or a file path to a \strong{rds} or \strong{json} file
-with a \code{Workflow} object.}
+\item{\code{Workflow}}{A \link{Workflow} S7 class object.}
 
-\item{\code{Analyses}}{\code{Analyses} S7 class object. A value argument can be given with a child of
-\code{Analyses} class or a specific input for the data dedicated child \code{Analyses} class.}
+\item{\code{Analyses}}{A \link{Analyses} S7 class object.}
 
-\item{\code{AuditTrail}}{\code{AuditTrail} S7 class object. No set method available!}
+\item{\code{AuditTrail}}{A \link{AuditTrail} S7 class object. Only getter method.}
 
-\item{\code{Config}}{\code{EngineConfig} S7 class object. A value argument can be given with an
-\code{EngineConfig} object.}
+\item{\code{Config}}{A \link{EngineConfig} S7 class object.}
 }
 \if{html}{\out{</div>}}
 }

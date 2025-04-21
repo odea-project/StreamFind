@@ -1,6 +1,6 @@
 # MARK: MassSpecEngine
 # MassSpecEngine -----
-#' **MassSpecEngine** R6 class and methods
+#' MassSpecEngine R6 class and methods
 #' 
 #' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
 #' storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
@@ -155,6 +155,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' vendor formats to mzML.
     #' @param levels Numeric vector with the MS levels to consider when centroiding data. Default
     #' is `c(1, 2)`.
+    #' 
+    #' @seealso [StreamFind::CoreEngine]
     #'
     #' @return A new MassSpecEngine class object.
     #'
