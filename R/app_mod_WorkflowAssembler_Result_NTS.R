@@ -361,34 +361,9 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                 width = 12,
                 shiny::div(
                   class = "mb-4",
-                  # Custom wrapper for table and controls
+                  # Custom wrapper for table
                   shiny::div(
                     class = "table-wrapper",
-                    # Buttons above the table
-                    shiny::div(
-                      class = "table-controls-wrapper d-flex justify-content-end align-items-center mb-2 mt-0",
-                      shiny::div(
-                        class = "btn-group",
-                        shiny::actionButton(
-                          ns_full("deselect_all_features"),
-                          "Deselect All", 
-                          icon = shiny::icon("times-circle"),
-                          class = "btn btn-outline-secondary btn-sm"
-                        ),
-                        shiny::downloadButton(
-                          ns_full("export_features_csv"),
-                          "Export to CSV",
-                          icon = shiny::icon("file-csv"),
-                          class = "btn btn-outline-primary btn-sm ml-2"
-                        ),
-                        shiny::downloadButton(
-                          ns_full("export_selected_features_csv"),
-                          "Export Selected to CSV",
-                          icon = shiny::icon("file-csv"),
-                          class = "btn btn-outline-primary btn-sm ml-2"
-                        )
-                      )
-                    ),
                     # DataTable output with custom class for styling
                     shiny::div(
                       class = "features-table-container",
@@ -399,7 +374,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
               )
             ),
             
-            # Feature Details Row (unchanged)
+            # Feature Details Row
             shiny::fluidRow(
               # Feature Peaks Plot
               shiny::column(
@@ -453,6 +428,50 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
                       shiny::div(
                         class = "p-3",
                         DT::dataTableOutput(ns_full("quality_table"))
+                      )
+                    )
+                  )
+                )
+              )
+            ),
+            
+            #  Buttons
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                shiny::div(
+                  class = "plot-container",
+                  shiny::div(
+                    class = "card-header",
+                    shiny::icon("cogs", class = "mr-2"), "Table Controls"
+                  ),
+                  shiny::div(
+                    class = "card-body d-flex justify-content-center align-items-center",
+                    shiny::div(
+                      class = "btn-group",
+                      shiny::actionButton(
+                        ns_full("deselect_all_features"),
+                        "Deselect All", 
+                        icon = shiny::icon("times-circle"),
+                        class = "btn btn-outline-secondary btn-sm"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_features_csv"),
+                        "Export to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_selected_features_csv"),
+                        "Export Selected to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::actionButton(
+                        ns_full("remove_selected_features"),
+                        "Remove Selected Features", 
+                        icon = shiny::icon("trash-alt"),
+                        class = "btn btn-outline-danger btn-sm ml-2"
                       )
                     )
                   )
@@ -629,8 +648,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
     })
     
     # Enhanced Features chart using plot_features_count with Plotly
-    # Enhanced Features chart using plot_features_count with Plotly
-output$features_chart <- plotly::renderPlotly({
+  output$features_chart <- plotly::renderPlotly({
   nts <- nts_data()
   
   # Get the color by parameter
@@ -733,26 +751,27 @@ output$features_table <- DT::renderDT({
     }
   }
 
-  # Add a new column for remove icons with red trash icon
-  features$Remove <- rep("<i class='fa fa-trash-alt' style='color: red;'></i>", nrow(features))
+  # Add a new column for checkboxes (initially unchecked)
+  features$sel <- rep(FALSE, nrow(features))
 
-  # Reorder columns to place Remove as the second column after analysis
-  setcolorder(features, c("analysis", "Remove", setdiff(names(features), c("analysis", "Remove"))))
+  # Reorder columns to place sel as the second column after analysis
+  setcolorder(features, c("sel", "analysis", setdiff(names(features), c("sel", "analysis"))))
 
-  # Determine the index of the 'filtered' column (0-based for JavaScript)
+  # Determine the index of the 'filtered' and 'sel' columns (0-based for JavaScript)
   filtered_col_index <- which(names(features) == "filtered") - 1
+  sel_col_index <- which(names(features) == "sel") - 1
 
   # Render the DataTable with enhanced styling and checkbox rendering
   DT::datatable(
     features,
-    escape = FALSE,  # Allow HTML in the Remove column
+    escape = FALSE,  # Allow HTML rendering
     options = list(
       pageLength = 10,
       scrollX = TRUE,
       scrollY = "400px",
       columnDefs = list(
+        list(width = "50px", targets = c(1)),   # sel column (checkboxes)
         list(width = "200px", targets = c(0)),  # analysis column
-        list(width = "50px", targets = c(1)),   # Remove column
         list(width = "200px", targets = c(2)),  # feature column
         list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
         list(width = "80px", targets = c(12)),
@@ -763,7 +782,21 @@ output$features_table <- DT::renderDT({
         list(width = "120px", targets = c(19)),
         list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
         list(className = "dt-left", targets = c(0, 2, 13, 14, 15, 16, 18, 19)),
-        list(className = "dt-center", targets = c(1)),  # Center the Remove column
+        list(className = "dt-center", targets = c(1)),  # Center the sel column (checkboxes)
+        # Custom rendering for the 'sel' column (checkboxes)
+        list(
+          targets = sel_col_index,
+          render = DT::JS(
+            "function(data, type, row, meta) {",
+            "  if (type === 'display') {",
+            "    var checked = data === true ? 'checked' : '';",
+            "    return '<input type=\"checkbox\" ' + checked + ' class=\"sel-checkbox\" data-row=\"' + meta.row + '\" />';",
+            "  }",
+            "  return data;",
+            "}"
+          ),
+          className = "dt-center"  # Center the checkboxes
+        ),
         # Custom rendering for the 'filtered' column
         list(
           targets = filtered_col_index,
@@ -780,10 +813,10 @@ output$features_table <- DT::renderDT({
         )
       ),
       selection = list(mode = "multiple", selected = NULL, target = "row"),
-      dom = '<"top"f>rt<"bottom"lip>',
+      dom = 'rt<"bottom"lip>',
       lengthMenu = c(5, 10, 25, 50, 100),
       ordering = TRUE,
-      searching = TRUE,
+      searching = FALSE,  # Search bar disabled as per previous request
       searchHighlight = TRUE
     ),
     style = "bootstrap",
