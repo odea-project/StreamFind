@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigExtraRoots}
 \alias{ConfigExtraRoots}
-\title{ConfigExtraRoots Class}
+\title{Configuration Parameter for Extra Root Directories}
 \usage{
 ConfigExtraRoots(value = "")
 }

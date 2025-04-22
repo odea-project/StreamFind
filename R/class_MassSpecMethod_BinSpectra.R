@@ -1,4 +1,4 @@
-#' **MassSpecMethod_BinSpectra_StreamFind**
+#' Mass Spectrometry Method for Binning Spectra (StreamFind algorithm)
 #'
 #' @description Bins spectral data based on variables.
 #' 

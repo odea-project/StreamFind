@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_NormalizeSpectra.R
 \name{MassSpecMethod_NormalizeSpectra_blockweight}
 \alias{MassSpecMethod_NormalizeSpectra_blockweight}
-\title{\strong{MassSpecMethod_NormalizeSpectra_blockweight}}
+\title{MassSpecMethod_NormalizeSpectra_blockweight S7 class}
 \usage{
 MassSpecMethod_NormalizeSpectra_blockweight()
 }

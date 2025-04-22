@@ -1,4 +1,4 @@
-#' **MassSpecMethod_CalculateSpectraCharges_native**
+#' MassSpecMethod_CalculateSpectraCharges_native S7 class
 #'
 #' @description Calculates spectral charges from multi-charged compounds (e.g. proteins and
 #' monoclonal antibodies) for mass deconvolution.

@@ -2,35 +2,33 @@ url: https://odea-project.github.io/StreamFind/
 
 template:
   bootstrap: 5
-  light-switch: true
-  bootswatch: simplex
+  assets:
+    - pkgdown/extra.css
 
 reference:
 
 - title: Introduction
   desc: >
-    StreamFind is built with two main class systems: R6 and S7. The R6 class system is used for engines, which are interfaces for reading, processing, and inspecting data. The S7 class system is used for all other objects.
-- title: Engine Classes
-  desc: >
-    Engines are R6 classes and are interfaces for reading, processing and inspecting a defined type of data.
+    StreamFind is built with two main class systems: R6 and S7. The R6 system is used for data processing engine classes, which are the main user interface for reading, processing, and inspecting different types of data. The S7 system is used for classes to manage metadata, analyses, data processing, results, audit trail and configuration. Below all classes exposed to the user are listed.
+- title: Engines (R6)
   contents:
   - CoreEngine
   - MassSpecEngine
   - RamanEngine
   - StatisticEngine
-- title: Metadata Classes
+- title: Metadata (S7)
   desc: >
-    Metadata is governed by the Metadata S7 classes.
+    Metadata classes are used to manage metadata (e.g., date, author and description) of main classes, such as the R6 engine classes.
   contents:
   - matches("Metadata")
-- title: Analyses Classes
+- title: Analyses (S7)
   desc: >
-    Analyses are S7 classes and represent data and results in StreamFind. Analyses child classes are implemented for each type of data.
+    Analyses represent data (i.e., actual data or links to raw data files) and results. Analyses child classes are implemented for each type of data.
   contents:
   - matches("Analyses")
-- title: Data Processing Classes
+- title: Data Processing (S7)
   desc: >
-    Data processing is governed by the Workflow S7 class which consists of a sequence of ProcessingStep S7 class objects. Processing methods for a specific type of data are implemented as child classes of the ProcessingStep class.
+    Data processing is governed by the Workflow class which consists of a sequence of ProcessingStep class objects. Processing methods for a specific type of data are implemented as child classes of the ProcessingStep class.
   contents:
   - Workflow
   - ProcessingStep
@@ -43,29 +41,29 @@ reference:
 - title: Statistic Methods
   contents:
   - starts_with("StatisticMethod_")
-- title: Results Classes
+- title: Results (S7)
   desc: >
-    Results are S7 classes and represent the results of a specific analysis. Results child classes are implemented for each type of data.
+    The Results classes represent results of specific data processing methods. Results child classes are implemented for each processing method but can be reused/updated across processing methods. For instance, normalizing averaged spectra will update the spectra results. 
   contents:
   - matches("Results")
-- title: Configuration Classes
+- title: Configuration (S7)
   desc: >
-    Configuration is governed by S7 classes.
+    Configuration is governed by Config class which consists of a list of ConfigParameter class objects. Childs of both Config and ConfigParameter classes are implemented for specific use cases.
   contents:
   - matches("Config")
-- title: Audit trail Classes
+- title: Audit Trail (S7)
   desc: >
-    Audit trail is governed by specific S7 classes.
+    Audit trail is governed by a specific classes, registering all changes made to the data within an engine.
   contents:
   - matches("AuditTrail")
-- title: Other MS functions
+- title: Other Functions
   contents:
   - convert_ms_files
   - trim_ms_files_spectra
   - run_app
-- title: S7 generics
+- title: S7 Generics
   desc: >
-    Generics are S7 and S3 methods that are used to define a common interface for a set of related functions. The behavior and possible arguments vary depending on the class of the object passed.
+    Severeal S7 generics are used to define a common interface for a set of related functions. The behavior and possible arguments vary depending on the class of the object passed.
   contents:
   - add
   - clear_cache

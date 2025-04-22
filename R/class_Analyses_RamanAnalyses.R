@@ -1,6 +1,6 @@
 # MARK: RamanAnalyses
 # RamanAnalyses -----
-#' @title RamanAnalyses Class
+#' @title Raman Spectroscopy Analyses
 #' 
 #' @description The RamanAnalyses class is used to store a list of Raman spectra.
 #' 

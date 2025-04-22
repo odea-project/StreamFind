@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_qalgorithms}
 \alias{MassSpecMethod_FindFeatures_qalgorithms}
-\title{\strong{MassSpecMethod_FindFeatures_qalgorithms}}
+\title{MassSpecMethod_FindFeatures_qalgorithms S7 class}
 \usage{
 MassSpecMethod_FindFeatures_qalgorithms(ppm = 5)
 }

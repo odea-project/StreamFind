@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_AuditTrail.R
 \name{AuditTrailEntry}
 \alias{AuditTrailEntry}
-\title{AuditTrailEntry Class}
+\title{Generic Entry for Audit Trail}
 \usage{
 AuditTrailEntry(time_stamp, value_class, value_parent, value)
 }
@@ -16,6 +16,6 @@ AuditTrailEntry(time_stamp, value_class, value_parent, value)
 \item{value}{A character string representing the value of the entry.}
 }
 \description{
-The AuditTrailEntry class is used as an element in the \link{AuditTrail}
-entries.
+The \link{AuditTrailEntry} class is used as an element in the
+\link{AuditTrail} entries.
 }

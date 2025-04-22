@@ -1,0 +1,15 @@
+pre {
+  overflow-x: auto !important;
+  white-space: pre !important;
+}
+
+pre code {
+  display: block !important;
+  overflow-x: auto !important;
+  white-space: pre !important;
+  font-size: 14px;
+}
+
+p {
+  text-align: justify;
+}

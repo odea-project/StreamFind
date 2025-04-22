@@ -1,4 +1,4 @@
-#' **MassSpecMethod_DeconvoluteSpectra_native**
+#' MassSpecMethod_DeconvoluteSpectra_native S7 class
 #'
 #' @description Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after
 #' assignment of charges.

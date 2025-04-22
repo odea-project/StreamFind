@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Analyses_StatisticAnalyses.R
 \name{StatisticAnalyses}
 \alias{StatisticAnalyses}
-\title{StatisticAnalyses Class}
+\title{Statistical Analyses (Tabular Data Input)}
 \usage{
 StatisticAnalyses(
   analyses = NULL,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Analyses_RamanAnalyses.R
 \name{RamanAnalyses}
 \alias{RamanAnalyses}
-\title{RamanAnalyses Class}
+\title{Raman Spectroscopy Analyses}
 \usage{
 RamanAnalyses(files = NULL)
 }

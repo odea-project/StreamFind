@@ -1,4 +1,4 @@
-#' **MassSpecMethod_IntegrateChromatograms_pracma**
+#' MassSpecMethod_IntegrateChromatograms_pracma S7 class
 #'
 #' @description Integrates chromatograms using the function `findpeaks` from the package
 #' \pkg{pracma} with natively 

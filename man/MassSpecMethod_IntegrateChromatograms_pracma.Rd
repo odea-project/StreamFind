@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_IntegrateChromatograms.R
 \name{MassSpecMethod_IntegrateChromatograms_pracma}
 \alias{MassSpecMethod_IntegrateChromatograms_pracma}
-\title{\strong{MassSpecMethod_IntegrateChromatograms_pracma}}
+\title{MassSpecMethod_IntegrateChromatograms_pracma S7 class}
 \usage{
 MassSpecMethod_IntegrateChromatograms_pracma(
   merge = TRUE,

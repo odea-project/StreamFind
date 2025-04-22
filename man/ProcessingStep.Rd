@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_ProcessingStep.R
 \name{ProcessingStep}
 \alias{ProcessingStep}
-\title{ProcessingStep Class}
+\title{Generic Processing Step}
 \usage{
 ProcessingStep(
   data_type = NA_character_,
@@ -46,9 +46,9 @@ additional information.}
 \item{doi}{A character string representing the DOI of the algorithm or additional information.}
 }
 \description{
-The ProcessingStep class is used to define a processing step within a
-\code{\link{Workflow}}. It contains information about the data type, method, algorithm,
-parameters, and other relevant metadata for the processing step. The ProcessingStep is the
+The \code{ProcessingStep} class is used to define a processing step within a
+\link{Workflow}. It contains information about the data type, method, algorithm,
+parameters, and other relevant metadata for the processing step. The \code{ProcessingStep} is the
 parent class of all processing methods in StreamFind.
 }
 \section{Slots}{

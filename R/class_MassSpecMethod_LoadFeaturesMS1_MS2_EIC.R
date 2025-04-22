@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadFeaturesMS1_StreamFind**
+#' MassSpecMethod_LoadFeaturesMS1_StreamFind S7 class
 #'
 #' @description Settings for loading MS1 spectra for features.
 #'
@@ -113,7 +113,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS1_StreamFind) <- function(x, engine
   })
 }
 
-#' **MassSpecMethod_LoadFeaturesMS2_StreamFind**
+#' MassSpecMethod_LoadFeaturesMS2_StreamFind S7 class
 #'
 #' @description Settings for loading MS2 spectra for features.
 #'
@@ -223,7 +223,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS2_StreamFind) <- function(x, engine
   })
 }
 
-#' **MassSpecMethod_LoadFeaturesEIC_StreamFind**
+#' MassSpecMethod_LoadFeaturesEIC_StreamFind S7 class
 #'
 #' @description Settings for loading spectra EIC for feature groups.
 #'

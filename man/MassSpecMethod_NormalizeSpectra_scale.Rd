@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_NormalizeSpectra.R
 \name{MassSpecMethod_NormalizeSpectra_scale}
 \alias{MassSpecMethod_NormalizeSpectra_scale}
-\title{\strong{MassSpecMethod_NormalizeSpectra_scale}}
+\title{MassSpecMethod_NormalizeSpectra_scale S7 class}
 \usage{
 MassSpecMethod_NormalizeSpectra_scale()
 }

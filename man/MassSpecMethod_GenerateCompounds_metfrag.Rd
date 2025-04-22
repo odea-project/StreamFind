@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_GenerateCompounds.R
 \name{MassSpecMethod_GenerateCompounds_metfrag}
 \alias{MassSpecMethod_GenerateCompounds_metfrag}
-\title{\strong{MassSpecMethod_GenerateCompounds_metfrag}}
+\title{MassSpecMethod_GenerateCompounds_metfrag S7 class}
 \usage{
 MassSpecMethod_GenerateCompounds_metfrag(
   method = "CL",

@@ -1,6 +1,6 @@
 # MARK: ConfigParameter
 # ConfigParameter -----
-#' @title ConfigParameter Class
+#' @title Generic Configuration Parameter
 #' 
 #' @description Class representing a configuration parameter.
 #' 
@@ -41,7 +41,7 @@ ConfigParameter <- S7::new_class(
 
 # MARK: Config
 # Config -----
-#' @title Config Class
+#' @title Generic Configuration
 #' 
 #' @description Class representing a configuration object composed of multiple
 #' [StreamFind::ConfigParameter] objects.
@@ -195,7 +195,7 @@ S7::method(names, Config) <- function(x) {
 
 # MARK: ConfigCache
 ## ConfigCache -----
-#' @title ConfigCache Class
+#' @title Configuration Parameter for Caching
 #' 
 #' @description Class representing a configuration for the caching behavior.
 #' 
@@ -361,7 +361,7 @@ S7::method(clear_cache, ConfigCache) <- function(x, what = NULL, ...) {
 
 # MARK: EngineConfig
 ## EngineConfig -----
-#' @title EngineConfig Class
+#' @title Engine Configuration
 #' 
 #' @description Class representing the engine configuration, inheriting from [StreamFind::Config].
 #' 
@@ -392,7 +392,7 @@ EngineConfig <- S7::new_class(
 
 # MARK: ConfigDurationNotifications
 ## ConfigDurationNotifications -----
-#' @title ConfigDurationNotifications Class
+#' @title Configuration Parameter for Duration of Notifications
 #' 
 #' @description Class representing a configuration for the duration of pop-up notifications in the
 #' app, inhiberiting from [StreamFind::ConfigParameter].
@@ -424,7 +424,7 @@ ConfigDurationNotifications <- S7::new_class(
 
 # MARK: ConfigExtraRoots
 ## ConfigExtraRoots -----
-#' @title ConfigExtraRoots Class
+#' @title Configuration Parameter for Extra Root Directories
 #' 
 #' @description Class representing a configuration for extra root directories for file selection
 #' in the app, inheriting from [StreamFind::ConfigParameter].
@@ -459,7 +459,7 @@ ConfigExtraRoots <- S7::new_class(
 
 # MARK: AppConfig
 ## AppConfig -----
-#' @title AppConfig Class
+#' @title App Configuration
 #' 
 #' @description Class representing the app configuration, inheriting from [StreamFind::Config].
 #' 

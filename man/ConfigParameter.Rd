@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigParameter}
 \alias{ConfigParameter}
-\title{ConfigParameter Class}
+\title{Generic Configuration Parameter}
 \usage{
 ConfigParameter(name = NA_character_, description = NA_character_)
 }

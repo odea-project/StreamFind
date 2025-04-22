@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadMSPeakLists_patRoon**
+#' MassSpecMethod_LoadMSPeakLists_patRoon S7 class
 #'
 #' @description Settings for loading MS2 and MS1 spectra for feature groups.
 #'
@@ -161,7 +161,7 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_patRoon) <- function(x, engine = 
   TRUE
 }
 
-#' **MassSpecMethod_LoadMSPeakLists_StreamFind**
+#' MassSpecMethod_LoadMSPeakLists_StreamFind S7 class
 #'
 #' @description Settings for converting loaded MS2 and MS1 spectra into a `MSPeakLists` object from
 #' patRoon.

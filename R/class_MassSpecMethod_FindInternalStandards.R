@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FindInternalStandards_StreamFind**
+#' MassSpecMethod_FindInternalStandards_StreamFind S7 class
 #'
 #' @description Settings for finding internal standards using a data.frame.
 #'

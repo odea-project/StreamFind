@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_forident}
 \alias{MassSpecMethod_SuspectScreening_forident}
-\title{\strong{MassSpecMethod_SuspectScreening_forident}}
+\title{MassSpecMethod_SuspectScreening_forident S7 class}
 \usage{
 MassSpecMethod_SuspectScreening_forident(
   addMS2 = FALSE,

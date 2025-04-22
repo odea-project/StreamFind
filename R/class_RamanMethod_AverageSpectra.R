@@ -1,5 +1,5 @@
-#' **RamanMethod_AverageSpectra_native**
-#'
+#' Raman Method to Average Spectra (native algorithm)
+#' 
 #' @description Averages spectra based on variables.
 #' 
 #' @param by Character (length 1) with the grouping variable for averaging. Possible variables are 
@@ -131,17 +131,20 @@ S7::method(run, RamanMethod_AverageSpectra_native) <- function(x, engine = NULL)
     spectra$group <- NULL
   }
   
+  .SD <- NULL
+  shift <- NULL
+  
   grouped_spectra <- spectra[, lapply(.SD, mean), by = groupCols]
   
   if ("replicate" %in% groupCols) {
-    setorder(grouped_spectra, shift, replicate)
+    data.table::setorder(grouped_spectra, shift, replicate)
     split_str <- grouped_spectra$replicate
     grouped_spectra$replicate <- NULL
     grouped_spectra_list <- split(grouped_spectra, split_str)
     names_spectra <- unique(engine$Analyses$replicates)
     grouped_spectra_list <- grouped_spectra_list[names_spectra]
   } else {
-    setorder(grouped_spectra, shift, analysis)
+    data.table::setorder(grouped_spectra, shift, analysis)
     split_str <- grouped_spectra$analysis
     grouped_spectra$analysis <- NULL
     grouped_spectra_list <- split(grouped_spectra, split_str)

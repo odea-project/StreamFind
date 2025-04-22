@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_GroupFeatures.R
 \name{MassSpecMethod_GroupFeatures_xcms3_peakdensity}
 \alias{MassSpecMethod_GroupFeatures_xcms3_peakdensity}
-\title{\strong{MassSpecMethod_GroupFeatures_xcms3_peakdensity}}
+\title{MassSpecMethod_GroupFeatures_xcms3_peakdensity S7 class}
 \usage{
 MassSpecMethod_GroupFeatures_xcms3_peakdensity(
   bw = 5,

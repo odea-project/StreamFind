@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_kpic2}
 \alias{MassSpecMethod_FindFeatures_kpic2}
-\title{\strong{MassSpecMethod_FindFeatures_kpic2}}
+\title{MassSpecMethod_FindFeatures_kpic2 S7 class}
 \usage{
 MassSpecMethod_FindFeatures_kpic2(
   level = 500,

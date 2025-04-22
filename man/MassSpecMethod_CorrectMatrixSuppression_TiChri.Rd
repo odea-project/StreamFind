@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_CorrectMatrixSuppression.R
 \name{MassSpecMethod_CorrectMatrixSuppression_TiChri}
 \alias{MassSpecMethod_CorrectMatrixSuppression_TiChri}
-\title{\strong{MassSpecMethod_CorrectMatrixSuppression_TiChri}}
+\title{MassSpecMethod_CorrectMatrixSuppression_TiChri S7 class}
 \usage{
 MassSpecMethod_CorrectMatrixSuppression_TiChri(
   mpRtWindow = 10,

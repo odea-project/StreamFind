@@ -1,8 +1,8 @@
-#' @title ProcessingStep Class
+#' @title Generic Processing Step
 #' 
-#' @description The ProcessingStep class is used to define a processing step within a
-#' \code{\link{Workflow}}. It contains information about the data type, method, algorithm,
-#' parameters, and other relevant metadata for the processing step. The ProcessingStep is the
+#' @description The `ProcessingStep` class is used to define a processing step within a
+#' [StreamFind::Workflow]. It contains information about the data type, method, algorithm,
+#' parameters, and other relevant metadata for the processing step. The `ProcessingStep` is the
 #' parent class of all processing methods in StreamFind.
 #' 
 #' @param data_type A character string representing the data type (e.g., "MassSpec", "Raman").

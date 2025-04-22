@@ -1,4 +1,4 @@
-#' **StatisticMethod_MakeModel_pca_mdatools**
+#' StatisticMethod_MakeModel_pca_mdatools S7 class
 #'
 #' @description Makes a Principle Component Analysis (PCA) model based on the R package
 #' \pkg{mdatools}.
@@ -150,7 +150,7 @@ S7::method(run, StatisticMethod_MakeModel_pca_mdatools) <- function(x, engine = 
   TRUE
 }
 
-#' **StatisticMethod_MakeModel_mcrpure_mdatools**
+#' StatisticMethod_MakeModel_mcrpure_mdatools S7 class
 #'
 #' @description Makes a Multivariate Curve Resolution (MCR) purity model based on the R package
 #' \pkg{mdatools}.
@@ -272,7 +272,7 @@ S7::method(run, StatisticMethod_MakeModel_mcrpure_mdatools) <- function(x, engin
   TRUE
 }
 
-#' **StatisticMethod_MakeModel_mcrals_mdatools**
+#' StatisticMethod_MakeModel_mcrals_mdatools S7 class
 #'
 #' @description Makes a Multivariate Curve Resolution (MCR) model using Alternating Least Squares
 #' (ALS) based on the R package \pkg{mdatools}.
@@ -434,7 +434,7 @@ S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(x, engine
   TRUE
 }
 
-#' **StatisticMethod_MakeModel_knn**
+#' StatisticMethod_MakeModel_knn S7 class
 #'
 #' @description Makes a classification model using the k-nearest neighbors (knn) algorithm from
 #' package \pkg{class}.

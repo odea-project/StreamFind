@@ -1,4 +1,4 @@
-#' @title Analyses Class
+#' @title Generic Analyses
 #' 
 #' @description The Analyses class is used harmonize the interface to data entries or links to raw data files. Analyses child classes are used to enable a specific structure and methods for each type of data.
 #' 

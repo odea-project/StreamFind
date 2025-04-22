@@ -1,4 +1,4 @@
-#' **MassSpecMethod_CalculateFeaturesQuality_StreamFind**
+#' Mass Spectrometry Method to Calculate Features Quality (StreamFind algorithm)
 #'
 #' @description Settings for calculating quality parameters of features (e.g., signal-to-noise (sn)
 #' ratio).

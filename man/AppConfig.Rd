@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Config.R
 \name{AppConfig}
 \alias{AppConfig}
-\title{AppConfig Class}
+\title{App Configuration}
 \usage{
 AppConfig()
 }

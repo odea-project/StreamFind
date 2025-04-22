@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Analyses_MassSpecAnalyses.R
 \name{MassSpecAnalyses}
 \alias{MassSpecAnalyses}
-\title{MassSpecAnalyses Class}
+\title{Mass Spectrometry Analyses}
 \usage{
 MassSpecAnalyses(files = NULL, centroid = FALSE, levels = c(1, 2))
 }
@@ -14,76 +14,76 @@ MassSpecAnalyses(files = NULL, centroid = FALSE, levels = c(1, 2))
 \item{levels}{Numeric vector with the MS levels to consider when centroiding data. Default is \code{c(1, 2)}.}
 }
 \description{
-The MassSpecAnalyses class represents mass spectrometry (MS) raw data files and holds results from processing MS data. It is a subclass of the \code{\link{Analyses}} class and provides methods to manage and inspect MS data. The MassSpecAnalyses class is built from a character vector of file paths to MS raw data files. The possible file formats are "mzML" and "mzXML". If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
+The \code{MassSpecAnalyses} class represents mass spectrometry (MS) raw data files and holds results from processing MS data. It is a subclass of the \link{Analyses} class and provides methods to manage and inspect MS data. The \code{MassSpecAnalyses} class is built from a character vector of file paths to MS raw data files. The possible file formats are \emph{mzML} and \emph{mzXML}. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to \emph{mzML}. Note that conversion of vendor formats is only possible under Windows OS.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{analyses}}{A list of objects representing individual mass spectrometry raw data files.}
+\item{\code{analyses}}{(getter/setter) A list of objects representing individual mass spectrometry raw data files.}
 
-\item{\code{replicates}}{(function) A character vector representing the names of the replicate name for each analysis.}
+\item{\code{replicates}}{(getter/setter) A character vector representing the names of the replicate name for each analysis.}
 
-\item{\code{blanks}}{(function) A character vector representing the names of the blank name for each analysis.}
+\item{\code{blanks}}{(getter/setter) A character vector representing the names of the blank name for each analysis.}
 
-\item{\code{concentrations}}{(function) A numeric vector representing the concentration for each analysis.}
+\item{\code{concentrations}}{(getter/setter) A numeric vector representing the concentration for each analysis.}
 
-\item{\code{types}}{(function) A character vector representing the type of each analysis.}
+\item{\code{types}}{(getter) A character vector representing the type of each analysis.}
 
-\item{\code{files}}{(function) A character vector with the file path of each analysis.}
+\item{\code{files}}{(getter) A character vector with the file path of each analysis.}
 
-\item{\code{formats}}{(function) A character vector with the file format of each analysis.}
+\item{\code{formats}}{(getter) A character vector with the file format of each analysis.}
 
-\item{\code{instruments}}{(function) A list with the instrument information for each analysis.}
+\item{\code{instruments}}{(getter) A list with the instrument information for each analysis.}
 
-\item{\code{software}}{(function) A list with the software information for each analysis.}
+\item{\code{software}}{(getter) A list with the software information for each analysis.}
 
-\item{\code{spectra_number}}{(function) A numeric vector with the number of spectra for each analysis.}
+\item{\code{spectra_number}}{(getter) A numeric vector with the number of spectra for each analysis.}
 
-\item{\code{spectra_headers}}{(function) A list with the headers of the spectra for each analysis.}
+\item{\code{spectra_headers}}{(getter) A list with the headers of the spectra for each analysis.}
 
-\item{\code{spectra_mode}}{(function) A character vector with the mode of the spectra for each analysis.}
+\item{\code{spectra_mode}}{(getter) A character vector with the mode of the spectra for each analysis.}
 
-\item{\code{spectra_level}}{(function) A character vector with the level of the spectra for each analysis.}
+\item{\code{spectra_level}}{(getter) A character vector with the level of the spectra for each analysis.}
 
-\item{\code{spectra_lowest_mz}}{(function) A numeric vector with the lowest m/z value for each analysis.}
+\item{\code{spectra_lowest_mz}}{(getter) A numeric vector with the lowest m/z value for each analysis.}
 
-\item{\code{spectra_highest_mz}}{(function) A numeric vector with the highest m/z value for each analysis.}
+\item{\code{spectra_highest_mz}}{(getter) A numeric vector with the highest m/z value for each analysis.}
 
-\item{\code{spectra_lowest_rt}}{(function) A numeric vector with the lowest retention time for each analysis.}
+\item{\code{spectra_lowest_rt}}{(getter) A numeric vector with the lowest retention time for each analysis.}
 
-\item{\code{spectra_highest_rt}}{(function) A numeric vector with the highest retention time for each analysis.}
+\item{\code{spectra_highest_rt}}{(getter) A numeric vector with the highest retention time for each analysis.}
 
-\item{\code{spectra_lowest_mobility}}{(function) A numeric vector with the lowest mobility for each analysis.}
+\item{\code{spectra_lowest_mobility}}{(getter) A numeric vector with the lowest mobility for each analysis.}
 
-\item{\code{spectra_highest_mobility}}{(function) A numeric vector with the highest mobility for each analysis.}
+\item{\code{spectra_highest_mobility}}{(getter) A numeric vector with the highest mobility for each analysis.}
 
-\item{\code{spectra_polarity}}{(function) A character vector with the polarity of the spectra for each analysis.}
+\item{\code{spectra_polarity}}{(getter) A character vector with the polarity of the spectra for each analysis.}
 
-\item{\code{spectra_tic}}{(function) A list with the total ion current (TIC) for each analysis.}
+\item{\code{spectra_tic}}{(getter) A list with the total ion current (TIC) for each analysis.}
 
-\item{\code{spectra_bpc}}{(function) A list with the base peak chromatogram (BPC) for each analysis.}
+\item{\code{spectra_bpc}}{(getter) A list with the base peak chromatogram (BPC) for each analysis.}
 
-\item{\code{chromatograms_number}}{(function) A numeric vector with the number of chromatograms for each analysis.}
+\item{\code{chromatograms_number}}{(getter) A numeric vector with the number of chromatograms for each analysis.}
 
-\item{\code{chromatograms_headers}}{(function) A list with the headers of the chromatograms for each analysis.}
+\item{\code{chromatograms_headers}}{(getter) A list with the headers of the chromatograms for each analysis.}
 
-\item{\code{chromatograms_raw}}{(function) A list with the raw chromatograms for each analysis.}
+\item{\code{chromatograms_raw}}{(getter) A list with the raw chromatograms for each analysis.}
 
-\item{\code{info}}{(function) A data frame with the information of each analysis.}
+\item{\code{info}}{(getter) A data frame with the information of each analysis.}
 
-\item{\code{has_ion_mobility}}{(function) A logical vector indicating if the analyses have ion mobility data.}
+\item{\code{has_ion_mobility}}{(getter) A logical vector indicating if the analyses have ion mobility data.}
 
-\item{\code{has_results_nts}}{(function) A logical vector indicating if the analyses have NTS results.}
+\item{\code{has_results_nts}}{(getter) A logical vector indicating if the analyses have NTS results.}
 
-\item{\code{has_results_spectra}}{(function) A logical vector indicating if the analyses have spectra results.}
+\item{\code{has_results_spectra}}{(getter) A logical vector indicating if the analyses have spectra results.}
 
-\item{\code{has_results_chromatograms}}{(function) A logical vector indicating if the analyses have chromatograms results.}
+\item{\code{has_results_chromatograms}}{(getter) A logical vector indicating if the analyses have chromatograms results.}
 
-\item{\code{NTS}}{(function) A list with the NTS results for each analysis.}
+\item{\code{NTS}}{(getter/setter) A list with the NTS results for each analysis.}
 
-\item{\code{Spectra}}{(function) A list with the spectra results for each analysis.}
+\item{\code{Spectra}}{(getter/setter) A list with the spectra results for each analysis.}
 
-\item{\code{Chromatograms}}{(function) A list with the chromatograms results for each analysis.}
+\item{\code{Chromatograms}}{(getter/setter) A list with the chromatograms results for each analysis.}
 }}
 
 \references{

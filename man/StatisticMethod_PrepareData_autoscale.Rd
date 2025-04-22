@@ -18,5 +18,5 @@ A StatisticMethod_PrepareData_autoscale object.
 Auto scale and centers data using the \code{prep.autoscale} function from the \pkg{mdatools} package.
 }
 \details{
-\strong{StatisticMethod_PrepareData_autoscale}
+StatisticMethod_PrepareData_autoscale S7 class
 }

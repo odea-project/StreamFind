@@ -1,0 +1,1 @@
+#' @param entries Named list with metadata entries. Note that all given elements must be named and of length one. If an element "name" is given, it must be type character. If an element "date" is given, it must be class `POSIXct` or `POSIXt`. If given "date" is character, conversion to class `POSIXct` or `POSIXt` is attempted.

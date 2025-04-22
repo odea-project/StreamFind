@@ -1,9 +1,9 @@
 # MARK: AuditTrailEntry
 # AuditTrailEntry -----
-#' @title AuditTrailEntry Class
+#' @title Generic Entry for Audit Trail
 #' 
-#' @description The AuditTrailEntry class is used as an element in the [StreamFind::AuditTrail]
-#' entries.
+#' @description The [StreamFind::AuditTrailEntry] class is used as an element in the
+#' [StreamFind::AuditTrail] entries.
 #' 
 #' @param time_stamp A POSIXct timestamp of the entry.
 #' @param value_class A character string representing the class of the entry.
@@ -53,10 +53,10 @@ AuditTrailEntry <- S7::new_class(
 
 # MARK: AuditTrail
 # AuditTrail -----
-#' @title AuditTrail Class
+#' @title Audit Trail Register
 #' 
-#' @description The AuditTrail class is used to store a list of entries, where each entry is an
-#' instance of the [StreamFind::AuditTrailEntry] class.
+#' @description The [StreamFind::AuditTrail] class is used to store a list of entries, where each
+#' entry is an instance of the [StreamFind::AuditTrailEntry] class.
 #' 
 #' @slot entries A list of entries, where each entry is an instance of the
 #' [StreamFind::AuditTrailEntry] class.

@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FillFeatures_StreamFind**
+#' MassSpecMethod_FillFeatures_StreamFind S7 class
 #'
 #' @description Settings for filling missing values in features.
 #'

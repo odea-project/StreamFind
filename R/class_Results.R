@@ -1,4 +1,4 @@
-#' @title Results Class
+#' @title Generic Results
 #' 
 #' @description The Results class is used to store results of data processing in
 #' [StreamFind::Analyses] child classes. Child classes of Results are implemented for diverse types

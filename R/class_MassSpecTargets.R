@@ -1,4 +1,3 @@
-#' @export
 #' @noRd
 MassSpecTargets <- S7::new_class(
   name = "MassSpecTargets",

@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_StreamFind}
 \alias{MassSpecMethod_SuspectScreening_StreamFind}
-\title{\strong{MassSpecMethod_SuspectScreening_StreamFind}}
+\title{MassSpecMethod_SuspectScreening_StreamFind S7 class}
 \usage{
 MassSpecMethod_SuspectScreening_StreamFind(
   database = data.table::data.table(name = character(), formula = character(), mass =

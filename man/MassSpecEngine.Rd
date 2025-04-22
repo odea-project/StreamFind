@@ -2,7 +2,7 @@
 % Please edit documentation in R/engine_MassSpecEngine.R
 \name{MassSpecEngine}
 \alias{MassSpecEngine}
-\title{MassSpecEngine R6 class and methods}
+\title{Mass Spectrometry Engine}
 \description{
 The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
 storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including

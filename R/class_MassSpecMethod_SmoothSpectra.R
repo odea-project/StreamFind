@@ -1,4 +1,4 @@
-#' **MassSpecMethod_SmoothSpectra_movingaverage**
+#' MassSpecMethod_SmoothSpectra_movingaverage S7 class
 #'
 #' @description Smooths spectra using the moving average algorithm.
 #' 
@@ -93,7 +93,7 @@ S7::method(run, MassSpecMethod_SmoothSpectra_movingaverage) <- function(x, engin
   TRUE
 }
 
-#' **MassSpecMethod_SmoothSpectra_savgol**
+#' MassSpecMethod_SmoothSpectra_savgol S7 class
 #'
 #' @description Smooths spectra using the Savitzky-Golay algorithm from the \pkg{pracma} package.
 #' 

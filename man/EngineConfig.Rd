@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Config.R
 \name{EngineConfig}
 \alias{EngineConfig}
-\title{EngineConfig Class}
+\title{Engine Configuration}
 \usage{
 EngineConfig()
 }

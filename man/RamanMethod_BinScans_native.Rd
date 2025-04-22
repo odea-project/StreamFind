@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_BinScans.R
 \name{RamanMethod_BinScans_native}
 \alias{RamanMethod_BinScans_native}
-\title{\strong{RamanMethod_BinScans_native}}
+\title{Raman Method for Binning Time Scans (native algorithm)}
 \usage{
 RamanMethod_BinScans_native(
   mode = c("unit"),

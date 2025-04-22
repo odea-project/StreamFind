@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadChromatograms_native**
+#' MassSpecMethod_LoadChromatograms_native
 #'
 #' @description Loads chromatograms from mass spectrometry analyses.
 #' 

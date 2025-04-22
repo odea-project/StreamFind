@@ -1,12 +1,11 @@
+# MARK: NTS
+# NTS ----
 #' @export
 #' @noRd
 NTS <- S7::new_class(
-  # MARK: NTS
-  # NTS ----
   name = "NTS",
   package = "StreamFind",
   parent = Results,
-  
   properties = list(
 
     # MARK: analyses_info
@@ -56,12 +55,20 @@ NTS <- S7::new_class(
       S7::class_character,
       getter = function(self) {
         if (nrow(self@analyses_info) > 0) {
-          rpl <- self@analyses_info$replicate
-          names(rpl) <- self@analyses_info$analysis
+          rpl <- self@analyses_info[["replicate"]]
+          if (!is.null(rpl)) names(rpl) <- self@analyses_info$analysis
           rpl
         } else {
           character()
         }
+      },
+      setter = function(self, value) {
+        if (length(self@analyses) > 0) {
+          if (length(value) == nrow(self@analyses_info)) {
+            self@analyses_info[["replicate"]] <- value
+          }
+        }
+        self
       }
     ),
     
@@ -71,12 +78,45 @@ NTS <- S7::new_class(
       S7::class_character,
       getter = function(self) {
         if (nrow(self@analyses_info) > 0) {
-          bln <- self@analyses_info$blank
-          names(bln) <- self@analyses_info$analysis
+          bln <- self@analyses_info[["blank"]]
+          if (!is.null(bln))  names(bln) <- self@analyses_info[["analysis"]]
           bln
         } else {
           character()
         }
+      },
+      setter = function(self, value) {
+        if (length(self@analyses) > 0) {
+          if (length(value) == nrow(self@analyses_info)) {
+            if (all(value %in% self@replicates)) {
+              self@analyses_info[["blank"]] <- value
+            }
+          }
+        }
+        self
+      }
+    ),
+    
+    # MARK: concentrations
+    ## concentrations -----
+    concentrations = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        if (length(self@analyses) > 0) {
+          conc <- self@analyses_info[["concentration"]]
+          if (!is.null(conc)) names(conc) <- self@analyses_info[["analysis"]]
+          conc
+        } else {
+          numeric()
+        }
+      },
+      setter = function(self, value) {
+        if (length(self@analyses) > 0) {
+          if (length(value) == nrow(self@analyses_info)) {
+            self@analyses_info[["concentration"]] <- value
+          }
+        }
+        self
       }
     ),
 
@@ -192,7 +232,7 @@ NTS <- S7::new_class(
       S7::class_logical,
       getter = function(self) {
         if (self@has_features) {
-          return(any(vapply(self$feature_list, function(x) {
+          return(any(vapply(self@feature_list, function(x) {
             if ("ms1" %in% colnames(x)) {
               any(vapply(x$ms1, function(z) length(z) > 0, FALSE))
             } else {
@@ -210,7 +250,7 @@ NTS <- S7::new_class(
       S7::class_logical,
       getter = function(self) {
         if (self@has_features) {
-          return(any(vapply(self$feature_list, function(x) {
+          return(any(vapply(self@feature_list, function(x) {
             if ("ms2" %in% colnames(x)) {
               any(vapply(x$ms2, function(z) length(z) > 0, FALSE))
             } else {
@@ -228,7 +268,7 @@ NTS <- S7::new_class(
       S7::class_logical,
       getter = function(self) {
         if (self@has_features) {
-          return(any(vapply(self$feature_list, function(x) {
+          return(any(vapply(self@feature_list, function(x) {
             if ("eic" %in% colnames(x)) {
               any(vapply(x$eic, function(z) length(z) > 0, FALSE))
             } else {
@@ -246,7 +286,7 @@ NTS <- S7::new_class(
       S7::class_logical,
       getter = function(self) {
         if (self@has_features) {
-          return(any(vapply(self$feature_list, function(x) {
+          return(any(vapply(self@feature_list, function(x) {
             if ("suspects" %in% colnames(x)) {
               any(vapply(x$suspects, function(z) length(z) > 0, FALSE))
             } else {
@@ -282,8 +322,8 @@ NTS <- S7::new_class(
     checkmate::assert_true(self@software == "StreamFind")
     checkmate::assert_character(self@version, len = 1)
     if (length(self@has_features) > 0) {
-      checkmate::assert_true(identical(self$analyses_info$analysis, names(self@feature_list)))
-      checkmate::assert_true(identical(self$analyses_info$analysis, names(self@spectra_headers)))
+      checkmate::assert_true(identical(self@analyses_info$analysis, names(self@feature_list)))
+      checkmate::assert_true(identical(self@analyses_info$analysis, names(self@spectra_headers)))
       fp <- c(
         "feature", "group",
         "rt", "mz",
@@ -317,13 +357,13 @@ S7::method(show, NTS) <- function(x) {
   cat("\n")
   cat(is(x))
   cat("\n")
-  if (!x$has_features) {
+  if (!x@has_features) {
     cat("No features found!")
     return()
   }
   info <- data.table::data.table(
     "analysis" = x@analyses_info$analysis,
-    "replicate" = x$replicates,
+    "replicate" = x@replicates,
     "features" = x@number_features,
     "filtered" = x@number_filtered_features,
     "groups" = x@number_groups
@@ -344,7 +384,7 @@ S7::method(names, NTS) <- function(x) {
 #' @export
 #' @noRd
 `[.StreamFind::NTS` <- function(x, i, j) {
-  if (!x$has_features) {
+  if (!x@has_features) {
     warning("No features found to subset!")
     return(x)
   }
@@ -353,7 +393,7 @@ S7::method(names, NTS) <- function(x) {
     x@feature_list <- x@feature_list[i]
   }
   if (!missing(j)) {
-    if (!x$has_groups) {
+    if (!x@has_groups) {
       warning("No feature groups found to subset!")
     } else if (is.character(j) || is.numeric(j)) {
       x@feature_list <- lapply(x@feature_list, function(z) {
@@ -397,7 +437,7 @@ S7::method(names, NTS) <- function(x) {
 #' @noRd
 `[[.StreamFind::NTS` <- function(x, value) {
   if (!missing(value)) {
-    if (!x$has_groups) {
+    if (!x@has_groups) {
       warning("No feature groups found to subset!")
     } else if (length(value) == 1) {
       x@feature_list <- lapply(x@feature_list, function(z) {
@@ -418,10 +458,10 @@ S7::method(names, NTS) <- function(x) {
 S7::method(get_features_count, NTS) <- function(x, analyses = NULL, filtered = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
   info <- data.table::data.table()
-  if (x$has_features) {
+  if (x@has_features) {
     info <- data.table::data.table(
       "analysis" = x@analyses_info$analysis,
-      "replicate" = x$replicates,
+      "replicate" = x@replicates,
       "features" = x@number_features,
       "filtered" = x@number_filtered_features,
       "groups" = x@number_groups
@@ -524,7 +564,7 @@ S7::method(get_features, NTS) <- function(x,
   
   fts <- NULL
   
-  if (x$has_features) fts <- x$feature_list[analyses]
+  if (x@has_features) fts <- x@feature_list[analyses]
   
   if (is.null(fts)) {
     return(data.table::data.table())
@@ -550,13 +590,13 @@ S7::method(get_features, NTS) <- function(x,
         fts <- fts[fts$feature %in% target_id, ]
       }
       
-      fts$replicate <- x$replicates[fts$analysis]
+      fts$replicate <- x@replicates[fts$analysis]
       
       return(fts)
     } else if (is.numeric(target_id)) {
       fts <- fts[target_id, ]
       
-      fts$replicate <- x$replicates[fts$analysis]
+      fts$replicate <- x@replicates[fts$analysis]
       
       return(fts)
     }
@@ -583,7 +623,7 @@ S7::method(get_features, NTS) <- function(x,
           fts$name <- ids[fts$feature]
         }
         
-        fts$replicate <- x$replicates[fts$analysis]
+        fts$replicate <- x@replicates[fts$analysis]
         
         return(fts)
         
@@ -604,7 +644,7 @@ S7::method(get_features, NTS) <- function(x,
           fts$name <- ids[fts$group]
         }
         
-        fts$replicate <- x$replicates[fts$analysis]
+        fts$replicate <- x@replicates[fts$analysis]
         
         return(fts)
       }
@@ -613,7 +653,7 @@ S7::method(get_features, NTS) <- function(x,
     return(data.table::data.table())
   }
   
-  polarities <- x$spectra_polarity[analyses]
+  polarities <- x@spectra_polarity[analyses]
   id <- NULL
   
   targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
@@ -677,12 +717,12 @@ S7::method(get_features, NTS) <- function(x,
     
     fts$name <- ids
     
-    fts$replicate <- x$replicates[fts$analysis]
+    fts$replicate <- x@replicates[fts$analysis]
     
     return(fts[sel])
   }
   
-  fts$replicate <- x$replicates[fts$analysis]
+  fts$replicate <- x@replicates[fts$analysis]
   
   fts
 }
@@ -941,7 +981,7 @@ S7::method(get_features_eic, NTS) <- function(x,
   }
   
   if (useLoadedData) {
-    if (x$has_features_eic) {
+    if (x@has_features_eic) {
       useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
@@ -952,12 +992,12 @@ S7::method(get_features_eic, NTS) <- function(x,
     fts_ana_split_vector <- fts$analysis
     fts$analysis <- NULL
     fts_list <- split(fts, fts_ana_split_vector)
-    ana_info <- x$analyses_info[x$analyses_info$analysis %in% names(fts_list), ]
+    ana_info <- x@analyses_info[x@analyses_info$analysis %in% names(fts_list), ]
     
     fts <- rcpp_ms_load_features_eic(
       analyses_names = ana_info$analysis,
       analyses_files = ana_info$file,
-      headers = x$spectra_headers[names(fts_list)],
+      headers = x@spectra_headers[names(fts_list)],
       features = fts_list,
       filtered = filtered,
       rtExpand = rtExpand,
@@ -983,12 +1023,12 @@ S7::method(get_features_eic, NTS) <- function(x,
       fts_without_eic_ana_split_vector <- fts_without_eic$analysis
       fts_without_eic$analysis <- NULL
       fts_without_eic_list <- split(fts_without_eic, fts_without_eic_ana_split_vector)
-      ana_info <- x$analyses_info[x$analyses_info$analysis %in% names(fts_without_eic_list), ]
+      ana_info <- x@analyses_info[x@analyses_info$analysis %in% names(fts_without_eic_list), ]
       
       fts_without_eic <- rcpp_ms_load_features_eic(
         analyses_names = ana_info$analysis,
         analyses_files = ana_info$file,
-        headers = x$spectra_headers[names(fts_without_eic_list)],
+        headers = x@spectra_headers[names(fts_without_eic_list)],
         features = fts_without_eic_list,
         filtered = filtered,
         rtExpand = rtExpand,
@@ -1015,7 +1055,7 @@ S7::method(get_features_eic, NTS) <- function(x,
   }, fts = fts)
   
   eic <- data.table::rbindlist(eic_list, fill = TRUE)
-  eic$replicate <- x$replicates[eic$analysis]
+  eic$replicate <- x@replicates[eic$analysis]
   data.table::setcolorder(eic, c("analysis", "replicate", "feature"))
   
   unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
@@ -1276,7 +1316,7 @@ S7::method(get_features_ms1, NTS) <- function(x,
   }
   
   if (useLoadedData) {
-    if (x$has_features_ms1) {
+    if (x@has_features_ms1) {
       useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
@@ -1287,12 +1327,12 @@ S7::method(get_features_ms1, NTS) <- function(x,
     fts_ana_split_vector <- fts$analysis
     fts$analysis <- NULL
     fts_list <- split(fts, fts_ana_split_vector)
-    ana_info <- x$analyses_info[x$analyses_info$analysis %in% names(fts_list), ]
+    ana_info <- x@analyses_info[x@analyses_info$analysis %in% names(fts_list), ]
     
     fts <- rcpp_ms_load_features_ms1(
       analyses_names = ana_info$analysis,
       analyses_files = ana_info$file,
-      headers = x$spectra_headers[names(fts_list)],
+      headers = x@spectra_headers[names(fts_list)],
       features = fts_list,
       filtered = filtered,
       rtWindow = rtWindow,
@@ -1339,7 +1379,7 @@ S7::method(get_features_ms1, NTS) <- function(x,
     return(data.table::data.table())
   }
   
-  ms1$replicate <- x$replicates[ms1$analysis]
+  ms1$replicate <- x@replicates[ms1$analysis]
   data.table::setcolorder(ms1, c("analysis", "replicate", "feature"))
   
   unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
@@ -1508,7 +1548,7 @@ S7::method(get_features_ms2, NTS) <- function(x,
   }
   
   if (useLoadedData) {
-    if (x$has_features_ms1) {
+    if (x@has_features_ms1) {
       useLoadedData <- TRUE
     } else {
       useLoadedData <- FALSE
@@ -1519,12 +1559,12 @@ S7::method(get_features_ms2, NTS) <- function(x,
     fts_ana_split_vector <- fts$analysis
     fts$analysis <- NULL
     fts_list <- split(fts, fts_ana_split_vector)
-    ana_info <- x$analyses_info[x$analyses_info$analysis %in% names(fts_list), ]
+    ana_info <- x@analyses_info[x@analyses_info$analysis %in% names(fts_list), ]
     
     fts <- rcpp_ms_load_features_ms2(
       analyses_names = ana_info$analysis,
       analyses_files = ana_info$file,
-      headers = x$spectra_headers[names(fts_list)],
+      headers = x@spectra_headers[names(fts_list)],
       features = fts_list,
       filtered = filtered,
       minTracesIntensity = minIntensity,
@@ -1570,7 +1610,7 @@ S7::method(get_features_ms2, NTS) <- function(x,
     return(data.table::data.table())
   }
   
-  ms2$replicate <- x$replicates[ms2$analysis]
+  ms2$replicate <- x@replicates[ms2$analysis]
   data.table::setcolorder(ms2, c("analysis", "replicate", "feature"))
   
   unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
@@ -1744,7 +1784,7 @@ S7::method(get_groups, NTS) <- function(x,
                                         metadata = FALSE,
                                         correctIntensity = FALSE) {
   
-  if (!x$has_groups) {
+  if (!x@has_groups) {
     return(data.table::data.table())
   }
   
@@ -1768,7 +1808,7 @@ S7::method(get_groups, NTS) <- function(x,
       
       if (average) {
         intensity <- NULL
-        rpls <- x$replicates
+        rpls <- x@replicates
         fts_temp <- data.table::copy(fts)
         fts_temp$analysis <- rpls[fts_temp$analysis]
         fts_av <- fts_temp[, .(
@@ -2274,7 +2314,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
     return(NULL)
   }
   
-  polarities <- x$spectra_polarity
+  polarities <- x@spectra_polarity
   
   if (!"polarity" %in% colnames(fts)) fts$polarity <- polarities[fts$analysis]
   
@@ -2288,15 +2328,15 @@ S7::method(plot_groups_profile, NTS) <- function(x,
     fts$intensity <- as.numeric(fts$intensity_rel)
   }
   
-  if (averaged && x$has_groups) {
+  if (averaged && x@has_groups) {
     group_cols <- c("replicate", "group", "polarity")
     if ("name" %in% colnames(fts)) group_cols <- c(group_cols, "name")
     intensity <- NULL
     fts <- fts[, .(intensity = mean(intensity), intensity_sd = sd(intensity)), by = group_cols]
-    names(polarities) <- x$replicates[names(polarities)]
+    names(polarities) <- x@replicates[names(polarities)]
     polarities <- polarities[!duplicated(names(polarities))]
     data.table::setnames(fts, "replicate", "analysis")
-    analyses <- unique(x$replicates[analyses])
+    analyses <- unique(x@replicates[analyses])
   }
   
   if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
@@ -2324,7 +2364,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
   
   names(showLeg) <- u_leg
   
-  rpls <- x$replicates
+  rpls <- x@replicates
   
   plot <- plot_ly(fts, x = sort(unique(fts$analysis)))
   
@@ -2344,7 +2384,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
       extra$polarity[extra$polarity %in% "positive"] <- 1
       extra$polarity[extra$polarity %in% "negative"] <- -1
       
-      if (averaged && x$has_groups) {
+      if (averaged && x@has_groups) {
         extra$intensity_sd <- 0
         df <- rbind(df[, c("analysis", "var", "intensity", "intensity_sd", "polarity")], extra)
       } else {
@@ -2360,7 +2400,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
           max_int <- max(df$intensity[df$polarity == p])
           if (max_int > 0) {
             df$intensity[df$polarity == p] <- df$intensity[df$polarity == p] / max_int
-            if (averaged && x$has_groups) {
+            if (averaged && x@has_groups) {
               df$intensity_sd[df$polarity == p] <- df$intensity_sd[df$polarity == p] / max_int
             }
           }
@@ -2369,7 +2409,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
         max_int <- max(df$intensity)
         if (max_int > 0) {
           df$intensity <- df$intensity / max_int
-          if (averaged && x$has_groups) {
+          if (averaged && x@has_groups) {
             df$intensity_sd <- df$intensity_sd / max_int
           }
         }
@@ -2393,7 +2433,7 @@ S7::method(plot_groups_profile, NTS) <- function(x,
     for (r in unique(df$replicate)) {
       df_r <- df[df$replicate %in% r, ]
       
-      if (averaged && x$has_groups) {
+      if (averaged && x@has_groups) {
         plot <- plot %>% add_trace(
           df_r,
           x = df_r$analysis,
@@ -2539,7 +2579,7 @@ S7::method(get_groups_ms1, NTS) <- function(x,
       ms1$analysis <- NA_character_
     }
   } else {
-    rpls <- x$replicates
+    rpls <- x@replicates
     ms1$analysis <- rpls[ms1$analysis]
     
     if (multiple_polarities) {
@@ -2669,7 +2709,7 @@ S7::method(get_groups_ms2, NTS) <- function(x,
       ms2$analysis <- NA_character_
     }
   } else {
-    rpls <- x$replicates
+    rpls <- x@replicates
     ms2$analysis <- rpls[ms2$analysis]
     
     if (multiple_polarities) {
@@ -3012,7 +3052,7 @@ S7::method(get_components, NTS) <- function(x,
                                             sec = 60,
                                             millisec = 5,
                                             filtered = FALSE) {
-  if (!x$has_features) {
+  if (!x@has_features) {
     warning("Features not found!")
     return(data.table::data.table())
   }
@@ -3035,7 +3075,7 @@ S7::method(get_components, NTS) <- function(x,
   
   names(fts_sel) <- x@analyses_info$analysis
   
-  all_fts <- x$feature_list
+  all_fts <- x@feature_list
   
   all_fts <- Map(function(z, k) {
     if (nrow(z) == 0) return(data.table::data.table())
@@ -3058,7 +3098,7 @@ S7::method(get_components, NTS) <- function(x,
   })
   
   all_fts <- data.table::rbindlist(all_fts, idcol = "analysis", fill = TRUE)
-  all_fts$replicate <- x$replicates[all_fts$analysis]
+  all_fts$replicate <- x@replicates[all_fts$analysis]
   data.table::setnames(all_fts, "component_feature", "component")
   data.table::setcolorder(all_fts, c("analysis", "replicate", "component", "feature", "group"))
   
@@ -3244,7 +3284,7 @@ S7::method(get_suspects, NTS) <- function(x,
                                           minCusiness = 0.7,
                                           minFragments = 3,
                                           filtered = FALSE) {
-  if (!x$has_features) {
+  if (!x@has_features) {
     warning("Features not found!")
     return(data.table::data.table())
   }
@@ -3538,7 +3578,7 @@ S7::method(get_suspects, NTS) <- function(x,
     suspects <- data.table::rbindlist(suspects, fill = TRUE)
   }
   
-  # if (nrow(suspects) > 0 && !filtered && x$has_groups && onGroups) {
+  # if (nrow(suspects) > 0 && !filtered && x@has_groups && onGroups) {
   #   if (all(!is.na(suspects$group))) {
   #     suspects$id_level <- factor(
   #       suspects$id_level,
@@ -4007,32 +4047,32 @@ S7::method(get_internal_standards, NTS) <- function(x, average = TRUE) {
     if (nrow(istd) > 0) {
       istd_l <- istd[["istd"]]
       
-      istd_l2 <- lapply(seq_len(length(istd_l)), function(x, istd_l, istd) {
-        temp <- istd_l[[x]]
-        temp_ft <- istd[x, ]
+      istd_l2 <- lapply(seq_len(length(istd_l)), function(z, istd_l, istd) {
+        temp <- istd_l[[z]]
+        temp_ft <- istd[z, ]
         temp <- cbind(temp, temp_ft)
         temp
       }, istd = istd, istd_l = istd_l)
       
-      istd <- rbindlist(istd_l2, fill = TRUE)
+      istd <- data.table::rbindlist(istd_l2, fill = TRUE)
       
       istd$rtr <- round(istd$rtmax - istd$rtmin, digits = 1)
       
       istd$mzr <- round(istd$mzmax - istd$mzmin, digits = 4)
       
       if ("annotation" %in% colnames(istd)) {
-        istd$iso_n <- vapply(istd$annotation, function(x) {
-          if (length(x) == 0) {
+        istd$iso_n <- vapply(istd$annotation, function(z) {
+          if (length(z) == 0) {
             NA_real_
           } else {
-            x$iso_size
+            z$iso_size
           }
         }, NA_real_)
-        istd$iso_c <- vapply(istd$annotation, function(x) {
-          if (length(x) == 0) {
+        istd$iso_c <- vapply(istd$annotation, function(z) {
+          if (length(z) == 0) {
             NA_real_
           } else {
-            x$iso_number_carbons
+            z$iso_number_carbons
           }
         }, NA_real_)
       } else {
@@ -4040,8 +4080,8 @@ S7::method(get_internal_standards, NTS) <- function(x, average = TRUE) {
         istd$iso_c <- NA_real_
       }
       
-      if (x$has_groups && average) {
-        rpl <- x$replicates
+      if (x@has_groups && average) {
+        rpl <- x@replicates
         
         istd$replicate <- rpl[istd$analysis]
         
@@ -4123,7 +4163,7 @@ S7::method(get_internal_standards, NTS) <- function(x, average = TRUE) {
           "feature"
         )
         
-        if (x$has_groups) cols <- c(cols, "group")
+        if (x@has_groups) cols <- c(cols, "group")
         
         istd <- istd[, cols, with = FALSE]
         istd$intensity <- round(istd$intensity, digits = 0)
@@ -4156,7 +4196,7 @@ S7::method(plot_internal_standards, NTS) <- function(x,
                                                      renderEngine = "webgl") {
   analyses <- .check_analyses_argument(x, analyses)
   
-  if (x$has_groups) {
+  if (x@has_groups) {
     istd <- get_internal_standards(x, average = TRUE)
     
     if (nrow(istd) == 0) {
@@ -4164,7 +4204,7 @@ S7::method(plot_internal_standards, NTS) <- function(x,
       return(NULL)
     }
     
-    istd <- istd[istd$replicate %in% x$replicates[analyses], ]
+    istd <- istd[istd$replicate %in% x@replicates[analyses], ]
     
     if (nrow(istd) == 0) {
       warning("Internal standards not found!")
@@ -4600,7 +4640,7 @@ S7::method(get_compounds, NTS) <- function(x,
                                            millisec = 5,
                                            filtered = FALSE,
                                            averaged = TRUE) {
-  if (!x$has_features) {
+  if (!x@has_features) {
     warning("Features not found!")
     return(data.table::data.table())
   }
@@ -4614,7 +4654,7 @@ S7::method(get_compounds, NTS) <- function(x,
   
   compounds <- fts$compounds
   
-  if (!averaged && x$has_groups) {
+  if (!averaged && x@has_groups) {
     compounds <- Map(function(z, y) {
       if (nrow(z) > 0) z$analysis <- y
       z
@@ -4651,7 +4691,7 @@ S7::method(get_compounds, NTS) <- function(x,
   compounds <- data.table::rbindlist(compounds, fill = TRUE)
   
   if (nrow(compounds) > 0) {
-    if (averaged && x$has_groups) {
+    if (averaged && x@has_groups) {
       data.table::setcolorder(compounds, c("group", "rt", "mass", "polarity", "compoundName"))
       duplos <- duplicated(paste0(compounds$group, compounds$compoundName, compounds$polarity))
       compounds <- compounds[!duplos]
@@ -4685,12 +4725,12 @@ S7::method(get_fold_change, NTS) <- function(x,
                                              fillZerosWithLowerLimit = FALSE,
                                              lowerLimit = NA_real_) {
   
-  if (!x$has_groups) {
+  if (!x@has_groups) {
     warning("\U2717 Feature groups not found!")
     return(NULL)
   }
   
-  rpls <- x$replicates
+  rpls <- x@replicates
   
   if (is.numeric(replicatesIn)) replicatesIn <- unique(rpls[replicatesIn])
   if (is.numeric(replicatesOut)) replicatesOut <- unique(rpls[replicatesOut])
@@ -4730,8 +4770,8 @@ S7::method(get_fold_change, NTS) <- function(x,
   comb <- data.table::data.table()
   
   for (rep in seq_len(length(replicatesOut))) {
-    out_temp <- names(x)[x$replicates %in% replicatesOut[rep]]
-    in_temp <- names(x)[x$replicates %in% replicatesIn[rep]]
+    out_temp <- names(x)[x@replicates %in% replicatesOut[rep]]
+    in_temp <- names(x)[x@replicates %in% replicatesIn[rep]]
     comb_temp <- expand.grid(
       analysisIn = in_temp,
       analysisOut = out_temp,
@@ -5009,7 +5049,7 @@ S7::method(plot_fold_change, NTS) <- function(x,
 #' @export
 #' @noRd
 S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGroups = TRUE) {
-  if (!x$has_features) {
+  if (!x@has_features) {
     warning("No features found to get!")
     return(NULL)
   }
@@ -5019,7 +5059,7 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
     return(FALSE)
   }
   
-  feature_list <- x$feature_list
+  feature_list <- x@feature_list
   
   feature_list <- lapply(feature_list, function(z) {
     if (!filtered) z <- z[!z$filtered, ]
@@ -5032,9 +5072,9 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
   
   feature_list <- feature_list[vapply(feature_list, nrow, 0) > 0]
   
-  ana_info <- x$analyses_info
+  ana_info <- x@analyses_info
   ana_info <- ana_info[ana_info$analysis %in% names(feature_list), ]
-  pols <- x$analyses_info$polarity
+  pols <- x@analyses_info$polarity
   ana_info$path <- dirname(ana_info$file)
   data.table::setnames(ana_info, "replicate", "group", skip_absent = TRUE)
   data.table::setcolorder(ana_info, c("path", "analysis", "group", "blank", "polarity"))
@@ -5045,7 +5085,7 @@ S7::method(get_patRoon_features, NTS) <- function(x, filtered = FALSE, featureGr
     make_set <- TRUE
   }
   
-  if (x$has_groups && featureGroups) {
+  if (x@has_groups && featureGroups) {
     
     feature_list <- lapply(feature_list, function(z) {
       z <- z[!is.na(z$group), ]
@@ -5187,12 +5227,12 @@ S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
                                                      presence = 0.7,
                                                      top = 25,
                                                      normalized = TRUE) {
-  if (!x$has_features) {
+  if (!x@has_features) {
     warning("No features found to get!")
     return(NULL)
   }
   
-  if (!x$has_features_ms2) {
+  if (!x@has_features_ms2) {
     warning("No MS2 features found to get!")
     return(NULL)
   }
@@ -5246,7 +5286,7 @@ S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
     out
   }
     
-  feature_list <- x$feature_list
+  feature_list <- x@feature_list
     
   plist <- lapply(feature_list, function(z, correct_spectrum) {
     features <- z[!z$filtered, ]
@@ -5277,10 +5317,10 @@ S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
     glist
   }, correct_spectrum = correct_spectrum)
     
-  names(plist) <- x$analyses_info$analysis
+  names(plist) <- x@analyses_info$analysis
   plist <- plist[vapply(plist, function(x) length(x) > 0, FALSE)]
   
-  run_list <- lapply(x$analyses_info$file, function(z) rcpp_parse_ms_spectra_headers(z))
+  run_list <- lapply(x@analyses_info$file, function(z) rcpp_parse_ms_spectra_headers(z))
     
   mlist <- Map(function(z, y) {
     features <- z[!z$filtered, ]
@@ -5314,7 +5354,7 @@ S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
     glist
   }, feature_list, run_list)
     
-  names(mlist) <- x$analyses_info$analysis
+  names(mlist) <- x@analyses_info$analysis
   mlist <- mlist[vapply(mlist, function(x) length(x) > 0, FALSE)]
   mlist <- mlist[names(plist)]
     
@@ -5391,7 +5431,7 @@ S7::method(get_patRoon_MSPeakLists, NTS) <- function(x,
     "retainPrecursorMSMS" = TRUE
   )
 
-  ana_info <- x$analyses_info[x$analyses_info$analysis %in% names(plist), ]
+  ana_info <- x@analyses_info[x@analyses_info$analysis %in% names(plist), ]
   pol <- ana_info$polarity
   ana_info$path <- dirname(ana_info$file)
   data.table::setnames(ana_info, "replicate", "group", skip_absent = TRUE)
@@ -5495,15 +5535,15 @@ S7::method(report, NTS) <- function(x,
     return(NULL)
   }
 
-  if (!x$has_groups) {
+  if (!x@has_groups) {
     warning("No feature groups found to report!")
     return(NULL)
   }
 
-  pat <- x$get_patRoon_features(filtered = filtered, featureGroups = TRUE)
+  pat <- get_patRoon_features(x, filtered = filtered, featureGroups = TRUE)
 
   patRoon::report(
-    x$features[[1]],
+    pat,
     MSPeakLists = NULL,
     formulas = NULL,
     compounds = NULL,

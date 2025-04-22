@@ -2,10 +2,10 @@
 % Please edit documentation in R/engine_CoreEngine.R
 \name{CoreEngine}
 \alias{CoreEngine}
-\title{CoreEngine R6 class and methods}
+\title{Core Engine (Internal Use Only)}
 \description{
-The CoreEngine R6 class is used to harmonize methods across different data specific
-engines. Users should not use this class directly but the data specific engines.
+The \link{CoreEngine} R6 class is used to harmonize methods across different
+data specific engines. Users should not use this class directly but data specific engines.
 }
 \note{
 The engine data is saved in an \strong{rds} file and loaded in the app. If save file is
@@ -16,15 +16,18 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{Metadata}}{A \link{Metadata} S7 class object.}
+\item{\code{Metadata}}{A \link{Metadata} or \link{EngineMetadata}. When setting can
+also be a named list with elements of length one.}
 
-\item{\code{Workflow}}{A \link{Workflow} S7 class object.}
+\item{\code{Workflow}}{A \link{Workflow} S7 class object. When settings can also be a list
+of \link{ProcessingStep} objects or a full path string to an \strong{rds} or \strong{json} file
+containing a \link{Workflow} object.}
 
-\item{\code{Analyses}}{A \link{Analyses} S7 class object.}
+\item{\code{Analyses}}{An \link{Analyses} S7 class object or a child of it.}
 
-\item{\code{AuditTrail}}{A \link{AuditTrail} S7 class object. Only getter method.}
+\item{\code{AuditTrail}}{An \link{AuditTrail} S7 class object. Only getter method.}
 
-\item{\code{Config}}{A \link{EngineConfig} S7 class object.}
+\item{\code{Config}}{An \link{EngineConfig} S7 class object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -51,7 +54,7 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \if{html}{\out{<a id="method-CoreEngine-new"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-new}{}}}
 \subsection{Method \code{new()}}{
-Creates a \code{CoreEngine} R6 class object.
+Creates a \link{CoreEngine} R6 class object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(metadata = NULL, workflow = NULL, analyses = NULL, ...)}\if{html}{\out{</div>}}
 }
@@ -70,7 +73,7 @@ with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow
 \item{\code{analyses}}{An \code{Analyses} child class or a data specific analyses input.
 See each data specific engine for details.}
 
-\item{\code{...}}{Additional data specific engine arguments.}
+\item{\code{...}}{Additional arguments for data specific engines.}
 }
 \if{html}{\out{</div>}}
 }
@@ -99,7 +102,7 @@ categories. If \code{NULL} (the default), the entire cache is cleared. Use the m
 \if{html}{\out{<a id="method-CoreEngine-clear_results"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-clear_results}{}}}
 \subsection{Method \code{clear_results()}}{
-Clears all result objects in the \code{Analyses}.
+Clears all result objects in the \code{Analyses} field.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$clear_results()}\if{html}{\out{</div>}}
 }
@@ -109,7 +112,7 @@ Clears all result objects in the \code{Analyses}.
 \if{html}{\out{<a id="method-CoreEngine-get_cache_info"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-get_cache_info}{}}}
 \subsection{Method \code{get_cache_info()}}{
-Gets a data.table with the cached data categories.
+Gets a \code{data.table} with the cached data categories.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_cache_info()}\if{html}{\out{</div>}}
 }
@@ -129,7 +132,7 @@ Gets the current size of the cache file.
 \if{html}{\out{<a id="method-CoreEngine-has_analyses"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-has_analyses}{}}}
 \subsection{Method \code{has_analyses()}}{
-Checks if there are analyses files/objects in the \code{Analyses}.
+Checks if there are analyses files/objects in the \code{Analyses} field.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_analyses()}\if{html}{\out{</div>}}
 }
@@ -139,7 +142,7 @@ Checks if there are analyses files/objects in the \code{Analyses}.
 \if{html}{\out{<a id="method-CoreEngine-has_results"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-has_results}{}}}
 \subsection{Method \code{has_results()}}{
-Checks if there are \code{Results} in the engine.
+Checks if there are \link{Results} in the \code{Analyses} field.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_results(value = NULL)}\if{html}{\out{</div>}}
 }
@@ -147,8 +150,8 @@ Checks if there are \code{Results} in the engine.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{A string or a vector of strings with the name/s of the \code{Results} child/s for
-checking the presence in the engine.}
+\item{\code{value}}{A string or a vector of strings with the name/s of the \link{Results}
+child/s for checking the presence.}
 }
 \if{html}{\out{</div>}}
 }
@@ -188,9 +191,9 @@ Prints a summary to the console.
 \if{latex}{\out{\hypertarget{method-CoreEngine-save}{}}}
 \subsection{Method \code{save()}}{
 Saves the engine data as an \strong{sqlite} or \strong{rds} file. If no file path is
-given, the engine data is saved in the file of the \code{Metadata}. If no file is specified
-in the \code{Metadata} the engine data is saved as \strong{rds} format with the engine class
-name and date in the \code{Metadata} as file name.
+given, the engine data is saved in the file of the \link{Metadata} field. If no file
+is specified in the \code{Metadata} the engine data is saved as \strong{rds} format with the engine
+class and date in the \code{Metadata} as file name.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save(file = NA_character_)}\if{html}{\out{</div>}}
 }
@@ -210,7 +213,7 @@ Invisible.
 \if{html}{\out{<a id="method-CoreEngine-run"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-run}{}}}
 \subsection{Method \code{run()}}{
-Runs a processing method defined by the \code{ProcessingStep} object.
+Runs a processing method defined by the \link{ProcessingStep} object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run(step = NULL)}\if{html}{\out{</div>}}
 }
@@ -218,7 +221,7 @@ Runs a processing method defined by the \code{ProcessingStep} object.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{step}}{A \code{ProcessingStep} object.}
+\item{\code{step}}{A \link{ProcessingStep} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -227,7 +230,7 @@ Runs a processing method defined by the \code{ProcessingStep} object.
 \if{html}{\out{<a id="method-CoreEngine-run_workflow"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-run_workflow}{}}}
 \subsection{Method \code{run_workflow()}}{
-Runs all processing steps in Workflow.
+Runs all \link{ProcessingStep} objects in the \link{Workflow}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_workflow()}\if{html}{\out{</div>}}
 }
@@ -237,7 +240,7 @@ Runs all processing steps in Workflow.
 \if{html}{\out{<a id="method-CoreEngine-run_app"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-run_app}{}}}
 \subsection{Method \code{run_app()}}{
-Runs the StreamFind Shiny app to explore and manage the engine data.
+Runs the StreamFind Shiny app to explore, process and manage the engine data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_app()}\if{html}{\out{</div>}}
 }

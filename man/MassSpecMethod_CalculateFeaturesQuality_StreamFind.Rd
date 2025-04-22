@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_CalculateFeaturesQuality.R
 \name{MassSpecMethod_CalculateFeaturesQuality_StreamFind}
 \alias{MassSpecMethod_CalculateFeaturesQuality_StreamFind}
-\title{\strong{MassSpecMethod_CalculateFeaturesQuality_StreamFind}}
+\title{Mass Spectrometry Method to Calculate Features Quality (StreamFind algorithm)}
 \usage{
 MassSpecMethod_CalculateFeaturesQuality_StreamFind(
   filtered = FALSE,

@@ -17,5 +17,5 @@ A StatisticMethod_Quantify_mcrals object.
 Quantify data using the mcrals statistical model and concentrations.
 }
 \details{
-\strong{StatisticMethod_Quantify_mcrals}
+StatisticMethod_Quantify_mcrals S7 class
 }

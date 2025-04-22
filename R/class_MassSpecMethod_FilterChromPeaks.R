@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FilterChromPeaks_native**
+#' MassSpecMethod_FilterChromPeaks_native S7 class
 #'
 #' @description Settings for filtering chromatographic peaks.
 #' 

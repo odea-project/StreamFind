@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigCache}
 \alias{ConfigCache}
-\title{ConfigCache Class}
+\title{Configuration Parameter for Caching}
 \usage{
 ConfigCache()
 }

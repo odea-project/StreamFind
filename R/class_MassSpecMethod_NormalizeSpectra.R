@@ -1,4 +1,4 @@
-#' **MassSpecMethod_NormalizeSpectra_minmax**
+#' MassSpecMethod_NormalizeSpectra_minmax S7 class
 #'
 #' @description Normalizes spectra using the min-max algorithm.
 #'
@@ -92,7 +92,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_minmax) <- function(x, engine = 
   TRUE
 }
 
-#' **MassSpecMethod_NormalizeSpectra_snv**
+#' MassSpecMethod_NormalizeSpectra_snv S7 class
 #'
 #' @description Normalizes spectra using the Standard Normal Variate (SNV) algorithm.
 #' 
@@ -197,7 +197,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_snv) <- function(x, engine = NUL
   
 }
 
-#' **MassSpecMethod_NormalizeSpectra_scale**
+#' MassSpecMethod_NormalizeSpectra_scale S7 class
 #'
 #' @description Normalizes spectra using scaling based on the standard deviation.
 #'
@@ -291,7 +291,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_scale) <- function(x, engine = N
   
 }
 
-#' **MassSpecMethod_NormalizeSpectra_blockweight**
+#' MassSpecMethod_NormalizeSpectra_blockweight S7 class
 #'
 #' @description Normalizes spectra using block weighting for downstream data evaluation.
 #'
@@ -381,7 +381,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_blockweight) <- function(x, engi
   TRUE
 }
 
-#' **MassSpecMethod_NormalizeSpectra_meancenter**
+#' MassSpecMethod_NormalizeSpectra_meancenter S7 class
 #'
 #' @description Normalizes spectra using mean centering.
 #'

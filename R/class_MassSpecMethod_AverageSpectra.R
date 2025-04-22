@@ -1,4 +1,4 @@
-#' **MassSpecMethod_AverageSpectra_StreamFind**
+#' Mass Spectrometry Method for Averaging Spectra (StreamFind algorithm)
 #'
 #' @description Averages spectra based on variables.
 #' 

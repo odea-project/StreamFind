@@ -1,6 +1,6 @@
 #' @noRd
 .calculate_tic_matrix_suppression <- function(x, rtWindow = 10) {
-  info <- x$info
+  info <- x@info
   if (nrow(info) == 0) {
     warning("No analyses available!")
     return(NULL)
@@ -65,7 +65,7 @@
   mpList
 }
 
-#' **MassSpecMethod_CorrectMatrixSuppression_TiChri**
+#' MassSpecMethod_CorrectMatrixSuppression_TiChri S7 class
 #'
 #' @description Settings for correcting matrix suppression based on the TiChri algorithm from
 #' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm
@@ -179,7 +179,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
     z
   })
 
-  parameters <- x$parameters
+  parameters <- x@parameters
 
   message("\U2699 Calculating TIC matrix suppression")
   ticMp <- .calculate_tic_matrix_suppression(engine$Analyses, rtWindow = parameters$mpRtWindow)
@@ -188,7 +188,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
     return(FALSE)
   }
 
-  info <- engine$Analyses$info
+  info <- engine$Analyses@info
   rpls <- info$replicate
   names(rpls) <- info$analysis
   blankRpls <- info$blank

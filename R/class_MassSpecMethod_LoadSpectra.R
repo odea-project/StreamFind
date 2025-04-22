@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadSpectra_native**
+#' MassSpecMethod_LoadSpectra_native S7 class
 #'
 #' @description .
 #' 
@@ -118,7 +118,7 @@ S7::method(run, MassSpecMethod_LoadSpectra_native) <- function(x, engine = NULL)
   })
 }
 
-#' **MassSpecMethod_LoadSpectra_chrompeaks**
+#' MassSpecMethod_LoadSpectra_chrompeaks S7 class
 #'
 #' @description Loads spectra based on retention time dimensions of chromatographic peaks.
 #' 

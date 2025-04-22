@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FindSpectraMaxima_native**
+#' MassSpecMethod_FindSpectraMaxima_native S7 class
 #'
 #' @description Finds maximum peaks in continuous spectra.
 #' 

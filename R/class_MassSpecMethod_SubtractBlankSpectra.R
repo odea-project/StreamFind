@@ -1,4 +1,4 @@
-#' **MassSpecMethod_SubtractBlankSpectra_StreamFind**
+#' MassSpecMethod_SubtractBlankSpectra_StreamFind S7 class
 #'
 #' @description Subtracts the blank spectra to each analysis according to the blank assignment.
 #' 

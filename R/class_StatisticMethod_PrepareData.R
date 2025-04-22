@@ -1,9 +1,4 @@
-
-# ______________________________________________________________________________________________________________________
-# autoscale -----
-# ______________________________________________________________________________________________________________________
-
-#' **StatisticMethod_PrepareData_autoscale**
+#' StatisticMethod_PrepareData_autoscale S7 class
 #'
 #' @title StatisticMethod_PrepareData_autoscale
 #' 

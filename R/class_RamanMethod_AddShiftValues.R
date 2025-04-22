@@ -1,4 +1,4 @@
-#' **RamanMethod_AddShiftValues_native**
+#' Raman Method for Adding Shift Values to Spectra (native algorithm)
 #'
 #' @description Adds custom shift values to the Raman spectra or copies from one or more analyses to
 #' the other analyses. When more than one analyses are selected, the shift values are copied from
@@ -134,7 +134,7 @@ S7::method(run, RamanMethod_AddShiftValues_native) <- function(x, engine = NULL)
         y$shift <- shifts
         return(y)
       })
-      z <- rbindlist(z)  
+      z <- data.table::rbindlist(z)  
     } else {
       z$shift <- shifts
     }

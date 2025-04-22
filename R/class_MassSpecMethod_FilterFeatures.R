@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FilterFeatures_StreamFind**
+#' MassSpecMethod_FilterFeatures_StreamFind S7 class
 #'
 #' @description Settings for filtering of features and feature groups.
 #'
@@ -652,7 +652,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   TRUE
 }
 
-#' **MassSpecMethod_FilterFeatures_patRoon**
+#' MassSpecMethod_FilterFeatures_patRoon S7 class
 #'
 #' @description Settings for filtering of features and feature groups. A full description of the
 #' filtering parameters is in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.

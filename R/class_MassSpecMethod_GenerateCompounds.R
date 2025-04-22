@@ -1,4 +1,4 @@
-#' **MassSpecMethod_GenerateCompounds_metfrag**
+#' MassSpecMethod_GenerateCompounds_metfrag S7 class
 #'
 #' @description Settings for generating compounds using
 #' \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}. The algorithm is used via the function
@@ -180,7 +180,7 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
   
   mspl <- get_patRoon_MSPeakLists(
     nts,
-    mzClust = mzclust,
+    mzClust = mzClust,
     minIntensity = minIntensity,
     presence = presence,
     top = 100,

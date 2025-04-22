@@ -1,4 +1,4 @@
-#' **RamanMethod_BinScans_native**
+#' Raman Method for Binning Time Scans (native algorithm)
 #'
 #' @description Merges scans by averaging spectra according to a given binning size.
 #' 
@@ -112,6 +112,8 @@ S7::method(run, RamanMethod_BinScans_native) <- function(x, engine = NULL) {
     ushifts <- unique(z$shift)
     urts_size <- length(urts)
     ushifts_size <- length(ushifts)
+    
+    .SD <- NULL
     
     if ("scans" %in% binning_mode) {
       bin_key <- cut(seq_len(urts_size), seq(1, urts_size, binning_value), include.lowest = TRUE)

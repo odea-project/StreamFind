@@ -1,4 +1,4 @@
-#' **MassSpecMethod_SmoothChromatograms_movingaverage**
+#' MassSpecMethod_SmoothChromatograms_movingaverage S7 class
 #'
 #' @description Smooths chromatograms using the moving average algorithm.
 #' 
@@ -97,7 +97,7 @@ S7::method(run, MassSpecMethod_SmoothChromatograms_movingaverage) <- function(x,
   TRUE
 }
 
-#' **MassSpecMethod_SmoothChromatograms_savgol**
+#' MassSpecMethod_SmoothChromatograms_savgol S7 class
 #'
 #' @description Smooths chromatograms using the Savitzky-Golay algorithm from the \pkg{pracma}
 #' package.

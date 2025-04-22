@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_xcms3_centwave}
 \alias{MassSpecMethod_FindFeatures_xcms3_centwave}
-\title{\strong{MassSpecMethod_FindFeatures_xcms3_centwave}}
+\title{MassSpecMethod_FindFeatures_xcms3_centwave S7 class}
 \usage{
 MassSpecMethod_FindFeatures_xcms3_centwave(
   ppm = 12,

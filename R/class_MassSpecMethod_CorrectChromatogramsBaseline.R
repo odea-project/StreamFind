@@ -1,4 +1,4 @@
-#' **MassSpecMethod_CorrectChromatogramsBaseline_baseline_als**
+#' MassSpecMethod_CorrectChromatogramsBaseline_baseline_als S7 class
 #'
 #' @description Performs baseline correction to chromatograms using the Asymmetric Least Squares
 #' (ALS) algorithm from the \pkg{baseline} package.
@@ -133,7 +133,7 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_baseline_als) <- fun
   TRUE
 }
 
-#' **MassSpecMethod_CorrectChromatogramsBaseline_airpls**
+#' MassSpecMethod_CorrectChromatogramsBaseline_airpls S7 class
 #'
 #' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least
 #' Squares (airPLS) based on the algorithm from Zhi-Min Zhang.

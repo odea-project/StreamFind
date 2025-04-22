@@ -1,4 +1,4 @@
-#' **StatisticMethod_Quantify_mcrals**
+#' StatisticMethod_Quantify_mcrals S7 class
 #'
 #' @title StatisticMethod_Quantify_mcrals
 #' 

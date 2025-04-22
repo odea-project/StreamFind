@@ -220,7 +220,7 @@
   }
 }
 
-#' **MassSpecMethod_FindFeatures_xcms3_centwave**
+#' MassSpecMethod_FindFeatures_xcms3_centwave S7 class
 #'
 #' @description Method for finding features (i.e., chromatographic peaks) in mass spectrometry files
 #' using the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
@@ -359,7 +359,7 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_centwave) <- function(x, engin
   .run_find_features_patRoon(x, engine)
 }
 
-#' **MassSpecMethod_FindFeatures_xcms3_matchedfilter**
+#' MassSpecMethod_FindFeatures_xcms3_matchedfilter S7 class
 #' 
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
 #' using the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
@@ -481,7 +481,7 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_matchedfilter) <- function(x, 
   .run_find_features_patRoon(x, engine)
 }
 
-#' **MassSpecMethod_FindFeatures_openms**
+#' MassSpecMethod_FindFeatures_openms S7 class
 #' 
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
 #' using the \href{https://www.openms.org/}{OpenMS}
@@ -661,7 +661,7 @@ S7::method(run, MassSpecMethod_FindFeatures_openms) <- function(x, engine = NULL
   .run_find_features_patRoon(x, engine)
 }
 
-#' **MassSpecMethod_FindFeatures_kpic2**
+#' MassSpecMethod_FindFeatures_kpic2 S7 class
 #' 
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
 #' using the package \href{https://github.com/hcji/KPIC2}{KPIC}. The function uses the package
@@ -748,7 +748,7 @@ S7::method(run, MassSpecMethod_FindFeatures_kpic2) <- function(x, engine = NULL)
   .run_find_features_patRoon(x, engine)
 }
 
-#' **MassSpecMethod_FindFeatures_qalgorithms**
+#' MassSpecMethod_FindFeatures_qalgorithms S7 class
 #'
 #' @description The qAlgorithms uses a comprehensive peak model developed by
 #' \href{https://doi.org/10.1021/acs.analchem.4c00494}{Renner et al.} to

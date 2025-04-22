@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FilterFeaturesMS2_native**
+#' MassSpecMethod_FilterFeaturesMS2_native S7 class
 #'
 #' @description Settings for filtering (i.e., cleaning) non-relevant traces in features MS2
 #' spectrum.

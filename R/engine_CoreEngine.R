@@ -1,13 +1,13 @@
 # MARK: CoreEngine
 # CoreEngine -----
-#' CoreEngine R6 class and methods
+#' @title Core Engine (Internal Use Only)
 #'
-#' @description The CoreEngine R6 class is used to harmonize methods across different data specific
-#' engines. Users should not use this class directly but the data specific engines.
+#' @description The [StreamFind::CoreEngine] R6 class is used to harmonize methods across different
+#' data specific engines. Users should not use this class directly but data specific engines.
 #'  
-#' @template arg-core-Metadata
-#' @template arg-core-Workflow
-#' @template arg-core-Analyses
+#' @template arg-core-metadata
+#' @template arg-core-workflow
+#' @template arg-core-analyses
 #'
 #' @export
 #' 
@@ -29,7 +29,8 @@ CoreEngine <- R6::R6Class(
   active = list(
 
     # MARK: Metadata
-    #' @field Metadata A [StreamFind::Metadata] S7 class object.
+    #' @field Metadata A [StreamFind::Metadata] or [StreamFind::EngineMetadata]. When setting can
+    #' also be a named list with elements of length one.
     Metadata = function(value) {
       
       if (missing(value)) {
@@ -76,7 +77,9 @@ CoreEngine <- R6::R6Class(
     },
 
     # MARK: Workflow
-    #' @field Workflow A [StreamFind::Workflow] S7 class object.
+    #' @field Workflow A [StreamFind::Workflow] S7 class object. When settings can also be a list
+    #' of [StreamFind::ProcessingStep] objects or a full path string to an **rds** or **json** file
+    #' containing a [StreamFind::Workflow] object.
     Workflow = function(value) {
       if (missing(value)) {
         return(private$.Workflow)
@@ -123,7 +126,7 @@ CoreEngine <- R6::R6Class(
     },
 
     # MARK: Analyses
-    #' @field Analyses A [StreamFind::Analyses] S7 class object.
+    #' @field Analyses An [StreamFind::Analyses] S7 class object or a child of it.
     Analyses = function(value) {
       if (missing(value)) {
         return(private$.Analyses)
@@ -161,13 +164,13 @@ CoreEngine <- R6::R6Class(
     },
     
     # MARK: AuditTrail
-    #' @field AuditTrail A [StreamFind::AuditTrail] S7 class object. Only getter method.
+    #' @field AuditTrail An [StreamFind::AuditTrail] S7 class object. Only getter method.
     AuditTrail = function(value) {
       private$.AuditTrail
     },
     
     # MARK: Config
-    #' @field Config A [StreamFind::EngineConfig] S7 class object.
+    #' @field Config An [StreamFind::EngineConfig] S7 class object.
     Config = function(value) {
       if (missing(value)) {
         return(private$.Config)
@@ -189,8 +192,8 @@ CoreEngine <- R6::R6Class(
   public = list(
     
     # MARK: initialize
-    #' @description Creates a `CoreEngine` R6 class object.
-    #' @param ... Additional data specific engine arguments.
+    #' @description Creates a [StreamFind::CoreEngine] R6 class object.
+    #' @param ... Additional arguments for data specific engines.
     initialize = function(metadata = NULL, workflow = NULL, analyses = NULL, ...) {
       private$.Metadata <- StreamFind::EngineMetadata(engine = is(self))
       private$.AuditTrail <- StreamFind::AuditTrail()
@@ -304,14 +307,14 @@ CoreEngine <- R6::R6Class(
       message("\U2713 Cache cleared!")
     },
     
-    #' @description Clears all result objects in the `Analyses`.
+    #' @description Clears all result objects in the `Analyses` field.
     clear_results = function() {
       private$.Analyses@results <- list()
       message("\U2713 Results cleared!")
     },
     
     # MARK: get_cache_info
-    #' @description Gets a data.table with the cached data categories.
+    #' @description Gets a `data.table` with the cached data categories.
     get_cache_info = function() {
       config_cache <- self$Config[["ConfigCache"]]
       config_cache@info
@@ -325,16 +328,16 @@ CoreEngine <- R6::R6Class(
     },
     
     # MARK: has_analyses
-    #' @description Checks if there are analyses files/objects in the `Analyses`.
+    #' @description Checks if there are analyses files/objects in the `Analyses` field.
     has_analyses = function() {
       length(self$Analyses) > 0
     },
     
     # MARK: has_results
-    #' @description Checks if there are `Results` in the engine.
+    #' @description Checks if there are [StreamFind::Results] in the `Analyses` field.
     #'
-    #' @param value A string or a vector of strings with the name/s of the `Results` child/s for
-    #' checking the presence in the engine.
+    #' @param value A string or a vector of strings with the name/s of the [StreamFind::Results]
+    #' child/s for checking the presence.
     #'
     has_results = function(value = NULL) {
       if (is.null(value)) value <- names(self$Analyses@results)
@@ -429,9 +432,9 @@ CoreEngine <- R6::R6Class(
     
     # MARK: save
     #' @description Saves the engine data as an **sqlite** or **rds** file. If no file path is
-    #' given, the engine data is saved in the file of the `Metadata`. If no file is specified
-    #' in the `Metadata` the engine data is saved as **rds** format with the engine class
-    #' name and date in the `Metadata` as file name.
+    #' given, the engine data is saved in the file of the [StreamFind::Metadata] field. If no file
+    #' is specified in the `Metadata` the engine data is saved as **rds** format with the engine
+    #' class and date in the `Metadata` as file name.
     #'
     #' @param file A string with the full file path of the **sqlite** or **rds** file.
     #'
@@ -502,9 +505,9 @@ CoreEngine <- R6::R6Class(
     },
     
     # MARK: run
-    #' @description Runs a processing method defined by the `ProcessingStep` object.
+    #' @description Runs a processing method defined by the [StreamFind::ProcessingStep] object.
     #' 
-    #' @param step A `ProcessingStep` object.
+    #' @param step A [StreamFind::ProcessingStep] object.
     #'
     run = function(step = NULL) {
       if (is.null(step)) {
@@ -628,7 +631,7 @@ CoreEngine <- R6::R6Class(
     },
     
     # MARK: run_workflow
-    #' @description Runs all processing steps in Workflow.
+    #' @description Runs all [StreamFind::ProcessingStep] objects in the [StreamFind::Workflow].
     run_workflow = function() {
       if (length(self$Workflow) > 0) {
         steps <- self$Workflow@processing_steps
@@ -642,7 +645,7 @@ CoreEngine <- R6::R6Class(
     },
     
     # MARK: run_app
-    #' @description Runs the StreamFind Shiny app to explore and manage the engine data.
+    #' @description Runs the StreamFind Shiny app to explore, process and manage the engine data.
     #'
     #' @note The engine data is saved in an **rds** file and loaded in the app. If save file is
     #' defined in the engine it is used, otherwise the save file name is automatically set to the

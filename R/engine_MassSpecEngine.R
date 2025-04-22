@@ -1,6 +1,6 @@
 # MARK: MassSpecEngine
 # MassSpecEngine -----
-#' MassSpecEngine R6 class and methods
+#' Mass Spectrometry Engine
 #' 
 #' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
 #' storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including

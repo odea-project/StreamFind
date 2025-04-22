@@ -2,7 +2,7 @@
 % Please edit documentation in R/engine_RamanEngine.R
 \name{RamanEngine}
 \alias{RamanEngine}
-\title{\strong{RamanEngine} R6 class and methods}
+\title{Raman Spectroscopy Engine}
 \description{
 The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecting and
 storing Raman spectroscopic data. Raman data can be loaded from "asc", "sif", "json", "wdf",

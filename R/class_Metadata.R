@@ -1,18 +1,13 @@
 # MARK: Metadata
 # Metadata -----
-#' @title Metadata Class
+#' @title Generic Metadata
 #'
-#' @description The Metadata S7 class holds information, such as name, date, author and file, as a
-#' named list with elements of length one.
+#' @description The `Metadata` S7 class holds information, such as name, date, author and file, as a named list with elements of length one.
 #'
-#' @param entries Named list with metadata entries. Note that all given elements must be named and 
-#' of length one. If an element "name" is given, it must be type character. If an element "date"
-#' is given, it must be class `POSIXct` or `POSIXt`. If given "date" is character, conversion to
-#' class `POSIXct` or `POSIXt` is attempted.
+#' @template arg-Metadata-entries
+#' @template slot-Metadata-entries
 #' 
-#' @slot entries `List` object with metadata entries as elements of length one.
-#' 
-#' @return A Metadata S7 class object.
+#' @return A `Metadata` S7 class object.
 #'
 #' @export
 #' 
@@ -50,14 +45,14 @@ Metadata <- S7::new_class(
     }
 
     if ("date" %in% names(entries)) {
-      entries$date <- as.POSIXct(entries$date)
-      attr(entries$date, "tzone") <- NULL
+      entries[["date"]] <- as.POSIXct(entries[["date"]])
+      attr(entries[["date"]], "tzone") <- NULL
     }
     
-    if (!"name" %in% names(entries)) entries$name <- NA_character_
-    if (!"author" %in% names(entries)) entries$author <- NA_character_
-    if (!"date" %in% names(entries)) entries$date <- Sys.time()
-    if (!"file" %in% names(entries)) entries$file <- NA_character_
+    if (!"name" %in% names(entries)) entries[["name"]] <- NA_character_
+    if (!"author" %in% names(entries)) entries[["author"]] <- NA_character_
+    if (!"date" %in% names(entries)) entries[["date"]] <- Sys.time()
+    if (!"file" %in% names(entries)) entries[["file"]] <- NA_character_
     
     S7::new_object(S7::S7_object(), entries = entries)
   },
@@ -88,28 +83,28 @@ Metadata <- S7::new_class(
       }
       
       if ("name" %in% names(self@entries)) {
-        if (!is.character(self@entries$name)) {
+        if (!is.character(self@entries[["name"]])) {
           warning("Metadata entry name must be character length 1!")
           valid <- FALSE
         }
       }
       
       if ("author" %in% names(self@entries)) {
-        if (!is.character(self@entries$author)) {
+        if (!is.character(self@entries[["author"]])) {
           warning("Metadata entry author must be character length 1!")
           valid <- FALSE
         }
       }
       
       if ("date" %in% names(self@entries)) {
-        if (!all(grepl("POSIXct|POSIXt", class(self@entries$date)))) {
+        if (!all(grepl("POSIXct|POSIXt", class(self@entries[["date"]])))) {
           warning("Metadata entry date class must be POSIXct or POSIXt length 1!")
           valid <- FALSE
         }
       }
       
       if ("file" %in% names(self@entries)) {
-        if (!is.character(self@entries$file)) {
+        if (!is.character(self@entries[["file"]])) {
           warning("Metadata entry file must be character length 1!")
           valid <- FALSE
         }
@@ -235,16 +230,17 @@ S7::method(show, Metadata) <- function(x) {
 
 # MARK: EngineMetadata S7 class
 # EngineMetadata -----
-#' @title EngineMetadata Class
+#' @title Engine Metadata
 #' 
-#' @description The EngineMetadata class is a subclass of the Metadata class. It is used to store
-#' metadata of data processing engines.
+#' @description The `EngineMetadata` class is a subclass of the [StreamFind::Metadata] class. It is used to store metadata of data processing engines.
 #' 
-#' @param entries A named list with metadata entries. Note that all given elements must be named and
-#' of length one. If an element "name" is given, it must be type character. If an element "date"
-#' is given, it must be class `POSIXct` or `POSIXt`. If given "date" is character, conversion to
-#' class `POSIXct` or `POSIXt` is attempted.
+#' @template arg-Metadata-entries
 #' @param engine A character string with the name of the engine. Default is "CoreEngine".
+#' 
+#' @template slot-Metadata-entries
+#' @slot engine A character string with the name of the engine.
+#' 
+#' @seealso [StreamFind::Metadata]
 #' 
 #' @export
 #' 
@@ -267,8 +263,8 @@ EngineMetadata <-  S7::new_class(
   validator = function(self) {
     checkmate::assert_character(self@engine)
     if ("file" %in% names(self@entries)) {
-      if (!is.na(self@entries$file)) {
-        checkmate::assert_true(tools::file_ext(self@entries$file) %in% c("sqlite", "rds"))
+      if (!is.na(self@entries[["file"]])) {
+        checkmate::assert_true(tools::file_ext(self@entries[["file"]]) %in% c("sqlite", "rds"))
       }
     }
     NULL

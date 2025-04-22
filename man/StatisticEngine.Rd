@@ -2,7 +2,7 @@
 % Please edit documentation in R/engine_StatisticEngine.R
 \name{StatisticEngine}
 \alias{StatisticEngine}
-\title{\strong{StatisticEngine} R6 class and methods}
+\title{Statistical Analysis Engine}
 \description{
 The \emph{StatisticEngine} R6 class is a framework for performing statistical analysis on data.
 Data can be added as a character vector with a path to a \code{csv} file with variable names as first

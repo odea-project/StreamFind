@@ -1,4 +1,4 @@
-#' **MassSpecMethod_SuspectScreening_StreamFind**
+#' MassSpecMethod_SuspectScreening_StreamFind S7 class
 #'
 #' @description Settings for performing suspect screening using a data.frame with target compounds.
 #'
@@ -178,7 +178,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
   }
 }
 
-#' **MassSpecMethod_SuspectScreening_forident**
+#' MassSpecMethod_SuspectScreening_forident S7 class
 #'
 #' @description Settings for performing suspect screening using the
 #' \href{https://water.for-ident.org/}{FOR-IDENT} platform.
@@ -412,7 +412,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_forident) <- function(x, engine 
   TRUE
 }
 
-#' **MassSpecMethod_SuspectScreening_patRoon**
+#' MassSpecMethod_SuspectScreening_patRoon S7 class
 #'
 #' @description Settings for performing suspect screening using the function
 #' \link[patRoon]{screenSuspects} from the patRoon R package.

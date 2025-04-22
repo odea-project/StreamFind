@@ -1,4 +1,4 @@
-#' **MassSpecMethod_GenerateFormulas_genform**
+#' MassSpecMethod_GenerateFormulas_genform S7 class
 #'
 #' @description Settings for generating formulas using the algorithm \href{https://sourceforge.net/projects/genform/}{GenForm}.
 #' The algorithm is used via the function \link[patRoon]{generateFormulas} from the package \pkg{patRoon}. Therefore,

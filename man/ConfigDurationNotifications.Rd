@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigDurationNotifications}
 \alias{ConfigDurationNotifications}
-\title{ConfigDurationNotifications Class}
+\title{Configuration Parameter for Duration of Notifications}
 \usage{
 ConfigDurationNotifications(value = 10)
 }

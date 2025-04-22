@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Analyses.R
 \name{Analyses}
 \alias{Analyses}
-\title{Analyses Class}
+\title{Generic Analyses}
 \usage{
 Analyses(analyses = list(), results = list())
 }

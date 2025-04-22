@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_openms}
 \alias{MassSpecMethod_FindFeatures_openms}
-\title{\strong{MassSpecMethod_FindFeatures_openms}}
+\title{MassSpecMethod_FindFeatures_openms S7 class}
 \usage{
 MassSpecMethod_FindFeatures_openms(
   noiseThrInt = 1000,

@@ -1,4 +1,4 @@
-#' **MassSpecMethod_ClusterSpectra_StreamFind**
+#' MassSpecMethod_ClusterSpectra_StreamFind S7 class
 #'
 #' @description Clusters spectra based on a variable (i.e. column name).
 #' 

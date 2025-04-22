@@ -1,4 +1,4 @@
-#' **MassSpecMethod_QuantifyChromatographicPeaks_native**
+#' MassSpecMethod_QuantifyChromatographicPeaks_native S7 class
 #'
 #' @description Quantifies chromatographic peaks based on a calibration model.
 #' 

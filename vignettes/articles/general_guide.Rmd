@@ -28,6 +28,7 @@ library(StreamFind)
 knitr::opts_chunk$set(
   echo = TRUE,
   fig.align = "center",
+  fig.width = 8.5,
   results = "markup",
   comment = "",
   message = FALSE,
@@ -45,17 +46,18 @@ cols <- c("name", "formula", "mass", "rt", "tag")
 db <- db[, cols, with = FALSE]
 ```
 
-```{=html}
-<style>
-pre {
-  overflow-x: auto;
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-</style>
-```
+<!-- ```{=html} -->
+<!-- <style> -->
+<!-- pre { -->
+<!--   overflow-x: auto; -->
+<!--   white-space: pre; -->
+<!-- } -->
+<!-- pre code { -->
+<!--   word-wrap: normal; -->
+<!--   white-space: pre; -->
+<!-- } -->
+<!-- </style> -->
+<!-- ``` -->
 
 <br>
 
@@ -68,10 +70,10 @@ pre code {
 The StreamFind R package is a data agnostic data processing workflow designer. Besides data processing, the package can also be used for data management, visualization and reporting. This guide focuses on describing the general framework of StreamFind. StreamFind is centered around [R6](https://r6.r-lib.org/index.html) classes, serving as data processing engines (used as metaphor) for different types of data (e.g. mass spectrometry (MS) and Raman spectroscopy (RS) data).  
 
 ```{r concept-image, fig.cap="StreamFind Concept", out.width="100%", echo=FALSE, fig.align='center', fig.alt="Concept"}
-knitr::include_graphics("StreamFind_Concept.png")
+knitr::include_graphics("Concept.png")
 ```
 
-Internally, the engines (R6 classes) use six central [S7](https://github.com/RConsortium/S7) classes:
+Internally, the engines (R6 classes) use seven central [S7](https://github.com/RConsortium/S7) classes:
  
  - [`Metadata`](https://odea-project.github.io/StreamFind/reference/Metadata.html)
  - [`Workflow`](https://odea-project.github.io/StreamFind/reference/Workflow.html)
@@ -79,8 +81,9 @@ Internally, the engines (R6 classes) use six central [S7](https://github.com/RCo
  - [`Analyses`](https://odea-project.github.io/StreamFind/reference/Analyses.html)
  - [`Results`](https://odea-project.github.io/StreamFind/reference/Results.html)
  - [`AuditTrail`](https://odea-project.github.io/StreamFind/reference/AuditTrail.html)
+ - [`Config`](https://odea-project.github.io/StreamFind/reference/Config.html)
 
-The `Metadata` class flexibly holds project information, such as name, author, date and file.  The `Workflow` class is an ordered list of `ProcessingStep` objects, which are used to harmonize the diversity of processing methods and algorithms available for a given data type. The `ProcessingStep` class is a representation of a processing method/step that transforms the data according to a specific algorithm. The `Analyses` class holds the data to be processed and the `Results` class holds the results of the data processing. The `AuditTrail` class records any modification to the project.
+The `Metadata` class flexibly holds project information, such as name, author, date and file.  The `Workflow` class is an ordered list of `ProcessingStep` objects, which are used to harmonize the diversity of processing methods and algorithms available for a given data type. The `ProcessingStep` class is a representation of a processing method/step that transforms the data according to a specific algorithm. The `Analyses` class holds the data to be processed and the `Results` class holds the results of the data processing. The `AuditTrail` class records any modification to the project. The `Config` class holds configuration parameters for the engines, app, etc.
 
 # `CoreEngine`
 

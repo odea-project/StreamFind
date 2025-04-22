@@ -2,16 +2,15 @@
 % Please edit documentation in R/class_Workflow.R
 \name{Workflow}
 \alias{Workflow}
-\title{Workflow Class}
+\title{Workflow Manager}
 \usage{
 Workflow(processing_steps = list())
 }
 \arguments{
-\item{processing_steps}{A list of \code{\link{ProcessingStep}} objects.}
+\item{processing_steps}{A list of \link{ProcessingStep} objects.}
 }
 \description{
-The Workflow class is used to manage an ordered list of \code{\link{ProcessingStep}}
-objects of a specific type of data.
+The Workflow class is used to manage an ordered list of \link{ProcessingStep} objects of a specific type of data.
 }
 \section{Slots}{
 

@@ -1,6 +1,6 @@
 # MARK: StatisticEngine
 # StatisticEngine -----
-#' **StatisticEngine** R6 class and methods
+#' Statistical Analysis Engine
 #'
 #' @description
 #' The *StatisticEngine* R6 class is a framework for performing statistical analysis on data.

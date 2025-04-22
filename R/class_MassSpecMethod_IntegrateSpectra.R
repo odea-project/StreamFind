@@ -1,4 +1,4 @@
-#' **MassSpecMethod_IntegrateSpectra_StreamFind**
+#' MassSpecMethod_IntegrateSpectra_StreamFind S7 class
 #'
 #' @description Integrates Spectra using the function `findpeaks` from the package \pkg{pracma}
 #' with natively added peak exclusion and evaluation steps.

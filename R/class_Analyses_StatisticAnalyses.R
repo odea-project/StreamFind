@@ -1,6 +1,6 @@
 # MARK: StatisticAnalyses
 # StatisticAnalyses -----
-#' @title StatisticAnalyses Class
+#' @title Statistical Analyses (Tabular Data Input)
 #' 
 #' @description The StatisticAnalyses class is used for statistical analysis of tabular data.
 #' 

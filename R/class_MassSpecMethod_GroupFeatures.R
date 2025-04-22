@@ -221,7 +221,7 @@
 #   NULL
 # }
 
-#' **MassSpecMethod_GroupFeatures_xcms3_peakdensity**
+#' MassSpecMethod_GroupFeatures_xcms3_peakdensity S7 class
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks) across mzML/mzXML files using the package
 #' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
@@ -324,7 +324,7 @@ S7::method(run, MassSpecMethod_GroupFeatures_xcms3_peakdensity) <- function(x, e
   .run_group_features_patRoon(settings, engine)
 }
 
-#' **MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups**
+#' MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups S7 class
 #'
 #' @description Settings for aligning and grouping features (i.e., chromatographic peaks) across mzML/mzXML files using
 #' the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
@@ -521,7 +521,7 @@ S7::method(run, MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups) <- fu
   .run_group_features_patRoon(settings, engine)
 }
 
-#' **MassSpecMethod_GroupFeatures_openms**
+#' MassSpecMethod_GroupFeatures_openms S7 class
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks) in mzML/mzXML files using the
 #' \href{https://www.openms.org/}{OpenMS}(\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software

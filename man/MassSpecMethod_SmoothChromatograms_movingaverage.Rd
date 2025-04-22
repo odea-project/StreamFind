@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothChromatograms.R
 \name{MassSpecMethod_SmoothChromatograms_movingaverage}
 \alias{MassSpecMethod_SmoothChromatograms_movingaverage}
-\title{\strong{MassSpecMethod_SmoothChromatograms_movingaverage}}
+\title{MassSpecMethod_SmoothChromatograms_movingaverage S7 class}
 \usage{
 MassSpecMethod_SmoothChromatograms_movingaverage(windowSize = 5)
 }

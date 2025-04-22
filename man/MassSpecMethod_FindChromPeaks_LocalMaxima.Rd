@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindChromPeaks.R
 \name{MassSpecMethod_FindChromPeaks_LocalMaxima}
 \alias{MassSpecMethod_FindChromPeaks_LocalMaxima}
-\title{\strong{MassSpecMethod_FindChromPeaks_LocalMaxima}}
+\title{MassSpecMethod_FindChromPeaks_LocalMaxima S7 class}
 \usage{
 MassSpecMethod_FindChromPeaks_LocalMaxima(
   minWidth = 0,

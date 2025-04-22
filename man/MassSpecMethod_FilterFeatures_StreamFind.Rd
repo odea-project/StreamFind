@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FilterFeatures.R
 \name{MassSpecMethod_FilterFeatures_StreamFind}
 \alias{MassSpecMethod_FilterFeatures_StreamFind}
-\title{\strong{MassSpecMethod_FilterFeatures_StreamFind}}
+\title{MassSpecMethod_FilterFeatures_StreamFind S7 class}
 \usage{
 MassSpecMethod_FilterFeatures_StreamFind(
   correctIntensity = TRUE,

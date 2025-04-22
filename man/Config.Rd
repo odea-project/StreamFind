@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Config.R
 \name{Config}
 \alias{Config}
-\title{Config Class}
+\title{Generic Configuration}
 \usage{
 Config(parameters = list())
 }

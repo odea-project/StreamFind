@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FindChromPeaks_LocalMaxima**
+#' MassSpecMethod_FindChromPeaks_LocalMaxima S7 class
 #'
 #' @description Finds peak maxima in chromatograms.
 #' 
@@ -187,7 +187,7 @@ S7::method(run, MassSpecMethod_FindChromPeaks_LocalMaxima) <- function(x, engine
   TRUE
 }
 
-#' **MassSpecMethod_FindChromPeaks_pracma**
+#' MassSpecMethod_FindChromPeaks_pracma S7 class
 #'
 #' @description Integrates chromatograms using the function `findpeaks` from the package
 #' \pkg{pracma} with natively added peak exclusion and evaluation steps.

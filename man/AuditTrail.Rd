@@ -2,13 +2,13 @@
 % Please edit documentation in R/class_AuditTrail.R
 \name{AuditTrail}
 \alias{AuditTrail}
-\title{AuditTrail Class}
+\title{Audit Trail Register}
 \usage{
 AuditTrail()
 }
 \description{
-The AuditTrail class is used to store a list of entries, where each entry is an
-instance of the \link{AuditTrailEntry} class.
+The \link{AuditTrail} class is used to store a list of entries, where each
+entry is an instance of the \link{AuditTrailEntry} class.
 }
 \section{Slots}{
 

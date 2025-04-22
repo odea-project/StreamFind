@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Results.R
 \name{Results}
 \alias{Results}
-\title{Results Class}
+\title{Generic Results}
 \usage{
 Results(
   name = NA_character_,

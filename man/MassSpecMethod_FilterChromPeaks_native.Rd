@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FilterChromPeaks.R
 \name{MassSpecMethod_FilterChromPeaks_native}
 \alias{MassSpecMethod_FilterChromPeaks_native}
-\title{\strong{MassSpecMethod_FilterChromPeaks_native}}
+\title{MassSpecMethod_FilterChromPeaks_native S7 class}
 \usage{
 MassSpecMethod_FilterChromPeaks_native(
   minIntensity = 0,

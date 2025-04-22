@@ -1,12 +1,12 @@
 pandoc: '3.2'
-pkgdown: 2.1.1
-pkgdown_sha: ~
+pkgdown: 2.1.1.9000
+pkgdown_sha: 62d5c5a0fc12899aae97f6ce14018d2784bf308b
 articles:
   articles/app_guide: app_guide.html
   articles/developer_guide: developer_guide.html
   articles/general_guide: general_guide.html
   StreamFind: StreamFind.html
-last_built: 2025-04-21T10:07Z
+last_built: 2025-04-22T14:21Z
 urls:
   reference: https://odea-project.github.io/StreamFind/reference
   article: https://odea-project.github.io/StreamFind/articles

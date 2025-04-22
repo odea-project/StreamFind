@@ -1,46 +1,46 @@
 # MARK: MassSpecAnalyses
 # MassSpecAnalyses -----
-#' @title MassSpecAnalyses Class
+#' @title Mass Spectrometry Analyses
 #' 
-#' @description The MassSpecAnalyses class represents mass spectrometry (MS) raw data files and holds results from processing MS data. It is a subclass of the \code{\link{Analyses}} class and provides methods to manage and inspect MS data. The MassSpecAnalyses class is built from a character vector of file paths to MS raw data files. The possible file formats are "mzML" and "mzXML". If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.
+#' @description The `MassSpecAnalyses` class represents mass spectrometry (MS) raw data files and holds results from processing MS data. It is a subclass of the [StreamFind::Analyses] class and provides methods to manage and inspect MS data. The `MassSpecAnalyses` class is built from a character vector of file paths to MS raw data files. The possible file formats are *mzML* and *mzXML*. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to *mzML*. Note that conversion of vendor formats is only possible under Windows OS.
 #' 
 #' @param files A character vector with the file paths of MS raw data files.
 #' @param centroid Logical (length 1). Set to `TRUE` to centroid data when converting from vendor formats to mzML.
 #' @param levels Numeric vector with the MS levels to consider when centroiding data. Default is `c(1, 2)`.
 #' 
-#' @slot analyses A list of objects representing individual mass spectrometry raw data files.
-#' @slot replicates (function) A character vector representing the names of the replicate name for each analysis.
-#' @slot blanks (function) A character vector representing the names of the blank name for each analysis.
-#' @slot concentrations (function) A numeric vector representing the concentration for each analysis.
-#' @slot types (function) A character vector representing the type of each analysis.
-#' @slot files (function) A character vector with the file path of each analysis.
-#' @slot formats (function) A character vector with the file format of each analysis.
-#' @slot instruments (function) A list with the instrument information for each analysis.
-#' @slot software (function) A list with the software information for each analysis.
-#' @slot spectra_number (function) A numeric vector with the number of spectra for each analysis.
-#' @slot spectra_headers (function) A list with the headers of the spectra for each analysis.
-#' @slot spectra_mode (function) A character vector with the mode of the spectra for each analysis.
-#' @slot spectra_level (function) A character vector with the level of the spectra for each analysis.
-#' @slot spectra_lowest_mz (function) A numeric vector with the lowest m/z value for each analysis.
-#' @slot spectra_highest_mz (function) A numeric vector with the highest m/z value for each analysis.
-#' @slot spectra_lowest_rt (function) A numeric vector with the lowest retention time for each analysis.
-#' @slot spectra_highest_rt (function) A numeric vector with the highest retention time for each analysis.
-#' @slot spectra_lowest_mobility (function) A numeric vector with the lowest mobility for each analysis.
-#' @slot spectra_highest_mobility (function) A numeric vector with the highest mobility for each analysis.
-#' @slot spectra_polarity (function) A character vector with the polarity of the spectra for each analysis.
-#' @slot spectra_tic (function) A list with the total ion current (TIC) for each analysis.
-#' @slot spectra_bpc (function) A list with the base peak chromatogram (BPC) for each analysis.
-#' @slot chromatograms_number (function) A numeric vector with the number of chromatograms for each analysis.
-#' @slot chromatograms_headers (function) A list with the headers of the chromatograms for each analysis.
-#' @slot chromatograms_raw (function) A list with the raw chromatograms for each analysis.
-#' @slot info (function) A data frame with the information of each analysis.
-#' @slot has_ion_mobility (function) A logical vector indicating if the analyses have ion mobility data.
-#' @slot has_results_nts (function) A logical vector indicating if the analyses have NTS results.
-#' @slot has_results_spectra (function) A logical vector indicating if the analyses have spectra results.
-#' @slot has_results_chromatograms (function) A logical vector indicating if the analyses have chromatograms results.
-#' @slot NTS (function) A list with the NTS results for each analysis.
-#' @slot Spectra (function) A list with the spectra results for each analysis.
-#' @slot Chromatograms (function) A list with the chromatograms results for each analysis.
+#' @slot analyses (getter/setter) A list of objects representing individual mass spectrometry raw data files.
+#' @slot replicates (getter/setter) A character vector representing the names of the replicate name for each analysis.
+#' @slot blanks (getter/setter) A character vector representing the names of the blank name for each analysis.
+#' @slot concentrations (getter/setter) A numeric vector representing the concentration for each analysis.
+#' @slot types (getter) A character vector representing the type of each analysis.
+#' @slot files (getter) A character vector with the file path of each analysis.
+#' @slot formats (getter) A character vector with the file format of each analysis.
+#' @slot instruments (getter) A list with the instrument information for each analysis.
+#' @slot software (getter) A list with the software information for each analysis.
+#' @slot spectra_number (getter) A numeric vector with the number of spectra for each analysis.
+#' @slot spectra_headers (getter) A list with the headers of the spectra for each analysis.
+#' @slot spectra_mode (getter) A character vector with the mode of the spectra for each analysis.
+#' @slot spectra_level (getter) A character vector with the level of the spectra for each analysis.
+#' @slot spectra_lowest_mz (getter) A numeric vector with the lowest m/z value for each analysis.
+#' @slot spectra_highest_mz (getter) A numeric vector with the highest m/z value for each analysis.
+#' @slot spectra_lowest_rt (getter) A numeric vector with the lowest retention time for each analysis.
+#' @slot spectra_highest_rt (getter) A numeric vector with the highest retention time for each analysis.
+#' @slot spectra_lowest_mobility (getter) A numeric vector with the lowest mobility for each analysis.
+#' @slot spectra_highest_mobility (getter) A numeric vector with the highest mobility for each analysis.
+#' @slot spectra_polarity (getter) A character vector with the polarity of the spectra for each analysis.
+#' @slot spectra_tic (getter) A list with the total ion current (TIC) for each analysis.
+#' @slot spectra_bpc (getter) A list with the base peak chromatogram (BPC) for each analysis.
+#' @slot chromatograms_number (getter) A numeric vector with the number of chromatograms for each analysis.
+#' @slot chromatograms_headers (getter) A list with the headers of the chromatograms for each analysis.
+#' @slot chromatograms_raw (getter) A list with the raw chromatograms for each analysis.
+#' @slot info (getter) A data frame with the information of each analysis.
+#' @slot has_ion_mobility (getter) A logical vector indicating if the analyses have ion mobility data.
+#' @slot has_results_nts (getter) A logical vector indicating if the analyses have NTS results.
+#' @slot has_results_spectra (getter) A logical vector indicating if the analyses have spectra results.
+#' @slot has_results_chromatograms (getter) A logical vector indicating if the analyses have chromatograms results.
+#' @slot NTS (getter/setter) A list with the NTS results for each analysis.
+#' @slot Spectra (getter/setter) A list with the spectra results for each analysis.
+#' @slot Chromatograms (getter/setter) A list with the chromatograms results for each analysis.
 #' 
 #' @references
 #' \insertRef{pugixml01}{StreamFind}
@@ -67,23 +67,12 @@ MassSpecAnalyses <- S7::new_class(
       S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$replicate, NA_character_),
       setter = function(self, value) {
-        if (length(value) != length(self)) {
-          warning("Length of replicates not conform!")
-          return(self)
-        }
-        if (!is.character(value)) {
-          warning("Replicates must be character!")
-          return(self)
-        }
-        for (i in seq_len(length(self))) {
-          self@analyses[[i]]$replicate <- value[i]
-        }
-        if (self$has_results_nts) {
-          if (self@results$NTS$has_features) {
-            self@results$NTS$features@analysisInfo$group <- value
-            if (self@results$NTS$has_groups) {
-              self@results$NTS$features@features@analysisInfo$group <- value
-            }
+        if (length(value) == length(self)) {
+          for (i in seq_len(length(self))) {
+            self@analyses[[i]]$replicate <- value[i]
+          }
+          if (self@has_results_nts) {
+            self@NTS@replicates <- value
           }
         }
         self
@@ -96,24 +85,13 @@ MassSpecAnalyses <- S7::new_class(
       S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$blank, NA_character_),
       setter = function(self, value) {
-        if (length(value) != length(self)) {
-          warning("Length of blanks not conform!")
-          return(self)
-        }
-        if (!is.character(value)) {
-          warning("Blanks must be character!")
-          return(self)
-        }
-        if (!all(value %in% self@replicates)) {
-          warning("Blank names must be in replicate names!")
-          return(self)
-        }
-        for (i in seq_len(length(self))) self@analyses[[i]]$blank <- value[i]
-        if (self$has_results_nts) {
-          if (self@results$NTS$has_features) {
-            self@results$NTS$features@analysisInfo$blank <- value
-            if (self@results$NTS$has_groups) {
-              self@results$NTS$features@features@analysisInfo$blank <- value
+        if (length(value) == length(self)) {
+          if (all(value %in% self@replicates)) {
+            for (i in seq_len(length(self))) {
+              self@analyses[[i]]$blank <- value[i]
+            }
+            if (self$has_results_nts) {
+              self@NTS@blanks <- value
             }
           }
         }
@@ -127,21 +105,12 @@ MassSpecAnalyses <- S7::new_class(
       S7::class_numeric,
       getter = function(self) vapply(self@analyses, function(x) x$concentration, 0),
       setter = function(self, value) {
-        if (length(value) != length(self)) {
-          warning("Length of concentrations not conform!")
-          return(self)
-        }
-        if (!is.numeric(value)) {
-          warning("Concentrations must be numeric!")
-          return(self)
-        }
-        for (i in seq_len(length(self))) self@analyses[[i]]$concentration <- value[i]
-        if (self$has_results_nts) {
-          if (self@results$NTS$has_features) {
-            self@results$NTS$features@analysisInfo$concentration <- value
-            if (self@results$NTS$has_groups) {
-              self@results$NTS$features@features@analysisInfo$concentration <- value
-            }
+        if (length(value) == length(self)) {
+          for (i in seq_len(length(self))) {
+            self@analyses[[i]]$concentration <- value[i]
+          }
+          if (self$has_results_nts) {
+            self@NTS@concentrations <- value
           }
         }
         self
@@ -427,7 +396,7 @@ MassSpecAnalyses <- S7::new_class(
           row.names(df) <- seq_len(nrow(df))
           df
         } else {
-          data.frame()
+          data.table::data.table()
         }
       }
     ),
@@ -503,10 +472,7 @@ MassSpecAnalyses <- S7::new_class(
     NTS = S7::new_property(
       S7::class_list,
       getter = function(self) {
-        if (self$has_results_nts) {
-          return(self@results[["NTS"]])
-        }
-        NULL
+        self@results[["NTS"]]
       },
       setter = function(self, value) {
         if (is(value, "StreamFind::NTS")) {
@@ -534,10 +500,7 @@ MassSpecAnalyses <- S7::new_class(
     Spectra = S7::new_property(
       S7::class_list,
       getter = function(self) {
-        if (self$has_results_spectra) {
-          return(self@results[["MassSpecSpectra"]])
-        }
-        NULL
+        self@results[["MassSpecSpectra"]]
       },
       setter = function(self, value) {
         if (is(value, "StreamFind::MassSpecSpectra")) {
@@ -572,10 +535,7 @@ MassSpecAnalyses <- S7::new_class(
     Chromatograms = S7::new_property(
       S7::class_list,
       getter = function(self) {
-        if (self$has_results_chromatograms) {
-          return(self@results[["Chromatograms"]])
-        }
-        NULL
+        self@results[["Chromatograms"]]
       },
       setter = function(self, value) {
         if (is(value, "StreamFind::Chromatograms")) {
@@ -661,7 +621,7 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
   analyses <- c(x@analyses, value)
   analyses <- analyses[order(names(analyses))]
   if (length(analyses) > length(x@analyses)) {
-    if (length(x$results) > 0) {
+    if (length(x@results) > 0) {
       warning("All results removed!")
       x@results <- list()
     }
@@ -675,20 +635,20 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
 #' @noRd
 S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    x$analyses <- x$analyses[!names(x) %in% value]
+    x@analyses <- x@analyses[!names(x) %in% value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_results_nts) x@results$NTS <- x@results$NTS[!names(x) %in% value]
-    if (x@has_results_spectra) x$results$Spectra <- x$results$Spectra[!names(x) %in% value]
+    if (x@has_results_nts) x@NTS <- x@NTS[!names(x) %in% value]
+    if (x@has_results_spectra) x@Spectra <- x@Spectra[!names(x) %in% value]
     if (x@has_results_chromatograms) {
-      x$results$Chromatograms <- x$results$Chromatograms[!names(x) %in% value]
+      x@Chromatograms <- x@Chromatograms[!names(x) %in% value]
     }
   } else if (is.numeric(value)) {
     x@analyses <- x@analyses[-value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_results_nts) x@results$NTS <- x@results$NTS[-value]
-    if (x@has_results_spectra) x$results$Spectra <- x$results$Spectra[-value]
+    if (x@has_results_nts) x@NTS <- x@NTS[-value]
+    if (x@has_results_spectra) x@Spectra <- x@Spectra[-value]
     if (x@has_results_chromatograms) {
-      x$results$Chromatograms <- x$results$Chromatograms[-value]
+      x@Chromatograms <- x@Chromatograms[-value]
     }
   }
   x
@@ -699,9 +659,9 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 #' @noRd
 `[.StreamFind::MassSpecAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_results_nts) x@results$NTS <- x@results$NTS[i]
-  if (x@has_results_spectra) x@results$Spectra <- x@results$Spectra[i]
-  if (x@has_results_chromatograms) x@results$Chromatograms <- x@results$Chromatograms[i]
+  if (x@has_results_nts) x@NTS <- x@NTS[i]
+  if (x@has_results_spectra) x@Spectra <- x@Spectra[i]
+  if (x@has_results_chromatograms) x@Chromatograms <- x@Chromatograms[i]
   x
 }
 
@@ -718,9 +678,9 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 #' @noRd
 `[[.StreamFind::MassSpecAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_results_nts) x@results$NTS <- x@results$NTS[i]
-  if (x@has_results_spectra) x@results$Spectra <- x@results$Spectra[i]
-  if (x@has_results_chromatograms) x@results$Chromatograms <- x@results$Chromatograms[i]
+  if (x@has_results_nts) x@NTS <- x@NTS[i]
+  if (x@has_results_spectra) x@Spectra <- x@Spectra[i]
+  if (x@has_results_chromatograms) x@Chromatograms <- x@Chromatograms[i]
   x
 }
 
@@ -771,7 +731,7 @@ S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x,
                                                           levels = c(1, 2),
                                                           rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
-  value <- x$spectra_tic[analyses]
+  value <- x@spectra_tic[analyses]
   value <- data.table::rbindlist(value, idcol = "analysis", fill = TRUE)
   value <- value[value$level %in% levels, ]
   if (!is.null(rt)) {
@@ -781,7 +741,7 @@ S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x,
       value <- value[sel, ]
     }
   }
-  value$replicate <- x$replicates[value$analysis]
+  value$replicate <- x@replicates[value$analysis]
   data.table::setcolorder(value, c("analysis", "replicate"))
   value
 }
@@ -795,7 +755,7 @@ S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x,
                                                           levels = c(1, 2),
                                                           rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
-  value <- x$spectra_bpc[analyses]
+  value <- x@spectra_bpc[analyses]
   value <- data.table::rbindlist(value, idcol = "analysis", fill = TRUE)
   value <- value[value$level %in% levels, ]
   if (!is.null(rt)) {
@@ -805,7 +765,7 @@ S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x,
       value <- value[sel, ]
     }
   }
-  value$replicate <- x$replicates[value$analysis]
+  value$replicate <- x@replicates[value$analysis]
   data.table::setcolorder(value, c("analysis", "replicate"))
   value
 }
@@ -850,7 +810,7 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
     }
   }
 
-  polarities <- x$spectra_polarity[analyses]
+  polarities <- x@spectra_polarity[analyses]
 
   targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
 
@@ -872,44 +832,44 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
       targets$mz[is.na(targets$mz)] <- 0
     }
     if (TRUE %in% is.na(targets$mzmax)) {
-      targets$mzmax[is.na(targets$mzmax)] <- max(x$spectra_highest_mz[analyses])
+      targets$mzmax[is.na(targets$mzmax)] <- max(x@spectra_highest_mz[analyses])
     }
     if (TRUE %in% is.na(targets$mzmin)) {
-      targets$mzmin[is.na(targets$mzmin)] <- min(x$spectra_lowest_mz[analyses])
+      targets$mzmin[is.na(targets$mzmin)] <- min(x@spectra_lowest_mz[analyses])
     }
     if (TRUE %in% (targets$mzmax == 0)) {
-      targets$mzmax[targets$mzmax == 0] <- max(x$spectra_highest_mz[analyses])
+      targets$mzmax[targets$mzmax == 0] <- max(x@spectra_highest_mz[analyses])
     }
     if (TRUE %in% is.na(targets$rt)) {
       targets$rt[is.na(targets$rt)] <- 0
     }
     if (TRUE %in% is.na(targets$rtmax)) {
-      targets$rtmax[is.na(targets$rtmax)] <- max(x$spectra_highest_rt[analyses])
+      targets$rtmax[is.na(targets$rtmax)] <- max(x@spectra_highest_rt[analyses])
     }
     if (TRUE %in% is.na(targets$rtmin)) {
-      targets$rtmin[is.na(targets$rtmin)] <- min(x$spectra_lowest_rt[analyses])
+      targets$rtmin[is.na(targets$rtmin)] <- min(x@spectra_lowest_rt[analyses])
     }
     if (TRUE %in% (targets$rtmax == 0)) {
-      targets$rtmax[targets$rtmax == 0] <- max(x$spectra_highest_rt[analyses])
+      targets$rtmax[targets$rtmax == 0] <- max(x@spectra_highest_rt[analyses])
     }
     if (TRUE %in% is.na(targets$mobility)) {
       targets$mobility[is.na(targets$mobility)] <- 0
     }
-    if (TRUE %in% is.na(targets$mobilitymax) && any(x$has_ion_mobility[analyses])) {
+    if (TRUE %in% is.na(targets$mobilitymax) && any(x@has_ion_mobility[analyses])) {
       targets$mobilitymax[is.na(targets$mobilitymax)] <- max(
-        x$spectra_highest_mobility[analyses],
+        x@spectra_highest_mobility[analyses],
         na.rm = TRUE
       )
     }
-    if (TRUE %in% is.na(targets$mobilitymin) && any(x$has_ion_mobility[analyses])) {
+    if (TRUE %in% is.na(targets$mobilitymin) && any(x@has_ion_mobility[analyses])) {
       targets$mobilitymin[is.na(targets$mobilitymin)] <- min(
-        x$spectra_lowest_mobility[analyses],
+        x@spectra_lowest_mobility[analyses],
         na.rm = TRUE
       )
     }
-    if (TRUE %in% (targets$mobilitymax == 0) && any(x$has_ion_mobility[analyses])) {
+    if (TRUE %in% (targets$mobilitymax == 0) && any(x@has_ion_mobility[analyses])) {
       targets$mobilitymax[targets$mobilitymax == 0] <- max(
-        x$spectra_highest_mobility[analyses],
+        x@spectra_highest_mobility[analyses],
         na.rm = TRUE
       )
     }
@@ -918,7 +878,7 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
   }
 
   if (is.null(levels)) {
-    levels <- unique(x$spectra_level[analyses])
+    levels <- unique(x@spectra_level[analyses])
     levels <- as.numeric(unlist(strsplit(levels, ", ")))
   }
 
@@ -938,7 +898,7 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
     }
   }
 
-  spec_list <- lapply(x$analyses[analyses], function(a, levels, targets) {
+  spec_list <- lapply(x@analyses[analyses], function(a, levels, targets) {
     if ("analysis" %in% colnames(targets)) {
       targets <- targets[targets$analysis %in% a$name, ]
     }
@@ -1106,7 +1066,7 @@ S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
   }
 
   if (!"id" %in% colnames(ms1)) {
-    if (x$has_ion_mobility) {
+    if (x@has_ion_mobility) {
       ms1$id <- paste(
         round(min(ms1$mz), 4),
         "-",
@@ -1149,7 +1109,7 @@ S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
 
   ms1_df <- ms1_df[order(ms1_df$analysis), ]
 
-  ms1_df$replicate <- x$replicates[ms1_df$analysis]
+  ms1_df$replicate <- x@replicates[ms1_df$analysis]
 
   data.table::setcolorder(ms1_df, c("analysis", "replicate"))
 
@@ -1190,7 +1150,7 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
   }
 
   if (!"id" %in% colnames(ms2)) {
-    if (x$has_ion_mobility) {
+    if (x@has_ion_mobility) {
       ms2$id <- paste(
         round(min(ms2$mz), 4),
         "-",
@@ -1233,7 +1193,7 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
 
   ms2_df <- ms2_df[order(ms2_df$analysis), ]
 
-  ms2_df$replicate <- x$replicates[ms2_df$analysis]
+  ms2_df$replicate <- x@replicates[ms2_df$analysis]
 
   data.table::setcolorder(ms2_df, c("analysis", "replicate"))
 
@@ -2005,7 +1965,7 @@ S7::method(get_raw_chromatograms, MassSpecAnalyses) <- function(x,
     return(data.table::data.table())
   }
 
-  chroms_list <- lapply(x$analyses[analyses], function(z, chromatograms) {
+  chroms_list <- lapply(x@analyses[analyses], function(z, chromatograms) {
     if (nrow(z$chromatograms_headers) == 0) {
       return(data.frame())
     }
@@ -2099,7 +2059,7 @@ S7::method(load_spectra, MassSpecAnalyses) <- function(x,
   )
 
   if (!is.null(cache$data)) {
-    x$Spectra <- cache$data
+    x@Spectra <- cache$data
     message("\U2139 Spectra loaded from cache!")
     return(x)
   }
@@ -2126,14 +2086,14 @@ S7::method(load_spectra, MassSpecAnalyses) <- function(x,
 
     spec <- StreamFind::MassSpecSpectra(
       spec,
-      replicates = x$replicates,
+      replicates = x@replicates,
       is_averaged = FALSE
     )
     if (!is.null(cache$hash)) {
       .save_cache_sqlite("load_spectra", spec, cache$hash)
       message("\U1f5ab Spectra cached!")
     }
-    x$Spectra <- spec
+    x@Spectra <- spec
   } else {
     warning("Not done! Spectra not found.")
   }
@@ -2169,10 +2129,10 @@ S7::method(load_chromatograms, MassSpecAnalyses) <- function(x,
     chroms <- split(chroms, split_vector)
     chroms <- StreamFind::Chromatograms(
       chroms,
-      replicates = x$replicates[names(chroms)],
+      replicates = x@replicates[names(chroms)],
       is_averaged = FALSE
     )
-    x$Chromatograms <- chroms
+    x@Chromatograms <- chroms
   } else {
     warning("Not done! Chromatograms not found.")
   }
