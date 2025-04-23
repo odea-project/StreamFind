@@ -811,7 +811,7 @@ S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
   }
 
   polarities <- x@spectra_polarity[analyses]
-
+  
   targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
 
   targets <- targets@targets

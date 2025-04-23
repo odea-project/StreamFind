@@ -5,9 +5,9 @@
 \title{Generic Results}
 \usage{
 Results(
-  name = NA_character_,
-  software = NA_character_,
-  version = NA_character_
+  name = class_missing,
+  software = class_missing,
+  version = class_missing
 )
 }
 \arguments{

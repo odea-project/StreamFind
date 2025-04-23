@@ -3,7 +3,7 @@
 
 #' @noRd
 .get_available_engines <- function() {
-  StreamFind_env <- as.environment("package:StreamFind")
+  StreamFind_env <- asNamespace("StreamFind")
   available_engines <- ls(envir = StreamFind_env, pattern = "Engine")
   available_engines <- available_engines[
     sapply(available_engines, function(x) {
@@ -16,7 +16,7 @@
 
 #' @noRd
 .get_available_processing_methods <- function(data_type = NA_character_) {
-  StreamFind_env <- as.environment("package:StreamFind")
+  StreamFind_env <- asNamespace("StreamFind")
   if (grepl("Engine$", data_type)) data_type <- gsub("Engine", "", data_type)
   data_type_methods_key <- paste0(data_type, "Method_")
   return(ls(envir = StreamFind_env, pattern = paste0("^", data_type_methods_key)))
