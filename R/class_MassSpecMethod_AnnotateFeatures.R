@@ -1,4 +1,4 @@
-#' Mass Spectrometry Method for Annotating Features in NTS (StreamFind algorithm)
+#' Mass Spectrometry Method for Annotating Features in NonTargetAnalysisResults (StreamFind algorithm)
 #'
 #' @description Method for annotation of isotopic and adduct features. The method uses the
 #' `maxIsotopes` to define the maximum length of the isotopic chain. The list of candidate features
@@ -79,14 +79,14 @@ S7::method(run, MassSpecMethod_AnnotateFeatures_StreamFind) <- function(x, engin
   }
 
   if (!engine$Analyses@has_results_nts) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
 
   if (!nts@has_features) {
-    warning("NTS object is empty! Not done.")
+    warning("NonTargetAnalysisResults object is empty! Not done.")
     return(FALSE)
   }
 
@@ -105,7 +105,7 @@ S7::method(run, MassSpecMethod_AnnotateFeatures_StreamFind) <- function(x, engin
       )
 
       nts@feature_list <- feature_list
-      engine$NTS <- nts
+      engine$NonTargetAnalysisResults <- nts
       message(paste0("\U2713 ", "Features annotated!"))
       TRUE
     },

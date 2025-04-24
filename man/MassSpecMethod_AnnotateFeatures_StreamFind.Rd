@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_AnnotateFeatures.R
 \name{MassSpecMethod_AnnotateFeatures_StreamFind}
 \alias{MassSpecMethod_AnnotateFeatures_StreamFind}
-\title{Mass Spectrometry Method for Annotating Features in NTS (StreamFind algorithm)}
+\title{Mass Spectrometry Method for Annotating Features in NonTargetAnalysisResults (StreamFind algorithm)}
 \usage{
 MassSpecMethod_AnnotateFeatures_StreamFind(
   rtWindowAlignment = 0.3,

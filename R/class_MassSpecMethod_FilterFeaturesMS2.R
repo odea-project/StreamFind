@@ -82,30 +82,30 @@ S7::method(run, MassSpecMethod_FilterFeaturesMS2_native) <- function(x, engine =
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  if (!engine$NTS$has_features) {
+  if (!engine$NonTargetAnalysisResults$has_features) {
     warning("There are no features! Run FindFeatures first!")
     return(FALSE)
   }
   
-  if (!engine$NTS$has_features_ms2) {
+  if (!engine$NonTargetAnalysisResults$has_features_ms2) {
     warning("There are no features MS2! Run LoadFeaturesMS2 first!")
     return(FALSE)
   }
   
-  feature_list <- engine$NTS$feature_list
+  feature_list <- engine$NonTargetAnalysisResults$feature_list
   
   parameters <- x@parameters  
   
   if (parameters$blankClean) {
     blk_ms2 <- data.table::data.table()
-    blk_analyses <- engine$NTS$blanks
-    blk_rpls <- engine$NTS$replicates
+    blk_analyses <- engine$NonTargetAnalysisResults$blanks
+    blk_rpls <- engine$NonTargetAnalysisResults$replicates
     blk_rpls <- blk_rpls[blk_rpls %in% blk_analyses]
-    blk_analyses <- names(blk_analyses)[engine$NTS$replicates %in% blk_rpls] 
+    blk_analyses <- names(blk_analyses)[engine$NonTargetAnalysisResults$replicates %in% blk_rpls] 
     
     if (length(blk_analyses) == 0) {
       message("No blank analyses available to clean blank MS2 traces! Not done.")
@@ -251,7 +251,7 @@ S7::method(run, MassSpecMethod_FilterFeaturesMS2_native) <- function(x, engine =
     z
   }, parameters = parameters)
   
-  engine$NTS$feature_list <- feature_list
+  engine$NonTargetAnalysisResults$feature_list <- feature_list
   
   message(paste0("\U2713 Features MS2 filtered!"))
   

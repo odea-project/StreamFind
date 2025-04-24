@@ -75,11 +75,11 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
 
   if (!nts$has_features) {
     warning("There are no features! Run find_features first!")
@@ -239,7 +239,7 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
 
     nts$feature_list <- features
     
-    engine$NTS <- nts
+    engine$NonTargetAnalysisResults <- nts
 
     message(
       "\U2713 ",

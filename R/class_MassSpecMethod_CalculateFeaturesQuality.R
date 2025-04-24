@@ -90,18 +90,18 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
 
-  if (!NTS@has_features) {
-    warning("NTS object does not have features! Not done.")
+  if (!NonTargetAnalysisResults@has_features) {
+    warning("NonTargetAnalysisResults object does not have features! Not done.")
     return(FALSE)
   }
 
-  feature_list <- NTS$feature_list
+  feature_list <- NonTargetAnalysisResults$feature_list
 
   feature_list <- lapply(feature_list, function(z) {
     if (!"quality" %in% colnames(z)) z$quality <- rep(data.table::data.table(), nrow(z))
@@ -111,8 +111,8 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
 
   parameters <- x$parameters
   
-  ana_info <- engine$NTS$analyses_info
-  headers <- engine$NTS$spectra_headers
+  ana_info <- engine$NonTargetAnalysisResults$analyses_info
+  headers <- engine$NonTargetAnalysisResults$spectra_headers
   
   feature_list <- rcpp_nts_calculate_features_quality(
     ana_info,
@@ -130,7 +130,7 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
   
   tryCatch(
     {
-      engine$NTS$feature_list <- feature_list
+      engine$NonTargetAnalysisResults$feature_list <- feature_list
       return(TRUE)
     },
     error = function(e) {

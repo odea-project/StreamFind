@@ -25,6 +25,8 @@ containing a \link{Workflow} object.}
 
 \item{\code{Analyses}}{An \link{Analyses} S7 class object or a child of it.}
 
+\item{\code{Results}}{A named list of \link{Results} S7 class objects or a child of it.}
+
 \item{\code{AuditTrail}}{An \link{AuditTrail} S7 class object. Only getter method.}
 
 \item{\code{Config}}{An \link{EngineConfig} S7 class object.}

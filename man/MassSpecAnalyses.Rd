@@ -73,13 +73,13 @@ The \code{MassSpecAnalyses} class represents mass spectrometry (MS) raw data fil
 
 \item{\code{has_ion_mobility}}{(getter) A logical vector indicating if the analyses have ion mobility data.}
 
-\item{\code{has_results_nts}}{(getter) A logical vector indicating if the analyses have NTS results.}
+\item{\code{has_results_nts}}{(getter) A logical vector indicating if the analyses have NonTargetAnalysisResults results.}
 
 \item{\code{has_results_spectra}}{(getter) A logical vector indicating if the analyses have spectra results.}
 
 \item{\code{has_results_chromatograms}}{(getter) A logical vector indicating if the analyses have chromatograms results.}
 
-\item{\code{NTS}}{(getter/setter) A list with the NTS results for each analysis.}
+\item{\code{NonTargetAnalysisResults}}{(getter/setter) A list with the NonTargetAnalysisResults results for each analysis.}
 
 \item{\code{Spectra}}{(getter/setter) A list with the spectra results for each analysis.}
 

@@ -5,6 +5,7 @@
 #' @param analyses A list of analyses, where each element is a data entry or a connection to a raw data file.
 #' @param results A list of results, where each element is specific \code{\link{Results}} child class.
 #' 
+#' @slot data_type (getter/setter) A character string indicating the type of data.
 #' @slot possible_formats (getter/setter) A character vector of possible formats for the raw data.
 #' @slot analyses (getter/setter) A list of analyses, where each element is a data entry or a connection to a raw data file.
 #' @slot results (getter/setter) A list of results, where each element is specific \code{\link{Results}} child class.
@@ -16,6 +17,9 @@ Analyses <- S7::new_class(
   name = "Analyses",
   package = "StreamFind",
   properties = list(
+    
+    # data_type -----
+    data_type = S7::new_property(S7::class_character, default = NA_character_),
 
     # possible_formats -----
     possible_formats = S7::new_property(S7::class_character, default = NA_character_),
@@ -46,12 +50,14 @@ Analyses <- S7::new_class(
   constructor = function(analyses = list(), results = list()) {
     S7::new_object(
       S7::S7_object(),
+      data_type = NA_character_,
       possible_formats = NA_character_,
       analyses = analyses,
       results = results
     )
   },
   validator = function(self) {
+    checkmate::assert_true(grepl(self@data_type, is(self)) || is.na(self@data_type))
     checkmate::assert_character(self@possible_formats)
     checkmate::assert_true(
       checkmate::test_list(self@analyses) || checkmate::test_data_frame(self@analyses)
@@ -60,6 +66,19 @@ Analyses <- S7::new_class(
     NULL
   }
 )
+
+#' @export
+#' @noRd
+`$.StreamFind::Analyses` <- function(x, i) {
+  S7::prop(x, i)
+}
+
+#' @export
+#' @noRd
+`$<-.StreamFind::Analyses` <- function(x, i, value) {
+  S7::prop(x, i) <- value
+  x
+}
 
 #' @export
 #' @noRd
@@ -132,19 +151,6 @@ S7::method(names, Analyses) <- function(x) {
       x@results <- list()
     }
   }
-  x
-}
-
-#' @export
-#' @noRd
-`$.StreamFind::Analyses` <- function(x, i) {
-  S7::prop(x, i)
-}
-
-#' @export
-#' @noRd
-`$<-.StreamFind::Analyses` <- function(x, i, value) {
-  S7::prop(x, i) <- value
   x
 }
 

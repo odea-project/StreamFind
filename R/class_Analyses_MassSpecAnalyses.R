@@ -35,10 +35,10 @@
 #' @slot chromatograms_raw (getter) A list with the raw chromatograms for each analysis.
 #' @slot info (getter) A data frame with the information of each analysis.
 #' @slot has_ion_mobility (getter) A logical vector indicating if the analyses have ion mobility data.
-#' @slot has_results_nts (getter) A logical vector indicating if the analyses have NTS results.
+#' @slot has_results_nts (getter) A logical vector indicating if the analyses have NonTargetAnalysisResults results.
 #' @slot has_results_spectra (getter) A logical vector indicating if the analyses have spectra results.
 #' @slot has_results_chromatograms (getter) A logical vector indicating if the analyses have chromatograms results.
-#' @slot NTS (getter/setter) A list with the NTS results for each analysis.
+#' @slot NonTargetAnalysisResults (getter/setter) A list with the NonTargetAnalysisResults results for each analysis.
 #' @slot Spectra (getter/setter) A list with the spectra results for each analysis.
 #' @slot Chromatograms (getter/setter) A list with the chromatograms results for each analysis.
 #' 
@@ -72,7 +72,7 @@ MassSpecAnalyses <- S7::new_class(
             self@analyses[[i]]$replicate <- value[i]
           }
           if (self@has_results_nts) {
-            self@NTS@replicates <- value
+            self@NonTargetAnalysisResults@replicates <- value
           }
         }
         self
@@ -90,8 +90,8 @@ MassSpecAnalyses <- S7::new_class(
             for (i in seq_len(length(self))) {
               self@analyses[[i]]$blank <- value[i]
             }
-            if (self$has_results_nts) {
-              self@NTS@blanks <- value
+            if (self@has_results_nts) {
+              self@NonTargetAnalysisResults@blanks <- value
             }
           }
         }
@@ -109,8 +109,8 @@ MassSpecAnalyses <- S7::new_class(
           for (i in seq_len(length(self))) {
             self@analyses[[i]]$concentration <- value[i]
           }
-          if (self$has_results_nts) {
-            self@NTS@concentrations <- value
+          if (self@has_results_nts) {
+            self@NonTargetAnalysisResults@concentrations <- value
           }
         }
         self
@@ -421,10 +421,10 @@ MassSpecAnalyses <- S7::new_class(
         if (length(self) == 0) {
           return(FALSE)
         }
-        if (is.null(self@results[["NTS"]])) {
+        if (is.null(self@results[["NonTargetAnalysisResults"]])) {
           return(FALSE)
         }
-        if (!is(self@results[["NTS"]], "StreamFind::NTS")) {
+        if (!is(self@results[["NonTargetAnalysisResults"]], "StreamFind::NonTargetAnalysisResults")) {
           return(FALSE)
         }
         TRUE
@@ -467,29 +467,29 @@ MassSpecAnalyses <- S7::new_class(
       }
     ),
 
-    # MARK: NTS
-    ## NTS -----
-    NTS = S7::new_property(
+    # MARK: NonTargetAnalysisResults
+    ## NonTargetAnalysisResults -----
+    NonTargetAnalysisResults = S7::new_property(
       S7::class_list,
       getter = function(self) {
-        self@results[["NTS"]]
+        self@results[["NonTargetAnalysisResults"]]
       },
       setter = function(self, value) {
-        if (is(value, "StreamFind::NTS")) {
+        if (is(value, "StreamFind::NonTargetAnalysisResults")) {
           if (value@number_analyses > 0) {
             analyses_names <- unname(names(self))
             value_analyses_names <- sort(value@analyses_info$analysis)
             if (identical(analyses_names, value_analyses_names)) {
-              self@results[[value@name]] <- value
+              self@results[[gsub("StreamFind::", "", is(value)[1])]] <- value
             } else {
-              # TODO check if some analyses are in engine and subset engine to match NTS
+              # TODO check if some analyses are in engine and subset engine to match NonTargetAnalysisResults
               warning("Analysis names do not match! Not done.")
             }
           } else {
-            warning("NTS results object is empty! Not done.")
+            warning("NonTargetAnalysisResults results object is empty! Not done.")
           }
         } else {
-          warning("Value must be an NTS results object! Not done.")
+          warning("Value must be an NonTargetAnalysisResults results object! Not done.")
         }
         self
       }
@@ -513,7 +513,7 @@ MassSpecAnalyses <- S7::new_class(
               warning("Analysis names do not match! Not done.")
             }
           } else if (value$is_averaged) {
-            replicate_names <- unique(unname(self$replicates))
+            replicate_names <- unique(unname(self@replicates))
             value_analyses_names <- names(value$spectra)
             if (identical(replicate_names, value_analyses_names)) {
               self@results[[value@name]] <- value
@@ -548,7 +548,7 @@ MassSpecAnalyses <- S7::new_class(
               warning("Analysis names do not match! Not done.")
             }
           } else if (value$is_averaged) {
-            replicate_names <- unname(self$replicates)
+            replicate_names <- unname(self@replicates)
             value_analyses_names <- names(value$chromatograms)
             if (identical(replicate_names, value_analyses_names)) {
               self@results[["Chromatograms"]] <- value
@@ -572,6 +572,7 @@ MassSpecAnalyses <- S7::new_class(
     analyses <- .get_MassSpecAnalysis_from_files(files, centroid, levels)
     S7::new_object(
       Analyses(),
+      data_type = "MassSpec",
       possible_formats = c("mzML", "mzXML", "d", "raw"),
       analyses = analyses
     )
@@ -637,7 +638,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
     x@analyses <- x@analyses[!names(x) %in% value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_results_nts) x@NTS <- x@NTS[!names(x) %in% value]
+    if (x@has_results_nts) x@NonTargetAnalysisResults <- x@NonTargetAnalysisResults[!names(x) %in% value]
     if (x@has_results_spectra) x@Spectra <- x@Spectra[!names(x) %in% value]
     if (x@has_results_chromatograms) {
       x@Chromatograms <- x@Chromatograms[!names(x) %in% value]
@@ -645,7 +646,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   } else if (is.numeric(value)) {
     x@analyses <- x@analyses[-value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_results_nts) x@NTS <- x@NTS[-value]
+    if (x@has_results_nts) x@NonTargetAnalysisResults <- x@NonTargetAnalysisResults[-value]
     if (x@has_results_spectra) x@Spectra <- x@Spectra[-value]
     if (x@has_results_chromatograms) {
       x@Chromatograms <- x@Chromatograms[-value]
@@ -659,7 +660,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 #' @noRd
 `[.StreamFind::MassSpecAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_results_nts) x@NTS <- x@NTS[i]
+  if (x@has_results_nts) x@NonTargetAnalysisResults <- x@NonTargetAnalysisResults[i]
   if (x@has_results_spectra) x@Spectra <- x@Spectra[i]
   if (x@has_results_chromatograms) x@Chromatograms <- x@Chromatograms[i]
   x
@@ -678,7 +679,7 @@ S7::method(remove, MassSpecAnalyses) <- function(x, value) {
 #' @noRd
 `[[.StreamFind::MassSpecAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_results_nts) x@NTS <- x@NTS[i]
+  if (x@has_results_nts) x@NonTargetAnalysisResults <- x@NonTargetAnalysisResults[i]
   if (x@has_results_spectra) x@Spectra <- x@Spectra[i]
   if (x@has_results_chromatograms) x@Chromatograms <- x@Chromatograms[i]
   x
@@ -710,7 +711,7 @@ S7::method(read, MassSpecAnalyses) <- function(x, file) {
     if (file.exists(file)) {
       json <- jsonlite::fromJSON(file)
       browser()
-      # TODO add read method for MassSpecAnalyses NTS and other results
+      # TODO add read method for MassSpecAnalyses NonTargetAnalysisResults and other results
       return(Analyses(jsonlite::fromJSON(file)))
     }
   } else if (grepl(".rds", file)) {
@@ -2140,8 +2141,8 @@ S7::method(load_chromatograms, MassSpecAnalyses) <- function(x,
   x
 }
 
-# MARK: NTS
-# NTS ------
+# MARK: NonTargetAnalysisResults
+# NonTargetAnalysisResults ------
 
 # MARK: get_matrix_suppression
 ## get_matrix_suppression -----

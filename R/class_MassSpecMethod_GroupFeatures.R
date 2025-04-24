@@ -11,18 +11,18 @@
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
 
-  if (!NTS@has_features) {
-    warning("NTS object is empty! Not done.")
+  if (!NonTargetAnalysisResults@has_features) {
+    warning("NonTargetAnalysisResults object is empty! Not done.")
     return(FALSE)
   }
 
-  pat_features <- get_patRoon_features(NTS, filtered = FALSE, featureGroups = FALSE)
+  pat_features <- get_patRoon_features(NonTargetAnalysisResults, filtered = FALSE, featureGroups = FALSE)
 
   algorithm <- x$algorithm
 
@@ -115,9 +115,9 @@
 
   pat_fl <- pat@features@features
 
-  pat_fl <- pat_fl[NTS@analyses_info$analysis]
+  pat_fl <- pat_fl[NonTargetAnalysisResults@analyses_info$analysis]
 
-  fl <- NTS@feature_list
+  fl <- NonTargetAnalysisResults@feature_list
 
   fl <- Map(function(z, y) {
     
@@ -139,12 +139,12 @@
     z
   }, fl, pat_fl)
 
-  names(fl) <- NTS@analyses_info$analysis
+  names(fl) <- NonTargetAnalysisResults@analyses_info$analysis
 
-  NTS@feature_list <- fl
+  NonTargetAnalysisResults@feature_list <- fl
 
-  if (is(NTS, "StreamFind::NTS")) {
-    engine$NTS <- NTS
+  if (is(NonTargetAnalysisResults, "StreamFind::NonTargetAnalysisResults")) {
+    engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
     TRUE
   } else {
     FALSE

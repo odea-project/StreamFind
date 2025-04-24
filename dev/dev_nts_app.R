@@ -22,7 +22,7 @@ ms <- MassSpecEngine$new(analyses = files)
 
 # ms$Analyses$has_results_nts
 # ms$has_results_nts()
-# ms$Analyses$NTS
+# ms$Analyses$NonTargetAnalysisResults
 
 # ms$get_spectra_bpc(analyses = 1:2)
 # ms$get_spectra_headers()
@@ -221,10 +221,10 @@ ms$run(
   )
 )
 
-show(ms$NTS)
+show(ms$NonTargetAnalysisResults)
 
-# Access NTS object and print to console
-nts <- ms$NTS
+# Access NonTargetAnalysisResults object and print to console
+nts <- ms$NonTargetAnalysisResults
 show(nts)
 
 # nts@number_analyses
@@ -292,8 +292,8 @@ show(nts)
 #StreamFind::clear_cache("all")
 
 # Access feature_list
-#names(ms$NTS$feature_list)
-#fts <- ms$NTS$feature_list
+#names(ms$NonTargetAnalysisResults$feature_list)
+#fts <- ms$NonTargetAnalysisResults$feature_list
 
 ms$save("ms.rds")
 ms$run_app()

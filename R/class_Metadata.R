@@ -124,6 +124,19 @@ S7::method(length, Metadata) <- function(x) {
 
 #' @export
 #' @noRd
+`$.StreamFind::Metadata` <- function(x, i) {
+  S7::prop(x, i)
+}
+
+#' @export
+#' @noRd
+`$<-.StreamFind::Metadata` <- function(x, i, value) {
+  S7::prop(x, i) <- value
+  x
+}
+
+#' @export
+#' @noRd
 S7::method(names, Metadata) <- function(x) {
   names(x@entries)
 }
@@ -152,32 +165,6 @@ S7::method(names, Metadata) <- function(x) {
 `[[<-.StreamFind::Metadata` <- function(x, i, value) {
   x@entries[[i]] <- value
   x
-}
-
-#' @export
-#' @noRd
-`$.StreamFind::Metadata` <- function(x, i) {
-  entries_list <- x@entries
-  if (missing(i)) return(entries_list)
-  if (is.character(i)) {
-    return(entries_list[[i]])
-  } else {
-    stop("Invalid entries getter type")
-  }
-}
-
-#' @export
-#' @noRd
-`$<-.StreamFind::Metadata` <- function(x, i, value) {
-  entries_list <- x@entries
-  if (missing(i)) return(entries_list)
-  if (is.character(i)) {
-    entries_list[[i]] <- value
-    x@entries <- entries_list
-    return(x)
-  } else {
-    stop("Invalid entries setter type")
-  }
 }
 
 #' @export

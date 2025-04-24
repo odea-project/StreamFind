@@ -242,12 +242,6 @@ nta_workflow <- list(
     filtered = FALSE
   ),
   StreamFind::MassSpecMethod_GenerateCompounds_metfrag(
-    MSPeakListsClusterMzWindow = 0.005,
-    MSPeakListsTopMost = 100,
-    MSPeakListsMinIntensityPre = 50,
-    MSPeakListsMinIntensityPost = 50,
-    MSPeakListsAvgFun = "mean",
-    MSPeakListsMethod = "distance",
     method = "CL",
     timeout = 300,
     timeoutRetries = 5,
@@ -287,20 +281,21 @@ ms$run_workflow()
 
 ```{r}
 
-ms$NTS$feature_list[[11]]
+ms$NonTargetAnalysisResults@feature_list[[11]]
+ana <- ms$Analyses
 
 View(fl[, c("feature", "annotation")])
 
 
-plot_suspects(ms$NTS, analyses = 11)
+plot_suspects(ms$NonTargetAnalysisResults, analyses = 11)
 
-get_suspects(ms$NTS, analyses = 11)$fragments
+get_suspects(ms$NonTargetAnalysisResults, analyses = 11)$fragments
 
 
 fl <- rcpp_nts_load_features_ms2(
-  ms$NTS$analyses_info[1, ],
-  ms$NTS$spectra_headers[1],
-  ms$NTS$feature_list[1],
+  ms$NonTargetAnalysisResults$analyses_info[1, ],
+  ms$NonTargetAnalysisResults$spectra_headers[1],
+  ms$NonTargetAnalysisResults$feature_list[1],
   filtered = TRUE,
   minTracesIntensity = 10,
   isolationWindow = 1.3,
@@ -308,27 +303,27 @@ fl <- rcpp_nts_load_features_ms2(
   presence = 0.3
 )
 
-plot_groups_overview(ms$NTS, mass = dbis, legendNames = TRUE)
+plot_groups_overview(ms$NonTargetAnalysisResults, mass = dbis, legendNames = TRUE)
 
 
-plot_features_ms2(ms$NTS, analyses = 11, mass = dbis, legendNames = TRUE, filtered = TRUE)
+plot_features_ms2(ms$NonTargetAnalysisResults, analyses = 11, mass = dbis, legendNames = TRUE, filtered = TRUE)
 
-plot_features(ms$NTS, analyses = 4, mass = dbis, legendNames = TRUE)
+plot_features(ms$NonTargetAnalysisResults, analyses = 4, mass = dbis, legendNames = TRUE)
 
-map_components(ms$NTS, analyses = 4, mass = dbis, legendNames = TRUE)
-
-
-get_features(ms$NTS, analyses = 4, mass = dbis)
+map_components(ms$NonTargetAnalysisResults, analyses = 4, mass = dbis, legendNames = TRUE)
 
 
-fl_temp <- ms$NTS$feature_list[4:5]
+get_features(ms$NonTargetAnalysisResults, analyses = 4, mass = dbis)
+
+
+fl_temp <- ms$NonTargetAnalysisResults$feature_list[4:5]
 fl_temp <- lapply(fl_temp, function(z) z[order(mz, decreasing = TRUE), ])
 
 
 res <- rcpp_nts_fill_features(
-  ms$NTS$analyses_info,
-  ms$NTS$spectra_headers,
-  ms$NTS$feature_list,
+  ms$NonTargetAnalysisResults$analyses_info,
+  ms$NonTargetAnalysisResults$spectra_headers,
+  ms$NonTargetAnalysisResults$feature_list,
   withinReplicate = FALSE,
   filtered = FALSE,
   rtExpand = 2,
@@ -365,8 +360,8 @@ View(rbindlist(fl$`01_tof_ww_is_pos_blank-r001`$annotation))
 # fl <- rcpp_nts_calculate_features_quality_v2(
 #   ms$get_analysis_names()[1:2],
 #   ms$get_files()[1:2],
-#   ms$NTS@spectra_headers[1:2],
-#   ms$NTS$feature_list[1:2],
+#   ms$NonTargetAnalysisResults@spectra_headers[1:2],
+#   ms$NonTargetAnalysisResults$feature_list[1:2],
 #   TRUE,
 #   rtExpand = 2,
 #   mzExpand = 0.002,

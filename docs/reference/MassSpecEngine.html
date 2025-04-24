@@ -68,7 +68,7 @@ Windows OS.</p>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The MassSpecEngine is using <a href="https://github.com/rickhelmus/patRoon" class="external-link">patRoon</a> for
-assembly of Non-Target Screening (NTS) data processing workflows.</p>
+assembly of Non-Target Screening (NonTargetAnalysisResults) data processing workflows.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -106,8 +106,8 @@ assembly of Non-Target Screening (NTS) data processing workflows.</p>
     </div>
     <div class="section level2">
     <h2 id="active-bindings">Active bindings<a class="anchor" aria-label="anchor" href="#active-bindings"></a></h2>
-    <p></p><div class="r6-active-bindings"><dl><dt><code>NTS</code></dt>
-<dd><p>Get/Set for the <code>NTS</code> results class.</p></dd>
+    <p></p><div class="r6-active-bindings"><dl><dt><code>NonTargetAnalysisResults</code></dt>
+<dd><p>Get/Set for the <code>NonTargetAnalysisResults</code> results class.</p></dd>
 
 
 <dt><code>Spectra</code></dt>
@@ -1800,7 +1800,7 @@ object.</p></dd>
 
 </div><p></p><hr><a id="method-MassSpecEngine-has_results_nts"></a><div class="section">
 <h3 id="method-has-results-nts-">Method <code>has_results_nts()</code><a class="anchor" aria-label="anchor" href="#method-has-results-nts-"></a></h3>
-<p>Checks if there are NTS results, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
+<p>Checks if there are NonTargetAnalysisResults results, returning <code>TRUE</code> or <code>FALSE</code>.</p><div class="section">
 <h4 id="usage-36">Usage<a class="anchor" aria-label="anchor" href="#usage-36"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">has_results_nts</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -2741,7 +2741,7 @@ object.</p></dd>
 
 </div><p></p><hr><a id="method-MassSpecEngine-get_features_count"></a><div class="section">
 <h3 id="method-get-features-count-">Method <code><a href="get_features_count.html">get_features_count()</a></code><a class="anchor" aria-label="anchor" href="#method-get-features-count-"></a></h3>
-<p>Gets a data.table with the features count from NTS results.</p><div class="section">
+<p>Gets a data.table with the features count from NonTargetAnalysisResults results.</p><div class="section">
 <h4 id="usage-52">Usage<a class="anchor" aria-label="anchor" href="#usage-52"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_features_count</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span>, filtered <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -2762,7 +2762,7 @@ object.</p></dd>
 
 </div><p></p><hr><a id="method-MassSpecEngine-plot_features_count"></a><div class="section">
 <h3 id="method-plot-features-count-">Method <code><a href="plot_features_count.html">plot_features_count()</a></code><a class="anchor" aria-label="anchor" href="#method-plot-features-count-"></a></h3>
-<p>Plots the features count from NTS results.</p><div class="section">
+<p>Plots the features count from NonTargetAnalysisResults results.</p><div class="section">
 <h4 id="usage-53">Usage<a class="anchor" aria-label="anchor" href="#usage-53"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">plot_features_count</span><span class="op">(</span></span>
 <span>  analyses <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -2812,7 +2812,7 @@ Mixed use (e.g. <code>analyses+polarities</code>) is also possible.</p></dd>
 
 </div><p></p><hr><a id="method-MassSpecEngine-get_features"></a><div class="section">
 <h3 id="method-get-features-">Method <code><a href="get_features.html">get_features()</a></code><a class="anchor" aria-label="anchor" href="#method-get-features-"></a></h3>
-<p>Gets a data.table with all features from NTS results or as selected by the
+<p>Gets a data.table with all features from NonTargetAnalysisResults results or as selected by the
 arguments.</p><div class="section">
 <h4 id="usage-54">Usage<a class="anchor" aria-label="anchor" href="#usage-54"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_features</span><span class="op">(</span></span>

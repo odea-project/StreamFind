@@ -1,7 +1,7 @@
 #include "NTS_utils.h"
 
 // MARK: as_MS_SPECTRA_HEADERS
-sc::MS_SPECTRA_HEADERS NTS::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
+sc::MS_SPECTRA_HEADERS NonTargetAnalysisResults::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
 {
   sc::MS_SPECTRA_HEADERS headers;
   const std::vector<int> &hd_index = hd["index"];
@@ -28,7 +28,7 @@ sc::MS_SPECTRA_HEADERS NTS::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
 };
 
 // MARK: merge_traces_within_rt
-void NTS::merge_traces_within_rt(std::vector<float> &rt,
+void NonTargetAnalysisResults::merge_traces_within_rt(std::vector<float> &rt,
                                  std::vector<float> &mz,
                                  std::vector<float> &intensity)
 {
@@ -60,7 +60,7 @@ void NTS::merge_traces_within_rt(std::vector<float> &rt,
 };
 
 // MARK: find_central_max_index
-size_t NTS::find_central_max_index(const std::vector<float> &rt,
+size_t NonTargetAnalysisResults::find_central_max_index(const std::vector<float> &rt,
                                    const std::vector<float> &intensity,
                                    const float &rt_mean,
                                    const float &rtWindow)
@@ -87,7 +87,7 @@ size_t NTS::find_central_max_index(const std::vector<float> &rt,
 };
 
 // MARK: trim_eic_by_low_cut
-void NTS::trim_eic_by_low_cut(std::vector<float> &rt,
+void NonTargetAnalysisResults::trim_eic_by_low_cut(std::vector<float> &rt,
                               std::vector<float> &mz,
                               std::vector<float> &intensity,
                               const float &low_cut)
@@ -130,7 +130,7 @@ void NTS::trim_eic_by_low_cut(std::vector<float> &rt,
 };
 
 // MARK: trim_to_equal_length_around_max_position
-void NTS::trim_to_equal_length_around_max_position(std::vector<float> &rt,
+void NonTargetAnalysisResults::trim_to_equal_length_around_max_position(std::vector<float> &rt,
                                                    std::vector<float> &mz,
                                                    std::vector<float> &intensity,
                                                    const size_t max_position,
@@ -223,7 +223,7 @@ void NTS::trim_to_equal_length_around_max_position(std::vector<float> &rt,
 };
 
 // MARK: trim_peak_base
-void NTS::trim_peak_base(std::vector<float> &rt,
+void NonTargetAnalysisResults::trim_peak_base(std::vector<float> &rt,
                          std::vector<float> &mz,
                          std::vector<float> &intensity,
                          size_t &max_position,
@@ -336,7 +336,7 @@ void NTS::trim_peak_base(std::vector<float> &rt,
   if (n_trimmed < 3)
     return;
   
-  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, rt[max_position], 0);
+  max_position = NonTargetAnalysisResults::find_central_max_index(rt_trimmed, int_trimmed, rt[max_position], 0);
   
   if (max_position <= 1 || max_position >= int_trimmed.size())
   {
@@ -349,7 +349,7 @@ void NTS::trim_peak_base(std::vector<float> &rt,
 };
 
 // MARK: apply_moving_average
-void NTS::apply_moving_average(std::vector<float>& x,
+void NonTargetAnalysisResults::apply_moving_average(std::vector<float>& x,
                              const size_t &start,
                              const size_t &end,
                              const int &windowSize) {
@@ -383,7 +383,7 @@ void NTS::apply_moving_average(std::vector<float>& x,
 }
 
 // MARK: smooth_eic_sides
-void NTS::smooth_eic_sides(std::vector<float>& x,
+void NonTargetAnalysisResults::smooth_eic_sides(std::vector<float>& x,
                            const size_t &max_position,
                            const int &windowSize)
 {
@@ -405,7 +405,7 @@ void NTS::smooth_eic_sides(std::vector<float>& x,
 };
 
 // MARK: FIT_GAUSSIAN_COST_FUNCTION
-float NTS::fit_gaussian_cost_function(const std::vector<float> &x,
+float NonTargetAnalysisResults::fit_gaussian_cost_function(const std::vector<float> &x,
                                       const std::vector<float> &y,
                                       const float &A,
                                       const float &mu,
@@ -414,14 +414,14 @@ float NTS::fit_gaussian_cost_function(const std::vector<float> &x,
   float cost = 0.0;
   for (size_t i = 0; i < x.size(); ++i)
   {
-    float y_pred = NTS::gaussian_function(A, mu, sigma, x[i]);
+    float y_pred = NonTargetAnalysisResults::gaussian_function(A, mu, sigma, x[i]);
     cost += pow(y[i] - y_pred, 2);
   }
   return cost;
 };
 
 // MARK: fit_gaussian
-void NTS::fit_gaussian(const std::vector<float> &x,
+void NonTargetAnalysisResults::fit_gaussian(const std::vector<float> &x,
                        const std::vector<float> &y,
                        float &A,
                        float &mu,
@@ -545,7 +545,7 @@ void NTS::fit_gaussian(const std::vector<float> &x,
 };
 
 // MARK: CALCULATE_GAUSSIAN_RSQUARED
-float NTS::calculate_gaussian_rsquared(const std::vector<float> &x,
+float NonTargetAnalysisResults::calculate_gaussian_rsquared(const std::vector<float> &x,
                                        const std::vector<float> &y,
                                        const float &A,
                                        const float &mu,
@@ -565,7 +565,7 @@ float NTS::calculate_gaussian_rsquared(const std::vector<float> &x,
 };
 
 // MARK: FEATURE::calculate_quality
-void NTS::FEATURE::calculate_quality(const float &baseCut,
+void NonTargetAnalysisResults::FEATURE::calculate_quality(const float &baseCut,
                                      const float &rtWindow,
                                      const float &maxTimeHalfWidth)
 {
@@ -701,7 +701,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
   if (n_trimmed < 3)
     return;
   
-  max_position = NTS::find_central_max_index(rt_trimmed, int_trimmed, rt, 0);
+  max_position = NonTargetAnalysisResults::find_central_max_index(rt_trimmed, int_trimmed, rt, 0);
   
   if (max_position < 1 || max_position >= eic.rt.size() - 1)
     return;
@@ -764,7 +764,7 @@ void NTS::FEATURE::calculate_quality(const float &baseCut,
 };
 
 // MARK: TRAPEZOIDAL_AREA
-float NTS::trapezoidal_area(const std::vector<float> &x, const std::vector<float> &intensity)
+float NonTargetAnalysisResults::trapezoidal_area(const std::vector<float> &x, const std::vector<float> &intensity)
 {
   float area = 0.0;
   
@@ -780,7 +780,7 @@ float NTS::trapezoidal_area(const std::vector<float> &x, const std::vector<float
 };
 
 // MARK: IS_MAX_GAP_REACHED
-bool NTS::is_max_gap_reached(const int &s, const int &maxGaps, const std::vector<int> &steps)
+bool NonTargetAnalysisResults::is_max_gap_reached(const int &s, const int &maxGaps, const std::vector<int> &steps)
 {
   if (steps.size() < 2)
     return false;
@@ -795,7 +795,7 @@ bool NTS::is_max_gap_reached(const int &s, const int &maxGaps, const std::vector
 };
 
 // MARK: ANNOTATION_CANDIDATE_CHAIN::ANNOTATE_ISOTOPES
-void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE_COMBINATIONS &combinations,
+void NonTargetAnalysisResults::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE_COMBINATIONS &combinations,
                                                         const int &maxIsotopes,
                                                         const int &maxCharge,
                                                         const int &maxGaps)
@@ -806,14 +806,14 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
   const int number_candidates = chain.size();
   FEATURE mono_ion = chain[0];
   
-  std::vector<NTS::ANNOTATION_ISOTOPE_CHAIN> isotopic_chains;
-  isotopic_chains.push_back(NTS::ANNOTATION_ISOTOPE_CHAIN(1, mono_ion, mzr));
+  std::vector<NonTargetAnalysisResults::ANNOTATION_ISOTOPE_CHAIN> isotopic_chains;
+  isotopic_chains.push_back(NonTargetAnalysisResults::ANNOTATION_ISOTOPE_CHAIN(1, mono_ion, mzr));
   
   if (maxCharge > 1)
   {
     for (int z = 2; z <= maxCharge; z++)
     {
-      isotopic_chains.push_back(NTS::ANNOTATION_ISOTOPE_CHAIN(z, mono_ion, mzr));
+      isotopic_chains.push_back(NonTargetAnalysisResults::ANNOTATION_ISOTOPE_CHAIN(z, mono_ion, mzr));
     }
   }
   
@@ -821,14 +821,14 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
   
   for (int z = 0; z < number_charges; z++)
   {
-    NTS::ANNOTATION_ISOTOPE_CHAIN iso_chain = isotopic_chains[z];
+    NonTargetAnalysisResults::ANNOTATION_ISOTOPE_CHAIN iso_chain = isotopic_chains[z];
     const int charge = iso_chain.charge[0];
     const int number_steps = maxIsotopes + 1;
     
     for (int s = 1; s < number_steps; ++s)
     {
       
-      if (NTS::is_max_gap_reached(s, maxGaps, iso_chain.step))
+      if (NonTargetAnalysisResults::is_max_gap_reached(s, maxGaps, iso_chain.step))
         break;
       
       std::vector<int> which_combinations;
@@ -879,7 +879,7 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
             // TODO this will also capture 2H loss and mark it as M+
             // the mass error might give an indication to check
             
-            NTS::FEATURE_ANNOTATION mono_ion_anno = mono_ion.annotation;
+            NonTargetAnalysisResults::FEATURE_ANNOTATION mono_ion_anno = mono_ion.annotation;
             mono_ion_anno.feature = mono_ion.feature;
             mono_ion_anno.component_feature = candidate.feature;
             mono_ion_anno.iso_step = -1;
@@ -1111,7 +1111,7 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
     
     ANNOTATION_ISOTOPE_CHAIN &sel_iso_chain = isotopic_chains[best_chain];
     
-    NTS::FEATURE_ANNOTATION mono_ion_anno = mono_ion.annotation;
+    NonTargetAnalysisResults::FEATURE_ANNOTATION mono_ion_anno = mono_ion.annotation;
     mono_ion_anno.feature = mono_ion.feature;
     mono_ion_anno.component_feature = mono_ion.feature;
     mono_ion_anno.iso_step = 0;
@@ -1136,7 +1136,7 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
       {
         const int candidate_idx = sel_iso_chain.candidate_indices[i];
         FEATURE temp_candidate = chain[candidate_idx];
-        NTS::FEATURE_ANNOTATION temp_candidate_anno = temp_candidate.annotation;
+        NonTargetAnalysisResults::FEATURE_ANNOTATION temp_candidate_anno = temp_candidate.annotation;
         temp_candidate_anno.feature = sel_iso_chain.chain[i].feature;
         temp_candidate_anno.component_feature = mono_ion.feature;
         temp_candidate_anno.iso_step = sel_iso_chain.step[i];
@@ -1164,10 +1164,10 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_isotopes(const ANNOTATION_ISOTOPE
 };
 
 // MARK: ANNOTATE_ADDUCTS
-void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_adducts()
+void NonTargetAnalysisResults::ANNOTATION_CANDIDATE_CHAIN::annotate_adducts()
 {
 
-  NTS::ANNOTATION_ADDUCT_SET all_adducts;
+  NonTargetAnalysisResults::ANNOTATION_ADDUCT_SET all_adducts;
   const int &pol = chain[0].polarity;
   const float neutralizer = all_adducts.neutralizer(pol);
   std::vector<ANNOTATION_ADDUCT> adducts = all_adducts.adducts(pol);
@@ -1213,7 +1213,7 @@ void NTS::ANNOTATION_CANDIDATE_CHAIN::annotate_adducts()
 };
 
 // MARK: cluster_spectra
-Rcpp::List NTS::cluster_spectra(const Rcpp::List &spectra,
+Rcpp::List NonTargetAnalysisResults::cluster_spectra(const Rcpp::List &spectra,
                                 const float &mzClust = 0.005,
                                 const float &presence = 0.8)
 {
@@ -1573,7 +1573,7 @@ Rcpp::List NTS::cluster_spectra(const Rcpp::List &spectra,
 };
 
 // MARK: cluster_spectra_internal
-void NTS::cluster_spectra_internal(std::vector<float> &pre_ce,
+void NonTargetAnalysisResults::cluster_spectra_internal(std::vector<float> &pre_ce,
                                    std::vector<float> &pre_mz,
                                    std::vector<float> &rt,
                                    std::vector<float> &mz,

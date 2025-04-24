@@ -5,20 +5,26 @@
 \title{Generic Results}
 \usage{
 Results(
-  name = class_missing,
-  software = class_missing,
-  version = class_missing
+  data_type = NA_character_,
+  name = NA_character_,
+  software = NA_character_,
+  version = NA_character_
 )
-}
-\arguments{
-\item{name}{A character string representing the name of the results.}
-
-\item{software}{A character string representing the name of the software used to generate the results.}
-
-\item{version}{A character string representing the version of the software used to generate the results.}
 }
 \description{
 The Results class is used to store results of data processing in
 \link{Analyses} child classes. Child classes of Results are implemented for diverse types
-of results.
+of results for a given type of data.
 }
+\section{Slots}{
+
+\describe{
+\item{\code{data_type}}{A character string indicating the type of data.}
+
+\item{\code{name}}{A character string representing the name of the results.}
+
+\item{\code{software}}{A character string representing the name of the software used to generate the results.}
+
+\item{\code{version}}{A character string representing the version of the software used to generate the results.}
+}}
+

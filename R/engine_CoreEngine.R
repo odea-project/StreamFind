@@ -136,8 +136,8 @@ CoreEngine <- R6::R6Class(
         old_results <- list()
         
         if (length(names_analyses) > 0) {
-          if (length(private$.Analyses$results) > 0) {
-            old_results <- private$.Analyses$results
+          if (length(private$.Analyses@results) > 0) {
+            old_results <- private$.Analyses@results
           }
         }
         
@@ -148,10 +148,10 @@ CoreEngine <- R6::R6Class(
           }
           
           if (length(names(private$.Analyses)) > 0) {
-            if (length(private$.Analyses$results) > 0) {
-              for (r in names(private$.Analyses$results)) {
-                if (!identical(private$.Analyses$results[[r]], old_results[[r]])) {
-                  private$.AuditTrail <- add(private$.AuditTrail, private$.Analyses$results[[r]])
+            if (length(private$.Analyses@results) > 0) {
+              for (r in names(private$.Analyses@results)) {
+                if (!identical(private$.Analyses@results[[r]], old_results[[r]])) {
+                  private$.AuditTrail <- add(private$.AuditTrail, private$.Analyses@results[[r]])
                 }
               }
             }
@@ -159,6 +159,46 @@ CoreEngine <- R6::R6Class(
         }
       } else {
         warning("Invalid Analyses object! Not added.")
+      }
+      invisible(self)
+    },
+    
+    #MARK: Results
+    #' @field Results A named list of [StreamFind::Results] S7 class objects or a child of it.
+    Results = function(value) {
+      if (missing(value)) {
+        return(private$.Analyses@results)
+      }
+      if (is(value, "StreamFind::Results")) {
+        if (grepl(value[[i]]@data_type, is(self))) {
+          private$.Analyses@results[[gsub("StreamFind::", "", is(value)[1])]] <- value
+          if (!is.null(private$.AuditTrail)) {
+            private$.AuditTrail <- add(private$.AuditTrail, value)
+          }
+        }
+      } else if (is(value, "list")) {
+        tryCatch(
+          {
+            for (i in seq_along(value)) {
+              if (is(value[[i]], "StreamFind::Results")) {
+                if (grepl(value[[i]]@data_type, is(self))) {
+                  private$.Analyses@results[[gsub("StreamFind::", "", is(value)[1])]] <- value[[i]]
+                  if (!is.null(private$.AuditTrail)) {
+                    private$.AuditTrail <- add(private$.AuditTrail, value[[i]])
+                  }
+                }
+              }
+            }
+          },
+          error = function(e) {
+            warning(e)
+          },
+          warning = function(w) {
+            warning(w)
+          }
+        )
+      } else {
+        warning("Invalid Results object! Not added.")
       }
       invisible(self)
     },
@@ -547,8 +587,8 @@ CoreEngine <- R6::R6Class(
           category = cache_category,
           as.list(self$Workflow),
           as.list(step),
-          self$Analyses$info,
-          names(self$Analyses$results)
+          self$Analyses@info,
+          names(self$Analyses@results)
         )
         
         if (!is.null(cache$data)) {

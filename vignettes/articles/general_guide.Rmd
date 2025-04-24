@@ -141,7 +141,7 @@ The [`ProcessingStep`](https://odea-project.github.io/StreamFind/reference/Proce
 # for annotating features in a non-target screening workflow
 # the constructor name gives away the engine, method and algorithm
 # i.e.
-# - the engine is MassSpecEngine
+# - the data type is MassSpec
 # - the method name is AnnotateFeatures
 # - the algorithm name is StreamFind
 MassSpecMethod_AnnotateFeatures_StreamFind()

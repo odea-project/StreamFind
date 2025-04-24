@@ -111,23 +111,23 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
 
-  if (!NTS@has_groups) {
-    warning("NTS object does not have feature groups! Not done.")
+  if (!NonTargetAnalysisResults@has_groups) {
+    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
     return(FALSE)
   }
 
   parameters <- x$parameters
   
   feature_list <- rcpp_nts_fill_features(
-    engine$NTS$analyses_info,
-    engine$NTS$spectra_headers,
-    engine$NTS$feature_list,
+    engine$NonTargetAnalysisResults$analyses_info,
+    engine$NonTargetAnalysisResults$spectra_headers,
+    engine$NonTargetAnalysisResults$feature_list,
     parameters$withinReplicate,
     parameters$filtered,
     parameters$rtExpand,
@@ -143,7 +143,7 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
     parameters$minGaussianFit
   )
   
-  NTS$feature_list <- feature_list
-  engine$NTS <- NTS
+  NonTargetAnalysisResults$feature_list <- feature_list
+  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
   TRUE
 }

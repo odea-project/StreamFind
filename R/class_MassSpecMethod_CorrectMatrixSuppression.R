@@ -160,14 +160,14 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
 
   if (!nts@has_features) {
-    warning("NTS object does not have features! Not done.")
+    warning("NonTargetAnalysisResults object does not have features! Not done.")
     return(FALSE)
   }
 
@@ -340,7 +340,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
 
   tryCatch(
     {
-      engine$NTS$feature_list <- feature_list
+      engine$NonTargetAnalysisResults$feature_list <- feature_list
       return(TRUE)
     },
     error = function(e) {

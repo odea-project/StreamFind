@@ -11,10 +11,10 @@
   }
 
   anaInfo <- data.frame(
-    "path" = dirname(engine$Analyses$files),
+    "path" = dirname(engine$Analyses@files),
     "analysis" = names(engine$Analyses),
-    "group" = engine$Analyses$replicates,
-    "blank" = engine$Analyses$blanks
+    "group" = engine$Analyses@replicates,
+    "blank" = engine$Analyses@blanks
   )
 
   anaInfo$blank[is.na(anaInfo$blank)] <- ""
@@ -184,13 +184,13 @@
 
   analyses_info <- data.frame(
     "analysis" = names(engine$Analyses),
-    "replicate" = engine$Analyses$replicates,
-    "blank" = engine$Analyses$blanks,
+    "replicate" = engine$Analyses@replicates,
+    "blank" = engine$Analyses@blanks,
     "polarity" = engine$get_spectra_polarity(),
-    "file" = engine$Analyses$files
+    "file" = engine$Analyses@files
   )
   
-  headers <- engine$Analyses$spectra_headers[analyses_info$analysis]
+  headers <- engine$Analyses@spectra_headers[analyses_info$analysis]
 
   feature_list <- feature_list[analyses_info$analysis]
   
@@ -210,10 +210,10 @@
     z[, fp, with = FALSE]
   }, fp = fp)
 
-  nts <- NTS(analyses_info, headers, feature_list)
+  nts <- NonTargetAnalysisResults(analyses_info, headers, feature_list)
 
-  if (is(nts, "StreamFind::NTS")) {
-    engine$NTS <- nts
+  if (is(nts, "StreamFind::NonTargetAnalysisResults")) {
+    engine$NonTargetAnalysisResults <- nts
     TRUE
   } else {
     FALSE

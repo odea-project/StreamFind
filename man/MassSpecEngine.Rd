@@ -4,18 +4,17 @@
 \alias{MassSpecEngine}
 \title{Mass Spectrometry Engine}
 \description{
-The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
-storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
-chromatograms produced by UV detection) can be loaded from mzML. If \code{msconvert} from
-\href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e.,
-must be added to the environmental variables), the engine can also load vendor formats (i.e.,
-Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF / WIFF2)
-by direct conversion to mzML. Note that conversion of vendor formats is only possible under
-Windows OS.
+The \code{MassSpecEngine} R6 class is a framework for parsing, processing and inspecting
+mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
+chromatograms produced by UV detection) can be loaded from \emph{mzML} and \emph{mzXML}. If \code{msconvert}
+from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI
+(i.e., must be added to the environmental variables), the engine can also load vendor formats
+(i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF /
+WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible
+under Windows OS.
 }
 \details{
-The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
-assembly of Non-Target Screening (NTS) data processing workflows.
+The \code{MassSpecEngine} is using several patRoon \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target Analysis (NTA) data processing workflows.
 }
 \references{
 \insertRef{patroon01}{StreamFind}
@@ -37,7 +36,7 @@ assembly of Non-Target Screening (NTS) data processing workflows.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{NTS}}{Get/Set for the \code{NTS} results class.}
+\item{\code{NonTargetAnalysisResults}}{Get/Set for the \code{NonTargetAnalysisResults} results class.}
 
 \item{\code{Spectra}}{Get/set for the \code{Spectra} results class.}
 
@@ -1485,7 +1484,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-has_results_nts"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-has_results_nts}{}}}
 \subsection{Method \code{has_results_nts()}}{
-Checks if there are NTS results, returning \code{TRUE} or \code{FALSE}.
+Checks if there are NonTargetAnalysisResults results, returning \code{TRUE} or \code{FALSE}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$has_results_nts()}\if{html}{\out{</div>}}
 }
@@ -2215,7 +2214,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features_count"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features_count}{}}}
 \subsection{Method \code{get_features_count()}}{
-Gets a data.table with the features count from NTS results.
+Gets a data.table with the features count from NonTargetAnalysisResults results.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features_count(analyses = NULL, filtered = FALSE)}\if{html}{\out{</div>}}
 }
@@ -2235,7 +2234,7 @@ object.}
 \if{html}{\out{<a id="method-MassSpecEngine-plot_features_count"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-plot_features_count}{}}}
 \subsection{Method \code{plot_features_count()}}{
-Plots the features count from NTS results.
+Plots the features count from NonTargetAnalysisResults results.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_features_count(
   analyses = NULL,
@@ -2274,7 +2273,7 @@ Mixed use (e.g. \code{analyses+polarities}) is also possible.}
 \if{html}{\out{<a id="method-MassSpecEngine-get_features"></a>}}
 \if{latex}{\out{\hypertarget{method-MassSpecEngine-get_features}{}}}
 \subsection{Method \code{get_features()}}{
-Gets a data.table with all features from NTS results or as selected by the
+Gets a data.table with all features from NonTargetAnalysisResults results or as selected by the
 arguments.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_features(

@@ -163,6 +163,12 @@ S7::method(names, Workflow) <- function(x) {
 
 #' @export
 #' @noRd
+`$<-.StreamFind::Workflow` <- function(x, i, value) {
+  S7::prop(x, i) <- value
+}
+
+#' @export
+#' @noRd
 `[.StreamFind::Workflow` <- function(x, i) {
   if (is.numeric(i) || is.logical(i) || is.character(i)) {
     x@processing_steps[i]
