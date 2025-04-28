@@ -546,10 +546,13 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
                                                                   reactive_volumes,
                                                                   reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
-    # Reactive values to store NTS data
-    nts_data <- shiny::reactive({
+    # Reactive value to store NTS data
+    nts_data <- shiny::reactiveVal()
+
+    # Initialize with input NTS data
+    shiny::observe({
       shiny::validate(need(!is.null(x), "NTS data is not available"))
-      x
+      nts_data(x)
     })
     
     # Chart color by input (default: replicates)
@@ -648,34 +651,34 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
     })
     
     # Enhanced Features chart using plot_features_count with Plotly
-  output$features_chart <- plotly::renderPlotly({
-  nts <- nts_data()
+    output$features_chart <- plotly::renderPlotly({
+    nts <- nts_data()
   
-  # Get the color by parameter
-  color_by <- chart_color_by()
-  
-  # Call the base plot function
-  p <- plot_features_count(nts, colorBy = color_by)
-  
-  # Enhance the plotly object
-  p <- plotly::layout(p,
-    width = NULL,  # Ensure no fixed width
-    autosize = TRUE,  # Enable dynamic resizing
-    margin = list(l = 60, r = 40, t = 40, b = 60),
-    paper_bgcolor = "rgba(0,0,0,0)",
-    plot_bgcolor = "rgba(0,0,0,0)",
+    # Get the color by parameter
+    color_by <- chart_color_by()
     
-    # Better title and axis labels
-    title = list(
-      text = paste0("Feature Distribution by ", ifelse(color_by == "replicates", "Replicates", "Analysis")),
-      font = list(size = 18, color = "#333")
-    ),
+    # Call the base plot function
+    p <- plot_features_count(nts, colorBy = color_by)
     
-    xaxis = list(
+    # Enhance the plotly object
+    p <- plotly::layout(p,
+      width = NULL,  # Ensure no fixed width
+      autosize = TRUE,  # Enable dynamic resizing
+      margin = list(l = 60, r = 40, t = 40, b = 60),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)",
+    
+      # Better title and axis labels
       title = list(
-        text = "Sample",
-        font = list(size = 14, color = "#555")
+        text = paste0("Feature Distribution by ", ifelse(color_by == "replicates", "Replicates", "Analysis")),
+        font = list(size = 18, color = "#333")
       ),
+    
+      xaxis = list(
+        title = list(
+          text = "Sample",
+          font = list(size = 14, color = "#555")
+        ),
       tickfont = list(size = 12),
       gridcolor = "#eee",
       categoryorder = "total descending"  # Ensure bars are ordered for better spacing
@@ -809,14 +812,14 @@ output$features_table <- DT::renderDT({
             "  return data;",
             "}"
           ),
-          className = "dt-center"  # Center the checkboxes
+          className = "dt-center"  # Center the checkboxes (filtered column)
         )
       ),
       selection = list(mode = "multiple", selected = NULL, target = "row"),
       dom = 'rt<"bottom"lip>',
       lengthMenu = c(5, 10, 25, 50, 100),
       ordering = TRUE,
-      searching = FALSE,  # Search bar disabled as per previous request
+      searching = FALSE,  # Search bar disabled
       searchHighlight = TRUE
     ),
     style = "bootstrap",
@@ -841,6 +844,55 @@ output$features_table <- DT::renderDT({
 
 shiny::observeEvent(input$deselect_all_features, {
   DT::selectRows(DT::dataTableProxy("features_table"), NULL)
+})
+
+# Handler for removing selected features
+shiny::observeEvent(input$remove_selected_features, {
+  # Get selected features
+  selected <- selected_features()
+  
+  # Validate selection
+  if (is.null(selected) || nrow(selected) == 0) {
+    shiny::showNotification("No features selected for removal.", type = "warning")
+    return()
+  }
+  
+  # Get current NTS data
+  nts <- nts_data()
+  
+  # Create a copy to modify
+  feature_list <- nts$feature_list
+  
+  # Remove selected features
+  tryCatch({
+    for (i in seq_len(nrow(selected))) {
+      analysis_i <- selected$analysis[i]
+      feature_i <- selected$feature[i]
+      feature_list[[analysis_i]] <- feature_list[[analysis_i]][
+        !feature_list[[analysis_i]][["feature"]] %in% feature_i,
+      ]
+    }
+    
+    # Update NTS feature list
+    nts$feature_list <- feature_list
+    
+    # Update reactive nts_data
+    nts_data(nts)
+    
+    # Clear table selection
+    DT::selectRows(DT::dataTableProxy("features_table"), NULL)
+    
+    # Notify user
+    shiny::showNotification(
+      paste(nrow(selected), "features removed successfully."),
+      type = "message"
+    )
+  }, error = function(e) {
+    shiny::showNotification(
+      paste("Error removing features:", e$message),
+      type = "error"
+    )
+  })
 })
 
 # Handler for export to CSV
