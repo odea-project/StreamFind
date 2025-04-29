@@ -73,7 +73,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
       border-left: 4px solid #4e73df;
     }
     .tab-content {
-      padding: 20px 0;
+      padding: 0;
     }
     .nav-tabs {
       border-bottom: 2px solid #e3e6f0;
@@ -1020,6 +1020,14 @@ selected_quality_data <- shiny::reactive({
   # If the result is empty, return a placeholder
   if (nrow(quality_data) == 0) {
     return(data.frame(message = "No quality data available"))
+  }
+  
+  # Identify numeric columns to round
+  numeric_cols <- c("sn", "gauss_a", "gauss_u", "gauss_s", "gauss_f")
+  for (col in numeric_cols) {
+    if (col %in% names(quality_data)) {
+      quality_data[[col]] <- round(as.numeric(quality_data[[col]]), 3)  # Round to 3 decimal places
+    }
   }
   
   # Reorder columns to put feature first
