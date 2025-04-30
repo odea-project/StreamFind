@@ -124,7 +124,7 @@ cols <- c("name", "formula", "mass", "rt")
 # rcpp_parse_ms_analysis(ms_files[1])
 
 
-# NTS Working group -------------------------------------------------------------
+# NonTargetAnalysisResults Working group -------------------------------------------------------------
 
 library(rhdf5)
 

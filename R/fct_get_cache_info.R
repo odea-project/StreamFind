@@ -4,6 +4,7 @@
 #' 
 #' @param x A character string specifying the cache file or path to use. Default is a relative 
 #' "cache" directory of the working directory.
+#' @param ... Not used.
 #' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
@@ -11,10 +12,12 @@
 #' \insertRef{patroon02}{StreamFind}
 #'
 #' @return A data.table with the categories saved in the cache.
+#' 
+#' @aliases get_cache_info
 #'
 #' @export
-#'
-get_cache_info.character <- function(x = getOption("StreamFind_cache_path")) {
+#' @noRd
+S7::method(get_cache_info, S7::class_character) <- function(x, ...) {
   
   caching_mode <- getOption("StreamFind_cache_mode")
   
@@ -38,8 +41,9 @@ get_cache_info.character <- function(x = getOption("StreamFind_cache_path")) {
   }
 }
 
+#' @export
 #' @noRd
-.get_cache_info_missing <- function() {
+S7::method(get_cache_info, S7::class_missing) <- function(x, ...) {
   caching_mode <- getOption("StreamFind_cache_mode")
   
   if (is.null(caching_mode)) {

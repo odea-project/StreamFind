@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadFeaturesMS1_MS2_EIC.R
 \name{MassSpecMethod_LoadFeaturesMS1_StreamFind}
 \alias{MassSpecMethod_LoadFeaturesMS1_StreamFind}
-\title{\strong{MassSpecMethod_LoadFeaturesMS1_StreamFind}}
+\title{MassSpecMethod_LoadFeaturesMS1_StreamFind S7 class}
 \usage{
 MassSpecMethod_LoadFeaturesMS1_StreamFind(
   rtWindow = c(-2, 2),

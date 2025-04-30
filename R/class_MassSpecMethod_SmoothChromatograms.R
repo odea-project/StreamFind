@@ -1,4 +1,4 @@
-#' **MassSpecMethod_SmoothChromatograms_movingaverage**
+#' MassSpecMethod_SmoothChromatograms_movingaverage S7 class
 #'
 #' @description Smooths chromatograms using the moving average algorithm.
 #' 
@@ -16,7 +16,7 @@ MassSpecMethod_SmoothChromatograms_movingaverage <- S7::new_class(
   constructor = function(windowSize = 5) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SmoothChromatograms",
         required = "LoadChromatograms",
         algorithm = "movingaverage",
@@ -33,7 +33,7 @@ MassSpecMethod_SmoothChromatograms_movingaverage <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SmoothChromatograms")
     checkmate::assert_choice(self@algorithm, "movingaverage")
     checkmate::assert_number(self@parameters$windowSize)
@@ -97,7 +97,7 @@ S7::method(run, MassSpecMethod_SmoothChromatograms_movingaverage) <- function(x,
   TRUE
 }
 
-#' **MassSpecMethod_SmoothChromatograms_savgol**
+#' MassSpecMethod_SmoothChromatograms_savgol S7 class
 #'
 #' @description Smooths chromatograms using the Savitzky-Golay algorithm from the \pkg{pracma}
 #' package.
@@ -120,7 +120,7 @@ MassSpecMethod_SmoothChromatograms_savgol <- S7::new_class(
   constructor = function(fl = 11, forder = 4, dorder = 0) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SmoothChromatograms",
         required = "LoadChromatograms",
         algorithm = "savgol",
@@ -142,7 +142,7 @@ MassSpecMethod_SmoothChromatograms_savgol <- S7::new_class(
   
   validator = function(self) {
     
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SmoothChromatograms")
     checkmate::assert_choice(self@algorithm, "savgol")
     checkmate::assert_number(self@parameters$fl)

@@ -1,4 +1,4 @@
-#' **MassSpecMethod_QuantifyChromatographicPeaks_native**
+#' MassSpecMethod_QuantifyChromatographicPeaks_native S7 class
 #'
 #' @description Quantifies chromatographic peaks based on a calibration model.
 #' 
@@ -21,7 +21,7 @@ MassSpecMethod_QuantifyChromatographicPeaks_native <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "QuantifyChromatographicPeaks",
         required = c("LoadChromatograms", "IntegrateChromatograms"),
         algorithm = "native",
@@ -42,7 +42,7 @@ MassSpecMethod_QuantifyChromatographicPeaks_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "QuantifyChromatographicPeaks")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_numeric(self@parameters$calibration)

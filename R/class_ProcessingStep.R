@@ -1,10 +1,33 @@
+#' @title Generic Processing Step
+#' 
+#' @description The `ProcessingStep` class is used to define a processing step within a
+#' [StreamFind::Workflow]. It contains information about the data type, method, algorithm,
+#' parameters, and other relevant metadata for the processing step. The `ProcessingStep` is the
+#' parent class of all processing methods in StreamFind.
+#' 
+#' @param data_type A character string representing the data type (e.g., "MassSpec", "Raman").
+#' @param method A character string representing the method used (e.g., "BaselineCorrection").
+#' @param required A character vector of required preceding methods.
+#' @param algorithm A character string representing the algorithm used (e.g., "baseline_als").
+#' @param parameters A list of parameters for the processing step.
+#' @param number_permitted A numeric value indicating the number of permitted instances.
+#' @param version A character string representing the version of the processing step.
+#' @param software A character string representing the original software.
+#' @param developer A character string representing the developer of the processing step.
+#' @param contact A character string representing the contact information for the developer.
+#' @param link A character string representing the link to the origin of the algorithm or link to
+#' additional information.
+#' @param doi A character string representing the DOI of the algorithm or additional information.
+#' 
+#' @slot call (getter) A character string representing the call to the processing step.
+#' 
 #' @export
-#' @noRd
+#' 
 ProcessingStep <- S7::new_class(
   name = "ProcessingStep",
   package = "StreamFind",
   properties = list(
-    engine = S7::new_property(S7::class_character, default = NA_character_),
+    data_type = S7::new_property(S7::class_character, default = NA_character_),
     method = S7::new_property(S7::class_character, default = NA_character_),
     required = S7::new_property(S7::class_character, default = NA_character_),
     algorithm = S7::new_property(S7::class_character, default = NA_character_),
@@ -17,15 +40,15 @@ ProcessingStep <- S7::new_class(
     link = S7::new_property(S7::class_character, default = NA_character_),
     doi = S7::new_property(S7::class_character, default = NA_character_),
     call = S7::new_property(S7::class_character, getter = function(self) {
-      paste0(self@engine, "Method_", self@method, "_", self@algorithm)
+      paste0(self@data_type, "Method_", self@method, "_", self@algorithm)
     })
   ),
   validator = function(self) {
-    checkmate::assert_character(self@engine, len = 1)
+    checkmate::assert_character(self@data_type, len = 1)
     checkmate::assert_character(self@method, len = 1)
     checkmate::assert_character(self@required)
     checkmate::assert_true(
-      all(self@required %in% c(.get_available_methods(self@engine), NA_character_))
+      all(self@required %in% c(.get_available_methods(self@data_type), NA_character_))
     )
     checkmate::assert_character(self@algorithm, len = 1)
     checkmate::assert_list(self@parameters)
@@ -61,15 +84,15 @@ ProcessingStep <- S7::new_class(
 as.ProcessingStep <- function(value) {
   if (length(value) == 1 && is.list(value)) value <- value[[1]]
   if (is.list(value)) {
-    must_have_elements <- c("engine", "method", "algorithm", "parameters")
+    must_have_elements <- c("data_type", "method", "algorithm", "parameters")
     if (!all(must_have_elements %in% names(value))) {
       return(NULL)
     }
     if (!"version" %in% names(value)) value$version <- NA_character_
     if (is.na(value$version)) value$version <- as.character(packageVersion("StreamFind"))
   }
-  settings_constructor <- paste0(value$engine, "Method_", value$method, "_", value$algorithm)
-  available_settings <- .get_available_processing_methods(value$engine)
+  settings_constructor <- paste0(value$data_type, "Method_", value$method, "_", value$algorithm)
+  available_settings <- .get_available_processing_methods(value$data_type)
   if (!settings_constructor %in% available_settings) {
     warning(paste0(settings_constructor, " not available!"))
     return(NULL)
@@ -79,22 +102,22 @@ as.ProcessingStep <- function(value) {
 
 #' @export
 #' @noRd
-S7::method(`$`, ProcessingStep) <- function(x, i) {
+`$.StreamFind::ProcessingStep` <- function(x, i) {
   S7::prop(x, i)
 }
 
 #' @export
 #' @noRd
-S7::method(`$<-`, ProcessingStep) <- function(x, i, value) {
-  if (i %in% "parameters") S7::prop(x, i) <- value
-  return(x)
+`$<-.StreamFind::ProcessingStep` <- function(x, i, value) {
+  S7::prop(x, i) <- value
+  x
 }
 
 #' @export
 #' @noRd
-S7::method(as.list, ProcessingStep) <- function(x) {
+S7::method(as.list, ProcessingStep) <- function(x, ...) {
   list(
-    engine = x@engine,
+    data_type = x@data_type,
     method = x@method,
     required = x@required,
     algorithm = x@algorithm,
@@ -146,7 +169,7 @@ S7::method(show, ProcessingStep) <- function(x, ...) {
   cat("\n")
   cat("", class(x)[1], "\n")
   cat(
-    " engine       ", x@engine, "\n",
+    " data_type    ", x@data_type, "\n",
     " method       ", x@method, "\n",
     " required     ", paste(x@required, collapse = "; "), "\n",
     " algorithm    ", x@algorithm, "\n",

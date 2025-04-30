@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_patRoon}
 \alias{MassSpecMethod_SuspectScreening_patRoon}
-\title{\strong{MassSpecMethod_SuspectScreening_patRoon}}
+\title{MassSpecMethod_SuspectScreening_patRoon S7 class}
 \usage{
 MassSpecMethod_SuspectScreening_patRoon(
   suspects = data.table::data.table(),

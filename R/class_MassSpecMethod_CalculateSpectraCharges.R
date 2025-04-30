@@ -1,4 +1,4 @@
-#' **MassSpecMethod_CalculateSpectraCharges_native**
+#' MassSpecMethod_CalculateSpectraCharges_native S7 class
 #'
 #' @description Calculates spectral charges from multi-charged compounds (e.g. proteins and
 #' monoclonal antibodies) for mass deconvolution.
@@ -29,7 +29,7 @@ MassSpecMethod_CalculateSpectraCharges_native <- S7::new_class(
                          top = 5) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "CalculateSpectraCharges",
         required = "LoadSpectra",
         algorithm = "native",
@@ -53,7 +53,7 @@ MassSpecMethod_CalculateSpectraCharges_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "CalculateSpectraCharges")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_logical(self@parameters$onlyTopScans, max.len = 1)

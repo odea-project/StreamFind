@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_BinSpectra.R
 \name{MassSpecMethod_BinSpectra_StreamFind}
 \alias{MassSpecMethod_BinSpectra_StreamFind}
-\title{\strong{MassSpecMethod_BinSpectra_StreamFind}}
+\title{Mass Spectrometry Method for Binning Spectra (StreamFind algorithm)}
 \usage{
 MassSpecMethod_BinSpectra_StreamFind(
   binNames = c("rt", "mz"),

@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FindChromPeaks_LocalMaxima**
+#' MassSpecMethod_FindChromPeaks_LocalMaxima S7 class
 #'
 #' @description Finds peak maxima in chromatograms.
 #' 
@@ -19,7 +19,7 @@ MassSpecMethod_FindChromPeaks_LocalMaxima <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindChromPeaks",
         required = "LoadChromatograms",
         algorithm = "LocalMaxima",
@@ -40,7 +40,7 @@ MassSpecMethod_FindChromPeaks_LocalMaxima <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindChromPeaks")
     checkmate::assert_choice(self@algorithm, "LocalMaxima")
     checkmate::assert_number(self@parameters$minWidth)
@@ -187,7 +187,7 @@ S7::method(run, MassSpecMethod_FindChromPeaks_LocalMaxima) <- function(x, engine
   TRUE
 }
 
-#' **MassSpecMethod_FindChromPeaks_pracma**
+#' MassSpecMethod_FindChromPeaks_pracma S7 class
 #'
 #' @description Integrates chromatograms using the function `findpeaks` from the package
 #' \pkg{pracma} with natively added peak exclusion and evaluation steps.
@@ -219,7 +219,7 @@ MassSpecMethod_FindChromPeaks_pracma <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindChromPeaks",
         required = "LoadChromatograms",
         algorithm = "pracma",
@@ -244,7 +244,7 @@ MassSpecMethod_FindChromPeaks_pracma <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindChromPeaks")
     checkmate::assert_choice(self@algorithm, "pracma")
     checkmate::assert_logical(self@parameters$merge, max.len = 1)

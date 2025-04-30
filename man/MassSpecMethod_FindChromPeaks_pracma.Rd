@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindChromPeaks.R
 \name{MassSpecMethod_FindChromPeaks_pracma}
 \alias{MassSpecMethod_FindChromPeaks_pracma}
-\title{\strong{MassSpecMethod_FindChromPeaks_pracma}}
+\title{MassSpecMethod_FindChromPeaks_pracma S7 class}
 \usage{
 MassSpecMethod_FindChromPeaks_pracma(
   merge = TRUE,

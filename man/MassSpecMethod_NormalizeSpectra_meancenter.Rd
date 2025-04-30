@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_NormalizeSpectra.R
 \name{MassSpecMethod_NormalizeSpectra_meancenter}
 \alias{MassSpecMethod_NormalizeSpectra_meancenter}
-\title{\strong{MassSpecMethod_NormalizeSpectra_meancenter}}
+\title{MassSpecMethod_NormalizeSpectra_meancenter S7 class}
 \usage{
 MassSpecMethod_NormalizeSpectra_meancenter()
 }

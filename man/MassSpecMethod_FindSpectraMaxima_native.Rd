@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindSpectraMaxima.R
 \name{MassSpecMethod_FindSpectraMaxima_native}
 \alias{MassSpecMethod_FindSpectraMaxima_native}
-\title{\strong{MassSpecMethod_FindSpectraMaxima_native}}
+\title{MassSpecMethod_FindSpectraMaxima_native S7 class}
 \usage{
 MassSpecMethod_FindSpectraMaxima_native(
   minWidth = 0,

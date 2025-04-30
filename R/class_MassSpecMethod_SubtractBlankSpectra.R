@@ -1,4 +1,4 @@
-#' **MassSpecMethod_SubtractBlankSpectra_StreamFind**
+#' MassSpecMethod_SubtractBlankSpectra_StreamFind S7 class
 #'
 #' @description Subtracts the blank spectra to each analysis according to the blank assignment.
 #' 
@@ -17,7 +17,7 @@ MassSpecMethod_SubtractBlankSpectra_StreamFind <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SubtractBlankSpectra",
         required = "LoadSpectra",
         algorithm = "StreamFind",
@@ -34,7 +34,7 @@ MassSpecMethod_SubtractBlankSpectra_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SubtractBlankSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_logical(self@parameters$negativeToZero, max.len = 1)

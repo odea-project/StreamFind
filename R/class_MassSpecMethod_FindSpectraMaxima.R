@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FindSpectraMaxima_native**
+#' MassSpecMethod_FindSpectraMaxima_native S7 class
 #'
 #' @description Finds maximum peaks in continuous spectra.
 #' 
@@ -19,7 +19,7 @@ MassSpecMethod_FindSpectraMaxima_native <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindSpectraMaxima",
         required = "LoadSpectra",
         algorithm = "native",
@@ -40,7 +40,7 @@ MassSpecMethod_FindSpectraMaxima_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindSpectraMaxima")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_number(self@parameters$minWidth)

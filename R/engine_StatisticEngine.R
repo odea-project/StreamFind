@@ -1,6 +1,6 @@
 # MARK: StatisticEngine
 # StatisticEngine -----
-#' **StatisticEngine** R6 class and methods
+#' Statistical Analysis Engine
 #'
 #' @description
 #' The *StatisticEngine* R6 class is a framework for performing statistical analysis on data.
@@ -81,7 +81,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     # MARK: prediction_results
     ## prediction_results -----
     #' @field prediction_results Prediction results.
-    prediction_results = function() {
+    prediction_results = function(value) {
       res <- self$get_results("prediction")
       if (length(res) > 0) {
         return(res$prediction[["results"]])
@@ -92,7 +92,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     # MARK: classification_results
     ## classification_results -----
     #' @field classification_results Classification results.
-    classification_results = function() {
+    classification_results = function(value) {
       res <- self$get_results("classification")
       if (length(res) > 0) {
         return(res$classification[["results"]])

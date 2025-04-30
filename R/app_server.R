@@ -40,14 +40,14 @@ app_server <- function(input, output, session) {
     return(invisible(self))
   }
   
-  library(StreamFind)
-  library(shiny)
-  library(htmltools)
-  library(shinydashboard)
-  library(shinycssloaders)
-  library(shinyFiles)
-  library(sortable)
-  library(data.table)
+  # library(StreamFind)
+  # library(shiny)
+  # library(htmltools)
+  # library(shinydashboard)
+  # library(shinycssloaders)
+  # library(shinyFiles)
+  # library(sortable)
+  # library(data.table)
   
   # _Global Reactive Variables -----
   reactive_app_mode <- shiny::reactiveVal(NA_character_)
@@ -91,11 +91,11 @@ app_server <- function(input, output, session) {
   ## out App Mode -----
   output$app_mode_ui <- shiny::renderUI({
     if (reactive_app_mode() %in% "WorkflowAssembler") {
-      tags$span(reactive_engine_type())
+      shiny::tags$span(reactive_engine_type())
     } else if (is.na(reactive_app_mode())) {
-      tags$span("StreamFind")
+      shiny::tags$span("StreamFind")
     } else {
-      tags$span(reactive_app_mode())
+      shiny::tags$span(reactive_app_mode())
     }
   })
   

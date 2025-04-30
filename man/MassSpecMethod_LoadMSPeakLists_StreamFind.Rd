@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadMSPeakLists.R
 \name{MassSpecMethod_LoadMSPeakLists_StreamFind}
 \alias{MassSpecMethod_LoadMSPeakLists_StreamFind}
-\title{\strong{MassSpecMethod_LoadMSPeakLists_StreamFind}}
+\title{MassSpecMethod_LoadMSPeakLists_StreamFind S7 class}
 \usage{
 MassSpecMethod_LoadMSPeakLists_StreamFind(
   clusterMzWindow = 0.005,

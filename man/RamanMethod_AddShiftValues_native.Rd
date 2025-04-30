@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_AddShiftValues.R
 \name{RamanMethod_AddShiftValues_native}
 \alias{RamanMethod_AddShiftValues_native}
-\title{\strong{RamanMethod_AddShiftValues_native}}
+\title{Raman Method for Adding Shift Values to Spectra (native algorithm)}
 \usage{
 RamanMethod_AddShiftValues_native(
   mode = "analyses",

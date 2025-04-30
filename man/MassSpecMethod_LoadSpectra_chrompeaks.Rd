@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadSpectra.R
 \name{MassSpecMethod_LoadSpectra_chrompeaks}
 \alias{MassSpecMethod_LoadSpectra_chrompeaks}
-\title{\strong{MassSpecMethod_LoadSpectra_chrompeaks}}
+\title{MassSpecMethod_LoadSpectra_chrompeaks S7 class}
 \usage{
 MassSpecMethod_LoadSpectra_chrompeaks(
   levels = 1,

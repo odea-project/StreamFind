@@ -1,4 +1,4 @@
-#' **MassSpecMethod_SmoothSpectra_movingaverage**
+#' MassSpecMethod_SmoothSpectra_movingaverage S7 class
 #'
 #' @description Smooths spectra using the moving average algorithm.
 #' 
@@ -17,7 +17,7 @@ MassSpecMethod_SmoothSpectra_movingaverage <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SmoothSpectra",
         algorithm = "movingaverage",
         required = "LoadSpectra",
@@ -34,7 +34,7 @@ MassSpecMethod_SmoothSpectra_movingaverage <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SmoothSpectra")
     checkmate::assert_choice(self@algorithm, "movingaverage")
     checkmate::assert_number(self@parameters$windowSize)
@@ -93,7 +93,7 @@ S7::method(run, MassSpecMethod_SmoothSpectra_movingaverage) <- function(x, engin
   TRUE
 }
 
-#' **MassSpecMethod_SmoothSpectra_savgol**
+#' MassSpecMethod_SmoothSpectra_savgol S7 class
 #'
 #' @description Smooths spectra using the Savitzky-Golay algorithm from the \pkg{pracma} package.
 #' 
@@ -116,7 +116,7 @@ MassSpecMethod_SmoothSpectra_savgol <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SmoothSpectra",
         required = "LoadSpectra",
         algorithm = "savgol",
@@ -137,7 +137,7 @@ MassSpecMethod_SmoothSpectra_savgol <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SmoothSpectra")
     checkmate::assert_choice(self@algorithm, "savgol")
     checkmate::assert_number(self@parameters$fl)

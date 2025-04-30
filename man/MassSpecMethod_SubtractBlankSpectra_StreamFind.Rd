@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SubtractBlankSpectra.R
 \name{MassSpecMethod_SubtractBlankSpectra_StreamFind}
 \alias{MassSpecMethod_SubtractBlankSpectra_StreamFind}
-\title{\strong{MassSpecMethod_SubtractBlankSpectra_StreamFind}}
+\title{MassSpecMethod_SubtractBlankSpectra_StreamFind S7 class}
 \usage{
 MassSpecMethod_SubtractBlankSpectra_StreamFind(negativeToZero = FALSE)
 }

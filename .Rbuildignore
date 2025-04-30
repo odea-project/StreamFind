@@ -20,3 +20,5 @@ $run_dev.*
 ^vignettes/articles$
 ^.lintr$
 ^\.vscode$
+^Dockerfile$
+^cache$

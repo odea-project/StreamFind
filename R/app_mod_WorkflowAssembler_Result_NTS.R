@@ -1,5 +1,5 @@
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
+S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- function(x, id, ns) {
   ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))
   
   # Custom CSS for consistent styling
@@ -539,7 +539,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NTS) <- function(x, id, ns) {
   )
 }
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Result_Server, NTS) <- function(x,
+S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- function(x,
                                                                   id,
                                                                   ns,
                                                                   reactive_analyses,

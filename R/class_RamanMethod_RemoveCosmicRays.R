@@ -13,7 +13,7 @@ RamanMethod_RemoveCosmicRays_native <- S7::new_class(
   constructor = function() {
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "RemoveCosmicRays",
         algorithm = "native",
         parameters = list(),
@@ -28,7 +28,7 @@ RamanMethod_RemoveCosmicRays_native <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "RemoveCosmicRays")
     checkmate::assert_choice(self@algorithm, "native")
     NULL

@@ -1,8 +1,3 @@
-
-# ______________________________________________________________________________________________________________________
-# baseline -----
-# ______________________________________________________________________________________________________________________
-
 #' **RamanMethod_CorrectSpectraBaseline_baseline_als**
 #'
 #' @description Performs baseline correction to spectra using the Asymmetric Least Squares (ALS) algorithm from the 
@@ -23,7 +18,7 @@ RamanMethod_CorrectSpectraBaseline_baseline_als <- S7::new_class("RamanMethod_Co
   constructor = function(lambda = 5, p = 0.05, maxit = 10) {
     
     S7::new_object(ProcessingStep(
-      engine = "Raman",
+      data_type = "Raman",
       method = "CorrectSpectraBaseline",
       required = NA_character_,
       algorithm = "baseline_als",
@@ -43,7 +38,7 @@ RamanMethod_CorrectSpectraBaseline_baseline_als <- S7::new_class("RamanMethod_Co
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "CorrectSpectraBaseline")
     checkmate::assert_choice(self@algorithm, "baseline_als")
     checkmate::assert_number(self@parameters$lambda)
@@ -121,10 +116,6 @@ S7::method(run, RamanMethod_CorrectSpectraBaseline_baseline_als) <- function(x, 
   TRUE
 }
 
-# ______________________________________________________________________________________________________________________
-# airpls -----
-# ______________________________________________________________________________________________________________________
-
 #' **RamanMethod_CorrectSpectraBaseline_airpls**
 #'
 #' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS) 
@@ -148,24 +139,26 @@ RamanMethod_CorrectSpectraBaseline_airpls <- S7::new_class("RamanMethod_CorrectS
   
   constructor = function(lambda = 10, differences = 1, itermax = 20) {
     
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "CorrectSpectraBaseline",
-      required = NA_character_,
-      algorithm = "airpls",
-      parameters = list(lambda = lambda, differences = differences, itermax = itermax),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "airPLS",
-      developer = "Zhi-Min Zhang",
-      contact = "zmzhang@csu.edu.cn",
-      link = "https://github.com/zmzhang/airPLS",
-      doi = "10.1039/b922045c"
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "CorrectSpectraBaseline",
+        required = NA_character_,
+        algorithm = "airpls",
+        parameters = list(lambda = lambda, differences = differences, itermax = itermax),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "airPLS",
+        developer = "Zhi-Min Zhang",
+        contact = "zmzhang@csu.edu.cn",
+        link = "https://github.com/zmzhang/airPLS",
+        doi = "10.1039/b922045c"
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "CorrectSpectraBaseline")
     checkmate::assert_choice(self@algorithm, "airpls")
     checkmate::assert_number(self@parameters$lambda)

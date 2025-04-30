@@ -22,7 +22,7 @@ ms <- MassSpecEngine$new(analyses = files)
 
 # ms$Analyses$has_results_nts
 # ms$has_results_nts()
-# ms$Analyses$NTS
+# ms$Analyses$NonTargetAnalysisResults
 
 # ms$get_spectra_bpc(analyses = 1:2)
 # ms$get_spectra_headers()
@@ -169,10 +169,10 @@ ms$run(
   )
 )
 
-show(ms$NTS)
+show(ms$NonTargetAnalysisResults)
 
-# Access NTS object and print to console
-nts <- ms$NTS
+# Access NonTargetAnalysisResults object and print to console
+nts <- ms$NonTargetAnalysisResults
 show(nts)
 
 nts@number_analyses
@@ -227,7 +227,7 @@ nts@group_names
 #   replicatesOut = "effluent_pos",
 #   constantThreshold = 0.5,
 #   eliminationThreshold = 0.25,
-#   correctSuppression = TRUE,
+#   correctIntensity = TRUE,
 #   fillZerosWithLowerLimit = TRUE,
 #   lowerLimit = NA_real_,
 #   normalized = TRUE,

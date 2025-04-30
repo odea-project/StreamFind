@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_CalculateSpectraCharges.R
 \name{MassSpecMethod_CalculateSpectraCharges_native}
 \alias{MassSpecMethod_CalculateSpectraCharges_native}
-\title{\strong{MassSpecMethod_CalculateSpectraCharges_native}}
+\title{MassSpecMethod_CalculateSpectraCharges_native S7 class}
 \usage{
 MassSpecMethod_CalculateSpectraCharges_native(
   onlyTopScans = FALSE,

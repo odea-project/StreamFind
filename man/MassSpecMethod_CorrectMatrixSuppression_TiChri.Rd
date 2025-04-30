@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_CorrectMatrixSuppression.R
 \name{MassSpecMethod_CorrectMatrixSuppression_TiChri}
 \alias{MassSpecMethod_CorrectMatrixSuppression_TiChri}
-\title{\strong{MassSpecMethod_CorrectMatrixSuppression_TiChri}}
+\title{MassSpecMethod_CorrectMatrixSuppression_TiChri S7 class}
 \usage{
 MassSpecMethod_CorrectMatrixSuppression_TiChri(
   mpRtWindow = 10,
@@ -38,7 +38,7 @@ Settings for correcting matrix suppression based on the TiChri algorithm from
 calculates the matrix profile for the total ion chromatogram (TIC) and corrects the matrix
 suppression for features. Internal standards can be assigned to improve the correction. The
 \code{suppression_factor} is added to the feature list and can be used to correct the features
-intensity. The argument/parameter \code{correctSuppression} is available in plotting and processing
+intensity. The argument/parameter \code{correctIntensity} is available in plotting and processing
 methods and when \code{TRUE}, the suppression factor is used to correct the feature intensity for
 better comparison across analyses with different matrix suppression.
 }

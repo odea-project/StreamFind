@@ -1,4 +1,4 @@
-#' **RamanMethod_AddShiftValues_native**
+#' Raman Method for Adding Shift Values to Spectra (native algorithm)
 #'
 #' @description Adds custom shift values to the Raman spectra or copies from one or more analyses to
 #' the other analyses. When more than one analyses are selected, the shift values are copied from
@@ -24,7 +24,7 @@ RamanMethod_AddShiftValues_native <- S7::new_class(
                          shifts = NA_real_) {
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "AddShiftValues",
         algorithm = "native",
         parameters = list(
@@ -43,7 +43,7 @@ RamanMethod_AddShiftValues_native <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "AddShiftValues")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_choice(self@parameters$mode, c("analyses", "custom"))
@@ -134,7 +134,7 @@ S7::method(run, RamanMethod_AddShiftValues_native) <- function(x, engine = NULL)
         y$shift <- shifts
         return(y)
       })
-      z <- rbindlist(z)  
+      z <- data.table::rbindlist(z)  
     } else {
       z$shift <- shifts
     }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadSpectra.R
 \name{MassSpecMethod_LoadSpectra_native}
 \alias{MassSpecMethod_LoadSpectra_native}
-\title{\strong{MassSpecMethod_LoadSpectra_native}}
+\title{MassSpecMethod_LoadSpectra_native S7 class}
 \usage{
 MassSpecMethod_LoadSpectra_native(
   levels = 1,

@@ -1,4 +1,4 @@
-#' **MassSpecMethod_FindInternalStandards_StreamFind**
+#' MassSpecMethod_FindInternalStandards_StreamFind S7 class
 #'
 #' @description Settings for finding internal standards using a data.frame.
 #'
@@ -26,7 +26,7 @@ MassSpecMethod_FindInternalStandards_StreamFind <- S7::new_class(
                          sec = 10) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FindInternalStandards",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -46,7 +46,7 @@ MassSpecMethod_FindInternalStandards_StreamFind <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FindInternalStandards")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$ppm)
@@ -75,13 +75,13 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  NTS <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
 
-  if (!NTS$has_features) {
+  if (!nts$has_features) {
     warning("There are no features! Run find_features first!")
     return(FALSE)
   }
@@ -96,12 +96,11 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
   }
 
   internal_standards <- get_suspects(
-    engine$NTS,
+    nts,
     database = database,
     ppm = x$parameters$ppm,
     sec = x$parameters$sec,
-    filtered = TRUE,
-    onGroups = FALSE
+    filtered = TRUE
   )
 
   if (nrow(internal_standards) == 0) {
@@ -128,7 +127,7 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
   } else {
     blks <- engine$Analyses$blanks
 
-    if (any(!is.na(blks)) & NTS$has_groups) {
+    if (any(!is.na(blks)) & nts$has_groups) {
       rpls <- engine$Analyses$replicates
 
       internal_standards$replicate <- rpls[internal_standards$analysis]
@@ -174,25 +173,25 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
         message("\U26a0 Duplicated internal standards found in analysis ", a, "!")
         duplicated_isdt <- unique(temp$name[duplicated(temp$name)])
         for (d in duplicated_isdt) {
-          temp2 <- temp[temp$name == d, ]
+          temp2 <- temp[temp$name %in% d, ]
           
           if (any(is.na(temp2$group))) {
             temp2 <- temp2[!is.na(temp2$group), ]
           }
           
           if (nrow(temp2) > 1) {
-            temp2 <- temp2[which(abs(temp2$error_mass) == min(abs(temp2$error_mass))), ]
+            temp2 <- temp2[which(abs(temp2$error_rt) == min(abs(temp2$error_rt))), ]
           }
           
           if (nrow(temp2) > 1) {
-            temp2 <- temp2[which(abs(temp2$error_rt) == min(abs(temp2$error_rt))), ]
+            temp2 <- temp2[which(abs(temp2$error_mass) == min(abs(temp2$error_mass))), ]
           }
           
           fts_rem <- temp[temp$name %in% d & !temp$feature %in% temp2$feature, ]
           
           if (nrow(fts_rem) > 0) {
             internal_standards <- internal_standards[
-              !(internal_standards$feature == fts_rem$feature & internal_standards$analysis == a),
+              !(internal_standards$feature %in% fts_rem$feature & internal_standards$analysis %in% a),
             ]
           }
         }
@@ -201,16 +200,15 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
     
     internal_standards_l <- split(internal_standards, internal_standards$analysis)
     
-    features <- NTS$feature_list
+    features <- nts$feature_list
 
-    istd_col <- lapply(names(features), function(x, features, internal_standards_l) {
-      istd <- internal_standards_l[[x]]
-
-      fts <- features[[x]]
+    istd_col <- lapply(names(features), function(z, features, internal_standards_l) {
+      istd <- internal_standards_l[[z]]
+      fts <- features[[z]]
 
       if (!is.null(istd)) {
-        istd_l <- lapply(fts$feature, function(z, istd) {
-          istd_idx <- which(istd$feature %in% z)
+        istd_l <- lapply(fts$feature, function(j, istd) {
+          istd_idx <- which(istd$feature %in% j)
 
           if (length(istd_idx) > 0) {
             istd_temp <- istd[istd_idx, ]
@@ -219,29 +217,29 @@ S7::method(run, MassSpecMethod_FindInternalStandards_StreamFind) <- function(x, 
             if (nrow(istd_temp) > 0) {
               istd_temp
             } else {
-              NULL
+              data.table::data.table()
             }
           } else {
-            NULL
+            data.table::data.table()
           }
         }, istd = istd)
 
         istd_l
       } else {
-        lapply(fts$feature, function(x) NULL)
+        lapply(fts$feature, function(j) data.table::data.table())
       }
     }, features = features, internal_standards_l = internal_standards_l)
 
     names(istd_col) <- names(features)
 
-    features <- Map(function(x, y) {
-      x[["istd"]] <- y
-      x
+    features <- Map(function(fts, i) {
+      fts$istd <- i
+      fts
     }, features, istd_col)
 
-    NTS$feature_list <- features
+    nts$feature_list <- features
     
-    engine$NTS <- NTS
+    engine$NonTargetAnalysisResults <- nts
 
     message(
       "\U2713 ",

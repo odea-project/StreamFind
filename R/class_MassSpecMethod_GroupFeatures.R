@@ -11,18 +11,18 @@
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
 
-  if (!NTS@has_features) {
-    warning("NTS object is empty! Not done.")
+  if (!NonTargetAnalysisResults@has_features) {
+    warning("NonTargetAnalysisResults object is empty! Not done.")
     return(FALSE)
   }
 
-  pat_features <- get_patRoon_features(NTS, filtered = FALSE, featureGroups = FALSE)
+  pat_features <- get_patRoon_features(NonTargetAnalysisResults, filtered = FALSE, featureGroups = FALSE)
 
   algorithm <- x$algorithm
 
@@ -115,33 +115,36 @@
 
   pat_fl <- pat@features@features
 
-  pat_fl <- pat_fl[NTS@analyses_info$analysis]
+  pat_fl <- pat_fl[NonTargetAnalysisResults@analyses_info$analysis]
 
-  fl <- NTS@feature_list
+  fl <- NonTargetAnalysisResults@feature_list
 
-  fl <- Map(function(x, y) {
+  fl <- Map(function(z, y) {
     
-    x_na <- x[!x$feature %in% y$ID, ]
+    z_na <- z[!z$feature %in% y$ID, ]
     
-    if (any(!x_na$filtered)) {
-      x_na$filtered[!x_na$filtered] <- TRUE
-      x_na$filter[!x_na$filtered] <- "GroupFeatures"
+    if (any(!z_na$filtered)) {
+      z_na$filtered[!z_na$filtered] <- TRUE
+      z_na$filter[!z_na$filtered] <- "GroupFeatures"
     }
     
-    x <- x[x$feature %in% y$ID, ]
+    z <- z[z$feature %in% y$ID, ]
     
-    x$group[match(y$ID, x$feature)] <- y$group[match(x$feature, y$ID)]
+    ID_grps <- y$group
+    names(ID_grps) <- y$ID
     
-    x <- data.table::rbindlist(list(x, x_na))
-    x
+    z$group <- ID_grps[z$feature]
+    
+    z <- data.table::rbindlist(list(z, z_na))
+    z
   }, fl, pat_fl)
 
-  names(fl) <- NTS@analyses_info$analysis
+  names(fl) <- NonTargetAnalysisResults@analyses_info$analysis
 
-  NTS@feature_list <- fl
+  NonTargetAnalysisResults@feature_list <- fl
 
-  if (is(NTS, "StreamFind::NTS")) {
-    engine$NTS <- NTS
+  if (is(NonTargetAnalysisResults, "StreamFind::NonTargetAnalysisResults")) {
+    engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
     TRUE
   } else {
     FALSE
@@ -218,7 +221,7 @@
 #   NULL
 # }
 
-#' **MassSpecMethod_GroupFeatures_xcms3_peakdensity**
+#' MassSpecMethod_GroupFeatures_xcms3_peakdensity S7 class
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks) across mzML/mzXML files using the package
 #' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
@@ -262,7 +265,7 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity <- S7::new_class(
                          maxFeatures = 100) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GroupFeatures",
         required = "FindFeatures",
         algorithm = "xcms3_peakdensity",
@@ -284,7 +287,7 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
     checkmate::assert_choice(self@algorithm, "xcms3_peakdensity")
     checkmate::assert_numeric(self@parameters$bw, len = 1)
@@ -321,7 +324,7 @@ S7::method(run, MassSpecMethod_GroupFeatures_xcms3_peakdensity) <- function(x, e
   .run_group_features_patRoon(settings, engine)
 }
 
-#' **MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups**
+#' MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups S7 class
 #'
 #' @description Settings for aligning and grouping features (i.e., chromatographic peaks) across mzML/mzXML files using
 #' the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
@@ -417,7 +420,7 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class(
                          subsetAdjust = "average") {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GroupFeatures",
         required = "FindFeatures",
         algorithm = "xcms3_peakdensity_peakgroups",
@@ -450,7 +453,7 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
     checkmate::assert_choice(self@algorithm, "xcms3_peakdensity_peakgroups")
     checkmate::assert_numeric(self@parameters$bw, len = 1)
@@ -518,7 +521,7 @@ S7::method(run, MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups) <- fu
   .run_group_features_patRoon(settings, engine)
 }
 
-#' **MassSpecMethod_GroupFeatures_openms**
+#' MassSpecMethod_GroupFeatures_openms S7 class
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks) in mzML/mzXML files using the
 #' \href{https://www.openms.org/}{OpenMS}(\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software
@@ -566,7 +569,7 @@ MassSpecMethod_GroupFeatures_openms <- S7::new_class(
                          verbose = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GroupFeatures",
         required = "FindFeatures",
         algorithm = "openms",
@@ -590,7 +593,7 @@ MassSpecMethod_GroupFeatures_openms <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GroupFeatures")
     checkmate::assert_choice(self@algorithm, "openms")
     checkmate::assert_logical(self@parameters$rtalign, len = 1)

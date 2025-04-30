@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_openms}
 \alias{MassSpecMethod_FindFeatures_openms}
-\title{\strong{MassSpecMethod_FindFeatures_openms}}
+\title{MassSpecMethod_FindFeatures_openms S7 class}
 \usage{
 MassSpecMethod_FindFeatures_openms(
   noiseThrInt = 1000,
@@ -103,8 +103,6 @@ experimental, may be less accurate and requires a recent version of OpenMS
 (>=2.7).}
 
 \item{verbose}{Logical of length one. When TRUE adds processing information to the console.}
-
-\item{extraOpts}{= NULL,}
 }
 \value{
 A \code{MassSpecMethod_FindFeatures_openms} object.

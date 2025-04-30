@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_StatisticMethod_MakeModel.R
 \name{StatisticMethod_MakeModel_pca_mdatools}
 \alias{StatisticMethod_MakeModel_pca_mdatools}
-\title{\strong{StatisticMethod_MakeModel_pca_mdatools}}
+\title{StatisticMethod_MakeModel_pca_mdatools S7 class}
 \usage{
 StatisticMethod_MakeModel_pca_mdatools(
   center = FALSE,

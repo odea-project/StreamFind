@@ -18,7 +18,7 @@ RamanMethod_FindChromPeaks_LocalMaxima <- S7::new_class(
   constructor = function(minWidth = 0, maxWidth = 0, minHeight = 0) {
     
     S7::new_object(ProcessingStep(
-      engine = "Raman",
+      data_type = "Raman",
       method = "FindChromPeaks",
       required = NA_character_,
       algorithm = "LocalMaxima",
@@ -38,7 +38,7 @@ RamanMethod_FindChromPeaks_LocalMaxima <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "FindChromPeaks")
     checkmate::assert_choice(self@algorithm, "LocalMaxima")
     checkmate::assert_number(self@parameters$minWidth)
@@ -212,7 +212,7 @@ RamanMethod_FindChromPeaks_pracma <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "FindChromPeaks",
         required = NA_character_,
         algorithm = "pracma",
@@ -237,7 +237,7 @@ RamanMethod_FindChromPeaks_pracma <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "FindChromPeaks")
     checkmate::assert_choice(self@algorithm, "pracma")
     checkmate::assert_logical(self@parameters$merge, max.len = 1)

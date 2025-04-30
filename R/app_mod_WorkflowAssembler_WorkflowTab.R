@@ -768,10 +768,33 @@
       package_path <- find.package(package_name, lib.loc = .libPaths())
       tryCatch(
         {
-          rd <- tools:::fetchRdDB(paste0(package_path, "/help/StreamFind"), method_name)
+          # rd <- tools:::fetchRdDB(paste0(package_path, "/help/StreamFind"), method_name)
+          
+          rd_list <- tools::Rd_db("StreamFind")
+          rd <- NULL
+          for (entry in rd_list) {
+            aliases <- unlist(lapply(entry, function(x) {
+              if (attr(x, "Rd_tag") == "\\alias") return(as.character(x))
+              return(NULL)
+            }))
+            if (method_name %in% aliases) {
+              rd <- entry
+              break
+            }
+          }
+          
+          if (is.null(rd)) {
+            stop(
+              sprintf(
+                "No Rd entry with alias '%s' found in package '%s'.", method_name, "StreamFind"
+              )
+            )
+          }
+          
           help_page <- capture.output(
             tools::Rd2HTML(rd, out = "", options = list(underline_titles = FALSE))
           )
+          
           shiny::showModal(
             shiny::modalDialog(
               title = NULL,

@@ -1,7 +1,29 @@
 # MARK: RamanAnalyses
 # RamanAnalyses -----
+#' @title Raman Spectroscopy Analyses
+#' 
+#' @description The RamanAnalyses class is used to store a list of Raman spectra.
+#' 
+#' @param files A `character` vector with full file paths to "asc", "sif", "json", "wdf", "sdf",
+#' "csv" and/or "txt" raman files or a `data.frame` with colnames `file`, `replicate` and `blank`.
+#' The "replicate" column is used to group the analyses and the "blank" column is used to identify
+#' the blank samples. The "file" column is the full to the raman files.
+#' 
+#' @slot analyses A `list` of Raman spectra.
+#' @slot replicates (getter and setter) A `character` vector with the names of the replicates.
+#' @slot blanks (getter and setter) A `character` vector with the names of the blanks.
+#' @slot concentrations (getter and setter) A `numeric` vector with the concentrations of each
+#' analysis.
+#' @slot references (getter and setter) A `character` vector with the names of the reference for
+#' each analysis.
+#' @slot types (getter) A `character` vector with the names of the types of each analysis.
+#' @slot files (getter) A `character` vector with the names of the files of each analysis.
+#' @slot info (getter) A `data.frame` with the information of each analysis.
+#' @slot has_spectra (getter) A `logical` value indicating if the object has spectra.
+#' @slot Spectra (getter and setter) `RamanSpectraResults`.
+#' 
 #' @export
-#' @noRd
+#' 
 RamanAnalyses <- S7::new_class("RamanAnalyses",
   package = "StreamFind", parent = Analyses,
   properties = list(
@@ -143,7 +165,7 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
           return(FALSE)
         }
         if (is.null(self@results[["RamanSpectra"]])) {
-          if (sum(vapply(self$analyses, function(x) nrow(x$spectra), 0)) == 0) {
+          if (sum(vapply(self@analyses, function(x) nrow(x$spectra), 0)) == 0) {
             return(FALSE)
           }
         } else {
@@ -181,7 +203,7 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
               warning("Analysis names do not match! Not done.")
             }
           } else if (value$is_averaged) {
-            replicate_names <- unique(unname(self$replicates))
+            replicate_names <- unique(unname(self@replicates))
             value_analyses_names <- names(value$spectra)
             if (identical(replicate_names, value_analyses_names)) {
               self@results[[value@name]] <- value
@@ -232,16 +254,12 @@ RamanAnalyses <- S7::new_class("RamanAnalyses",
 # MARK: Methods
 # Methods -----
 
-# MARK: names
-## names -----
 #' @export
 #' @noRd
 S7::method(names, RamanAnalyses) <- function(x) {
   vapply(x@analyses, function(x) x$name, NA_character_)
 }
 
-# MARK: add
-## add -----
 #' @export
 #' @noRd
 S7::method(add, RamanAnalyses) <- function(x, value) {
@@ -285,7 +303,7 @@ S7::method(add, RamanAnalyses) <- function(x, value) {
   analyses <- analyses[order(names(analyses))]
 
   if (length(analyses) > length(x@analyses)) {
-    if (length(x$results) > 0) {
+    if (length(x@results) > 0) {
       warning("All results removed!")
       x@results <- list()
     }
@@ -295,13 +313,11 @@ S7::method(add, RamanAnalyses) <- function(x, value) {
   x
 }
 
-# MARK: remove
-## remove -----
 #' @export
 #' @noRd
 S7::method(remove, RamanAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    x$analyses <- x$analyses[!names(x) %in% value]
+    x@analyses <- x@analyses[!names(x) %in% value]
     x@analyses <- x@analyses[order(names(x@analyses))]
   } else if (is.numeric(value)) {
     x@analyses <- x@analyses[-value]
@@ -314,7 +330,7 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
       spec <- spec[names(x) %in% spectra_names]
       spec <- spec[order(names(spec))]
     } else {
-      spec <- spec[x$replicates %in% spectra_names]
+      spec <- spec[x@replicates %in% spectra_names]
       spec <- spec[order(names(spec))]
     }
     
@@ -323,20 +339,18 @@ S7::method(remove, RamanAnalyses) <- function(x, value) {
   x
 }
 
-# MARK: `[`
-## `[` -----
 #' @export
 #' @noRd
-S7::method(`[`, RamanAnalyses) <- function(x, i) {
+`[.StreamFind::RamanAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (!is.null(x$results[["RamanSpectra"]])) {
+  if (!is.null(x@results[["RamanSpectra"]])) {
     spec <- x@results[["RamanSpectra"]]
     spectra_names <- names(spec)
     if (!spec$is_averaged) {
       spec <- spec[names(x) %in% spectra_names]
       spec <- spec[order(names(spec))]
     } else {
-      spec <- spec[x$replicates %in% spectra_names]
+      spec <- spec[x@replicates %in% spectra_names]
       spec <- spec[order(names(spec))]
     }
     x@results[["RamanSpectra"]] <- spec
@@ -344,29 +358,25 @@ S7::method(`[`, RamanAnalyses) <- function(x, i) {
   return(x)
 }
 
-# MARK: `[<-`
-## `[<-` -----
 #' @export
 #' @noRd
-S7::method(`[<-`, RamanAnalyses) <- function(x, i, value) {
+`[<-.StreamFind::RamanAnalyses` <- function(x, i, value) {
   warning("Method not implemented in RamanAnalyses! Use add or remove methods instead.")
   return(x)
 }
 
-# MARK: `[[`
-## `[[` -----
 #' @export
 #' @noRd
-S7::method(`[[`, RamanAnalyses) <- function(x, i) {
+`[[.StreamFind::RamanAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[[i]]
-  if (!is.null(x$results[["RamanSpectra"]])) {
+  if (!is.null(x@results[["RamanSpectra"]])) {
     spec <- x@results[["RamanSpectra"]]
     spectra_names <- names(spec)
     if (!spec$is_averaged) {
       spec <- spec[names(x) %in% spectra_names]
       spec <- spec[order(names(spec))]
     } else {
-      spec <- spec[x$replicates %in% spectra_names]
+      spec <- spec[x@replicates %in% spectra_names]
       spec <- spec[order(names(spec))]
     }
     x@results[["RamanSpectra"]] <- spec
@@ -374,17 +384,13 @@ S7::method(`[[`, RamanAnalyses) <- function(x, i) {
   return(x)
 }
 
-# MARK: `[[<-`
-## `[[<-` -----
 #' @export
 #' @noRd
-S7::method(`[[<-`, RamanAnalyses) <- function(x, i, value) {
+`[[<-.StreamFind::RamanAnalyses` <- function(x, i, value) {
   warning("Method not implemented in RamanAnalyses! Use add or remove methods instead.")
   return(x)
 }
 
-# MARK: `c`
-## `c` -----
 #' @export
 #' @noRd
 S7::method(`c`, RamanAnalyses) <- function(x, ...) {
@@ -463,16 +469,16 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
     return(list())
   }
   
-  if (x$has_spectra) {
+  if (x@has_spectra) {
     if (useRawData) {
-      spec <- StreamFind::RamanSpectra(lapply(x@analyses, function(x) x$spectra))
+      spec <- StreamFind::RamanSpectra(lapply(x@analyses, function(z) z$spectra))
       spec$spectra <- spec$spectra[analyses]
       
     } else {
-      spec <- x$Spectra
+      spec <- x@Spectra
       
       if (spec$is_averaged) {
-        rpl <- x$replicates
+        rpl <- x@replicates
         rpl <- rpl[analyses]
         spec$spectra <- spec$spectra[names(spec$spectra) %in% unname(rpl)]
         spec$spectra <- Map( function(z, y) {
@@ -480,7 +486,7 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
           z
         }, spec$spectra, names(spec$spectra))
       } else {
-        rpl <- x$replicates
+        rpl <- x@replicates
         spec$spectra <- spec$spectra[analyses]
         spec$spectra <- Map( function(z, y) {
           if (nrow(z) > 0) {
@@ -565,7 +571,7 @@ S7::method(get_spectra_matrix, RamanAnalyses) <- function(x,
     return(list())
   }
   
-  if (!x$has_spectra) {
+  if (!x@has_spectra) {
     warning("No spectra results object available!")
     return(matrix())
   }
@@ -1016,26 +1022,26 @@ S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x,
     return(data.table::data.table())
   }
   
-  if (!x$has_spectra) {
+  if (!x@has_spectra) {
     return(data.table::data.table())
   }
   
-  pks <- x$Spectra$chrom_peaks
+  pks <- x@Spectra$chrom_peaks
   if (length(pks) == 0) {
     return(data.table::data.table())
   }
   
-  if (x$Spectra$is_averaged) {
-    pks <- data.table::rbindlist(x$Spectra$chrom_peaks, idcol = "replicate", fill = TRUE)
+  if (x@Spectra$is_averaged) {
+    pks <- data.table::rbindlist(x@Spectra$chrom_peaks, idcol = "replicate", fill = TRUE)
   } else {
-    pks <- data.table::rbindlist(x$Spectra$chrom_peaks, idcol = "analysis", fill = TRUE)
+    pks <- data.table::rbindlist(x@Spectra$chrom_peaks, idcol = "analysis", fill = TRUE)
   }
   
   if ("analysis" %in% colnames(pks)) {
     pks <- pks[pks$analysis %in% analyses, ]
     
   } else if ("replicate" %in% colnames(pks)) {
-    rpl <- x$replicates
+    rpl <- x@replicates
     rpl <- rpl[analyses]
     pks <- pks[pks$replicate %in% unname(rpl)]
     
@@ -1046,7 +1052,7 @@ S7::method(get_chromatograms_peaks, RamanAnalyses) <- function(x,
   }
   
   if (!"replicate" %in% colnames(pks)) {
-    pks$replicate <- x$replicates[pks$analysis]
+    pks$replicate <- x@replicates[pks$analysis]
   }
   
   if (!is.null(targets)) {

@@ -1,10 +1,9 @@
 # MARK: CoreEngine
 # CoreEngine -----
-#' **CoreEngine** R6 class and methods
+#' @title Core Engine (Internal Use Only)
 #'
-#' @description The `CoreEngine` R6 class is used harmonizing method across different data specific
-#' engines. Users should not use this class directly as core method are available from the specific
-#' data engines.
+#' @description The [StreamFind::CoreEngine] R6 class is used to harmonize methods across different
+#' data specific engines. Users should not use this class directly but data specific engines.
 #'  
 #' @template arg-core-metadata
 #' @template arg-core-workflow
@@ -30,8 +29,8 @@ CoreEngine <- R6::R6Class(
   active = list(
 
     # MARK: Metadata
-    #' @field Metadata `Metadata` S7 class object. A value argument can be given with a `Metadata`
-    #' object or a list with metadata entries.
+    #' @field Metadata A [StreamFind::Metadata] or [StreamFind::EngineMetadata]. When setting can
+    #' also be a named list with elements of length one.
     Metadata = function(value) {
       
       if (missing(value)) {
@@ -78,9 +77,9 @@ CoreEngine <- R6::R6Class(
     },
 
     # MARK: Workflow
-    #' @field Workflow `Workflow` S7 class object. A value argument can be given with a `Workflow`
-    #' object, a list with `ProcessingStep` objects or a file path to a **rds** or **json** file
-    #' with a `Workflow` object.
+    #' @field Workflow A [StreamFind::Workflow] S7 class object. When settings can also be a list
+    #' of [StreamFind::ProcessingStep] objects or a full path string to an **rds** or **json** file
+    #' containing a [StreamFind::Workflow] object.
     Workflow = function(value) {
       if (missing(value)) {
         return(private$.Workflow)
@@ -127,8 +126,7 @@ CoreEngine <- R6::R6Class(
     },
 
     # MARK: Analyses
-    #' @field Analyses `Analyses` S7 class object. A value argument can be given with a child of
-    #' `Analyses` class or a specific input for the data dedicated child `Analyses` class.
+    #' @field Analyses An [StreamFind::Analyses] S7 class object or a child of it.
     Analyses = function(value) {
       if (missing(value)) {
         return(private$.Analyses)
@@ -138,8 +136,8 @@ CoreEngine <- R6::R6Class(
         old_results <- list()
         
         if (length(names_analyses) > 0) {
-          if (length(private$.Analyses$results) > 0) {
-            old_results <- private$.Analyses$results
+          if (length(private$.Analyses@results) > 0) {
+            old_results <- private$.Analyses@results
           }
         }
         
@@ -150,10 +148,10 @@ CoreEngine <- R6::R6Class(
           }
           
           if (length(names(private$.Analyses)) > 0) {
-            if (length(private$.Analyses$results) > 0) {
-              for (r in names(private$.Analyses$results)) {
-                if (!identical(private$.Analyses$results[[r]], old_results[[r]])) {
-                  private$.AuditTrail <- add(private$.AuditTrail, private$.Analyses$results[[r]])
+            if (length(private$.Analyses@results) > 0) {
+              for (r in names(private$.Analyses@results)) {
+                if (!identical(private$.Analyses@results[[r]], old_results[[r]])) {
+                  private$.AuditTrail <- add(private$.AuditTrail, private$.Analyses@results[[r]])
                 }
               }
             }
@@ -165,15 +163,54 @@ CoreEngine <- R6::R6Class(
       invisible(self)
     },
     
+    #MARK: Results
+    #' @field Results A named list of [StreamFind::Results] S7 class objects or a child of it.
+    Results = function(value) {
+      if (missing(value)) {
+        return(private$.Analyses@results)
+      }
+      if (is(value, "StreamFind::Results")) {
+        if (grepl(value[[i]]@data_type, is(self))) {
+          private$.Analyses@results[[gsub("StreamFind::", "", is(value)[1])]] <- value
+          if (!is.null(private$.AuditTrail)) {
+            private$.AuditTrail <- add(private$.AuditTrail, value)
+          }
+        }
+      } else if (is(value, "list")) {
+        tryCatch(
+          {
+            for (i in seq_along(value)) {
+              if (is(value[[i]], "StreamFind::Results")) {
+                if (grepl(value[[i]]@data_type, is(self))) {
+                  private$.Analyses@results[[gsub("StreamFind::", "", is(value)[1])]] <- value[[i]]
+                  if (!is.null(private$.AuditTrail)) {
+                    private$.AuditTrail <- add(private$.AuditTrail, value[[i]])
+                  }
+                }
+              }
+            }
+          },
+          error = function(e) {
+            warning(e)
+          },
+          warning = function(w) {
+            warning(w)
+          }
+        )
+      } else {
+        warning("Invalid Results object! Not added.")
+      }
+      invisible(self)
+    },
+    
     # MARK: AuditTrail
-    #' @field AuditTrail `AuditTrail` S7 class object. No set method available!
-    AuditTrail = function() {
+    #' @field AuditTrail An [StreamFind::AuditTrail] S7 class object. Only getter method.
+    AuditTrail = function(value) {
       private$.AuditTrail
     },
     
     # MARK: Config
-    #' @field Config `EngineConfig` S7 class object. A value argument can be given with an
-    #' `EngineConfig` object.
+    #' @field Config An [StreamFind::EngineConfig] S7 class object.
     Config = function(value) {
       if (missing(value)) {
         return(private$.Config)
@@ -195,8 +232,8 @@ CoreEngine <- R6::R6Class(
   public = list(
     
     # MARK: initialize
-    #' @description Creates a `CoreEngine` R6 class object.
-    #' @param ... Additional data specific engine arguments.
+    #' @description Creates a [StreamFind::CoreEngine] R6 class object.
+    #' @param ... Additional arguments for data specific engines.
     initialize = function(metadata = NULL, workflow = NULL, analyses = NULL, ...) {
       private$.Metadata <- StreamFind::EngineMetadata(engine = is(self))
       private$.AuditTrail <- StreamFind::AuditTrail()
@@ -221,7 +258,7 @@ CoreEngine <- R6::R6Class(
         }
       }
       
-      if (!is.na(self$Metadata@entries$file)) {
+      if (!is.na(self$Metadata@entries[["file"]])) {
         tryCatch(
           {
             self$load()
@@ -305,43 +342,46 @@ CoreEngine <- R6::R6Class(
     #' 
     clear_cache = function(value = NULL) {
       if (is.null(value)) value = "all"
-      StreamFind::clear_cache(self$Config$ConfigCache, value)
+      config_cache <- self$Config[["ConfigCache"]]
+      StreamFind::clear_cache(config_cache, value)
       message("\U2713 Cache cleared!")
     },
     
-    #' @description Clears all result objects in the `Analyses`.
+    #' @description Clears all result objects in the `Analyses` field.
     clear_results = function() {
-      private$.Analyses$results <- list()
+      private$.Analyses@results <- list()
       message("\U2713 Results cleared!")
     },
     
     # MARK: get_cache_info
-    #' @description Gets a data.table with the cached data categories.
+    #' @description Gets a `data.table` with the cached data categories.
     get_cache_info = function() {
-      self$Config$ConfigCache$info
+      config_cache <- self$Config[["ConfigCache"]]
+      config_cache@info
     },
     
     # MARK: get_cache_size
     #' @description Gets the current size of the cache file.
     get_cache_size = function() {
-      self$Config$ConfigCache$size
+      config_cache <- self$Config[["ConfigCache"]]
+      config_cache@size
     },
     
     # MARK: has_analyses
-    #' @description Checks if there are analyses files/objects in the `Analyses`.
+    #' @description Checks if there are analyses files/objects in the `Analyses` field.
     has_analyses = function() {
       length(self$Analyses) > 0
     },
     
     # MARK: has_results
-    #' @description Checks if there are `Results` in the engine.
+    #' @description Checks if there are [StreamFind::Results] in the `Analyses` field.
     #'
-    #' @param value A string or a vector of strings with the name/s of the `Results` child/s for
-    #' checking the presence in the engine.
+    #' @param value A string or a vector of strings with the name/s of the [StreamFind::Results]
+    #' child/s for checking the presence.
     #'
     has_results = function(value = NULL) {
-      if (is.null(value)) value <- names(self$Analyses$results)
-      !all(vapply(private$.Analyses$results[value], is.null, FALSE))
+      if (is.null(value)) value <- names(self$Analyses@results)
+      !all(vapply(private$.Analyses@results[value], is.null, FALSE))
     },
     
     # MARK: load
@@ -352,17 +392,17 @@ CoreEngine <- R6::R6Class(
     #' @return Invisible.
     #'
     load = function(file = NA_character_) {
-      if (is.na(file)) file <- self$Metadata@entries$file
+      if (is.na(file)) file <- self$Metadata@entries[["file"]]
       
       if (!file.exists(file)) {
         warning("File does not exist!")
         return(invisible(self))
       }
       
-      if (!self$Metadata@entries$file %in% file) {
+      if (!self$Metadata@entries[["file"]] %in% file) {
         tryCatch(
           {
-            self$Metadata@entries$file <- file
+            self$Metadata@entries[["file"]] <- file
           },
           error = function(e) {
             warning("File not valid! Not loaded.")
@@ -383,7 +423,7 @@ CoreEngine <- R6::R6Class(
           private$.Workflow <- data$Workflow
           private$.Analyses <- data$Analyses
           private$.AuditTrail <- data$AuditTrail
-          self$Metadata@entries$file <- file
+          self$Metadata@entries[["file"]] <- file
           message("\U2713 Engine data loaded from ", file, "!")
         } else {
           warning("No data loaded from cache!")
@@ -397,7 +437,7 @@ CoreEngine <- R6::R6Class(
             private$.Workflow <- data$Workflow
             private$.Analyses <- data$Analyses
             private$.AuditTrail <- data$AuditTrail
-            self$Metadata@entries$file <- file
+            self$Metadata@entries[["file"]] <- file
             message("\U2713 Engine data loaded from ", file, "!")
           } else {
             warning("Engine type not matching with current engine! Not done.")
@@ -432,28 +472,28 @@ CoreEngine <- R6::R6Class(
     
     # MARK: save
     #' @description Saves the engine data as an **sqlite** or **rds** file. If no file path is
-    #' given, the engine data is saved in the file of the `Metadata`. If no file is specified
-    #' in the `Metadata` the engine data is saved as **rds** format with the engine class
-    #' name and date in the `Metadata` as file name.
+    #' given, the engine data is saved in the file of the [StreamFind::Metadata] field. If no file
+    #' is specified in the `Metadata` the engine data is saved as **rds** format with the engine
+    #' class and date in the `Metadata` as file name.
     #'
     #' @param file A string with the full file path of the **sqlite** or **rds** file.
     #'
     #' @return Invisible.
     #'
     save = function(file = NA_character_) {
-      if (is.na(file)) file <- self$Metadata@entries$file
+      if (is.na(file)) file <- self$Metadata@entries[["file"]]
       
       if (is.na(file)) {
         file <- paste0(
-          getwd(), "/", is(self), "_", format(self$Metadata@entries$date, "%Y%m%d%H%M%S"), ".rds"
+          getwd(), "/", is(self), "_", format(self$Metadata@entries[["date"]], "%Y%m%d%H%M%S"), ".rds"
         )
       }
       
-      if (!self$Metadata@entries$file %in% file) {
+      if (!self$Metadata@entries[["file"]] %in% file) {
         tryCatch(
           {
             mtd <- self$Metadata
-            mtd@entries$file <- file
+            mtd@entries[["file"]] <- file
             self$Metadata <- mtd
           },
           error = function(e) {
@@ -505,9 +545,9 @@ CoreEngine <- R6::R6Class(
     },
     
     # MARK: run
-    #' @description Runs a processing method defined by the `ProcessingStep` object.
+    #' @description Runs a processing method defined by the [StreamFind::ProcessingStep] object.
     #' 
-    #' @param step A `ProcessingStep` object.
+    #' @param step A [StreamFind::ProcessingStep] object.
     #'
     run = function(step = NULL) {
       if (is.null(step)) {
@@ -518,69 +558,71 @@ CoreEngine <- R6::R6Class(
         warning("ProcessingStep not valid!")
         return(invisible(self))
       }
-      engine <- step$engine
-      if (!checkmate::test_choice(paste0(engine, "Engine"), is(self))) {
-        warning("Engine type ", engine, " not matching with current engine! Not done.")
+      data_type <- step@data_type
+      if (!checkmate::test_choice(paste0(data_type, "Engine"), is(self))) {
+        warning("Data type ", data_type, " not matching with current engine! Not done.")
         return(invisible(self))
       }
-      call <- step$call
-      available_processing_steps <- .get_available_processing_methods(step$engine)
+      call <- step@call
+      available_processing_steps <- .get_available_processing_methods(step@data_type)
       if (!call %in% available_processing_steps) {
         warning(paste0(call, " not available!"))
         return(invisible(self))
       }
       
-      message("\U2699 Running ", step$method, " using ", step$algorithm)
-      
+      message("\U2699 Running ", step@method, " using ", step@algorithm)
+      config_cache <- self$Config[["ConfigCache"]]
       processed <- FALSE
       loaded_cached <- FALSE
       
-      if (self$Config$ConfigCache$value) {
+      if (config_cache@value) {
         
-        engine_name <- self$Metadata["name"]
+        engine_name <- self$Metadata@entries[["name"]]
         if (is.null(engine_name) || is.na(engine_name)) engine_name <- is(self)
         
-        cache_category <- paste0(engine_name, "_results_", step$method, "_", step$algorithm)
+        cache_category <- paste0(engine_name, "_results_", step@method, "_", step@algorithm)
         
         cache <- StreamFind::load_cache(
-          self$Config$ConfigCache,
+          config_cache,
           category = cache_category,
           as.list(self$Workflow),
           as.list(step),
-          self$Analyses$info,
-          names(self$Analyses$results)
+          self$Analyses@info,
+          names(self$Analyses@results)
         )
         
         if (!is.null(cache$data)) {
           
           message(
             "\U2139 Results from ",
-            step$method,
+            step@method,
             " using ",
-            step$algorithm, " loaded from cache!"
+            step@algorithm, " loaded from cache!"
           )
           
           tryCatch(
             {
-              self$Analyses$results <- cache$data
+              self$Analyses@results <- cache$data
               processed <- TRUE
               loaded_cached <- TRUE
             },
             error = function(e) {
               warning(
                 "Error when adding results from ",
-                step$method, ":\n", e, "\n",
+                step@method, ":\n", e, "\n",
                 "Results deleted from cache!"
               )
-              StreamFind::sclear_cache(self$Config$ConfigCache, cache_category)
+              StreamFind::clear_cache(config_cache, cache_category)
             },
             warning = function(w) {
               warning(
-                "Warning when adding results from ",
-                step$method, ":\n", w, "\n",
-                "Results deleted from cache!"
+                paste0(
+                  "Warning when adding results from ",
+                  step@method, ":\n", w, "\n",
+                  "Results deleted from cache!"
+                )
               )
-              StreamFind::sclear_cache(self$Config$ConfigCache, cache_category)
+              StreamFind::clear_cache(config_cache, cache_category)
             }
           )
         }
@@ -592,29 +634,29 @@ CoreEngine <- R6::R6Class(
       
       if (processed) {
         
-        if (self$Config$ConfigCache$value && !loaded_cached) {
+        if (config_cache@value && !loaded_cached) {
           if (!is.null(cache$hash)) {
             StreamFind::save_cache(
-              self$Config$ConfigCache,
+              config_cache,
               category = cache_category,
-              data = self$Analyses$results,
+              data = self$Analyses@results,
               hash = cache$hash
             )
             message(
               "\U1f5ab Results from ",
-              step$method,
+              step@method,
               " using ",
-              step$algorithm,
+              step@algorithm,
               " cached!"
             )
           }
         }
         
-        if (step$method %in% self$Workflow@methods) {
-          if (step$number_permitted > 1) {
+        if (step@method %in% self$Workflow@methods) {
+          if (step@number_permitted > 1) {
             self$Workflow[length(self$Workflow) + 1] <- step
           } else {
-            step_idx <- which(self$Workflow@methods %in% step$method)
+            step_idx <- which(self$Workflow@methods %in% step@method)
             self$Workflow[step_idx] <- step
           }
         } else {
@@ -629,12 +671,12 @@ CoreEngine <- R6::R6Class(
     },
     
     # MARK: run_workflow
-    #' @description Runs all processing steps in Workflow.
+    #' @description Runs all [StreamFind::ProcessingStep] objects in the [StreamFind::Workflow].
     run_workflow = function() {
       if (length(self$Workflow) > 0) {
-        steps <- self$Workflow$processing_steps
+        steps <- self$Workflow@processing_steps
         self$Workflow <- StreamFind::Workflow()
-        if (length(self$Analyses$results) > 0) self$Analyses$results <- list()
+        if (length(self$Analyses@results) > 0) self$Analyses@results <- list()
         lapply(steps, function(x) self$run(x))
       } else {
         warning("There are no processing steps to run!")
@@ -643,7 +685,7 @@ CoreEngine <- R6::R6Class(
     },
     
     # MARK: run_app
-    #' @description Runs the StreamFind Shiny app to explore and manage the engine data.
+    #' @description Runs the StreamFind Shiny app to explore, process and manage the engine data.
     #'
     #' @note The engine data is saved in an **rds** file and loaded in the app. If save file is
     #' defined in the engine it is used, otherwise the save file name is automatically set to the
@@ -652,7 +694,7 @@ CoreEngine <- R6::R6Class(
     #'
     run_app = function() {
       self$save()
-      file <- self$Metadata$file
+      file <- self$Metadata@entries[["file"]]
       engine_type <- is(self)
 
       if (!requireNamespace("shiny", quietly = TRUE)) {

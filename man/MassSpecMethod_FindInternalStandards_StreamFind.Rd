@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindInternalStandards.R
 \name{MassSpecMethod_FindInternalStandards_StreamFind}
 \alias{MassSpecMethod_FindInternalStandards_StreamFind}
-\title{\strong{MassSpecMethod_FindInternalStandards_StreamFind}}
+\title{MassSpecMethod_FindInternalStandards_StreamFind S7 class}
 \usage{
 MassSpecMethod_FindInternalStandards_StreamFind(
   database = data.table::data.table(name = character(), formula = character(), mass =

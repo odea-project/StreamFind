@@ -5,12 +5,15 @@
 #' @inheritParams shiny::shinyApp
 #'
 #' @export
-#' @importFrom shiny shinyApp
-#' @importFrom golem with_golem_options
 run_app <- function(onStart = NULL, options = list(), enableBookmarking = NULL, uiPattern = "/", ...) {
   
   if (!requireNamespace("shiny", quietly = TRUE)) {
-    warning("Shiny package not installed!")
+    warning("shiny package not installed!")
+    return(invisible(self))
+  }
+  
+  if (!requireNamespace("golem", quietly = TRUE)) {
+    warning("golem package not installed!")
     return(invisible(self))
   }
   

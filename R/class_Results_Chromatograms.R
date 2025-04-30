@@ -105,7 +105,7 @@ S7::method(show, Chromatograms) <- function(x) {
 ## `[` -----
 #' @export
 #' @noRd
-S7::method(`[`, Chromatograms) <- function(x, i) {
+`[.StreamFind::Chromatograms` <- function(x, i) {
   x@chromatograms <- x@chromatograms[i]
   if (x@has_peaks) {
     x@peaks <- x@peaks[i]

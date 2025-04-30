@@ -12,7 +12,7 @@ library(StreamFind)
 # TODO when subsetting on features/groups check/add if features_eics are also changed
 # TODO add suspects to MassSpecData matching patRoon
 # TODO check the import MassSpecData from JSON, in particular the nested data.tables
-# TODO make components based on MCR approach (NTS gideline)
+# TODO make components based on MCR approach (NonTargetAnalysisResults gideline)
 # TODO add filter_features by ID and add filter_groups by ID and others
 
 
@@ -863,7 +863,7 @@ ms$plot_groups_ms2(groups = suspects$group[1],
 
 
 
-fls <- list.files("D:/NTS/Project_230829_LINEG_LCMSMS_Scan_KA_Gesamtablauf/mzml", full.names = TRUE)
+fls <- list.files("D:/NonTargetAnalysisResults/Project_230829_LINEG_LCMSMS_Scan_KA_Gesamtablauf/mzml", full.names = TRUE)
 ms <- MassSpecData$new(fls[c(1, 40)]) #[grepl("neg", fls)]
 
 ffs <- Method_find_features_xcms3_matchedfilter(binSize = 0.5, snthresh = 40)

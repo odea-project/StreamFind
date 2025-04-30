@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadChromatograms_native**
+#' MassSpecMethod_LoadChromatograms_native
 #'
 #' @description Loads chromatograms from mass spectrometry analyses.
 #' 
@@ -24,7 +24,7 @@ MassSpecMethod_LoadChromatograms_native <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadChromatograms",
         required = NA_character_,
         algorithm = "native",
@@ -46,7 +46,7 @@ MassSpecMethod_LoadChromatograms_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadChromatograms")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_true(

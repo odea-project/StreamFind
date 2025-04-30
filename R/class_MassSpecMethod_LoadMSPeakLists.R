@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadMSPeakLists_patRoon**
+#' MassSpecMethod_LoadMSPeakLists_patRoon S7 class
 #'
 #' @description Settings for loading MS2 and MS1 spectra for feature groups.
 #'
@@ -58,7 +58,7 @@ MassSpecMethod_LoadMSPeakLists_patRoon <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadMSPeakLists",
         required = c("FindFeatures", "GroupFeatures"),
         algorithm = "patRoon",
@@ -85,7 +85,7 @@ MassSpecMethod_LoadMSPeakLists_patRoon <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadMSPeakLists")
     checkmate::assert_choice(self@algorithm, "patRoon")
     checkmate::assert_numeric(self@parameters$maxMSRtWindow, len = 1)
@@ -117,20 +117,22 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_patRoon) <- function(x, engine = 
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
   
-  if (!NTS@has_groups) {
-    warning("NTS object does not have feature groups! Not done.")
+  if (!NonTargetAnalysisResults@has_groups) {
+    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
     return(FALSE)
   }
   
   parameters <- x$parameters
   
-  parameters$avgFun <- get(parameters$avgFun)
+  avgFunName <- parameters$avgFun
+  
+  parameters$avgFun <- get(avgFunName)
   
   av_args <- list(
     clusterMzWindow =  parameters$clusterMzWindow,
@@ -144,7 +146,7 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_patRoon) <- function(x, engine = 
   )
   
   mspl <- patRoon::generateMSPeakLists(
-    NTS$features,
+    NonTargetAnalysisResults$features,
     algorithm = "mzr",
     maxMSRtWindow = parameters$maxMSRtWindow,
     precursorMzWindow = parameters$precursorMzWindow,
@@ -153,13 +155,13 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_patRoon) <- function(x, engine = 
     avgFGroupParams = av_args
   )
   
-  NTS$mspl <- mspl
-  engine$NTS <- NTS
+  NonTargetAnalysisResults$mspl <- mspl
+  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
   message("\U2713 MSPeakLists loaded!")
   TRUE
 }
 
-#' **MassSpecMethod_LoadMSPeakLists_StreamFind**
+#' MassSpecMethod_LoadMSPeakLists_StreamFind S7 class
 #'
 #' @description Settings for converting loaded MS2 and MS1 spectra into a `MSPeakLists` object from
 #' patRoon.
@@ -204,7 +206,7 @@ MassSpecMethod_LoadMSPeakLists_StreamFind <- S7::new_class(
    
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadMSPeakLists",
         required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
         algorithm = "StreamFind",
@@ -228,7 +230,7 @@ MassSpecMethod_LoadMSPeakLists_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadMSPeakLists")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_numeric(self@parameters$clusterMzWindow, len = 1)
@@ -256,36 +258,38 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
   
-  if (!NTS@has_groups) {
-    warning("NTS object does not have feature groups! Not done.")
+  if (!NonTargetAnalysisResults@has_groups) {
+    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
     return(FALSE)
   }
   
-  if (!(NTS$has_features_ms1 && NTS$has_features_ms2)) {
+  if (!(NonTargetAnalysisResults$has_features_ms1 && NonTargetAnalysisResults$has_features_ms2)) {
     warning("Features MS1 and/or MS2 not loaded! Not done.")
     return(FALSE)
   }
   
   parameters <- x$parameters
   
-  parameters$avgFun <- get(parameters$avgFun)
+  avgFunName <- parameters$avgFun
   
-  mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(NTS, parameters)
+  parameters$avgFun <- get(avgFunName)
   
-  NTS$mspl <- mspl
-  engine$NTS <- NTS
+  mspl <- .convert_ms1_ms2_columns_to_MSPeakLists(NonTargetAnalysisResults, parameters)
+  
+  NonTargetAnalysisResults$mspl <- mspl
+  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
   message("\U2713 MSPeakLists loaded!")
   TRUE
 }
 
 #' @noRd
-.convert_ms1_ms2_columns_to_MSPeakLists <- function(NTS, parameters) {
+.convert_ms1_ms2_columns_to_MSPeakLists <- function(NonTargetAnalysisResults, parameters) {
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
@@ -320,7 +324,7 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
     out
   }
   
-  feature_list <- NTS$feature_list
+  feature_list <- NonTargetAnalysisResults$feature_list
   
   plist <- lapply(feature_list, function(x, correct_spectrum) {
     
@@ -371,11 +375,11 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
     
   }, correct_spectrum = correct_spectrum)
   
-  names(plist) <- NTS$analyses_info$analysis
+  names(plist) <- NonTargetAnalysisResults$analyses_info$analysis
   
   plist <- plist[vapply(plist, function(x) length(x) > 0, FALSE)]
   
-  run_list <- lapply(NTS$analyses_info$file, function(z) rcpp_parse_ms_spectra_headers(z))
+  run_list <- lapply(NonTargetAnalysisResults$analyses_info$file, function(z) rcpp_parse_ms_spectra_headers(z))
   
   mlist <- Map(function(x, y) {
     
@@ -393,7 +397,12 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
     
     y$polarity <- pol_key[pol_col]
     
-    setnames(y, c("index", "level", "ce", "pre_mz"), c("seqNum", "msLevel", "collisionEnergy", "precursorMZ"), skip_absent = TRUE)
+    data.table::setnames(
+      y,
+      c("index", "level", "ce", "pre_mz"),
+      c("seqNum", "msLevel", "collisionEnergy", "precursorMZ"),
+      skip_absent = TRUE
+    )
     
     glist <- lapply(groups, function(x2, features, y) {
       
@@ -423,13 +432,32 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
     
   }, feature_list, run_list)
   
-  names(mlist) <- NTS$analyses_info$analysis
+  names(mlist) <- NonTargetAnalysisResults$analyses_info$analysis
   mlist <- mlist[vapply(mlist, function(x) length(x) > 0, FALSE)]
   mlist <- mlist[names(plist)]
   
   groups <- lapply(feature_list[names(plist)], function(x) x$group[!x$filtered])
   groups <- unique(unlist(groups))
   groups <- groups[!is.na(groups)]
+  
+  browser()
+  browser()
+  browser()
+  
+  av_ms2 <- get_groups_ms2(
+    NonTargetAnalysisResults,
+    groups = groups,
+    isolationWindow = 1.3,
+    mzClustFeatures = 0.003,
+    presenceFeatures = 0.7,
+    minIntensityFeatures = 100,
+    useLoadedData = FALSE,
+    mzClust = 0.003,
+    presence = 0.7,
+    minIntensity = 100
+  )
+  
+  av_plist <- 
   
   pat_param <- list(
     "clusterMzWindow" = parameters$clusterMzWindow,
@@ -442,7 +470,7 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
     "retainPrecursorMSMS" = TRUE
   )
   
-  ana_info <- NTS$analyses_info[NTS$analyses_info$analysis %in% names(plist), ]
+  ana_info <- NonTargetAnalysisResults$analyses_info[NonTargetAnalysisResults$analyses_info$analysis %in% names(plist), ]
   pol <- ana_info$polarity
   ana_info$path <- dirname(ana_info$file)
   data.table::setnames(ana_info, "replicate", "group", skip_absent = TRUE)
@@ -494,6 +522,7 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_StreamFind) <- function(x, engine
   } else {
     plfinal <- new(
       "MSPeakLists",
+      doAverage = FALSE,
       peakLists = plist,
       metadata = mlist,
       avgPeakListArgs = pat_param,

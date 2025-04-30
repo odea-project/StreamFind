@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_AverageSpectra.R
 \name{MassSpecMethod_AverageSpectra_StreamFind}
 \alias{MassSpecMethod_AverageSpectra_StreamFind}
-\title{\strong{MassSpecMethod_AverageSpectra_StreamFind}}
+\title{Mass Spectrometry Method for Averaging Spectra (StreamFind algorithm)}
 \usage{
 MassSpecMethod_AverageSpectra_StreamFind(
   by = "replicates",

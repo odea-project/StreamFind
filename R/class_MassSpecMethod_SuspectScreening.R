@@ -1,4 +1,4 @@
-#' **MassSpecMethod_SuspectScreening_StreamFind**
+#' MassSpecMethod_SuspectScreening_StreamFind S7 class
 #'
 #' @description Settings for performing suspect screening using a data.frame with target compounds.
 #'
@@ -7,11 +7,11 @@
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
 #' @template arg-ms-ppmMS2
+#' @param mzrMS2 Numeric length 1 with the absolute m/z range window for matching MS2 fragments with
+#' experimental MS2 traces.
 #' @template arg-ms-minFragments
-#' @template arg-ms-isolationWindow
-#' @template arg-ms-mzClust
-#' @template arg-ms-presence
-#' @template arg-ms-minIntensity
+#' @param minCusiness Numeric length 1 with the minimum cusiness value of the experimental and
+#' database fragments for a feature to be considered a suspect.
 #' @template arg-ms-filtered
 #'
 #' @return A `MassSpecMethod_SuspectScreening_StreamFind` object.
@@ -31,16 +31,14 @@ MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
                          ppm = 5,
                          sec = 10,
                          ppmMS2 = 10,
+                         mzrMS2 = 0.008,
+                         minCusiness = 0.5,
                          minFragments = 3,
-                         isolationWindow = 1.3,
-                         mzClust = 0.003,
-                         presence = 0.8,
-                         minIntensity = 0,
                          filtered = FALSE) {
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SuspectScreening",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -49,11 +47,9 @@ MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
           "ppm" = as.numeric(ppm),
           "sec" = as.numeric(sec),
           "ppmMS2" = as.numeric(ppmMS2),
+          "mzrMS2" = as.numeric(mzrMS2),
+          "minCusiness" = as.numeric(minCusiness),
           "minFragments" = as.numeric(minFragments),
-          "isolationWindow" = as.numeric(isolationWindow),
-          "mzClust" = as.numeric(mzClust),
-          "presence" = as.numeric(presence),
-          "minIntensity" = as.numeric(minIntensity),
           "filtered" = as.logical(filtered)
         ),
         number_permitted = 1,
@@ -68,17 +64,15 @@ MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SuspectScreening")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$ppm)
     checkmate::assert_number(self@parameters$sec)
     checkmate::assert_number(self@parameters$ppmMS2)
+    checkmate::assert_number(self@parameters$mzrMS2)
+    checkmate::assert_number(self@parameters$minCusiness)
     checkmate::assert_number(self@parameters$minFragments)
-    checkmate::assert_number(self@parameters$isolationWindow)
-    checkmate::assert_number(self@parameters$mzClust)
-    checkmate::assert_number(self@parameters$presence)
-    checkmate::assert_number(self@parameters$minIntensity)
     checkmate::assert_logical(self@parameters$filtered, max.len = 1)
     checkmate::assert_data_table(self@parameters$database)
     checkmate::assert_true(
@@ -105,14 +99,14 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
   
   if (!nts@has_features) {
-    warning("NTS object is empty! Not done.")
+    warning("NonTargetAnalysisResults object is empty! Not done.")
     return(FALSE)
   }
   
@@ -124,13 +118,10 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     ppm = parameters$ppm,
     sec = parameters$sec,
     ppmMS2 = parameters$ppmMS2,
+    mzrMS2 = parameters$mzrMS2,
+    minCusiness = parameters$minCusiness,
     minFragments = parameters$minFragments,
-    isolationWindow = parameters$isolationWindow,
-    mzClust = parameters$mzClust,
-    presence = parameters$presence,
-    minIntensity = parameters$minIntensity,
-    filtered = parameters$filtered,
-    onGroups = FALSE
+    filtered = parameters$filtered
   )
   
   if (nrow(suspect_features) > 0) {
@@ -173,17 +164,21 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     
     names(sus_col) <- names(features)
     
-    nts <- .add_features_column(nts, "suspects", sus_col)
-    engine$NTS <- nts
-    TRUE
+    features <- Map(function(fts, i) {
+      fts$suspects <- i
+      fts
+    }, features, sus_col)
     
+    nts$feature_list <- features
+    engine$NonTargetAnalysisResults <- nts
+    TRUE
   } else {
     message("\U26a0 No suspects found!")
     FALSE
   }
 }
 
-#' **MassSpecMethod_SuspectScreening_forident**
+#' MassSpecMethod_SuspectScreening_forident S7 class
 #'
 #' @description Settings for performing suspect screening using the
 #' \href{https://water.for-ident.org/}{FOR-IDENT} platform.
@@ -221,7 +216,7 @@ MassSpecMethod_SuspectScreening_forident <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SuspectScreening",
         algorithm = "forident",
         parameters = list(
@@ -242,7 +237,7 @@ MassSpecMethod_SuspectScreening_forident <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SuspectScreening")
     checkmate::assert_choice(self@algorithm, "forident")
     checkmate::assert_true(dir.exists(self@parameters$path))
@@ -268,18 +263,18 @@ S7::method(run, MassSpecMethod_SuspectScreening_forident) <- function(x, engine 
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
   
-  if (NTS@number_features == 0) {
-    warning("NTS object is empty! Not done.")
+  if (NonTargetAnalysisResults@number_features == 0) {
+    warning("NonTargetAnalysisResults object is empty! Not done.")
     return(FALSE)
   }
   
-  if (NTS$has_groups) {
+  if (NonTargetAnalysisResults$has_groups) {
     
     polarities <- unique(engine$get_spectra_polarity())
     
@@ -345,7 +340,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_forident) <- function(x, engine 
     
   } else {
     
-    if (NTS$has_groups) {
+    if (NonTargetAnalysisResults$has_groups) {
       ms2 <- engine$get_groups_ms2()
       ms2 <- split(ms2, ms2$group)
       out_list$ms2 <- lapply(out_list$group, function(x, ms2) {
@@ -417,7 +412,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_forident) <- function(x, engine 
   TRUE
 }
 
-#' **MassSpecMethod_SuspectScreening_patRoon**
+#' MassSpecMethod_SuspectScreening_patRoon S7 class
 #'
 #' @description Settings for performing suspect screening using the function
 #' \link[patRoon]{screenSuspects} from the patRoon R package.
@@ -450,7 +445,7 @@ MassSpecMethod_SuspectScreening_patRoon <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "SuspectScreening",
         algorithm = "patRoon",
         parameters = list(
@@ -471,7 +466,7 @@ MassSpecMethod_SuspectScreening_patRoon <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "SuspectScreening")
     checkmate::assert_choice(self@algorithm, "patRoon")
     checkmate::assert_number(self@parameters$rtWindow)
@@ -508,7 +503,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_patRoon) <- function(x, engine =
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
@@ -517,17 +512,17 @@ S7::method(run, MassSpecMethod_SuspectScreening_patRoon) <- function(x, engine =
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
   
-  if (!NTS@has_groups) {
-    warning("NTS object does not have feature groups! Not done.")
+  if (!NonTargetAnalysisResults@has_groups) {
+    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
     return(FALSE)
   }
   
   parameters <- x$parameters
   
   res <- patRoon::screenSuspects(
-    fGroups = NTS$features,
+    fGroups = NonTargetAnalysisResults$features,
     suspects = parameters$suspects,
     rtWindow = parameters$rtWindow,
     mzWindow = parameters$mzWindow,
@@ -540,9 +535,9 @@ S7::method(run, MassSpecMethod_SuspectScreening_patRoon) <- function(x, engine =
   
   suspect_list <- res@screenInfo
   
-  NTS$features <- res
+  NonTargetAnalysisResults$features <- res
   
-  features <- NTS$feature_list
+  features <- NonTargetAnalysisResults$feature_list
   
   features <- lapply(features, function(x, suspect_list) {
     
@@ -602,8 +597,8 @@ S7::method(run, MassSpecMethod_SuspectScreening_patRoon) <- function(x, engine =
     
   }, suspect_list = suspect_list)
   
-  NTS$feature_list <- features
-  engine$NTS <- NTS
+  NonTargetAnalysisResults$feature_list <- features
+  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
   message("\U2713 Suspect screening done with patRoon!")
   TRUE
 }

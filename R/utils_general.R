@@ -3,7 +3,7 @@
 
 #' @noRd
 .get_available_engines <- function() {
-  StreamFind_env <- as.environment("package:StreamFind")
+  StreamFind_env <- asNamespace("StreamFind")
   available_engines <- ls(envir = StreamFind_env, pattern = "Engine")
   available_engines <- available_engines[
     sapply(available_engines, function(x) {
@@ -15,18 +15,18 @@
 }
 
 #' @noRd
-.get_available_processing_methods <- function(engine = NA_character_) {
-  StreamFind_env <- as.environment("package:StreamFind")
-  if (grepl("Engine$", engine)) engine <- gsub("Engine", "", engine)
-  engine_methods_key <- paste0(engine, "Method_")
-  return(ls(envir = StreamFind_env, pattern = paste0("^", engine_methods_key)))
+.get_available_processing_methods <- function(data_type = NA_character_) {
+  StreamFind_env <- asNamespace("StreamFind")
+  if (grepl("Engine$", data_type)) data_type <- gsub("Engine", "", data_type)
+  data_type_methods_key <- paste0(data_type, "Method_")
+  return(ls(envir = StreamFind_env, pattern = paste0("^", data_type_methods_key)))
 }
 
 #' @noRd
-.get_available_methods <- function(engine = NA_character_) {
-  if (grepl("Engine$", engine)) engine <- gsub("Engine", "", engine)
-  processing_methods <- .get_available_processing_methods(engine)
-  processing_methods <- gsub(paste0(engine, "Method_"), "", processing_methods)
+.get_available_methods <- function(data_type = NA_character_) {
+  if (grepl("Engine$", data_type)) data_type <- gsub("Engine", "", data_type)
+  processing_methods <- .get_available_processing_methods(data_type)
+  processing_methods <- gsub(paste0(data_type, "Method_"), "", processing_methods)
   processing_methods <- gsub("_.*", "", processing_methods)
   return(unique(processing_methods))
 }

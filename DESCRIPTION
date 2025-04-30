@@ -1,22 +1,15 @@
 Package: StreamFind
-Title: Framework and workflows for data analysis in the water cycle
+Title: Flexible Workflow Assembler for Advanced Data Analysis 
 Version: 0.2.0
+Author: Ricardo Cunha [cre, aut, fnd] (<https://orcid.org/0000-0002-6791-0119>)
+Maintainer: Ricardo Cunha <cunha@iuta.de>
 Authors@R: c(
-    person(
-        "Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut"), comment = c(ORCID = "0000-0002-6791-0119")
-    ),
-    person(
-        "Walter", "Laurito", email="laurito@fzi.de", role = "ctb"
-    ))
-Description: The StreamFind R package is a framework for spectrometric and 
-    spectroscopic data processing with focus on environmental and quality 
-    studies of the water cycle. The StreamFind R package aims to stimulate 
-    the use of advanced data analysis (e.g., non-target screening (NTS) and 
-    statistical analysis) in routine studies, promoting standardization of data 
-    processing and easing the retrospective inclusion of data.
+        person("Ricardo", "Cunha", email="cunha@iuta.de", role=c("cre", "aut", "fnd"), comment = c(ORCID = "0000-0002-6791-0119")),
+        person("Walter", "Laurito", email="laurito@fzi.de", role = "ctb")
+    )
+Description: The package StreamFind is a flexible R package designed to support the assembly and execution of standardized workflows for advanced data analysis. Originally developed within the project “Flexible Data Analysis and Workflow Designer to Identify Chemicals in the Water Cycle”, funded by the German Federal Ministry of Education and Research (BMBF), StreamFind offers a modular platform capable of handling diverse data types, including mass spectrometry, spectroscopy, and other structured datasets. The package promotes the use of advanced analysis techniques — such as non-target screening (NTS), statistical modeling, and retrospective data evaluation — in both research and routine quality control workflows. With its standardized approach to data processing, comprehensive documentation, and an integrated graphical user interface, StreamFind is designed to support scientists and technical staff across a wide range of disciplines, from environmental monitoring to pharmaceutical quality assurance.
 License: GPL (>= 3)
-URL: https://github.com/odea-project/StreamFind,
-    https://odea-project.github.io/StreamFind/
+URL: https://github.com/odea-project/StreamFind, https://odea-project.github.io/StreamFind/
 BugReports: https://github.com/odea-project/StreamFind/issues
 Depends: R (>= 4.3.0)
 Imports: 
@@ -36,7 +29,6 @@ Imports:
     tools,
     utils,
     plyr,
-    tidyr,
     methods,
     digest,
     DBI,
@@ -44,7 +36,6 @@ Imports:
     withr,
     fst,
     zlibbioc,
-    Rhdf5lib,
     reticulate,
     ggplot2,
     dplyr,
@@ -70,19 +61,24 @@ Suggests:
     knitr,
     kableExtra,
     rmarkdown,
-    testthat
+    testthat,
+    DT,
+    config,
+    Rhdf5lib
 Config/testthat/edition: 3
 Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-SystemRequirements: GNU make, C++17
-LinkingTo: Rhdf5lib, Rcpp
 RdMacros: 
     Rdpack
-Collate: 
+VignetteBuilder: knitr
+SystemRequirements: GNU make, C++17
+LinkingTo: Rhdf5lib, Rcpp
+Collate:
     'global_import_namespace.R'
     'RcppExports.R'
+    'globals.R'
     'generics.R'
     'utils_pipe.R'
     'utils_general.R'
@@ -90,6 +86,8 @@ Collate:
     'fct_get_cache_info.R'
     'fct_clear_cache.R'
     'fct_ms_convert_trim_files.R'
+    'class_internal_DataTypes.R'
+    'class_internal_MassSpecTargets.R'
     'class_Config.R'
     'class_AuditTrail.R'
     'class_Metadata.R'
@@ -101,11 +99,10 @@ Collate:
     'class_Results_Spectra_MassSpecSpectra.R'
     'class_Results_SpectraSimilarity.R'
     'class_Results_Chromatograms.R'
-    'class_Results_NTS.R'
+    'class_Results_NonTargetAnalysisResults.R'
     'class_Results_StatisticModel.R'
     'class_Results_DataFrame.R'
     'class_Results_Quantification.R'
-    'class_MassSpecTargets.R'
     'class_Analyses.R'
     'class_Analyses_MassSpecAnalyses.R'
     'class_Analyses_RamanAnalyses.R'
@@ -135,6 +132,7 @@ Collate:
     'class_MassSpecMethod_LoadChromatograms.R'
     'class_MassSpecMethod_QuantifyChromatographicPeaks.R'
     'class_MassSpecMethod_LoadFeaturesMS1_MS2_EIC.R'
+    'class_MassSpecMethod_FilterFeaturesMS2.R'
     'class_MassSpecMethod_LoadMSPeakLists.R'
     'class_MassSpecMethod_LoadSpectra.R'
     'class_MassSpecMethod_NormalizeSpectra.R'
@@ -185,4 +183,3 @@ Collate:
     'run_app.R'
     'streamFind-package.R'
     'zzz.R'
-VignetteBuilder: knitr

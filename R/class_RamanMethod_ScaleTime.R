@@ -15,7 +15,7 @@ RamanMethod_ScaleTime_native <- S7::new_class(
   
   constructor = function(value = 0) {
     S7::new_object(ProcessingStep(
-      engine = "Raman",
+      data_type = "Raman",
       method = "ScaleTime",
       required = NA_character_,
       algorithm = "native",
@@ -33,7 +33,7 @@ RamanMethod_ScaleTime_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "ScaleTime")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_numeric(self@parameters$value)

@@ -1,4 +1,4 @@
-#' **MassSpecMethod_LoadFeaturesMS1_StreamFind**
+#' MassSpecMethod_LoadFeaturesMS1_StreamFind S7 class
 #'
 #' @description Settings for loading MS1 spectra for features.
 #'
@@ -27,7 +27,7 @@ MassSpecMethod_LoadFeaturesMS1_StreamFind <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadFeaturesMS1",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -51,7 +51,7 @@ MassSpecMethod_LoadFeaturesMS1_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadFeaturesMS1")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_double(as.numeric(self@parameters$rtWindow), max.len = 2)
@@ -78,32 +78,23 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS1_StreamFind) <- function(x, engine
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
   
   if (!nts$has_features) {
-    warning("NTS object does not have features! Not done.")
+    warning("NonTargetAnalysisResults object does not have features! Not done.")
     return(FALSE)
   }
   
-  feature_list <- nts$feature_list
-  
-  feature_list <- lapply(feature_list, function(z) {
-    if (!"ms1" %in% colnames(z)) z$ms1 <- list(rep(data.table::data.table(), nrow(z)))
-    z
-  })
-  
   parameters <- x$parameters
-  ana_info <- nts$analyses_info
   
-  feature_list <- rcpp_ms_load_features_ms1(
-    analyses_names = ana_info$analysis,
-    analyses_files = ana_info$file,
-    headers = nts$spectra_headers,
-    features = feature_list,
+  feature_list <- rcpp_nts_load_features_ms1(
+    nts$analyses_info,
+    nts$spectra_headers,
+    nts$feature_list,
     filtered = parameters$filtered,
     rtWindow = parameters$rtWindow,
     mzWindow = parameters$mzWindow,
@@ -113,7 +104,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS1_StreamFind) <- function(x, engine
   )
   
   tryCatch({
-    engine$NTS$feature_list <- feature_list
+    engine$NonTargetAnalysisResults$feature_list <- feature_list
     message("\U2713 MS1 added to features!")
     return(TRUE)
   }, error = function(e) {
@@ -122,7 +113,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS1_StreamFind) <- function(x, engine
   })
 }
 
-#' **MassSpecMethod_LoadFeaturesMS2_StreamFind**
+#' MassSpecMethod_LoadFeaturesMS2_StreamFind S7 class
 #'
 #' @description Settings for loading MS2 spectra for features.
 #'
@@ -149,7 +140,7 @@ MassSpecMethod_LoadFeaturesMS2_StreamFind <- S7::new_class(
    
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadFeaturesMS2",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -172,7 +163,7 @@ MassSpecMethod_LoadFeaturesMS2_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadFeaturesMS2")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$isolationWindow)
@@ -198,32 +189,23 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS2_StreamFind) <- function(x, engine
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
   
   if (!nts$has_features) {
-    warning("NTS object does not have features! Not done.")
+    warning("NonTargetAnalysisResults object does not have features! Not done.")
     return(FALSE)
   }
   
-  feature_list <- nts$feature_list
-  
-  feature_list <- lapply(feature_list, function(z) {
-    if (!"ms2" %in% colnames(z)) z$ms2 <- list(rep(data.table::data.table(), nrow(z)))
-    z
-  })
-  
   parameters <- x$parameters
-  ana_info <- nts$analyses_info
   
-  feature_list <- rcpp_ms_load_features_ms2(
-    analyses_names = ana_info$analysis,
-    analyses_files = ana_info$file,
-    headers = nts$spectra_headers,
-    features = feature_list,
+  feature_list <- rcpp_nts_load_features_ms2(
+    nts$analyses_info,
+    nts$spectra_headers,
+    nts$feature_list,
     filtered = parameters$filtered,
     minTracesIntensity = parameters$minIntensity,
     isolationWindow = parameters$isolationWindow,
@@ -232,7 +214,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS2_StreamFind) <- function(x, engine
   )
   
   tryCatch({
-    engine$NTS$feature_list <- feature_list
+    engine$NonTargetAnalysisResults$feature_list <- feature_list
     message("\U2713 MS2 added to features!")
     return(TRUE)
   }, error = function(e) {
@@ -241,7 +223,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS2_StreamFind) <- function(x, engine
   })
 }
 
-#' **MassSpecMethod_LoadFeaturesEIC_StreamFind**
+#' MassSpecMethod_LoadFeaturesEIC_StreamFind S7 class
 #'
 #' @description Settings for loading spectra EIC for feature groups.
 #'
@@ -264,7 +246,7 @@ MassSpecMethod_LoadFeaturesEIC_StreamFind <- S7::new_class(
    
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "LoadFeaturesEIC",
         required = "FindFeatures",
         algorithm = "StreamFind",
@@ -286,7 +268,7 @@ MassSpecMethod_LoadFeaturesEIC_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "LoadFeaturesEIC")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$rtExpand)
@@ -312,32 +294,22 @@ S7::method(run, MassSpecMethod_LoadFeaturesEIC_StreamFind) <- function(x, engine
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
 
   if (!nts$has_features) {
-    warning("NTS object does not have features! Not done.")
+    warning("NonTargetAnalysisResults object does not have features! Not done.")
     return(FALSE)
   }
-  
-  feature_list <- nts$feature_list
-  
-  feature_list <- lapply(feature_list, function(z) {
-    if (!"eic" %in% colnames(z)) z$eic <- list(rep(data.table::data.table(), nrow(z)))
-    z
-  })
-    
   parameters <- x$parameters
-  ana_info <- nts$analyses_info
   
-  feature_list <- rcpp_ms_load_features_eic(
-    analyses_names = ana_info$analysis,
-    analyses_files = ana_info$file,
-    headers = nts$spectra_headers,
-    feature_list,
+  feature_list <- rcpp_nts_load_features_eic(
+    nts$analyses_info,
+    nts$spectra_headers,
+    nts$feature_list,
     parameters$filtered,
     parameters$rtExpand,
     parameters$mzExpand,
@@ -345,7 +317,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesEIC_StreamFind) <- function(x, engine
   )
   
   tryCatch({
-    engine$NTS$feature_list <- feature_list
+    engine$NonTargetAnalysisResults$feature_list <- feature_list
     message("\U2713 EIC added to features!")
     return(TRUE)
   }, error = function(e) {

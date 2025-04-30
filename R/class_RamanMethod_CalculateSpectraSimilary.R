@@ -21,7 +21,7 @@ RamanMethod_CalculateSpectraSimilary_hqi <- S7::new_class(
   constructor = function(reference = data.frame(), method = "pearson") {
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "CalculateSpectraSimilary",
         required = NA_character_,
         algorithm = "hqi",
@@ -41,7 +41,7 @@ RamanMethod_CalculateSpectraSimilary_hqi <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "CalculateSpectraSimilary")
     checkmate::assert_choice(self@algorithm, "hqi")
     checkmate::assert_data_frame(self@parameters$reference)

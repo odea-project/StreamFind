@@ -1,19 +1,18 @@
 # MARK: MassSpecEngine
 # MassSpecEngine -----
-#' **MassSpecEngine** R6 class and methods
-#'
-#' @description The MassSpecEngine R6 class is a framework for parsing, processing, inspecting and
-#' storing mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
-#' chromatograms produced by UV detection) can be loaded from mzML. If `msconvert` from 
-#' \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e.,
-#' must be added to the environmental variables), the engine can also load vendor formats (i.e., 
-#' Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF / WIFF2)
-#' by direct conversion to mzML. Note that conversion of vendor formats is only possible under
-#' Windows OS.
-#'
-#' @details The MassSpecEngine is using \href{https://github.com/rickhelmus/patRoon}{patRoon} for
-#' assembly of Non-Target Screening (NTS) data processing workflows.
-#'
+#' Mass Spectrometry Engine
+#' 
+#' @description The `MassSpecEngine` R6 class is a framework for parsing, processing and inspecting
+#' mass spectrometry (MS) data. MS data (i.e., spectra and chromatograms, including
+#' chromatograms produced by UV detection) can be loaded from *mzML* and *mzXML*. If `msconvert`
+#' from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI
+#' (i.e., must be added to the environmental variables), the engine can also load vendor formats
+#' (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF /
+#' WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible
+#' under Windows OS.
+#' 
+#' @details The `MassSpecEngine` is using several patRoon \href{https://github.com/rickhelmus/patRoon}{patRoon} for assembly of Non-Target Analysis (NTA) data processing workflows.
+#' 
 #' @template arg-core-metadata
 #' @template arg-core-workflow
 #' @template arg-analyses
@@ -65,22 +64,22 @@
 #' @template arg-xlim-ylim
 #' @template arg-showText
 #' @template arg-settings
-#' @template arg-ms-correctSuppression
+#' @template arg-ms-correctIntensity
 #' @template arg-renderEngine
-#'
+#' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
-#'
+#' 
 #' \insertRef{patroon02}{StreamFind}
-#'
+#' 
 #' \insertRef{pugixml01}{StreamFind}
 #' 
 #' \insertRef{proteo01}{StreamFind}
 #' 
 #' \insertRef{proteo02}{StreamFind}
-#'
+#' 
 #' @export
-#'
+#' 
 MassSpecEngine <- R6::R6Class("MassSpecEngine",
   inherit = CoreEngine,
 
@@ -88,17 +87,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
   # Active Bindings -----
   active = list(
 
-    # MARK: NTS
-    ## NTS -----
-    #' @field NTS Get/Set for the `NTS` results class.
-    NTS = function(value) {
+    # MARK: NonTargetAnalysisResults
+    ## NonTargetAnalysisResults -----
+    #' @field NonTargetAnalysisResults Get/Set for the `NonTargetAnalysisResults` results class.
+    NonTargetAnalysisResults = function(value) {
       if (missing(value)) {
-        return(self$Analyses$results[["NTS"]])
+        return(self$Analyses@results[["NonTargetAnalysisResults"]])
       }
-      if (is(value, "StreamFind::NTS")) {
-        self$Analyses$NTS <- value
+      if (is(value, "StreamFind::NonTargetAnalysisResults")) {
+        self$Analyses@NonTargetAnalysisResults <- value
       } else {
-        warning("Value must be an NTS results object! Not done.")
+        warning("Value must be an NonTargetAnalysisResults results object! Not done.")
       }
       invisible(self)
     },
@@ -108,10 +107,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @field Spectra Get/set for the `Spectra` results class.
     Spectra = function(value) {
       if (missing(value)) {
-        return(self$Analyses$Spectra)
+        return(self$Analyses@Spectra)
       }
       if (is(value, "StreamFind::MassSpecSpectra")) {
-        self$Analyses$Spectra <- value
+        self$Analyses@Spectra <- value
       } else {
         warning("Value must be a Spectra object! Not done.")
       }
@@ -123,10 +122,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @field Chromatograms Get/set for the chromatograms results class.
     Chromatograms = function(value) {
       if (missing(value)) {
-        return(self$Analyses$Chromatograms)
+        return(self$Analyses@Chromatograms)
       }
       if (is(value, "StreamFind::Chromatograms")) {
-        self$Analyses$Chromatograms <- value
+        self$Analyses@Chromatograms <- value
       } else {
         warning("Value must be a Chromatograms object! Not done.")
       }
@@ -155,6 +154,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' vendor formats to mzML.
     #' @param levels Numeric vector with the MS levels to consider when centroiding data. Default
     #' is `c(1, 2)`.
+    #' 
+    #' @seealso [StreamFind::CoreEngine]
     #'
     #' @return A new MassSpecEngine class object.
     #'
@@ -201,7 +202,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' number of analyses.
     #' 
     add_replicate_names = function(value) {
-      self$Analyses$replicates <- value
+      self$Analyses@replicates <- value
       invisible(self)
     },
     
@@ -213,7 +214,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' number of analyses and must be one of replicate names.
     #' 
     add_blank_names = function(value) {
-      self$Analyses$blanks <- value
+      self$Analyses@blanks <- value
       invisible(self)
     },
 
@@ -230,7 +231,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a character vector with the analysis replicate names.
     get_replicate_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$replicates[analyses]
+      self$Analyses@replicates[analyses]
     },
 
     # MARK: get_blank_names
@@ -238,7 +239,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a character vector with the analysis blank replicate names.
     get_blank_names = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$blanks[analyses]
+      self$Analyses@blanks[analyses]
     },
 
     # MARK: get_files
@@ -246,7 +247,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a character vector with the full file paths of each analysis.
     get_files = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$files[analyses]
+      self$Analyses@files[analyses]
     },
 
     # MARK: get_formats
@@ -254,7 +255,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a character vector with the file format of each analysis.'
     get_formats = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$formats[analyses]
+      self$Analyses@formats[analyses]
     },
 
     # MARK: get_instruments
@@ -262,7 +263,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a list of instrument information from each analysis as elements.
     get_instruments = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$instruments[analyses]
+      self$Analyses@instruments[analyses]
     },
 
     # MARK: get_software
@@ -270,7 +271,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a list of software information from each analysis as elements.
     get_software = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$software[analyses]
+      self$Analyses@software[analyses]
     },
 
     # MARK: get_spectra_number
@@ -278,7 +279,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a numeric vector with the number of spectra in each analysis.
     get_spectra_number = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$spectra_number[analyses]
+      self$Analyses@spectra_number[analyses]
     },
 
     # MARK: get_spectra_mode
@@ -287,7 +288,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' (i.e., profile or centroid).
     get_spectra_mode = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$spectra_mode[analyses]
+      self$Analyses@spectra_mode[analyses]
     },
 
     # MARK: get_spectra_level
@@ -295,7 +296,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a character vector with the spectra levels (e.g., "1, 2") of each analysis.
     get_spectra_level = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$spectra_level[analyses]
+      self$Analyses@spectra_level[analyses]
     },
 
     # MARK: get_spectra_lowest_mz
@@ -303,7 +304,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a numeric vector with the lower \emph{m/z} value of each analysis.
     get_spectra_lowest_mz = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$spectra_lowest_mz[analyses]
+      self$Analyses@spectra_lowest_mz[analyses]
     },
 
     # MARK: get_spectra_highest_mz
@@ -311,7 +312,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a numeric vector with the higher \emph{m/z} value of each analysis.
     get_spectra_highest_mz = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$spectra_highest_mz[analyses]
+      self$Analyses@spectra_highest_mz[analyses]
     },
 
     # MARK: get_spectra_lowest_rt
@@ -319,7 +320,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a numeric vector with the start retention time value of each analysis.
     get_spectra_lowest_rt = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$spectra_lowest_rt[analyses]
+      self$Analyses@spectra_lowest_rt[analyses]
     },
 
     # MARK: get_spectra_highest_rt
@@ -327,7 +328,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a numeric vector with the end retention time value of each analysis.
     get_spectra_highest_rt = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$spectra_highest_rt[analyses]
+      self$Analyses@spectra_highest_rt[analyses]
     },
 
     # MARK: get_spectra_polarity
@@ -335,7 +336,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a character vector with the polarity of each analysis.
     get_spectra_polarity = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$spectra_polarity[analyses]
+      self$Analyses@spectra_polarity[analyses]
     },
 
     # MARK: get_spectra_headers
@@ -343,7 +344,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets a data.table of the spectra headers from each analysis.
     get_spectra_headers = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      value <- self$Analyses$spectra_headers[analyses]
+      value <- self$Analyses@spectra_headers[analyses]
       value <- rbindlist(value, idcol = "analysis", fill = TRUE)
       value
     },
@@ -627,7 +628,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets the number of chromatograms in each analysis.
     get_chromatograms_number = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      self$Analyses$chromatograms_number[analyses]
+      self$Analyses@chromatograms_number[analyses]
     },
     
     # MARK: get_chromatograms_headers
@@ -635,7 +636,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Gets the chromatograms headers data.table of each analysis.
     get_chromatograms_headers = function(analyses = NULL) {
       analyses <- .check_analyses_argument(self$Analyses, analyses)
-      value <- self$Analyses$chromatograms_headers[analyses]
+      value <- self$Analyses@chromatograms_headers[analyses]
       value <- rbindlist(value, idcol = "analysis", fill = TRUE)
       value
     },
@@ -656,23 +657,23 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     
     # MARK: has_results_nts
     ## has_results_nts -----
-    #' @description Checks if there are NTS results, returning `TRUE` or `FALSE`.
+    #' @description Checks if there are NonTargetAnalysisResults results, returning `TRUE` or `FALSE`.
     has_results_nts = function() {
-      self$Analyses$has_results_nts
+      self$Analyses@has_results_nts
     },
     
     # MARK: has_results_spectra
     ## has_results_spectra -----
     #' @description Checks if there are spectra, returning `TRUE` or `FALSE`.
     has_results_spectra = function() {
-      self$Analyses$has_results_spectra
+      self$Analyses@has_results_spectra
     },
     
     # MARK: has_results_chromatograms
     ## has_results_chromatograms -----
     #' @description Checks if there are chromatograms, returning `TRUE` or `FALSE`.
     has_results_chromatograms = function() {
-      self$Analyses$has_results_chromatograms
+      self$Analyses@has_results_chromatograms
     },
     
     # MARK: Chromatograms
@@ -1002,26 +1003,26 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       }
     },
     
-    # MARK: NTS
-    # NTS -----
+    # MARK: NonTargetAnalysisResults
+    # NonTargetAnalysisResults -----
     
     # MARK: get_features_count
     ## get_features_count -----
-    #' @description Gets a data.table with the features count from NTS results.
+    #' @description Gets a data.table with the features count from NonTargetAnalysisResults results.
     get_features_count = function(analyses = NULL, filtered = FALSE) {
       if (self$has_results_nts()) {
         StreamFind::get_features_count(
-          self$NTS, analyses, filtered
+          self$NonTargetAnalysisResults, analyses, filtered
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
     
     # MARK: plot_features_count
     ## plot_features_count -----
-    #' @description Plots the features count from NTS results.
+    #' @description Plots the features count from NonTargetAnalysisResults results.
     #' 
     #' @param showHoverText Logical (length 1). Set to \code{TRUE} to show hover text.
     #' 
@@ -1034,17 +1035,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    showHoverText = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::plot_features_count(
-          self$NTS, analyses, filtered, yLab, title, colorBy, showLegend, showHoverText
+          self$NonTargetAnalysisResults, analyses, filtered, yLab, title, colorBy, showLegend, showHoverText
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
     
     # MARK: get_features
     ## get_features -----
-    #' @description Gets a data.table with all features from NTS results or as selected by the 
+    #' @description Gets a data.table with all features from NonTargetAnalysisResults results or as selected by the 
     #' arguments.
     get_features = function(analyses = NULL,
                             features = NULL,
@@ -1058,10 +1059,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             filtered = FALSE) {
       if (self$has_results_nts()) {
         StreamFind::get_features(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1093,11 +1094,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::map_features(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, neutral_mass,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, neutral_mass,
           filtered, legendNames, xLab, yLab, title, colorBy, showLegend, interactive, renderEngine
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1123,11 +1124,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                       renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::map_features_intensity(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
           filtered, legendNames, xLab, yLab, title, colorBy, renderEngine
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1150,11 +1151,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 useLoadedData = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::get_features_eic(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
           rtExpand, mzExpand, filtered, useLoadedData
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1184,12 +1185,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::plot_features(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
           rtExpand, mzExpand, useLoadedData, filtered, legendNames, xLab, yLab, title, colorBy,
           interactive, renderEngine
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1216,11 +1217,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 useLoadedData = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::get_features_ms1(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
           rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1253,12 +1254,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  interactive = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::plot_features_ms1(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow,
           mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData, legendNames,
           xLab, yLab, title, colorBy, showText, interactive
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1284,11 +1285,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 useLoadedData = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::get_features_ms2(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
           isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1320,12 +1321,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                  interactive = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::plot_features_ms2(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
           mzClust, presence, minIntensity, filtered, useLoadedData, legendNames, xLab, yLab, title,
           colorBy, showText, interactive
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1352,14 +1353,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                           average = FALSE,
                           sdValues = FALSE,
                           metadata = FALSE,
-                          correctSuppression = FALSE) {
+                          correctIntensity = FALSE) {
       if (self$has_results_nts()) {
         StreamFind::get_groups(
-          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec,
-          filtered, intensities, average, sdValues, metadata, correctSuppression
+          self$NonTargetAnalysisResults, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          filtered, intensities, average, sdValues, metadata, correctIntensity
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1387,11 +1388,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::plot_groups(
-          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand,
+          self$NonTargetAnalysisResults, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand,
           filtered, legendNames, xLab, yLab, title, colorBy, interactive, renderEngine
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1401,7 +1402,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' @description Method to give an overview of the EIC, alignment and intensity variance from
     #' features within target feature groups.
     #'
-    #' @param correctSuppression Logical (length 1). When `TRUE` and suppression factor is available 
+    #' @param correctIntensity Logical (length 1). When `TRUE` and suppression factor is available 
     #' the intensities are corrected for suppression.
     #' @param heights A numeric vector of length 3 to control the height of the first, second and
     #' third plot, respectively.
@@ -1418,7 +1419,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     rtExpand = 120,
                                     mzExpand = 0.005,
                                     useLoadedData = TRUE,
-                                    correctSuppression = TRUE,
+                                    correctIntensity = TRUE,
                                     filtered = FALSE,
                                     legendNames = NULL,
                                     title = NULL,
@@ -1426,12 +1427,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                     renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::plot_groups_overview(
-          self$NTS, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand,
-          mzExpand, useLoadedData, correctSuppression, filtered, legendNames, title, heights,
+          self$NonTargetAnalysisResults, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand,
+          mzExpand, useLoadedData, correctIntensity, filtered, legendNames, title, heights,
           renderEngine
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1453,7 +1454,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    sec = 60,
                                    millisec = 5,
                                    filtered = FALSE,
-                                   correctSuppression = TRUE,
+                                   correctIntensity = TRUE,
                                    averaged = FALSE,
                                    normalized = TRUE,
                                    legendNames = NULL,
@@ -1463,11 +1464,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                    renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::plot_groups_profile(
-          self$NTS, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-          correctSuppression, normalized, legendNames, yLab, title, showLegend, renderEngine
+          self$NonTargetAnalysisResults, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
+          correctIntensity, normalized, legendNames, yLab, title, showLegend, renderEngine
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1496,12 +1497,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               filtered = FALSE) {
       if (self$has_results_nts()) {
         StreamFind::get_groups_ms1(
-          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, groups, mass, mz, rt, mobility, ppm, sec, millisec,
           rtWindow, mzWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
           useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1537,13 +1538,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                interactive = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::plot_groups_ms1(
-          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow,
+          self$NonTargetAnalysisResults, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow,
           mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData,
           mzClust, presence, minIntensity, groupBy, filtered, legendNames,
           xLab, yLab, title, colorBy, showText, interactive
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1571,12 +1572,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               filtered = FALSE) {
       if (self$has_results_nts()) {
         StreamFind::get_groups_ms2(
-          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, groups, mass, mz, rt, mobility, ppm, sec, millisec,
           isolationWindow, mzClustFeatures, presenceFeatures, minIntensityFeatures,
           useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1611,13 +1612,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                interactive = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::plot_groups_ms2(
-          self$NTS, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
+          self$NonTargetAnalysisResults, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow,
           mzClustFeatures, presenceFeatures, minIntensityFeatures, useLoadedData,
           mzClust, presence, minIntensity, groupBy, filtered, legendNames,
           xLab, yLab, title, colorBy, showText, interactive
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1638,10 +1639,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               filtered = FALSE) {
       if (self$has_results_nts()) {
         StreamFind::get_components(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1669,11 +1670,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                               renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::map_components(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
           legendNames, xLab, yLab, title, colorBy, interactive, showLegend, renderEngine
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1709,11 +1710,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             onGroups = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::get_suspects(
-          self$NTS, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
           ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, onGroups
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1756,12 +1757,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              interactive = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::plot_suspects(
-          self$NTS, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
           ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered,
           rtExpand, mzExpand, useLoadedData, legendNames, colorBy, heights, interactive
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1776,9 +1777,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     get_internal_standards = function(average = TRUE) {
       if (self$has_results_nts()) {
-        StreamFind::get_internal_standards(self$NTS, average)
+        StreamFind::get_internal_standards(self$NonTargetAnalysisResults, average)
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1804,10 +1805,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                        renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::plot_internal_standards(
-          self$NTS, analyses, presence, recovery, deviations, widths, renderEngine
+          self$NonTargetAnalysisResults, analyses, presence, recovery, deviations, widths, renderEngine
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1825,7 +1826,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' constant.
     #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as
     #' eliminated.
-    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when
+    #' @param correctIntensity Logical of length one. When `TRUE` the suppression factor (when
     #' available) is used to correct the intensity before fold-change analysis.
     #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled
     #' with the lower limit.
@@ -1844,17 +1845,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                filtered = FALSE,
                                constantThreshold = 0.5,
                                eliminationThreshold = 0.2,
-                               correctSuppression = FALSE,
+                               correctIntensity = FALSE,
                                fillZerosWithLowerLimit = FALSE,
                                lowerLimit = NA_real_) {
       if (self$has_results_nts()) {
         StreamFind::get_fold_change(
-          self$NTS, replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
-          filtered, constantThreshold, eliminationThreshold, correctSuppression,
+          self$NonTargetAnalysisResults, replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          filtered, constantThreshold, eliminationThreshold, correctIntensity,
           fillZerosWithLowerLimit, lowerLimit
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1871,7 +1872,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #' constant.
     #' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as
     #' eliminated.
-    #' @param correctSuppression Logical of length one. When `TRUE` the suppression factor (when
+    #' @param correctIntensity Logical of length one. When `TRUE` the suppression factor (when
     #' available) is used to correct the intensity before fold-change analysis.
     #' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled
     #' with the lower limit.
@@ -1891,7 +1892,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 filtered = FALSE,
                                 constantThreshold = 0.5,
                                 eliminationThreshold = 0.2,
-                                correctSuppression = FALSE,
+                                correctIntensity = FALSE,
                                 fillZerosWithLowerLimit = FALSE,
                                 lowerLimit = NA_real_,
                                 normalized = TRUE,
@@ -1901,12 +1902,12 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                 showLegend = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::plot_fold_change(
-          self$NTS, replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
-          filtered, constantThreshold, eliminationThreshold, correctSuppression,
+          self$NonTargetAnalysisResults, replicatesIn, replicatesOut, groups, mass, mz, rt, mobility, ppm, sec, millisec,
+          filtered, constantThreshold, eliminationThreshold, correctIntensity,
           fillZerosWithLowerLimit, lowerLimit, normalized, yLab, title, interactive, showLegend
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1931,11 +1932,11 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              averaged = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::get_compounds(
-          self$NTS, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
+          self$NonTargetAnalysisResults, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
           filtered, averaged
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(data.table::data.table())
       }
     },
@@ -1949,9 +1950,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     get_patRoon_features = function(filtered = FALSE, featureGroups = TRUE) {
       if (self$has_results_nts()) {
-        StreamFind::get_patRoon_features( self$NTS, filtered, featureGroups)
+        StreamFind::get_patRoon_features( self$NonTargetAnalysisResults, filtered, featureGroups)
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     },
@@ -1992,10 +1993,10 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                                        method = "distance") {
       if (self$has_results_nts()) {
         StreamFind::get_patRoon_MSPeakLists(
-          self$NTS, clusterMzWindow, topMost, minIntensityPre, minIntensityPost, avgFun, method
+          self$NonTargetAnalysisResults, clusterMzWindow, topMost, minIntensityPre, minIntensityPost, avgFun, method
         )
       } else {
-        warning("No NTS results available! Not done.")
+        warning("No NonTargetAnalysisResults results available! Not done.")
         return(NULL)
       }
     }

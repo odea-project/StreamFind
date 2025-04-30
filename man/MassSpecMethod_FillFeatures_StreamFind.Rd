@@ -2,13 +2,15 @@
 % Please edit documentation in R/class_MassSpecMethod_FillFeatures.R
 \name{MassSpecMethod_FillFeatures_StreamFind}
 \alias{MassSpecMethod_FillFeatures_StreamFind}
-\title{\strong{MassSpecMethod_FillFeatures_StreamFind}}
+\title{MassSpecMethod_FillFeatures_StreamFind S7 class}
 \usage{
 MassSpecMethod_FillFeatures_StreamFind(
   withinReplicate = TRUE,
+  filtered = TRUE,
   rtExpand = 0,
   mzExpand = 0,
   minPeakWidth = 6,
+  maxPeakWidth = 30,
   minTracesIntensity = 1000,
   minNumberTraces = 5,
   minIntensity = 5000,
@@ -21,6 +23,8 @@ MassSpecMethod_FillFeatures_StreamFind(
 \arguments{
 \item{withinReplicate}{Logical of length one to fill within replicates not global.}
 
+\item{filtered}{Logical of length one to consider filtered features or not.}
+
 \item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
 retention time range.}
 
@@ -28,6 +32,9 @@ retention time range.}
 right the mass range.}
 
 \item{minPeakWidth}{Numeric of length one with the minimum peak width for building feature
+extraction targets.}
+
+\item{maxPeakWidth}{Numeric of length one with the maximum peak width for building feature
 extraction targets.}
 
 \item{minTracesIntensity}{Numeric of length one with the minimum intensity to collect spectra

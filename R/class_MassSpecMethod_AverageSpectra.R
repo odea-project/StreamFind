@@ -1,4 +1,4 @@
-#' **MassSpecMethod_AverageSpectra_StreamFind**
+#' Mass Spectrometry Method for Averaging Spectra (StreamFind algorithm)
 #'
 #' @description Averages spectra based on variables.
 #' 
@@ -20,7 +20,7 @@ MassSpecMethod_AverageSpectra_StreamFind <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "AverageSpectra",
         required = "LoadSpectra",
         algorithm = "StreamFind",
@@ -40,7 +40,7 @@ MassSpecMethod_AverageSpectra_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "AverageSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_choice(
@@ -74,24 +74,24 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$Analyses@has_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
   
-  if (engine$Spectra$is_averaged) {
+  if (engine$Spectra@is_averaged) {
     warning("Spectra are already averaged! Not done.")
     return(FALSE)
   }
   
-  spectra_list <- engine$Spectra$spectra
+  spectra_list <- engine$Spectra@spectra
   
   spectra <- data.table::rbindlist(spectra_list, idcol = "analysis", fill = TRUE)
   
-  if (engine$Spectra$is_averaged) {
+  if (engine$Spectra@is_averaged) {
     spectra$replicate <- spectra$analysis
   } else {
-    rpl <- engine$Analyses$replicates
+    rpl <- engine$Analyses@replicates
     spectra$replicate <- rpl[spectra$analysis]
   }
   
@@ -99,9 +99,9 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
   
   groupCols <- groupCols[groupCols %in% colnames(spectra)]
   
-  if (grepl("replicates", x$parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
-  if (grepl("chrom_peaks", x$parameters$by, fixed = FALSE)) groupCols <- c("chrom_peaks", groupCols)
-  if (grepl("rt", x$parameters$by, fixed = FALSE)) groupCols <- c("rt", groupCols)
+  if (grepl("replicates", x@parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
+  if (grepl("chrom_peaks", x@parameters$by, fixed = FALSE)) groupCols <- c("chrom_peaks", groupCols)
+  if (grepl("rt", x@parameters$by, fixed = FALSE)) groupCols <- c("rt", groupCols)
   
   if ("chrom_peaks" %in% groupCols) {
     if (engine$Analyses$has_results_chromatograms) {
@@ -136,7 +136,7 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
     spectra$rt <- NULL
   }
   
-  if (x$parameters$weightedAveraged) {
+  if (x@parameters$weightedAveraged) {
     intensity <- NULL
     grouped_spectra <- spectra[, lapply(.SD, weighted.mean, w = intensity), by = groupCols]
     

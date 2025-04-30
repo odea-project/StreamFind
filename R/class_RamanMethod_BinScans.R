@@ -1,4 +1,4 @@
-#' **RamanMethod_BinScans_native**
+#' Raman Method for Binning Time Scans (native algorithm)
 #'
 #' @description Merges scans by averaging spectra according to a given binning size.
 #' 
@@ -24,7 +24,7 @@ RamanMethod_BinScans_native <- S7::new_class(
                          refAnalysis = NA_integer_) {
     S7::new_object(
       ProcessingStep(
-        engine = "Raman",
+        data_type = "Raman",
         method = "BinScans",
         required = NA_character_,
         algorithm = "native",
@@ -46,7 +46,7 @@ RamanMethod_BinScans_native <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "BinScans")
     checkmate::assert_choice(self@algorithm, "native")
     checkmate::assert_choice(self@parameters$mode, c("scans", "time"))
@@ -112,6 +112,8 @@ S7::method(run, RamanMethod_BinScans_native) <- function(x, engine = NULL) {
     ushifts <- unique(z$shift)
     urts_size <- length(urts)
     ushifts_size <- length(ushifts)
+    
+    .SD <- NULL
     
     if ("scans" %in% binning_mode) {
       bin_key <- cut(seq_len(urts_size), seq(1, urts_size, binning_value), include.lowest = TRUE)

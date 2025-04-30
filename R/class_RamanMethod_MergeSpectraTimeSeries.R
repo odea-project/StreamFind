@@ -16,23 +16,25 @@ RamanMethod_MergeSpectraTimeSeries_StreamFind <- S7::new_class("RamanMethod_Merg
   parent = ProcessingStep,
   package = "StreamFind",
   constructor = function(preCut = 2) {
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "MergeSpectraTimeSeries",
-      required = NA_character_,
-      algorithm = "StreamFind",
-      parameters = list(preCut = preCut),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "MergeSpectraTimeSeries",
+        required = NA_character_,
+        algorithm = "StreamFind",
+        parameters = list(preCut = preCut),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "MergeSpectraTimeSeries")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_number(self@parameters$preCut)

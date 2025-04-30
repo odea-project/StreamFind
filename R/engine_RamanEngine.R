@@ -1,6 +1,6 @@
 # MARK: RamanEngine
 # RamanEngine -----
-#' **RamanEngine** R6 class and methods
+#' Raman Spectroscopy Engine
 #'
 #' @description The *RamanEngine* R6 class is a framework for parsing, processing, inspecting and 
 #' storing Raman spectroscopic data. Raman data can be loaded from "asc", "sif", "json", "wdf", 

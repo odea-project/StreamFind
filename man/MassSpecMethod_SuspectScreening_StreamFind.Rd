@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_StreamFind}
 \alias{MassSpecMethod_SuspectScreening_StreamFind}
-\title{\strong{MassSpecMethod_SuspectScreening_StreamFind}}
+\title{MassSpecMethod_SuspectScreening_StreamFind S7 class}
 \usage{
 MassSpecMethod_SuspectScreening_StreamFind(
   database = data.table::data.table(name = character(), formula = character(), mass =
@@ -10,11 +10,9 @@ MassSpecMethod_SuspectScreening_StreamFind(
   ppm = 5,
   sec = 10,
   ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCusiness = 0.5,
   minFragments = 3,
-  isolationWindow = 1.3,
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 0,
   filtered = FALSE
 )
 }
@@ -28,19 +26,13 @@ neutral monoisotopic mass of the suspect targets.}
 
 \item{ppmMS2}{Numeric (length 1) with the mass deviation for MS2, in ppm.}
 
+\item{mzrMS2}{Numeric length 1 with the absolute m/z range window for matching MS2 fragments with
+experimental MS2 traces.}
+
+\item{minCusiness}{Numeric length 1 with the minimum cusiness value of the experimental and
+database fragments for a feature to be considered a suspect.}
+
 \item{minFragments}{Integer (length 1) with the minimum number of fragments.}
-
-\item{isolationWindow}{Numeric value with the isolation window (in Da)
-applied for ion isolation and fragmentation during acquisition of tandem
-data (i.e., MS2 data).}
-
-\item{mzClust}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
-on the mass resolution of the MS data.}
-
-\item{presence}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
-spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
-
-\item{minIntensity}{Numeric (length 1) with the minimum intensity.}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 }

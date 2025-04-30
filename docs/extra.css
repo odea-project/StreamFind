@@ -1,0 +1,17 @@
+pre {
+  overflow-x: auto !important;
+  white-space: pre !important;
+  max-width: 100% !important;
+}
+
+pre code {
+  display: block !important;
+  overflow-x: auto !important;
+  white-space: pre !important;
+  display: inline;
+  font-size: 14px;
+}
+
+p {
+  text-align: justify;
+}

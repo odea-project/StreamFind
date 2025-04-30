@@ -1,24 +1,11 @@
-#' **MassSpecMethod_GenerateCompounds_metfrag**
+#' MassSpecMethod_GenerateCompounds_metfrag S7 class
 #'
-#' @description Settings for generating compounds using \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}.
-#' The algorithm is used via the function \link[patRoon]{generateCompounds} from the package \pkg{patRoon}. Therefore,
-#' it is highly recommended to check the original documentation of the function in \pkg{patRoon} for more details.
+#' @description Settings for generating compounds using
+#' \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}. The algorithm is used via the function
+#' \link[patRoon]{generateCompounds} from the package \pkg{patRoon}. Therefore, it is highly
+#' recommended to check the original documentation of the function in \pkg{patRoon} for more
+#' details.
 #' 
-#' @param MSPeakListsClusterMzWindow m/z window (in Da) used for clustering m/z values when spectra are averaged.
-#' For method="hclust" this corresponds to the cluster height, while for method="distance" this value is used to find
-#' nearby masses (+/- window). Too small windows will prevent clustering m/z values (thus erroneously treating equal 
-#' masses along spectra as different), whereas too big windows may cluster unrelated m/z values from different or even
-#' the same spectrum together.
-#' @param MSPeakListsTopMost Only retain this maximum number of MS peaks when generating averaged spectra. Lowering
-#' this number may exclude more irrelevant (noisy) MS peaks and decrease processing time, whereas higher values may
-#' avoid excluding lower intense MS peaks that may still be of interest.
-#' @param MSPeakListsMinIntensityPre MS peaks with intensities below this value will be removed (applied prior to
-#' selection by `topMost`) before averaging.
-#' @param MSPeakListsMinIntensityPost MS peaks with intensities below this value will be removed after averaging.
-#' @param MSPeakListsAvgFun Character with the function name that is used to calculate average m/z values.
-#' @param MSPeakListsMethod Method used for producing averaged MS spectra. Valid values are "hclust", used for
-#' hierarchical clustering (using the fastcluster package), and "distance", to use the between peak distance.
-#' The latter method may reduces processing time and memory requirements, at the potential cost of reduced accuracy.
 #' @param method Character (length 1) with the method to be used for MetFrag execution: "CL" for MetFragCL and "R" for MetFragR.
 #' @param timeout Numeric (length 1) with the maximum time (in seconds) before a MetFrag query for a feature group is stopped.
 #' @param timeoutRetries Numeric (length 1) with the maximum number of retries after reaching a timeout before completely
@@ -42,7 +29,8 @@
 #' @param maxCandidatesToStop Numeric (length 1) with the maximum number of candidates to be returned before stopping the
 #' MetFrag query for a feature group.
 #'
-#' @details Detailed documentation can be found in \link[patRoon]{generateCompoundsMetFrag}.
+#' @details Detailed documentation can be found in \link[patRoon]{generateCompoundsMetFrag} and in
+#' the \href{https://ipb-halle.github.io/MetFrag/projects/metfragr/}{MetFrag} documentation.
 #'
 #' @return A `MassSpecMethod_GenerateCompounds_metfrag` object.
 #'
@@ -66,13 +54,7 @@ MassSpecMethod_GenerateCompounds_metfrag <- S7::new_class(
   name = "MassSpecMethod_GenerateCompounds_metfrag",
   parent = ProcessingStep,
   package = "StreamFind",
-  constructor = function(MSPeakListsClusterMzWindow = 0.005,
-                         MSPeakListsTopMost = 100,
-                         MSPeakListsMinIntensityPre = 50,
-                         MSPeakListsMinIntensityPost = 50,
-                         MSPeakListsAvgFun = "mean",
-                         MSPeakListsMethod = "distance",
-                         method = "CL",
+  constructor = function(method = "CL",
                          timeout = 300,
                          timeoutRetries = 5,
                          errorRetries = 5,
@@ -95,17 +77,11 @@ MassSpecMethod_GenerateCompounds_metfrag <- S7::new_class(
                          maxCandidatesToStop = 100) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GenerateCompounds",
         required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
         algorithm = "metfrag",
         parameters = list(
-          MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
-          MSPeakListsTopMost = MSPeakListsTopMost,
-          MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
-          MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
-          MSPeakListsAvgFun = MSPeakListsAvgFun,
-          MSPeakListsMethod = MSPeakListsMethod,
           method = as.character(method),
           timeout = as.numeric(timeout),
           timeoutRetries = as.numeric(timeoutRetries),
@@ -135,15 +111,9 @@ MassSpecMethod_GenerateCompounds_metfrag <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GenerateCompounds")
     checkmate::assert_choice(self@algorithm, "metfrag")
-    checkmate::assert_numeric(self@parameters$MSPeakListsClusterMzWindow, len = 1)
-    checkmate::assert_numeric(self@parameters$MSPeakListsTopMost, len = 1)
-    checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPre, len = 1)
-    checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPost, len = 1)
-    checkmate::assert_character(self@parameters$MSPeakListsAvgFun)
-    checkmate::assert_choice(self@parameters$MSPeakListsMethod, c("hclust", "distance"))
     checkmate::assert_choice(self@parameters$method, c("CL", "R"))
     checkmate::assert_number(self@parameters$timeout)
     checkmate::assertCount(self@parameters$timeoutRetries)
@@ -182,51 +152,39 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  NTS <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
   
-  if (!NTS@has_groups) {
-    warning("NTS object does not have feature groups! Not done.")
+  if (!nts@has_groups) {
+    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
     return(FALSE)
   }
   
   parameters <- x$parameters
-  
-  cache <- .load_cache_sqlite("generate_compounds", NTS, x)
-  
-  if (!is.null(cache$data)) {
-    feature_list <- cache$data
-    tryCatch(
-      {
-        engine$NTS$feature_list <- feature_list
-        message("Compounds already generated and added to the feature list!")
-        return(TRUE)
-      },
-      error = function(e) {
-        warning(e)
-      }
-    )
-  }
-  
   algorithm <- x$algorithm
   
   fg <- get_patRoon_features(
-    NTS,
+    nts,
     filtered = FALSE,
     featureGroups = TRUE
   )
   
+  load_ms1_param <- engine$Workflow[grepl("LoadFeaturesMS1", names(engine$Workflow))][[1]]
+  load_ms2_param <- engine$Workflow[grepl("LoadFeaturesMS2", names(engine$Workflow))][[1]]
+  mzClust <- min(load_ms1_param$parameters$mzClust, load_ms2_param$parameters$mzClust)
+  presence <- min(load_ms1_param$parameters$presence, load_ms2_param$parameters$presence)
+  minIntensity <- min(load_ms1_param$parameters$minIntensity, load_ms2_param$parameters$minIntensity)
+  
   mspl <- get_patRoon_MSPeakLists(
-    NTS,
-    parameters$MSPeakListsClusterMzWindow,
-    parameters$MSPeakListsTopMost,
-    parameters$MSPeakListsMinIntensityPre,
-    parameters$MSPeakListsMinIntensityPost,
-    parameters$MSPeakListsAvgFun,
-    parameters$MSPeakListsMethod
+    nts,
+    mzClust = mzClust,
+    minIntensity = minIntensity,
+    presence = presence,
+    top = 100,
+    normalized = FALSE
   )
   
   if (length(mspl) == 0) {
@@ -236,7 +194,7 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
   
   fg <- fg[names(mspl@peakLists), ]
   
-  parameters <- c(parameters, list(identifiers = NULL,extraOpts = NULL))
+  parameters <- c(parameters, list(identifiers = NULL, extraOpts = NULL))
   
   if ("featureGroupsSet" %in% is(fg)) {
     parameters$adduct <- NULL
@@ -255,8 +213,6 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
   
   pp_fun <- patRoon::generateCompounds
   
-  parameters <- parameters[!grepl("MSPeakLists", names(parameters))]
-  
   compounds <- do.call(pp_fun, c(ag, parameters))
   
   if (length(compounds) == 0) {
@@ -264,7 +220,7 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
     return(FALSE)
   }
   
-  feature_list <- NTS$feature_list
+  feature_list <- nts$feature_list
   
   if ("featureGroupsSet" %in% is(fg)) {
     feature_list <- lapply(feature_list, function(z, compounds) {
@@ -308,14 +264,9 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
     }, compounds = compounds)
   }
   
-  if (!is.null(cache$hash)) {
-    .save_cache_sqlite("generate_compounds", feature_list, cache$hash)
-    message("\U1f5ab Generated compounds cached!")
-  }
+  nts@feature_list <- feature_list
   
-  NTS@feature_list <- feature_list
-  
-  engine$NTS <- NTS
+  engine$NonTargetAnalysisResults <- nts
   
   message(
     paste0("\U2713 ", length(compounds), " compounds generated and added to the feature list!")

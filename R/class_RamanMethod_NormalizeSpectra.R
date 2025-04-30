@@ -17,23 +17,25 @@ RamanMethod_NormalizeSpectra_minmax <- S7::new_class("RamanMethod_NormalizeSpect
   
   constructor = function() {
     
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "NormalizeSpectra",
-      algorithm = "minmax",
-      parameters = list(),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "NormalizeSpectra",
+        algorithm = "minmax",
+        parameters = list(),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "minmax")
     NULL
@@ -113,23 +115,25 @@ RamanMethod_NormalizeSpectra_snv <- S7::new_class("RamanMethod_NormalizeSpectra_
   
   constructor = function(liftTozero = FALSE) {
   
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "NormalizeSpectra",
-      algorithm = "snv",
-      parameters = list(liftTozero = liftTozero),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = NA_character_,
-      developer = "J\u00FCrgen Schram",
-      contact = "schram@hsnr.de",
-      link = NA_character_,
-      doi = "10.1016/j.trac.2018.12.004"
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "NormalizeSpectra",
+        algorithm = "snv",
+        parameters = list(liftTozero = liftTozero),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = NA_character_,
+        developer = "J\u00FCrgen Schram",
+        contact = "schram@hsnr.de",
+        link = NA_character_,
+        doi = "10.1016/j.trac.2018.12.004"
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "snv")
     checkmate::assert_logical(self@parameters$liftTozero, max.len = 1)
@@ -212,23 +216,25 @@ RamanMethod_NormalizeSpectra_scale <- S7::new_class("RamanMethod_NormalizeSpectr
   
   constructor = function() {
     
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "NormalizeSpectra",
-      algorithm = "scale",
-      parameters = list(),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "NormalizeSpectra",
+        algorithm = "scale",
+        parameters = list(),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "scale")
     NULL
@@ -304,23 +310,25 @@ RamanMethod_NormalizeSpectra_blockweight <- S7::new_class("RamanMethod_Normalize
   
   constructor = function() {
     
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "NormalizeSpectra",
-      algorithm = "blockweight",
-      parameters = list(),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "NormalizeSpectra",
+        algorithm = "blockweight",
+        parameters = list(),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "blockweight")
     NULL
@@ -394,23 +402,25 @@ RamanMethod_NormalizeSpectra_meancenter <- S7::new_class("RamanMethod_NormalizeS
   
   constructor = function() {
     
-    S7::new_object(ProcessingStep(
-      engine = "Raman",
-      method = "NormalizeSpectra",
-      algorithm = "meancenter",
-      parameters = list(),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "Raman",
+        method = "NormalizeSpectra",
+        algorithm = "meancenter",
+        parameters = list(),
+        number_permitted = Inf,
+        version = as.character(packageVersion("StreamFind")),
+        software = "StreamFind",
+        developer = "Ricardo Cunha",
+        contact = "cunha@iuta.de",
+        link = "https://odea-project.github.io/StreamFind",
+        doi = NA_character_
+      )
+    )
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "Raman")
+    checkmate::assert_choice(self@data_type, "Raman")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "meancenter")
     NULL

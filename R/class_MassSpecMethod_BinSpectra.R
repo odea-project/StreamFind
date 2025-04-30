@@ -1,4 +1,4 @@
-#' **MassSpecMethod_BinSpectra_StreamFind**
+#' Mass Spectrometry Method for Binning Spectra (StreamFind algorithm)
 #'
 #' @description Bins spectral data based on variables.
 #' 
@@ -26,7 +26,7 @@ MassSpecMethod_BinSpectra_StreamFind <- S7::new_class(
                          refBinAnalysis = NA_integer_) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "BinSpectra",
         required = "LoadSpectra",
         algorithm = "StreamFind",
@@ -48,7 +48,7 @@ MassSpecMethod_BinSpectra_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "BinSpectra")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_character(self@parameters$binNames)

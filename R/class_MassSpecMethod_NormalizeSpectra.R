@@ -1,4 +1,4 @@
-#' **MassSpecMethod_NormalizeSpectra_minmax**
+#' MassSpecMethod_NormalizeSpectra_minmax S7 class
 #'
 #' @description Normalizes spectra using the min-max algorithm.
 #'
@@ -15,7 +15,7 @@ MassSpecMethod_NormalizeSpectra_minmax <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "minmax",
@@ -32,7 +32,7 @@ MassSpecMethod_NormalizeSpectra_minmax <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "minmax")
     NULL
@@ -92,7 +92,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_minmax) <- function(x, engine = 
   TRUE
 }
 
-#' **MassSpecMethod_NormalizeSpectra_snv**
+#' MassSpecMethod_NormalizeSpectra_snv S7 class
 #'
 #' @description Normalizes spectra using the Standard Normal Variate (SNV) algorithm.
 #' 
@@ -111,7 +111,7 @@ MassSpecMethod_NormalizeSpectra_snv <- S7::new_class(
   
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "snv",
@@ -128,7 +128,7 @@ MassSpecMethod_NormalizeSpectra_snv <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "snv")
     checkmate::assert_logical(self@parameters$liftTozero, max.len = 1)
@@ -197,7 +197,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_snv) <- function(x, engine = NUL
   
 }
 
-#' **MassSpecMethod_NormalizeSpectra_scale**
+#' MassSpecMethod_NormalizeSpectra_scale S7 class
 #'
 #' @description Normalizes spectra using scaling based on the standard deviation.
 #'
@@ -214,7 +214,7 @@ MassSpecMethod_NormalizeSpectra_scale <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "scale",
@@ -231,7 +231,7 @@ MassSpecMethod_NormalizeSpectra_scale <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "scale")
     NULL
@@ -291,7 +291,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_scale) <- function(x, engine = N
   
 }
 
-#' **MassSpecMethod_NormalizeSpectra_blockweight**
+#' MassSpecMethod_NormalizeSpectra_blockweight S7 class
 #'
 #' @description Normalizes spectra using block weighting for downstream data evaluation.
 #'
@@ -308,7 +308,7 @@ MassSpecMethod_NormalizeSpectra_blockweight <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "blockweight",
@@ -325,7 +325,7 @@ MassSpecMethod_NormalizeSpectra_blockweight <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "blockweight")
     NULL
@@ -381,7 +381,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_blockweight) <- function(x, engi
   TRUE
 }
 
-#' **MassSpecMethod_NormalizeSpectra_meancenter**
+#' MassSpecMethod_NormalizeSpectra_meancenter S7 class
 #'
 #' @description Normalizes spectra using mean centering.
 #'
@@ -398,7 +398,7 @@ MassSpecMethod_NormalizeSpectra_meancenter <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "NormalizeSpectra",
         required = "LoadSpectra",
         algorithm = "meancenter",
@@ -415,7 +415,7 @@ MassSpecMethod_NormalizeSpectra_meancenter <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "NormalizeSpectra")
     checkmate::assert_choice(self@algorithm, "meancenter")
     NULL

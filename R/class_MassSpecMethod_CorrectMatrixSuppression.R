@@ -1,6 +1,6 @@
 #' @noRd
 .calculate_tic_matrix_suppression <- function(x, rtWindow = 10) {
-  info <- x$info
+  info <- x@info
   if (nrow(info) == 0) {
     warning("No analyses available!")
     return(NULL)
@@ -65,14 +65,14 @@
   mpList
 }
 
-#' **MassSpecMethod_CorrectMatrixSuppression_TiChri**
+#' MassSpecMethod_CorrectMatrixSuppression_TiChri S7 class
 #'
 #' @description Settings for correcting matrix suppression based on the TiChri algorithm from
 #' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm
 #' calculates the matrix profile for the total ion chromatogram (TIC) and corrects the matrix
 #' suppression for features. Internal standards can be assigned to improve the correction. The
 #' `suppression_factor` is added to the feature list and can be used to correct the features
-#' intensity. The argument/parameter `correctSuppression` is available in plotting and processing
+#' intensity. The argument/parameter `correctIntensity` is available in plotting and processing
 #' methods and when `TRUE`, the suppression factor is used to correct the feature intensity for
 #' better comparison across analyses with different matrix suppression.
 #'
@@ -112,28 +112,30 @@ MassSpecMethod_CorrectMatrixSuppression_TiChri <- S7::new_class(
       required <- c(required, "FindInternalStandards")
     }
     
-    S7::new_object(ProcessingStep(
-      engine = "MassSpec",
-      method = "CorrectMatrixSuppression",
-      required = required,
-      algorithm = "TiChri",
-      parameters = list(
-        "mpRtWindow" = as.numeric(mpRtWindow),
-        "istdAssignment" = as.character(istdAssignment),
-        "istdRtWindow" = as.numeric(istdRtWindow),
-        "istdN" = as.integer(istdN)
-      ),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "TiChri",
-      developer = "Selina Tisler",
-      contact = "seti@plen.ku.dk",
-      link = "https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357",
-      doi = "10.1021/acs.analchem.1c00357"
-    ))
+    S7::new_object(
+      ProcessingStep(
+        data_type = "MassSpec",
+        method = "CorrectMatrixSuppression",
+        required = required,
+        algorithm = "TiChri",
+        parameters = list(
+          "mpRtWindow" = as.numeric(mpRtWindow),
+          "istdAssignment" = as.character(istdAssignment),
+          "istdRtWindow" = as.numeric(istdRtWindow),
+          "istdN" = as.integer(istdN)
+        ),
+        number_permitted = 1,
+        version = as.character(packageVersion("StreamFind")),
+        software = "TiChri",
+        developer = "Selina Tisler",
+        contact = "seti@plen.ku.dk",
+        link = "https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357",
+        doi = "10.1021/acs.analchem.1c00357"
+      )
+    )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "CorrectMatrixSuppression")
     checkmate::assert_choice(self@algorithm, "TiChri")
     checkmate::assert_numeric(self@parameters$mpRtWindow, lower = 0)
@@ -158,14 +160,14 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$NTS
+  nts <- engine$NonTargetAnalysisResults
 
   if (!nts@has_features) {
-    warning("NTS object does not have features! Not done.")
+    warning("NonTargetAnalysisResults object does not have features! Not done.")
     return(FALSE)
   }
 
@@ -177,7 +179,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
     z
   })
 
-  parameters <- x$parameters
+  parameters <- x@parameters
 
   message("\U2699 Calculating TIC matrix suppression")
   ticMp <- .calculate_tic_matrix_suppression(engine$Analyses, rtWindow = parameters$mpRtWindow)
@@ -186,7 +188,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
     return(FALSE)
   }
 
-  info <- engine$Analyses$info
+  info <- engine$Analyses@info
   rpls <- info$replicate
   names(rpls) <- info$analysis
   blankRpls <- info$blank
@@ -275,7 +277,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
 
     message("\U2699 Correcting matrix suppression for ", nrow(fts), " features in ", z)
     
-    suppresion_factor <- vapply(seq_len(nrow(fts)), function(i, z, rpl, fts, mp, istd, parameters) {
+    suppression_factor <- vapply(seq_len(nrow(fts)), function(i, z, rpl, fts, mp, istd, parameters) {
       ft <- fts[i, ]
       if (is.null(parameters$mpRtWindow)) {
         parameters$mpRtWindow <- (ft[["rtmax"]] - ft[["rtmin"]]) / 2
@@ -320,7 +322,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
 
         # first part of eq. 7 from 10.1021/acs.analchem.1c00357
         if (nrow(valid_istd) == 0) {
-          return(ft$intensity * (-mp_ft + 1))
+          return(-mp_ft + 1)
         }
 
         # eq. 7 from 10.1021/acs.analchem.1c00357
@@ -330,7 +332,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
       }
     }, z = z, rpl = rpl, fts = fts, mp = mp, istd = istd, parameters = parameters, 0)
 
-    fts$suppression_factor <- suppresion_factor
+    fts$correction <- suppression_factor
     fts
   }, feature_list = feature_list, ticMp = ticMp, rpls = rpls, istd = istd, parameters = parameters)
 
@@ -338,7 +340,7 @@ S7::method(run, MassSpecMethod_CorrectMatrixSuppression_TiChri) <- function(x, e
 
   tryCatch(
     {
-      engine$NTS$feature_list <- feature_list
+      engine$NonTargetAnalysisResults$feature_list <- feature_list
       return(TRUE)
     },
     error = function(e) {

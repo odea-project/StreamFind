@@ -2,44 +2,83 @@ url: https://odea-project.github.io/StreamFind/
 
 template:
   bootstrap: 5
+  assets:
+    - pkgdown/extra.css
 
 reference:
 
-- title: Data Processing Engines
+- title: Introduction
   desc: >
-    R6 classes are used as processing engines for reading, processing, inspecting and storing data.
+    StreamFind is built with two main class systems: R6 and S7. The R6 system is used for data processing engine classes, which are the main user interface for reading, processing, and inspecting different types of data. The S7 system is used for classes to manage metadata, analyses, data processing, results, audit trail and configuration. Below all classes exposed to the user are listed.
+- title: Engines (R6)
   contents:
-    - CoreEngine
-    - MassSpecEngine
-    - RamanEngine
-    - StatisticEngine
-
-# - title: Project Headers
-#   desc: >
-#     The _Metadata_ S7 class is used to manage and store project headers (i.e. metadata) in the processing engines.
-#   contents:
-#     - Metadata
-
-- title: Processing settings
+  - CoreEngine
+  - MassSpecEngine
+  - RamanEngine
+  - StatisticEngine
+- title: Metadata (S7)
   desc: >
-    A data processing workflow in StreamFind is assemble by creating an ordered list of proessing settings objects. 
-    Each processing method is assigened to a processing engine and an algorithm.
-
-- subtitle: MassSpec Settings
+    Metadata classes are used to manage metadata (e.g., date, author and description) of main classes, such as the R6 engine classes.
   contents:
-    - matches("MassSpecSettings")
-
-- subtitle: Raman Settings
+  - matches("Metadata")
+- title: Analyses (S7)
+  desc: >
+    Analyses represent data (i.e., actual data or links to raw data files) and results. Analyses child classes are implemented for each type of data.
   contents:
-    - matches("RamanSettings")
-    
-- subtitle: Statistic Settings
+  - matches("Analyses")
+- title: Data Processing (S7)
+  desc: >
+    Data processing is governed by the Workflow class which consists of a sequence of ProcessingStep class objects. Processing methods for a specific type of data are implemented as child classes of the ProcessingStep class.
   contents:
-    - matches("StatisticSettings")
-
-- title: Other MS functions
+  - Workflow
+  - ProcessingStep
+- title: Mass Spectrometry Methods
   contents:
-    - convert_ms_files
-    - trim_ms_files_spectra
-    - clear_cache
-    - run_app
+  - starts_with("MassSpecMethod_")
+- title: Raman Spectroscopy Methods
+  contents:
+  - starts_with("RamanMethod_")
+- title: Statistic Methods
+  contents:
+  - starts_with("StatisticMethod_")
+- title: Results (S7)
+  desc: >
+    The Results classes represent results of specific data processing methods. Results child classes are implemented for each processing method but can be reused/updated across processing methods. For instance, normalizing averaged spectra will update the spectra results. 
+  contents:
+  - matches("Results")
+- title: Configuration (S7)
+  desc: >
+    Configuration is governed by Config class which consists of a list of ConfigParameter class objects. Childs of both Config and ConfigParameter classes are implemented for specific use cases.
+  contents:
+  - matches("Config")
+- title: Audit Trail (S7)
+  desc: >
+    Audit trail is governed by a specific classes, registering all changes made to the data within an engine.
+  contents:
+  - matches("AuditTrail")
+- title: Other Functions
+  contents:
+  - convert_ms_files
+  - trim_ms_files_spectra
+  - run_app
+- title: S7 Generics
+  desc: >
+    Severeal S7 generics are used to define a common interface for a set of related functions. The behavior and possible arguments vary depending on the class of the object passed.
+  contents:
+  - add
+  - clear_cache
+  - starts_with("get_")
+  - load
+  - starts_with("load_")
+  - starts_with("map_")
+  - starts_with("plot_")
+  - predict
+  - read
+  - remove
+  - report
+  - run
+  - save
+  - save_cache
+  - show
+  - test
+  

@@ -2,13 +2,14 @@
 % Please edit documentation in R/class_MassSpecMethod_CalculateFeaturesQuality.R
 \name{MassSpecMethod_CalculateFeaturesQuality_StreamFind}
 \alias{MassSpecMethod_CalculateFeaturesQuality_StreamFind}
-\title{\strong{MassSpecMethod_CalculateFeaturesQuality_StreamFind}}
+\title{Mass Spectrometry Method to Calculate Features Quality (StreamFind algorithm)}
 \usage{
 MassSpecMethod_CalculateFeaturesQuality_StreamFind(
   filtered = FALSE,
   rtExpand = 0,
   mzExpand = 0,
   minPeakWidth = 6,
+  maxPeakWidth = 30,
   minTracesIntensity = 0,
   minNumberTraces = 6,
   baseCut = 0
@@ -24,15 +25,18 @@ retention time range.}
 right the mass range.}
 
 \item{minPeakWidth}{Numeric of length one with the minimum peak width centered on the maximum
-for extracting the feature IEC.}
+for extracting the feature EIC.}
 
-\item{baseCut}{Numeric of length 1 with the base cut for calculating feature Gaussian fit.}
+\item{maxPeakWidth}{Numeric of length one with the maximum peak width centered on the maximum
+for reconstructing the feature EIC.}
 
-\item{minTraces}{Numeric of length 1 with the minimum number traces for calculating feature
+\item{minTracesIntensity}{Numeric of length 1 with the minimum intensity of spectra traces for
+calculating feature quality.}
+
+\item{minNumberTraces}{Numeric of length 1 with the minimum number traces for calculating feature
 quality.}
 
-\item{minIntensity}{Numeric of length 1 with the minimum intensity of spectra traces for
-calculating feature quality.}
+\item{baseCut}{Numeric of length 1 with the base cut for calculating feature Gaussian fit.}
 }
 \value{
 A \code{MassSpecMethod_CalculateFeaturesQuality_StreamFind} object.

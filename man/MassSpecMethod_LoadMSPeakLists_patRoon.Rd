@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadMSPeakLists.R
 \name{MassSpecMethod_LoadMSPeakLists_patRoon}
 \alias{MassSpecMethod_LoadMSPeakLists_patRoon}
-\title{\strong{MassSpecMethod_LoadMSPeakLists_patRoon}}
+\title{MassSpecMethod_LoadMSPeakLists_patRoon S7 class}
 \usage{
 MassSpecMethod_LoadMSPeakLists_patRoon(
   maxMSRtWindow = 5,

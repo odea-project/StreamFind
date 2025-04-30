@@ -1,41 +1,32 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
-<style>
-  p {
-    text-align: justify;
-  }
-</style>
 <!-- badges: start -->
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-<!-- <p align="center" width="100%">
-  <img width="60%" src="man/figures/logo_StreamFind.png" alt="Logo" />
-</p> -->
-
 <img src="man/figures/logos.png" alt="Logo" width="100%" style="display: block; margin: auto;" />
 
 StreamFind R package is developed within the project [“Flexible data
 analysis and workflow designer to identify chemicals in the water
-cycle”](https://www.bildung-forschung.digital/digitalezukunft/de/wissen/Datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html)
+cycle”](https://www.bildung-forschung.digital/digitalezukunft/de/bildung/digital-_und_datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html)
 funded by the [German Federal Ministry of Education and Research
 (BMBF)](https://www.bmbf.de). The development is carried out by the
 [Institut für Umwelt & Energie, Technik & Analytik e. V.
 (IUTA)](https://www.iuta.de), the [Forschungszentrum Informatik
 (FZI)](https://www.fzi.de/) and supporting partners. StreamFind is
 intended to be a platform for assembling processing workflows for
-different types of data (e.g. mass spectrometry and spectroscopy) with
-applications in different fields (e.g. environmental and quality studies
+different types of data (e.g. mass spectrometry (MS) and spectroscopy
+data) with applications in different fields (e.g. environmental studies
 of the water cycle and quality control of pharmaceuticals). StreamFind
 aims to stimulate the use of advanced data analysis (e.g. non-target
 screening, statistical analysis, etc.) in routine studies, to promote
-standardisation of data structure and processing, and to facilitate
+standardization of data structure and processing, and to facilitate
 retrospective data evaluation. The StreamFind platform is aimed at
 scientists, but also at technicians due to its comprehensive
-documentation, its well categorised set of integrated modular functions
-and its embedded graphical user interface.
+documentation, its well categorized set of integrated modular processing
+methods and its embedded graphical user interface.
 
 The StreamFind development is ongoing, please [contact
 us](mailto:cunha@iuta.de) for questions or collaboration.
@@ -47,12 +38,13 @@ Pre-requisites for the StreamFind are the
 [RTools](https://cran.r-project.org/bin/windows/Rtools/) (only
 applicable for Windows users). RTools is needed for compiling C++ code
 used in the StreamFind R package. StreamFind also uses python scripts
-for some of its functionalities, so it is recommended to have the latest
-[python](https://www.python.org/downloads/) installed and added to the
-environmental variables for Windows users. Assuming that R, RTools and
-python are installed, the StreamFind R package can be installed from the
-GitHub repository via the
-[BiocManager](https://www.bioconductor.org/install/).
+for some of its processing methods, so it is recommended to have the
+latest [python](https://www.python.org/downloads/) installed and added
+to the environmental variables for Windows users. Assuming that R,
+RTools and python are installed, the StreamFind R package can be
+installed from the GitHub repository via the
+[BiocManager](https://www.bioconductor.org/install/). Note that
+StreamFind is not yet available on the Bioconductor repository.
 
 ``` r
 if (!require("BiocManager", quietly = TRUE))
@@ -63,15 +55,12 @@ BiocManager::install("odea-project/StreamFind")
 ## Other dependencies
 
 The StreamFind depends on other open source software to process
-different analytical data. For instance, for non-target screening using
+different analytic data. For instance, for non-target screening using
 mass spectrometry the StreamFind uses the
 [patRoon](https://github.com/rickhelmus/patRoon) R package and its own
-dependencies. Installation instructions for patRoon and its dependencies
-can be found
-[here](https://rickhelmus.github.io/patRoon/handbook_bd/manual-installation.html#r-prerequisites).
-When a dependency is not installed, a warning message will be displayed
-when necessary with instructions. Consult the documentation for
-dependencies of other data types.
+dependencies for some processing methods. When a dependency is not
+installed, a warning message will be displayed with instructions.
+Consult the documentation of each processing method for dependencies.
 
 ## Suplementary data
 
@@ -118,7 +107,8 @@ page](https://odea-project.github.io/StreamFind/reference/index.html)
 and
 [articles](https://odea-project.github.io/StreamFind/articles/index.html)
 of the [webpage](https://odea-project.github.io/StreamFind/index.html),
-respectively.
+respectively. Note that documentation and articles are under development
+so not all are yet available.
 
 ## References
 

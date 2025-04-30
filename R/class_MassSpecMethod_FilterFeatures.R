@@ -1,8 +1,8 @@
-#' **MassSpecMethod_FilterFeatures_StreamFind**
+#' MassSpecMethod_FilterFeatures_StreamFind S7 class
 #'
 #' @description Settings for filtering of features and feature groups.
 #'
-#' @template arg-ms-correctSuppression
+#' @template arg-ms-correctIntensity
 #' @param minSnRatio Numeric (length 1) with the minimum signal-to-noise ratio.
 #' @param minGaussianFit Numeric (length 1) with the minimum Gaussian fit.
 #' @param excludeIsotopes Logical (length 1) with `TRUE` for filtering annotated isotopes
@@ -31,7 +31,7 @@ MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
   name = "MassSpecMethod_FilterFeatures_StreamFind",
   parent = ProcessingStep,
   package = "StreamFind",
-  constructor = function(correctSuppression = TRUE,
+  constructor = function(correctIntensity = TRUE,
                          minSnRatio = NA_real_,
                          minGaussianFit = NA_real_,
                          excludeIsotopes = FALSE,
@@ -44,12 +44,12 @@ MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
                          onlyWithMS2 = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FilterFeatures",
         required = "FindFeatures",
         algorithm = "StreamFind",
         parameters = list(
-          correctSuppression = as.logical(correctSuppression),
+          correctIntensity = as.logical(correctIntensity),
           minSnRatio = as.numeric(minSnRatio),
           minGaussianFit = as.numeric(minGaussianFit),
           excludeIsotopes = as.logical(excludeIsotopes),
@@ -72,10 +72,10 @@ MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FilterFeatures")
     checkmate::assert_choice(self@algorithm, "StreamFind")
-    checkmate::assert_logical(self@parameters$correctSuppression, len = 1)
+    checkmate::assert_logical(self@parameters$correctIntensity, len = 1)
     checkmate::assert_numeric(self@parameters$minSnRatio, len = 1)
     checkmate::assert_numeric(self@parameters$minGaussianFit, len = 1)
     checkmate::assert_logical(self@parameters$excludeIsotopes, len = 1)
@@ -109,31 +109,31 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  if (!engine$NTS$has_features) {
+  if (!engine$NonTargetAnalysisResults$has_features) {
     warning("There are no features! Run find_features first!")
     return(FALSE)
   }
 
   parameters <- x$parameters
-  correctSuppression <- parameters$correctSuppression
-  parameters$correctSuppression <- NULL
+  correctIntensity <- parameters$correctIntensity
+  parameters$correctIntensity <- NULL
   conservative <- parameters$conservative
   parameters$conservative <- NULL
   
   filters <- names(parameters)
-  n_features <- sum(vapply(engine$NTS$feature_list, function(x) sum(!x$filtered), 0))
+  n_features <- sum(vapply(engine$NonTargetAnalysisResults$feature_list, function(x) sum(!x$filtered), 0))
 
   .filter_excludeIsotopes <- function(value = NULL, engine) {
-    if (engine$NTS$has_features && is.logical(value) && length(value) == 1) {
+    if (engine$NonTargetAnalysisResults$has_features && is.logical(value) && length(value) == 1) {
       if (!value) {
         return()
       }
       
-      features <- engine$NTS$feature_list
+      features <- engine$NonTargetAnalysisResults$feature_list
 
       features <- lapply(features, function(x) {
         if ("annotation" %in% colnames(x)) {
@@ -151,19 +151,19 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         x
       })
 
-      engine$NTS$feature_list <- features
+      engine$NonTargetAnalysisResults$feature_list <- features
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
   }
 
   .filter_excludeAdducts <- function(value = NULL, engine) {
-    if (engine$NTS$has_features && is.logical(value) && length(value) == 1) {
+    if (engine$NonTargetAnalysisResults$has_features && is.logical(value) && length(value) == 1) {
       if (!value) {
         return()
       }
 
-      features <- engine$NTS$feature_list
+      features <- engine$NonTargetAnalysisResults$feature_list
 
       features <- lapply(features, function(x) {
         if ("annotation" %in% colnames(x)) {
@@ -181,45 +181,45 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         x
       })
 
-      engine$NTS$feature_list <- features
+      engine$NonTargetAnalysisResults$feature_list <- features
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
   }
 
   .filter_minSnRatio <- function(value = 3, conservative = FALSE, engine) {
-    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
+    if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
         return()
       }
       
-      if (engine$NTS@has_groups && conservative) {
+      if (engine$NonTargetAnalysisResults@has_groups && conservative) {
         rpl <- unique(engine$Analyses$replicates)
         groups <- get_groups(
-          engine$NTS,
+          engine$NonTargetAnalysisResults,
           filtered = FALSE,
           intensities = FALSE,
           average = TRUE,
           metadata = TRUE,
-          correctSuppression = FALSE
+          correctIntensity = FALSE
         )
         if (any(!is.na(groups$sn))) {
           groups_sel <- groups$sn < value
           groups <- groups$group[groups_sel]
-          feature_list <- engine$NTS$feature_list
+          feature_list <- engine$NonTargetAnalysisResults$feature_list
           feature_list <- lapply(feature_list, function(x, groups) {
             sel <- x$group %in% groups & !x$filtered
             x$filtered[sel] <- TRUE
             x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minSnRatio"))
             x
           }, groups = groups)
-          engine$NTS$feature_list <- feature_list
+          engine$NonTargetAnalysisResults$feature_list <- feature_list
         } else {
           warning("There are no signal-to-noise ratio values in features!")
         }
       } else {
-        features <- engine$NTS$feature_list
+        features <- engine$NonTargetAnalysisResults$feature_list
         features <- lapply(features, function(x) {
           if ("quality" %in% colnames(x)) {
             qlt <- vapply(x$quality, function(z) {
@@ -236,7 +236,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           }
           x
         })
-        engine$NTS$feature_list <- features
+        engine$NonTargetAnalysisResults$feature_list <- features
       }
     } else {
       warning("There are no features in the MassSpecEngine!")
@@ -244,16 +244,16 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   }
   
   .filter_minGaussianFit <- function(value = 0.3, conservative = FALSE, engine) {
-    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
+    if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
         return()
       }
       
-      if (engine$NTS@has_groups && conservative) {
+      if (engine$NonTargetAnalysisResults@has_groups && conservative) {
         rpl <- unique(engine$Analyses$replicates)
         groups <- get_groups(
-          engine$NTS,
+          engine$NonTargetAnalysisResults,
           filtered = FALSE,
           intensities = FALSE,
           average = TRUE,
@@ -262,19 +262,19 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         if (any(!is.na(groups$gauss_f))) {
           groups_sel <- groups$gauss_f < value
           groups <- groups$group[groups_sel]
-          feature_list <- engine$NTS$feature_list
+          feature_list <- engine$NonTargetAnalysisResults$feature_list
           feature_list <- lapply(feature_list, function(x, groups) {
             sel <- x$group %in% groups & !x$filtered
             x$filtered[sel] <- TRUE
             x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minGaussianFit"))
             x
           }, groups = groups)
-          engine$NTS$feature_list <- feature_list
+          engine$NonTargetAnalysisResults$feature_list <- feature_list
         } else {
           warning("There are no signal-to-noise ratio values in features!")
         }
       } else {
-        features <- engine$NTS$feature_list
+        features <- engine$NonTargetAnalysisResults$feature_list
         features <- lapply(features, function(x) {
           if ("quality" %in% colnames(x)) {
             qlt <- vapply(x$quality, function(z) {
@@ -291,51 +291,104 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           }
           x
         })
-        engine$NTS$feature_list <- features
+        engine$NonTargetAnalysisResults$feature_list <- features
       }
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
   }
   
-  .filter_minIntensity <- function(value = 0,
-                                   correctSuppression,
-                                   conservative,
-                                   engine) {
-    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
+  # .filter_minRtMuDistance <- function(value = 2, conservative = FALSE, engine) {
+  #   if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
+  #     
+  #     if (is.na(value) || value == 0) {
+  #       return()
+  #     }
+  #     
+  #     if (engine$NonTargetAnalysisResults@has_groups && conservative) {
+  #       rpl <- unique(engine$Analyses$replicates)
+  #       groups <- get_groups(
+  #         engine$NonTargetAnalysisResults,
+  #         filtered = FALSE,
+  #         intensities = FALSE,
+  #         average = TRUE,
+  #         metadata = TRUE
+  #       )
+  #       if (any(!is.na(groups$gauss_f))) {
+  #         groups_sel <- groups$gauss_f < value
+  #         groups <- groups$group[groups_sel]
+  #         feature_list <- engine$NonTargetAnalysisResults$feature_list
+  #         feature_list <- lapply(feature_list, function(x, groups) {
+  #           sel <- x$group %in% groups & !x$filtered
+  #           x$filtered[sel] <- TRUE
+  #           x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minRtMuDistance"))
+  #           x
+  #         }, groups = groups)
+  #         engine$NonTargetAnalysisResults$feature_list <- feature_list
+  #       } else {
+  #         warning("There are no signal-to-noise ratio values in features!")
+  #       }
+  #     } else {
+  #       features <- engine$NonTargetAnalysisResults$feature_list
+  #       features <- lapply(features, function(x) {
+  #         if ("quality" %in% colnames(x)) {
+  #           mu <- vapply(x$quality, function(z) {
+  #             if (length(z) == 0) {
+  #               NA_real_
+  #             } else {
+  #               z[["gauss_u"]]
+  #             }
+  #           }, NA_real_)
+  #           mu[is.na(mu)] <- 0
+  #           distance_mu <- abs(mu - x$rt)
+  #           sel <- distance_mu > value & !x$filtered
+  #           x$filtered[sel] <- TRUE
+  #           x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minRtMuDistance"))
+  #         }
+  #         x
+  #       })
+  #       engine$NonTargetAnalysisResults$feature_list <- features
+  #     }
+  #   } else {
+  #     warning("There are no features in the MassSpecEngine!")
+  #   }
+  # }
+  
+  .filter_minIntensity <- function(value = 0, correctIntensity, conservative, engine) {
+    if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
         return()
       }
       
-      if (engine$NTS@has_groups && conservative) {
+      if (engine$NonTargetAnalysisResults@has_groups && conservative) {
         rpl <- unique(engine$Analyses$replicates)
         groups <- get_groups(
-          engine$NTS,
+          engine$NonTargetAnalysisResults,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
           metadata = FALSE,
-          correctSuppression = correctSuppression
+          correctIntensity = correctIntensity
         )
         rpl <- rpl[rpl %in% colnames(groups)]
         groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) max(x) <= value)
         groups <- groups$group[groups_sel]
-        feature_list <- engine$NTS$feature_list
+        feature_list <- engine$NonTargetAnalysisResults$feature_list
         feature_list <- lapply(feature_list, function(x, groups) {
           sel <- x$group %in% groups & !x$filtered
           x$filtered[sel] <- TRUE
           x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minIntensity"))
           x
         }, groups = groups)
-        engine$NTS$feature_list <- feature_list
+        engine$NonTargetAnalysisResults$feature_list <- feature_list
       } else {
-        feature_list <- engine$NTS$feature_list
-        feature_list <- lapply(feature_list, function(x, correctSuppression) {
+        feature_list <- engine$NonTargetAnalysisResults$feature_list
+        feature_list <- lapply(feature_list, function(x, correctIntensity) {
           
           intensity_vector <- x$intensity
           
-          if (correctSuppression) {
+          if (correctIntensity) {
             if ("suppression_factor" %in% colnames(x)) {
               intensity_vector <- intensity_vector * x$suppression_factor
             }
@@ -344,44 +397,44 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           x$filtered[sel] <- TRUE
           x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minIntensity"))
           x
-        }, correctSuppression = correctSuppression)
-        engine$NTS$feature_list <- feature_list
+        }, correctIntensity = correctIntensity)
+        engine$NonTargetAnalysisResults$feature_list <- feature_list
       }
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
   }
   
-  .filter_maxDeviationInReplicate <- function(value = 100, correctSuppression, engine) {
-    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
+  .filter_maxDeviationInReplicate <- function(value = 100, correctIntensity, engine) {
+    if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 100) {
         return()
       }
       
-      if (engine$NTS@has_groups) {
+      if (engine$NonTargetAnalysisResults@has_groups) {
         rpl <- unique(engine$Analyses$replicates)
         rpl <- paste(rpl, "_sd", sep = "")
         groups <- get_groups(
-          engine$NTS,
+          engine$NonTargetAnalysisResults,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
           sdValues = TRUE,
           metadata = FALSE,
-          correctSuppression = correctSuppression
+          correctIntensity = correctIntensity
         )
         rpl <- rpl[rpl %in% colnames(groups)]
         groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) min(x) > value)
         groups <- groups$group[groups_sel]
-        feature_list <- engine$NTS$feature_list
+        feature_list <- engine$NonTargetAnalysisResults$feature_list
         feature_list <- lapply(feature_list, function(x, groups) {
           sel <- x$group %in% groups & !x$filtered
           x$filtered[sel] <- TRUE
           x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " maxDeviationInReplicate"))
           x
         }, groups = groups)
-        engine$NTS$feature_list <- feature_list
+        engine$NonTargetAnalysisResults$feature_list <- feature_list
       } else {
         warning("There are no feature groups but needed for the maxDeviationInReplicate filter!")
       }
@@ -391,17 +444,17 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   }
   
   .filter_minAbundanceInReplicate <- function(value = 0, engine) {
-    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
+    if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
         return()
       }
       
-      if (engine$NTS@has_groups) {
+      if (engine$NonTargetAnalysisResults@has_groups) {
         rpl <- unique(engine$Analyses$replicates)
         rpl <- paste(rpl, "_n", sep = "")
         groups <- get_groups(
-          engine$NTS,
+          engine$NonTargetAnalysisResults,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
@@ -411,14 +464,14 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         rpl <- rpl[rpl %in% colnames(groups)]
         groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) max(x) < value)
         groups <- groups$group[groups_sel]
-        feature_list <- engine$NTS$feature_list
+        feature_list <- engine$NonTargetAnalysisResults$feature_list
         feature_list <- lapply(feature_list, function(x, groups) {
           sel <- x$group %in% groups & !x$filtered
           x$filtered[sel] <- TRUE
           x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minAbundanceInReplicate"))
           x
         }, groups = groups)
-        engine$NTS$feature_list <- feature_list
+        engine$NonTargetAnalysisResults$feature_list <- feature_list
       } else {
         warning("There are no feature groups but needed for the minAbundanceInReplicate filter!")
       }
@@ -429,15 +482,15 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   
   .filter_blankThreshold <- function(value = 3,
                                      conservative,
-                                     correctSuppression,
+                                     correctIntensity,
                                      engine) {
-    if (engine$NTS$has_features && is.numeric(value) && length(value) == 1) {
+    if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
         return()
       }
       
-      if (engine$NTS@has_groups) {
+      if (engine$NonTargetAnalysisResults@has_groups) {
         info <- engine$Analyses$info[, c("replicate", "blank"), with = FALSE]
         info <- unique(info)
         
@@ -449,13 +502,13 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         rpl <- unique(info$replicate)
         
         groups <- get_groups(
-          engine$NTS,
+          engine$NonTargetAnalysisResults,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
           sdValues = FALSE,
           metadata = FALSE,
-          correctSuppression = correctSuppression
+          correctIntensity = correctIntensity
         )
         
         rpl <- rpl[rpl %in% colnames(groups)]
@@ -482,7 +535,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         }, value = value, info = info, groups_rpl = groups_rpl, groups_blk = groups_blk)
         names(groups_list) <- colnames(groups_rpl)
         groups_list <- data.table::as.data.table(groups_list)
-        feature_list <- engine$NTS$feature_list
+        feature_list <- engine$NonTargetAnalysisResults$feature_list
         if (conservative) {
           groups_sel <- apply(groups_list, MARGIN = 1, function(x) all(x))
           groups <- groups$group[groups_sel]
@@ -516,7 +569,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           
           names(feature_list) <- analyses
         }
-        engine$NTS$feature_list <- feature_list
+        engine$NonTargetAnalysisResults$feature_list <- feature_list
       } else {
         warning("There are no feature groups but needed for the blankThreshold filter!")
       }
@@ -526,11 +579,11 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   }
   
   .filter_onlyWithMS2 <- function(value = NULL, engine) {
-    if (engine$NTS$has_features && is.logical(value) && length(value) == 1) {
+    if (engine$NonTargetAnalysisResults$has_features && is.logical(value) && length(value) == 1) {
       if (!value) {
         return()
       }
-      features <- engine$NTS$feature_list
+      features <- engine$NonTargetAnalysisResults$feature_list
       features <- lapply(features, function(x) {
         if ("ms2" %in% colnames(x)) {
           sel <- vapply(x$ms2, function(z) {
@@ -548,7 +601,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
         }
         x
       })
-      engine$NTS$feature_list <- features
+      engine$NonTargetAnalysisResults$feature_list <- features
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
@@ -566,19 +619,19 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       excludeAdducts = .filter_excludeAdducts(parameters[[filters[i]]], engine),
       minIntensity = .filter_minIntensity(
         parameters[[filters[i]]],
-        correctSuppression,
+        correctIntensity,
         conservative,
         engine
       ),
       blankThreshold = .filter_blankThreshold(
         parameters[[filters[i]]],
         conservative,
-        correctSuppression,
+        correctIntensity,
         engine
       ),
       maxDeviationInReplicate = .filter_maxDeviationInReplicate(
         parameters[[filters[i]]],
-        correctSuppression,
+        correctIntensity,
         engine
       ),
       minSnRatio = .filter_minSnRatio(parameters[[filters[i]]], conservative, engine),
@@ -588,7 +641,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
     )
   }
   
-  n_features_after <- sum(vapply(engine$NTS$feature_list, function(x) sum(!x$filtered), 0))
+  n_features_after <- sum(vapply(engine$NonTargetAnalysisResults$feature_list, function(x) sum(!x$filtered), 0))
   
   n_features_filtered <- n_features - n_features_after
   
@@ -599,7 +652,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   TRUE
 }
 
-#' **MassSpecMethod_FilterFeatures_patRoon**
+#' MassSpecMethod_FilterFeatures_patRoon S7 class
 #'
 #' @description Settings for filtering of features and feature groups. A full description of the
 #' filtering parameters is in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
@@ -696,7 +749,7 @@ MassSpecMethod_FilterFeatures_patRoon <- S7::new_class(
                          negate = FALSE) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "FilterFeatures",
         required = "FindFeatures",
         algorithm = "patRoon",
@@ -744,7 +797,7 @@ MassSpecMethod_FilterFeatures_patRoon <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "FilterFeatures")
     checkmate::assert_choice(self@algorithm, "patRoon")
     checkmate::assert_numeric(self@parameters$absMinIntensity)
@@ -796,13 +849,13 @@ S7::method(run, MassSpecMethod_FilterFeatures_patRoon) <- function(x, engine = N
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
   
-  if (engine$NTS$has_features) {
-    NTS <- engine$NTS
-    pat <- get_patRoon_features(NTS, featureGroups = TRUE)
+  if (engine$NonTargetAnalysisResults$has_features) {
+    NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
+    pat <- get_patRoon_features(NonTargetAnalysisResults, featureGroups = TRUE)
   } else {
     warning("No features found! Not done.")
     return(FALSE)
@@ -837,7 +890,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_patRoon) <- function(x, engine = N
     pat_features <- pat_features@features
   }
 
-  feature_list <- NTS$feature_list
+  feature_list <- NonTargetAnalysisResults$feature_list
   
   pat_features <- pat_features[names(pat_features) %in% names(feature_list)]
   pat_features <- pat_features[match(names(feature_list), names(pat_features))]
@@ -857,7 +910,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_patRoon) <- function(x, engine = N
     x
   }, feature_list, pat_features)
 
-  NTS$feature_list <- feature_list
-  engine$NTS <- NTS
+  NonTargetAnalysisResults$feature_list <- feature_list
+  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
   TRUE
 }

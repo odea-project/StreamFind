@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_StatisticMethod_MakeModel.R
 \name{StatisticMethod_MakeModel_knn}
 \alias{StatisticMethod_MakeModel_knn}
-\title{\strong{StatisticMethod_MakeModel_knn}}
+\title{StatisticMethod_MakeModel_knn S7 class}
 \usage{
 StatisticMethod_MakeModel_knn(k = 3, l = 0)
 }

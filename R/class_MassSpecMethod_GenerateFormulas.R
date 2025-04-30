@@ -1,4 +1,4 @@
-#' **MassSpecMethod_GenerateFormulas_genform**
+#' MassSpecMethod_GenerateFormulas_genform S7 class
 #'
 #' @description Settings for generating formulas using the algorithm \href{https://sourceforge.net/projects/genform/}{GenForm}.
 #' The algorithm is used via the function \link[patRoon]{generateFormulas} from the package \pkg{patRoon}. Therefore,
@@ -91,7 +91,7 @@ MassSpecMethod_GenerateFormulas_genform <- S7::new_class(
                          batchSize = 8) {
     S7::new_object(
       ProcessingStep(
-        engine = "MassSpec",
+        data_type = "MassSpec",
         method = "GenerateFormulas",
         required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
         algorithm = "genform",
@@ -132,7 +132,7 @@ MassSpecMethod_GenerateFormulas_genform <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@engine, "MassSpec")
+    checkmate::assert_choice(self@data_type, "MassSpec")
     checkmate::assert_choice(self@method, "GenerateFormulas")
     checkmate::assert_choice(self@algorithm, "genform")
     checkmate::assert_numeric(self@parameters$MSPeakListsClusterMzWindow, len = 1)
@@ -177,14 +177,14 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NTS object available! Not done.")
+    warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  NTS <- engine$NTS
+  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
 
-  if (!NTS@has_groups) {
-    warning("NTS object does not have feature groups! Not done.")
+  if (!NonTargetAnalysisResults@has_groups) {
+    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
     return(FALSE)
   }
 
@@ -200,13 +200,13 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
   algorithm <- x$algorithm
   
   fg <- get_patRoon_features(
-    NTS,
+    NonTargetAnalysisResults,
     filtered = FALSE,
     featureGroups = TRUE
   )
   
   mspl <- get_patRoon_MSPeakLists(
-    NTS,
+    NonTargetAnalysisResults,
     MSPeakListsClusterMzWindow,
     MSPeakListsTopMost,
     MSPeakListsMinIntensityPre,
@@ -241,7 +241,7 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
     return(FALSE)
   }
 
-  feature_list <- NTS$feature_list
+  feature_list <- NonTargetAnalysisResults$feature_list
 
   formulas_col <- lapply(names(feature_list), function(x, feature_list, formulas) {
     formula <- formulas@featureFormulas[[x]]
@@ -261,11 +261,11 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
     rep(list(NULL), nrow(feature_list[[x]]))
   }, feature_list = feature_list, formulas = formulas)
 
-  NTS <- .add_features_column(NTS, "formulas", formulas_col)
+  NonTargetAnalysisResults <- .add_features_column(NonTargetAnalysisResults, "formulas", formulas_col)
 
-  NTS$formulas <- formulas
+  NonTargetAnalysisResults$formulas <- formulas
 
-  engine$NTS <- NTS
+  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
 
   message(paste0("\U2713 ", length(formulas), " formulas generated and added!"))
 

@@ -4,9 +4,9 @@
 \name{StreamFind-package}
 \alias{StreamFind}
 \alias{StreamFind-package}
-\title{StreamFind: Framework and workflows for data analysis in the water cycle}
+\title{StreamFind: Flexible Workflow Assembler for Advanced Data Analysis}
 \description{
-The StreamFind R package is a framework for spectrometric and spectroscopic data processing with focus on environmental and quality studies of the water cycle. The StreamFind R package aims to stimulate the use of advanced data analysis (e.g., non-target screening (NTS) and statistical analysis) in routine studies, promoting standardization of data processing and easing the retrospective inclusion of data.
+The package StreamFind is a flexible R package designed to support the assembly and execution of standardized workflows for advanced data analysis. Originally developed within the project “Flexible Data Analysis and Workflow Designer to Identify Chemicals in the Water Cycle”, funded by the German Federal Ministry of Education and Research (BMBF), StreamFind offers a modular platform capable of handling diverse data types, including mass spectrometry, spectroscopy, and other structured datasets. The package promotes the use of advanced analysis techniques — such as non-target screening (NTS), statistical modeling, and retrospective data evaluation — in both research and routine quality control workflows. With its standardized approach to data processing, comprehensive documentation, and an integrated graphical user interface, StreamFind is designed to support scientists and technical staff across a wide range of disciplines, from environmental monitoring to pharmaceutical quality assurance.
 }
 \seealso{
 Useful links:
@@ -18,7 +18,7 @@ Useful links:
 
 }
 \author{
-\strong{Maintainer}: Ricardo Cunha \email{cunha@iuta.de} (\href{https://orcid.org/0000-0002-6791-0119}{ORCID})
+\strong{Maintainer}: Ricardo Cunha \email{cunha@iuta.de} (\href{https://orcid.org/0000-0002-6791-0119}{ORCID}) [funder]
 
 Other contributors:
 \itemize{

@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_AverageSpectra.R
 \name{RamanMethod_AverageSpectra_native}
 \alias{RamanMethod_AverageSpectra_native}
-\title{\strong{RamanMethod_AverageSpectra_native}}
+\title{Raman Method to Average Spectra (native algorithm)}
 \usage{
 RamanMethod_AverageSpectra_native(by = "replicates")
 }
