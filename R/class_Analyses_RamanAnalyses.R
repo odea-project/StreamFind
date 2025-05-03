@@ -499,7 +499,7 @@ S7::method(get_spectra, RamanAnalyses) <- function(x,
     }
     
     if (spec$has_chrom_peaks) {
-      if (length(spec$spectra) == length(spec$chrom_peaks[names(spec$spectra)])) {
+      if (length(spec$spectra) == length(spec$chrom_peaks)) {
         spec$spectra <- Map(function(z, y) {
           if (nrow(z) > 0) {
             z$id <- NA_character_

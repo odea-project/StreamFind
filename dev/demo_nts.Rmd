@@ -1,5 +1,5 @@
 ---
-title: 'Non-target Screening (NonTargetAnalysisResults) Wastewater Treatment Evaluation'
+title: 'Non-target Analysis for Wastewater Treatment Evaluation'
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
@@ -12,7 +12,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{'Non-target Screening (NonTargetAnalysisResults) Wastewater Treatment Evaluation'}
+  %\VignetteIndexEntry{'Non-target Analysis for Wastewater Treatment Evaluation'}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -81,7 +81,7 @@ In this article we demonstrate how StreamFind can be used to evaluate ozonation 
 basename(files)
 ```
 
-The showcase will use the StreamFind *MassSpecEngine*, which encapsulates all tools required for parsing, storing, processing and visualizing MS data. Note that not all methods/functions will be shown as the demonstration focuses of the workflow to assess wastewater ozonation. Other processing methods are available in the StreamFind package and can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
+The showcase will use the StreamFind *MassSpecEngine*, which encapsulates all tools required for parsing, storing, processing and visualizing MS data. Note that not all methods/functions will be shown, as the demonstration focuses of the workflow to assess wastewater treatment. Other processing methods for MS data are available in the StreamFind package and can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
 
 # *MassSpecEngine*
 

@@ -1,9 +1,8 @@
-#' StatisticMethod_Quantify_mcrals S7 class
-#'
-#' @title StatisticMethod_Quantify_mcrals
+#' @title Method for Quantification using an MCR-ALS model
 #' 
 #' @description Quantify data using the mcrals statistical model and concentrations.
 #' 
+#' @param regression A character string indicating the type of regression to be used. Default is "linear". Possible values are "linear", "poly2" or "poly3".
 #' @param concentrations Numeric of the same length as analyses with the concentrations to be used for quantification.
 #' When concentration is not known or not available, use `NA_real_`.
 #' 
@@ -15,7 +14,7 @@ StatisticMethod_Quantify_mcrals <- S7::new_class(
   "StatisticMethod_Quantify_mcrals",
   parent = ProcessingStep,
   package = "StreamFind",
-  constructor = function(concentrations = NA_real_) {
+  constructor = function(regression = "linear", concentrations = NA_real_) {
     S7::new_object(
       ProcessingStep(
         data_type = "Statistic",
@@ -23,6 +22,7 @@ StatisticMethod_Quantify_mcrals <- S7::new_class(
         required = "MakeModel",
         algorithm = "mcrals",
         parameters = list(
+          regression = regression,
           concentrations = concentrations
         ),
         number_permitted = 1,
@@ -39,6 +39,9 @@ StatisticMethod_Quantify_mcrals <- S7::new_class(
     checkmate::assert_choice(self@data_type, "Statistic")
     checkmate::assert_choice(self@method, "Quantify")
     checkmate::assert_choice(self@algorithm, "mcrals")
+    checkmate::assert_choice(self@required, "MakeModel")
+    checkmate::assert_choice(self@number_permitted, 1)
+    checkmate::assert_choice(self@parameters$regression, c("linear", "poly2", "poly3"))
     checkmate::assert_numeric(self@parameters$concentrations)
     NULL
   }
@@ -69,6 +72,7 @@ S7::method(run, StatisticMethod_Quantify_mcrals) <- function(x, engine = NULL) {
   }
   
   parameters <- x$parameters
+  regression <- parameters$regression
   concentrations <- parameters$concentrations
   
   if (all(is.na(concentrations))) {
@@ -94,20 +98,50 @@ S7::method(run, StatisticMethod_Quantify_mcrals) <- function(x, engine = NULL) {
     c_i <- concentrations
     x <- c_i[!is.na(c_i)]
     y <- model_data$contribution[[i]][!is.na(c_i)]
-    linear_model <- lm(x  ~  y)
-    summary_linear_model <- summary(linear_model)
-    r_squared <- summary_linear_model$r.squared
+    
+    if (length(x) < 2 || length(y) < 2) {
+      warning(paste0("Not enough data to fit a model for ", compound, "! Not done."))
+      next
+    }
+    
+    if (length(x) != length(y)) {
+      warning(paste0("Length of x and y do not match for ", compound, "! Not done."))
+      next
+    }
+    
+    if (any(is.na(x)) || any(is.na(y))) {
+      warning(paste0("NA values in x or y for ", compound, "! Not done."))
+      next
+    }
+    
+    if (any(x < 0) || any(y < 0)) {
+      warning(paste0("Negative values in x or y for ", compound, "! Not done."))
+      next
+    }
+    
+    if (regression == "linear") {
+      model <- lm(x ~ y)
+    } else if (regression == "poly2") {
+      model <- lm(x ~ poly(y, 2, raw = TRUE))
+    } else if (regression == "poly3") {
+      model <- lm(x ~ poly(y, 3, raw = TRUE))
+    } else {
+      stop("Unknown regression type!")
+    }
+    
+    summary_model <- summary(model)
+    r_squared <- summary_model$r.squared
     to_quantify <- is.na(c_i)
     for (j in seq_len(length(c_i))) {
       if (to_quantify[j]) {
         mcr_val <- data.frame(y = model_data$contribution[[i]][j])
-        c_i[j] <- stats::predict(linear_model, newdata = mcr_val)
+        c_i[j] <- stats::predict(model, newdata = mcr_val)
       }
     }
     
     res@compounds <- c(res@compounds, compound)
     
-    res@models[[compound]] <- linear_model
+    res@models[[compound]] <- model
     
     res@quantities[[compound]] <- data.table::data.table(
       "result" = model_data$contribution$result,
