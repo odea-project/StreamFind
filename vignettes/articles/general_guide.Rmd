@@ -46,19 +46,6 @@ cols <- c("name", "formula", "mass", "rt", "tag")
 db <- db[, cols, with = FALSE]
 ```
 
-<!-- ```{=html} -->
-<!-- <style> -->
-<!-- pre { -->
-<!--   overflow-x: auto; -->
-<!--   white-space: pre; -->
-<!-- } -->
-<!-- pre code { -->
-<!--   word-wrap: normal; -->
-<!--   white-space: pre; -->
-<!-- } -->
-<!-- </style> -->
-<!-- ``` -->
-
 <br>
 
 <br>
@@ -70,7 +57,7 @@ db <- db[, cols, with = FALSE]
 The StreamFind R package is a data agnostic data processing workflow designer. Besides data processing, the package can also be used for data management, visualization and reporting. This guide focuses on describing the general framework of StreamFind. StreamFind is centered around [R6](https://r6.r-lib.org/index.html) classes, serving as data processing engines (used as metaphor) for different types of data (e.g. mass spectrometry (MS) and Raman spectroscopy (RS) data).  
 
 ```{r concept-image, fig.cap="StreamFind Concept", out.width="100%", echo=FALSE, fig.align='center', fig.alt="Concept"}
-knitr::include_graphics("Concept.png")
+#knitr::include_graphics("Concept.png")
 ```
 
 Internally, the engines (R6 classes) use seven central [S7](https://github.com/RConsortium/S7) classes:
@@ -162,7 +149,7 @@ raman <- RamanEngine$new(analyses = raman_ex_files)
 raman
 ```
 
-Data specific engines have dedicated active fields to access the data. For instance, the `Analyses` active field in the `RamanEngine` is used to access the raw spectra and any `Results`. Note that accessing properties of [S7](https://github.com/RConsortium/S7) classes should be done with `@` instead of `$`.
+Data specific engines have dedicated active fields to access the data. For instance, the `Analyses` active field in the `RamanEngine` is used to access the raw spectra and any `Results`. Note that accessing properties of [S7](https://github.com/RConsortium/S7) classes should be done with `@` instead of `$` but the `$` operator is also available for convenience.
 
 ```{r raman-analyses}
 # Gets the length of Analyses in the RamanEngine
