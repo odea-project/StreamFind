@@ -176,15 +176,15 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
   
   # plot maximize functions
   source_functions <- list(
-    create_maximize_button = create_maximize_button,
-    create_plot_modal = create_plot_modal,
-    plot_maximize_js = plot_maximize_js
+    .app_util_create_maximize_button = .app_util_create_maximize_button,
+    .app_util_create_plot_modal = .app_util_create_plot_modal,
+    .app_util_plot_maximize_js = .app_util_plot_maximize_js
   )
   
   shiny::tagList(
     custom_css,
-    plot_maximize_js(),  # JavaScript functions
-    create_plot_modal(ns_full),  # Modal container
+    .app_util_plot_maximize_js(),  # JavaScript functions
+    .app_util_create_plot_modal(ns_full),  # Modal container
     
     shiny::div(style = "margin-top: -20px;",
       shinydashboard::tabBox(
@@ -341,7 +341,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                   shiny::div(
                     class = "card-body p-0 position-relative",
                     # maximize button
-                    create_maximize_button("features_chart", ns_full),
+                    .app_util_create_maximize_button("features_chart", ns_full),
                     plotly::plotlyOutput(ns_full("features_chart"), height = "auto")
                   )
                 )
@@ -387,7 +387,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                   ),
                   shiny::div(
                     class = "card-body p-0 position-relative",
-                    create_maximize_button("feature_peaks_plot", ns_full),
+                    .app_util_create_maximize_button("feature_peaks_plot", ns_full),
                     plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "auto")
                   )
                 )
@@ -407,7 +407,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                       title = "MS1",
                       shiny::div(
                         class = "p-3 position-relative",
-                        create_maximize_button("ms1_plot", ns_full),
+                        .app_util_create_maximize_button("ms1_plot", ns_full),
                         plotly::plotlyOutput(ns_full("ms1_plot"), height = "auto")
                       )
                     ),
@@ -417,7 +417,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                       title = "MS2",
                       shiny::div(
                         class = "p-3 position-relative",
-                        create_maximize_button("ms2_plot", ns_full),
+                        .app_util_create_maximize_button("ms2_plot", ns_full),
                         plotly::plotlyOutput(ns_full("ms2_plot"), height = "auto")
                       )
                     ),
@@ -587,68 +587,63 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
     })
     
     # Status indicators with UI formatting
-    output$has_features_ui <- shiny::renderUI({
-      value <- nts_data()@has_features
-      if (value) {
-        shiny::tags$span(class = "status-yes", "YES")
-      } else {
-        shiny::tags$span(class = "status-no", "NO")
-      }
-    })
-    
-    output$has_filtered_features_ui <- shiny::renderUI({
-      value <- nts_data()@has_filtered_features
-      if (value) {
-        shiny::tags$span(class = "status-yes", "YES")
-      } else {
-        shiny::tags$span(class = "status-no", "NO")
-      }
-    })
-    
-    output$has_groups_ui <- shiny::renderUI({
-      value <- nts_data()@has_groups
-      if (value) {
-        shiny::tags$span(class = "status-yes", "YES")
-      } else {
-        shiny::tags$span(class = "status-no", "NO")
-      }
-    })
-    
-    output$has_features_eic_ui <- shiny::renderUI({
-      value <- nts_data()@has_features_eic
-      if (value) {
-        shiny::tags$span(class = "status-yes", "YES")
-      } else {
-        shiny::tags$span(class = "status-no", "NO")
-      }
-    })
-    
-    output$has_features_ms1_ui <- shiny::renderUI({
-      value <- nts_data()@has_features_ms1
-      if (value) {
-        shiny::tags$span(class = "status-yes", "YES")
-      } else {
-        shiny::tags$span(class = "status-no", "NO")
-      }
-    })
-    
-    output$has_features_ms2_ui <- shiny::renderUI({
-      value <- nts_data()@has_features_ms2
-      if (value) {
-        shiny::tags$span(class = "status-yes", "YES")
-      } else {
-        shiny::tags$span(class = "status-no", "NO")
-      }
-    })
-    
-    output$has_features_suspects_ui <- shiny::renderUI({
-      value <- nts_data()@has_features_suspects
-      if (value) {
-        shiny::tags$span(class = "status-yes", "YES")
-      } else {
-        shiny::tags$span(class = "status-no", "NO")
-      }
-    })
+    # Dynamic status indicators with UI formatting
+output$has_features_ui <- shiny::renderUI({
+  value <- nts_data()@has_features
+  shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+})
+
+output$has_filtered_features_ui <- shiny::renderUI({
+  value <- nts_data()@has_filtered_features
+  shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+})
+
+output$has_groups_ui <- shiny::renderUI({
+  value <- nts_data()@has_groups
+  shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+})
+
+output$has_features_eic_ui <- shiny::renderUI({
+  value <- nts_data()@has_features_eic
+  shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+})
+
+# Dynamic MS1 check
+output$has_features_ms1_ui <- shiny::renderUI({
+  features <- get_features(nts_data())
+  if (nrow(features) > 0) {
+    mass_data <- features[1, .(mass)]
+    ms1_available <- !inherits(try(plot_features_ms1(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE), "try-error")
+    shiny::tags$span(class = ifelse(ms1_available, "status-yes", "status-no"), ifelse(ms1_available, "YES", "NO"))
+  } else {
+    shiny::tags$span(class = "status-no", "NO")
+  }
+})
+
+# Dynamic MS2 check
+output$has_features_ms2_ui <- shiny::renderUI({
+  features <- get_features(nts_data())
+  if (nrow(features) > 0) {
+    mass_data <- features[1, .(mass)]
+    ms2_available <- !inherits(try(plot_features_ms2(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE), "try-error")
+    shiny::tags$span(class = ifelse(ms2_available, "status-yes", "status-no"), ifelse(ms2_available, "YES", "NO"))
+  } else {
+    shiny::tags$span(class = "status-no", "NO")
+  }
+})
+
+# Dynamic Suspects check
+output$has_features_suspects_ui <- shiny::renderUI({
+  features <- get_features(nts_data())
+  cat("Debug: Suspects data structure\n")
+  print(str(features$suspects, max.level = 1))
+  if (nrow(features) > 0) {
+    suspects_available <- any(sapply(features$suspects, function(x) !is.null(x) && length(x) > 0 && !all(is.na(x))))
+    shiny::tags$span(class = ifelse(suspects_available, "status-yes", "status-no"), ifelse(suspects_available, "YES", "NO"))
+  } else {
+    shiny::tags$span(class = "status-no", "NO")
+  }
+})
     
     # Enhanced Features chart using plot_features_count with Plotly
     output$features_chart <- plotly::renderPlotly({
@@ -734,17 +729,57 @@ output$features_table <- DT::renderDT({
   # Fetch features data
   features <- get_features(nts_data())
   
-  # Store availability flags in temp vars to avoid name conflict with original list-cols
-  features$ms1_flag <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
-  features$ms2_flag <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
-  features$istd_flag <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
+  # Debug: Log features data structure
+  cat("Debug: Features data structure\n")
+  print(str(features, max.level = 2))
+  
+  # Debug: Check if plotting functions have access to ms1/ms2 data
+  if (nrow(features) > 0) {
+    cat("Debug: Checking MS1/MS2 data availability for first feature\n")
+    mass_data <- features[1, .(mass)]
+    ms1_plot <- try(plot_features_ms1(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE)
+    ms2_plot <- try(plot_features_ms2(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE)
+    cat("Debug: MS1 plot data available =", !inherits(ms1_plot, "try-error"), "\n")
+    cat("Debug: MS2 plot data available =", !inherits(ms2_plot, "try-error"), "\n")
+  } else {
+    cat("Debug: No features available\n")
+  }
+  
+  # Enhanced flag logic with fallback to plotting data
+  features$ms1_flag <- sapply(features$ms1, function(x) {
+    !is.null(x) && length(x) > 0 && !all(is.na(x))
+  })
+  features$ms2_flag <- sapply(features$ms2, function(x) {
+    !is.null(x) && length(x) > 0 && !all(is.na(x))
+  })
+  features$istd_flag <- sapply(features$istd, function(x) {
+    !is.null(x) && length(x) > 0 && !all(is.na(x))
+  })
+  # Removed suspects_flag calculation since we don't need the column
+
+  # Fallback: If flags are all FALSE but plots exist, infer from mass column
+  if (nrow(features) > 0 && !any(features$ms1_flag) && !inherits(try(plot_features_ms1(nts_data(), mass = features[1, .(mass)]), silent = TRUE), "try-error")) {
+    cat("Debug: Inferring MS1 flags from mass data\n")
+    features$ms1_flag <- !is.na(features$mass) & features$mass > 0
+  }
+  if (nrow(features) > 0 && !any(features$ms2_flag) && !inherits(try(plot_features_ms2(nts_data(), mass = features[1, .(mass)]), silent = TRUE), "try-error")) {
+    cat("Debug: Inferring MS2 flags from mass data\n")
+    features$ms2_flag <- !is.na(features$mass) & features$mass > 0
+  }
+
+  # Debug: Log flag counts
+  cat("Debug: MS1 flags =", sum(features$ms1_flag), "\n")
+  cat("Debug: MS2 flags =", sum(features$ms2_flag), "\n")
 
   # Remove original nested list-columns
   nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
   features <- features[, !nested_cols, with = FALSE]
 
-  # Rename flags to final column names
-  data.table::setnames(features, old = c("ms1_flag", "ms2_flag", "istd_flag"), new = c("ms1", "ms2", "istd"))
+  # Rename flags to final column names (excluding suspects)
+  data.table::setnames(features, 
+    old = c("ms1_flag", "ms2_flag", "istd_flag"), 
+    new = c("ms1", "ms2", "istd")
+  )
 
   # Round numeric columns to 4 decimal places for readability
   numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
@@ -767,15 +802,15 @@ output$features_table <- DT::renderDT({
   # Render the DataTable with enhanced styling and checkbox rendering
   DT::datatable(
     features,
-    escape = FALSE,  # Allow HTML rendering
+    escape = FALSE,
     options = list(
       pageLength = 10,
       scrollX = TRUE,
       scrollY = "400px",
       columnDefs = list(
-        list(width = "50px", targets = c(1)),   # sel column (checkboxes)
-        list(width = "200px", targets = c(0)),  # analysis column
-        list(width = "200px", targets = c(2)),  # feature column
+        list(width = "50px", targets = c(1)),
+        list(width = "200px", targets = c(0)),
+        list(width = "200px", targets = c(2)),
         list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
         list(width = "80px", targets = c(12)),
         list(width = "100px", targets = c(13)),
@@ -785,8 +820,7 @@ output$features_table <- DT::renderDT({
         list(width = "120px", targets = c(19)),
         list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
         list(className = "dt-left", targets = c(0, 2, 13, 14, 15, 16, 18, 19)),
-        list(className = "dt-center", targets = c(1)),  # Center the sel column (checkboxes)
-        # Custom rendering for the 'sel' column (checkboxes)
+        list(className = "dt-center", targets = c(1)),
         list(
           targets = sel_col_index,
           render = DT::JS(
@@ -798,9 +832,8 @@ output$features_table <- DT::renderDT({
             "  return data;",
             "}"
           ),
-          className = "dt-center"  # Center the checkboxes
+          className = "dt-center"
         ),
-        # Custom rendering for the 'filtered' column
         list(
           targets = filtered_col_index,
           render = DT::JS(
@@ -812,14 +845,14 @@ output$features_table <- DT::renderDT({
             "  return data;",
             "}"
           ),
-          className = "dt-center"  # Center the checkboxes (filtered column)
+          className = "dt-center"
         )
       ),
       selection = list(mode = "multiple", selected = NULL, target = "row"),
       dom = 'rt<"bottom"lip>',
       lengthMenu = c(5, 10, 25, 50, 100),
       ordering = TRUE,
-      searching = FALSE,  # Search bar disabled
+      searching = FALSE,
       searchHighlight = TRUE
     ),
     style = "bootstrap",
@@ -828,13 +861,11 @@ output$features_table <- DT::renderDT({
     filter = "top",
     selection = "multiple"
   ) %>%
-    # Custom CSS
     DT::formatStyle(
       columns = names(features),
       fontSize = "14px",
       padding = "8px 12px"
     ) %>%
-    # Highlight numeric columns
     DT::formatStyle(
       columns = intersect(numeric_cols, names(features)),
       backgroundColor = NULL,
