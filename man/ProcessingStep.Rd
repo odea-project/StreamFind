@@ -5,18 +5,18 @@
 \title{Generic Processing Step}
 \usage{
 ProcessingStep(
-  data_type = NA_character_,
-  method = NA_character_,
-  required = NA_character_,
-  algorithm = NA_character_,
-  parameters = list(),
-  number_permitted = NA_real_,
-  version = NA_character_,
-  software = NA_character_,
-  developer = NA_character_,
-  contact = NA_character_,
-  link = NA_character_,
-  doi = NA_character_
+  data_type = class_missing,
+  method = class_missing,
+  required = class_missing,
+  algorithm = class_missing,
+  parameters = class_missing,
+  number_permitted = class_missing,
+  version = class_missing,
+  software = class_missing,
+  developer = class_missing,
+  contact = class_missing,
+  link = class_missing,
+  doi = class_missing
 )
 }
 \arguments{

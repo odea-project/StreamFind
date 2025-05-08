@@ -27,6 +27,7 @@
 #' @slot has_features_ms2 (getter) A logical indicating if MS2 features are present.
 #' @slot has_features_eic (getter) A logical indicating if EIC features are present.
 #' @slot has_features_suspects (getter) A logical indicating if suspect features are present.
+#' @slot info (getter) A data frame containing an overview of the number of features.
 #'
 #' @export
 #'
@@ -338,6 +339,21 @@ NonTargetAnalysisResults <- S7::new_class(
           }, FALSE)))
         }
         FALSE
+      }
+    ),
+    
+    # MARK: info
+    ## info -----
+    info = S7::new_property(
+      S7::class_data.frame,
+      getter = function(self) {
+        data.table::data.table(
+          "analysis" = self@analyses_info$analysis,
+          "replicate" = self@replicates,
+          "features" = self@number_features,
+          "filtered" = self@number_filtered_features,
+          "groups" = self@number_groups
+        )
       }
     )
   ),

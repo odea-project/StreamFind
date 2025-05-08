@@ -5,10 +5,10 @@
 \title{Generic Results}
 \usage{
 Results(
-  data_type = NA_character_,
-  name = NA_character_,
-  software = NA_character_,
-  version = NA_character_
+  data_type = class_missing,
+  name = class_missing,
+  software = class_missing,
+  version = class_missing
 )
 }
 \description{

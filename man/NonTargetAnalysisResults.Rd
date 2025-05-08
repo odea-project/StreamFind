@@ -60,5 +60,7 @@ The \code{NonTargetAnalysisResults} class is a child of the \link{Results} class
 \item{\code{has_features_eic}}{(getter) A logical indicating if EIC features are present.}
 
 \item{\code{has_features_suspects}}{(getter) A logical indicating if suspect features are present.}
+
+\item{\code{info}}{(getter) A data frame containing an overview of the number of features.}
 }}
 

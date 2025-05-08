@@ -2,11 +2,16 @@
 % Please edit documentation in R/class_StatisticMethod_Quantify.R
 \name{StatisticMethod_Quantify_mcrals}
 \alias{StatisticMethod_Quantify_mcrals}
-\title{StatisticMethod_Quantify_mcrals}
+\title{Method for Quantification using an MCR-ALS model}
 \usage{
-StatisticMethod_Quantify_mcrals(concentrations = NA_real_)
+StatisticMethod_Quantify_mcrals(
+  regression = "linear",
+  concentrations = NA_real_
+)
 }
 \arguments{
+\item{regression}{A character string indicating the type of regression to be used. Default is "linear". Possible values are "linear", "poly2" or "poly3".}
+
 \item{concentrations}{Numeric of the same length as analyses with the concentrations to be used for quantification.
 When concentration is not known or not available, use \code{NA_real_}.}
 }
@@ -15,7 +20,4 @@ A StatisticMethod_Quantify_mcrals object.
 }
 \description{
 Quantify data using the mcrals statistical model and concentrations.
-}
-\details{
-StatisticMethod_Quantify_mcrals S7 class
 }
