@@ -42,6 +42,7 @@
 <url><loc>https://odea-project.github.io/StreamFind/reference/get_matrix_suppression.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/get_model_data.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/get_model_prediction.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/get_patRoon_compounds.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/get_patRoon_features.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/get_patRoon_MSPeakLists.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/get_raw_chromatograms.html</loc></url>
@@ -121,6 +122,7 @@
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_SuspectScreening_patRoon.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_SuspectScreening_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/Metadata.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/NonTargetAnalysisResults.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/pipe.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/plot_chromatograms.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/plot_chromatograms_baseline.html</loc></url>

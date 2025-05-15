@@ -405,7 +405,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
     }
   }
   
-  .filter_maxDeviationInReplicate <- function(value = 100, correctIntensity, engine) {
+  .filter_maxDeviationInReplicate <- function(value = 100, correctIntensity, conservative, engine) {
     if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 100) {
@@ -415,6 +415,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       if (engine$NonTargetAnalysisResults@has_groups) {
         rpl <- unique(engine$Analyses$replicates)
         rpl <- paste(rpl, "_sd", sep = "")
+        names(rpl) <- unique(engine$Analyses$replicates)
+        
         groups <- get_groups(
           engine$NonTargetAnalysisResults,
           filtered = FALSE,
@@ -424,17 +426,49 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           metadata = FALSE,
           correctIntensity = correctIntensity
         )
+        
         rpl <- rpl[rpl %in% colnames(groups)]
-        groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) min(x) > value)
-        groups <- groups$group[groups_sel]
-        feature_list <- engine$NonTargetAnalysisResults$feature_list
-        feature_list <- lapply(feature_list, function(x, groups) {
-          sel <- x$group %in% groups & !x$filtered
-          x$filtered[sel] <- TRUE
-          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " maxDeviationInReplicate"))
-          x
-        }, groups = groups)
-        engine$NonTargetAnalysisResults$feature_list <- feature_list
+        
+        if (conservative) {
+          groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) min(x) > value)
+          groups <- groups$group[groups_sel]
+          feature_list <- engine$NonTargetAnalysisResults$feature_list
+          feature_list <- lapply(feature_list, function(x, groups) {
+            sel <- x$group %in% groups & !x$filtered
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " maxDeviationInReplicate"))
+            x
+          }, groups = groups)
+          engine$NonTargetAnalysisResults$feature_list <- feature_list
+          
+        } else {
+          groups_sel <- lapply(groups[, rpl, with = FALSE], function(x) x > value)
+          groups_sel <- lapply(groups_sel, function(x) {
+            names(x) <- groups$group
+            x
+          })
+          names(groups_sel) <- names(rpl)
+          
+          feature_list <- engine$NonTargetAnalysisResults$feature_list
+          
+          feature_list <- Map(function(x, y) {
+            if (nrow(x) > 0) {
+              x$replicate <- y
+            }
+            x
+          }, feature_list, engine$Analyses$replicates)
+            
+          feature_list <- lapply(feature_list, function(x, groups_sel) {
+            sel <- groups_sel[[x$replicate[1]]]
+            sel <- sel[sel]
+            sel <- x$group %in% names(sel) & !x$filtered
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " maxDeviationInReplicate"))
+            x$replicate <- NULL
+            x
+          }, groups_sel = groups_sel)
+          engine$NonTargetAnalysisResults$feature_list <- feature_list
+        }
       } else {
         warning("There are no feature groups but needed for the maxDeviationInReplicate filter!")
       }
@@ -443,7 +477,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
     }
   }
   
-  .filter_minAbundanceInReplicate <- function(value = 0, engine) {
+  .filter_minAbundanceInReplicate <- function(value = 0, conservative, engine) {
     if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
       if (is.na(value) || value == 0) {
@@ -453,6 +487,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       if (engine$NonTargetAnalysisResults@has_groups) {
         rpl <- unique(engine$Analyses$replicates)
         rpl <- paste(rpl, "_n", sep = "")
+        names(rpl) <- unique(engine$Analyses$replicates)
+        
         groups <- get_groups(
           engine$NonTargetAnalysisResults,
           filtered = FALSE,
@@ -461,17 +497,49 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
           sdValues = TRUE,
           metadata = FALSE
         )
+        
         rpl <- rpl[rpl %in% colnames(groups)]
-        groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) max(x) < value)
-        groups <- groups$group[groups_sel]
-        feature_list <- engine$NonTargetAnalysisResults$feature_list
-        feature_list <- lapply(feature_list, function(x, groups) {
-          sel <- x$group %in% groups & !x$filtered
-          x$filtered[sel] <- TRUE
-          x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minAbundanceInReplicate"))
-          x
-        }, groups = groups)
-        engine$NonTargetAnalysisResults$feature_list <- feature_list
+        
+        if (conservative) {
+          groups_sel <- apply(groups[, rpl, with = FALSE], MARGIN = 1, function(x) max(x) < value)
+          groups <- groups$group[groups_sel]
+          feature_list <- engine$NonTargetAnalysisResults$feature_list
+          feature_list <- lapply(feature_list, function(x, groups) {
+            sel <- x$group %in% groups & !x$filtered
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " minAbundanceInReplicate"))
+            x
+          }, groups = groups)
+          engine$NonTargetAnalysisResults$feature_list <- feature_list
+          
+        } else {
+          groups_sel <- lapply(groups[, rpl, with = FALSE], function(x) x < value)
+          groups_sel <- lapply(groups_sel, function(x) {
+            names(x) <- groups$group
+            x
+          })
+          names(groups_sel) <- names(rpl)
+          
+          feature_list <- engine$NonTargetAnalysisResults$feature_list
+          
+          feature_list <- Map(function(x, y) {
+            if (nrow(x) > 0) {
+              x$replicate <- y
+            }
+            x
+          }, feature_list, engine$Analyses$replicates)
+          
+          feature_list <- lapply(feature_list, function(x, groups_sel) {
+            sel <- groups_sel[[x$replicate[1]]]
+            sel <- sel[sel]
+            sel <- x$group %in% names(sel) & !x$filtered
+            x$filtered[sel] <- TRUE
+            x$filter[sel] <- gsub("NA ", "", paste0(x$filter[sel], " maxDeviationInReplicate"))
+            x$replicate <- NULL
+            x
+          }, groups_sel = groups_sel)
+          engine$NonTargetAnalysisResults$feature_list <- feature_list
+        }
       } else {
         warning("There are no feature groups but needed for the minAbundanceInReplicate filter!")
       }
@@ -481,8 +549,8 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
   }
   
   .filter_blankThreshold <- function(value = 3,
-                                     conservative,
                                      correctIntensity,
+                                     conservative,
                                      engine) {
     if (engine$NonTargetAnalysisResults$has_features && is.numeric(value) && length(value) == 1) {
       
@@ -625,18 +693,23 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
       ),
       blankThreshold = .filter_blankThreshold(
         parameters[[filters[i]]],
-        conservative,
         correctIntensity,
+        conservative,
         engine
       ),
       maxDeviationInReplicate = .filter_maxDeviationInReplicate(
         parameters[[filters[i]]],
         correctIntensity,
+        conservative,
         engine
       ),
       minSnRatio = .filter_minSnRatio(parameters[[filters[i]]], conservative, engine),
       minGaussianFit = .filter_minGaussianFit(parameters[[filters[i]]], conservative, engine),
-      minAbundanceInReplicate = .filter_minAbundanceInReplicate(parameters[[filters[i]]], engine),
+      minAbundanceInReplicate = .filter_minAbundanceInReplicate(
+        parameters[[filters[i]]],
+        conservative,
+        engine
+      ),
       onlyWithMS2 = .filter_onlyWithMS2(parameters[[filters[i]]], engine)
     )
   }

@@ -244,6 +244,17 @@ get_model_data <- S7::new_generic("get_model_data", "x")
 #' 
 get_model_prediction <- S7::new_generic("get_model_prediction", "x")
 
+#' @title Generic `get_patRoon_compounds`
+#' 
+#' @description S7 generic to get [patRoon](https://github.com/rickhelmus/patRoon) compounds class from `x`.
+#' 
+#' @param x An object from which the patRoon compounds will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' 
+#' @export
+#'
+get_patRoon_compounds <- S7::new_generic("get_patRoon_compounds", "x")
+
 #' @title Generic `get_patRoon_features`
 #' 
 #' @description S7 generic to get [patRoon](https://github.com/rickhelmus/patRoon) features class from `x`.

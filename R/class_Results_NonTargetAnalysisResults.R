@@ -2083,8 +2083,8 @@ S7::method(get_groups, NonTargetAnalysisResults) <- function(x,
         fts_sd$analysis <- paste(fts_sd$analysis, "_sd", sep = "")
         fts_sd <- data.table::dcast(fts_sd[, c("group", "analysis", "sd"), with = TRUE], group ~ analysis, value.var = "sd")
         fts_sd[is.na(fts_sd)] <- 0
-        tbl_rpls <- table(rpls)
-        fts_n$n <- tbl_rpls[fts_n$analysis]
+        #tbl_rpls <- table(rpls)
+        #fts_n$n <- tbl_rpls[fts_n$analysis]
         fts_n$intensity <- NULL
         fts_n$sd <- NULL
         fts_n$analysis <- paste(fts_n$analysis, "_n", sep = "")
@@ -2118,12 +2118,14 @@ S7::method(get_groups, NonTargetAnalysisResults) <- function(x,
       annotation <- NULL
       istd <- NULL
       
+      max_presence <- nrow(x$analyses_info)
+      
       fts_meta <- fts[, .(
         rt = round(mean(rt), digits = 0),
         mass = round(mean(mass), digits = 4),
         rtdev = round(max(rtmax - rtmin), digits = 0),
         massdev = round(max(mzmax - mzmin), digits = 4),
-        presence = round(length(feature) / length(x) * 100, digits = 1),
+        presence = round(length(feature) / max_presence * 100, digits = 1),
         maxint = round(max(intensity), digits = 0),
         sn = round(max(
           vapply(quality, function(z) {
@@ -5828,10 +5830,10 @@ S7::method(get_patRoon_features, NonTargetAnalysisResults) <- function(x,
 #' @noRd
 S7::method(get_patRoon_MSPeakLists, NonTargetAnalysisResults) <- function(x,
                                                                           mzClust = 0.005,
-                                                                          minIntensity = 10,
+                                                                          minIntensity = 0,
                                                                           presence = 0.7,
                                                                           top = 25,
-                                                                          normalized = TRUE) {
+                                                                          normalized = FALSE) {
   if (!x@has_features) {
     warning("No features found to get!")
     return(NULL)
@@ -5847,18 +5849,11 @@ S7::method(get_patRoon_MSPeakLists, NonTargetAnalysisResults) <- function(x,
     return(FALSE)
   }
   
-  parameters <- list(
-    clusterMzWindow = mzClust,
-    topMost = 100,
-    minIntensityPre = minIntensity,
-    minIntensityPost = minIntensity,
-    avgFun = "mean",
-    method = "distance"
-  )
-  
-  avgFunName <- parameters$avgFun
-  
-  parameters$avgFun <- get(avgFunName)
+  parameters <- patRoon::getDefAvgPListParams()
+  parameters$clusterMzWindow <- mzClust
+  parameters$minIntensityPre <- minIntensity
+  parameters$minIntensityPost <- minIntensity
+  parameters$topMost <- top
   
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found! Install it for finding features.")
@@ -6046,7 +6041,7 @@ S7::method(get_patRoon_MSPeakLists, NonTargetAnalysisResults) <- function(x,
     "minIntensityPost" = parameters$minIntensityPost,
     "avgFun" = parameters$avgFun,
     "method" = parameters$method,
-    "pruneMissingPrecursorMS" = FALSE,
+    "pruneMissingPrecursorMS" = TRUE,
     "retainPrecursorMSMS" = TRUE
   )
   
@@ -6122,13 +6117,65 @@ S7::method(get_patRoon_MSPeakLists, NonTargetAnalysisResults) <- function(x,
   plfinal
 }
 
+# MARK: get_patRoon_compounds
+## get_patRoon_compounds -----
+#' @export
+#' @noRd
+S7::method(get_patRoon_compounds, NonTargetAnalysisResults) <- function(x) {
+  comp <- get_compounds(x, filtered = FALSE)
+  
+  if (nrow(comp) == 0) {
+    warning("No compounds found to get!")
+    return(NULL)
+  }
+  
+  if (!requireNamespace("patRoon", quietly = TRUE)) {
+    warning("patRoon package not found! Install it for finding features.")
+    return(FALSE)
+  }
+  
+  comp_split <- comp$group
+  comp$group <- NULL
+  comp$rt <- NULL
+  comp$polarity <- NULL
+  comp$mass <- NULL
+  comp <- split(comp, comp_split)
+  
+  scoreRanges <- lapply(comp, function(z) {
+    scores <- lapply(z, function(k) {
+      if (is.numeric(k)) {
+        return(c(min(k), max(k)))
+      } else {
+        NULL
+      }
+    })
+    
+    scores <- scores[!sapply(scores, is.null)]
+  })
+  
+  pat_comp <- patRoon::compounds(
+    MS2QuantMeta = list(),
+    groupAnnotations = comp,
+    scoreTypes = names(scoreRanges[[1]]),
+    scoreRanges = scoreRanges,
+    algorithm = "metfrag"
+  )
+  
+  pat_comp
+}
+
 # MARK: report
 ## report -----
 #' @export
 #' @noRd
 S7::method(report, NonTargetAnalysisResults) <- function(x,
-                                                         path = paste0(getwd(), "/report"),
                                                          filtered = FALSE,
+                                                         mzClust = 0.005,
+                                                         minIntensity = 10,
+                                                         presence = 0.7,
+                                                         top = 25,
+                                                         normalized = TRUE,
+                                                         path = paste0(getwd(), "/report"),
                                                          settingsFile = system.file("report", "settings.yml", package = "patRoon"),
                                                          eicRtWindow = 30,
                                                          eicTopMost = 1,
@@ -6161,11 +6208,22 @@ S7::method(report, NonTargetAnalysisResults) <- function(x,
   
   pat <- get_patRoon_features(x, filtered = filtered, featureGroups = TRUE)
   
+  mspl <- get_patRoon_MSPeakLists(
+    x,
+    mzClust = mzClust,
+    minIntensity = minIntensity,
+    presence = presence,
+    top = top,
+    normalized = normalized
+  )
+  
+  comp <- get_patRoon_compounds(x)
+  
   patRoon::report(
     pat,
-    MSPeakLists = NULL,
+    MSPeakLists = mspl,
     formulas = NULL,
-    compounds = NULL,
+    compounds = comp,
     compsCluster = NULL,
     components = NULL,
     TPs = NULL,
