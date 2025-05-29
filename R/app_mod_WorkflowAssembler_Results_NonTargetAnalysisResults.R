@@ -164,6 +164,61 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
       align-items: center;
       margin-right: 15px;
     }
+    .results-wrapper .nav-tabs {
+      background-color: #f8f9fa;
+      border-radius: 8px 8px 0 0;
+      padding: 0 15px;
+      margin-bottom: 0;
+      border-bottom: 2px solid #e3e6f0;
+    }
+
+    .results-wrapper .nav-tabs .nav-link {
+      border: none;
+      color: #5a5c69;
+      padding: 12px 20px;
+      font-weight: 500;
+      margin-right: 5px;
+      border-radius: 0;
+    }
+
+    .results-wrapper .nav-tabs .nav-link:hover {
+      border-color: transparent;
+      background-color: rgba(78, 115, 223, 0.1);
+      color: #4e73df;
+    }
+
+    .results-wrapper .nav-tabs .nav-link.active {
+      color: #4e73df;
+      background-color: white;
+      border-color: transparent transparent #4e73df transparent;
+      border-bottom: 3px solid #4e73df;
+      font-weight: 600;
+    }
+
+    .results-wrapper .tab-content {
+      background: white;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      padding: 0;
+      margin-top: -1px;
+    }
+
+    .results-wrapper .tab-pane {
+      padding: 0;
+    }
+
+    /* Remove extra margin from your inner tabs */
+    .results-wrapper .tab-content .nav-tabs {
+      margin-bottom: 0;
+      background: transparent;
+      border-bottom: 2px solid #e3e6f0;
+      padding: 15px 20px 0 20px;
+    }
+
+    .results-wrapper .tab-content .tab-content {
+      padding: 20px;
+    }
+
   "))
   
   # Color palette for metrics
@@ -373,6 +428,43 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                 )
               )
             ),
+
+            #  Buttons
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                  shiny::div(
+                    class = "card-body d-flex justify-content-center align-items-center",
+                    shiny::div(
+                      class = "btn-group",
+                      shiny::actionButton(
+                        ns_full("deselect_all_features"),
+                        "Deselect All", 
+                        icon = shiny::icon("times-circle"),
+                        class = "btn btn-outline-secondary btn-sm"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_features_csv"),
+                        "Export to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_selected_features_csv"),
+                        "Export Selected to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::actionButton(
+                        ns_full("remove_selected_features"),
+                        "Remove Selected Features", 
+                        icon = shiny::icon("trash-alt"),
+                        class = "btn btn-outline-danger btn-sm ml-2"
+                      )
+                    )
+                )
+              )
+            ),
             
             # Feature Details Row
             shiny::fluidRow(
@@ -433,50 +525,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                   )
                 )
               )
-            ),
-            
-            #  Buttons
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  class = "plot-container",
-                  shiny::div(
-                    class = "card-header",
-                    shiny::icon("cogs", class = "mr-2"), "Table Controls"
-                  ),
-                  shiny::div(
-                    class = "card-body d-flex justify-content-center align-items-center",
-                    shiny::div(
-                      class = "btn-group",
-                      shiny::actionButton(
-                        ns_full("deselect_all_features"),
-                        "Deselect All", 
-                        icon = shiny::icon("times-circle"),
-                        class = "btn btn-outline-secondary btn-sm"
-                      ),
-                      shiny::downloadButton(
-                        ns_full("export_features_csv"),
-                        "Export to CSV",
-                        icon = shiny::icon("file-csv"),
-                        class = "btn btn-outline-primary btn-sm ml-2"
-                      ),
-                      shiny::downloadButton(
-                        ns_full("export_selected_features_csv"),
-                        "Export Selected to CSV",
-                        icon = shiny::icon("file-csv"),
-                        class = "btn btn-outline-primary btn-sm ml-2"
-                      ),
-                      shiny::actionButton(
-                        ns_full("remove_selected_features"),
-                        "Remove Selected Features", 
-                        icon = shiny::icon("trash-alt"),
-                        class = "btn btn-outline-danger btn-sm ml-2"
-                      )
-                    )
-                  )
-                )
-              )
             )
           )
         ),
@@ -490,9 +538,11 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
               shiny::column(
                 width = 12,
                 shiny::div(
-                  class = "plot-container empty-state",
-                  shiny::div(class = "empty-state-icon", shiny::icon("object-group")),
-                  shiny::h4("Groups data will be displayed here", class = "text-muted")
+                  class = "mb-4",
+                  shiny::div(
+                    class = "table-wrapper",
+                    DT::dataTableOutput(ns_full("groups_table"))
+                  )
                 )
               )
             )
@@ -804,8 +854,9 @@ output$features_table <- DT::renderDT({
     features,
     escape = FALSE,
     options = list(
-      pageLength = 10,
+      pageLength = 15,
       scrollX = TRUE,
+      processing = TRUE,
       scrollY = "400px",
       columnDefs = list(
         list(width = "50px", targets = c(1)),
@@ -1300,6 +1351,7 @@ output$quality_table <- DT::renderDT({
     quality_data,
     options = list(
       pageLength = 5,
+      processing = TRUE,
       scrollX = TRUE,
       dom = "lfrtp",
       ordering = TRUE,
@@ -1314,6 +1366,58 @@ output$quality_table <- DT::renderDT({
   ) %>%
     DT::formatStyle(
       columns = names(quality_data),
+      fontSize = "14px",
+      padding = "8px 12px"
+    )
+})
+
+# Groups table for the Groups tab
+output$groups_table <- DT::renderDT({
+  # Fetch groups data
+  groups <- get_groups(nts_data())
+  
+  # Check if groups data is available
+  if (is.null(groups) || nrow(groups) == 0) {
+    return(DT::datatable(
+      data.frame(Message = "No groups data available"),
+      options = list(
+        dom = "t",
+        ordering = FALSE,
+        processing = TRUE,
+        paging = FALSE
+      ),
+      style = "bootstrap",
+      class = "table table-bordered",
+      rownames = FALSE
+    ))
+  }
+  
+  # Round numeric columns to 4 decimal places for readability
+  numeric_cols <- names(groups)[sapply(groups, is.numeric)]
+  for (col in numeric_cols) {
+    groups[[col]] <- round(groups[[col]], 4)
+  }
+  
+  # Render the DataTable with basic styling
+  DT::datatable(
+    groups,
+    options = list(
+      pageLength = 15,
+      scrollX = TRUE,
+      processing = TRUE,
+      scrollY = "400px",
+      dom = 'rtp',
+      lengthMenu = c(5, 10, 25, 50, 100),
+      ordering = TRUE,
+      searching = FALSE
+    ),
+    style = "bootstrap",
+    class = "table table-striped table-hover",
+    rownames = FALSE,
+    filter = "none",
+  ) %>%
+    DT::formatStyle(
+      columns = names(groups),
       fontSize = "14px",
       padding = "8px 12px"
     )
