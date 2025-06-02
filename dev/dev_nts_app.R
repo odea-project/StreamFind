@@ -116,11 +116,19 @@ ms$run(
   )
 )
 
+# ms$run(
+#   MassSpecMethod_FilterFeatures_patRoon(
+#     maxReplicateIntRSD = 40,
+#     blankThreshold = 5,
+#     absMinReplicateAbundance = 3
+#   )
+# )
+
 ms$run(
-  MassSpecMethod_FilterFeatures_patRoon(
-    maxReplicateIntRSD = 40,
+  MassSpecMethod_FilterFeatures_StreamFind(
+    maxDeviationInReplicate = 40,
     blankThreshold = 5,
-    absMinReplicateAbundance = 3
+    minAbundanceInReplicate = 3
   )
 )
 
@@ -200,8 +208,8 @@ nts@group_names
 # plot_features_ms2(nts, mass = db[2:3, ], legendNames = TRUE)
 # map_features(nts, mass = db[2:3, ])
 # map_features_intensity(nts, mass = db[2:3, ])
-# get_groups(nts, mass = db[2:3, ], metadata = TRUE)
-# plot_groups(nts, mass = db[2:3, ])
+# get_groups(nts, metadata = FALSE, average = TRUE) #mass = db[2:3, ]
+# plot_groups(nts, mass = db[2, ], colorBy = "replicates", interactive = FALSE)
 # plot_groups_overview(nts, mass = db[2:3, ])
 # plot_groups_profile(nts, mass = db[2:3, ])
 # get_groups_ms1(nts, mass = db[2:3, ])
@@ -247,6 +255,8 @@ nts@group_names
 #fts <- ms$NTS$feature_list
 
 ms$save("ms.rds")
+
+ms$get_cache_size()
 
 devtools::load_all()
 options(shiny.launch.browser = FALSE)
