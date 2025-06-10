@@ -207,7 +207,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
       padding: 0;
     }
 
-    /* Remove extra margin from your inner tabs */
     .results-wrapper .tab-content .nav-tabs {
       margin-bottom: 0;
       background: transparent;
@@ -217,6 +216,37 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
 
     .results-wrapper .tab-content .tab-content {
       padding: 20px;
+    }
+
+    /* Chromatogram icon styling */
+    .chromatogram-icon {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      background-color: #4e73df;
+      color: white;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+
+    .chromatogram-icon:hover {
+      background-color: #2e59d9;
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(78, 115, 223, 0.3);
+    }
+
+    .chromatogram-modal .modal-dialog {
+      max-width: 90vw;
+      width: 90vw;
+    }
+
+    .chromatogram-modal .modal-body {
+      padding: 20px;
+      min-height: 500px;
     }
 
   "))
@@ -240,6 +270,35 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
     custom_css,
     .app_util_plot_maximize_js(),  # JavaScript functions
     .app_util_create_plot_modal(ns_full),  # Modal container
+
+    # Add chromatogram modal
+    shiny::div(
+      id = ns_full("chromatogram_modal"),
+      class = "modal fade chromatogram-modal",
+      tabindex = "-1",
+      role = "dialog",
+      shiny::div(
+        class = "modal-dialog modal-lg",
+        role = "document",
+        shiny::div(
+          class = "modal-content",
+          shiny::div(
+            class = "modal-header",
+            shiny::h4(class = "modal-title", "Group Chromatogram"),
+            shiny::tags$button(
+              type = "button",
+              class = "close",
+              `data-dismiss` = "modal",
+              shiny::span("×")
+            )
+          ),
+          shiny::div(
+            class = "modal-body",
+            plotly::plotlyOutput(ns_full("chromatogram_plot"), height = "500px")
+          )
+        )
+      )
+    ),
     
     shiny::div(style = "margin-top: -20px;",
       shinydashboard::tabBox(
@@ -1384,11 +1443,13 @@ output$groups_table <- DT::renderDT({
         dom = "t",
         ordering = FALSE,
         processing = TRUE,
-        paging = FALSE
+        paging = FALSE,
+        selection = "none"
       ),
       style = "bootstrap",
       class = "table table-bordered",
-      rownames = FALSE
+      rownames = FALSE,
+      selection = "none"
     ))
   }
   
@@ -1398,45 +1459,156 @@ output$groups_table <- DT::renderDT({
     groups[[col]] <- round(groups[[col]], 4)
   }
   
+  # Add chromatogram column with clickable icons
+  groups$chromatogram <- sapply(1:nrow(groups), function(i) {
+    paste0('<div class="chromatogram-icon" onclick="showChromatogram(\'', 
+          groups$group[i], '\')" title="View chromatogram for ', groups$group[i], '">',
+          '<i class="fas fa-chart-line"></i></div>')
+  })
+  
+  # Reorder columns to put chromatogram as second column
+  col_order <- c("group", "chromatogram", setdiff(names(groups), c("group", "chromatogram")))
+  groups <- groups[, col_order, with = FALSE]
+  
+  # Find chromatogram column index (0-based for JavaScript)
+  chromatogram_col_index <- which(names(groups) == "chromatogram") - 1
+  
   # Render the DataTable with basic styling
   DT::datatable(
     groups,
+    escape = FALSE,
+    selection = "none",
     options = list(
       pageLength = 15,
       scrollX = TRUE,
       processing = TRUE,
       scrollY = "400px",
       dom = 'rtp',
-      lengthMenu = c(5, 10, 25, 50, 100),
       ordering = TRUE,
-      searching = FALSE
+      searching = FALSE,
+      select = FALSE,
+      columnDefs = list(
+        list(
+          targets = chromatogram_col_index,
+          orderable = FALSE,  # Disable sorting for chromatogram column
+          width = "80px",
+          className = "dt-center"
+        ),
+        list(width = "150px", targets = 0),  # group column
+        list(className = "dt-center", targets = chromatogram_col_index)
+      )
     ),
     style = "bootstrap",
     class = "table table-striped table-hover",
     rownames = FALSE,
-    filter = "none",
+    filter = "none"
   ) %>%
     DT::formatStyle(
       columns = names(groups),
       fontSize = "14px",
       padding = "8px 12px"
+    ) %>%
+    DT::formatStyle(
+      columns = "chromatogram",
+      textAlign = "center"
     )
+})
+
+# Reactive value to store selected group for chromatogram
+selected_group <- shiny::reactiveVal(NULL)
+
+# Handle chromatogram click
+shiny::observeEvent(input$show_chromatogram, {
+  req(input$show_chromatogram$group)
+  selected_group(input$show_chromatogram$group)
+})
+
+# Chromatogram plot
+output$chromatogram_plot <- plotly::renderPlotly({
+  shiny::validate(
+    need(!is.null(selected_group()), "Please select a group to display the chromatogram.")
+  )
+  
+  # Generate the chromatogram plot using plot_groups
+  nts <- nts_data()
+  group_id <- selected_group()
+  
+  tryCatch({
+    # Call plot_groups function with the selected group
+    p <- plot_groups(nts, groups = data.frame(group = group_id))
+    
+    # Enhance the plotly object
+    p <- plotly::layout(p,
+      title = list(
+        text = paste("Chromatogram for Group:", group_id),
+        font = list(size = 18, color = "#333")
+      ),
+      xaxis = list(
+        title = list(text = "Retention Time (RT)", font = list(size = 14)),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      yaxis = list(
+        title = list(text = "Intensity", font = list(size = 14)),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      margin = list(l = 60, r = 40, t = 60, b = 60),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)"
+    )
+    
+    # Configure plotly
+    p <- plotly::config(p, 
+      displayModeBar = TRUE,
+      modeBarButtonsToRemove = c(
+        "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+        "hoverCompareCartesian", "lasso2d", "select2d"
+      ),
+      displaylogo = FALSE,
+      responsive = TRUE
+    )
+    
+    return(p)
+    
+  }, error = function(e) {
+    # Handle errors gracefully
+    plotly::plot_ly() %>%
+      plotly::add_text(x = 0.5, y = 0.5, text = paste("Error loading chromatogram:", e$message),
+                      textfont = list(size = 16, color = "red")) %>%
+      plotly::layout(
+        title = paste("Error: Group", group_id),
+        xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+        yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+      )
+  })
 })
 
 # JavaScript for UI interactions
 shiny::observeEvent(1, {
-  # Initialize tooltips
+  # Get the full namespace for use in JavaScript
+  ns_prefix <- paste0("WorkflowAssembler-", id)
+  
+  # Initialize tooltips and chromatogram functionality
   shiny::insertUI(
     selector = "head",
     where = "beforeEnd",
-    ui = shiny::tags$script(HTML("
+    ui = shiny::tags$script(HTML(paste0("
+      // Global function to show chromatogram
+      function showChromatogram(groupId) {
+        Shiny.setInputValue('", ns_prefix, "-show_chromatogram', {
+          group: groupId,
+          timestamp: Date.now()
+        });
+        $('#", ns_prefix, "-chromatogram_modal').modal('show');
+      }
+      
       $(document).ready(function(){
         // Initialize tooltips
         $('[data-toggle=\"tooltip\"]').tooltip();
         
         // Make status panel items clickable
         $('.status-item').css('cursor', 'pointer').click(function(){
-          // Toggle active class
           $('.status-item').removeClass('active');
           $(this).addClass('active');
         });
@@ -1447,7 +1619,7 @@ shiny::observeEvent(1, {
           $(this).addClass('active');
         });
       });
-    "))
+    ")))
   )
 }, once = TRUE)
   })
