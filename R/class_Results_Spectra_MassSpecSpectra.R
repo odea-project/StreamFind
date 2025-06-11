@@ -574,9 +574,9 @@ S7::method(plot_spectra_3d, MassSpecSpectra) <- function(x,
     zaxis = list(title = zlab)
   ))
   
-  if (renderEngine %in% "webgl") {
-    fig <- fig %>% plotly::toWebGL()
-  }
+  # if (renderEngine %in% "webgl") {
+  #   fig <- fig %>% plotly::toWebGL()
+  # }
   
   fig
 }
