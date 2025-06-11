@@ -93,27 +93,30 @@ ms <- MassSpecEngine$new(analyses = files)
 ```
 
 ```{r show-ms}
-# Prints in console a summary of the MassSpecEngine
-ms
+# MassSpecEngine class hierarchy
+class(ms)
+
+# Number of analyses
+length(ms$Analyses)
 ```
 
 # *Metadata*
 
-Project headers (e.g., name, author and description) can be added to the `MassSpecEngine$headers` as a list object as shown below. The elements of the list can be anything but must have length one.
+Project metadata (e.g., name, author and description) can be added to the `MassSpecEngine$Metadata` as a named list object as shown below. The elements of the list can be anything but must have length one.
 
 ```{r add-headers}
-# Adds headers to the MassSpecEngine
-ms$headers <- list(
+# Adds metadata to the MassSpecEngine
+ms$Metadata <- list(
   name = "Wastewater Ozonation Showcase",
   author = "Ricardo Cunha",
   description = "Demonstration project"
 )
 
-# Gets and shows the headers
-show(ms$headers)
+# Gets and shows the metadata
+show(ms$Metadata)
 
 # Gets the MassSpecEngine date
-ms$headers$date
+ms$Metadata@entries$date
 ```
 
 # Replicates and blanks
@@ -147,16 +150,16 @@ ms$add_replicate_names(rpls)
 ms$add_blank_names(blks)
 
 # Replicates and blanks were amended
-ms$analyses$info[, 1:5]
+ms$Analyses$info[, c(1:3, 5)]
 ```
 
 # *ProcessingStep*
 
-Data processing is performed by steps according to *ProcessingStep*. S7 *ProcessingStep* class objects are obtained via the respective [`[Engine type]Settings_[module name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingStep* for the step `FindFeatures` using the algorithm *openms*. The parameters for each processing module can be changed via the constructor arguments. Documentation for each *ProcessingStep* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
+Data processing is performed by steps according to *ProcessingStep* objects. S7 *ProcessingStep* class objects are obtained via the respective [`[Engine type]Method_[method name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingStep* for the method `FindFeatures` using the algorithm *openms*. The parameters can be changed via the constructor arguments. Documentation for each *ProcessingStep* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
 
 ```{r ffs}
 # Gets ProcessingStep for finding features using the openms algorithm
-ffs <- MassSpecSettings_FindFeatures_openms(
+ffs <- MassSpecMethod_FindFeatures_openms(
   noiseThrInt = 1000,
   chromSNR = 3,
   chromFWHM = 7,
@@ -185,7 +188,7 @@ ffs <- MassSpecSettings_FindFeatures_openms(
 show(ffs)
 ```
 
-```{r other-settings}
+```{r other-methods}
 # Creates an ordered list with all processing steps for the MS data
 workflow <- list(
 
@@ -193,7 +196,7 @@ workflow <- list(
   ffs,
 
   # Annotation of natural isotopes and adducts
-  MassSpecSettings_AnnotateFeatures_StreamFind(
+  MassSpecMethod_AnnotateFeatures_StreamFind(
     rtWindowAlignment = 0.3,
     maxIsotopes = 8,
     maxCharge = 2,
@@ -201,13 +204,13 @@ workflow <- list(
   ),
 
   # Excludes annotated isotopes and adducts
-  MassSpecSettings_FilterFeatures_StreamFind(
+  MassSpecMethod_FilterFeatures_StreamFind(
     excludeIsotopes = TRUE,
     excludeAdducts = TRUE
   ),
 
   # Grouping features across analyses
-  MassSpecSettings_GroupFeatures_openms(
+  MassSpecMethod_GroupFeatures_openms(
     rtalign = FALSE,
     QT = FALSE,
     maxAlignRT = 5,
@@ -218,13 +221,13 @@ workflow <- list(
   ),
 
   # Filter feature groups with maximum intensity below 5000 counts
-  MassSpecSettings_FilterFeatures_StreamFind(
+  MassSpecMethod_FilterFeatures_StreamFind(
     minIntensity = 3000
   ),
 
   # Fill features with missing data
   # Reduces false negatives
-  MassSpecSettings_FillFeatures_StreamFind(
+  MassSpecMethod_FillFeatures_StreamFind(
     withinReplicate = FALSE,
     rtExpand = 2,
     mzExpand = 0.0005,
@@ -236,7 +239,7 @@ workflow <- list(
   ),
 
   # Calculate quality metrics for each feature
-  MassSpecSettings_CalculateFeaturesQuality_StreamFind(
+  MassSpecMethod_CalculateFeaturesQuality_StreamFind(
     filtered = FALSE,
     rtExpand = 2,
     mzExpand = 0.0005,
@@ -247,12 +250,12 @@ workflow <- list(
 
   # Filter features based on minimum signal-to-noise ratio (s/n)
   # The s/n is calculated using the CalculateFeaturesQuality method
-  MassSpecSettings_FilterFeatures_StreamFind(
+  MassSpecMethod_FilterFeatures_StreamFind(
     minSnRatio = 5
   ),
 
   # Filter features using other parameters via the patRoon package
-  MassSpecSettings_FilterFeatures_patRoon(
+  MassSpecMethod_FilterFeatures_patRoon(
     maxReplicateIntRSD = 40,
     blankThreshold = 5,
     absMinReplicateAbundance = 3
@@ -262,7 +265,7 @@ workflow <- list(
   # db_is is a data.table with the
   # name, mass and expected retention time of
   # spiked internal standards, as shown below
-  MassSpecSettings_FindInternalStandards_StreamFind(
+  MassSpecMethod_FindInternalStandards_StreamFind(
     database = db_is,
     ppm = 8,
     sec = 10
@@ -270,7 +273,7 @@ workflow <- list(
   
   # Corrects matrix suppression using the TiChri method from
   # 10.1021/acs.analchem.1c00357 to better compare influent and effluent
-  MassSpecSettings_CorrectMatrixSuppression_TiChri(
+  MassSpecMethod_CorrectMatrixSuppression_TiChri(
     mpRtWindow = 10,
     istdAssignment = "range",
     istdRtWindow = 50,
@@ -278,24 +281,24 @@ workflow <- list(
   ),
 
   # Loads MS1 for features not filtered
-  MassSpecSettings_LoadFeaturesMS1_StreamFind(
+  MassSpecMethod_LoadFeaturesMS1_StreamFind(
     filtered = FALSE
   ),
 
   # Loads MS2 for features not filtered
-  MassSpecSettings_LoadFeaturesMS2_StreamFind(
+  MassSpecMethod_LoadFeaturesMS2_StreamFind(
     filtered = FALSE
   ),
 
   # Loads feature extracted ion chromatograms (EIC)
-  MassSpecSettings_LoadFeaturesEIC_StreamFind(
+  MassSpecMethod_LoadFeaturesEIC_StreamFind(
     filtered = FALSE
   ),
 
   # Performs suspect screening using the StreamFind algorithm
   # db_with_ms2 is a database with suspect chemical standards
   # includes MS2 data (i.e., fragmentation pattern) from standards
-  MassSpecSettings_SuspectScreening_StreamFind(
+  MassSpecMethod_SuspectScreening_StreamFind(
     database = db_with_ms2,
     ppm = 10,
     sec = 15,
@@ -308,11 +311,14 @@ workflow <- list(
 Then, the list can be added to the *MassSpecEngine*. Note that the order will matter when the workflow is applied!
 
 ```{r add-settings}
+# Conversion of list to Workflow object with validation
+workflow <- Workflow(workflow)
+
 # Adds the workflow to the engine. The order matters!
-ms$workflow <- workflow
+ms$Workflow <- workflow
 
 # Printing the data processing workflow
-ms$print_workflow()
+show(ms$Workflow)
 ```
 
 # `run_workflow()`
@@ -326,7 +332,7 @@ ms$run_workflow()
 
 # Results
 
-The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods in the *MassSpecEngine*. Internally, the *MassSpecEngine* stores the results in the *NonTargetAnalysisResults* object, which can be accessed with `MassSpecEngine$NonTargetAnalysisResults`. Yet, the engine interface is recommended for accessing the results. However, the *NonTargetAnalysisResults* object can be used for more advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
+The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods in the *MassSpecEngine* or methods of the created Results class. Internally, the *MassSpecEngine* stores the results in the *NonTargetAnalysisResults* object, which can be accessed with `MassSpecEngine$NonTargetAnalysisResults`. Yet, the engine interface is recommended for accessing the results. However, the *NonTargetAnalysisResults* object can be used for more advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
 
 ## `data.table` objects
 
@@ -378,7 +384,7 @@ db_is
 
 ```{r get_is}
 # Gets the internal standards evaluation data.table
-ms$get_internal_standards()
+ms$get_internal_standards()[, 1:7]
 ```
 
 ```{r plot_is_qc, fig.height=10, fig.cap="Quality control of spiked internal standards"}
@@ -423,10 +429,10 @@ ms$map_components(
 The methods `MassSpecEngine$get_suspects()` and `MassSpecEngine$plot_suspects()` can be used to inspect the suspect screening results. In the plot function, a second plot is added to compare the experimental fragmentation pattern (top) with the fragmentation pattern of the respective reference standard (down) added within the database. The `colorBy` argument can be set to *targets+replicates* to legend the plot with combined keys of suspect target names and analysis replicate names.
 
 ```{r get_suspects}
-ms$get_suspects()
+ms$get_suspects()[, c(1, 5, 14)]
 ```
 
-```{r plot-suspects}
+```{r plot-suspects, fig.height=10}
 ms$plot_suspects(colorBy = "targets+replicates")
 ```
 
@@ -465,7 +471,7 @@ ms$plot_fold_change(
 
 Alternatively, the `plotVolcano` from [patRoon](https://github.com/rickhelmus/patRoon) can be used to plot fold-change. For more information check the [patRoon reference documentation](https://rickhelmus.github.io/patRoon/reference/index.html). Note that the function `patRoon::getFCParams` is used to define the parameters for the fold-change calculation. Below we use the default argument values, only the in and out replicate names are set.
 
-```{r}
+```{r pat-volcano, fig.alt="Volcano plot of fold-change"}
 patRoon::plotVolcano(
   fGroups, # obtained above with get_patRoon_features
   patRoon::getFCParams(c("influent_pos", "effluent_pos"))

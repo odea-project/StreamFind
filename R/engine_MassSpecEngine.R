@@ -1368,7 +1368,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     # MARK: plot_groups
     ## plot_groups -----
     #' @description Plots feature groups EIC.
-    plot_groups = function(groups = NULL,
+    plot_groups = function(analyses = NULL,
+                           groups = NULL,
                            mass = NULL,
                            mz = NULL,
                            rt = NULL,
@@ -1388,7 +1389,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                            renderEngine = "webgl") {
       if (self$has_results_nts()) {
         StreamFind::plot_groups(
-          self$NonTargetAnalysisResults, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand,
+          self$NonTargetAnalysisResults, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtExpand, mzExpand,
           filtered, legendNames, xLab, yLab, title, colorBy, interactive, renderEngine
         )
       } else {
@@ -1465,7 +1466,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (self$has_results_nts()) {
         StreamFind::plot_groups_profile(
           self$NonTargetAnalysisResults, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-          correctIntensity, normalized, legendNames, yLab, title, showLegend, renderEngine
+          correctIntensity, averaged, normalized, legendNames, yLab, title, showLegend, renderEngine
         )
       } else {
         warning("No NonTargetAnalysisResults results available! Not done.")
@@ -1701,17 +1702,14 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                             sec = 10,
                             millisec = 5,
                             ppmMS2 = 10,
+                            mzrMS2 = 0.008,
+                            minCusiness = 0.7,
                             minFragments = 3,
-                            isolationWindow = 1.3,
-                            mzClust = 0.003,
-                            presence = 0.8,
-                            minIntensity = 0,
-                            filtered = FALSE,
-                            onGroups = TRUE) {
+                            filtered = FALSE) {
       if (self$has_results_nts()) {
         StreamFind::get_suspects(
           self$NonTargetAnalysisResults, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
-          ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered, onGroups
+          ppmMS2, mzrMS2, minCusiness, minFragments, filtered
         )
       } else {
         warning("No NonTargetAnalysisResults results available! Not done.")
@@ -1738,15 +1736,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              mz = NULL,
                              rt = NULL,
                              mobility = NULL,
-                             ppm = 4,
+                             ppm = 5,
                              sec = 10,
                              millisec = 5,
                              ppmMS2 = 10,
+                             mzrMS2 = 0.008,
+                             minCusiness = 0.7,
                              minFragments = 3,
-                             isolationWindow = 1.3,
-                             mzClust = 0.003,
-                             presence = 0.8,
-                             minIntensity = 0,
                              filtered = FALSE,
                              rtExpand = 120,
                              mzExpand = 0.005,
@@ -1757,9 +1753,9 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
                              interactive = TRUE) {
       if (self$has_results_nts()) {
         StreamFind::plot_suspects(
-          self$NonTargetAnalysisResults, analyses, database, features, mass, mz, rt, mobility, ppm, sec, millisec,
-          ppmMS2, minFragments, isolationWindow, mzClust, presence, minIntensity, filtered,
-          rtExpand, mzExpand, useLoadedData, legendNames, colorBy, heights, interactive
+          self$NonTargetAnalysisResults, analyses, database, features, mass, mz, rt, mobility, ppm,
+          sec, millisec, ppmMS2, mzrMS2, minCusiness, minFragments, filtered, rtExpand, mzExpand,
+          useLoadedData, legendNames, colorBy, heights, interactive
         )
       } else {
         warning("No NonTargetAnalysisResults results available! Not done.")
