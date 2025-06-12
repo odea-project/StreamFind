@@ -145,13 +145,14 @@ S7::method(get_spectra, MassSpecSpectra) <- function(x,
   }
   
   if (x$is_averaged) {
-    rpl <- x$replicates
-    rpl <- rpl[analyses]
-    x$spectra <- x$spectra[names(x$spectra) %in% unname(rpl)]
+    rpl <- unique(x$replicates)
+    rpl <- rpl[rpl %in% analyses]
+    x$spectra <-  x$spectra[names(x$spectra) %in% rpl]
     x$spectra <- Map( function(z, y) {
       if (nrow(z) > 0) {
+        z$analysis <- y
         z$replicate <- y
-        data.table::setcolorder(z, c("replicate"))
+        data.table::setcolorder(z, c("analysis", "replicate"))
       }
       z
     }, x$spectra, names(x$spectra))
@@ -292,7 +293,9 @@ S7::method(get_spectra, MassSpecSpectra) <- function(x,
       }
       
       if (nrow(targets) > 0) {
-        if ("polarity" %in% colnames(targets)) temp <- temp[temp$polarity %in% targets$polarity, ]
+        if ("polarity" %in% colnames(targets) && "polarity" %in% colnames(temp)) {
+          temp <- temp[temp$polarity %in% targets$polarity, ]
+        }
         temp <- .trim_spectra_targets(temp, targets, with_im)
       } else {
         return(data.table::data.table())
@@ -433,8 +436,8 @@ S7::method(plot_spectra, MassSpecSpectra) <- function(x,
           "<br>analysis: ", analysis,
           "<br>replicate: ", replicate,
           "<br>id: ", id,
-          "<br>polarity: ", polarity,
-          "<br>level: ", level,
+          # "<br>polarity: ", polarity,
+          # "<br>level: ", level,
           "<br>", xVal, ": ", xval,
           "<br>intensity: ", intensity
         ),
@@ -608,15 +611,22 @@ S7::method(plot_spectra_charges, MassSpecSpectra) <- function(x,
   
   if (x$is_averaged) {
     rpl <- x$replicates
-    rpl <- rpl[analyses]
-    res <- res[names(res) %in% unname(rpl)]
+    rpl <- rpl[rpl %in% analyses]
+    res <- res[names(res) %in% names(rpl)]
     res <- Map( function(z, y) {
       if (nrow(z) > 0) {
-        z$replicate <- y
-        data.table::setcolorder(z, c("replicate"))
+        z$analysis <- y
+        data.table::setcolorder(z, "analysis")
       }
       z
     }, res, names(res))
+    res <- Map( function(z, y) {
+      if (nrow(z) > 0) {
+        z$replicate <- y
+        data.table::setcolorder(z, c("analysis", "replicate"))
+      }
+      z
+    }, res, rpl)
   } else {
     rpl <- x$replicates[analyses]
     res <- res[analyses]
@@ -731,10 +741,11 @@ S7::method(get_spectra_matrix, MassSpecSpectra) <- function(x, analyses = NULL) 
   }
   analyses <- .check_analyses_argument(x, analyses)
   spec_list <- x@spectra
+  
   if (x@is_averaged) {
     rpl <- x@replicates
-    rpl <- unique(rpl[analyses])
-    spec_list <- spec_list[rpl]
+    rpl <- unique(rpl[rpl %in% analyses])
+    spec_list <- spec_list[names(spec_list) %in% rpl]
   } else {
     spec_list <- spec_list[analyses]
   }

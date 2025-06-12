@@ -2016,7 +2016,7 @@ S7::method(get_raw_chromatograms, MassSpecAnalyses) <- function(x,
   if (length(chroms_list) == length(analyses)) {
     chroms <- data.table::rbindlist(chroms_list, fill = TRUE)
 
-    if (nrow(chroms) > 0) setcolorder(chroms, c("analysis", "replicate"))
+    if (nrow(chroms) > 0) data.table::setcolorder(chroms, c("analysis", "replicate"))
 
     if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
 

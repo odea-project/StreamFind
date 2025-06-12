@@ -718,11 +718,13 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     # MARK: plot_chromatograms
     ## plot_chromatograms -----
     #' @description Plots chromatograms from the Chromatograms results.
+    #' @param normalized Logical (length 1). Set to `TRUE` to normalize the chromatograms.
     plot_chromatograms = function(analyses = NULL,
                                   chromatograms = NULL,
                                   rtmin = 0,
                                   rtmax = 0,
                                   minIntensity = NULL,
+                                  normalized = TRUE,
                                   xLab = NULL,
                                   yLab = NULL,
                                   title = NULL,
@@ -733,7 +735,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
       if (self$has_results_chromatograms()) {
         StreamFind::plot_chromatograms(
           self$Chromatograms, analyses, chromatograms, rtmin, rtmax, minIntensity,
-          xLab, yLab, title, colorBy, legendNames, interactive, renderEngine
+          normalized, xLab, yLab, title, colorBy, legendNames, interactive, renderEngine
         )
       } else {
         warning("No chromatograms results available! Not done.")
@@ -1687,6 +1689,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @param database A data.frame with at least the columns name and mass, indicating the name
     #' and neutral monoisotopic mass of the suspect targets.
+    #' @param mzrMS2 Numeric (length 1). The m/z resolution for MS2 spectra.
+    #' @param minCusiness Numeric (length 1). The minimum Cusiness value for the suspects.
     #'
     #' @details The `ppm` and `sec` which indicate the mass (im ppm) and time (in seconds)
     #' deviations applied during the screening.
@@ -1723,6 +1727,8 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     #'
     #' @param database A data.frame with at least the columns name and mass, indicating the name
     #' and neutral monoisotopic mass of the suspect targets.
+    #' @param mzrMS2 Numeric (length 1). The m/z resolution for MS2 spectra.
+    #' @param minCusiness Numeric (length 1). The minimum Cusiness value for the suspects.
     #' @param heights A numeric vector of length 2 to control the height of the first and second
     #' plot, respectively.
     #'

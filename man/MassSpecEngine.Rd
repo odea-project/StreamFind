@@ -1586,6 +1586,7 @@ Plots chromatograms from the Chromatograms results.
   rtmin = 0,
   rtmax = 0,
   minIntensity = NULL,
+  normalized = TRUE,
   xLab = NULL,
   yLab = NULL,
   title = NULL,
@@ -1609,6 +1610,8 @@ object.}
 \item{\code{rtmax}}{Numeric (length 1) with the maximum retention time.}
 
 \item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
+
+\item{\code{normalized}}{Logical (length 1). Set to \code{TRUE} to normalize the chromatograms.}
 
 \item{\code{xLab}}{A string with the title for the x axis.}
 
@@ -3207,6 +3210,7 @@ correction is ignored even if set to \code{TRUE}.}
 Plots feature groups EIC.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$plot_groups(
+  analyses = NULL,
   groups = NULL,
   mass = NULL,
   mz = NULL,
@@ -3231,6 +3235,9 @@ Plots feature groups EIC.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
 \item{\code{groups}}{A numeric or character vector with the number or ID of feature groups, respectively.}
 
 \item{\code{mass}}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
@@ -4117,13 +4124,10 @@ mass (\code{ppm}) and time (\code{sec}) deviations.
   sec = 10,
   millisec = 5,
   ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCusiness = 0.7,
   minFragments = 3,
-  isolationWindow = 1.3,
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 0,
-  filtered = FALSE,
-  onGroups = TRUE
+  filtered = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -4175,23 +4179,13 @@ in milliseconds.}
 
 \item{\code{ppmMS2}}{Numeric (length 1) with the mass deviation for MS2, in ppm.}
 
+\item{\code{mzrMS2}}{Numeric (length 1). The m/z resolution for MS2 spectra.}
+
+\item{\code{minCusiness}}{Numeric (length 1). The minimum Cusiness value for the suspects.}
+
 \item{\code{minFragments}}{Integer (length 1) with the minimum number of fragments.}
 
-\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
-applied for ion isolation and fragmentation during acquisition of tandem
-data (i.e., MS2 data).}
-
-\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
-on the mass resolution of the MS data.}
-
-\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
-spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
-
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
-
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-
-\item{\code{onGroups}}{Logical (length 1). When \code{TRUE} results are return based on feature groups not individual features.}
 }
 \if{html}{\out{</div>}}
 }
@@ -4215,15 +4209,13 @@ Plots suspects.
   mz = NULL,
   rt = NULL,
   mobility = NULL,
-  ppm = 4,
+  ppm = 5,
   sec = 10,
   millisec = 5,
   ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCusiness = 0.7,
   minFragments = 3,
-  isolationWindow = 1.3,
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 0,
   filtered = FALSE,
   rtExpand = 120,
   mzExpand = 0.005,
@@ -4283,19 +4275,11 @@ in milliseconds.}
 
 \item{\code{ppmMS2}}{Numeric (length 1) with the mass deviation for MS2, in ppm.}
 
+\item{\code{mzrMS2}}{Numeric (length 1). The m/z resolution for MS2 spectra.}
+
+\item{\code{minCusiness}}{Numeric (length 1). The minimum Cusiness value for the suspects.}
+
 \item{\code{minFragments}}{Integer (length 1) with the minimum number of fragments.}
-
-\item{\code{isolationWindow}}{Numeric value with the isolation window (in Da)
-applied for ion isolation and fragmentation during acquisition of tandem
-data (i.e., MS2 data).}
-
-\item{\code{mzClust}}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
-on the mass resolution of the MS data.}
-
-\item{\code{presence}}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
-spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
-
-\item{\code{minIntensity}}{Numeric (length 1) with the minimum intensity.}
 
 \item{\code{filtered}}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 

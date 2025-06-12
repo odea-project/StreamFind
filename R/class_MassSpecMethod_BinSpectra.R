@@ -75,7 +75,7 @@ S7::method(run, MassSpecMethod_BinSpectra_StreamFind) <- function(x, engine = NU
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$Analyses$has_results_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
