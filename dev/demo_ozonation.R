@@ -20,7 +20,7 @@ files <- all_files[grepl("blank|influent|o3sw", all_files)]
 # Create -----------------------------------------------------------------------
 
 # Make project headers
-headers <- ProjectHeaders(
+headers <- Metadata(
   name = "Wastewater project",
   author = "Ricardo Cunha",
   description = "Demo"
@@ -63,16 +63,16 @@ ms$add_replicate_names(rpls)$add_blank_names(blks)
 
 # Processing settings ----------------------------------------------------------
 
-ffs <- Settings_find_features_openms()
+ffs <- Method_find_features_openms()
 
 # Settings documentation
-# ?Settings_find_features_openms
+# ?Method_find_features_openms
 
 # Web reference page 
 # ms$help$settings_find_features()
 
 # Saves an example of settings on disk
-save_default_ProcessingSettings(
+save_default_ProcessingStep(
   call = "find_features",
   algorithm = "openms",
   format = "json",
@@ -96,27 +96,27 @@ dbsus <- db[!grepl("IS", db$tag), ]
 # Add other module processing settings
 ms$add_settings(
   list(
-    Settings_annotate_features_StreamFind(),
+    Method_annotate_features_StreamFind(),
 
-    Settings_group_features_openms(),
+    Method_group_features_openms(),
 
-    Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+    Method_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
 
-    Settings_filter_features_StreamFind(excludeIsotopes = TRUE),
+    Method_filter_features_StreamFind(excludeIsotopes = TRUE),
 
-    Settings_filter_features_patRoon(
+    Method_filter_features_patRoon(
       absMinIntensity = 5000, maxReplicateIntRSD = 30, blankThreshold = 5, absMinReplicateAbundance = 3
     ),
 
-    Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
+    Method_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005),
 
-    Settings_calculate_quality_StreamFind(),
+    Method_calculate_quality_StreamFind(),
 
-    Settings_filter_features_StreamFind(minSnRatio = 3),
+    Method_filter_features_StreamFind(minSnRatio = 3),
     
-    Settings_load_features_ms2_StreamFind(),
+    Method_load_features_ms2_StreamFind(),
 
-    Settings_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
+    Method_suspect_screening_StreamFind(database = dbsus, ppm = 5, sec = 10)
   )
 )
 

@@ -89,7 +89,7 @@ plot_spectra_xic(ms$analyses, analyses = 5, mass = dbis[c(4, 8), ], ppm = 50, se
 ```
 
 ```{r}
-ffs <- MassSpecSettings_FindFeatures_openms()
+ffs <- MassSpecMethod_FindFeatures_openms()
 ffs
 ```
 

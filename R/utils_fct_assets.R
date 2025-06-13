@@ -55,14 +55,36 @@
   output
 }
 
+.trapezoidal_integration <- function(x, y) sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)
+
+.integrate_peak_area <- function(xVec, vec, peak_start, peak_end) {
+  peak_mask <- (xVec >= peak_start) & (xVec <= peak_end)
+  peak_xVec <- xVec[peak_mask]
+  peak_intensity <- vec[peak_mask]
+  base_int <- peak_intensity[1]
+  base_end <- peak_intensity[length(peak_intensity)]
+  base_vec <- seq(base_int, base_end, length.out = length(peak_intensity))
+  peak_intensity <- peak_intensity - base_vec
+  peak_intensity[peak_intensity < 0] <- 0
+  return(.trapezoidal_integration(peak_xVec, peak_intensity))
+}
+
 #' @title .find_peaks
 #' 
-#' @description Finds peaks in a given vector using the `findpeaks` function from `pracma` and an additional attempt 
-#' to merge peaks.
+#' @description Finds peaks in a given vector using the `findpeaks` function from `pracma` and an 
+#' additional attempt to merge peaks.
 #' 
 #' @noRd
 #' 
-.find_peaks <- function(data, xVar, merge, closeByThreshold, minPeakHeight, minPeakDistance, maxPeakWidth, minPeakWidth, minSN) {
+.find_peaks <- function(data,
+                        xVar,
+                        merge,
+                        closeByThreshold,
+                        minPeakHeight,
+                        minPeakDistance,
+                        maxPeakWidth,
+                        minPeakWidth,
+                        minSN) {
   
   plotLevel <- 0
   
@@ -241,20 +263,6 @@
   }, 0)
   
   pks$idx <- vapply(pks$index, function(i) which(xVec %in% pks$xVal[i])[1], 0)
-  
-  .trapezoidal_integration <- function(x, y) sum(diff(x) * (head(y, -1) + tail(y, -1)) / 2)
-  
-  .integrate_peak_area <- function(xVec, vec, peak_start, peak_end) {
-    peak_mask <- (xVec >= peak_start) & (xVec <= peak_end)
-    peak_xVec <- xVec[peak_mask]
-    peak_intensity <- vec[peak_mask]
-    base_int <- peak_intensity[1]
-    base_end <- peak_intensity[length(peak_intensity)]
-    base_vec <- seq(base_int, base_end, length.out = length(peak_intensity))
-    peak_intensity <- peak_intensity - base_vec
-    peak_intensity[peak_intensity < 0] <- 0
-    return(.trapezoidal_integration(peak_xVec, peak_intensity))
-  }
   
   integrated_areas <- vapply(pks$index, function(i) {.integrate_peak_area(xVec, vec, pks$min[i], pks$max[i])}, 0)
   

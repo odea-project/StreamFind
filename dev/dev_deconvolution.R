@@ -11,15 +11,15 @@ ms$load_chromatograms(chromatograms = 0)
 
 # ms$plot_chromatograms(colorBy = "analyses")
 
-ms$smooth_chromatograms(Settings_smooth_chromatograms_movingaverage(windowSize = 5))
+ms$smooth_chromatograms(Method_smooth_chromatograms_movingaverage(windowSize = 5))
 
 # ms$plot_chromatograms(colorBy = "analyses")
 
-ms$correct_chromatograms_baseline(Settings_correct_chromatograms_baseline_airpls())
+ms$correct_chromatograms_baseline(Method_correct_chromatograms_baseline_airpls())
 
 # ms$plot_chromatograms(colorBy = "analyses")
 
-ps <- Settings_integrate_chromatograms_StreamFind(
+ps <- Method_integrate_chromatograms_StreamFind(
   merge = TRUE,
   closeByThreshold = 2,
   minPeakHeight = 20000,
@@ -59,7 +59,7 @@ ms$chromatograms_peaks
 
 # ms$plot_chromatograms_peaks(colorBy = "targets+analyses")
 
-ms$deconvolute_spectra_charges(Settings_deconvolute_spectra_charges_StreamFind())
+ms$deconvolute_spectra_charges(Method_deconvolute_spectra_charges_StreamFind())
 
 ms$plot_spectra()
 
@@ -114,7 +114,7 @@ ms2$plot_chrom_peaks(colorBy = "targets+analyses")
 
 ms2$plot_spectra_ms1(analyses = 6, rt = data.table(rtmin = 342 - 2.5, rtmax = 342 + 2.5), presence = 0.1, mzClust = 0.01, minIntensity = 50, interactive = FALSE)
 
-dps <- Settings_deconvolute_spectra_charges_StreamFind(
+dps <- Method_deconvolute_spectra_charges_StreamFind(
   rtmin = 342 - 2.5,
   rtmax = 342 + 2.5
 )

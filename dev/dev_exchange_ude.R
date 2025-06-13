@@ -20,12 +20,12 @@ ms2 <- ms$clone()
 nrow(ms2$get_spectra())
 
 
-qCentroids <- Settings_centroid_spectra_qCentroids(maxScale = 20, mode = 2, runParallel = FALSE)
+qCentroids <- Method_centroid_spectra_qCentroids(maxScale = 20, mode = 2, runParallel = FALSE)
 
 ms2$centroid_spectra(qCentroids)
 
-# qBinning <- Settings_bin_spectra_qBinning()
-# qPeaks <- Settings_find_features_qPeaks()
+# qBinning <- Method_bin_spectra_qBinning()
+# qPeaks <- Method_find_features_qPeaks()
 
 
 ms$plot_spectra(analyses = 1, mass = db[16], ppm = 150)

@@ -1,99 +1,116 @@
 # MARK: MassSpecAnalyses
+# MassSpecAnalyses -----
+#' @title Mass Spectrometry Analyses
+#' 
+#' @description The `MassSpecAnalyses` class represents mass spectrometry (MS) raw data files and holds results from processing MS data. It is a subclass of the [StreamFind::Analyses] class and provides methods to manage and inspect MS data. The `MassSpecAnalyses` class is built from a character vector of file paths to MS raw data files. The possible file formats are *mzML* and *mzXML*. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to *mzML*. Note that conversion of vendor formats is only possible under Windows OS.
+#' 
+#' @param files A character vector with the file paths of MS raw data files.
+#' @param centroid Logical (length 1). Set to `TRUE` to centroid data when converting from vendor formats to mzML.
+#' @param levels Numeric vector with the MS levels to consider when centroiding data. Default is `c(1, 2)`.
+#' 
+#' @slot analyses (getter/setter) A list of objects representing individual mass spectrometry raw data files.
+#' @slot replicates (getter/setter) A character vector representing the names of the replicate name for each analysis.
+#' @slot blanks (getter/setter) A character vector representing the names of the blank name for each analysis.
+#' @slot concentrations (getter/setter) A numeric vector representing the concentration for each analysis.
+#' @slot types (getter) A character vector representing the type of each analysis.
+#' @slot files (getter) A character vector with the file path of each analysis.
+#' @slot formats (getter) A character vector with the file format of each analysis.
+#' @slot instruments (getter) A list with the instrument information for each analysis.
+#' @slot software (getter) A list with the software information for each analysis.
+#' @slot spectra_number (getter) A numeric vector with the number of spectra for each analysis.
+#' @slot spectra_headers (getter) A list with the headers of the spectra for each analysis.
+#' @slot spectra_mode (getter) A character vector with the mode of the spectra for each analysis.
+#' @slot spectra_level (getter) A character vector with the level of the spectra for each analysis.
+#' @slot spectra_lowest_mz (getter) A numeric vector with the lowest m/z value for each analysis.
+#' @slot spectra_highest_mz (getter) A numeric vector with the highest m/z value for each analysis.
+#' @slot spectra_lowest_rt (getter) A numeric vector with the lowest retention time for each analysis.
+#' @slot spectra_highest_rt (getter) A numeric vector with the highest retention time for each analysis.
+#' @slot spectra_lowest_mobility (getter) A numeric vector with the lowest mobility for each analysis.
+#' @slot spectra_highest_mobility (getter) A numeric vector with the highest mobility for each analysis.
+#' @slot spectra_polarity (getter) A character vector with the polarity of the spectra for each analysis.
+#' @slot spectra_tic (getter) A list with the total ion current (TIC) for each analysis.
+#' @slot spectra_bpc (getter) A list with the base peak chromatogram (BPC) for each analysis.
+#' @slot chromatograms_number (getter) A numeric vector with the number of chromatograms for each analysis.
+#' @slot chromatograms_headers (getter) A list with the headers of the chromatograms for each analysis.
+#' @slot chromatograms_raw (getter) A list with the raw chromatograms for each analysis.
+#' @slot info (getter) A data frame with the information of each analysis.
+#' @slot has_ion_mobility (getter) A logical vector indicating if the analyses have ion mobility data.
+#' @slot has_results_nts (getter) A logical vector indicating if the analyses have NonTargetAnalysisResults results.
+#' @slot has_results_spectra (getter) A logical vector indicating if the analyses have spectra results.
+#' @slot has_results_chromatograms (getter) A logical vector indicating if the analyses have chromatograms results.
+#' @slot NonTargetAnalysisResults (getter/setter) A list with the NonTargetAnalysisResults results for each analysis.
+#' @slot Spectra (getter/setter) A list with the spectra results for each analysis.
+#' @slot Chromatograms (getter/setter) A list with the chromatograms results for each analysis.
+#' 
+#' @references
+#' \insertRef{pugixml01}{StreamFind}
+#' 
+#' \insertRef{proteo01}{StreamFind}
+#' 
+#' \insertRef{proteo02}{StreamFind}
+#' 
 #' @export
-#' @noRd
-MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
-  package = "StreamFind", parent = Analyses,
+#' 
+MassSpecAnalyses <- S7::new_class(
+  name = "MassSpecAnalyses",
+  package = "StreamFind",
+  parent = Analyses,
   properties = list(
 
     # MARK: analyses
-    ## __analyses -----
+    ## analyses -----
     analyses = S7::new_property(S7::class_list, default = list()),
 
-    ## __names -----
-    names = S7::new_property(S7::class_character,
-      getter = function(self) {
-        vapply(self@analyses, function(x) x$name, NA_character_)
-      }
-    ),
-
     # MARK: replicates
-    ## __replicates -----
-    replicates = S7::new_property(S7::class_character,
+    ## replicates -----
+    replicates = S7::new_property(
+      S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$replicate, NA_character_),
       setter = function(self, value) {
-        if (length(value) != length(self)) {
-          warning("Length of replicates not conform!")
-          return(self)
-        }
-        if (!is.character(value)) {
-          warning("Replicates must be character!")
-          return(self)
-        }
-        for (i in seq_len(length(self))) self@analyses[[i]]$replicate <- value[i]
-
-        if (self$has_nts) {
-          if (self@results$nts$has_features) {
-            self@results$nts$features@analysisInfo$group <- value
-            if (self@results$nts$has_groups) {
-              self@results$nts$features@features@analysisInfo$group <- value
-            }
+        if (length(value) == length(self)) {
+          for (i in seq_len(length(self))) {
+            self@analyses[[i]]$replicate <- value[i]
+          }
+          if (self@has_results_nts) {
+            self@NonTargetAnalysisResults@replicates <- value
           }
         }
-
         self
       }
     ),
 
     # MARK: blanks
-    ## __blanks -----
-    blanks = S7::new_property(S7::class_character,
+    ## blanks -----
+    blanks = S7::new_property(
+      S7::class_character,
       getter = function(self) vapply(self@analyses, function(x) x$blank, NA_character_),
       setter = function(self, value) {
-        if (length(value) != length(self)) {
-          warning("Length of blanks not conform!")
-          return(self)
-        }
-        if (!is.character(value)) {
-          warning("Blanks must be character!")
-          return(self)
-        }
-        if (!all(value %in% self@replicates)) {
-          warning("Blank names must be in replicate names!")
-          return(self)
-        }
-        for (i in seq_len(length(self))) self@analyses[[i]]$blank <- value[i]
-        if (self$has_nts) {
-          if (self@results$nts$has_features) {
-            self@results$nts$features@analysisInfo$blank <- value
-            if (self@results$nts$has_groups) {
-              self@results$nts$features@features@analysisInfo$blank <- value
+        if (length(value) == length(self)) {
+          if (all(value %in% self@replicates)) {
+            for (i in seq_len(length(self))) {
+              self@analyses[[i]]$blank <- value[i]
+            }
+            if (self@has_results_nts) {
+              self@NonTargetAnalysisResults@blanks <- value
             }
           }
         }
         self
       }
     ),
-    
+
     # MARK: concentrations
-    ## __concentrations -----
-    concentrations = S7::new_property(S7::class_numeric,
+    ## concentrations -----
+    concentrations = S7::new_property(
+      S7::class_numeric,
       getter = function(self) vapply(self@analyses, function(x) x$concentration, 0),
       setter = function(self, value) {
-        if (length(value) != length(self)) {
-          warning("Length of concentrations not conform!")
-          return(self)
-        }
-        if (!is.numeric(value)) {
-          warning("Concentrations must be numeric!")
-          return(self)
-        }
-        for (i in seq_len(length(self))) self@analyses[[i]]$concentration <- value[i]
-        if (self$has_nts) {
-          if (self@results$nts$has_features) {
-            self@results$nts$features@analysisInfo$concentration <- value
-            if (self@results$nts$has_groups) {
-              self@results$nts$features@features@analysisInfo$concentration <- value
-            }
+        if (length(value) == length(self)) {
+          for (i in seq_len(length(self))) {
+            self@analyses[[i]]$concentration <- value[i]
+          }
+          if (self@has_results_nts) {
+            self@NonTargetAnalysisResults@concentrations <- value
           }
         }
         self
@@ -101,357 +118,405 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
     ),
 
     # MARK: types
-    ## __types -----
-    types = S7::new_property(S7::class_character, getter = function(self) {
-      vapply(self@analyses, function(x) x$type, NA_character_)
-    }),
+    ## types -----
+    types = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
+        vapply(self@analyses, function(x) x$type, NA_character_)
+      }
+    ),
 
     # MARK: files
-    ## __files -----
-    files = S7::new_property(S7::class_character, getter = function(self) {
-      vapply(self@analyses, function(x) x$file, NA_character_)
-    }),
+    ## files -----
+    files = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
+        vapply(self@analyses, function(x) x$file, NA_character_)
+      }
+    ),
 
     # MARK: formats
-    ## __formats -----
-    formats = S7::new_property(S7::class_character, getter = function(self) {
-      vapply(self@analyses, function(x) x$format, NA_character_)
-    }),
+    ## formats -----
+    formats = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
+        vapply(self@analyses, function(x) x$format, NA_character_)
+      }
+    ),
 
     # MARK: instruments
-    ## __instruments -----
-    instruments = S7::new_property(S7::class_character, getter = function(self) {
-      lapply(self@analyses, function(x) x$instrument)
-    }),
+    ## instruments -----
+    instruments = S7::new_property(
+      S7::class_list,
+      getter = function(self) {
+        lapply(self@analyses, function(x) x$instrument)
+      }
+    ),
 
     # MARK: software
-    ## __software -----
-    software = S7::new_property(S7::class_character, getter = function(self) {
-      lapply(self@analyses, function(x) x$software)
-    }),
+    ## software -----
+    software = S7::new_property(
+      S7::class_list,
+      getter = function(self) {
+        lapply(self@analyses, function(x) x$software)
+      }
+    ),
 
     # MARK: spectra_number
-    ## __spectra_number -----
-    spectra_number = S7::new_property(S7::class_numeric, getter = function(self) {
-      vapply(self@analyses, function(x) x$spectra_number, 0)
-    }),
+    ## spectra_number -----
+    spectra_number = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        vapply(self@analyses, function(x) x$spectra_number, 0)
+      }
+    ),
 
     # MARK: spectra_headers
-    ## __spectra_headers -----
-    spectra_headers = S7::new_property(S7::class_list, getter = function(self) {
-      lapply(self@analyses, function(x) {
-        res <- x$spectra_headers
-        res$replicate <- x$replicate
-        data.table::setcolorder(res, c("replicate"))
-        res
-      })
-    }),
+    ## spectra_headers -----
+    spectra_headers = S7::new_property(
+      S7::class_list,
+      getter = function(self) {
+        lapply(self@analyses, function(x) {
+          res <- x$spectra_headers
+          res$replicate <- x$replicate
+          data.table::setcolorder(res, c("replicate"))
+          res
+        })
+      }
+    ),
 
     # MARK: spectra_mode
-    ## __spectra_mode -----
-    spectra_mode = S7::new_property(S7::class_character, getter = function(self) {
-      vapply(self@analyses, function(x) {
-        if (x$spectra_number == 0) {
-          return(NA_character_)
-        }
-        mode <- unique(x$spectra_headers$mode)
-        mode[mode == 0] <- "unknown"
-        mode[mode == 1] <- "profile"
-        mode[mode == 2] <- "centroid"
-        if (length(mode) > 1) mode <- paste(mode, collapse = ", ")
-        mode
-      }, NA_character_)
-    }),
+    ## spectra_mode -----
+    spectra_mode = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
+        vapply(self@analyses, function(x) {
+          if (x$spectra_number == 0) {
+            return(NA_character_)
+          }
+          mode <- unique(x$spectra_headers$mode)
+          mode[mode == 0] <- "unknown"
+          mode[mode == 1] <- "profile"
+          mode[mode == 2] <- "centroid"
+          if (length(mode) > 1) mode <- paste(mode, collapse = ", ")
+          mode
+        }, NA_character_)
+      }
+    ),
 
     # MARK: spectra_level
-    ## __spectra_level -----
-    spectra_level = S7::new_property(S7::class_character, getter = function(self) {
-      vapply(self@analyses, function(x) {
-        if (x$spectra_number == 0) {
-          return(NA_character_)
-        }
-        levels <- unique(x$spectra_headers$level)
-        if (length(levels) > 1) levels <- paste(levels, collapse = ", ")
-        as.character(levels)
-      }, NA_character_)
-    }),
+    ## spectra_level -----
+    spectra_level = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
+        vapply(self@analyses, function(x) {
+          if (x$spectra_number == 0) {
+            return(NA_character_)
+          }
+          levels <- unique(x$spectra_headers$level)
+          if (length(levels) > 1) levels <- paste(levels, collapse = ", ")
+          as.character(levels)
+        }, NA_character_)
+      }
+    ),
 
     # MARK: spectra_lowest_mz
-    ## __spectra_lowest_mz -----
-    spectra_lowest_mz = S7::new_property(S7::class_numeric, getter = function(self) {
-      vapply(self@analyses, function(x) min(x$spectra_headers$lowmz), NA_real_)
-    }),
+    ## spectra_lowest_mz -----
+    spectra_lowest_mz = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        vapply(self@analyses, function(x) min(x$spectra_headers$lowmz), NA_real_)
+      }
+    ),
 
     # MARK: spectra_highest_mz
-    ## __spectra_highest_mz -----
-    spectra_highest_mz = S7::new_property(S7::class_numeric, getter = function(self) {
-      vapply(self@analyses, function(x) max(x$spectra_headers$highmz), NA_real_)
-    }),
+    ## spectra_highest_mz -----
+    spectra_highest_mz = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        vapply(self@analyses, function(x) max(x$spectra_headers$highmz), NA_real_)
+      }
+    ),
 
     # MARK: spectra_lowest_rt
-    ## __spectra_lowest_rt -----
-    spectra_lowest_rt = S7::new_property(S7::class_numeric, getter = function(self) {
-      vapply(self@analyses, function(x) min(x$spectra_headers$rt), NA_real_)
-    }),
+    ## spectra_lowest_rt -----
+    spectra_lowest_rt = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        vapply(self@analyses, function(x) min(x$spectra_headers$rt), NA_real_)
+      }
+    ),
 
     # MARK: spectra_highest_rt
-    ## __spectra_highest_rt -----
-    spectra_highest_rt = S7::new_property(S7::class_numeric, getter = function(self) {
-      vapply(self@analyses, function(x) max(x$spectra_headers$rt), NA_real_)
-    }),
+    ## spectra_highest_rt -----
+    spectra_highest_rt = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        vapply(self@analyses, function(x) max(x$spectra_headers$rt), NA_real_)
+      }
+    ),
 
     # MARK: spectra_lowest_mobility
-    ## __spectra_highest_mobility -----
-    spectra_highest_mobility = S7::new_property(S7::class_numeric, getter = function(self) {
-      vapply(self@analyses, function(x) max(x$spectra_headers$mobility), NA_real_)
-    }),
+    ## spectra_highest_mobility -----
+    spectra_highest_mobility = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        vapply(self@analyses, function(x) max(x$spectra_headers$mobility), NA_real_)
+      }
+    ),
 
     # MARK: spectra_lowest_mobility
-    ## __spectra_lowest_mobility -----
-    spectra_lowest_mobility = S7::new_property(S7::class_numeric, getter = function(self) {
-      vapply(self@analyses, function(x) min(x$spectra_headers$mobility), NA_real_)
-    }),
+    ## spectra_lowest_mobility -----
+    spectra_lowest_mobility = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        vapply(self@analyses, function(x) min(x$spectra_headers$mobility), NA_real_)
+      }
+    ),
 
     # MARK: spectra_polarity
-    ## __spectra_polarity -----
-    spectra_polarity = S7::new_property(S7::class_character, getter = function(self) {
-      vapply(self@analyses, function(x) {
-        if (x$spectra_number == 0) {
-          return(NA_character_)
-        }
-        polarity <- unique(x$spectra_headers$polarity)
-
-        if (length(polarity) > 1) {
-          # tries to infer short polarity switching from scans
-          polarities <- x$spectra_headers$polarity
-          scans_pos <- length(polarities[polarities == 1])
-          scans_neg <- length(polarities[polarities == -1])
-          ratio <- scans_pos / scans_neg
-          if (ratio > 1.5) {
-            polarity <- 1
-          } else if (ratio < 0.5) {
-            polarity <- -1
+    ## spectra_polarity -----
+    spectra_polarity = S7::new_property(
+      S7::class_character,
+      getter = function(self) {
+        vapply(self@analyses, function(x) {
+          if (x$spectra_number == 0) {
+            return(NA_character_)
           }
-        }
-
-        polarity[polarity == 0] <- "unkown"
-        polarity[polarity == 1] <- "positive"
-        polarity[polarity == -1] <- "negative"
-        if (length(polarity) > 1) polarity <- paste(polarity, collapse = ", ")
-        polarity
-      }, NA_character_)
-    }),
+          polarity <- unique(x$spectra_headers$polarity)
+          if (length(polarity) > 1) {
+            # tries to infer short polarity switching from scans
+            polarities <- x$spectra_headers$polarity
+            scans_pos <- length(polarities[polarities == 1])
+            scans_neg <- length(polarities[polarities == -1])
+            ratio <- scans_pos / scans_neg
+            if (ratio > 1.5) {
+              polarity <- 1
+            } else if (ratio < 0.5) {
+              polarity <- -1
+            }
+          }
+          polarity[polarity == 0] <- "unkown"
+          polarity[polarity == 1] <- "positive"
+          polarity[polarity == -1] <- "negative"
+          if (length(polarity) > 1) polarity <- paste(polarity, collapse = ", ")
+          polarity
+        }, NA_character_)
+      }
+    ),
 
     # MARK: spectra_tic
-    ## __spectra_tic -----
-    spectra_tic = S7::new_property(S7::class_numeric, getter = function(self) {
-      lapply(self@analyses, function(x) {
-        res <- x$spectra_headers[, c("polarity", "level", "rt", "tic"), with = FALSE]
-        res$replicate <- x$replicate
-        colnames(res) <- c("polarity", "level", "rt", "intensity", "replicate")
-        data.table::setcolorder(res, "replicate")
-        res
-      })
-    }),
+    ## spectra_tic -----
+    spectra_tic = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        lapply(self@analyses, function(x) {
+          res <- x$spectra_headers[, c("polarity", "level", "rt", "tic"), with = FALSE]
+          res$replicate <- x$replicate
+          colnames(res) <- c("polarity", "level", "rt", "intensity", "replicate")
+          data.table::setcolorder(res, "replicate")
+          res
+        })
+      }
+    ),
 
     # MARK: spectra_bpc
-    ## __spectra_bpc -----
-    spectra_bpc = S7::new_property(S7::class_numeric, getter = function(self) {
-      lapply(self@analyses, function(x) {
-        res <- x$spectra_headers[, c("polarity", "level", "rt", "bpmz", "bpint"), with = FALSE]
-        res$replicate <- x$replicate
-        colnames(res) <- c("polarity", "level", "rt", "mz", "intensity", "replicate")
-        data.table::setcolorder(res, "replicate")
-        res
-      })
-    }),
-
-    # MARK: __spectra_raw
-    ## __spectra_raw -----
-    spectra_raw = S7::new_property(S7::class_list, getter = function(self) {
-      Spectra(
+    ## spectra_bpc -----
+    spectra_bpc = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
         lapply(self@analyses, function(x) {
-          if (nrow(x$spectra) > 0) {
-            x$spectra
-          } else {
-            levels <- unique(self$spectra_level)
-            levels <- as.numeric(unlist(strsplit(levels, ", ")))
-            targets <- MassSpecTargets()@targets
-            rcpp_parse_ms_spectra(x, levels, targets, 0, 0)
-          }
+          res <- x$spectra_headers[, c("polarity", "level", "rt", "bpmz", "bpint"), with = FALSE]
+          res$replicate <- x$replicate
+          colnames(res) <- c("polarity", "level", "rt", "mz", "intensity", "replicate")
+          data.table::setcolorder(res, "replicate")
+          res
         })
-      )
-    }),
+      }
+    ),
 
     # MARK: chromatograms_number
-    ## __chromatograms_number -----
-    chromatograms_number = S7::new_property(S7::class_numeric, getter = function(self) {
-      vapply(self@analyses, function(x) x$chromatograms_number, 0)
-    }),
+    ## chromatograms_number -----
+    chromatograms_number = S7::new_property(
+      S7::class_numeric,
+      getter = function(self) {
+        vapply(self@analyses, function(x) x$chromatograms_number, 0)
+      }
+    ),
 
-    ## __chromatograms_headers -----
-    chromatograms_headers = S7::new_property(S7::class_data.frame, getter = function(self) {
-      lapply(self@analyses, function(x) {
-        res <- x$chromatograms_headers
-        res$replicate <- x$replicate
-        data.table::setcolorder(res, c("replicate"))
-        res
-      })
-    }),
+    # MARK: chromatograms_headers
+    ## chromatograms_headers -----
+    chromatograms_headers = S7::new_property(
+      S7::class_data.frame,
+      getter = function(self) {
+        lapply(self@analyses, function(x) {
+          res <- x$chromatograms_headers
+          res$replicate <- x$replicate
+          data.table::setcolorder(res, c("replicate"))
+          res
+        })
+      }
+    ),
 
     # MARK: chromatograms_raw
-    ## __chromatograms_raw -----
-    chromatograms_raw = S7::new_property(S7::class_list, getter = function(self) {
-      StreamFind::Chromatograms(
-        lapply(self@analyses, function(x) {
-          if (nrow(x$chromatograms) > 0) {
-            x$chromatograms
-          } else {
-            rcpp_parse_ms_chromatograms(x, idx = seq_along(x$number_chromatograms))
-          }
-        })
-      )
-    }),
+    ## chromatograms_raw -----
+    chromatograms_raw = S7::new_property(
+      S7::class_list,
+      getter = function(self) {
+        StreamFind::Chromatograms(
+          lapply(self@analyses, function(x) {
+            if (nrow(x$chromatograms) > 0) {
+              x$chromatograms
+            } else {
+              rcpp_parse_ms_chromatograms(x, idx = seq_along(x$number_chromatograms))
+            }
+          })
+        )
+      }
+    ),
 
     # MARK: info
-    ## __info -----
-    info = S7::new_property(S7::class_data.frame, getter = function(self) {
-      if (length(self) > 0) {
-        pols <- self@spectra_polarity
-        pols <- unlist(pols)
-
-        df <- data.table::data.table(
-          "analysis" = vapply(self@analyses, function(x) x$name, ""),
-          "replicate" = vapply(self@analyses, function(x) x$replicate, ""),
-          "blank" = vapply(self@analyses, function(x) x$blank, ""),
-          "type" = vapply(self@analyses, function(x) x$type, ""),
-          "polarity" = pols,
-          "spectra" = vapply(self@analyses, function(x) round(x$spectra_number, digits = 0), 0),
-          "chromatograms" = vapply(self@analyses, function(x) round(x$chromatograms_number, digits = 0), 0),
-          "concentration" = vapply(self@analyses, function(x) x$concentration, 0)
-        )
-
-        row.names(df) <- seq_len(nrow(df))
-        df
-      } else {
-        data.frame()
+    ## info -----
+    info = S7::new_property(
+      S7::class_data.frame,
+      getter = function(self) {
+        if (length(self) > 0) {
+          pols <- self@spectra_polarity
+          pols <- unlist(pols)
+          df <- data.table::data.table(
+            "analysis" = vapply(self@analyses, function(x) x$name, ""),
+            "replicate" = vapply(self@analyses, function(x) x$replicate, ""),
+            "blank" = vapply(self@analyses, function(x) x$blank, ""),
+            "type" = vapply(self@analyses, function(x) x$type, ""),
+            "polarity" = pols,
+            "spectra" = vapply(self@analyses, function(x) round(x$spectra_number, digits = 0), 0),
+            "chromatograms" = vapply(self@analyses, function(x) round(x$chromatograms_number, digits = 0), 0),
+            "concentration" = vapply(self@analyses, function(x) x$concentration, 0)
+          )
+          row.names(df) <- seq_len(nrow(df))
+          df
+        } else {
+          data.table::data.table()
+        }
       }
-    }),
+    ),
 
     # MARK: has_ion_mobility
-    ## __has_ion_mobility -----
-    has_ion_mobility = S7::new_property(S7::class_logical, getter = function(self) {
-      if (length(self) == 0) {
-        return(FALSE)
-      }
-      vapply(self@analyses, function(x) any(x$spectra_headers$mobility > 0), FALSE)
-    }),
-
-    # MARK: has_loaded_spectra
-    ## __has_loaded_spectra -----
-    has_loaded_spectra = S7::new_property(S7::class_logical, getter = function(self) {
-      if (length(self) == 0) {
-        return(FALSE)
-      }
-      vapply(self@analyses, function(x) nrow(x$spectra) > 0, FALSE)
-    }),
-
-    # MARK: has_loaded_chromatograms
-    ## __has_loaded_chromatograms -----
-    has_loaded_chromatograms = S7::new_property(S7::class_logical, getter = function(self) {
-      if (length(self) == 0) {
-        return(FALSE)
-      }
-      vapply(self@analyses, function(x) nrow(x$chromatograms) > 0, FALSE)
-    }),
-
-    # MARK: has_nts
-    ## __has_nts -----
-    has_nts = S7::new_property(S7::class_logical, getter = function(self) {
-      if (length(self) == 0) {
-        return(FALSE)
-      }
-      if (is.null(self@results[["nts"]])) {
-        return(FALSE)
-      }
-      if (!is(self@results[["nts"]], "StreamFind::NTS")) {
-        return(FALSE)
-      }
-      TRUE
-    }),
-
-    # MARK: nts
-    ## __nts -----
-    nts = S7::new_property(S7::class_list,
+    ## has_ion_mobility -----
+    has_ion_mobility = S7::new_property(
+      S7::class_logical,
       getter = function(self) {
-        if (self$has_nts) {
-          return(self@results[["nts"]])
+        if (length(self) == 0) {
+          return(FALSE)
         }
-        NULL
+        vapply(self@analyses, function(x) any(x$spectra_headers$mobility > 0), FALSE)
+      }
+    ),
+
+    # MARK: has_results_nts
+    ## has_results_nts -----
+    has_results_nts = S7::new_property(
+      S7::class_logical,
+      getter = function(self) {
+        if (length(self) == 0) {
+          return(FALSE)
+        }
+        if (is.null(self@results[["NonTargetAnalysisResults"]])) {
+          return(FALSE)
+        }
+        if (!is(self@results[["NonTargetAnalysisResults"]], "StreamFind::NonTargetAnalysisResults")) {
+          return(FALSE)
+        }
+        TRUE
+      }
+    ),
+
+    # MARK: has_results_spectra
+    ## has_results_spectra -----
+    has_results_spectra = S7::new_property(
+      S7::class_logical,
+      getter = function(self) {
+        if (length(self) == 0) {
+          return(FALSE)
+        }
+        if (is.null(self@results[["MassSpecSpectra"]])) {
+          return(FALSE)
+        }
+        if (!is(self@results[["MassSpecSpectra"]], "StreamFind::MassSpecSpectra")) {
+          return(FALSE)
+        }
+        TRUE
+      }
+    ),
+
+    # MARK: has_results_chromatograms
+    ## has_results_chromatograms -----
+    has_results_chromatograms = S7::new_property(
+      S7::class_logical,
+      getter = function(self) {
+        if (length(self) == 0) {
+          return(FALSE)
+        }
+        if (is.null(self@results[["Chromatograms"]])) {
+          return(FALSE)
+        }
+        if (!is(self@results[["Chromatograms"]], "StreamFind::Chromatograms")) {
+          return(FALSE)
+        }
+        TRUE
+      }
+    ),
+
+    # MARK: NonTargetAnalysisResults
+    ## NonTargetAnalysisResults -----
+    NonTargetAnalysisResults = S7::new_property(
+      S7::class_list,
+      getter = function(self) {
+        self@results[["NonTargetAnalysisResults"]]
       },
       setter = function(self, value) {
-        if (is(value, "StreamFind::NTS")) {
+        if (is(value, "StreamFind::NonTargetAnalysisResults")) {
           if (value@number_analyses > 0) {
             analyses_names <- unname(names(self))
-            value_analyses_names <- sort(value@features@analysisInfo$analysis)
+            value_analyses_names <- sort(value@analyses_info$analysis)
             if (identical(analyses_names, value_analyses_names)) {
-              self@results[["nts"]] <- value
+              self@results[[gsub("StreamFind::", "", is(value)[1])]] <- value
             } else {
-              # TODO check if some analyses are in engine and subset engine to match nts
+              # TODO check if some analyses are in engine and subset engine to match NonTargetAnalysisResults
               warning("Analysis names do not match! Not done.")
             }
           } else {
-            warning("NTS results object is empty! Not done.")
+            warning("NonTargetAnalysisResults results object is empty! Not done.")
           }
         } else {
-          warning("Value must be an NTS results object! Not done.")
+          warning("Value must be an NonTargetAnalysisResults results object! Not done.")
         }
         self
       }
     ),
 
-    # MARK: has_spectra
-    ## __has_spectra -----
-    has_spectra = S7::new_property(S7::class_logical, getter = function(self) {
-      if (length(self) == 0) {
-        return(FALSE)
-      }
-      if (is.null(self@results[["spectra"]])) {
-        return(FALSE)
-      }
-      if (!is(self@results[["spectra"]], "StreamFind::Spectra")) {
-        return(FALSE)
-      }
-      TRUE
-    }),
-
-    # MARK: spectra
-    ## __spectra -----
-    spectra = S7::new_property(S7::class_list,
+    # MARK: Spectra
+    ## Spectra -----
+    Spectra = S7::new_property(
+      S7::class_list,
       getter = function(self) {
-        if (self$has_spectra) {
-          return(self@results[["spectra"]])
-        }
-        if (any(self$spectra_number > 0)) {
-          return(StreamFind::Spectra(self$spectra_raw))
-        }
-        NULL
+        self@results[["MassSpecSpectra"]]
       },
       setter = function(self, value) {
-        if (is(value, "StreamFind::Spectra")) {
+        if (is(value, "StreamFind::MassSpecSpectra")) {
           if (!value$is_averaged) {
             analyses_names <- unname(names(self))
             value_analyses_names <- names(value$spectra)
             if (identical(analyses_names, value_analyses_names)) {
-              self@results[["spectra"]] <- value
+              self@results[[value@name]] <- value
             } else {
               warning("Analysis names do not match! Not done.")
             }
           } else if (value$is_averaged) {
-            replicate_names <- unique(unname(self$replicates))
+            replicate_names <- unique(unname(self@replicates))
             value_analyses_names <- names(value$spectra)
             if (identical(replicate_names, value_analyses_names)) {
-              self@results[["spectra"]] <- value
+              self@results[[value@name]] <- value
             } else {
               warning("Replicate names do not match! Not done.")
             }
@@ -465,32 +530,12 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
       }
     ),
 
-    # MARK: has_chromatograms
-    ## __has_chromatograms -----
-    has_chromatograms = S7::new_property(S7::class_logical, getter = function(self) {
-      if (length(self) == 0) {
-        return(FALSE)
-      }
-      if (is.null(self@results[["chromatograms"]])) {
-        return(FALSE)
-      }
-      if (!is(self@results[["chromatograms"]], "StreamFind::Chromatograms")) {
-        return(FALSE)
-      }
-      TRUE
-    }),
-
-    # MARK: chromatograms
-    ## __chromatograms -----
-    chromatograms = S7::new_property(S7::class_list,
+    # MARK: Chromatograms
+    ## Chromatograms -----
+    Chromatograms = S7::new_property(
+      S7::class_list,
       getter = function(self) {
-        if (self$has_chromatograms) {
-          return(self@results[["chromatograms"]])
-        }
-        if (any(self$chromatograms_number > 0)) {
-          return(self$chromatograms_raw)
-        }
-        NULL
+        self@results[["Chromatograms"]]
       },
       setter = function(self, value) {
         if (is(value, "StreamFind::Chromatograms")) {
@@ -498,15 +543,15 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
             analyses_names <- unname(names(self))
             value_analyses_names <- names(value$chromatograms)
             if (identical(analyses_names, value_analyses_names)) {
-              self@results[["chromatograms"]] <- value
+              self@results[["Chromatograms"]] <- value
             } else {
               warning("Analysis names do not match! Not done.")
             }
           } else if (value$is_averaged) {
-            replicate_names <- unname(self$replicates)
+            replicate_names <- unname(self@replicates)
             value_analyses_names <- names(value$chromatograms)
             if (identical(replicate_names, value_analyses_names)) {
-              self@results[["chromatograms"]] <- value
+              self@results[["Chromatograms"]] <- value
             } else {
               warning("Replicate names do not match! Not done.")
             }
@@ -522,17 +567,24 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
   ),
 
   # MARK: constructor
-  ## __constructor -----
+  ## constructor -----
   constructor = function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
     analyses <- .get_MassSpecAnalysis_from_files(files, centroid, levels)
-    S7::new_object(Analyses(), possible_formats = c("mzML|mzXML"), analyses = analyses)
+    S7::new_object(
+      Analyses(),
+      data_type = "MassSpec",
+      possible_formats = c("mzML", "mzXML", "d", "raw"),
+      analyses = analyses
+    )
   },
 
   # MARK: validator
-  ## __validator -----
+  ## validator -----
   validator = function(self) {
-    checkmate::assert_true(identical(self@possible_formats, c("mzML|mzXML")))
-    if (length(self) > 0) checkmate::assert_true(identical(names(self@analyses), unname(self@names)))
+    checkmate::assert_true(identical(self@possible_formats, c("mzML", "mzXML", "d", "raw")))
+    if (length(self) > 0) {
+      checkmate::assert_true(identical(names(self@analyses), unname(names(self))))
+    }
     NULL
   }
 )
@@ -541,7 +593,6 @@ MassSpecAnalyses <- S7::new_class("MassSpecAnalyses",
 # Methods -----
 
 # MARK: names
-## __names -----
 #' @export
 #' @noRd
 S7::method(names, MassSpecAnalyses) <- function(x) {
@@ -549,12 +600,11 @@ S7::method(names, MassSpecAnalyses) <- function(x) {
 }
 
 # MARK: add
-## __add -----
 #' @export
 #' @noRd
 S7::method(add, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    if (all(grepl(x@possible_formats, value))) {
+    if (all(tools::file_ext(value) %in% x@possible_formats)) {
       value <- .get_MassSpecAnalysis_from_files(value)
     } else {
       warning("File/s not valid!")
@@ -565,94 +615,103 @@ S7::method(add, MassSpecAnalyses) <- function(x, value) {
     warning("Analysis/s not valid!")
     return(x)
   }
-  if (any(vapply(value, function(a) a$name %in% x@names, FALSE))) {
+  if (any(vapply(value, function(a) a$name %in% names(x), FALSE))) {
     warning("Analysis names already exist!")
     return(x)
   }
   analyses <- c(x@analyses, value)
   analyses <- analyses[order(names(analyses))]
   if (length(analyses) > length(x@analyses)) {
-    warning("All results removed!")
-    x@results <- list()
+    if (length(x@results) > 0) {
+      warning("All results removed!")
+      x@results <- list()
+    }
   }
   x@analyses <- analyses
   x
 }
 
 # MARK: remove
-## __remove -----
 #' @export
 #' @noRd
 S7::method(remove, MassSpecAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    x$analyses <- x$analyses[!x$names %in% value]
+    x@analyses <- x@analyses[!names(x) %in% value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_nts) x@results$nts <- x@results$nts[!x$names %in% value]
+    if (x@has_results_nts) x@NonTargetAnalysisResults <- x@NonTargetAnalysisResults[!names(x) %in% value]
+    if (x@has_results_spectra) x@Spectra <- x@Spectra[!names(x) %in% value]
+    if (x@has_results_chromatograms) {
+      x@Chromatograms <- x@Chromatograms[!names(x) %in% value]
+    }
   } else if (is.numeric(value)) {
     x@analyses <- x@analyses[-value]
     x@analyses <- x@analyses[order(names(x@analyses))]
-    if (x@has_nts) x@results$nts <- x@results$nts[-value]
+    if (x@has_results_nts) x@NonTargetAnalysisResults <- x@NonTargetAnalysisResults[-value]
+    if (x@has_results_spectra) x@Spectra <- x@Spectra[-value]
+    if (x@has_results_chromatograms) {
+      x@Chromatograms <- x@Chromatograms[-value]
+    }
   }
   x
 }
 
+# MARK: `[`
 #' @export
 #' @noRd
-S7::method(`[`, MassSpecAnalyses) <- function(x, i) {
+`[.StreamFind::MassSpecAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_nts) x@results$nts <- x@results$nts[i]
+  if (x@has_results_nts) x@NonTargetAnalysisResults <- x@NonTargetAnalysisResults[i]
+  if (x@has_results_spectra) x@Spectra <- x@Spectra[i]
+  if (x@has_results_chromatograms) x@Chromatograms <- x@Chromatograms[i]
   x
 }
 
+# MARK: `[<-`
 #' @export
 #' @noRd
-S7::method(`[<-`, MassSpecAnalyses) <- function(x, i, value) {
+`[<-.StreamFind::MassSpecAnalyses` <- function(x, i, value) {
   x <- add(x, value)
   x
 }
 
+# MARK: `[[`
 #' @export
 #' @noRd
-S7::method(`[[`, MassSpecAnalyses) <- function(x, i) {
+`[[.StreamFind::MassSpecAnalyses` <- function(x, i) {
   x@analyses <- x@analyses[i]
-  if (x@has_nts) x@results$nts <- x@results$nts[i]
+  if (x@has_results_nts) x@NonTargetAnalysisResults <- x@NonTargetAnalysisResults[i]
+  if (x@has_results_spectra) x@Spectra <- x@Spectra[i]
+  if (x@has_results_chromatograms) x@Chromatograms <- x@Chromatograms[i]
   x
 }
 
+# MARK: `[[<-`
 #' @export
 #' @noRd
-S7::method(`[[<-`, MassSpecAnalyses) <- function(x, i, value) {
+`[[<-.StreamFind::MassSpecAnalyses` <- function(x, i, value) {
   x <- add(x, value)
   x
 }
 
 # MARK: as.list
-## __as.list -----
 #' @export
 #' @noRd
-S7::method(as.list, MassSpecAnalyses) <- function(x) {
-  if (x$has_nts) {
-    # TODO make as.list method for MassSpecAnalyses results
-
-    browser()
+S7::method(as.list, MassSpecAnalyses) <- function(x, ...) {
+  if (length(x@results) > 0) {
+    # TODO make as.list method for each MassSpecAnalyses results
   }
-
   list("analyses" = x@analyses, "results" = x@results)
 }
 
 # MARK: read
-## __read -----
 #' @export
 #' @noRd
 S7::method(read, MassSpecAnalyses) <- function(x, file) {
   if (grepl(".json", file)) {
     if (file.exists(file)) {
       json <- jsonlite::fromJSON(file)
-
       browser()
-
-      # TODO add read method for MassSpecAnalyses NTS and other results
-
+      # TODO add read method for MassSpecAnalyses NonTargetAnalysisResults and other results
       return(Analyses(jsonlite::fromJSON(file)))
     }
   } else if (grepl(".rds", file)) {
@@ -664,16 +723,16 @@ S7::method(read, MassSpecAnalyses) <- function(x, file) {
   NULL
 }
 
-# MARK: Get Spectra
-# Get Spectra ------
-
 # MARK: get_spectra_tic
-## __get_spectra_tic -----
+## get_spectra_tic -----
 #' @export
 #' @noRd
-S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x, analyses = NULL, levels = c(1, 2), rt = NULL) {
+S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x,
+                                                          analyses = NULL,
+                                                          levels = c(1, 2),
+                                                          rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
-  value <- x$spectra_tic[analyses]
+  value <- x@spectra_tic[analyses]
   value <- data.table::rbindlist(value, idcol = "analysis", fill = TRUE)
   value <- value[value$level %in% levels, ]
   if (!is.null(rt)) {
@@ -683,28 +742,21 @@ S7::method(get_spectra_tic, MassSpecAnalyses) <- function(x, analyses = NULL, le
       value <- value[sel, ]
     }
   }
+  value$replicate <- x@replicates[value$analysis]
+  data.table::setcolorder(value, c("analysis", "replicate"))
   value
-}
-
-# MARK: get_matrix_suppression
-## __get_matrix_suppression -----
-#' @export
-#' @noRd
-S7::method(get_matrix_suppression, MassSpecAnalyses) <- function(x, rtWindow = 10) {
-  mpList <- .calculate_tic_matrix_suppression(x, rtWindow)
-  if (is.null(mpList)) {
-    return(data.table::data.table())
-  }
-  data.table::rbindlist(mpList, fill = TRUE)
 }
 
 # MARK: get_spectra_bpc
-## __get_spectra_bpc -----
+## get_spectra_bpc -----
 #' @export
 #' @noRd
-S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x, analyses = NULL, levels = c(1, 2), rt = NULL) {
+S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x,
+                                                          analyses = NULL,
+                                                          levels = c(1, 2),
+                                                          rt = NULL) {
   analyses <- .check_analyses_argument(x, analyses)
-  value <- x$spectra_bpc[analyses]
+  value <- x@spectra_bpc[analyses]
   value <- data.table::rbindlist(value, idcol = "analysis", fill = TRUE)
   value <- value[value$level %in% levels, ]
   if (!is.null(rt)) {
@@ -714,42 +766,53 @@ S7::method(get_spectra_bpc, MassSpecAnalyses) <- function(x, analyses = NULL, le
       value <- value[sel, ]
     }
   }
+  value$replicate <- x@replicates[value$analysis]
+  data.table::setcolorder(value, c("analysis", "replicate"))
   value
 }
 
-# MARK: get_spectra
-## __get_spectra -----
+# MARK: get_raw_spectra
+## get_raw_spectra -----
 #' @export
 #' @noRd
-S7::method(get_spectra, MassSpecAnalyses) <- function(x,
-                                                      analyses = NULL,
-                                                      levels = NULL,
-                                                      mass = NULL,
-                                                      mz = NULL,
-                                                      rt = NULL,
-                                                      mobility = NULL,
-                                                      ppm = 20,
-                                                      sec = 60,
-                                                      millisec = 5,
-                                                      id = NULL,
-                                                      allTraces = TRUE,
-                                                      isolationWindow = 1.3,
-                                                      minIntensityMS1 = 0,
-                                                      minIntensityMS2 = 0,
-                                                      useRawData = TRUE,
-                                                      useLoadedData = TRUE) {
+S7::method(get_raw_spectra, MassSpecAnalyses) <- function(x,
+                                                          analyses = NULL,
+                                                          levels = NULL,
+                                                          mass = NULL,
+                                                          mz = NULL,
+                                                          rt = NULL,
+                                                          mobility = NULL,
+                                                          ppm = 20,
+                                                          sec = 60,
+                                                          millisec = 5,
+                                                          id = NULL,
+                                                          allTraces = TRUE,
+                                                          isolationWindow = 1.3,
+                                                          minIntensityMS1 = 0,
+                                                          minIntensityMS2 = 0) {
   analyses <- .check_analyses_argument(x, analyses)
-
   if (is.null(analyses)) {
-    return(data.table())
+    return(data.table::data.table())
   }
 
   if (!any(is.numeric(minIntensityMS1) | is.integer(minIntensityMS1))) minIntensityMS1 <- 0
 
   if (!any(is.numeric(minIntensityMS2) | is.integer(minIntensityMS2))) minIntensityMS2 <- 0
 
-  polarities <- x$spectra_polarity[analyses]
+  if (is.data.frame(mz)) {
+    if ("analysis" %in% colnames(mz)) {
+      analyses <- mz$analysis
+    }
+  }
 
+  if (is.data.frame(mass)) {
+    if ("analysis" %in% colnames(mass)) {
+      analyses <- mass$analysis
+    }
+  }
+
+  polarities <- x@spectra_polarity[analyses]
+  
   targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
 
   targets <- targets@targets
@@ -761,38 +824,62 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
     }
   }
 
-  num_cols <- c("mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax")
+  num_cols <- c(
+    "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax"
+  )
 
   if (all(apply(targets[, num_cols, with = FALSE], 1, function(z) sum(z, na.rm = TRUE)) != 0)) {
-    if (TRUE %in% is.na(targets$mz)) targets$mz[is.na(targets$mz)] <- 0
-
-    if (TRUE %in% is.na(targets$mzmax)) targets$mzmax[is.na(targets$mzmax)] <- max(x$spectra_highest_mz[analyses])
-
-    if (TRUE %in% is.na(targets$mzmin)) targets$mzmin[is.na(targets$mzmin)] <- min(x$spectra_lowest_mz[analyses])
-
-    if (TRUE %in% (targets$mzmax == 0)) targets$mzmax[targets$mzmax == 0] <- max(x$spectra_highest_mz[analyses])
-
-    if (TRUE %in% is.na(targets$rt)) targets$rt[is.na(targets$rt)] <- 0
-
-    if (TRUE %in% is.na(targets$rtmax)) targets$rtmax[is.na(targets$rtmax)] <- max(x$spectra_highest_rt[analyses])
-
-    if (TRUE %in% is.na(targets$rtmin)) targets$rtmin[is.na(targets$rtmin)] <- min(x$spectra_lowest_rt[analyses])
-
-    if (TRUE %in% (targets$rtmax == 0)) targets$rtmax[targets$rtmax == 0] <- max(x$spectra_highest_rt[analyses])
-
-    if (TRUE %in% is.na(targets$mobility)) targets$mobility[is.na(targets$mobility)] <- 0
-
-    if (TRUE %in% is.na(targets$mobilitymax) && any(x$has_ion_mobility[analyses])) targets$mobilitymax[is.na(targets$mobilitymax)] <- max(x$spectra_highest_mobility[analyses], na.rm = TRUE)
-
-    if (TRUE %in% is.na(targets$mobilitymin) && any(x$has_ion_mobility[analyses])) targets$mobilitymin[is.na(targets$mobilitymin)] <- min(x$spectra_lowest_mobility[analyses], na.rm = TRUE)
-
-    if (TRUE %in% (targets$mobilitymax == 0) && any(x$has_ion_mobility[analyses])) targets$mobilitymax[targets$mobilitymax == 0] <- max(x$spectra_highest_mobility[analyses], na.rm = TRUE)
+    if (TRUE %in% is.na(targets$mz)) {
+      targets$mz[is.na(targets$mz)] <- 0
+    }
+    if (TRUE %in% is.na(targets$mzmax)) {
+      targets$mzmax[is.na(targets$mzmax)] <- max(x@spectra_highest_mz[analyses])
+    }
+    if (TRUE %in% is.na(targets$mzmin)) {
+      targets$mzmin[is.na(targets$mzmin)] <- min(x@spectra_lowest_mz[analyses])
+    }
+    if (TRUE %in% (targets$mzmax == 0)) {
+      targets$mzmax[targets$mzmax == 0] <- max(x@spectra_highest_mz[analyses])
+    }
+    if (TRUE %in% is.na(targets$rt)) {
+      targets$rt[is.na(targets$rt)] <- 0
+    }
+    if (TRUE %in% is.na(targets$rtmax)) {
+      targets$rtmax[is.na(targets$rtmax)] <- max(x@spectra_highest_rt[analyses])
+    }
+    if (TRUE %in% is.na(targets$rtmin)) {
+      targets$rtmin[is.na(targets$rtmin)] <- min(x@spectra_lowest_rt[analyses])
+    }
+    if (TRUE %in% (targets$rtmax == 0)) {
+      targets$rtmax[targets$rtmax == 0] <- max(x@spectra_highest_rt[analyses])
+    }
+    if (TRUE %in% is.na(targets$mobility)) {
+      targets$mobility[is.na(targets$mobility)] <- 0
+    }
+    if (TRUE %in% is.na(targets$mobilitymax) && any(x@has_ion_mobility[analyses])) {
+      targets$mobilitymax[is.na(targets$mobilitymax)] <- max(
+        x@spectra_highest_mobility[analyses],
+        na.rm = TRUE
+      )
+    }
+    if (TRUE %in% is.na(targets$mobilitymin) && any(x@has_ion_mobility[analyses])) {
+      targets$mobilitymin[is.na(targets$mobilitymin)] <- min(
+        x@spectra_lowest_mobility[analyses],
+        na.rm = TRUE
+      )
+    }
+    if (TRUE %in% (targets$mobilitymax == 0) && any(x@has_ion_mobility[analyses])) {
+      targets$mobilitymax[targets$mobilitymax == 0] <- max(
+        x@spectra_highest_mobility[analyses],
+        na.rm = TRUE
+      )
+    }
   } else {
     targets$id <- targets$analysis
   }
 
   if (is.null(levels)) {
-    levels <- unique(x$spectra_level[analyses])
+    levels <- unique(x@spectra_level[analyses])
     levels <- as.numeric(unlist(strsplit(levels, ", ")))
   }
 
@@ -802,174 +889,103 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
 
   if (nrow(targets) > 0) {
     if ("polarity" %in% colnames(targets)) targets$polarity <- as.numeric(targets$polarity)
-
     targets$precursor <- FALSE
-
     if (!allTraces) {
       if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) isolationWindow <- 0
-
       targets$precursor <- TRUE
-
       targets$mzmin <- targets$mzmin - (isolationWindow / 2)
-
       targets$mzmax <- targets$mzmax + (isolationWindow / 2)
-
       # TODO make case for DIA when pre_mz is not available
     }
   }
 
-  # __________________________________________________________________
-  # Extracts spectra results
-  # __________________________________________________________________
-  if ((!useRawData) && x$has_spectra) {
-    if (x$spectra$is_averaged) {
-      spec <- rbindlist(x$spectra$spectra, idcol = "replicate", fill = TRUE)
-    } else {
-      spec <- rbindlist(x$spectra$spectra, idcol = "analysis", fill = TRUE)
+  spec_list <- lapply(x@analyses[analyses], function(a, levels, targets) {
+    if ("analysis" %in% colnames(targets)) {
+      targets <- targets[targets$analysis %in% a$name, ]
     }
 
-    if ("analysis" %in% colnames(spec)) {
-      spec <- spec[spec$analysis %in% analyses, ]
-    } else if ("replicate" %in% colnames(spec)) {
-      rpl <- x$replicates
-      rpl <- rpl[analyses]
-      spec <- spec[spec$replicate %in% unname(rpl)]
-
-      if (!"analysis" %in% colnames(spec)) {
-        spec$analysis <- spec$replicate
-        setcolorder(spec, c("analysis", "replicate"))
-      }
-    }
-
-    return(spec)
-
-    # __________________________________________________________________
-    # Extracts spectra from results
-    # __________________________________________________________________
-  } else if (useRawData && useLoadedData && any(x$has_loaded_spectra)) {
-    spec_list <- lapply(x$analyses[analyses], function(a) {
-      temp <- a$spectra
-
-      with_im <- any(temp$mobility > 0)
-
-      if (!is.null(levels)) temp <- temp[temp$level %in% levels, ]
-
-      if (nrow(targets) > 0) {
-        if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% a$name, ]
-
-        if (nrow(targets) > 0) {
-          if ("polarity" %in% colnames(targets)) temp <- temp[temp$polarity == targets$polarity, ]
-
-          if (nrow(targets) > 0) {
-            temp <- .trim_spectra_targets(temp, targets, with_im)
-          } else {
-            temp <- data.table()
-          }
-        } else {
-          temp <- data.table()
-        }
-      }
-
-      if (with_im) temp$mobility <- NULL
-
-      if (!"analysis" %in% colnames(temp)) temp$analysis <- a$name
-
-      if (!"replicate" %in% colnames(temp)) temp$replicate <- a$replicate
-
-      temp <- temp[!(temp$intensity <= minIntensityMS1 & temp$level == 1), ]
-
-      temp <- temp[!(temp$intensity <= minIntensityMS2 & temp$level == 2), ]
-
-      temp
+    cache <- lapply(seq_len(nrow(targets)), function(i) {
+      .load_cache_sqlite(
+        paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", targets$id[i])),
+        a$file,
+        levels,
+        targets[i, ],
+        minIntensityMS1,
+        minIntensityMS2
+      )
     })
 
-    # __________________________________________________________________
-    # Extracts spectra from raw data
-    # __________________________________________________________________
-  } else {
-    spec_list <- lapply(x$analyses[analyses], function(a, levels, targets) {
-      if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% a$name, ]
+    names(cache) <- targets$id
+    cached_targets_sel <- vapply(cache, function(z) !is.null(z$data), FALSE)
+    cached_targets <- cache[cached_targets_sel]
+    no_cached_targets <- targets[!cached_targets_sel, ]
 
-      cache <- lapply(seq_len(nrow(targets)), function(i) {
-        .load_chache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", targets$id[i])), a$file, levels, targets[i, ], minIntensityMS1, minIntensityMS2)
-      })
+    if (nrow(no_cached_targets) > 0) {
+      message("\U2699 Parsing spectra from ", basename(a$file), "...", appendLF = FALSE)
 
-      names(cache) <- targets$id
+      if (nrow(no_cached_targets) == 1) {
+        num_cols <- c(
+          "mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax"
+        )
+        if (apply(no_cached_targets[, num_cols, with = FALSE], 1, function(z) sum(z, na.rm = TRUE)) == 0) {
+          no_cached_targets <- no_cached_targets[0, ]
+        }
+      }
 
-      cached_targets_sel <- vapply(cache, function(z) !is.null(z$data), FALSE)
+      spec <- rcpp_parse_ms_spectra(a, levels, no_cached_targets, minIntensityMS1, minIntensityMS2)
 
-      cached_targets <- cache[cached_targets_sel]
+      message(" Done!")
 
-      no_cached_targets <- targets[!cached_targets_sel, ]
+      if (nrow(spec) > 0) {
+        if (!any(spec$mobility > 0)) spec$mobility <- NULL
+        if (!"analysis" %in% colnames(spec)) spec$analysis <- a$name
+        if (!"replicate" %in% colnames(spec)) spec$replicate <- a$replicate
 
-      if (nrow(no_cached_targets) > 0) {
-        message("\U2699 Parsing spectra from ", basename(a$file), "...", appendLF = FALSE)
-
-        if (nrow(no_cached_targets) == 1) {
-          num_cols <- c("mz", "rt", "mobility", "mzmin", "mzmax", "rtmin", "rtmax", "mobilitymin", "mobilitymax")
-          if (apply(no_cached_targets[, num_cols, with = FALSE], 1, function(z) sum(z, na.rm = TRUE)) == 0) {
-            no_cached_targets <- no_cached_targets[0, ]
-          }
+        if ("id" %in% colnames(spec)) {
+          spec <- split(spec, spec$id)
+        } else {
+          spec <- list(spec)
         }
 
-        spec <- rcpp_parse_ms_spectra(a, levels, no_cached_targets, minIntensityMS1, minIntensityMS2)
-
-        message(" Done!")
-
-        if (nrow(spec) > 0) {
-          if (!any(spec$mobility > 0)) spec$mobility <- NULL
-          if (!"analysis" %in% colnames(spec)) spec$analysis <- a$name
-          if (!"replicate" %in% colnames(spec)) spec$replicate <- a$replicate
-
-          if ("id" %in% colnames(spec)) {
-            spec <- split(spec, spec$id)
-          } else {
-            spec <- list(spec)
-          }
-
-          for (i in names(spec)) {
-            if (nrow(spec[[i]]) > 0) {
-              if (!is.null(cache[[i]]$hash)) {
-                .save_cache(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", i)), spec[[i]], cache[[i]]$hash)
-                # message("\U1f5ab Parsed spectra for ", i, " cached!")
-              }
+        for (i in names(spec)) {
+          if (nrow(spec[[i]]) > 0) {
+            if (!is.null(cache[[i]]$hash)) {
+              .save_cache_sqlite(paste0("parsed_ms_spectra_", gsub("-|[/]|[.]|[() ]", "", i)), spec[[i]], cache[[i]]$hash)
+              # message("\U1f5ab Parsed spectra for ", i, " cached!")
             }
           }
-
-          spec <- data.table::rbindlist(spec, fill = TRUE)
-        } else {
-          spec <- data.table::data.table()
         }
+
+        spec <- data.table::rbindlist(spec, fill = TRUE)
       } else {
         spec <- data.table::data.table()
       }
-
-      if (length(cached_targets) > 0) {
-        cached_targets_dt <- data.table::rbindlist(lapply(cached_targets, function(z) as.data.table(z$data)), fill = TRUE)
-        spec <- data.table::rbindlist(c(list(cached_targets_dt), list(spec)), fill = TRUE)
-        message("\U2139 Spectra loaded from cache!")
-      }
-
-      if (nrow(spec) == 0) {
-        return(data.table::data.table())
-      }
-
-      if ("id" %in% colnames(spec)) {
-        data.table::setorder(spec, id, rt, mz)
-      } else {
-        data.table::setorder(spec, rt, mz)
-      }
-
-      gc()
-      spec
-    }, levels = levels, targets = targets)
-  }
+    } else {
+      spec <- data.table::data.table()
+    }
+    if (length(cached_targets) > 0) {
+      cached_targets_dt <- data.table::rbindlist(
+        lapply(cached_targets, function(z) data.table::as.data.table(z$data)),
+        fill = TRUE
+      )
+      spec <- data.table::rbindlist(c(list(cached_targets_dt), list(spec)), fill = TRUE)
+      message("\U2139 Spectra loaded from cache!")
+    }
+    if (nrow(spec) == 0) {
+      return(data.table::data.table())
+    }
+    if ("id" %in% colnames(spec)) {
+      data.table::setorder(spec, id, rt, mz)
+    } else {
+      data.table::setorder(spec, rt, mz)
+    }
+    gc()
+    spec
+  }, levels = levels, targets = targets)
 
   if (length(spec_list) == length(analyses)) {
     spec <- data.table::rbindlist(spec_list, fill = TRUE)
-
     if (nrow(spec) > 0) data.table::setcolorder(spec, c("analysis", "replicate"))
-
     spec
   } else {
     warning("Defined analyses not found!")
@@ -977,109 +993,8 @@ S7::method(get_spectra, MassSpecAnalyses) <- function(x,
   }
 }
 
-# MARK: get_spectra_matrix
-## __get_spectra_matrix -----
-#' @export
-#' @noRd
-S7::method(get_spectra_matrix, MassSpecAnalyses) <- function(x, analyses = NULL) {
-  if (!x$has_spectra) {
-    warning("No spectra results object available!")
-    return(matrix())
-  }
-
-  analyses <- .check_analyses_argument(x, analyses)
-
-  spec_list <- x$spectra$spectra
-
-  if (x$spectra$is_averaged) {
-    rpl <- x$replicates
-    rpl <- unique(rpl[analyses])
-    spec_list <- spec_list[rpl]
-  } else {
-    spec_list <- spec_list[analyses]
-  }
-
-  intensity <- NULL
-
-  spec_list <- spec_list[vapply(spec_list, function(z) nrow(z) > 0, FALSE)]
-
-  spec_list <- lapply(spec_list, function(z) {
-    if (!"bins" %in% colnames(z)) {
-      if ("mass" %in% colnames(z)) z$mz <- z$mass
-      if (!"level" %in% colnames(z)) z$level <- 1
-
-      if ("mobility" %in% colnames(z)) {
-        z$bins <- paste0("r", z$rt, "_m", z$mz, "_d", z$mobility, "_p", z$polarity, "_l", z$level)
-      } else {
-        z$bins <- paste0("r", z$rt, "_m", z$mz, "_p", z$polarity, "_l", z$level)
-      }
-    }
-
-    z <- z[, .(intensity = mean(intensity)), by = c("bins")]
-    z <- data.table::dcast(z, formula = 1 ~ bins, value.var = "intensity")[, -1]
-    z
-  })
-
-  spec <- as.matrix(rbindlist(spec_list, fill = TRUE))
-  rownames(spec) <- names(spec_list)
-  spec
-}
-
-# MARK: load_spectra
-## __load_spectra -----
-#' @export
-#' @noRd
-S7::method(load_spectra, MassSpecAnalyses) <- function(x,
-                                                       analyses = NULL,
-                                                       levels = NULL,
-                                                       mass = NULL,
-                                                       mz = NULL,
-                                                       rt = NULL,
-                                                       mobility = NULL,
-                                                       ppm = 20,
-                                                       sec = 60,
-                                                       millisec = 5,
-                                                       id = NULL,
-                                                       allTraces = TRUE,
-                                                       isolationWindow = 1.3,
-                                                       minIntensityMS1 = 0,
-                                                       minIntensityMS2 = 0) {
-  cache <- .load_chache("load_spectra", x, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id, allTraces, isolationWindow, minIntensityMS1, minIntensityMS2)
-
-  if (!is.null(cache$data)) {
-    x$spectra <- cache$data
-    message("\U2139 Spectra loaded from cache!")
-    return(x)
-  }
-
-  spec <- get_spectra(x,
-    analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
-    allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
-    useRawData = TRUE, useLoadedData = FALSE
-  )
-
-  if (nrow(spec) > 0) {
-    split_vector <- spec$analysis
-    spec$analysis <- NULL
-    spec$replicate <- NULL
-    spec <- split(spec, split_vector)
-    spec <- StreamFind::Spectra(spec, is_averaged = FALSE)
-
-    if (!is.null(cache$hash)) {
-      .save_cache("load_spectra", spec, cache$hash)
-      message("\U1f5ab Spectra cached!")
-    }
-
-    x$spectra <- spec
-  } else {
-    warning("Not done! Spectra not found.")
-  }
-
-  x
-}
-
 # MARK: get_spectra_eic
-## __get_spectra_eic -----
+## get_spectra_eic -----
 #' @export
 #' @noRd
 S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
@@ -1091,28 +1006,29 @@ S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
                                                           ppm = 20,
                                                           sec = 60,
                                                           millisec = 5,
-                                                          id = NULL,
-                                                          useRawData = TRUE,
-                                                          useLoadedData = FALSE) {
-  eic <- get_spectra(x,
+                                                          id = NULL) {
+  eic <- get_raw_spectra(
+    x,
     analyses,
     levels = 1,
     mass, mz, rt, mobility, ppm, sec, millisec, id,
     allTraces = TRUE,
     isolationWindow = 1.3,
     minIntensityMS1 = 0,
-    minIntensityMS2 = 0,
-    useRawData = useRawData,
-    useLoadedData = useLoadedData
+    minIntensityMS2 = 0
   )
 
   if (nrow(eic) > 0) {
     intensity <- NULL
-    eic <- as.data.table(eic)
+    eic <- data.table::as.data.table(eic)
     if (!"id" %in% colnames(eic)) eic$id <- NA_character_
     if (!"polarity" %in% colnames(eic)) eic$polarity <- 0
-    eic <- eic[, `:=`(intensity = max(intensity), mz = mean(mz)), by = c("analysis", "polarity", "id", "rt")][]
-    eic <- eic[, c("analysis", "polarity", "id", "rt", "mz", "intensity"), with = FALSE]
+    cols_summary <- c("analysis", "replicate", "polarity", "id", "rt")
+    intensity <- NULL
+    mz <- NULL
+    eic <- eic[, .(intensity = max(intensity), mz = mean(mz)), by = cols_summary]
+    sel_cols <- c("analysis", "replicate", "id", "polarity", "rt", "mz", "intensity")
+    eic <- eic[, sel_cols, with = FALSE]
     eic <- unique(eic)
   }
 
@@ -1120,7 +1036,7 @@ S7::method(get_spectra_eic, MassSpecAnalyses) <- function(x,
 }
 
 # MARK: get_spectra_ms1
-## __get_spectra_ms1 -----
+## get_spectra_ms1 -----
 #' @export
 #' @noRd
 S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
@@ -1135,18 +1051,15 @@ S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
                                                           id = NULL,
                                                           mzClust = 0.003,
                                                           presence = 0.8,
-                                                          minIntensity = 1000,
-                                                          useRawData = TRUE,
-                                                          useLoadedData = FALSE) {
-  ms1 <- get_spectra(x,
+                                                          minIntensity = 1000) {
+  ms1 <- get_raw_spectra(
+    x,
     analyses,
     levels = 1,
     mass, mz, rt, mobility, ppm, sec, millisec, id,
     allTraces = TRUE,
     minIntensityMS1 = minIntensity,
-    minIntensityMS2 = 0,
-    useRawData = useRawData,
-    useLoadedData = useLoadedData
+    minIntensityMS2 = 0
   )
 
   if (nrow(ms1) == 0) {
@@ -1154,7 +1067,7 @@ S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
   }
 
   if (!"id" %in% colnames(ms1)) {
-    if (x$has_ion_mobility) {
+    if (x@has_ion_mobility) {
       ms1$id <- paste(
         round(min(ms1$mz), 4),
         "-",
@@ -1189,7 +1102,7 @@ S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
 
   ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, FALSE)
 
-  ms1_df <- rbindlist(ms1_list, fill = TRUE)
+  ms1_df <- data.table::rbindlist(ms1_list, fill = TRUE)
 
   ms1_df <- ms1_df[order(ms1_df$mz), ]
 
@@ -1197,11 +1110,15 @@ S7::method(get_spectra_ms1, MassSpecAnalyses) <- function(x,
 
   ms1_df <- ms1_df[order(ms1_df$analysis), ]
 
+  ms1_df$replicate <- x@replicates[ms1_df$analysis]
+
+  data.table::setcolorder(ms1_df, c("analysis", "replicate"))
+
   ms1_df
 }
 
 # MARK: get_spectra_ms2
-## __get_spectra_ms2 -----
+## get_spectra_ms2 -----
 #' @export
 #' @noRd
 S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
@@ -1217,19 +1134,16 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
                                                           isolationWindow = 1.3,
                                                           mzClust = 0.005,
                                                           presence = 0.8,
-                                                          minIntensity = 0,
-                                                          useRawData = TRUE,
-                                                          useLoadedData = FALSE) {
-  ms2 <- get_spectra(x,
+                                                          minIntensity = 0) {
+  ms2 <- get_raw_spectra(
+    x,
     analyses,
     levels = 2,
     mass, mz, rt, mobility, ppm, sec, millisec, id,
     isolationWindow = isolationWindow,
     allTraces = FALSE,
     minIntensityMS1 = 0,
-    minIntensityMS2 = minIntensity,
-    useRawData = useRawData,
-    useLoadedData = useLoadedData
+    minIntensityMS2 = minIntensity
   )
 
   if (nrow(ms2) == 0) {
@@ -1237,7 +1151,7 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
   }
 
   if (!"id" %in% colnames(ms2)) {
-    if (x$has_ion_mobility) {
+    if (x@has_ion_mobility) {
       ms2$id <- paste(
         round(min(ms2$mz), 4),
         "-",
@@ -1272,7 +1186,7 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
 
   ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, FALSE)
 
-  ms2_df <- rbindlist(ms2_list, fill = TRUE)
+  ms2_df <- data.table::rbindlist(ms2_list, fill = TRUE)
 
   ms2_df <- ms2_df[order(ms2_df$mz), ]
 
@@ -1280,200 +1194,15 @@ S7::method(get_spectra_ms2, MassSpecAnalyses) <- function(x,
 
   ms2_df <- ms2_df[order(ms2_df$analysis), ]
 
+  ms2_df$replicate <- x@replicates[ms2_df$analysis]
+
+  data.table::setcolorder(ms2_df, c("analysis", "replicate"))
+
   ms2_df
 }
 
-# MARK: get_spectra_peaks
-## __get_spectra_peaks -----
-#' @export
-#' @noRd
-S7::method(get_spectra_peaks, MassSpecAnalyses) <- function(x, analyses = NULL) {
-  analyses <- .check_analyses_argument(x, analyses)
-  if (is.null(analyses)) {
-    return(data.table::data.table())
-  }
-  
-  if (!x$has_spectra) {
-    return(data.table::data.table())
-  }
-  
-  pks <- x$spectra$peaks
-  if (length(pks) == 0) {
-    return(data.table::data.table())
-  }
-  
-  if (x$spectra$is_averaged) {
-    pks <- data.table::rbindlist(x$spectra$peaks, idcol = "replicate", fill = TRUE)
-  } else {
-    pks <- data.table::rbindlist(x$spectra$peaks, idcol = "analysis", fill = TRUE)
-  }
-  
-  if ("analysis" %in% colnames(pks)) {
-    pks <- pks[pks$analysis %in% analyses, ]
-  } else if ("replicate" %in% colnames(pks)) {
-    rpl <- x$replicates
-    rpl <- rpl[analyses]
-    pks <- pks[pks$replicate %in% unname(rpl)]
-    
-    if (!"analysis" %in% colnames(pks)) {
-      pks$analysis <- pks$replicate
-      data.table::setcolorder(pks, c("analysis", "replicate"))
-    }
-  }
-  
-  if (nrow(pks) == 0) {
-    message("\U2717 Peaks not found for the targets!")
-    return(data.table::data.table())
-  }
-  
-  pks
-}
-
-# MARK: Plot Spectra
-# Plot Spectra -----
-
-# MARK: plot_spectra
-## __plot_spectra -----
-#' @export
-#' @noRd
-S7::method(plot_spectra, MassSpecAnalyses) <- function(x,
-                                                       analyses = NULL,
-                                                       levels = NULL,
-                                                       mass = NULL,
-                                                       mz = NULL,
-                                                       rt = NULL,
-                                                       mobility = NULL,
-                                                       ppm = 20,
-                                                       sec = 60,
-                                                       millisec = 5,
-                                                       id = NULL,
-                                                       allTraces = TRUE,
-                                                       isolationWindow = 1.3,
-                                                       minIntensityMS1 = 0,
-                                                       minIntensityMS2 = 0,
-                                                       useRawData = FALSE,
-                                                       useLoadedData = TRUE,
-                                                       legendNames = TRUE,
-                                                       colorBy = "analyses",
-                                                       xVal = "mz",
-                                                       xLab = NULL,
-                                                       yLab = NULL,
-                                                       title = NULL,
-                                                       cex = 0.6,
-                                                       showLegend = TRUE,
-                                                       interactive = TRUE) {
-  spec <- get_spectra(x, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
-    allTraces = allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
-    useRawData, useLoadedData
-  )
-
-  if (nrow(spec) == 0) {
-    message("\U2717 Traces not found for the targets!")
-    return(NULL)
-  }
-
-  if (xVal == "mz" && (!"mz" %in% colnames(spec)) && "mass" %in% colnames(spec)) xVal <- "mass"
-
-  if (!xVal %in% colnames(spec)) {
-    message("\U2717 xVal not found in spectra data.table!")
-    return(NULL)
-  }
-
-  spec$x <- spec[[xVal]]
-
-  if ("feature" %in% colnames(spec)) spec$id <- spec$feature
-
-  if ("replicates" %in% colorBy && !"replicate" %in% colnames(spec)) {
-    spec$replicate <- x$replicates[spec$analysis]
-  }
-
-  spec <- .make_colorBy_varkey(spec, colorBy, legendNames = NULL)
-
-  unique_key <- c("analysis", "var", "x")
-
-  intensity <- NULL
-
-  spec <- spec[, .(intensity = max(intensity)), by = c(unique_key)]
-
-  spec <- unique(spec)
-
-  if ("rt" %in% xVal) {
-    if (is.null(xLab)) xLab <- "Retention time / seconds"
-  } else if ("mz" %in% xVal) {
-    if (is.null(xLab)) {
-      if (interactive) {
-        xLab <- "<i>m/z</i> / Da"
-      } else {
-        xLab <- expression(italic("m/z ") / " Da")
-      }
-    }
-  } else if ("mass" %in% xVal) {
-    if (is.null(xLab)) xLab <- "Mass / Da"
-  } else if ("mobility" %in% xVal) {
-    if (is.null(xLab)) xLab <- "mobility time / milliseconds"
-  }
-
-  if (is.null(yLab)) yLab <- "Intensity / counts"
-
-  setorder(spec, var, x)
-
-  if (!interactive) {
-    return(.plot_x_spectra_static(spec, xLab, yLab, title, cex, showLegend))
-  } else {
-    return(.plot_x_spectra_interactive(spec, xLab, yLab, title, colorBy))
-  }
-}
-
-# MARK: plot_spectra_3d
-## __plot_spectra_3d -----
-#' @export
-#' @noRd
-S7::method(plot_spectra_3d, MassSpecAnalyses) <- function(x,
-                                                          analyses = NULL,
-                                                          levels = NULL,
-                                                          mass = NULL,
-                                                          mz = NULL,
-                                                          rt = NULL,
-                                                          mobility = NULL,
-                                                          ppm = 20,
-                                                          sec = 60,
-                                                          millisec = 5,
-                                                          id = NULL,
-                                                          allTraces = TRUE,
-                                                          isolationWindow = 1.3,
-                                                          minIntensityMS1 = 0,
-                                                          minIntensityMS2 = 0,
-                                                          legendNames = TRUE,
-                                                          colorBy = "analyses",
-                                                          xVal = "rt",
-                                                          yVal = "mz",
-                                                          xLab = NULL,
-                                                          yLab = NULL,
-                                                          zLab = NULL) {
-  spec <- get_spectra(x, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
-    allTraces = allTraces, isolationWindow, minIntensityMS1, minIntensityMS2,
-    useRawData = TRUE, useLoadedData = FALSE
-  )
-
-  if (nrow(spec) == 0) {
-    message("\U2717 Traces not found for the targets!")
-    return(NULL)
-  }
-
-  if ("mobility" %in% c(xVal, yVal)) {
-    if (!"mobility" %in% colnames(spec)) {
-      warning("mobility time values not found!")
-      return(NULL)
-    }
-  }
-
-  if ("feature" %in% colnames(spec)) spec$id <- spec$feature
-  if (!"replicates" %in% colorBy) spec$replicate <- x$replicates[spec$analysis]
-  .plot_spectra_3d_interactive(spec, colorBy, legendNames, xVal, yVal, xLab, yLab, zLab)
-}
-
 # MARK: plot_spectra_tic
-## __plot_spectra_tic -----
+## plot_spectra_tic -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
@@ -1485,31 +1214,83 @@ S7::method(plot_spectra_tic, MassSpecAnalyses) <- function(x,
                                                            title = NULL,
                                                            colorBy = "analyses",
                                                            legendNames = NULL,
-                                                           showLegend = TRUE,
-                                                           xlim = NULL,
-                                                           ylim = NULL,
-                                                           cex = 0.6,
                                                            downsize = 1,
-                                                           interactive = TRUE) {
+                                                           interactive = TRUE,
+                                                           renderEngine = "webgl") {
   intensity <- NULL
   level <- NULL
+
   tic <- get_spectra_tic(x, analyses, levels, rt)
-  tic <- tic[, .(intensity = mean(intensity)), by = .(rt = floor(rt / downsize) * downsize, analysis, level)]
+  tic$rt <- floor(tic$rt / downsize) * downsize
+  groupCols <- c("rt", "analysis", "replicate", "polarity", "level")
+  tic <- tic[, .(intensity = mean(intensity)), by = groupCols]
+
   if (nrow(tic) == 0) {
     message("\U2717 TIC not found for the analyses!")
     return(NULL)
   }
-  if (grepl("replicates", colorBy)) tic$replicate <- x@replicates[tic$analysis]
-  if (!"id" %in% colnames(tic)) tic$id <- tic$analysis
+
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+
+  tic <- .make_colorBy_varkey(tic, colorBy, legendNames)
+
+  tic$loop <- paste0(tic$analysis, tic$replicate, tic$id, tic$var)
+
+  cl <- .get_colors(unique(tic$var))
+
   if (!interactive) {
-    .plot_spectra_eic_static(tic, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+    ggplot2::ggplot(tic, ggplot2::aes(x = rt, y = intensity, group = loop)) +
+      ggplot2::geom_line(ggplot2::aes(color = var)) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = colorBy)
   } else {
-    .plot_spectra_eic_interactive(tic, legendNames, colorBy, title, showLegend, xLab, yLab)
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+
+    loop <- NULL
+
+    plot <- tic %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines+markers",
+        line = list(width = 0.5),
+        marker = list(size = 2),
+        text = ~ paste(
+          "<br>analysis: ", analysis,
+          "<br>replicate: ", replicate,
+          "<br>id: ", id,
+          "<br>polarity: ", polarity,
+          "<br>level: ", level,
+          "<br>rt: ", rt,
+          "<br>intensity: ", intensity
+        ),
+        hoverinfo = "text"
+      ) %>%
+      plotly::layout(
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
+    }
+
+    plot
   }
 }
 
 # MARK: plot_spectra_bpc
-## __plot_spectra_bpc -----
+## plot_spectra_bpc -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_bpc, MassSpecAnalyses) <- function(x,
@@ -1521,60 +1302,77 @@ S7::method(plot_spectra_bpc, MassSpecAnalyses) <- function(x,
                                                            title = NULL,
                                                            colorBy = "analyses",
                                                            legendNames = NULL,
-                                                           showLegend = TRUE,
-                                                           xlim = NULL,
-                                                           ylim = NULL,
-                                                           cex = 0.6,
-                                                           interactive = TRUE) {
+                                                           interactive = TRUE,
+                                                           renderEngine = "webgl") {
   bpc <- get_spectra_bpc(x, analyses, levels, rt)
+
   if (nrow(bpc) == 0) {
     message("\U2717 BPC not found for the analyses!")
     return(NULL)
   }
-  if (grepl("replicates", colorBy)) bpc$replicate <- x@replicates[bpc$analysis]
-  if (!"id" %in% colnames(bpc)) bpc$id <- bpc$analysis
-  if (!interactive) {
-    .plot_spectra_eic_static(bpc, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-  } else {
-    .plot_spectra_eic_interactive(bpc, legendNames, colorBy, title, showLegend, xLab, yLab)
-  }
-}
 
-# MARK: plot_matrix_suppression
-## __plot_matrix_suppression -----
-#' @export
-#' @noRd
-S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
-                                                                  analyses = NULL,
-                                                                  rtWindow = 10,
-                                                                  xLab = NULL,
-                                                                  yLab = NULL,
-                                                                  title = NULL,
-                                                                  colorBy = "analyses",
-                                                                  legendNames = NULL,
-                                                                  showLegend = TRUE,
-                                                                  xlim = NULL,
-                                                                  ylim = NULL,
-                                                                  cex = 0.6,
-                                                                  interactive = TRUE) {
-  mp <- get_matrix_suppression(x, rtWindow)
-  if (nrow(mp) == 0) {
-    message("\U2717 TIC matrix suppression not found for the analyses!")
-    return(NULL)
-  }
-  if (grepl("replicates", colorBy) && "replicate" %in% colnames(mp)) mp$replicate <- x@replicates[mp$analysis]
-  if (!"id" %in% colnames(mp)) mp$id <- mp$analysis
-  mp$intensity <- mp$mp
-  if (is.null(yLab)) yLab <- "Supression Factor"
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+
+  bpc <- .make_colorBy_varkey(bpc, colorBy, legendNames)
+
+  bpc$loop <- paste0(bpc$analysis, bpc$replicate, bpc$id, bpc$var)
+
+  cl <- .get_colors(unique(bpc$var))
+
   if (!interactive) {
-    .plot_spectra_eic_static(mp, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+    ggplot2::ggplot(bpc, ggplot2::aes(x = rt, y = intensity, group = loop)) +
+      ggplot2::geom_line(ggplot2::aes(color = var)) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = colorBy)
   } else {
-    .plot_spectra_eic_interactive(mp, legendNames, colorBy, title, showLegend, xLab, yLab)
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+
+    loop <- NULL
+
+    plot <- bpc %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines+markers",
+        line = list(width = 0.5),
+        marker = list(size = 2),
+        text = ~ paste(
+          "<br>analysis: ", analysis,
+          "<br>replicate: ", replicate,
+          "<br>id: ", id,
+          "<br>polarity: ", polarity,
+          "<br>level: ", level,
+          "<br>mz: ", mz,
+          "<br>rt: ", rt,
+          "<br>intensity: ", intensity
+        ),
+        hoverinfo = "text"
+      ) %>%
+      plotly::layout(
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
+    }
+
+    plot
   }
 }
 
 # MARK: plot_spectra_eic
-## __plot_spectra_eic -----
+## plot_spectra_eic -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_eic, MassSpecAnalyses) <- function(x,
@@ -1592,11 +1390,8 @@ S7::method(plot_spectra_eic, MassSpecAnalyses) <- function(x,
                                                            yLab = NULL,
                                                            title = NULL,
                                                            colorBy = "targets",
-                                                           showLegend = TRUE,
-                                                           xlim = NULL,
-                                                           ylim = NULL,
-                                                           cex = 0.6,
-                                                           interactive = TRUE) {
+                                                           interactive = TRUE,
+                                                           renderEngine = "webgl") {
   eic <- get_spectra_eic(x, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id)
 
   if (nrow(eic) == 0) {
@@ -1604,17 +1399,68 @@ S7::method(plot_spectra_eic, MassSpecAnalyses) <- function(x,
     return(NULL)
   }
 
-  if (grepl("replicates", colorBy)) eic$replicate <- x$replicates[eic$analysis]
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+
+  eic <- .make_colorBy_varkey(eic, colorBy, legendNames)
+
+  eic$loop <- paste0(eic$analysis, eic$replicate, eic$id, eic$var)
+
+  cl <- .get_colors(unique(eic$var))
 
   if (!interactive) {
-    .plot_spectra_eic_static(eic, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
+    ggplot2::ggplot(eic, ggplot2::aes(x = rt, y = intensity, group = loop)) +
+      ggplot2::geom_line(ggplot2::aes(color = var)) +
+      ggplot2::geom_point(ggplot2::aes(color = var), size = 1) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = colorBy)
   } else {
-    .plot_spectra_eic_interactive(eic, legendNames, colorBy, title, showLegend, xLab, yLab)
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+
+    loop <- NULL
+
+    plot <- eic %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines+markers",
+        line = list(width = 0.5),
+        marker = list(size = 2),
+        text = ~ paste(
+          "<br>analysis: ", analysis,
+          "<br>replicate: ", replicate,
+          "<br>id: ", id,
+          "<br>polarity: ", polarity,
+          "<br>mz: ", mz,
+          "<br>rt: ", rt,
+          "<br>intensity: ", intensity
+        ),
+        hoverinfo = "text"
+      ) %>%
+      plotly::layout(
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
+      )
+
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
+    }
+
+    plot
   }
 }
 
 # MARK: plot_spectra_xic
-## __plot_spectra_xic -----
+## plot_spectra_xic -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_xic, MassSpecAnalyses) <- function(x,
@@ -1632,8 +1478,10 @@ S7::method(plot_spectra_xic, MassSpecAnalyses) <- function(x,
                                                            targetsMark = NULL,
                                                            ppmMark = 5,
                                                            secMark = 10,
-                                                           numberRows = 1) {
-  xic <- get_spectra(x,
+                                                           numberRows = 1,
+                                                           renderEngine = "webgl") {
+  xic <- get_raw_spectra(
+    x,
     analyses,
     levels = 1,
     mass,
@@ -1649,19 +1497,222 @@ S7::method(plot_spectra_xic, MassSpecAnalyses) <- function(x,
     return(NULL)
   }
 
-  .plot_spectra_xic_interactive(
-    xic,
-    legendNames,
-    plotTargetMark,
-    targetsMark,
-    ppmMark,
-    secMark,
-    numberRows
+  if (!"id" %in% colnames(xic)) xic$id <- NA_character_
+
+  ids <- unique(xic$id)
+  if (is.character(legendNames) & length(legendNames) == length(ids)) {
+    names(legendNames) <- ids
+    xic$id <- legendNames[xic$id]
+  }
+
+  if (plotTargetMark) {
+    plotTargetMark <- FALSE
+    if (is.data.frame(targetsMark)) {
+      if (nrow(targetsMark) == length(ids) &&
+        "mz" %in% colnames(targetsMark) &&
+        "rt" %in% colnames(targetsMark)) {
+        tgmMZ <- as.numeric(targetsMark$mz)
+        names(tgmMZ) <- ids
+        tgmRT <- as.numeric(targetsMark$rt)
+        names(tgmRT) <- ids
+        xic$mz_id <- tgmMZ[xic$id]
+        xic$rt_id <- tgmRT[xic$id]
+
+        plotTargetMark <- TRUE
+      }
+    }
+  }
+
+  ids <- unique(xic$id)
+
+  xic <- split(xic, by = "id")
+
+  colors <- colorRamp(c("#383E47", "#5E8CAA", "#16B9E5", "#16E5C9", "#16E54C"))
+
+  line <- list(
+    type = "line",
+    line = list(color = "red", dash = "dash", width = 0.5),
+    xref = "x",
+    yref = "y"
   )
+
+  xaxis <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2,
+    title = "Retention time / seconds",
+    titlefont = list(size = 10, color = "black"),
+    tickfont = list(size = 10)
+  )
+
+  yaxis1 <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2,
+    title = "Intensity / counts",
+    titlefont = list(size = 10, color = "black"),
+    tickfont = list(size = 10)
+  )
+
+  yaxis2 <- list(
+    linecolor = toRGB("black"),
+    linewidth = 2,
+    title = paste("<i>m/z</i> / Da"),
+    titlefont = list(size = 10, color = "black"),
+    tickfont = list(size = 10)
+  )
+
+  mainPlot <- list()
+
+  for (t in ids) {
+    plotList <- list()
+    vline1 <- list()
+    vline2 <- list()
+    hline <- list()
+    rect <- list()
+
+    xic_s <- xic[[t]]
+
+    rtmin <- min(xic_s$rt, na.rm = TRUE)
+    rtmax <- max(xic_s$rt, na.rm = TRUE)
+    mzmin <- min(xic_s$mz, na.rm = TRUE)
+    mzmax <- max(xic_s$mz, na.rm = TRUE)
+    maxInt <- max(xic_s$intensity, na.rm = TRUE) * 1.1
+
+    xic_s <- split(xic_s, by = "analysis")
+
+    if (any(unlist(lapply(xic_s, nrow)) > 20000)) {
+      warning(paste0(
+        "The MS area to be plotted seems rather large. ",
+        "It is suggested to restrict the data first using",
+        " narrow mz and rt deviations."
+      ))
+      return(NULL)
+    }
+
+    for (s in seq_len(length(xic_s))) {
+      temp <- xic_s[[s]]
+
+      if (plotTargetMark && is.numeric(temp$mz_id) && is.numeric(temp$rt_id)) {
+        plotTargetMark_loop <- TRUE
+
+        vline1 <- list(
+          x0 = temp$rt_id[1],
+          x1 = temp$rt_id[1],
+          y0 = 0,
+          y1 = max(temp$intensity, na.rm = TRUE)
+        )
+
+        vline2 <- list(
+          x0 = temp$rt_id[1],
+          x1 = temp$rt_id[1],
+          y0 = mzmin,
+          y1 = mzmax
+        )
+
+        hline <- list(
+          x0 = min(temp$rt, na.rm = TRUE),
+          x1 = max(temp$rt, na.rm = TRUE),
+          y0 = temp$mz_id[1],
+          y1 = temp$mz_id[1]
+        )
+
+        rect <- list(
+          type = "rect",
+          fillcolor = "red",
+          line = list(color = "red"),
+          opacity = 0.1,
+          x0 = temp$rt_id[1] - secMark,
+          x1 = temp$rt_id[1] + secMark,
+          xref = "x",
+          y0 = temp$mz_id[1] - ((ppmMark / 1E6) * temp$mz_id[1]),
+          y1 = temp$mz_id[1] + ((ppmMark / 1E6) * temp$mz_id[1]),
+          yref = "y"
+        )
+      } else {
+        plotTargetMark_loop <- FALSE
+      }
+
+      p1 <- plot_ly(
+        data = temp, x = temp$rt, y = temp$intensity,
+        type = "scatter", mode = "markers",
+        color = temp$intensity, colors = colors,
+        marker = list(size = 8, line = list(color = "white", width = 0.5)),
+        name = paste0(s, "p1")
+      )
+
+      if (plotTargetMark_loop) {
+        p1 <- p1 %>% plotly::layout(shapes = c(vline1, line))
+      }
+
+      p1 <- p1 %>% add_annotations(
+        text = paste(unique(temp$analysis), t, sep = " - "),
+        x = 0.05, y = 1, yref = "paper", xref = "paper",
+        xanchor = "left", yanchor = "bottom", align = "center",
+        showarrow = FALSE, font = list(size = 10)
+      )
+
+      p2 <- plot_ly(
+        temp,
+        x = temp$rt, y = temp$mz,
+        type = "scatter", mode = "markers",
+        color = temp$intensity, colors = colors,
+        marker = list(size = 8, line = list(color = "white", width = 0.5)),
+        name = paste0(s, "p2")
+      )
+
+      if (plotTargetMark_loop) {
+        p2 <- p2 %>% plotly::layout(
+          shapes = list(c(vline2, line), c(hline, line), rect)
+        )
+      }
+
+      p1 <- p1 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis1)
+      p2 <- p2 %>% plotly::layout(xaxis = xaxis, yaxis = yaxis2)
+
+      plotList[[paste0("p1", s)]] <- p1
+      plotList[[paste0("p2", s)]] <- p2
+    }
+
+    plotList <- plotList[order(names(plotList))]
+
+    plot <- subplot(
+      plotList,
+      nrows = 2,
+      margin = 0.01,
+      shareX = TRUE,
+      shareY = TRUE,
+      which_layout = "merge"
+    )
+
+    plot <- hide_colorbar(plot)
+
+    plot <- hide_legend(plot)
+
+    mainPlot[[t]] <- plot
+  }
+
+  if (length(ids) > 1) {
+    finalplot <- subplot(
+      mainPlot,
+      titleY = TRUE, titleX = TRUE,
+      nrows = numberRows,
+      margin = 0.05,
+      shareY = FALSE,
+      shareX = FALSE,
+      which_layout = "merge"
+    )
+  } else {
+    finalplot <- mainPlot[[1]]
+  }
+
+  if (renderEngine %in% "webgl") {
+    finalplot <- finalplot %>% plotly::toWebGL()
+  }
+
+  finalplot
 }
 
 # MARK: plot_spectra_ms1
-## __plot_spectra_ms1 -----
+## plot_spectra_ms1 -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_ms1, MassSpecAnalyses) <- function(x,
@@ -1684,24 +1735,96 @@ S7::method(plot_spectra_ms1, MassSpecAnalyses) <- function(x,
                                                            colorBy = "targets",
                                                            showText = FALSE,
                                                            interactive = TRUE) {
-  ms1 <- get_spectra_ms1(x, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust, presence, minIntensity)
+  ms1 <- get_spectra_ms1(
+    x, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, mzClust, presence, minIntensity
+  )
 
   if (nrow(ms1) == 0) {
     message("\U2717 MS1 traces not found for the targets!")
     return(NULL)
   }
 
-  if (grepl("replicates", colorBy)) ms1$replicate <- x$replicates[ms1$analysis]
+  ms1 <- .make_colorBy_varkey(ms1, colorBy, legendNames)
+
+  ms1$loop <- paste0(ms1$analysis, ms1$replicate, ms1$id, ms1$var)
+
+  cl <- .get_colors(unique(ms1$var))
 
   if (!interactive) {
-    .plot_spectra_ms1_static(ms1, legendNames, colorBy, title, xLab, yLab, showText)
+    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    plot <- ggplot2::ggplot(ms1, ggplot2::aes(x = mz, y = intensity, group = loop)) +
+      ggplot2::geom_segment(ggplot2::aes(xend = mz, yend = 0, color = var), linewidth = 1)
+
+    if (showText) {
+      plot <- plot + ggplot2::geom_text(
+        ggplot2::aes(label = round(mz, 4)),
+        vjust = 0.2, hjust = -0.2, angle = 90, size = 2, show.legend = FALSE
+      )
+    }
+
+    plot <- plot +
+      ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, max(ms1$intensity) * 1.5)) +
+      ggplot2::labs(title = title, x = xLab, y = yLab) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = colorBy)
+
+    plot
   } else {
-    .plot_spectra_ms1_interactive(ms1, legendNames, colorBy, title, xLab, yLab, showText)
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    ticksMin <- plyr::round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
+    ticksMax <- plyr::round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
+
+    title <- list(text = title, font = list(size = 12, color = "black"))
+
+    xaxis <- list(
+      linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"),
+      range = c(ticksMin, ticksMax),
+      dtick = round((max(ms1$mz) / 10), -1),
+      ticks = "outside"
+    )
+
+    yaxis <- list(
+      linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"),
+      range = c(0, max(ms1$intensity) * 1.5)
+    )
+
+    loop <- NULL
+
+    plot <- ms1 %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~mz,
+        y = ~intensity,
+        type = "bar",
+        color = ~var,
+        colors = cl,
+        marker = list(line = list(width = 0.01)),
+        text = ~ paste0(round(mz, digits = 4), "  "),
+        textposition = "outside",
+        textangle = 90,
+        textfont = list(size = 9)
+      ) %>%
+      plotly::layout(
+        bargap = 1,
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        barmode = "overlay",
+        uniformtext = list(minsize = 6, mode = "show")
+      )
+
+    plot
   }
 }
 
 # MARK: plot_spectra_ms2
-## __plot_spectra_ms2 -----
+## plot_spectra_ms2 -----
 #' @export
 #' @noRd
 S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
@@ -1723,2849 +1846,422 @@ S7::method(plot_spectra_ms2, MassSpecAnalyses) <- function(x,
                                                            yLab = NULL,
                                                            title = NULL,
                                                            colorBy = "targets",
+                                                           showText = TRUE,
                                                            interactive = TRUE) {
-  ms2 <- get_spectra_ms2(x, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id, isolationWindow, mzClust, presence, minIntensity)
+  ms2 <- get_spectra_ms2(
+    x, analyses, mass, mz, rt, mobility, ppm, sec, millisec, id,
+    isolationWindow, mzClust, presence, minIntensity
+  )
 
   if (nrow(ms2) == 0) {
     message("\U2717 MS2 traces not found for the targets!")
     return(NULL)
   }
 
-  if (grepl("replicates", colorBy)) ms2$replicate <- x$replicates[ms2$analysis]
+  ms2 <- .make_colorBy_varkey(ms2, colorBy, legendNames)
+
+  loop <- NULL
+
+  ms2$loop <- paste0(ms2$analysis, ms2$replicate, ms2$id, ms2$var)
+
+  cl <- .get_colors(unique(ms2$var))
+
+  if (showText) {
+    ms2$text_string <- paste0(round(ms2$mz, 4))
+    ms2$text_string[ms2$is_pre] <- paste0("Pre ", ms2$text_string[ms2$is_pre])
+  } else {
+    ms2$text_string <- ""
+  }
 
   if (!interactive) {
-    .plot_spectra_ms2_static(ms2, legendNames, colorBy, title, xLab, yLab)
+    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    ms2$linesize <- 1
+    ms2$linesize[ms2$is_pre] <- 2
+
+    plot <- ggplot2::ggplot(ms2, ggplot2::aes(x = mz, y = intensity, group = loop)) +
+      ggplot2::geom_segment(ggplot2::aes(xend = mz, yend = 0, color = var, linewidth = linesize))
+
+    if (showText) {
+      plot <- plot + ggplot2::geom_text(
+        ggplot2::aes(label = text_string),
+        vjust = 0.2, hjust = -0.2, angle = 90, size = 2, show.legend = FALSE
+      )
+    }
+
+    plot <- plot +
+      ggplot2::scale_y_continuous(expand = c(0, 0), limits = c(0, max(ms2$intensity) * 1.5)) +
+      ggplot2::labs(title = title, x = xLab, y = yLab) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::scale_linewidth_continuous(range = c(1, 2), guide = "none") +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = colorBy)
+
+    plot
   } else {
-    .plot_spectra_ms2_interactive(ms2, legendNames, colorBy, title, xLab, yLab)
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    ms2$linesize <- 0.01
+    ms2$linesize[ms2$is_pre] <- 2
+
+    ticksMin <- plyr::round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
+    ticksMax <- plyr::round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
+
+    title <- list(text = title, font = list(size = 12, color = "black"))
+
+    xaxis <- list(
+      linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"),
+      range = c(ticksMin, ticksMax),
+      dtick = round((max(ms2$mz) / 10), -1),
+      ticks = "outside"
+    )
+
+    yaxis <- list(
+      linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"),
+      range = c(0, max(ms2$intensity) * 1.5)
+    )
+
+    plot <- ms2 %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~mz,
+        y = ~intensity,
+        type = "bar",
+        color = ~var,
+        colors = cl,
+        marker = list(line = list(width = ~linesize)),
+        text = ~ paste0(text_string, "  "),
+        textposition = "outside",
+        textangle = 90,
+        textfont = list(size = 9)
+      ) %>%
+      plotly::layout(
+        bargap = 1,
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        barmode = "overlay",
+        uniformtext = list(minsize = 6, mode = "show")
+      )
+
+    plot
   }
 }
 
-# MARK: plot_spectra_baseline
-## __plot_spectra_baseline -----
+# MARK: get_raw_chromatograms
+## get_raw_chromatograms -----
 #' @export
 #' @noRd
-S7::method(plot_spectra_baseline, MassSpecAnalyses) <- function(x,
+S7::method(get_raw_chromatograms, MassSpecAnalyses) <- function(x,
                                                                 analyses = NULL,
-                                                                xVal = "mz",
-                                                                xLab = NULL,
-                                                                yLab = NULL,
-                                                                title = NULL,
-                                                                cex = 0.6,
-                                                                showLegend = TRUE,
-                                                                colorBy = "analyses",
-                                                                interactive = TRUE) {
-  spec <- get_spectra(x, analyses = analyses, useRawData = FALSE, useLoadedData = TRUE)
-
-  if (nrow(spec) == 0) {
-    message("\U2717 Traces not found for the targets!")
-    return(NULL)
+                                                                chromatograms = NULL,
+                                                                rtmin = 0,
+                                                                rtmax = 0,
+                                                                minIntensity = NULL) {
+  analyses <- .check_analyses_argument(x, analyses)
+  if (is.null(analyses)) {
+    return(data.table::data.table())
   }
 
-  if (!("baseline" %in% colnames(spec) && "raw" %in% colnames(spec))) {
-    warning("Baseline not found!")
-    return(NULL)
+  chroms_list <- lapply(x@analyses[analyses], function(z, chromatograms) {
+    if (nrow(z$chromatograms_headers) == 0) {
+      return(data.frame())
+    }
+
+    idx <- z$chromatograms_headers$index
+
+    if (is.numeric(chromatograms)) {
+      idx <- idx[chromatograms + 1]
+    } else if (is.character(chromatograms)) {
+      cid <- z$chromatograms_headers$id
+      which_chroms <- cid %in% chromatograms
+      idx <- idx[which_chroms]
+    } else if (!is.null(chromatograms)) {
+      return(data.table::data.table())
+    }
+
+    cache <- StreamFind:::.load_cache_sqlite("parsed_ms_chromatograms", z$file, idx)
+
+    if (!is.null(cache$data)) {
+      message("\U2139 Chromatograms loaded from cache!")
+      return(cache$data)
+    }
+
+    message("\U2699 Parsing chromatograms from ", basename(z$file), "...", appendLF = FALSE)
+
+    chrom <- rcpp_parse_ms_chromatograms(z, idx)
+
+    message(" Done!")
+
+    if (nrow(chrom) == 0) {
+      warning("Parsing chromatograms failed!")
+      return(data.table::data.table())
+    }
+
+    if (!"analysis" %in% colnames(chrom)) chrom$analysis <- z$name
+
+    if (!"replicate" %in% colnames(chrom)) chrom$replicate <- z$replicate
+
+    if (!is.null(cache$hash)) {
+      StreamFind:::.save_cache_sqlite("parsed_ms_chromatograms", chrom, cache$hash)
+      message("\U1f5ab Parsed chromatograms cached!")
+    }
+
+    chrom
+  }, chromatograms = chromatograms)
+
+  if (length(chroms_list) == length(analyses)) {
+    chroms <- data.table::rbindlist(chroms_list, fill = TRUE)
+
+    if (nrow(chroms) > 0) data.table::setcolorder(chroms, c("analysis", "replicate"))
+
+    if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
+
+    if (is.numeric(rtmin) && is.numeric(rtmax)) {
+      if (rtmax > 0) chroms <- chroms[chroms$rt >= rtmin & chroms$rt <= rtmax]
+    }
+
+    chroms
+  } else {
+    warning("Defined analyses or chromatograms not found!")
+    data.table::data.table()
+  }
+}
+
+# MARK: Spectra Methods
+# Spectra Methods ------
+
+# MARK: load_spectra
+## load_spectra -----
+#' @export
+#' @noRd
+S7::method(load_spectra, MassSpecAnalyses) <- function(x,
+                                                       analyses = NULL,
+                                                       levels = NULL,
+                                                       mass = NULL,
+                                                       mz = NULL,
+                                                       rt = NULL,
+                                                       mobility = NULL,
+                                                       ppm = 20,
+                                                       sec = 60,
+                                                       millisec = 5,
+                                                       id = NULL,
+                                                       allTraces = TRUE,
+                                                       isolationWindow = 1.3,
+                                                       minIntensityMS1 = 0,
+                                                       minIntensityMS2 = 0) {
+  cache <- .load_cache_sqlite(
+    "load_spectra",
+    x, analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+    allTraces, isolationWindow, minIntensityMS1, minIntensityMS2
+  )
+
+  if (!is.null(cache$data)) {
+    x@Spectra <- cache$data
+    message("\U2139 Spectra loaded from cache!")
+    return(x)
   }
 
-  if ("replicates" %in% colorBy && !"replicate" %in% colnames(spec)) {
-    spec$replicate <- x$replicates[spec$analysis]
-  }
+  spec <- get_raw_spectra(
+    x,
+    analyses, levels, mass, mz, rt, mobility, ppm, sec, millisec, id,
+    allTraces, isolationWindow, minIntensityMS1, minIntensityMS2
+  )
 
-  if (xVal == "mz" && (!"mz" %in% colnames(spec)) && "mass" %in% colnames(spec)) xVal <- "mass"
+  if (nrow(spec) > 0) {
+    split_vector <- spec$analysis
+    spec$analysis <- NULL
+    spec$replicate <- NULL
+    spec <- split(spec, split_vector)
 
-  if (!xVal %in% colnames(spec)) {
-    message("\U2717 xVal not found in spectra data.table!")
-    return(NULL)
-  }
-
-  spec$x <- spec[[xVal]]
-
-  if ("feature" %in% colnames(spec)) spec$id <- spec$feature
-
-  if ("replicates" %in% colorBy && !"replicate" %in% colnames(spec)) {
-    spec$replicate <- x$replicates[spec$analysis]
-  }
-
-  spec <- .make_colorBy_varkey(spec, colorBy, legendNames = NULL)
-
-  unique_key <- c("analysis", "var", "x")
-
-  intensity <- NULL
-  baseline <- NULL
-  raw <- NULL
-
-  spec <- spec[, .(intensity = max(intensity), baseline = max(baseline), raw = max(raw)), by = c(unique_key)]
-
-  spec <- unique(spec)
-
-  if ("rt" %in% xVal) {
-    if (is.null(xLab)) xLab <- "Retention time / seconds"
-  } else if ("mz" %in% xVal) {
-    if (is.null(xLab)) {
-      if (interactive) {
-        xLab <- "<i>m/z</i> / Da"
-      } else {
-        xLab <- expression(italic("m/z ") / " Da")
+    for (a in names(x)) {
+      if (!a %in% names(spec)) {
+        spec[[a]] <- data.table::data.table()
       }
     }
-  } else if ("mass" %in% xVal) {
-    if (is.null(xLab)) xLab <- "Mass / Da"
-  } else if ("mobility" %in% xVal) {
-    if (is.null(xLab)) xLab <- "mobility time / milliseconds"
-  }
 
-  if (is.null(yLab)) yLab <- "Intensity / counts"
+    spec <- spec[names(x)]
 
-  setorder(spec, var, x)
-
-  if (!interactive) {
-    return(.plot_x_spectra_baseline_static(spec, xLab, yLab, title, cex, showLegend))
+    spec <- StreamFind::MassSpecSpectra(
+      spec,
+      replicates = x@replicates,
+      is_averaged = FALSE
+    )
+    if (!is.null(cache$hash)) {
+      .save_cache_sqlite("load_spectra", spec, cache$hash)
+      message("\U1f5ab Spectra cached!")
+    }
+    x@Spectra <- spec
   } else {
-    return(.plot_x_spectra_baseline_interactive(spec, xLab, yLab, title, colorBy))
+    warning("Not done! Spectra not found.")
   }
-}
-
-# MARK: plot_spectra_charges
-## __plot_spectra_charges -----
-#' @export
-#' @noRd
-S7::method(plot_spectra_charges, MassSpecAnalyses) <- function(x,
-                                                               analyses = NULL,
-                                                               legendNames = NULL,
-                                                               title = NULL,
-                                                               colorBy = "analyses",
-                                                               showLegend = TRUE,
-                                                               xlim = NULL,
-                                                               ylim = NULL,
-                                                               cex = 0.6,
-                                                               xLab = NULL,
-                                                               yLab = NULL,
-                                                               interactive = TRUE) {
-  analyses <- .check_analyses_argument(x, analyses)
-
-  if (is.null(analyses)) {
-    return(NULL)
-  }
-
-  if (!x$has_spectra) {
-    return(NULL)
-  }
-
-  if (length(x$spectra$charges) == 0) {
-    message("\U2717 Spectra charges not found!")
-    return(NULL)
-  }
-
-  res <- x$spectra$charges
-
-  res <- rbindlist(res, idcol = "analysis", fill = TRUE)
-
-  res <- res[res$analysis %in% analyses, ]
-
-  if (nrow(res) == 0) {
-    message("\U2717 Spectra charges not found for the targets!")
-    return(NULL)
-  }
-
-  res$replicate <- x$replicates[res$analysis]
-
-  if (!interactive) {
-    .plot_spec_charges_static(res, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-  } else {
-    .plot_spec_charges_interactive(res, legendNames, colorBy, title, showLegend, xLab, yLab)
-  }
-}
-
-# MARK: plot_spectra_peaks
-## __plot_spectra_peaks -----
-#' @export
-#' @noRd
-S7::method(plot_spectra_peaks, MassSpecAnalyses) <- function(x,
-                                                             analyses = NULL,
-                                                             legendNames = NULL,
-                                                             title = NULL,
-                                                             colorBy = "targets",
-                                                             showLegend = TRUE,
-                                                             xlim = NULL,
-                                                             ylim = NULL,
-                                                             cex = 0.6,
-                                                             xLab = NULL,
-                                                             yLab = NULL,
-                                                             interactive = TRUE) {
-  pks <- get_spectra_peaks(x, analyses = analyses)
-  
-  if (nrow(pks) == 0) {
-    message("\U2717 Peaks not found!")
-    return(NULL)
-  }
-  
-  chroms <- get_spectra(x, analyses = analyses, useRawData = FALSE, useLoadedData = TRUE)
-  
-  if (nrow(chroms) == 0) {
-    message("\U2717 Chromatograms not found!")
-    return(NULL)
-  }
-  
-  if ("replicates" %in% colorBy && !"replicate" %in% colnames(pks)) {
-    pks$replicate <- x$replicates[pks$analysis]
-    chroms$replicate <- x$replicates[chroms$analysis]
-  }
-  
-  if ("mass" %in% colnames(chroms)) {
-    chroms$rt <- chroms$mass
-    pks$rt <- pks$mass
-    pks$rtmin <- pks$min
-    pks$rtmax <- pks$max
-    if (is.null(xLab)) xLab <- "Mass / Da"
-  } else if ("mz" %in% colnames(chroms)) {
-    chroms$rt <- chroms$mz
-    pks$rt <- pks$mz
-    pks$rtmin <- pks$min
-    pks$rtmax <- pks$max
-    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
-  }
-  
-  if (!interactive) {
-    .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-  } else {
-    .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
-  }
+  x
 }
 
 # MARK: Chromatograms
 # Chromatograms ------
 
-# MARK: get_chromatograms
-## __get_chromatograms -----
-#' @export
-#' @noRd
-S7::method(get_chromatograms, MassSpecAnalyses) <- function(x,
-                                                            analyses = NULL,
-                                                            chromatograms = NULL,
-                                                            rtmin = 0,
-                                                            rtmax = 0,
-                                                            minIntensity = NULL,
-                                                            useRawData = FALSE,
-                                                            useLoadedData = TRUE) {
-  analyses <- .check_analyses_argument(x, analyses)
-
-  if (is.null(analyses)) {
-    return(data.table())
-  }
-
-  # __________________________________________________________________
-  # Extracts chromatograms from results via the active binding
-  # __________________________________________________________________
-  if ((!useRawData) && x$has_chromatograms) {
-    if (x$chromatograms$is_averaged) {
-      chroms <- rbindlist(x$chromatograms$chromatograms, idcol = "replicate", fill = TRUE)
-    } else {
-      chroms <- rbindlist(x$chromatograms$chromatograms, idcol = "analysis", fill = TRUE)
-    }
-
-    if ("analysis" %in% colnames(chroms)) {
-      chroms <- chroms[chroms$analysis %in% analyses, ]
-    } else if ("replicate" %in% colnames(chroms)) {
-      rpl <- x$replicates
-      rpl <- rpl[analyses]
-      chroms <- chroms[chroms$replicate %in% unname(rpl)]
-
-      if (!"analysis" %in% colnames(chroms)) {
-        chroms$analysis <- chroms$replicate
-        setcolorder(chroms, c("analysis", "replicate"))
-      }
-    }
-
-    if (is.numeric(chromatograms)) {
-      which_chroms <- chroms$index %in% chromatograms
-      chroms <- chroms[which_chroms, ]
-    } else if (is.character(chromatograms)) {
-      which_chroms <- chroms$id %in% chromatograms
-      chroms <- chroms[which_chroms, ]
-    } else if (!is.null(chromatograms)) {
-      return(data.table())
-    }
-
-    if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
-    
-    if (is.numeric(rtmin) && is.numeric(rtmax)) {
-      if (rtmax > 0) chroms <- chroms[chroms$rt >= rtmin & chroms$rt <= rtmax]
-    }
-
-    chroms
-
-    # __________________________________________________________________
-    # Extracts loaded chromatograms
-    # __________________________________________________________________
-  } else if (any(x$has_loaded_chromatograms[analyses]) && useLoadedData && !useRawData) {
-    chroms <- lapply(x$analyses[analyses], function(z) z$chromatograms)
-    chroms <- rbindlist(chroms, idcol = "analysis", fill = TRUE)
-
-    if (is.numeric(chromatograms)) {
-      which_chroms <- chroms$index %in% chromatograms
-      chroms <- chroms[which_chroms, ]
-    } else if (is.character(chromatograms)) {
-      which_chroms <- chroms$id %in% chromatograms
-      chroms <- chroms[which_chroms, ]
-    } else if (!is.null(chromatograms)) {
-      return(data.table())
-    }
-
-    if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
-    
-    if (is.numeric(rtmin) && is.numeric(rtmax)) {
-      if (rtmax > 0) chroms <- chroms[chroms$rt >= rtmin & chroms$rt <= rtmax]
-    }
-
-    chroms
-
-    # __________________________________________________________________
-    # Extracts chromatograms from raw files
-    # __________________________________________________________________
-  } else {
-    chroms_list <- lapply(x$analyses[analyses], function(z, chromatograms) {
-      if (nrow(z$chromatograms_headers) == 0) {
-        return(data.frame())
-      }
-
-      idx <- z$chromatograms_headers$index
-      
-      if (is.numeric(chromatograms)) {
-        idx <- idx[chromatograms + 1]
-      } else if (is.character(chromatograms)) {
-        cid <- z$chromatograms_headers$id
-        which_chroms <- cid %in% chromatograms
-        idx <- idx[which_chroms]
-      } else if (!is.null(chromatograms)) {
-        return(data.table::data.table())
-      }
-
-      cache <- StreamFind:::.load_chache("parsed_ms_chromatograms", z$file, idx)
-
-      if (!is.null(cache$data)) {
-        message("\U2139 Chromatograms loaded from cache!")
-        return(cache$data)
-      }
-
-      message("\U2699 Parsing chromatograms from ", basename(z$file), "...", appendLF = FALSE)
-
-      chrom <- rcpp_parse_ms_chromatograms(z, idx)
-      
-      message(" Done!")
-
-      if (nrow(chrom) == 0) {
-        warning("Parsing chromatograms failed!")
-        return(data.table::data.table())
-      }
-
-      if (!"analysis" %in% colnames(chrom)) chrom$analysis <- z$name
-
-      if (!"replicate" %in% colnames(chrom)) chrom$replicate <- z$replicate
-
-      if (!is.null(cache$hash)) {
-        StreamFind:::.save_cache("parsed_ms_chromatograms", chrom, cache$hash)
-        message("\U1f5ab Parsed chromatograms cached!")
-      }
-
-      chrom
-    }, chromatograms = chromatograms)
-
-    if (length(chroms_list) == length(analyses)) {
-      chroms <- data.table::rbindlist(chroms_list, fill = TRUE)
-
-      if (nrow(chroms) > 0) setcolorder(chroms, c("analysis", "replicate"))
-
-      if (is.numeric(minIntensity)) chroms <- chroms[chroms$intensity > minIntensity, ]
-      
-      if (is.numeric(rtmin) && is.numeric(rtmax)) {
-        if (rtmax > 0) chroms <- chroms[chroms$rt >= rtmin & chroms$rt <= rtmax]
-      }
-
-      chroms
-    } else {
-      warning("Defined analyses or chromatograms not found!")
-      data.table::data.table()
-    }
-  }
-}
-
 # MARK: load_chromatograms
-## __load_chromatograms -----
+## load_chromatograms -----
 #' @export
 #' @noRd
 S7::method(load_chromatograms, MassSpecAnalyses) <- function(x,
                                                              analyses = NULL,
                                                              chromatograms = NULL,
                                                              rtmin = 0,
-                                                             rtmax = 0, 
+                                                             rtmax = 0,
                                                              minIntensity = NULL) {
-  analyses <- .check_analyses_argument(x, analyses)
-  chroms <- get_chromatograms(
+  chroms <- get_raw_chromatograms(
     x,
     analyses,
     chromatograms,
     rtmin,
     rtmax,
-    minIntensity,
-    useRawData = TRUE,
-    useLoadedData = FALSE
+    minIntensity
   )
+
   if (nrow(chroms) > 0) {
     split_vector <- chroms$analysis
     chroms$analysis <- NULL
     chroms$replicate <- NULL
     chroms <- split(chroms, split_vector)
-    chroms <- StreamFind::Chromatograms(chroms, is_averaged = FALSE)
-    x$chromatograms <- chroms
+    chroms <- StreamFind::Chromatograms(
+      chroms,
+      replicates = x@replicates[names(chroms)],
+      is_averaged = FALSE
+    )
+    x@Chromatograms <- chroms
   } else {
     warning("Not done! Chromatograms not found.")
   }
-  return(x)
+
+  x
 }
 
-# MARK: get_chromatograms_peaks
-## __get_chromatograms_peaks -----
+# MARK: NonTargetAnalysisResults
+# NonTargetAnalysisResults ------
+
+# MARK: get_matrix_suppression
+## get_matrix_suppression -----
 #' @export
 #' @noRd
-S7::method(get_chromatograms_peaks, MassSpecAnalyses) <- function(x, analyses = NULL, chromatograms = NULL) {
+S7::method(get_matrix_suppression, MassSpecAnalyses) <- function(x, rtWindow = 10) {
+  mpList <- .calculate_tic_matrix_suppression(x, rtWindow)
+  if (is.null(mpList)) {
+    return(data.table::data.table())
+  }
+  data.table::rbindlist(mpList, fill = TRUE)
+}
+
+# MARK: plot_matrix_suppression
+## plot_matrix_suppression -----
+#' @export
+#' @noRd
+S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
+                                                                  analyses = NULL,
+                                                                  rtWindow = 10,
+                                                                  xLab = NULL,
+                                                                  yLab = NULL,
+                                                                  title = NULL,
+                                                                  colorBy = "analyses",
+                                                                  legendNames = NULL,
+                                                                  downsize = 1,
+                                                                  interactive = TRUE,
+                                                                  showLegend = TRUE,
+                                                                  renderEngine = "webgl") {
   analyses <- .check_analyses_argument(x, analyses)
-  if (is.null(analyses)) {
-    return(data.table::data.table())
-  }
-
-  if (!x$has_chromatograms) {
-    return(data.table::data.table())
-  }
-
-  pks <- x$chromatograms$peaks
-  if (length(pks) == 0) {
-    return(data.table::data.table())
-  }
-
-  if (x$chromatograms$is_averaged) {
-    pks <- data.table::rbindlist(x$chromatograms$peaks, idcol = "replicate", fill = TRUE)
-  } else {
-    pks <- data.table::rbindlist(x$chromatograms$peaks, idcol = "analysis", fill = TRUE)
-  }
-
-  if ("analysis" %in% colnames(pks)) {
-    pks <- pks[pks$analysis %in% analyses, ]
-  } else if ("replicate" %in% colnames(pks)) {
-    rpl <- x$replicates
-    rpl <- rpl[analyses]
-    pks <- pks[pks$replicate %in% unname(rpl)]
-
-    if (!"analysis" %in% colnames(pks)) {
-      pks$analysis <- pks$replicate
-      data.table::setcolorder(pks, c("analysis", "replicate"))
-    }
-  }
-
-  if (is.numeric(chromatograms)) {
-    which_pks <- pks$index %in% chromatograms
-    pks <- pks[which_pks, ]
-  } else if (is.character(chromatograms)) {
-    which_pks <- pks$id %in% chromatograms
-    pks <- pks[which_pks, ]
-  } else if (!is.null(chromatograms)) {
-    return(data.table::data.table())
-  }
-
-  if (nrow(pks) == 0) {
-    message("\U2717 Peaks not found for the targets!")
-    return(data.table::data.table())
-  }
-
-  pks
-}
-
-# MARK: plot_chromatograms
-## __plot_chromatograms -----
-#' @export
-#' @noRd
-S7::method(plot_chromatograms, MassSpecAnalyses) <- function(x,
-                                                             analyses = NULL,
-                                                             chromatograms = NULL,
-                                                             rtmin = 0,
-                                                             rtmax = 0,
-                                                             minIntensity = NULL,
-                                                             useRawData = FALSE,
-                                                             useLoadedData = TRUE,
-                                                             xLab = NULL,
-                                                             yLab = NULL,
-                                                             title = NULL,
-                                                             colorBy = "targets",
-                                                             legendNames = NULL,
-                                                             showLegend = TRUE,
-                                                             xlim = NULL,
-                                                             ylim = NULL,
-                                                             cex = 0.6,
-                                                             interactive = TRUE) {
-  chromatograms <- StreamFind::get_chromatograms(
-    x, analyses,
-    chromatograms,
-    rtmin, rtmax,
-    minIntensity,
-    useRawData,
-    useLoadedData
-  )
-
-  if (nrow(chromatograms) == 0) {
-    message("\U2717 Chromatograms not found for the analyses!")
+  mp <- get_matrix_suppression(x, rtWindow)
+  if (nrow(mp) == 0) {
+    message("\U2717 TIC matrix suppression not found for the analyses!")
     return(NULL)
   }
-
-  if ("replicates" %in% colorBy) chromatograms$replicate <- x$replicates[chromatograms$analysis]
-
-  pol_key <- c("positive", "negative", "nd")
-  names(pol_key) <- c("1", "-1", "0")
-  chromatograms$polarity <- as.character(chromatograms$polarity)
-  chromatograms$polarity <- pol_key[chromatograms$polarity]
-
-  if (!interactive) {
-    .plot_spectra_eic_static(chromatograms, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-  } else {
-    .plot_chromatograms_interactive(chromatograms, legendNames, colorBy, xLab, yLab, title, showLegend)
-  }
-}
-
-# MARK: plot_chromatograms_peaks
-## __plot_chromatograms_peaks -----
-#' @export
-#' @noRd
-S7::method(plot_chromatograms_peaks, MassSpecAnalyses) <- function(x,
-                                                                   analyses = NULL,
-                                                                   chromatograms = NULL,
-                                                                   legendNames = NULL,
-                                                                   title = NULL,
-                                                                   colorBy = "targets",
-                                                                   showLegend = TRUE,
-                                                                   xlim = NULL,
-                                                                   ylim = NULL,
-                                                                   cex = 0.6,
-                                                                   xLab = NULL,
-                                                                   yLab = NULL,
-                                                                   interactive = TRUE) {
-  pks <- get_chromatograms_peaks(x, analyses = analyses, chromatograms = chromatograms)
-
-  if (nrow(pks) == 0) {
-    message("\U2717 Peaks not found!")
+  sel <- mp$analysis %in% analyses
+  mp <- mp[sel, ]
+  if (nrow(mp) == 0) {
+    message("\U2717 TIC matrix suppression not found for the analyses!")
     return(NULL)
   }
-
-  chroms <- get_chromatograms(x, analyses = analyses, chromatograms = chromatograms, useRawData = FALSE, useLoadedData = TRUE)
-
-  if (nrow(chroms) == 0) {
-    message("\U2717 Chromatograms not found!")
-    return(NULL)
-  }
-
-  if ("replicates" %in% colorBy && !"replicate" %in% colnames(pks)) {
-    pks$replicate <- x$replicates[pks$analysis]
-    chroms$replicate <- x$replicates[chroms$analysis]
-  }
-
-  if (!interactive) {
-    .plot_chrom_peaks_static(chroms, pks, legendNames, colorBy, title, showLegend, xlim, ylim, cex, xLab, yLab)
-  } else {
-    .plot_chrom_peaks_interactive(chroms, pks, legendNames, colorBy, title, showLegend, xLab, yLab)
-  }
-}
-
-# MARK: plot_chromatograms_baseline
-## __plot_chromatograms_baseline -----
-#' @export
-#' @noRd
-S7::method(plot_chromatograms_baseline, MassSpecAnalyses) <- function(x,
-                                                                      analyses = NULL,
-                                                                      chromatograms = NULL,
-                                                                      xLab = NULL,
-                                                                      yLab = NULL,
-                                                                      title = NULL,
-                                                                      cex = 0.6,
-                                                                      showLegend = TRUE,
-                                                                      colorBy = "analyses",
-                                                                      interactive = TRUE) {
-  chroms <- get_chromatograms(x, analyses, chromatograms, minIntensity = 0, useRawData = FALSE, useLoadedData = TRUE)
-
-  if (!("baseline" %in% colnames(chroms) && "raw" %in% colnames(chroms))) {
-    warning("Baseline not found!")
-    return(NULL)
-  }
-
-  if ("replicates" %in% colorBy && !"replicate" %in% colnames(chroms)) {
-    chroms$replicate <- x$replicates[chroms$analysis]
-  }
-
-  chroms <- .make_colorBy_varkey(chroms, colorBy, legendNames = NULL)
-
-  setnames(chroms, "rt", "x")
-
+  if (!"id" %in% colnames(mp)) mp$id <- mp$analysis
+  mp$intensity <- mp$mp
+  if (is.null(yLab)) yLab <- "Supression Factor"
   if (is.null(xLab)) xLab <- "Retention time / seconds"
 
-  if (is.null(yLab)) yLab <- "Intensity / counts"
+  mp <- .make_colorBy_varkey(mp, colorBy, legendNames)
+  mp$loop <- paste0(mp$analysis, mp$replicate, mp$id, mp$var)
+  cl <- .get_colors(unique(mp$var))
 
   if (!interactive) {
-    return(.plot_x_spectra_baseline_static(chroms, xLab, yLab, title, cex, showLegend))
+    ggplot2::ggplot(mp, ggplot2::aes(x = rt, y = intensity, group = loop)) +
+      ggplot2::geom_line(ggplot2::aes(color = var)) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = colorBy)
   } else {
-    return(.plot_x_spectra_baseline_interactive(chroms, xLab, yLab, title, colorBy))
-  }
-}
-
-# MARK: Get NTS
-# Get NTS ------
-
-# MARK: get_features_count
-## __get_features_count -----
-#' @export
-#' @noRd
-S7::method(get_features_count, MassSpecAnalyses) <- function(x, analyses = NULL, filtered = FALSE) {
-  analyses <- .check_analyses_argument(x, analyses)
-  info <- x$info
-  info <- info[info$analysis %in% analyses, ]
-
-  if (x$has_nts) {
-    if (x@results$nts$has_features) {
-      if (x@results$nts$has_groups) {
-        info$features <- vapply(x@results$nts$features@features@features[analyses], function(x) nrow(x), 0)
-      } else {
-        info$features <- vapply(x@results$nts$features@features[analyses], function(x) nrow(x), 0)
-      }
-      if (filtered) info$features <- info$features + vapply(x@results$nts$filtered[analyses], function(x) nrow(x), 0)
-    }
-  }
-
-  info
-}
-
-# MARK: get_features
-## __get_features -----
-#' @export
-#' @noRd
-S7::method(get_features, MassSpecAnalyses) <- function(x,
-                                                       analyses = NULL,
-                                                       features = NULL,
-                                                       mass = NULL,
-                                                       mz = NULL,
-                                                       rt = NULL,
-                                                       mobility = NULL,
-                                                       ppm = 20,
-                                                       sec = 60,
-                                                       millisec = 5,
-                                                       filtered = FALSE) {
-  analyses <- .check_analyses_argument(x, analyses)
-
-  if (is.null(analyses)) {
-    return(data.table::data.table())
-  }
-
-  fts <- NULL
-
-  if (x$has_nts) fts <- x$nts$feature_list[analyses]
-
-  if (is.null(fts)) {
-    return(data.table::data.table())
-  }
-
-  fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
-
-  if (nrow(fts) == 0) {
-    return(data.table::data.table())
-  }
-
-  if (!filtered) fts <- fts[!fts$filtered, ]
-
-  fts$feature <- as.character(fts$feature)
-
-  if (!is.null(features)) {
-    target_id <- features
-
-    if (is.character(target_id)) {
-      if ("group" %in% colnames(fts)) {
-        fts <- fts[fts$feature %in% target_id | fts$group %in% target_id, ]
-      } else {
-        fts <- fts[fts$feature %in% target_id, ]
-      }
-
-      fts$replicate <- x$replicates[fts$analysis]
-
-      return(fts)
-    } else if (is.numeric(target_id)) {
-      fts <- fts[target_id, ]
-
-      fts$replicate <- x$replicates[fts$analysis]
-
-      return(fts)
-    }
-
-    if (is.data.frame(target_id)) {
-      if (all(colnames(fts) %in% colnames(target_id))) {
-        return(target_id)
-      }
-
-      if ("analysis" %in% colnames(target_id)) {
-        sel <- rep(FALSE, nrow(fts))
-
-        for (i in seq_len(nrow(target_id))) {
-          sel[(fts$feature %in% target_id$feature[i] &
-            fts$analysis %in% target_id$analysis[i]) |
-            fts$group %in% target_id$group] <- TRUE
-        }
-
-        fts <- fts[sel, ]
-
-        if ("name" %in% colnames(target_id)) {
-          ids <- target_id$name
-          names(ids) <- target_id$feature
-          fts$name <- ids[fts$feature]
-        }
-
-        return(fts)
-      } else if ("group" %in% colnames(target_id)) {
-        sel <- rep(FALSE, nrow(fts))
-
-        for (i in seq_len(nrow(target_id))) {
-          sel[fts$feature %in% target_id$feature[i] |
-            fts$group %in% target_id$group] <- TRUE
-        }
-
-        fts <- fts[sel, ]
-
-        if ("name" %in% colnames(target_id)) {
-          ids <- target_id$name
-          names(ids) <- target_id$group
-          ids <- ids[!duplicated(names(ids))]
-          fts$name <- ids[fts$group]
-        }
-
-        fts$replicate <- x$replicates[fts$analysis]
-
-        return(fts)
-      }
-    }
-
-    return(data.table::data.table())
-  }
-
-  polarities <- x$spectra_polarity[analyses]
-
-  id <- NULL
-
-  targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
-
-  targets <- targets@targets
-
-  if (nrow(targets) > 0) {
-    for (i in seq_len(nrow(targets))) {
-      if (targets$rtmax[i] == 0) targets$rtmax[i] <- max(fts$rtmax)
-
-      if (targets$mzmax[i] == 0) targets$mzmax[i] <- max(fts$mz)
-
-      if ("mobility" %in% colnames(fts)) {
-        if (targets$mobilitymax[i] == 0) targets$mobilitymax[i] <- max(fts$mobility)
-      }
-    }
-
-    sel <- rep(FALSE, nrow(fts))
-
-    ids <- rep(NA_character_, nrow(fts))
-
-    if ("polarity" %in% colnames(targets) && nrow(targets) > 0) {
-      for (i in seq_len(nrow(targets))) {
-        if (targets$polarity[i] == "positive") targets$polarity[i] <- 1
-        if (targets$polarity[i] == "negative") targets$polarity[i] <- -1
-      }
-    }
-
-    for (i in seq_len(nrow(targets))) {
-      if ("mobility" %in% colnames(fts)) {
-        sel[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
-          data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-          data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-          data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- TRUE
-
-        ids[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
-          data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-          data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i]) &
-          data.table::between(fts$mobility, targets$mobilitymin[i], targets$mobilitymax[i])] <- targets$id[i]
-      } else {
-        sel[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
-          data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-          data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- TRUE
-
-        ids[fts$analysis == targets$analysis[i] & fts$polarity == targets$polarity[i] &
-          data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
-          data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])] <- targets$id[i]
-      }
-    }
-
-    fts$name <- ids
-
-    fts$replicate <- x$replicates[fts$analysis]
-
-    return(fts[sel])
-  }
-
-  fts$replicate <- x$replicates[fts$analysis]
-
-  fts
-}
-
-# MARK: get_features_eic
-## __get_features_eic -----
-#' @export
-#' @noRd
-S7::method(get_features_eic, MassSpecAnalyses) <- function(x,
-                                                           analyses = NULL,
-                                                           features = NULL,
-                                                           mass = NULL,
-                                                           mz = NULL,
-                                                           rt = NULL,
-                                                           mobility = NULL,
-                                                           ppm = 20,
-                                                           sec = 60,
-                                                           millisec = 5,
-                                                           rtExpand = 0,
-                                                           mzExpand = 0,
-                                                           filtered = FALSE,
-                                                           useLoadedData = TRUE) {
-  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    return(data.table())
-  }
-
-  if (useLoadedData) {
-    if (x$nts$has_features_eic) {
-      useLoadedData <- TRUE
-    } else {
-      useLoadedData <- FALSE
-    }
-  }
-
-  if (!useLoadedData) {
-    fts_ana_split_vector <- fts$analysis
-    fts$analysis <- NULL
-    fts_list <- split(fts, fts_ana_split_vector)
-    ana_list <- x$analyses[names(fts_list)]
-
-    fts <- rcpp_ms_load_features_eic(
-      analyses = ana_list,
-      features = fts_list,
-      filtered = filtered,
-      rtExpand = rtExpand,
-      mzExpand = mzExpand,
-      minTracesIntensity = 0
-    )
-
-    fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
-  } else {
-    sel <- vapply(fts$eic, function(z) is.data.frame(z), TRUE)
-    fts_without_eic <- fts[!sel, ]
-    fts_with_eic <- fts[sel, ]
-
-    if (nrow(fts_without_eic) > 0) {
-      fts_without_eic_ana_split_vector <- fts_without_eic$analysis
-      fts_without_eic$analysis <- NULL
-      fts_without_eic_list <- split(fts_without_eic, fts_without_eic_ana_split_vector)
-      ana_list <- x$analyses[names(fts_without_eic_list)]
-
-      fts_without_eic <- rcpp_ms_load_features_eic(
-        analyses = ana_list,
-        features = fts_without_eic_list,
-        filtered = filtered,
-        rtExpand = rtExpand,
-        mzExpand = mzExpand,
-        minTracesIntensity = 0
-      )
-
-      fts_without_eic <- data.table::rbindlist(fts_without_eic, idcol = "analysis", fill = TRUE)
-
-      fts <- data.table::rbindlist(list(fts_without_eic, fts_with_eic), fill = TRUE)
-    }
-  }
-
-  eic_list <- lapply(seq_len(nrow(fts)), function(z, fts) {
-    temp <- fts[z, ]
-    temp_ms <- temp[["eic"]][[1]]
-    if (is.null(temp_ms)) {
-      return(data.table::data.table())
-    }
-    if (!is.data.frame(temp_ms)) temp_ms <- data.table::as.data.table(temp_ms)
-    temp_ms$analysis <- temp$analysis
-    temp_ms$feature <- temp$feature
-    temp_ms
-  }, fts = fts)
-
-  eic <- data.table::rbindlist(eic_list, fill = TRUE)
-  data.table::setcolorder(eic, c("analysis", "feature"))
-
-  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
-  unique_eic_id <- paste0(eic$analysis, "-", eic$feature)
-
-  if ("group" %in% colnames(fts)) {
-    fgs <- fts$group
-    names(fgs) <- unique_fts_id
-    eic$group <- fgs[unique_eic_id]
-  }
-
-  if ("name" %in% colnames(fts)) {
-    tar_ids <- fts$name
-    names(tar_ids) <- unique_fts_id
-    eic$name <- tar_ids[unique_eic_id]
-  }
-
-  eic
-}
-
-# MARK: get_features_ms1
-## __get_features_ms1 -----
-#' @export
-#' @noRd
-S7::method(get_features_ms1, MassSpecAnalyses) <- function(x,
-                                                           analyses = NULL,
-                                                           features = NULL,
-                                                           mass = NULL,
-                                                           mz = NULL,
-                                                           rt = NULL,
-                                                           mobility = NULL,
-                                                           ppm = 20,
-                                                           sec = 60,
-                                                           millisec = 5,
-                                                           rtWindow = c(-2, 2),
-                                                           mzWindow = c(-5, 100),
-                                                           mzClust = 0.003,
-                                                           presence = 0.8,
-                                                           minIntensity = 1000,
-                                                           filtered = FALSE,
-                                                           useLoadedData = TRUE) {
-  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    return(data.table::data.table())
-  }
-
-  if (useLoadedData) {
-    if (x$nts$has_features_ms1) {
-      useLoadedData <- TRUE
-    } else {
-      useLoadedData <- FALSE
-    }
-  }
-
-  if (!useLoadedData) {
-    fts_ana_split_vector <- fts$analysis
-    fts$analysis <- NULL
-    fts_list <- split(fts, fts_ana_split_vector)
-    ana_list <- x$analyses[names(fts_list)]
-
-    fts <- rcpp_ms_load_features_ms1(
-      analyses = ana_list,
-      features = fts_list,
-      filtered = filtered,
-      rtWindow = rtWindow,
-      mzWindow = mzWindow,
-      minTracesIntensity = minIntensity,
-      mzClust = mzClust,
-      presence = presence
-    )
-
-    fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
-  }
-
-  ms1_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
-    temp <- fts[x, ]
-    temp_ms <- temp[["ms1"]][[1]]
-    if (is.null(temp_ms)) {
-      return(data.table::data.table())
-    }
-    temp_ms$analysis <- temp$analysis
-    temp_ms$feature <- temp$feature
-    temp_ms
-  }, fts = fts)
-
-  ms1 <- data.table::rbindlist(ms1_list, fill = TRUE)
-  data.table::setcolorder(ms1, c("analysis", "feature"))
-
-  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
-  unique_ms1_id <- paste0(ms1$analysis, "-", ms1$feature)
-
-  if ("group" %in% colnames(fts)) {
-    fgs <- fts$group
-    names(fgs) <- unique_fts_id
-    ms1$group <- fgs[unique_ms1_id]
-  }
-
-  if ("name" %in% colnames(fts)) {
-    tar_ids <- fts$name
-    names(tar_ids) <- unique_fts_id
-    ms1$name <- tar_ids[unique_ms1_id]
-  }
-
-  ms1
-}
-
-# MARK: get_features_ms2
-## __get_features_ms2 -----
-#' @export
-#' @noRd
-S7::method(get_features_ms2, MassSpecAnalyses) <- function(x,
-                                                           analyses = NULL,
-                                                           features = NULL,
-                                                           mass = NULL,
-                                                           mz = NULL,
-                                                           rt = NULL,
-                                                           mobility = NULL,
-                                                           ppm = 20,
-                                                           sec = 60,
-                                                           millisec = 5,
-                                                           isolationWindow = 1.3,
-                                                           mzClust = 0.003,
-                                                           presence = 0.8,
-                                                           minIntensity = 0,
-                                                           filtered = FALSE,
-                                                           useLoadedData = TRUE) {
-  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    return(data.table::data.table())
-  }
-
-  if (useLoadedData) {
-    if (x$nts$has_features_ms1) {
-      useLoadedData <- TRUE
-    } else {
-      useLoadedData <- FALSE
-    }
-  }
-
-  if (!useLoadedData) {
-    fts_ana_split_vector <- fts$analysis
-    fts$analysis <- NULL
-    fts_list <- split(fts, fts_ana_split_vector)
-    ana_list <- x$analyses[names(fts_list)]
-
-    fts <- rcpp_ms_load_features_ms2(
-      analyses = ana_list,
-      features = fts_list,
-      filtered = filtered,
-      minTracesIntensity = minIntensity,
-      isolationWindow = isolationWindow,
-      mzClust = mzClust,
-      presence = presence
-    )
-
-    fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
-  }
-
-  ms2_list <- lapply(seq_len(nrow(fts)), function(x, fts) {
-    temp <- fts[x, ]
-    temp_ms <- temp[["ms2"]][[1]]
-    if (is.null(temp_ms)) {
-      return(data.table::data.table())
-    }
-    temp_ms$analysis <- temp$analysis
-    temp_ms$feature <- temp$feature
-    temp_ms
-  }, fts = fts)
-
-  ms2 <- data.table::rbindlist(ms2_list, fill = TRUE)
-  data.table::setcolorder(ms2, c("analysis", "feature"))
-
-  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
-  unique_ms2_id <- paste0(ms2$analysis, "-", ms2$feature)
-
-  if ("group" %in% colnames(fts)) {
-    fgs <- fts$group
-    names(fgs) <- unique_fts_id
-    ms2$group <- fgs[unique_ms2_id]
-  }
-
-  if ("name" %in% colnames(fts)) {
-    tar_ids <- fts$name
-    names(tar_ids) <- unique_fts_id
-    ms2$name <- tar_ids[unique_ms2_id]
-  }
-
-  ms2
-}
-
-# MARK: get_groups
-## __get_groups -----
-#' @export
-#' @noRd
-S7::method(get_groups, MassSpecAnalyses) <- function(x,
-                                                     groups = NULL,
-                                                     mass = NULL,
-                                                     mz = NULL,
-                                                     rt = NULL,
-                                                     mobility = NULL,
-                                                     ppm = 20,
-                                                     sec = 60,
-                                                     millisec = 5,
-                                                     filtered = FALSE,
-                                                     intensities = TRUE,
-                                                     average = FALSE,
-                                                     sdValues = FALSE,
-                                                     metadata = FALSE) {
-  if (!x$has_nts) {
-    return(data.table::data.table())
-  }
-
-  if (!x$nts$has_groups) {
-    return(data.table::data.table())
-  }
-
-  fts <- get_features(x,
-    analyses = NULL,
-    features = groups,
-    mass, mz, rt, mobility, ppm, sec, millisec,
-    filtered = filtered
-  )
-
-  if (nrow(fts) > 0) {
-    g_ids <- unique(fts$group)
-
-    fgroups <- data.table::data.table("group" = g_ids)
-
-    if (intensities) {
-      if (average) {
-        intensity <- NULL
-        rpls <- x$replicates
-        fts_temp <- data.table::copy(fts)
-        fts_temp$analysis <- rpls[fts_temp$analysis]
-        fts_av <- fts_temp[, .(intensity = mean(intensity), sd = sd(intensity), n = length(intensity)), by = c("group", "analysis")]
-        fts_av$sd[is.na(fts_av$sd)] <- 0
-        fts_av$sd <- round(fts_av$sd / fts_av$intensity * 100, digits = 0)
-
-        fts_sd <- data.table::copy(fts_av)
-        fts_n <- data.table::copy(fts_av)
-
-        fts_sd$intensity <- NULL
-        fts_sd$n <- NULL
-        fts_sd$analysis <- paste(fts_sd$analysis, "_sd", sep = "")
-        fts_sd <- data.table::dcast(fts_sd[, c("group", "analysis", "sd"), with = TRUE], group ~ analysis, value.var = "sd")
-        fts_sd[is.na(fts_sd)] <- 0
-
-        tbl_rpls <- table(rpls)
-        fts_n$tn <- tbl_rpls[fts_n$analysis]
-        fts_n$n <- round(fts_n$n / fts_n$tn * 100, digits = 0)
-        fts_n$intensity <- NULL
-        fts_n$tn <- NULL
-        fts_n$sd <- NULL
-        fts_n$analysis <- paste(fts_n$analysis, "_n", sep = "")
-        fts_n <- data.table::dcast(fts_n[, c("group", "analysis", "n"), with = TRUE], group ~ analysis, value.var = "n")
-        fts_n[is.na(fts_n)] <- 0
-
-        fts_av$sd <- NULL
-        fts_av$n <- NULL
-        fts_av <- data.table::dcast(fts_av, group ~ analysis, value.var = "intensity")
-        fts_av[is.na(fts_av)] <- 0
-      } else {
-        fts_av <- fts[, .(intensity = max(intensity)), by = c("group", "analysis")]
-        fts_av <- data.table::dcast(fts_av, group ~ analysis, value.var = "intensity")
-        fts_av[is.na(fts_av)] <- 0
-      }
-    }
-
-    if ("name" %in% colnames(fts)) {
-      g_names <- fts$name
-      names(g_names) <- fts$group
-      g_names <- g_names[!duplicated(names(g_names))]
-      fgroups$name <- g_names[fgroups$group]
-    }
-
-    if (metadata) {
-      cols <- colnames(fts)
-
-      if (!"istd" %in% cols) fts[["istd"]] <- list(rep(list(), nrow(fts)))
-      if (!"quality" %in% cols) fts[["quality"]] <- list(rep(list(), nrow(fts)))
-      if (!"annotation" %in% cols) fts[["isotope"]] <- list(rep(list(), nrow(fts)))
-
-      rtmin <- NULL
-      rtmax <- NULL
-      mzmin <- NULL
-      mzmax <- NULL
-      feature <- NULL
-      quality <- NULL
-      annotation <- NULL
-      istd <- NULL
-
-      fts_meta <- fts[, .(
-        rt = round(mean(rt), digits = 0),
-        mass = round(mean(mass), digits = 4),
-        rtdev = round(max(rtmax - rtmin), digits = 0),
-        massdev = round(max(mzmax - mzmin), digits = 4),
-        presence = round(length(feature) / length(x) * 100, digits = 1),
-        maxint = round(max(intensity), digits = 0),
-        sn = round(max(vapply(quality, function(z) if (length(z) > 0) z$sn else 0, 0), na.rm = TRUE), digits = 1),
-        iso = min(vapply(annotation, function(z) if (length(z) > 0) z$iso_step else 0, 0)),
-        istd = paste0(unique(vapply(istd, function(z) if (length(z) > 0) x$name else NA_character_, NA_character_)), collapse = "; "),
-        filtered = all(filtered)
-      ), by = "group"]
-
-      fgroups <- fgroups[fts_meta, on = "group"]
-    }
-
-    if (intensities) fgroups <- fgroups[fts_av, on = "group"]
-
-    if (average && sdValues) {
-      fgroups <- fgroups[fts_sd, on = "group"]
-      fgroups <- fgroups[fts_n, on = "group"]
-    }
-
-    fgroups
-  } else {
-    data.table::data.table()
-  }
-}
-
-# MARK: get_groups_ms1
-## __get_groups_ms1 -----
-#' @export
-#' @noRd
-S7::method(get_groups_ms1, MassSpecAnalyses) <- function(x,
-                                                         groups = NULL,
-                                                         mass = NULL,
-                                                         mz = NULL,
-                                                         rt = NULL,
-                                                         mobility = NULL,
-                                                         ppm = 20,
-                                                         sec = 60,
-                                                         millisec = 5,
-                                                         rtWindow = c(-2, 2),
-                                                         mzWindow = c(-5, 90),
-                                                         mzClustFeatures = 0.003,
-                                                         presenceFeatures = 0.8,
-                                                         minIntensityFeatures = 1000,
-                                                         useLoadedData = TRUE,
-                                                         mzClust = 0.003,
-                                                         presence = 0.8,
-                                                         minIntensity = 1000,
-                                                         groupBy = "groups",
-                                                         filtered = FALSE) {
-  fgs <- get_groups(x,
-    groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-    intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = FALSE
-  )
-
-  if (nrow(fgs) == 0) {
-    return(data.table::data.table())
-  }
-
-  fts <- get_features(x, features = fgs$group)
-
-  if (nrow(fts) == 0) {
-    return(data.table::data.table())
-  }
-
-  ms1 <- get_features_ms1(x,
-    analyses = unique(fts$analysis),
-    features = fts$feature,
-    rtWindow = rtWindow,
-    mzWindow = mzWindow,
-    mzClust = mzClustFeatures,
-    presence = presenceFeatures,
-    minIntensity = minIntensityFeatures,
-    filtered = filtered,
-    useLoadedData = useLoadedData
-  )
-
-  ms1 <- ms1[ms1$intensity > minIntensity, ]
-
-  if (nrow(ms1) == 0) {
-    return(data.table::data.table())
-  }
-
-  polarities <- unique(x$spectra_polarity[unique(ms1$analysis)])
-
-  multiple_polarities <- FALSE
-
-  # TODO check for polarity switching with comma
-
-  if (length(polarities) > 1) multiple_polarities <- TRUE
-
-  if ("groups" %in% groupBy) {
-    if (multiple_polarities) {
-      ms1$unique_id <- paste0(ms1$group, "_", ms1$polarity)
-      ms1$analysis <- NA_character_
-    } else {
-      ms1$unique_id <- ms1$group
-      ms1$analysis <- NA_character_
-    }
-  } else {
-    rpls <- x$replicates
-    ms1$analysis <- rpls[ms1$analysis]
-
-    if (multiple_polarities) {
-      ms1$unique_id <- paste0(ms1$analysis, "_", ms1$group, "", ms1$polarity)
-    } else {
-      ms1$unique_id <- paste0(ms1$analysis, "_", ms1$group)
-    }
-  }
-
-  ms1$id <- ms1$group
-
-  ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, verbose = FALSE)
-
-  ms1_df <- data.table::rbindlist(ms1_list, fill = TRUE)
-
-  ms1_df$group <- ms1_df$id
-
-  ms1_df[["id"]] <- NULL
-
-  ms1_df <- ms1_df[order(ms1_df$mz), ]
-
-  ms1_df <- ms1_df[order(ms1_df$group), ]
-
-  if ("groups" %in% groupBy) {
-    ms1_df[["analysis"]] <- NULL
-  } else {
-    ms1_df <- ms1_df[order(ms1_df$analysis), ]
-    data.table::setnames(ms1_df, "analysis", "replicate")
-  }
-
-  if ("name" %in% colnames(fgs)) {
-    tar_ids <- fgs$name
-    names(tar_ids) <- fgs$group
-    ms1_df$name <- tar_ids[ms1_df$group]
-  }
-
-  data.table::copy(ms1_df)
-}
-
-# MARK: get_groups_ms2
-## __get_groups_ms2 -----
-#' @export
-#' @noRd
-S7::method(get_groups_ms2, MassSpecAnalyses) <- function(x,
-                                                         groups = NULL,
-                                                         mass = NULL,
-                                                         mz = NULL,
-                                                         rt = NULL,
-                                                         mobility = NULL,
-                                                         ppm = 20,
-                                                         sec = 60,
-                                                         millisec = 5,
-                                                         isolationWindow = 1.3,
-                                                         mzClustFeatures = 0.003,
-                                                         presenceFeatures = 0.8,
-                                                         minIntensityFeatures = 100,
-                                                         useLoadedData = TRUE,
-                                                         mzClust = 0.003,
-                                                         presence = 0.8,
-                                                         minIntensity = 100,
-                                                         groupBy = "groups",
-                                                         filtered = FALSE) {
-  fgs <- get_groups(x,
-    groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered,
-    intensities = FALSE, average = FALSE, sdValues = FALSE, metadata = FALSE
-  )
-
-  if (nrow(fgs) == 0) {
-    return(data.table::data.table())
-  }
-
-  fts <- get_features(x, features = fgs$group, filtered = filtered)
-
-  if (nrow(fts) == 0) {
-    return(data.table::data.table())
-  }
-
-  ms2 <- get_features_ms2(x,
-    analyses = unique(fts$analysis),
-    features = fts$feature,
-    isolationWindow = isolationWindow,
-    mzClust = mzClustFeatures,
-    presence = presenceFeatures,
-    minIntensity = minIntensityFeatures,
-    filtered = filtered,
-    useLoadedData = useLoadedData
-  )
-
-  ms2 <- ms2[ms2$intensity > minIntensity, ]
-
-  if (nrow(ms2) == 0) {
-    return(data.table::data.table())
-  }
-
-  polarities <- unique(x$spectra_polarity[unique(ms2$analysis)])
-
-  multiple_polarities <- FALSE
-
-  # TODO check for polarity switching with comma
-
-  if (length(polarities) > 1) multiple_polarities <- TRUE
-
-  if ("groups" %in% groupBy) {
-    if (multiple_polarities) {
-      ms2$unique_id <- paste0(ms2$group, "_", ms2$polarity)
-      ms2$analysis <- NA_character_
-    } else {
-      ms2$unique_id <- ms2$group
-      ms2$analysis <- NA_character_
-    }
-  } else {
-    rpls <- x$replicates
-    ms2$analysis <- rpls[ms2$analysis]
-
-    if (multiple_polarities) {
-      ms2$unique_id <- paste0(ms2$analysis, "_", ms2$group, "", ms2$polarity)
-    } else {
-      ms2$unique_id <- paste0(ms2$analysis, "_", ms2$group)
-    }
-  }
-
-  ms2$id <- ms2$group
-
-  ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, verbose = FALSE)
-
-  ms2_df <- data.table::rbindlist(ms2_list, fill = TRUE)
-
-  ms2_df$group <- ms2_df$id
-
-  ms2_df[["id"]] <- NULL
-
-  ms2_df <- ms2_df[order(ms2_df$mz), ]
-
-  ms2_df <- ms2_df[order(ms2_df$group), ]
-
-  if ("groups" %in% groupBy) {
-    ms2_df[["analysis"]] <- NULL
-  } else {
-    ms2_df <- ms2_df[order(ms2_df$analysis), ]
-    data.table::setnames(ms2_df, "analysis", "replicate")
-  }
-
-  if ("name" %in% colnames(fgs)) {
-    tar_ids <- fgs$name
-    names(tar_ids) <- fgs$group
-    ms2_df$name <- tar_ids[ms2_df$group]
-  }
-
-  data.table::copy(ms2_df)
-}
-
-# MARK: get_components
-## __get_components -----
-#' @export
-#' @noRd
-S7::method(get_components, MassSpecAnalyses) <- function(x,
-                                                         analyses = NULL,
-                                                         features = NULL,
-                                                         mass = NULL,
-                                                         mz = NULL,
-                                                         rt = NULL,
-                                                         mobility = NULL,
-                                                         ppm = 20,
-                                                         sec = 60,
-                                                         millisec = 5,
-                                                         filtered = FALSE) {
-  if (!x$has_nts) {
-    warning("No NTS results found!")
-    return(data.table::data.table())
-  }
-
-  if (!x$nts$has_features) {
-    warning("Features not found!")
-    return(data.table::data.table())
-  }
-
-  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    message("\U2717 Features not found for targets!")
-    return(data.table::data.table())
-  }
-
-  fts$uid <- paste0(fts$analysis, "-", fts$feature)
-
-  if ("name" %in% colnames(fts)) {
-    names_fts <- fts$name
-    names(names_fts) <- fts$uid
-  }
-
-  all_fts <- x$nts$feature_list
-
-  all_fts <- Map(function(x, y) {
-    x$analysis <- y
-    x
-  }, all_fts, names(all_fts))
-
-  all_fts <- lapply(all_fts, function(z, fts_uid) {
-    sel <- vapply(z[["annotation"]], function(k) length(k) > 0, FALSE)
-    z <- z[sel, ]
-    cf <- vapply(z[["annotation"]], function(k) k$component_feature, "")
-    z$uid <- paste0(z$analysis, "-", cf)
-    z <- z[z$uid %in% fts_uid, ]
-    if ("name" %in% colnames(fts)) {
-      z$name <- names_fts[z$uid]
-    }
-    z$analysis <- NULL
-    z
-  }, fts_uid = fts$uid)
-
-  all_fts <- lapply(all_fts, function(z) {
-    if (nrow(z) == 0) {
-      return(data.table::data.table())
-    }
-    annotation <- lapply(z[["annotation"]], function(k) data.table::as.data.table(k))
-    annotation <- data.table::rbindlist(annotation)
-    feature <- NULL
-    z <- z[annotation, on = .(feature)]
-    z$annotation <- NULL
-    z <- z[order(z$component_feature), ]
-    z
-  })
-
-  all_fts <- data.table::rbindlist(all_fts, idcol = "analysis", fill = TRUE)
-
-  data.table::setnames(all_fts, "component_feature", "component")
-
-  if ("group" %in% colnames(all_fts)) {
-    groups <- fts$group
-    names(groups) <- fts$uid
-    groups <- groups[!is.na(groups)]
-    all_fts$group <- groups[all_fts$uid]
-    data.table::setcolorder(all_fts, c("analysis", "component", "feature", "group"))
-  } else {
-    data.table::setcolorder(all_fts, c("analysis", "component", "feature"))
-  }
-
-  all_fts$uid <- NULL
-  all_fts
-}
-
-# MARK: get_suspects
-## __get_suspects -----
-#' @export
-#' @noRd
-S7::method(get_suspects, MassSpecAnalyses) <- function(x,
-                                                       analyses = NULL,
-                                                       database = NULL,
-                                                       features = NULL,
-                                                       mass = NULL,
-                                                       mz = NULL,
-                                                       rt = NULL,
-                                                       mobility = NULL,
-                                                       ppm = 5,
-                                                       sec = 10,
-                                                       millisec = 5,
-                                                       ppmMS2 = 10,
-                                                       minFragments = 3,
-                                                       isolationWindow = 1.3,
-                                                       mzClust = 0.003,
-                                                       presence = 0.8,
-                                                       minIntensity = 0,
-                                                       filtered = FALSE,
-                                                       onGroups = TRUE) {
-  if (!x$has_nts) {
-    warning("No NTS results found!")
-    return(data.table::data.table())
-  }
-
-  if (!x$nts$has_features) {
-    warning("Features not found!")
-    return(data.table::data.table())
-  }
-
-  if (is.null(database)) {
-    features <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-    if (nrow(features) == 0) {
-      message("\U2717 Features not found for targets!")
-      return(data.table::data.table())
-    }
-
-    features[["name"]] <- NULL
-
-    if ("suspects" %in% colnames(features)) {
-      sel <- vapply(features$suspects, function(z) {
-        if (length(z) > 0) if (is.data.frame(z)) if (nrow(z) > 0) {
-          return(TRUE)
-        }
-        FALSE
-      }, FALSE)
-
-      if (any(sel)) {
-        features <- features[sel, ]
-
-        suspects_l <- features[["suspects"]]
-
-        suspects <- lapply(seq_len(length(suspects_l)), function(z, suspects_l, features) {
-          temp <- suspects_l[[z]]
-
-          temp_ft <- features[z, ]
-          temp_ft[["suspects"]] <- NULL
-          temp_ft$rt <- NULL
-          temp_ft$intensity <- NULL
-          temp_ft$area <- NULL
-          temp_ft$mass <- NULL
-
-          if ("group" %in% colnames(temp)) {
-            temp <- merge(temp, temp_ft, by = c("feature", "group"), all = TRUE)
-          } else {
-            temp <- merge(temp, temp_ft, by = "feature", all = TRUE)
-          }
-
-          data.table::setcolorder(temp, c("analysis", "replicate"))
-
-          temp
-        }, suspects_l = suspects_l, features = features)
-
-        suspects <- data.table::rbindlist(suspects, fill = TRUE)
-      } else {
-        warning("Suspects were not found! Run suspect_screening or give a database for searching for suspects.")
-        return(data.table::data.table())
-      }
-    } else {
-      warning("Suspects were not found! Run suspect_screening or give a database.")
-      return(data.table::data.table())
-    }
-  } else {
-    database <- data.table::as.data.table(database)
-
-    valid_db <- FALSE
-
-    if (is.data.frame(database)) {
-      database <- data.table::as.data.table(database)
-      if (any(c("mass", "neutralMass") %in% colnames(database)) | "mz" %in% colnames(database)) {
-        if ("name" %in% colnames(database)) {
-          if ("neutralMass" %in% colnames(database)) {
-            data.table::setnames(database, "neutralMass", "mass")
-          }
-          valid_db <- TRUE
-        }
-      }
-    }
-
-    if (!valid_db) {
-      warning("Argument database must be a data.frame with at least the columns name and mass or mz!")
-      return(data.table::data.table())
-    }
-
-    if (!"rt" %in% colnames(database)) {
-      database$rt <- 0
-    } else {
-      database$rt[database$rt == ""] <- 0
-    }
-
-    database$rt <- as.numeric(database$rt)
-    database$rt[is.na(rt)] <- 0
-
-    if ("mass" %in% colnames(database)) {
-      suspects <- get_features(x, analyses, mass = database, ppm = ppm, sec = sec, millisec = millisec, filtered = filtered)
-    } else if ("mz" %in% colnames(database)) {
-      suspects <- get_features(x, analyses, mz = database, ppm = ppm, sec = sec, millisec = millisec, filtered = filtered)
-    } else {
-      warning("Argument database must be a data.frame with at least the columns name and mass or mz!")
-      return(data.table::data.table())
-    }
-
-    if (nrow(suspects) == 0) {
-      message("\U2717 No suspects found!")
-      return(data.table::data.table())
-    }
-
-    suspects <- split(suspects, suspects$analysis)
-
-    suspects <- lapply(suspects, function(z, database) {
-      out <- data.table::data.table()
-
-      if (nrow(z) > 0) {
-        for (i in seq_len(nrow(z))) {
-          suspect_analysis <- z$analysis[i]
-          suspect_feature <- z$feature[i]
-          suspect_name <- z$name[i]
-          suspect_mass <- z$mass[i]
-          suspect_rt <- z$rt[i]
-          suspect_intensity <- z$intensity[i]
-          suspect_area <- z$area[i]
-
-          suspect_db <- database[database$name == suspect_name][1, ]
-
-          temp <- data.table::data.table("analysis" = suspect_analysis, "feature" = suspect_feature)
-          if ("group" %in% colnames(z)) temp$group <- z$group[i]
-          temp$name <- suspect_name
-
-          if ("formula" %in% colnames(suspect_db)) temp$formula <- suspect_db$formula
-          if ("SMILES" %in% colnames(suspect_db)) temp$SMILES <- suspect_db$SMILES
-
-          temp$mass <- suspect_mass
-          if ("mz" %in% suspect_db) {
-            temp$exp_mass <- suspect_db$mz - (z$polarity[i] * 1.007276)
-          } else {
-            temp$exp_mass <- suspect_db$mass
-          }
-          temp$error_mass <- round(((temp$mass - temp$exp_mass) / temp$mass) * 1E6, digits = 1)
-
-          temp$rt <- suspect_rt
-          temp$exp_rt <- suspect_db$rt
-          temp$error_rt <- round(temp$rt - temp$exp_rt, digits = 1)
-
-          temp$id_level <- "4"
-
-          temp$shared_fragments <- 0
-          temp$fragments <- NA_character_
-
-          temp$intensity <- suspect_intensity
-          temp$area <- suspect_area
-
-          if (temp$exp_rt > 0) temp$id_level <- "3b"
-
-          if ("fragments" %in% colnames(suspect_db)) {
-            fragments <- suspect_db$fragments
-
-            if (!is.na(fragments)) {
-              ms2 <- data.table::data.table()
-
-              if ("ms2" %in% colnames(z)) {
-                ms2 <- z$ms2[i][[1]]
-                if (length(ms2) == 0) ms2 <- data.table::data.table()
-              }
-
-              if (nrow(ms2) == 0) {
-                ms2 <- get_features_ms2(
-                  x,
-                  z$analysis[i],
-                  z$feature[i],
-                  isolationWindow = isolationWindow,
-                  mzClust = mzClust,
-                  presence = presence,
-                  minIntensity = minIntensity
-                )
-              }
-
-              if (nrow(ms2) > 0) {
-                fragments <- unlist(strsplit(fragments, split = "; ", fixed = TRUE))
-                fragments <- strsplit(fragments, " ")
-                fragments <- data.table::data.table(
-                  "mz" = vapply(fragments, function(x) as.numeric(x[1]), NA_real_),
-                  "intensity" = vapply(fragments, function(x) as.numeric(x[2]), NA_real_)
-                )
-
-                mzr <- fragments$mz * ppm / 1E6
-                fragments$mzmin <- fragments$mz - mzr
-                fragments$mzmax <- fragments$mz + mzr
-
-                fragments$shared <- apply(fragments, 1, function(x) {
-                  any(ms2$mz >= x[3] & ms2$mz <= x[4])
-                })
-
-                temp$shared_fragments <- sum(fragments$shared)
-
-                if (temp$shared_fragments > 3) {
-                  temp$fragments <- suspect_db$fragments
-
-                  if (temp$id_level == "3b") {
-                    temp$id_level <- "1"
-                  } else if (temp$id_level == "4") {
-                    temp$id_level <- "2"
-                  }
-                }
-              }
-            }
-          }
-          out <- data.table::rbindlist(list(out, temp), fill = TRUE)
-        }
-      }
-      out
-    }, database = database)
-
-    suspects <- data.table::rbindlist(suspects, fill = TRUE)
-  }
-
-  if (nrow(suspects) > 0 && !filtered && x$nts$has_groups && onGroups) {
-    if (all(!is.na(suspects$group))) {
-      suspects$id_level <- factor(suspects$id_level, levels = c("1", "2", "3a", "3b", "4"), ordered = TRUE)
-
-      id_level <- NULL
-      error_mass <- NULL
-      error_rt <- NULL
-      shared_fragments <- NULL
-      name <- NULL
-
-      temp_vals <- suspects[, .(
-        name = unique(name),
-        id_level = min(id_level),
-        error_mass = min(abs(error_mass)),
-        error_rt = min(abs(error_rt)),
-        shared_fragments = max(shared_fragments)
-      ), by = "group"]
-
-      temp_vals <- unique(temp_vals)
-      groups_df <- get_groups(x, groups = unique(suspects$group), intensities = TRUE, average = TRUE, sdValues = FALSE, metadata = FALSE)
-      group <- NULL
-      groups_df <- groups_df[temp_vals, on = .(group)]
-      data.table::setkey(groups_df, group)
-      groups_df <- groups_df[unique(group), mult = "first"]
-      data.table::setcolorder(groups_df, c("group", "name", "id_level", "error_mass", "error_rt", "shared_fragments"))
-      data.table::setkey(groups_df, NULL)
-      return(groups_df)
-    }
-  }
-
-  suspects
-}
-
-# MARK: get_internal_standards
-## __get_internal_standards -----
-#' @export
-#' @noRd
-S7::method(get_internal_standards, MassSpecAnalyses) <- function(x, average = TRUE) {
-  istd <- get_features(x, filtered = TRUE)
-
-  if ("istd" %in% colnames(istd)) {
-    sel <- vapply(istd$istd, function(z) {
-      if (length(z) > 0) if (is.data.frame(z)) if (nrow(z) > 0) {
-        return(TRUE)
-      }
-      FALSE
-    }, FALSE)
-
-    istd <- istd[sel, ]
-
-    if (nrow(istd) > 0) {
-      istd_l <- istd[["istd"]]
-
-      istd_l2 <- lapply(seq_len(length(istd_l)), function(x, istd_l, istd) {
-        temp <- istd_l[[x]]
-        temp_ft <- istd[x, ]
-        temp <- cbind(temp, temp_ft)
-        temp
-      }, istd = istd, istd_l = istd_l)
-
-      istd <- rbindlist(istd_l2, fill = TRUE)
-
-      istd$rtr <- round(istd$rtmax - istd$rtmin, digits = 1)
-
-      istd$mzr <- round(istd$mzmax - istd$mzmin, digits = 4)
-
-      if ("annotation" %in% colnames(istd)) {
-        istd$iso_n <- vapply(istd$annotation, function(x) {
-          if (length(x) == 0) {
-            NA_real_
-          } else {
-            x$iso_size
-          }
-        }, NA_real_)
-        istd$iso_c <- vapply(istd$annotation, function(x) {
-          if (length(x) == 0) {
-            NA_real_
-          } else {
-            x$iso_number_carbons
-          }
-        }, NA_real_)
-      } else {
-        istd$iso_n <- NA_real_
-        istd$iso_c <- NA_real_
-      }
-
-      if (x$nts$has_groups & average) {
-        rpl <- x$replicates
-
-        istd$replicate <- rpl[istd$analysis]
-
-        cols <- c(
-          "name",
-          "rt",
-          "mass",
-          "intensity",
-          "area",
-          "rtr",
-          "mzr",
-          "error_rt",
-          "error_mass",
-          "rec",
-          "iso_n",
-          "iso_c",
-          "replicate",
-          "group"
-        )
-
-        istd <- istd[, cols, with = FALSE]
-
-        area <- NULL
-        rt <- NULL
-        mass <- NULL
-        intensity <- NULL
-        rtr <- NULL
-        mzr <- NULL
-        error_rt <- NULL
-        error_mass <- NULL
-        rec <- NULL
-        iso_n <- NULL
-        iso_c <- NULL
-
-        istd <- istd[, `:=`(
-          freq = length(area),
-          rt = round(mean(rt, na.rm = TRUE), digits = 0),
-          mass = round(mean(mass, na.rm = TRUE), digits = 4),
-          intensity = round(mean(intensity, na.rm = TRUE), digits = 0),
-          intensity_sd = round(sd(intensity, na.rm = TRUE), digits = 0),
-          area = round(mean(area, na.rm = TRUE), digits = 0),
-          area_sd = round(sd(area, na.rm = TRUE), digits = 0),
-          rtr = round(mean(rtr, na.rm = TRUE), digits = 1),
-          rtr_sd = round(sd(rtr, na.rm = TRUE), digits = 1),
-          mzr = round(mean(mzr, na.rm = TRUE), digits = 4),
-          mzr_sd = round(sd(mzr, na.rm = TRUE), digits = 4),
-          error_rt = round(mean(error_rt, na.rm = TRUE), digits = 1),
-          error_rt_sd = round(sd(error_rt, na.rm = TRUE), digits = 1),
-          error_mass = round(mean(error_mass, na.rm = TRUE), digits = 1),
-          error_mass_sd = round(sd(error_mass, na.rm = TRUE), digits = 1),
-          rec = round(mean(rec, na.rm = TRUE), digits = 1),
-          rec_sd = round(sd(rec, na.rm = TRUE), digits = 1),
-          iso_n = round(mean(iso_n, na.rm = TRUE), digits = 0),
-          iso_n_sd = round(sd(iso_n, na.rm = TRUE), digits = 0),
-          iso_c = round(mean(iso_c, na.rm = TRUE), digits = 0),
-          iso_c_sd = round(sd(iso_c, na.rm = TRUE), digits = 0)
+    title <- list(text = title, font = list(size = 12, color = "black"))
+    xaxis <- list(linecolor = "black", title = xLab, titlefont = list(size = 12, color = "black"))
+    yaxis <- list(linecolor = "black", title = yLab, titlefont = list(size = 12, color = "black"))
+
+    loop <- NULL
+
+    plot <- mp %>%
+      dplyr::group_by(loop) %>%
+      plot_ly(
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        color = ~var,
+        colors = cl,
+        mode = "lines", #+markers
+        line = list(width = 2),
+        # marker = list(size = 2.5),
+        text = ~ paste(
+          "<br>analysis: ", analysis,
+          "<br>replicate: ", replicate,
+          "<br>id: ", id,
+          "<br>polarity: ", polarity,
+          "<br>level: ", level,
+          "<br>rt: ", rt,
+          "<br>suppression: ", intensity
         ),
-        by = c("name", "group", "replicate")
-        ][]
-
-        istd <- unique(istd)
-
-        istd$rec[is.nan(istd$rec)] <- NA_real_
-      } else {
-        cols <- c(
-          "name",
-          "rt",
-          "mass",
-          "intensity",
-          "area",
-          "rtr",
-          "mzr",
-          "error_rt",
-          "error_mass",
-          "rec",
-          "iso_n",
-          "iso_c",
-          "analysis",
-          "feature"
-        )
-
-        if (x$nts$has_groups) cols <- c(cols, "group")
-
-        istd <- istd[, cols, with = FALSE]
-        istd$intensity <- round(istd$intensity, digits = 0)
-        istd$area <- round(istd$area, digits = 0)
-      }
-
-      setorder(istd, "name")
-
-      istd
-    } else {
-      warning("Internal standards not found!")
-      data.table()
-    }
-  } else {
-    warning("Not present! Run find_internal_standards method to tag the internal standards!")
-    data.table()
-  }
-}
-
-# Plot NTS -----
-
-# MARK: plot_features_count
-## __plot_features_count -----
-#' @export
-#' @noRd
-S7::method(plot_features_count, MassSpecAnalyses) <- function(x,
-                                                              analyses = NULL,
-                                                              filtered = FALSE,
-                                                              yLab = NULL,
-                                                              title = NULL,
-                                                              colorBy = "analyses") {
-  info <- get_features_count(x, analyses, filtered)
-
-  if ("replicates" %in% colorBy) info$analysis <- info$replicate
-
-  features <- NULL
-  polarity <- NULL
-
-  info <- info[, .(
-    features = round(mean(features), digits = 0),
-    features_sd = round(sd(features), digits = 0),
-    n_analysis = length(features),
-    polarity = unique(polarity)
-  ), by = c("analysis")]
-
-  info$features_sd[is.na(info$features_sd)] <- 0
-
-  info <- unique(info)
-
-  info$hover_text <- paste(
-    info$analysis, "<br>",
-    "N.: ", info$n_analysis, "<br>",
-    "Polarity: ", info$polarity, "<br>",
-    "Features: ", info$features, " (SD: ", info$features_sd, ")"
-  )
-
-  info <- info[order(info$analysis), ]
-
-  colors_tag <- StreamFind:::.get_colors(info$analysis)
-
-  if (is.null(yLab)) yLab <- "Number of features"
-
-  plotly::plot_ly(
-    x = info$analysis,
-    y = info$features,
-    marker = list(color = unname(colors_tag)),
-    type = "bar",
-    text = info$hover_text,
-    hoverinfo = "text",
-    error_y = list(
-      type = "data",
-      array = info$features_sd,
-      color = "darkred",
-      symmetric = FALSE,
-      visible = TRUE
-    )
-  ) %>% plotly::layout(
-    xaxis = list(title = NULL),
-    yaxis = list(title = yLab)
-  )
-}
-
-# MARK: plot_features
-## __plot_features -----
-#' @export
-#' @noRd
-S7::method(plot_features, MassSpecAnalyses) <- function(x,
-                                                        analyses = NULL,
-                                                        features = NULL,
-                                                        mass = NULL,
-                                                        mz = NULL,
-                                                        rt = NULL,
-                                                        mobility = NULL,
-                                                        ppm = 20,
-                                                        sec = 60,
-                                                        millisec = 5,
-                                                        rtExpand = 120,
-                                                        mzExpand = 0.001,
-                                                        useLoadedData = TRUE,
-                                                        filtered = FALSE,
-                                                        legendNames = NULL,
-                                                        xLab = NULL,
-                                                        yLab = NULL,
-                                                        title = NULL,
-                                                        colorBy = "targets",
-                                                        showLegend = TRUE,
-                                                        xlim = NULL,
-                                                        ylim = NULL,
-                                                        cex = 0.6,
-                                                        interactive = TRUE) {
-  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    message("\U2717 Features not found for the targets!")
-    return(NULL)
-  }
-
-  eic <- get_features_eic(x,
-    analyses = unique(fts$analysis),
-    features = fts,
-    rtExpand = rtExpand,
-    mzExpand = mzExpand,
-    filtered = filtered,
-    useLoadedData = useLoadedData
-  )
-
-  intensity <- NULL
-
-  eic <- eic[, `:=`(intensity = max(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
-
-  eic <- unique(eic)
-
-  if (nrow(eic) == 0) {
-    message("\U2717 Traces not found for the targets!")
-    return(NULL)
-  }
-
-  if (grepl("replicates", colorBy)) eic$replicate <- x$replicates[eic$analysis]
-
-  if (!interactive) {
-    .plot_features_static(eic, fts, legendNames, colorBy, xLab, yLab, title, showLegend, xlim, ylim, cex)
-  } else {
-    .plot_features_interactive(eic, fts, legendNames, colorBy, xLab, yLab, title, showLegend)
-  }
-}
-
-# MARK: map_features
-## __map_features -----
-#' @export
-#' @noRd
-S7::method(map_features, MassSpecAnalyses) <- function(x,
-                                                       analyses = NULL,
-                                                       features = NULL,
-                                                       mass = NULL,
-                                                       mz = NULL,
-                                                       rt = NULL,
-                                                       mobility = NULL,
-                                                       ppm = 20,
-                                                       sec = 60,
-                                                       millisec = 5,
-                                                       neutral_mass = TRUE,
-                                                       filtered = FALSE,
-                                                       legendNames = NULL,
-                                                       xLab = NULL,
-                                                       yLab = NULL,
-                                                       title = NULL,
-                                                       colorBy = "targets",
-                                                       showLegend = TRUE,
-                                                       xlim = 30,
-                                                       ylim = 0.05,
-                                                       cex = 0.6,
-                                                       interactive = TRUE) {
-  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    message("\U2717 Features not found for the targets!")
-    return(NULL)
-  }
-
-  if (grepl("replicates", colorBy)) fts$replicate <- x$replicates[fts$analysis]
-
-  if (neutral_mass) {
-    fts$mzmin <- fts$mass - (fts$mz - fts$mzmin)
-    fts$mzmax <- fts$mass + (fts$mzmax - fts$mz)
-    fts$mz <- fts$mass
-  }
-
-  if (!interactive) {
-    .map_features_static(fts, colorBy, legendNames, xLab, yLab, title, showLegend, xlim, ylim, cex)
-  } else {
-    .map_features_interactive(fts, colorBy, legendNames, xlim, ylim, xLab, yLab, title)
-  }
-}
-
-# MARK: map_features_intensity
-## __map_features_intensity -----
-#' @export
-#' @noRd
-S7::method(map_features_intensity, MassSpecAnalyses) <- function(x,
-                                                                 analyses = NULL,
-                                                                 features = NULL,
-                                                                 mass = NULL,
-                                                                 mz = NULL,
-                                                                 rt = NULL,
-                                                                 mobility = NULL,
-                                                                 ppm = 20,
-                                                                 sec = 60,
-                                                                 millisec = 5,
-                                                                 neutral_mass = TRUE,
-                                                                 filtered = FALSE,
-                                                                 legendNames = NULL,
-                                                                 xLab = NULL,
-                                                                 yLab = NULL,
-                                                                 title = NULL,
-                                                                 colorBy = "targets",
-                                                                 showLegend = TRUE,
-                                                                 xlim = 30,
-                                                                 ylim = 0.05,
-                                                                 cex = 0.6,
-                                                                 interactive = TRUE) {
-  fts <- get_features(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    message("\U2717 Features not found for the targets!")
-    return(NULL)
-  }
-
-  if (grepl("replicates", colorBy)) fts$replicate <- x$replicates[fts$analysis]
-
-  fts <- .make_colorBy_varkey(fts, colorBy, legendNames)
-
-  if (!interactive) {
-    .map_features_static(fts, colorBy, legendNames, xLab, yLab, title, showLegend, xlim, ylim, cex)
-  } else {
-    plotly::plot_ly(
-      data = fts,
-      x = ~rt,
-      y = ~intensity,
-      color = ~var,
-      type = "scatter",
-      mode = "markers",
-      colors = StreamFind:::.get_colors(unique(fts$var)),
-      text = ~ paste(
-        "<br>Analysis: ", analysis,
-        "<br>Mass: ", mass,
-        "<br>MZ: ", mz,
-        "<br>RT: ", rt,
-        "<br>Intensity: ", intensity
-      ),
-      hoverinfo = "text"
-    ) %>%
+        hoverinfo = "text",
+        showlegend = showLegend
+      ) %>%
       plotly::layout(
-        title = NULL,
-        xaxis = list(title = "Retention Time (Seconds)"),
-        yaxis = list(title = "Intensity (Counts)"),
-        legend = list(title = "Analysis")
-      )
-  }
-}
-
-# MARK: plot_features_ms1
-## __plot_features_ms1 -----
-#' @export
-#' @noRd
-S7::method(plot_features_ms1, MassSpecAnalyses) <- function(x,
-                                                            analyses = NULL,
-                                                            features = NULL,
-                                                            mass = NULL,
-                                                            mz = NULL,
-                                                            rt = NULL,
-                                                            mobility = NULL,
-                                                            ppm = 20,
-                                                            sec = 60,
-                                                            millisec = 5,
-                                                            rtWindow = c(-2, 2),
-                                                            mzWindow = c(-5, 100),
-                                                            mzClust = 0.003,
-                                                            presence = 0.8,
-                                                            minIntensity = 1000,
-                                                            filtered = FALSE,
-                                                            useLoadedData = TRUE,
-                                                            legendNames = NULL,
-                                                            xLab = NULL,
-                                                            yLab = NULL,
-                                                            title = NULL,
-                                                            colorBy = "targets",
-                                                            interactive = TRUE) {
-  ms1 <- get_features_ms1(
-    x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
-    rtWindow, mzWindow, mzClust, presence, minIntensity, filtered, useLoadedData
-  )
-
-  if (nrow(ms1) == 0) {
-    message("\U2717 MS1 traces not found for the targets!")
-    return(NULL)
-  }
-
-  if (grepl("replicates", colorBy)) {
-    ms1$replicate <- x$replicates[ms1$analysis]
-  }
-
-  if (!interactive) {
-    .plot_spectra_ms1_static(ms1, legendNames, colorBy, title, xLab, yLab)
-  } else {
-    .plot_spectra_ms1_interactive(ms1, legendNames, colorBy, title, xLab, yLab)
-  }
-}
-
-# MARK: plot_features_ms2
-## __plot_features_ms2 -----
-#' @export
-#' @noRd
-S7::method(plot_features_ms2, MassSpecAnalyses) <- function(x,
-                                                            analyses = NULL,
-                                                            features = NULL,
-                                                            mass = NULL,
-                                                            mz = NULL,
-                                                            rt = NULL,
-                                                            mobility = NULL,
-                                                            ppm = 20,
-                                                            sec = 60,
-                                                            millisec = 5,
-                                                            isolationWindow = 1.3,
-                                                            mzClust = 0.005,
-                                                            presence = 0.8,
-                                                            minIntensity = 0,
-                                                            filtered = FALSE,
-                                                            useLoadedData = TRUE,
-                                                            legendNames = NULL,
-                                                            xLab = NULL,
-                                                            yLab = NULL,
-                                                            title = NULL,
-                                                            colorBy = "targets",
-                                                            interactive = TRUE) {
-  ms2 <- get_features_ms2(
-    x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec,
-    isolationWindow, mzClust, presence, minIntensity, filtered, useLoadedData
-  )
-
-  if (nrow(ms2) == 0) {
-    message("\U2717 MS2 traces not found for the targets!")
-    return(NULL)
-  }
-  if (grepl("replicates", colorBy)) {
-    ms2$replicate <- x$replicates[ms2$analysis]
-  }
-
-  if (!interactive) {
-    .plot_spectra_ms2_static(ms2, legendNames, colorBy, title, xLab, yLab)
-  } else {
-    .plot_spectra_ms2_interactive(ms2, legendNames, colorBy, title, xLab, yLab)
-  }
-}
-
-# MARK: plot_groups
-## __plot_groups -----
-#' @export
-#' @noRd
-S7::method(plot_groups, MassSpecAnalyses) <- function(x,
-                                                      groups = NULL,
-                                                      mass = NULL,
-                                                      mz = NULL,
-                                                      rt = NULL,
-                                                      mobility = NULL,
-                                                      ppm = 20,
-                                                      sec = 60,
-                                                      millisec = 5,
-                                                      rtExpand = 15,
-                                                      mzExpand = 0.001,
-                                                      filtered = FALSE,
-                                                      legendNames = NULL,
-                                                      xLab = NULL,
-                                                      yLab = NULL,
-                                                      title = NULL,
-                                                      colorBy = "targets",
-                                                      showLegend = TRUE,
-                                                      xlim = NULL,
-                                                      ylim = NULL,
-                                                      cex = 0.6,
-                                                      interactive = TRUE) {
-  fts <- get_features(x, analyses = NULL, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (grepl("targets", colorBy) & !isTRUE(legendNames)) {
-    fts$name <- fts$group
-    if (is.null(legendNames)) legendNames <- TRUE
-  }
-
-  plot_features(x,
-    features = fts,
-    rtExpand = rtExpand,
-    mzExpand = mzExpand,
-    filtered = filtered,
-    legendNames = legendNames,
-    xLab = xLab,
-    yLab = yLab,
-    title = title,
-    colorBy = colorBy,
-    showLegend = showLegend,
-    xlim = xlim,
-    ylim = ylim,
-    cex = cex,
-    interactive = interactive
-  )
-}
-
-# MARK: plot_groups_ms1
-## __plot_groups_ms1 -----
-#' @export
-#' @noRd
-S7::method(plot_groups_ms1, MassSpecAnalyses) <- function(x,
-                                                          groups = NULL,
-                                                          mass = NULL,
-                                                          mz = NULL,
-                                                          rt = NULL,
-                                                          mobility = NULL,
-                                                          ppm = 20,
-                                                          sec = 60,
-                                                          millisec = 5,
-                                                          rtWindow = c(-2, 2),
-                                                          mzWindow = c(-5, 90),
-                                                          mzClustFeatures = 0.005,
-                                                          presenceFeatures = 0.8,
-                                                          minIntensityFeatures = 1000,
-                                                          useLoadedData = TRUE,
-                                                          mzClust = 0.005,
-                                                          presence = 0.8,
-                                                          minIntensity = 1000,
-                                                          groupBy = "groups",
-                                                          filtered = FALSE,
-                                                          legendNames = NULL,
-                                                          xLab = NULL,
-                                                          yLab = NULL,
-                                                          title = NULL,
-                                                          colorBy = "targets",
-                                                          interactive = TRUE) {
-  if (grepl("groups", colorBy) || grepl("targets", colorBy)) {
-    groupBy <- "groups"
-  } else {
-    groupBy <- "replicates"
-  }
-
-  ms1 <- get_groups_ms1(
-    x, groups, mass, mz, rt, mobility, ppm, sec, millisec, rtWindow, mzWindow, mzClustFeatures,
-    presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
-  )
-
-  if (nrow(ms1) == 0) {
-    message("\U2717 MS1 traces not found for the targets!")
-    return(NULL)
-  }
-
-  if ("analyses" %in% colorBy) colorBy <- "replicates"
-
-  if (grepl("analyses", colorBy) && grepl("targets", colorBy)) colorBy <- "replicates+targets"
-
-  if (!interactive) {
-    .plot_spectra_ms1_static(ms1, legendNames, colorBy, title, xLab, yLab)
-  } else {
-    .plot_spectra_ms1_interactive(ms1, legendNames, colorBy, title, xLab, yLab)
-  }
-}
-
-# MARK: plot_groups_ms2
-## __plot_groups_ms2 -----
-#' @export
-#' @noRd
-S7::method(plot_groups_ms2, MassSpecAnalyses) <- function(x,
-                                                          groups = NULL,
-                                                          mass = NULL,
-                                                          mz = NULL,
-                                                          rt = NULL,
-                                                          mobility = NULL,
-                                                          ppm = 20,
-                                                          sec = 60,
-                                                          millisec = 5,
-                                                          isolationWindow = 1.3,
-                                                          mzClustFeatures = 0.003,
-                                                          presenceFeatures = 0.8,
-                                                          minIntensityFeatures = 100,
-                                                          useLoadedData = TRUE,
-                                                          mzClust = 0.003,
-                                                          presence = TRUE,
-                                                          minIntensity = 100,
-                                                          groupBy = "groups",
-                                                          filtered = FALSE,
-                                                          legendNames = NULL,
-                                                          xLab = NULL,
-                                                          yLab = NULL,
-                                                          title = NULL,
-                                                          colorBy = "targets",
-                                                          interactive = TRUE) {
-  if (grepl("groups", colorBy) || grepl("targets", colorBy)) {
-    groupBy <- "groups"
-  } else {
-    groupBy <- "replicates"
-  }
-
-  ms2 <- get_groups_ms2(
-    x, groups, mass, mz, rt, mobility, ppm, sec, millisec, isolationWindow, mzClustFeatures,
-    presenceFeatures, minIntensityFeatures, useLoadedData, mzClust, presence, minIntensity, groupBy, filtered
-  )
-
-  if (nrow(ms2) == 0) {
-    message("\U2717 MS2 traces not found for the targets!")
-    return(NULL)
-  }
-
-  if ("analyses" %in% colorBy) colorBy <- "replicates"
-
-  if (grepl("analyses", colorBy) && grepl("targets", colorBy)) colorBy <- "replicates+targets"
-
-  if (!interactive) {
-    .plot_spectra_ms2_static(ms2, legendNames, colorBy, title, xLab, yLab)
-  } else {
-    .plot_spectra_ms2_interactive(ms2, legendNames, colorBy, title, xLab, yLab)
-  }
-}
-
-# MARK: plot_groups_overview
-## __plot_groups_overview -----
-#' @export
-#' @noRd
-S7::method(plot_groups_overview, MassSpecAnalyses) <- function(x,
-                                                               analyses = NULL,
-                                                               groups = NULL,
-                                                               mass = NULL,
-                                                               mz = NULL,
-                                                               rt = NULL,
-                                                               mobility = NULL,
-                                                               ppm = 20,
-                                                               sec = 60,
-                                                               millisec = 5,
-                                                               rtExpand = 120,
-                                                               mzExpand = 0.005,
-                                                               useLoadedData = TRUE,
-                                                               correctSuppression = TRUE,
-                                                               filtered = FALSE,
-                                                               legendNames = NULL,
-                                                               title = NULL,
-                                                               heights = c(0.35, 0.5, 0.15)) {
-  fts <- get_features(x, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    message("\U2717 Features not found for the targets!")
-    return(NULL)
-  }
-
-  eic <- get_features_eic(x,
-    analyses = unique(fts$analysis), features = fts,
-    rtExpand = rtExpand, mzExpand = mzExpand, filtered = filtered, useLoadedData = useLoadedData
-  )
-
-  intensity <- NULL
-
-  eic <- eic[, `:=`(intensity = max(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
-
-  eic <- unique(eic)
-
-  if (nrow(eic) == 0) {
-    message("\U2717 Traces and/or features not found for targets!")
-    return(NULL)
-  }
-
-  if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
-    leg <- legendNames
-    names(leg) <- unique(fts$group)
-    leg <- leg[fts$group]
-  } else if (isTRUE(legendNames) & "name" %in% colnames(fts)) {
-    leg <- fts$name
-  } else {
-    leg <- fts$group
-  }
-
-  names(leg) <- paste0(fts$feature, "_", fts$analysis)
-  eic$uid <- paste0(eic$feature, "_", eic$analysis)
-  fts$uid <- paste0(fts$feature, "_", fts$analysis)
-  eic$var <- leg[eic$uid]
-  fts$var <- leg
-
-  analyses <- .check_analyses_argument(x, analyses)
-
-  .plot_groups_overview_aux(fts, eic, heights, analyses, correctSuppression)
-}
-
-# MARK: plot_groups_profile
-## __plot_groups_profile -----
-#' @export
-#' @noRd
-S7::method(plot_groups_profile, MassSpecAnalyses) <- function(x,
-                                                              analyses = NULL,
-                                                              groups = NULL,
-                                                              mass = NULL,
-                                                              mz = NULL,
-                                                              rt = NULL,
-                                                              mobility = NULL,
-                                                              ppm = 20,
-                                                              sec = 60,
-                                                              millisec = 5,
-                                                              filtered = FALSE,
-                                                              correctSuppression = TRUE,
-                                                              normalized = TRUE,
-                                                              legendNames = NULL,
-                                                              yLab = NULL,
-                                                              title = NULL) {
-  fts <- get_features(x, analyses, groups, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(fts) == 0) {
-    message("\U2717 Features not found for the targets!")
-    return(NULL)
-  }
-
-  polarities <- x$spectra_polarity
-
-  if (!"polarity" %in% colnames(fts)) fts$polarity <- polarities[fts$analysis]
-
-  if (correctSuppression) {
-    if ("suppression_factor" %in% colnames(fts)) {
-      fts$intensity <- fts$intensity * fts$suppression_factor
-    }
-  }
-
-  if (normalized && "intensity_rel" %in% colnames(fts)) fts$intensity <- as.numeric(fts$intensity_rel)
-
-  if (is.character(legendNames) & length(legendNames) == length(unique(fts$group))) {
-    leg <- legendNames
-    names(leg) <- unique(fts$group)
-    leg <- leg[fts$group]
-    fts$var <- leg[fts$group]
-  } else if (isTRUE(legendNames) & "name" %in% colnames(fts)) {
-    leg <- fts$name
-    fts$var <- fts$name
-  } else {
-    leg <- fts$group
-    fts$var <- fts$group
-  }
-
-  u_leg <- unique(leg)
-
-  colors <- .get_colors(u_leg)
-
-  analyses <- .check_analyses_argument(x, analyses)
-
-  showLeg <- rep(TRUE, length(u_leg))
-  names(showLeg) <- u_leg
-
-  rpls <- x$replicates
-
-  plot <- plot_ly(fts, x = sort(unique(fts$analysis)))
-
-  for (g in u_leg) {
-    df <- fts[fts$var == g, ]
-
-    if (!all(analyses %in% df$analysis)) {
-      extra <- data.frame(
-        "analysis" = analyses[!analyses %in% df$analysis],
-        "polarity" = polarities[!names(polarities) %in% df$analysis & names(polarities) %in% analyses],
-        "var" = g,
-        "intensity" = 0
-      )
-      df <- rbind(df[, c("analysis", "var", "intensity", "polarity")], extra)
-    }
-
-    df <- df[order(df$analysis), ]
-
-    if (normalized) {
-      if (length(unique(df$polarity)) > 1) {
-        for (p in unique(df$polarity)) {
-          max_int <- max(df$intensity[df$polarity == p])
-          if (max_int > 0) df$intensity[df$polarity == p] <- df$intensity[df$polarity == p] / max_int
-        }
-      } else {
-        max_int <- max(df$intensity)
-        if (max_int > 0) df$intensity <- df$intensity / max_int
-      }
-    }
-
-    plot <- plot %>% add_trace(df,
-      x = df$analysis,
-      y = df$intensity,
-      type = "scatter", mode = "lines",
-      line = list(width = 0.5, color = colors[g], dash = "dash"),
-      connectgaps = FALSE,
-      name = g,
-      legendgroup = g,
-      showlegend = FALSE
-    )
-
-    df$replicate <- rpls[df$analysis]
-
-    for (r in unique(df$replicate)) {
-      df_r <- df[df$replicate %in% r, ]
-
-      plot <- plot %>% add_trace(df,
-        x = df_r$analysis,
-        y = df_r$intensity,
-        type = "scatter", mode = "lines+markers",
-        line = list(width = 1.5, color = colors[g]),
-        marker = list(size = 5, color = colors[g]),
-        connectgaps = FALSE,
-        name = g,
-        legendgroup = g,
-        showlegend = showLeg[g]
+        xaxis = xaxis,
+        yaxis = yaxis,
+        title = title
       )
 
-      showLeg[g] <- FALSE
+    if (renderEngine %in% "webgl") {
+      plot <- plot %>% plotly::toWebGL()
     }
-  }
 
-  xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = NULL)
-
-  if (!is.null(yLab)) {
-    if (normalized) {
-      yLab <- "Normalized intensity"
-    } else {
-      yLab <- "Intensity / counts"
-    }
-  }
-
-  yaxis <- list(
-    linecolor = toRGB("black"), linewidth = 2,
-    title = "Normalized intensity",
-    titlefont = list(size = 12, color = "black")
-  )
-
-  plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis)
-
-  plot
-}
-
-# MARK: map_components
-## __map_components -----
-#' @export
-#' @noRd
-S7::method(map_components, MassSpecAnalyses) <- function(x,
-                                                         analyses = NULL,
-                                                         features = NULL,
-                                                         mass = NULL,
-                                                         mz = NULL,
-                                                         rt = NULL,
-                                                         mobility = NULL,
-                                                         ppm = 20,
-                                                         sec = 60,
-                                                         millisec = 5,
-                                                         filtered = FALSE,
-                                                         xlim = 30,
-                                                         ylim = 0.05,
-                                                         showLegend = TRUE,
-                                                         legendNames = NULL,
-                                                         xLab = NULL,
-                                                         yLab = NULL,
-                                                         title = NULL,
-                                                         colorBy = "targets",
-                                                         interactive = TRUE) {
-  components <- get_components(x, analyses, features, mass, mz, rt, mobility, ppm, sec, millisec, filtered)
-
-  if (nrow(components) == 0) {
-    warning("\U2717 Components not found for the targets!")
-    return(NULL)
-  }
-
-  if (grepl("replicates", colorBy) && !"replicate" %in% colnames(components)) {
-    components$replicate <- x$replicates[components$analysis]
-  }
-
-  if (!interactive) {
-    .map_components_static(components, colorBy, legendNames, xlim, ylim, xLab, yLab, title, showLegend)
-  } else {
-    .map_components_interactive(components, colorBy, legendNames, xlim, ylim, xLab, yLab, title, showLegend = TRUE)
+    plot
   }
 }
-
-# MARK: plot_internal_standards
-## __plot_internal_standards -----
-#' @export
-#' @noRd
-S7::method(plot_internal_standards, MassSpecAnalyses) <- function(x,
-                                                                  analyses = NULL,
-                                                                  presence = TRUE,
-                                                                  recovery = TRUE,
-                                                                  deviations = TRUE,
-                                                                  widths = TRUE) {
-  analyses <- .check_analyses_argument(x, analyses)
-
-  if (!x$has_nts) {
-    return(NULL)
-  }
-
-  if (x$nts$has_groups) {
-    istd <- get_internal_standards(x, average = TRUE)
-    istd <- istd[istd$replicate %in% x$replicates[analyses], ]
-    .plot_internal_standards_qc_interactive(istd, x$replicates[analyses], presence, recovery, deviations, widths)
-  } else {
-    istd <- get_internal_standards(x, average = FALSE)
-    istd <- istd[istd$analysis %in% analyses, ]
-    .plot_internal_standards_qc_interactive(istd, x$names[analyses], presence, recovery, deviations, widths)
-  }
-}
-
-# MARK: plot_suspects
-## __plot_suspects -----
-#' @export
-#' @noRd
-S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
-                                                        analyses = NULL,
-                                                        database = NULL,
-                                                        features = NULL,
-                                                        mass = NULL,
-                                                        mz = NULL,
-                                                        rt = NULL,
-                                                        mobility = NULL,
-                                                        ppm = 4,
-                                                        sec = 10,
-                                                        millisec = 5,
-                                                        ppmMS2 = 10,
-                                                        minFragments = 3,
-                                                        isolationWindow = 1.3,
-                                                        mzClust = 0.003,
-                                                        presence = 0.8,
-                                                        minIntensity = 0,
-                                                        filtered = FALSE,
-                                                        rtExpand = 120,
-                                                        mzExpand = 0.005,
-                                                        useLoadedData = TRUE,
-                                                        colorBy = "targets",
-                                                        interactive = TRUE) {
-  if (!x$has_nts) {
-    return(NULL)
-  }
-
-  if (!x$nts$has_features_suspects) {
-    return(NULL)
-  }
-
-  suspects <- get_suspects(
-    x,
-    analyses,
-    database,
-    features,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    ppmMS2,
-    minFragments,
-    isolationWindow,
-    mzClust,
-    presence,
-    minIntensity,
-    filtered,
-    onGroups = FALSE
-  )
-
-  if (nrow(suspects) == 0) {
-    return(NULL)
-  }
-
-  eic <- get_features_eic(
-    x,
-    analyses = unique(suspects$analysis),
-    features = suspects$feature,
-    rtExpand = rtExpand,
-    mzExpand = mzExpand,
-    filtered = filtered,
-    useLoadedData = useLoadedData
-  )
-
-  intensity <- NULL
-
-  eic <- eic[, `:=`(intensity = sum(intensity)), by = c("analysis", "polarity", "feature", "rt")][]
-
-  if (nrow(eic) == 0) {
-    message("\U2717 Traces and/or features not found for targets!")
-    return(NULL)
-  }
-
-  if (grepl("replicates", colorBy)) {
-    eic$replicate <- x$replicates[eic$analysis]
-    suspects$replicate <- x$replicates[suspects$analysis]
-  }
-
-  suspects <- .make_colorBy_varkey(suspects, colorBy, TRUE)
-
-  leg <- suspects$var
-  names(leg) <- paste0(suspects$feature, "_", suspects$analysis)
-  eic$uid <- paste0(eic$feature, "_", eic$analysis)
-  suspects$uid <- paste0(suspects$feature, "_", suspects$analysis)
-  eic$var <- leg[eic$uid]
-
-  if (!interactive) {
-    .plot_suspects_static(suspects, eic)
-  } else {
-    .plot_suspects_interactive(suspects, eic, heights = c(0.5, 0.5))
-  }
-}
-
-#' @noRd
-# S7::method(, MassSpecAnalyses) <- function(x, ) {
-#
-# }
-
-
-#' @noRd
-# S7::method(, MassSpecAnalyses) <- function(x, ) {
-#
-# }
-
-
 
 # MARK: Utility functions
 # Utility functions -----
 
 # MARK: .get_MassSpecAnalysis_from_files
 #' @noRd
-.get_MassSpecAnalysis_from_files <- function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
+.get_MassSpecAnalysis_from_files <- function(files = NULL,
+                                             centroid = FALSE,
+                                             levels = c(1, 2)) {
   if (!is.null(files)) {
     if (is.data.frame(files)) {
       if (all(c("path", "analysis") %in% colnames(files))) {
         files$file <- vapply(seq_len(nrow(files)), function(x) {
-          list.files(files$path[x], pattern = files$analysis[x], full.names = TRUE, recursive = FALSE)
+          list.files(
+            files$path[x],
+            pattern = files$analysis[x],
+            full.names = TRUE,
+            recursive = FALSE
+          )
         }, "")
       }
 
@@ -4617,7 +2313,6 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
     names(blanks) <- as.character(files)
 
     if (any(vapply(files, function(x) tools::file_ext(x) == "d", FALSE))) {
-
       files_to_convert <- files[tools::file_ext(files) == "d"]
       files_converted <- gsub(".d$", ".mzML", files_to_convert)
 
@@ -4630,16 +2325,16 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
           }
         }
       }
-      
+
       files_to_convert <- files[tools::file_ext(files) == "d"]
 
       if (length(files_to_convert) > 0) {
         filter <- ""
-        
+
         if (centroid) {
           filter <- "peakPicking vendor"
         }
-        
+
         if (centroid && is.numeric(levels) && length(levels) > 0) {
           levels <- paste(levels, collapse = "-")
           levels <- paste("msLevel=", levels, collapse = "", sep = "")
@@ -4649,36 +2344,44 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
             filter <- levels
           }
         }
-        
+
         optList <- list()
         if (filter != "") {
           optList <- list(filter = filter)
         }
 
-        tryCatch({
-          StreamFind::convert_ms_files(
-            files = files_to_convert,
-            outputFormat = "mzML",
-            outputPath = NULL,
-            optList = optList
-          )
+        tryCatch(
+          {
+            StreamFind::convert_ms_files(
+              files = files_to_convert,
+              outputFormat = "mzML",
+              outputPath = NULL,
+              optList = optList
+            )
 
-          files <- c(files[!files %in% files_to_convert], files_converted[!files_converted %in% files])
-          exist_files <- vapply(files, function(x) file.exists(x), FALSE)
-          files <- files[exist_files]
+            files <- c(
+              files[!files %in% files_to_convert],
+              files_converted[!files_converted %in% files]
+            )
 
-        }, error = function(e) {
-          warning("Error converting files!")
-          files <- files[!files %in% files_to_convert]
-        }, warning = function(w) {
-          warning("Warning converting files!")
-          files <- files[!files %in% files_to_convert]
-        })
+            exist_files <- vapply(files, function(x) file.exists(x), FALSE)
+            files <- files[exist_files]
+          },
+          error = function(e) {
+            warning("Error converting files!")
+            files <- files[!files %in% files_to_convert]
+          },
+          warning = function(w) {
+            warning("Warning converting files!")
+            files <- files[!files %in% files_to_convert]
+          }
+        )
       }
     }
 
     analyses <- lapply(files, function(x) {
-      cache <- .load_chache("parsed_ms_analyses", x)
+      cache <- .load_chache_rds("parsed_ms_analyses", x)
+      # cache <- .load_cache_sqlite("parsed_ms_analyses", x)
       if (!is.null(cache$data)) {
         message("\U2139 ", basename(x), " analysis loaded from cache!")
         cache$data
@@ -4707,11 +2410,18 @@ S7::method(plot_suspects, MassSpecAnalyses) <- function(x,
         if (!is.na(blk)) ana$blank <- blk
 
         ana$blank <- blk
-        
-        ana$concentration <- suppressWarnings(as.numeric(ana$name))
+
+        concentration <- suppressWarnings(as.numeric(ana$name))
+
+        if (is.na(concentration)) {
+          ana$concentration <- NA_real_
+        } else {
+          ana$concentration <- concentration
+        }
 
         if (!is.null(cache$hash)) {
-          .save_cache("parsed_ms_analyses", ana, cache$hash)
+          .save_cache_rds("parsed_ms_analyses", ana, cache$hash)
+          # .save_cache_sqlite("parsed_ms_analyses", ana, cache$hash)
           message("\U1f5ab Parsed analysis cached!")
         }
 

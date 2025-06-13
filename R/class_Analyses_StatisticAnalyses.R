@@ -1,56 +1,73 @@
 # MARK: StatisticAnalyses
+# StatisticAnalyses -----
+#' @title Statistical Analyses (Tabular Data Input)
+#' 
+#' @description The StatisticAnalyses class is used for statistical analysis of tabular data.
+#' 
+#' @param analyses A `character` vector with full file path to `.csv` file with variable names as
+#' first row and analyses names as first column or a `data.frame` or `matrix` object.
+#' @param classes A `character` vector with the classes of the analyses.
+#' @param concentrations A `numeric` vector with the concentrations of the analyses.
+#' @param ... Additional arguments passed to the constructor.
+#' 
+#' @slot analyses A `data.frame` with the analyses data.
+#' @slot type A `character` vector with the type of analyses.
+#' @slot classes A `character` vector with the classes of the analyses.
+#' @slot concentrations A `numeric` vector with the concentrations of the analyses.
+#' @slot info (getter) A `data.frame` with the information of the analyses.
+#' @slot number_variables (getter) A `numeric` with the number of variables in the analyses.
+#' @slot has_data (getter) A `logical` indicating if the analyses has data.
+#' @slot data (getter/setter) A `list` with the data of the analyses.
+#' @slot has_model (getter) A `logical` indicating if the analyses has a model.
+#' @slot model (getter/setter) A `list` with the model of the analyses.
+#' @slot has_test (getter) A `logical` indicating if the analyses has a test.
+#' @slot test (getter) A `list` with the test of the analyses.
+#' @slot has_prediction (getter) A `logical` indicating if the analyses has a prediction.
+#' @slot prediction (getter) A `list` with the prediction of the analyses.
+#' @slot has_quantification (getter) A `logical` indicating if the analyses has a quantification.
+#' @slot quantification (getter/setter) A `list` with the quantification of the analyses.
+#' 
 #' @export
-#' @noRd
-StatisticAnalyses <- S7::new_class("StatisticAnalyses",
-  package = "StreamFind", parent = Analyses,
+#' 
+StatisticAnalyses <- S7::new_class(
+  name = "StatisticAnalyses",
+  package = "StreamFind",
+  parent = Analyses,
   properties = list(
 
     # MARK: analyses
-    ## __analyses -----
+    ## analyses -----
     analyses = S7::new_property(S7::class_data.frame, default = data.frame()),
 
-    # MARK: names
-    ## __names -----
-    names = S7::new_property(S7::class_character,
-      getter = function(self) {
-        out <- rownames(self$analyses)
-        if (is(self$results[["model"]], "StreamFind::StatisticModel")) {
-          has_test <- !is.null(self$results[["model"]]$model$res$test)
-          has_prediction <- !is.null(self$results[["model"]]$model$res$prediction)
-          if (has_test) out <- c(out, rownames(self$results[["model"]]$model$res$test$data))
-          if (has_prediction) out <- c(out, rownames(self$results[["model"]]$model$res$prediction$data))
-        }
-        out
-      }
-    ),
-
     # MARK: type
-    ## __type -----
+    ## type -----
     type = S7::new_property(S7::class_character, getter = function(self) {
       out <- rep("model", nrow(self$analyses))
       if (is(self$results[["model"]], "StreamFind::StatisticModel")) {
         has_test <- !is.null(self$results[["model"]]$model$res$test$data)
         has_prediction <- !is.null(self$results[["model"]]$model$res$prediction$data)
         if (has_test) out <- c(out, rep("test", nrow(self$results[["model"]]$model$res$test$data)))
-        if (has_prediction) out <- c(out, rep("prediction", nrow(self$results[["model"]]$model$res$prediction$data)))
+        if (has_prediction) {
+          out <- c(out, rep("prediction", nrow(self$results[["model"]]$model$res$prediction$data)))
+        }
       }
-      names(out) <- self$names
+      names(out) <- names(self)
       out
     }),
 
     # MARK: classes
-    ## __classes -----
+    ## classes -----
     classes = S7::new_property(S7::class_character, default = character()),
 
     # MARK: concentrations
-    ## __concentrations -----
+    ## concentrations -----
     concentrations = S7::new_property(S7::class_numeric, default = numeric(0)),
 
     # MARK: info
-    ## __info -----
+    ## info -----
     info = S7::new_property(S7::class_data.frame, getter = function(self) {
       if (length(self) > 0) {
-        analyses_names <- self$names
+        analyses_names <- names(self)
         df <- data.frame(
           "analysis" = analyses_names,
           "type" = self@type,
@@ -58,13 +75,21 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
         )
 
         if (length(self@classes) > 0) {
-          df <- cbind(df, "class" = c(self@classes, rep(NA_character_, length(self@type) - length(self@classes))))
+          df <- cbind(
+            df,
+            "class" = c(self@classes, rep(NA_character_, length(self@type) - length(self@classes)))
+          )
         }
 
         if (length(self@concentrations) > 0) {
-          df <- cbind(df, "concentration" = c(self@concentrations, rep(NA_real_, length(self@type) - length(self@concentrations))))
+          df <- cbind(
+            df,
+            "concentration" = c(
+              self@concentrations,
+              rep(NA_real_, length(self@type) - length(self@concentrations))
+            )
+          )
         }
-
         row.names(df) <- seq_len(length(analyses_names))
         df
       } else {
@@ -73,7 +98,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }, default = data.frame()),
 
     # MARK: number_variables
-    ## __number_variables -----
+    ## number_variables -----
     number_variables = S7::new_property(S7::class_numeric, getter = function(self) {
       if (length(self) == 0) {
         return(0)
@@ -82,28 +107,28 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: has_data
-    ## __has_data -----
+    ## has_data -----
     has_data = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
         return(FALSE)
       }
-      if (is.null(self@results[["data"]])) {
+      if (is.null(self@results[["DataFrame"]])) {
         if (nrow(self$analyses) == 0) {
           return(FALSE)
         }
       }
-      if (!is(self@results[["data"]], "StreamFind::DataFrame")) {
+      if (!is(self@results[["DataFrame"]], "StreamFind::DataFrame")) {
         return(FALSE)
       }
       TRUE
     }),
 
     # MARK: data
-    ## __data -----
+    ## data -----
     data = S7::new_property(S7::class_list,
       getter = function(self) {
-        if (!is.null(self@results[["data"]])) {
-          data <- self@results[["data"]]
+        if (!is.null(self@results[["DataFrame"]])) {
+          data <- self@results[["DataFrame"]]
         } else {
           data <- StreamFind::DataFrame(data = self$analyses)
         }
@@ -116,7 +141,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
       setter = function(self, value) {
         if (is(value, "StreamFind::DataFrame")) {
           self@results[["results"]] <- list()
-          self@results[["data"]] <- value
+          self@results[[value@name]] <- value
         } else {
           warning("Value must be a Data results object! Not done.")
         }
@@ -125,32 +150,37 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     ),
 
     # MARK: has_model
-    ## __has_model -----
+    ## has_model -----
     has_model = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
         return(FALSE)
       }
-      if (is.null(self@results[["model"]])) {
+      if (length(self@results) == 0) {
         return(FALSE)
       }
-      if (!is(self@results[["model"]], "StreamFind::StatisticModel")) {
+      if (!any(vapply(self@results, function(x) is(x, "StreamFind::StatisticModel"), FALSE))) {
         return(FALSE)
       }
       TRUE
     }),
 
     # MARK: model
-    ## __model -----
+    ## model -----
     model = S7::new_property(S7::class_list,
       getter = function(self) {
         if (self$has_model) {
-          return(self@results[["model"]])
+          model_sel <- vapply(self@results, function(x) is(x, "StreamFind::StatisticModel"), FALSE)
+          model <- self@results[model_sel]
+          if (length(model) > 1) {
+            warning("More than one model found, returning the first one!")
+          }
+          return(model[[1]])
         }
         NULL
       },
       setter = function(self, value) {
         if (is(value, "StreamFind::StatisticModel")) {
-          self@results[["model"]] <- value
+          self@results[[value@name]] <- value
         } else {
           warning("Value must be a Model results object! Not done.")
         }
@@ -159,7 +189,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     ),
 
     # MARK: has_test
-    ## __has_test -----
+    ## has_test -----
     has_test = S7::new_property(S7::class_logical, getter = function(self) {
       if (!self$has_model) {
         return(FALSE)
@@ -171,7 +201,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: test
-    ## __test -----
+    ## test -----
     test = S7::new_property(S7::class_list, getter = function(self) {
       if (self$has_test) {
         return(self@results[["model"]]$model$res$test)
@@ -180,7 +210,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: has_prediction
-    ## __has_prediction -----
+    ## has_prediction -----
     has_prediction = S7::new_property(S7::class_logical, getter = function(self) {
       if (!self$has_model) {
         return(FALSE)
@@ -192,7 +222,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: prediction
-    ## __prediction -----
+    ## prediction -----
     prediction = S7::new_property(S7::class_list, getter = function(self) {
       if (self$has_prediction) {
         return(self@results[["model"]]$model$res$prediction)
@@ -201,7 +231,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: has_quantification
-    ## __has_quantification -----
+    ## has_quantification -----
     has_quantification = S7::new_property(S7::class_logical, getter = function(self) {
       if (length(self) == 0) {
         return(FALSE)
@@ -216,7 +246,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
     }),
 
     # MARK: quantification
-    ## __quantification -----
+    ## quantification -----
     quantification = S7::new_property(S7::class_list,
       getter = function(self) {
         if (self$has_quantification) {
@@ -236,7 +266,7 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
   ),
 
   # MARK: constructor
-  ## __constructor -----
+  ## constructor -----
   constructor = function(analyses = NULL, classes = character(), concentrations = numeric(), ...) {
     if (is.null(analyses)) analyses <- data.frame()
 
@@ -259,11 +289,17 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
       }
     }
 
-    S7::new_object(Analyses(), possible_formats = ".csv", analyses = analyses, classes = classes, concentrations = concentrations)
+    S7::new_object(
+      Analyses(),
+      possible_formats = ".csv",
+      analyses = analyses,
+      classes = classes,
+      concentrations = concentrations
+    )
   },
 
   # MARK: validator
-  ## __validator -----
+  ## validator -----
   validator = function(self) {
     checkmate::assert_true(identical(self@possible_formats, ".csv"))
     checkmate::assert_data_frame(self@analyses)
@@ -279,14 +315,21 @@ StatisticAnalyses <- S7::new_class("StatisticAnalyses",
 # Methods -----
 
 # MARK: names
-## __names -----
+## names -----
 #' @noRd
 S7::method(names, StatisticAnalyses) <- function(x) {
-  x@names
+  out <- rownames(x$analyses)
+  if (is(x$results[["model"]], "StreamFind::StatisticModel")) {
+    has_test <- !is.null(x$results[["model"]]$model$res$test)
+    has_prediction <- !is.null(x$results[["model"]]$model$res$prediction)
+    if (has_test) out <- c(out, rownames(x$results[["model"]]$model$res$test$data))
+    if (has_prediction) out <- c(out, rownames(x$results[["model"]]$model$res$prediction$data))
+  }
+  out
 }
 
 # MARK: length
-## __length -----
+## length -----
 #' @export
 #' @noRd
 S7::method(length, StatisticAnalyses) <- function(x) {
@@ -294,7 +337,7 @@ S7::method(length, StatisticAnalyses) <- function(x) {
 }
 
 # MARK: add
-## __add -----
+## add -----
 #' @export
 #' @noRd
 S7::method(add, StatisticAnalyses) <- function(x, value) {
@@ -319,7 +362,9 @@ S7::method(add, StatisticAnalyses) <- function(x, value) {
 
     if (nrow(value) > 0) {
       if (length(rownames(value)) == 0) {
-        rownames(value) <- paste0("analysis_", seq(nrow(x@analyses) + 1, nrow(x@analyses) + nrow(value), by = 1))
+        rownames(value) <- paste0(
+          "analysis_", seq(nrow(x@analyses) + 1, nrow(x@analyses) + nrow(value), by = 1)
+        )
       }
     }
 
@@ -327,16 +372,16 @@ S7::method(add, StatisticAnalyses) <- function(x, value) {
     x@analyses <- x@analyses[order(rownames(x@analyses)), ]
     x@results <- list()
   }
-  return(x)
+  x
 }
 
 # MARK: remove
-## __remove -----
+## remove -----
 #' @export
 #' @noRd
 S7::method(remove, StatisticAnalyses) <- function(x, value) {
   if (is.character(value)) {
-    if (value %in% x@names) {
+    if (value %in% names(x)) {
       x@analyses <- x@analyses[-which(rownames(x@analyses) == value), ]
       x@results <- list()
     }
@@ -347,15 +392,15 @@ S7::method(remove, StatisticAnalyses) <- function(x, value) {
       x@results <- list()
     }
   }
-  return(x)
+  x
 }
 
 # MARK: `[`
-## __`[` -----
+## `[` -----
 
 #' @export
 #' @noRd
-S7::method(`[`, StatisticAnalyses) <- function(x, i) {
+`[.StreamFind::StatisticAnalyses` <- function(x, i) {
   if (is.character(i)) {
     x@analyses <- x@analyses[rownames(x@analyses) %in% i, ]
     x@results <- list()
@@ -365,23 +410,23 @@ S7::method(`[`, StatisticAnalyses) <- function(x, i) {
   } else {
     warning("Index must be character or numeric!")
   }
-  return(x)
+  x
 }
 
 # MARK: `[<-`
-## __`[<-` -----
+## `[<-` -----
 #' @export
 #' @noRd
-S7::method(`[<-`, StatisticAnalyses) <- function(x, i, value) {
+`[<-.StreamFind::StatisticAnalyses` <- function(x, i, value) {
   x <- add(x, value)
-  return(x)
+  x
 }
 
 # MARK: `[[`
-## __`[[` -----
+## `[[` -----
 #' @export
 #' @noRd
-S7::method(`[[`, StatisticAnalyses) <- function(x, i) {
+`[[.StreamFind::StatisticAnalyses` <- function(x, i) {
   if (is.character(i)) {
     x@analyses <- x@analyses[rownames(x@analyses) %in% i, ]
     x@results <- list()
@@ -391,20 +436,20 @@ S7::method(`[[`, StatisticAnalyses) <- function(x, i) {
   } else {
     warning("Index must be character or numeric!")
   }
-  return(x)
+  x
 }
 
 # MARK: `[[<-`
-## __`[[<-` -----
+## `[[<-` -----
 #' @export
 #' @noRd
-S7::method(`[[<-`, StatisticAnalyses) <- function(x, i, value) {
+`[[<-.StreamFind::StatisticAnalyses` <- function(x, i, value) {
   x <- add(x, value)
-  return(x)
+  x
 }
 
 # MARK: predict
-## __predict -----
+## predict -----
 #' @export
 #' @noRd
 S7::method(predict, StatisticAnalyses) <- function(x, data) {
@@ -442,7 +487,10 @@ S7::method(predict, StatisticAnalyses) <- function(x, data) {
   }
 
   if (ncol(data) != x$number_variables) {
-    warning("The number of variables in the data must be equal to the number of variables in the model! Not done.")
+    warning(
+      "The number of variables in the data must be equal to the
+      number of variables in the model! Not done."
+    )
     return(x)
   }
 
@@ -457,7 +505,7 @@ S7::method(predict, StatisticAnalyses) <- function(x, data) {
 }
 
 # MARK: test
-## __test -----
+## test -----
 #' @export
 #' @noRd
 S7::method(test, StatisticAnalyses) <- function(x, data) {
@@ -495,7 +543,10 @@ S7::method(test, StatisticAnalyses) <- function(x, data) {
   }
 
   if (ncol(data) != x$number_variables) {
-    warning("The number of variables in the data must be equal to the number of variables in the model! Not done.")
+    warning(
+      "The number of variables in the data must be equal
+      to the number of variables in the model! Not done."
+    )
     return(x)
   }
 
@@ -513,7 +564,7 @@ S7::method(test, StatisticAnalyses) <- function(x, data) {
 # Get Methods -----
 
 # MARK: get_model_data
-## __get_model_data -----
+## get_model_data -----
 #' @export
 #' @noRd
 S7::method(get_model_data, StatisticAnalyses) <- function(x) {
@@ -528,7 +579,7 @@ S7::method(get_model_data, StatisticAnalyses) <- function(x) {
 # Plot Methods -----
 
 # MARK: plot_data
-## __plot_data -----
+## plot_data -----
 #' @export
 #' @noRd
 S7::method(plot_data, StatisticAnalyses) <- function(x,
@@ -538,7 +589,9 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
                                                      interactive = TRUE,
                                                      xLab = NULL,
                                                      yLab = NULL,
-                                                     title = NULL) {
+                                                     title = NULL,
+                                                     colorGroups = NULL,
+                                                     xTickLabelsShow = TRUE) {
   mat <- x$data$data
 
   if (!is.null(analyses)) mat <- mat[analyses, , drop = FALSE]
@@ -549,8 +602,8 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
   }
 
   if (x$has_model) {
-    new_analyses_names <- paste0(x$type, "_", x$names)
-    names(new_analyses_names) <- x$names
+    new_analyses_names <- paste0(x$type, "_", names(x))
+    names(new_analyses_names) <- names(x)
     rownames(mat) <- new_analyses_names[rownames(mat)]
   }
 
@@ -573,17 +626,43 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
 
   if (!interactive) {
     cl <- .get_colors(rownames(mat))
-    plot(seq_len(ncol(mat)), mat[1, ], type = "l", col = unname(cl[1]), xlab = xLab, ylab = yLab, main = title, ylim = range(mat))
+    plot(
+      seq_len(ncol(mat)),
+      mat[1, ], type = "l",
+      col = unname(cl[1]),
+      xlab = xLab,
+      ylab = yLab,
+      main = title,
+      ylim = range(mat)
+    )
     for (i in 2:nrow(mat)) lines(seq_len(ncol(mat)), mat[i, ], col = unname(cl[i]))
     legend("topright", legend = rownames(mat), col = unname(cl), lty = 1, cex = 0.8)
   } else {
-    cl <- .get_colors(rownames(mat))
+    
+    if (!is.null(colorGroups)) {
+      if (length(colorGroups) != nrow(mat)) {
+        warning("The color groups must have the same length as the number of analyses!")
+        return(NULL)
+      }
+      
+      colorGroups <- gsub(" ", "_", colorGroups)
+      var_name <- colorGroups
+      cl <- .get_colors(unique(colorGroups))
+    } else {
+      var_name <- rownames(mat)
+      cl <- .get_colors(unique(rownames(mat)))
+    }
+    
+    how_leg <- rep(TRUE, length(cl))
+    names(how_leg) <- names(cl)
+    
     fig <- plotly::plot_ly()
 
     if (is.null(attr(mat, "xValues"))) {
       xVal <- seq_len(ncol(mat))
     } else {
       xVal <- attr(mat, "xValues")
+      xVal <- factor(xVal, levels = xVal)
     }
 
     for (i in seq_len(nrow(mat))) {
@@ -591,21 +670,34 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
         x = xVal,
         y = unlist(mat[i, ]),
         type = "scatter", mode = "lines",
-        line = list(width = 0.5, color = unname(cl[i])),
+        line = list(width = 0.5, color = unname(cl[var_name[i]])),
         text = paste0(
           "Analysis: ", rownames(mat)[i], "<br>",
           "Variable: ", xVal, "<br>",
           "Intensity: ", unlist(mat[i, ])
         ),
         hoverinfo = "text",
-        name = names(cl)[i],
-        legendgroup = names(cl)[i],
-        showlegend = TRUE
+        name = var_name[i],
+        legendgroup = var_name[i],
+        showlegend = how_leg[var_name[i]]
       )
+      how_leg[var_name[i]] <- FALSE
     }
 
-    xaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = xLab, titlefont = list(size = 12, color = "black"))
-    yaxis <- list(linecolor = toRGB("black"), linewidth = 2, title = yLab, titlefont = list(size = 12, color = "black"))
+    xaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = xLab,
+      titlefont = list(size = 12, color = "black"),
+      showticklabels = xTickLabelsShow
+    )
+    
+    yaxis <- list(
+      linecolor = toRGB("black"),
+      linewidth = 2,
+      title = yLab,
+      titlefont = list(size = 12, color = "black")
+    )
 
     fig <- fig %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
 
@@ -614,7 +706,7 @@ S7::method(plot_data, StatisticAnalyses) <- function(x,
 }
 
 # MARK: plot_residual_distance
-## __plot_residual_distance -----
+## plot_residual_distance -----
 #' @export
 #' @noRd
 S7::method(plot_residual_distance, StatisticAnalyses) <- function(x, ...) {
@@ -622,7 +714,7 @@ S7::method(plot_residual_distance, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_explained_variance
-## __plot_explained_variance -----
+## plot_explained_variance -----
 #' @export
 #' @noRd
 S7::method(plot_explained_variance, StatisticAnalyses) <- function(x, ...) {
@@ -630,7 +722,7 @@ S7::method(plot_explained_variance, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_scores
-## __plot_scores -----
+## plot_scores -----
 #' @export
 #' @noRd
 S7::method(plot_scores, StatisticAnalyses) <- function(x, ...) {
@@ -640,7 +732,7 @@ S7::method(plot_scores, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_loadings
-## __plot_loadings -----
+## plot_loadings -----
 #' @export
 #' @noRd
 S7::method(plot_loadings, StatisticAnalyses) <- function(x, ...) {
@@ -648,7 +740,7 @@ S7::method(plot_loadings, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_residuals
-## __plot_residuals -----
+## plot_residuals -----
 #' @export
 #' @noRd
 S7::method(plot_residuals, StatisticAnalyses) <- function(x, ...) {
@@ -658,7 +750,7 @@ S7::method(plot_residuals, StatisticAnalyses) <- function(x, ...) {
 }
 
 # MARK: plot_resolved_spectra
-## __plot_resolved_spectra -----
+## plot_resolved_spectra -----
 #' @export
 #' @noRd
 S7::method(plot_resolved_spectra, StatisticAnalyses) <- function(x, ...) {

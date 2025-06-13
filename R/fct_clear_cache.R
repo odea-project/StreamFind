@@ -1,61 +1,108 @@
-#' @title clear_cache
-#'
+#' @title clear_cache.character
+#' 
 #' @description Clears cached data using the approach as in the patRoon package.
 #' 
-#' @param what A character string specifying the cache to remove. If NULL, a list of available caches is shown.
+#' @param x A character vector with the names of the cache categories to clear. An integer
+#' vector with the indices of the categories to clear can alternatively be given to remove
+#' categories. If `NULL` (the default), the entire cache is cleared. Use the method
+#' `get_cache_info` to get the cached categories.
 #' @param file A character string specifying the cache file to use. Default is "cache.sqlite".
 #' 
 #' @references
 #' \insertRef{patroon01}{StreamFind}
-#'
+#' 
 #' \insertRef{patroon02}{StreamFind}
-#'
+#' 
+#' 
 #' @export
-#'
-clear_cache <- function(what = NULL, file = "cache.sqlite") {
-  checkmate::assertString(what, na.ok = FALSE, null.ok = TRUE)
+#' @noRd
+S7::method(clear_cache, S7::class_character) <- function(x, file = getOption("StreamFind_cache_path"), ...) {
   
-  if (!file.exists(file)) {
-    message("\U2139 No cache file found, nothing to do.")
-    
-  } else if (!is.null(what) && what == "all") {
-    
-    if (unlink(file) != 0) {
-      gc()
-      if (unlink(file) != 0) {
-        warning("Could not clear cache file!")
-      } else {
-        message("\U2713 All caches cleared!")
-      }
-    }
-  } else {
-    db <- .openCacheDBScope(file = file)
-    tables <- DBI::dbListTables(db)
-    
-    if (length(tables) == 0) {
-      message("\U2139 Cache file is empty, nothing to do.")
-      
-    } else if (is.null(what) || !nzchar(what)) {
-      tableRows <- unlist(sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))))
-      formatted_strings <- sprintf("- %s (%d rows)\n", tables, tableRows)
-      combined_string <- paste(formatted_strings, collapse = "")
-      message("Please specify which cache you want to remove. Available are:\n",
-        combined_string, "- all (removes complete cache database)\n",
-        sep = ""
-      )
-      
-    } else {
-      matchedTables <- grep(what, tables, value = TRUE)
-      
-      if (length(matchedTables) == 0) {
-        warning("No cache found that matches given pattern. Currently stored caches: ", paste0(tables, collapse = ", "))
-        
-      } else {
-        for (tab in matchedTables) DBI::dbExecute(db, sprintf("DROP TABLE IF EXISTS %s", tab))
-        DBI::dbExecute(db, "VACUUM")
-        message("\U2713 Removed caches: ", paste0(matchedTables, collapse = ", "))
-      }
-    }
+  caching_mode <- getOption("StreamFind_cache_mode")
+  
+  if (is.null(caching_mode)) {
+    warning(
+      "No caching mode set in options!",
+      " Use `set_cache_mode` to set the caching mode to rds or sqlite."
+    )
+    return(invisible(NULL))
   }
-  invisible(NULL)
+  
+  checkmate::assert_choice(caching_mode, c("rds", "sqlite"))
+  
+  info <- get_cache_info(file)
+  
+  if (nrow(info) == 0) {
+    warning("No cache categories found!")
+  }
+  
+  if (caching_mode == "rds") {
+    .clear_cache_rds(x, file)
+  } else if (caching_mode == "sqlite") {
+    .clear_cache_sqlite(x, file)
+  } else {
+    stop("Unknown caching mode!")
+  }
+}
+
+#' @export
+#' @noRd
+S7::method(clear_cache, S7::class_numeric) <- function(x, file = getOption("StreamFind_cache_path"), ...) {
+  
+  caching_mode <- getOption("StreamFind_cache_mode")
+  
+  if (is.null(caching_mode)) {
+    warning(
+      "No caching mode set in options!",
+      " Use `set_cache_mode` to set the caching mode to rds or sqlite."
+    )
+    return(invisible(NULL))
+  }
+  
+  checkmate::assert_choice(caching_mode, c("rds", "sqlite"))
+  
+  info <- get_cache_info(file)
+  
+  if (nrow(info) == 0) {
+    warning("No cache categories found!")
+  }
+  
+  if (caching_mode == "rds") {
+    .clear_cache_rds(x, file)
+  } else if (caching_mode == "sqlite") {
+    .clear_cache_sqlite(x, file)
+  } else {
+    stop("Unknown caching mode!")
+  }
+}
+
+#' @export
+#' @noRd
+S7::method(clear_cache, S7::class_missing) <- function(x, file = getOption("StreamFind_cache_path"), ...) {
+  
+  caching_mode <- getOption("StreamFind_cache_mode")
+  
+  if (is.null(caching_mode)) {
+    warning(
+      "No caching mode set in options!",
+      " Use `set_cache_mode` to set the caching mode to rds or sqlite."
+    )
+    return(invisible(NULL))
+  }
+  
+  checkmate::assert_choice(caching_mode, c("rds", "sqlite"))
+  
+  info <- get_cache_info(file)
+  
+  if (nrow(info) == 0) {
+    warning("No cache categories found!")
+  }
+  
+  if (caching_mode == "rds") {
+    .clear_cache_rds(x, file)
+  } else if (caching_mode == "sqlite") {
+    .clear_cache_sqlite(x, file)
+  } else {
+    stop("Unknown caching mode!")
+  }
 }

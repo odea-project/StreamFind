@@ -103,12 +103,14 @@ Rcpp::List rcpp_parse_asc_file(std::string file_path) {
   
   data_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
   
- list_out = Rcpp::List::create(
+  list_out = Rcpp::List::create(
     Rcpp::Named("name") = file_info,
     Rcpp::Named("replicate") = file_info,
-    Rcpp::Named("blank") = "",
+    Rcpp::Named("blank") = NA_STRING,
+    Rcpp::Named("concentration") = NA_REAL,
+    Rcpp::Named("reference") = NA_STRING,
     Rcpp::Named("file") = file_path,
-    Rcpp::Named("type") = "raman",
+    Rcpp::Named("type") = "Raman",
     Rcpp::Named("metadata") = metadata_list,
     Rcpp::Named("spectra") = data_list
   );

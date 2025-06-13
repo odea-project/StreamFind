@@ -9,7 +9,11 @@ devtools::document()
 devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = FALSE)
 
 # Builds/Updates the GitHub page
+pkgdown::clean_cache()
+pkgdown::clean_site()
 pkgdown::build_site()
+
+pkgdown::build_reference()
 
 # Check the package for conformity
 devtools::check()
@@ -43,7 +47,7 @@ zlibbioc::pkgconfig()
 
 #gsub(".*M(.*)\\].*", "\\1", adduct_ion)
 
-file_path <- "R/fct_ProcessingSettings.R"
+file_path <- "R/fct_ProcessingStep.R"
 file_content <- readLines(file_path, encoding = "UTF-8")
 non_ascii_lines <- grep("[^\x01-\x7F]", file_content, value = TRUE)
 cat("Non-ASCII characters found in the following lines:\n")

@@ -46,7 +46,7 @@ Rcpp::List readCVReference(const H5::Group& group, const std::string& dataset_na
         out["prefix"] = prefixes;
         out["accession"] = accessions;
     } else {
-        std::cerr << "Unsupported datatype for dataset: " << dataset_name << std::endl;
+        Rcpp::Rcout << "Unsupported datatype for dataset: " << dataset_name << std::endl;
     }
 
     return out;
@@ -74,7 +74,7 @@ Rcpp::List listNamesAndGetData(const H5::Group& group, const std::string& prefix
         H5G_obj_t obj_type = group.getObjTypeByIdx(i);
 
         // Print the name with the prefix
-        std::cout << prefix << obj_name << std::endl;
+        Rcpp::Rcout << prefix << obj_name << std::endl;
 
         // If the object is a group, recursively list its contents
         if (obj_type == H5G_GROUP) {
@@ -114,7 +114,7 @@ Rcpp::List listNamesAndGetData(const H5::Group& group, const std::string& prefix
                 }
                 out[obj_name] = data_list;
             } else {
-                std::cerr << "Unsupported datatype for dataset: " << obj_name << std::endl;
+              Rcpp::Rcout << "Unsupported datatype for dataset: " << obj_name << std::endl;
             }
         }
     }
@@ -137,7 +137,7 @@ Rcpp::List listNamesAndGetData2(const H5::Group& group, const std::string& prefi
         H5G_obj_t obj_type = group.getObjTypeByIdx(i);
 
         // Print the name with the prefix
-        std::cout << prefix << obj_name << std::endl;
+        Rcpp::Rcout << prefix << obj_name << std::endl;
 
         // If the object is a group, recursively list its contents
         if (obj_type == H5G_GROUP) {
@@ -180,7 +180,7 @@ Rcpp::List listNamesAndGetData2(const H5::Group& group, const std::string& prefi
                     Rcpp::Named("accession") = accessions
                 );
             } else {
-                std::cerr << "Unsupported datatype for dataset: " << obj_name << std::endl;
+              Rcpp::Rcout << "Unsupported datatype for dataset: " << obj_name << std::endl;
             }
         }
     }
@@ -282,25 +282,25 @@ Rcpp::List test_create_hdf5() {
   // catch failure caused by the H5File operations
   catch(const H5::FileIException& error)
   {
-    std::cerr << "HDF5 File Exception: " << error.getCDetailMsg() << std::endl;
+    Rcpp::Rcout << "HDF5 File Exception: " << error.getCDetailMsg() << std::endl;
     return -1;
   }
   // catch failure caused by the DataSet operations
   catch(const H5::DataSetIException& error)
   {
-    std::cerr << "Datset Exception: " << error.getCDetailMsg() << std::endl;
+    Rcpp::Rcout << "Datset Exception: " << error.getCDetailMsg() << std::endl;
     return -1;
   }
   // catch failure caused by the DataSpace operations
   catch(const H5::DataSpaceIException& error)
   {
-    std::cerr << "Data space Exception: " << error.getCDetailMsg() << std::endl;
+    Rcpp::Rcout << "Data space Exception: " << error.getCDetailMsg() << std::endl;
     return -1;
   }
   // catch failure caused by the DataSpace operations
   catch(const H5::DataTypeIException& error)
   {
-    std::cerr << "Data type Exception: " << error.getCDetailMsg() << std::endl;
+    Rcpp::Rcout << "Data type Exception: " << error.getCDetailMsg() << std::endl;
     return -1;
   }
   

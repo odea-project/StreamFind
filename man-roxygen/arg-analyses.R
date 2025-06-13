@@ -1,1 +1,2 @@
-#' @param analyses A numeric/character vector with the number/name of the analyses.
+#' @param analyses Character or numeric vector with names or indexes of analyses in the `Analyses`
+#' object.

@@ -2,34 +2,34 @@
 % Please edit documentation in R/engine_CoreEngine.R
 \name{CoreEngine}
 \alias{CoreEngine}
-\title{\strong{CoreEngine} R6 class and methods}
+\title{Core Engine (Internal Use Only)}
 \description{
-The \code{CoreEngine} R6 class is used internally for harmonizing the different data specific engines. Users
-should not use this class directly.
+The \link{CoreEngine} R6 class is used to harmonize methods across different
+data specific engines. Users should not use this class directly but data specific engines.
 }
 \note{
-If there are \code{ProcessingSettings} objects with the same method names it is better to use \code{run_workflow()}.
-
-The engine data is saved in an \strong{rds} file and loaded in the app. If save file is defined in the engine it
-is used, otherwise the save file name is automatically set to the engine class name and the date in the format
-\strong{rds}. Changes made in the app can be saved in the \strong{rds} file and then loaded to continue working on the
-engine by scripting.
+The engine data is saved in an \strong{rds} file and loaded in the app. If save file is
+defined in the engine it is used, otherwise the save file name is automatically set to the
+engine class name and the date in the format \strong{rds}. Changes made in the app can be saved
+in the \strong{rds} file and then loaded to continue working on the engine by scripting.
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{headers}}{\code{ProjectHeaders} S7 class object.}
+\item{\code{Metadata}}{A \link{Metadata} or \link{EngineMetadata}. When setting can
+also be a named list with elements of length one.}
 
-\item{\code{workflow}}{\code{Workflow} S7 class object.}
+\item{\code{Workflow}}{A \link{Workflow} S7 class object. When settings can also be a list
+of \link{ProcessingStep} objects or a full path string to an \strong{rds} or \strong{json} file
+containing a \link{Workflow} object.}
 
-\item{\code{analyses}}{\code{Analyses} S7 class object.}
+\item{\code{Analyses}}{An \link{Analyses} S7 class object or a child of it.}
 
-\item{\code{results}}{List of results in the analyses.}
+\item{\code{Results}}{A named list of \link{Results} S7 class objects or a child of it.}
 
-\item{\code{file}}{An \code{EngineSaveFile} S7 class object. When setting the value it
-can also be a character with an \code{sqlite} or \code{rds} file path to save the engine.}
+\item{\code{AuditTrail}}{An \link{AuditTrail} S7 class object. Only getter method.}
 
-\item{\code{audit_trail}}{AuditTrail S7 class object.}
+\item{\code{Config}}{An \link{EngineConfig} S7 class object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -37,25 +37,17 @@ can also be a character with an \code{sqlite} or \code{rds} file path to save th
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-CoreEngine-new}{\code{CoreEngine$new()}}
-\item \href{#method-CoreEngine-print}{\code{CoreEngine$print()}}
-\item \href{#method-CoreEngine-print_headers}{\code{CoreEngine$print_headers()}}
-\item \href{#method-CoreEngine-print_analyses}{\code{CoreEngine$print_analyses()}}
-\item \href{#method-CoreEngine-print_workflow}{\code{CoreEngine$print_workflow()}}
-\item \href{#method-CoreEngine-save}{\code{CoreEngine$save()}}
-\item \href{#method-CoreEngine-load}{\code{CoreEngine$load()}}
-\item \href{#method-CoreEngine-add_analyses}{\code{CoreEngine$add_analyses()}}
-\item \href{#method-CoreEngine-remove_analyses}{\code{CoreEngine$remove_analyses()}}
-\item \href{#method-CoreEngine-has_settings}{\code{CoreEngine$has_settings()}}
+\item \href{#method-CoreEngine-clear_cache}{\code{CoreEngine$clear_cache()}}
+\item \href{#method-CoreEngine-clear_results}{\code{CoreEngine$clear_results()}}
+\item \href{#method-CoreEngine-get_cache_info}{\code{CoreEngine$get_cache_info()}}
+\item \href{#method-CoreEngine-get_cache_size}{\code{CoreEngine$get_cache_size()}}
 \item \href{#method-CoreEngine-has_analyses}{\code{CoreEngine$has_analyses()}}
 \item \href{#method-CoreEngine-has_results}{\code{CoreEngine$has_results()}}
+\item \href{#method-CoreEngine-load}{\code{CoreEngine$load()}}
+\item \href{#method-CoreEngine-print}{\code{CoreEngine$print()}}
+\item \href{#method-CoreEngine-save}{\code{CoreEngine$save()}}
 \item \href{#method-CoreEngine-run}{\code{CoreEngine$run()}}
 \item \href{#method-CoreEngine-run_workflow}{\code{CoreEngine$run_workflow()}}
-\item \href{#method-CoreEngine-export_headers}{\code{CoreEngine$export_headers()}}
-\item \href{#method-CoreEngine-export_workflow}{\code{CoreEngine$export_workflow()}}
-\item \href{#method-CoreEngine-export_analyses}{\code{CoreEngine$export_analyses()}}
-\item \href{#method-CoreEngine-import_headers}{\code{CoreEngine$import_headers()}}
-\item \href{#method-CoreEngine-import_workflow}{\code{CoreEngine$import_workflow()}}
-\item \href{#method-CoreEngine-import_analyses}{\code{CoreEngine$import_analyses()}}
 \item \href{#method-CoreEngine-run_app}{\code{CoreEngine$run_app()}}
 \item \href{#method-CoreEngine-clone}{\code{CoreEngine$clone()}}
 }
@@ -64,34 +56,126 @@ can also be a character with an \code{sqlite} or \code{rds} file path to save th
 \if{html}{\out{<a id="method-CoreEngine-new"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-new}{}}}
 \subsection{Method \code{new()}}{
-Creates a \code{CoreEngine} R6 class object.
+Creates a \link{CoreEngine} R6 class object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(
-  file = NULL,
-  headers = NULL,
-  workflow = NULL,
-  analyses = NULL,
-  ...
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$new(metadata = NULL, workflow = NULL, analyses = NULL, ...)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{Character of length one with the full path to the \code{sqlite} or \code{rds} save file of the engine.}
+\item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
+There is no type restrictions except for name (must be type character), author (must be type
+character) and date (must be class POSIXct or POSIXt). A file entry must be a character string
+with a full path to a file.}
 
-\item{\code{headers}}{A named list with headers or a \code{ProjectHeaders} object. Each list element must have length one. There
-is no type restrictions except for name (must be type character), author (must be type character character) and date
-(must be class POSIXct or class POSIXt).}
-
-\item{\code{workflow}}{A \code{Workflow} S7 class object or a list of \code{ProcessingSettings} S7 class objects.}
+\item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
+with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
 \item{\code{analyses}}{An \code{Analyses} child class or a data specific analyses input.
 See each data specific engine for details.}
 
-\item{\code{...}}{Additional data specific engine arguments.}
+\item{\code{...}}{Additional arguments for data specific engines.}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-clear_cache"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-clear_cache}{}}}
+\subsection{Method \code{clear_cache()}}{
+Clears the cache.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$clear_cache(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A character vector with the names of the cache categories to clear. An integer
+vector with the indices of the categories to clear can alternatively be given to remove
+categories. If \code{NULL} (the default), the entire cache is cleared. Use the method
+\code{get_cache_info} to get the cached categories.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-clear_results"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-clear_results}{}}}
+\subsection{Method \code{clear_results()}}{
+Clears all result objects in the \code{Analyses} field.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$clear_results()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-get_cache_info"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-get_cache_info}{}}}
+\subsection{Method \code{get_cache_info()}}{
+Gets a \code{data.table} with the cached data categories.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_cache_info()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-get_cache_size"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-get_cache_size}{}}}
+\subsection{Method \code{get_cache_size()}}{
+Gets the current size of the cache file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$get_cache_size()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_analyses}{}}}
+\subsection{Method \code{has_analyses()}}{
+Checks if there are analyses files/objects in the \code{Analyses} field.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_analyses()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-has_results"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-has_results}{}}}
+\subsection{Method \code{has_results()}}{
+Checks if there are \link{Results} in the \code{Analyses} field.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_results(value = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{A string or a vector of strings with the name/s of the \link{Results}
+child/s for checking the presence.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-CoreEngine-load"></a>}}
+\if{latex}{\out{\hypertarget{method-CoreEngine-load}{}}}
+\subsection{Method \code{load()}}{
+Loads engine data from an \strong{sqlite} or \strong{rds} file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$load(file = NA_character_)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{file}}{A string with the full file path of the \strong{sqlite} or \strong{rds} file.}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+Invisible.
 }
 }
 \if{html}{\out{<hr>}}
@@ -105,40 +189,13 @@ Prints a summary to the console.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-print_headers"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-print_headers}{}}}
-\subsection{Method \code{print_headers()}}{
-Prints the headers.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_headers()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-print_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-print_analyses}{}}}
-\subsection{Method \code{print_analyses()}}{
-Prints the analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_analyses()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-print_workflow"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-print_workflow}{}}}
-\subsection{Method \code{print_workflow()}}{
-Prints the workflow.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$print_workflow()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-save"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-save}{}}}
 \subsection{Method \code{save()}}{
-Saves the engine data as an \strong{sqlite} or \strong{rds} file.
+Saves the engine data as an \strong{sqlite} or \strong{rds} file. If no file path is
+given, the engine data is saved in the file of the \link{Metadata} field. If no file
+is specified in the \code{Metadata} the engine data is saved as \strong{rds} format with the engine
+class and date in the \code{Metadata} as file name.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$save(file = NA_character_)}\if{html}{\out{</div>}}
 }
@@ -146,136 +203,27 @@ Saves the engine data as an \strong{sqlite} or \strong{rds} file.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A string with the full file path of the \strong{sqlite} or \strong{rds} file. If \code{NA} (the default) and
-no save file is defined in the engine, the file name is automatically created with the engine class name and the
-date in the headers in the \strong{rds} format.}
+\item{\code{file}}{A string with the full file path of the \strong{sqlite} or \strong{rds} file.}
 }
 \if{html}{\out{</div>}}
 }
 \subsection{Returns}{
 Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-load"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-load}{}}}
-\subsection{Method \code{load()}}{
-Loads the engine data from an \strong{sqlite} or \strong{rds} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$load(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A string with the full file path of the \strong{sqlite} or \strong{rds} file containing the engine data saved.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-add_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-add_analyses}{}}}
-\subsection{Method \code{add_analyses()}}{
-Adds analyses. Note that when adding new analyses, any existing results are removed.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{An engine specific analysis object or a list of engine specific analysis input. See each data
-specific engine for details.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Details}{
-By adding analyses to the engine the results are removed as data reprocessing must be done. The
-analyses object can be a specific engine analysis object or a file path to a engine specific format.
-}
-
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-remove_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-remove_analyses}{}}}
-\subsection{Method \code{remove_analyses()}}{
-Removes analyses.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{A string or a vector of strings with the name/s or numeric with indices of the analyses to remove.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_settings"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_settings}{}}}
-\subsection{Method \code{has_settings()}}{
-Checks if there are processing settings, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_settings()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_analyses}{}}}
-\subsection{Method \code{has_analyses()}}{
-Checks if analyses are present, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_analyses()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-has_results"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-has_results}{}}}
-\subsection{Method \code{has_results()}}{
-Checks if results are present, returning \code{TRUE} or \code{FALSE}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$has_results(names = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{names}}{A string or a vector of strings with the name/s of the
-results data. The actual names depends of the applied algorithms. For
-instance, when algorithms via patRoon are used, the name of the module
-data is patRoon.}
-}
-\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-run"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-run}{}}}
 \subsection{Method \code{run()}}{
-Runs a processing method according to the provided settings.
+Runs a processing method defined by the \link{ProcessingStep} object.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run(settings = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run(step = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{settings}}{A \code{ProcessingSettings} object or a \code{character} string with the method name of a previously added
-\code{ProcessingSettings} in the engine.}
+\item{\code{step}}{A \link{ProcessingStep} object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -284,131 +232,17 @@ Runs a processing method according to the provided settings.
 \if{html}{\out{<a id="method-CoreEngine-run_workflow"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-run_workflow}{}}}
 \subsection{Method \code{run_workflow()}}{
-Runs all processing methods in workflow.
+Runs all \link{ProcessingStep} objects in the \link{Workflow}.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_workflow()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-export_headers"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-export_headers}{}}}
-\subsection{Method \code{export_headers()}}{
-Exports the headers as \emph{json} (the default) or \emph{rds}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_headers(file = "headers.json")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A character vector of length one with full file path.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-export_workflow"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-export_workflow}{}}}
-\subsection{Method \code{export_workflow()}}{
-Exports the workflow as \emph{json} (the default) or \emph{rds}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_workflow(file = "workflow.json")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A character vector of length one with full file path.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-export_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-export_analyses}{}}}
-\subsection{Method \code{export_analyses()}}{
-Exports the analyses as \emph{json} (the default) or \emph{rds}.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$export_analyses(file = "analyses.json")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A character vector of length one with full file path.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-import_headers"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-import_headers}{}}}
-\subsection{Method \code{import_headers()}}{
-Imports headers from an \emph{rds} or \emph{json} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import_headers(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-import_workflow"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-import_workflow}{}}}
-\subsection{Method \code{import_workflow()}}{
-Imports workflow from an \emph{rds} or \emph{json} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import_workflow(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-CoreEngine-import_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-CoreEngine-import_analyses}{}}}
-\subsection{Method \code{import_analyses()}}{
-Imports analyses from an \emph{rds} or \emph{json} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{CoreEngine$import_analyses(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A \emph{json} or \emph{rds} file.}
-}
-\if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Invisible.
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-CoreEngine-run_app"></a>}}
 \if{latex}{\out{\hypertarget{method-CoreEngine-run_app}{}}}
 \subsection{Method \code{run_app()}}{
-Runs a Shiny app to explore and manage the engine.
+Runs the StreamFind Shiny app to explore, process and manage the engine data.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{CoreEngine$run_app()}\if{html}{\out{</div>}}
 }

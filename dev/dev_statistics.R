@@ -14,11 +14,11 @@ rownames(data) <- analyses_names
 
 st <- StreamFind::StatisticEngine$new(data = data[1:10000, ])
 
-st$process(StatisticSettings_PrepareData_autoscale())
+st$process(StatisticMethod_PrepareData_autoscale())
 
 st$plot_data(analyses = 1:10000, transpose = TRUE, interactive = TRUE)
 
-st$process(StatisticSettings_MakeModel_pca_mdatools())
+st$process(StatisticMethod_MakeModel_pca_mdatools())
 
 st$plot_model_scores(showText = FALSE, colorGroups = date_part[1:10000])
 

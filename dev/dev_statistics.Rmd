@@ -120,7 +120,7 @@ The data processing workflow is based on applied processing methods within the e
 2. Find the mass-to-charge (*m/z*) range of BSA for deconvolution of charges; 
 3. Deconvolute charges for estimation of the exact mass, in DA; 
 
-The individual processing steps are applied according to *ProcessingSettings*. Below, the integration of the TIC is shown using the dedicated *ProcessingSettings* after loading the TIC chromatograms from the analysis files and smoothing using a moving average approach.
+The individual processing steps are applied according to *ProcessingStep*. Below, the integration of the TIC is shown using the dedicated *ProcessingStep* after loading the TIC chromatograms from the analysis files and smoothing using a moving average approach.
 
 ```{r}
 ms$load_chromatograms("TIC")
@@ -128,12 +128,12 @@ ms$load_chromatograms("TIC")
 
 ```{r}
 # Smoothing of the TIC chromatogram for improving peak finding
-ms$smooth_chromatograms(Settings_smooth_chromatograms_movingaverage(windowSize = 5))
+ms$smooth_chromatograms(Method_smooth_chromatograms_movingaverage(windowSize = 5))
 ```
 
 ```{r}
 # Settings for integration of the TIC
-ps_ic <- Settings_integrate_chromatograms_StreamFind(
+ps_ic <- Method_integrate_chromatograms_StreamFind(
   merge = TRUE,
   closeByThreshold = 5,
   minPeakHeight = 3E6,
@@ -162,7 +162,7 @@ ms$plot_spectra_ms1(rt = mean(rbindlist(ms$chromatograms_peaks)$rt), sec = 0.5,
 )
 ```
 
-According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingSettings* for deconvolution, as shown below. The first step is to load from the mzML files the traces within the retention time and *m/z* ranges selected.
+According to the MS1 spectra, the *m/z* from 1200 to 2000 can be added to the dedicated *ProcessingStep* for deconvolution, as shown below. The first step is to load from the mzML files the traces within the retention time and *m/z* ranges selected.
 
 ```{r}
 av_rt <- mean(rbindlist(ms$chromatograms_peaks)$rt)
@@ -175,19 +175,19 @@ spectra_ranges <- data.table("mzmin" = 1200, "mzmax" = 2000, "rtmin" = av_rt - 1
 
 ms$load_spectra(mz = spectra_ranges)
 
-# ms$cluster_spectra(Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2))
-# ms$calculate_spectra_charges(Settings_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000))
-# ms$deconvolute_spectra(Settings_deconvolute_spectra_StreamFind())
-# ms$smooth_spectra(Settings_smooth_spectra_movingaverage(windowSize = 15))
-# ms$normalize_spectra(Settings_normalize_spectra_minmax()) #liftTozero = TRUE
-# ms$normalize_spectra(Settings_normalize_spectra_blockweight())
-# ms$bin_spectra(Settings_bin_spectra_StreamFind(bins = list("rt" = 2, "mass" = 25), refBinAnalysis = 1))
+# ms$cluster_spectra(Method_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2))
+# ms$calculate_spectra_charges(Method_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000))
+# ms$deconvolute_spectra(Method_deconvolute_spectra_StreamFind())
+# ms$smooth_spectra(Method_smooth_spectra_movingaverage(windowSize = 15))
+# ms$normalize_spectra(Method_normalize_spectra_minmax()) #liftTozero = TRUE
+# ms$normalize_spectra(Method_normalize_spectra_blockweight())
+# ms$bin_spectra(Method_bin_spectra_StreamFind(bins = list("rt" = 2, "mass" = 25), refBinAnalysis = 1))
 
 # View(ms$spectra)
 # ms$plot_spectra()
 # ms$spectra_charges
 # ms$plot_spectra_charges()
-# ms$correct_spectra_baseline(Settings_correct_spectra_baseline_baseline())
+# ms$correct_spectra_baseline(Method_correct_spectra_baseline_baseline())
 # ms$plot_deconvoluted_spectra()
 # ms$plot_spectra(interactive = T)
 # ms$plot_spectra_charges()
@@ -203,18 +203,18 @@ ms$load_spectra(mz = spectra_ranges)
 # View(ms$get_results("spectra"))
 ```
 
-Below we create an ordered list of *ProcessingSettings* objects for each processing method to be applied and add the list to the engine. The exact parameters for each method can be optimized individually by calling the specific method directly. Once the settings are added, the workflow can be inspected with the `print_workflow()` method.
+Below we create an ordered list of *ProcessingStep* objects for each processing method to be applied and add the list to the engine. The exact parameters for each method can be optimized individually by calling the specific method directly. Once the settings are added, the workflow can be inspected with the `print_workflow()` method.
 
 ```{r}
 ms_workflow_settings <- list(
-  Settings_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2),
-  Settings_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000),
-  Settings_deconvolute_spectra_StreamFind(),
-  Settings_smooth_spectra_movingaverage(windowSize = 15),
-  Settings_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 20), refBinAnalysis = 1),
-  Settings_average_spectra_StreamFind(),
-  Settings_normalize_spectra_minmax(),
-  Settings_normalize_spectra_blockweight()
+  Method_cluster_spectra_StreamFind(val = "mz", clustVal = 0.01, presence = 0.2),
+  Method_calculate_spectra_charges_StreamFind(roundVal = 15, relLowCut = 0.2, absLowCut = 8000),
+  Method_deconvolute_spectra_StreamFind(),
+  Method_smooth_spectra_movingaverage(windowSize = 15),
+  Method_bin_spectra_StreamFind(bins = list("rt" = 5, "mass" = 20), refBinAnalysis = 1),
+  Method_average_spectra_StreamFind(),
+  Method_normalize_spectra_minmax(),
+  Method_normalize_spectra_blockweight()
 )
 
 # Remove the settings added to integrate the TIC chromatograms
@@ -276,18 +276,18 @@ As for MS data, the workflow for Raman data is also assembled using an ordered l
 
 ```{r}
 raman_workflow_settings <- list(
-  Settings_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 3),
-  Settings_normalize_spectra_minmax(),
-  Settings_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)),
-  Settings_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(-100, 330))),
-  Settings_delete_spectra_section_StreamFind(list("shift" = c(1800, 2600))),
-  Settings_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
-  Settings_delete_spectra_section_StreamFind(list("rt" = c(0, 5.5))),
-  Settings_delete_spectra_section_StreamFind(list("rt" = c(8, 11))),
-  Settings_average_spectra_StreamFind(collapseTime = TRUE),
-  Settings_normalize_spectra_minmax(),
-  Settings_normalize_spectra_blockweight()
+  Method_bin_spectra_StreamFind(unitsVal = "rt", unitsNumber = 3),
+  Method_normalize_spectra_minmax(),
+  Method_subtract_spectra_section_StreamFind(sectionWindow = c(0, 3)),
+  Method_smooth_spectra_savgol(fl = 21, forder = 4, dorder = 0),
+  Method_delete_spectra_section_StreamFind(list("shift" = c(-100, 330))),
+  Method_delete_spectra_section_StreamFind(list("shift" = c(1800, 2600))),
+  Method_correct_spectra_baseline_airpls(lambda = 45, differences = 1, itermax = 30),
+  Method_delete_spectra_section_StreamFind(list("rt" = c(0, 5.5))),
+  Method_delete_spectra_section_StreamFind(list("rt" = c(8, 11))),
+  Method_average_spectra_StreamFind(collapseTime = TRUE),
+  Method_normalize_spectra_minmax(),
+  Method_normalize_spectra_blockweight()
 )
 
 raman$add_settings(raman_workflow_settings)

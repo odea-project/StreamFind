@@ -1,7 +1,6 @@
 #' @noRd
 S7::method(.mod_WorkflowAssembler_Explorer_UI, RamanAnalyses) <- function(x, id, ns) {
   ns2 <- shiny::NS(id)
-
   shinydashboard::tabBox(
     width = 12, height = "1080px",
     shiny::tabPanel(
@@ -16,11 +15,22 @@ S7::method(.mod_WorkflowAssembler_Explorer_UI, RamanAnalyses) <- function(x, id,
 }
 
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x, id, ns, reactive_analyses, reactive_volumes) {
+S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
+                                                                              id,
+                                                                              ns,
+                                                                              reactive_analyses,
+                                                                              reactive_volumes,
+                                                                              reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
 
-    shinyFiles::shinyFileSave(input, "summary_plot_save", roots = reactive_volumes(), defaultRoot = "wd", session = session)
+    shinyFiles::shinyFileSave(
+      input,
+      "summary_plot_save",
+      roots = reactive_volumes(),
+      defaultRoot = "wd",
+      session = session
+    )
 
     # out summary plot UI -----
     output$summary_plot_ui <- shiny::renderUI({
@@ -28,9 +38,13 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
         htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
       } else if (!is.null(input$summary_plot_interactive)) {
         if (input$summary_plot_interactive) {
-          shinycssloaders::withSpinner(plotly::plotlyOutput(ns(ns2("summary_plotly")), height = "600px"), color = "black")
+          shinycssloaders::withSpinner(
+            plotly::plotlyOutput(ns(ns2("summary_plotly")), height = "600px"), color = "black"
+          )
         } else {
-          shinycssloaders::withSpinner(shiny::plotOutput(ns(ns2("summary_plot")), height = "600px"), color = "black")
+          shinycssloaders::withSpinner(
+            shiny::plotOutput(ns(ns2("summary_plot")), height = "600px"), color = "black"
+          )
         }
       }
     })
@@ -42,10 +56,44 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
       }
       htmltools::div(
         style = "display: flex; align-items: center;",
-        htmltools::div(style = "margin-left: 20px;", shiny::checkboxInput(ns(ns2("summary_plot_interactive")), label = "Interactive", value = TRUE, width = 100)),
-        htmltools::div(style = "margin-left: 20px;", shiny::selectInput(ns(ns2("summary_plot_colorby")), label = "Color by", choices = c("analyses", "replicates"), selected = "analyses", width = 100)),
-        htmltools::div(style = "margin-left: 20px;", shiny::checkboxInput(ns(ns2("summary_plot_raw")), label = "Raw Spectra", value = TRUE, width = 100)),
-        htmltools::div(style = "margin-left: 20px;", shinyFiles::shinySaveButton(ns(ns2("summary_plot_save")), "Save Plot Data (.csv)", "Save Plot Data (.csv)", filename = "spectra_summary_data", filetype = list(csv = "csv"))),
+        htmltools::div(
+          style = "margin-left: 20px;",
+          shiny::checkboxInput(
+            ns(ns2("summary_plot_interactive")),
+            label = "Interactive",
+            value = TRUE,
+            width = 100
+          )
+        ),
+        htmltools::div(
+          style = "margin-left: 20px;",
+          shiny::selectInput(
+            ns(ns2("summary_plot_colorby")),
+            label = "Color by",
+            choices = c("analyses", "replicates"),
+            selected = "analyses",
+            width = 100
+          )
+        ),
+        htmltools::div(
+          style = "margin-left: 20px;",
+          shiny::checkboxInput(
+            ns(ns2("summary_plot_raw")),
+            label = "Raw Spectra",
+            value = TRUE,
+            width = 100
+          )
+        ),
+        htmltools::div(
+          style = "margin-left: 20px;",
+          shinyFiles::shinySaveButton(
+            ns(ns2("summary_plot_save")),
+            "Save Plot Data (.csv)",
+            "Save Plot Data (.csv)",
+            filename = "spectra_summary_data",
+            filetype = list(csv = "csv")
+          )
+        ),
         htmltools::div(style = "margin-bottom: 20px;")
       )
     })
@@ -72,7 +120,13 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
       if (length(selected) == 0) {
         return()
       }
-      plot_spectra(reactive_analyses(), analyses = selected, colorBy = input$summary_plot_colorby, interactive = input$summary_plot_interactive, useRawData = input$summary_plot_raw)
+      plot_spectra(
+        reactive_analyses(),
+        analyses = selected,
+        colorBy = input$summary_plot_colorby,
+        interactive = input$summary_plot_interactive,
+        useRawData = input$summary_plot_raw
+      )
     })
 
     # out Summary plot -----
@@ -84,7 +138,13 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
       if (length(selected) == 0) {
         return()
       }
-      plot_spectra(reactive_analyses(), analyses = selected, colorBy = input$summary_plot_colorby, interactive = input$summary_plot_interactive, useRawData = input$summary_plot_raw)
+      plot_spectra(
+        reactive_analyses(),
+        analyses = selected,
+        colorBy = input$summary_plot_colorby,
+        interactive = input$summary_plot_interactive,
+        useRawData = input$summary_plot_raw
+      )
     })
 
     # event Summary plot export -----
@@ -99,7 +159,11 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
         if (length(selected) == 0) {
           return()
         }
-        csv <- get_spectra(reactive_analyses(), analyses = selected, useRawData = input$summary_plot_raw)
+        csv <- get_spectra(
+          reactive_analyses(),
+          analyses = selected,
+          useRawData = input$summary_plot_raw
+        )
         fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$summary_plot_save)
         if (nrow(fileinfo) > 0) {
           write.csv(csv, fileinfo$datapath, row.names = FALSE)

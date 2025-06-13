@@ -40,14 +40,14 @@ app_server <- function(input, output, session) {
     return(invisible(self))
   }
   
-  library(StreamFind)
-  library(shiny)
-  library(htmltools)
-  library(shinydashboard)
-  library(shinycssloaders)
-  library(shinyFiles)
-  library(sortable)
-  library(data.table)
+  # library(StreamFind)
+  # library(shiny)
+  # library(htmltools)
+  # library(shinydashboard)
+  # library(shinycssloaders)
+  # library(shinyFiles)
+  # library(sortable)
+  # library(data.table)
   
   # _Global Reactive Variables -----
   reactive_app_mode <- shiny::reactiveVal(NA_character_)
@@ -91,11 +91,11 @@ app_server <- function(input, output, session) {
   ## out App Mode -----
   output$app_mode_ui <- shiny::renderUI({
     if (reactive_app_mode() %in% "WorkflowAssembler") {
-      tags$span(reactive_engine_type())
+      shiny::tags$span(reactive_engine_type())
     } else if (is.na(reactive_app_mode())) {
-      tags$span("StreamFind")
+      shiny::tags$span("StreamFind")
     } else {
-      tags$span(reactive_app_mode())
+      shiny::tags$span(reactive_app_mode())
     }
   })
   
@@ -109,7 +109,8 @@ app_server <- function(input, output, session) {
         shinydashboard::menuItem("Explorer", tabName = "WorkflowAssembler-explorer", icon = NULL),
         shinydashboard::menuItem("Workflow", tabName = "WorkflowAssembler-workflow", icon = NULL),
         shinydashboard::menuItem("Results", tabName = "WorkflowAssembler-results", icon = NULL),
-        shinydashboard::menuItem("Audit Trail", tabName = "WorkflowAssembler-audit", icon = NULL)
+        shinydashboard::menuItem("Audit Trail", tabName = "WorkflowAssembler-audit", icon = NULL),
+        shinydashboard::menuItem("Configuration", tabName = "WorkflowAssembler-config", icon = NULL)
       )
     } else {
       shinydashboard::sidebarMenu(shiny::actionButton("restart_app", "Restart", width = "90%"))
@@ -126,16 +127,27 @@ app_server <- function(input, output, session) {
   ## out App Body -----
   output$body_ui <- shiny::renderUI({
     if (reactive_app_mode() %in% "WorkflowAssembler") {
-      .mod_WorkflowAssembler_Server("WorkflowAssembler", reactive_clean_start, reactive_engine_type, reactive_engine_save_file, reactive_warnings)
+      .mod_WorkflowAssembler_Server(
+        "WorkflowAssembler",
+        reactive_clean_start,
+        reactive_engine_type,
+        reactive_engine_save_file,
+        reactive_warnings
+      )
       .mod_WorkflowAssembler_UI("WorkflowAssembler")
     } else {
       shinydashboard::tabItems()
     }
   })
   
+  ## obs App Mode -----
   shiny::observe({
     if (reactive_app_mode() %in% "WorkflowAssembler") {
-      shinydashboard::updateTabItems(session, "WorkflowAssembler-tabs", selected = "WorkflowAssembler-project")
+      shinydashboard::updateTabItems(
+        session,
+        "WorkflowAssembler-tabs",
+        selected = "WorkflowAssembler-project"
+      )
     }
   })
   

@@ -26,16 +26,6 @@ The goal of StreamFind is to boost competences of researchers and graduate stude
 
 -   [Developer Guide](https://odea-project.github.io/StreamFind/articles/developer_guide.html)
 
-# Examples
-
--   [Non-target Screening (NTS) Wastewater Treatment Evaluation](https://odea-project.github.io/StreamFind/articles/demo_ozonation_project.html)
-
--   [Purity Evaluation of Bovine Serum Albumin Products](https://odea-project.github.io/StreamFind/articles/demo_ms_raman_fusion_bsa.html)
-
--   [Detect Pharmaceutical Quality Deviations with MS, Raman and Statistics](https://odea-project.github.io/StreamFind/articles/demo_paracetamol.html)
-
-- [Pharmaceutical API Quantification with Raman and MCR](https://odea-project.github.io/StreamFind/articles/demo_paracetamol_quantification.html)
-
 # Development
 
 The life cycle of the StreamFind R package is [experimental](https://lifecycle.r-lib.org/articles/stages.html). Please [contact us](mailto:cunha@iuta.de) for questions, suggestions, issues or collaboration. **Stay tuned!**

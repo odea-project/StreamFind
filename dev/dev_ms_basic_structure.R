@@ -12,7 +12,7 @@ library(StreamFind)
 # TODO when subsetting on features/groups check/add if features_eics are also changed
 # TODO add suspects to MassSpecData matching patRoon
 # TODO check the import MassSpecData from JSON, in particular the nested data.tables
-# TODO make components based on MCR approach (NTS gideline)
+# TODO make components based on MCR approach (NonTargetAnalysisResults gideline)
 # TODO add filter_features by ID and add filter_groups by ID and others
 
 
@@ -55,18 +55,18 @@ files_df <- data.frame(
 )
 
 ps <- list(
-  Settings_find_features_openms(),
-  Settings_annotate_features_StreamFind(),
-  Settings_group_features_openms(),
-  Settings_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
-  Settings_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 10, minGroupAbundance = 3, blank = 5, excludeIsotopes = TRUE),
-  Settings_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
-  # Settings_load_features_ms1_StreamFind(),
-  Settings_load_features_ms2_StreamFind(),
-  Settings_calculate_quality_StreamFind(),
-  Settings_filter_features_StreamFind(minSnRatio = 3),
-  Settings_suspect_screening_StreamFind(database = db, ppm = 10, sec = 15, ppmMS2 = 10, minFragments = 3),
-  Settings_filter_features_StreamFind(onlySuspects = TRUE)
+  Method_find_features_openms(),
+  Method_annotate_features_StreamFind(),
+  Method_group_features_openms(),
+  Method_find_internal_standards_StreamFind(database = dbis, ppm = 8, sec = 10),
+  Method_filter_features_StreamFind(minIntensity = 5000, maxGroupSd = 10, minGroupAbundance = 3, blank = 5, excludeIsotopes = TRUE),
+  Method_load_features_eic_StreamFind(rtExpand = 60, mzExpand = 0.0005, runParallel = FALSE),
+  # Method_load_features_ms1_StreamFind(),
+  Method_load_features_ms2_StreamFind(),
+  Method_calculate_quality_StreamFind(),
+  Method_filter_features_StreamFind(minSnRatio = 3),
+  Method_suspect_screening_StreamFind(database = db, ppm = 10, sec = 15, ppmMS2 = 10, minFragments = 3),
+  Method_filter_features_StreamFind(onlySuspects = TRUE)
 )
 
 # patRoon::clearCache("all")
@@ -265,8 +265,8 @@ patRoon::screenInfo(pat_sus)
 
 # fg <- ms$as_patRoon_featureGroups(filtered = F)
 
-# ssus <- Settings_suspect_screening_patRoon(suspects = db)
-# .s3_ms_suspect_screening.Settings_suspect_screening_patRoon(ssus, ms)
+# ssus <- Method_suspect_screening_patRoon(suspects = db)
+# .s3_ms_suspect_screening.Method_suspect_screening_patRoon(ssus, ms)
 
 
 ms$has_suspects()
@@ -347,7 +347,7 @@ ms$plot_groups_overview(mass = db[1:3, ], filtered = TRUE, legendNames = TRUE)
 
 
 
-ms2$add_settings(Settings_load_features_eic_StreamFind())
+ms2$add_settings(Method_load_features_eic_StreamFind())
 
 ms2$add_features_eic(ms2$load_features_eic())
 
@@ -444,19 +444,19 @@ ms <- MassSpecData$new(files = files_df)
 
 ms$add_settings(
   list(
-    Settings_find_features_xcms3_centwave(),
-    Settings_group_features_xcms3_peakdensity(),
-    Settings_filter_features_StreamFind(
+    Method_find_features_xcms3_centwave(),
+    Method_group_features_xcms3_peakdensity(),
+    Method_filter_features_StreamFind(
       minIntensity = 10000,
       minSnRatio = 20,
       maxGroupSd = 30,
       blank = 5,
       minGroupAbundance = 3
     ),
-    Settings_load_features_ms1_StreamFind(presence = 0.5),
-    Settings_load_features_ms2_StreamFind(presence = 0.5),
-    Settings_load_groups_ms1_StreamFind(presence = 0.5),
-    Settings_load_groups_ms2_StreamFind(presence = 0.5)
+    Method_load_features_ms1_StreamFind(presence = 0.5),
+    Method_load_features_ms2_StreamFind(presence = 0.5),
+    Method_load_groups_ms1_StreamFind(presence = 0.5),
+    Method_load_groups_ms2_StreamFind(presence = 0.5)
   )
 )
 
@@ -515,9 +515,9 @@ ms$plot_groups_ms1(colorBy = "targets+polarities")
 View(ms$get_features())
 
 
-ffs <- Settings_find_features_xcms3_centwave()
+ffs <- Method_find_features_xcms3_centwave()
 
-ffs <- Settings_filter_features_StreamFind()
+ffs <- Method_filter_features_StreamFind()
 
 sloop::s3_dispatch(validate(ffs))
 
@@ -749,7 +749,7 @@ msbp$load_groups_ms2()
 
 
 
-sssfi <- Settings_suspect_screening_forident(addMS2 = TRUE)
+sssfi <- Method_suspect_screening_forident(addMS2 = TRUE)
 msbp$suspect_screening(sssfi)
 
 
@@ -805,16 +805,16 @@ file.remove("feature_list.txt")
 
 
 
-sss <- Settings_suspect_screening_StreamFind(database = db, ppm = 5, sec = 10)
+sss <- Method_suspect_screening_StreamFind(database = db, ppm = 5, sec = 10)
 
 
 
 
 # implement export MS2 ------
 
-slfms2 <- Settings_load_features_ms2_StreamFind()
+slfms2 <- Method_load_features_ms2_StreamFind()
 slfms2$parameters$minIntensity <- 100
-slgms2 <- Settings_load_groups_ms2_StreamFind()
+slgms2 <- Method_load_groups_ms2_StreamFind()
 slgms2$parameters$minIntensity <- 100
 msbp <- ms$subset_analyses(4:6)
 
@@ -863,11 +863,11 @@ ms$plot_groups_ms2(groups = suspects$group[1],
 
 
 
-fls <- list.files("D:/NTS/Project_230829_LINEG_LCMSMS_Scan_KA_Gesamtablauf/mzml", full.names = TRUE)
+fls <- list.files("D:/NonTargetAnalysisResults/Project_230829_LINEG_LCMSMS_Scan_KA_Gesamtablauf/mzml", full.names = TRUE)
 ms <- MassSpecData$new(fls[c(1, 40)]) #[grepl("neg", fls)]
 
-ffs <- Settings_find_features_xcms3_matchedfilter(binSize = 0.5, snthresh = 40)
-gfs <- Settings_group_features_xcms3_peakdensity(bw = 5, binSize = 0.5)
+ffs <- Method_find_features_xcms3_matchedfilter(binSize = 0.5, snthresh = 40)
+gfs <- Method_group_features_xcms3_peakdensity(bw = 5, binSize = 0.5)
 
 ms$find_features(ffs)
 
@@ -877,11 +877,11 @@ ms$group_features(gfs)
 
 ms$get_groups()
 
-rtf1 <- Settings_filter_features_StreamFind(
+rtf1 <- Method_filter_features_StreamFind(
   rtFilter = c(0, 100)
 )
 
-rtf2 <- Settings_filter_features_StreamFind(
+rtf2 <- Method_filter_features_StreamFind(
   rtFilter = c(1400, 1500)
 )
 
@@ -1234,7 +1234,7 @@ ms$get_history()
 #   return(copy(ms2))
 # }
 
-#' #' @title Settings_load_groups_ms1_StreamFind
+#' #' @title Method_load_groups_ms1_StreamFind
 #' #'
 #' #' @description Settings for loading MS1 spectra for feature groups.
 #' #'
@@ -1245,12 +1245,12 @@ ms$get_history()
 #' #' @template arg-runParallel
 #' #' @template arg-verbose
 #' #'
-#' #' @return A ProcessingSettings S3 class object with subclass
-#' #' Settings_load_groups_ms1_StreamFind.
+#' #' @return A ProcessingStep S3 class object with subclass
+#' #' Method_load_groups_ms1_StreamFind.
 #' #'
 #' #' @export
 #' #'
-#' Settings_load_groups_ms1_StreamFind <- function(
+#' Method_load_groups_ms1_StreamFind <- function(
 #'     mzClust = 0.003,
 #'     presence = 0.6,
 #'     minIntensity = 1000,
@@ -1277,19 +1277,19 @@ ms$get_history()
 #'     doi = NA_character_
 #'   )
 #'   
-#'   settings <- as.ProcessingSettings(settings)
+#'   settings <- as.ProcessingStep(settings)
 #'   
 #'   return(settings)
 #' }
 #' 
-#' #' @describeIn Settings_load_groups_ms1_StreamFind
+#' #' @describeIn Method_load_groups_ms1_StreamFind
 #' #' Validates the object structure, returning a logical value of length one.
 #' #'
-#' #' @param x A Settings_load_groups_ms1_StreamFind S3 class object.
+#' #' @param x A Method_load_groups_ms1_StreamFind S3 class object.
 #' #'
 #' #' @export
 #' #'
-#' validate.Settings_load_groups_ms1_StreamFind <- function(x) {
+#' validate.Method_load_groups_ms1_StreamFind <- function(x) {
 #'   all(
 #'     checkmate::test_choice(x$call, "load_groups_ms1"),
 #'     checkmate::test_choice(x$algorithm, "StreamFind"),
@@ -1301,7 +1301,7 @@ ms$get_history()
 #'   )
 #' }
 #' 
-#' #' @title Settings_load_groups_ms2_StreamFind
+#' #' @title Method_load_groups_ms2_StreamFind
 #' #'
 #' #' @description Settings for loading MS2 spectra for feature groups.
 #' #'
@@ -1312,12 +1312,12 @@ ms$get_history()
 #' #' @template arg-runParallel
 #' #' @template arg-verbose
 #' #'
-#' #' @return A ProcessingSettings S3 class object with subclass
-#' #' Settings_load_groups_ms2_StreamFind.
+#' #' @return A ProcessingStep S3 class object with subclass
+#' #' Method_load_groups_ms2_StreamFind.
 #' #'
 #' #' @export
 #' #'
-#' Settings_load_groups_ms2_StreamFind <- function(
+#' Method_load_groups_ms2_StreamFind <- function(
 #'     mzClust = 0.01,
 #'     presence = 0.3,
 #'     minIntensity = 250,
@@ -1344,19 +1344,19 @@ ms$get_history()
 #'     doi = NA_character_
 #'   )
 #'   
-#'   settings <- as.ProcessingSettings(settings)
+#'   settings <- as.ProcessingStep(settings)
 #'   
 #'   return(settings)
 #' }
 #' 
-#' #' @describeIn Settings_load_groups_ms2_StreamFind
+#' #' @describeIn Method_load_groups_ms2_StreamFind
 #' #' Validates the object structure, returning a logical value of length one.
 #' #'
-#' #' @param x A Settings_load_groups_ms2_StreamFind S3 class object.
+#' #' @param x A Method_load_groups_ms2_StreamFind S3 class object.
 #' #'
 #' #' @export
 #' #'
-#' validate.Settings_load_groups_ms2_StreamFind <- function(x) {
+#' validate.Method_load_groups_ms2_StreamFind <- function(x) {
 #'   all(
 #'     checkmate::test_choice(x$call, "load_groups_ms2"),
 #'     checkmate::test_choice(x$algorithm, "StreamFind"),
