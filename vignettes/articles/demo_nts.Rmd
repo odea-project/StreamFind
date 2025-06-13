@@ -89,7 +89,10 @@ The [*R6*](https://r6.r-lib.org/) [*MassSpecEngine*](https://odea-project.github
 
 ```{r create-ms}
 # Creates a MassSpecEngine from mzML files
-ms <- MassSpecEngine$new(analyses = files)
+ms <- MassSpecEngine$new(
+  metadata = list(name = "Wastewater NTA"),
+  analyses = files
+)
 ```
 
 ```{r show-ms}

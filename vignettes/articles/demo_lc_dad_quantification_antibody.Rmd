@@ -1,5 +1,5 @@
 ---
-title: 'Quantification of Intact Monoclonal Antibody Bevacizumab using LC coupled to DAD'
+title: 'Quantification of Intact Monoclonal Antibody with LC-DAD'
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
@@ -12,7 +12,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{'Quantification of Intact Monoclonal Antibody Bevacizumab using LC coupled to DAD'}
+  %\VignetteIndexEntry{'Quantification of Intact Monoclonal Antibody with LC-DAD'}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -87,6 +87,7 @@ The `StreamFind` package provides a flexible and powerful framework for processi
 ```{r engine}
 # Starts engine for quantification
 ms <- StreamFind::MassSpecEngine$new(
+  metadata = list(name = "Quantification of Bevacizumab"),
   analyses = files,
   centroid = TRUE,
   levels = 1

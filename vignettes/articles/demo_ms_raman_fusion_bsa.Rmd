@@ -83,7 +83,7 @@ With the *.d* files, a *MassSpecEngine* is created to pre-process the MS data. N
 
 ```{r engine-creation}
 ms <- StreamFind::MassSpecEngine$new(
-  metadata = list(name = "BSA Quality Evaluation Project"),
+  metadata = list(name = "BSA Quality Evaluation MS Project"),
   analyses = ms_files,
   centroid = TRUE,
   levels = 1
@@ -246,7 +246,10 @@ basename(raman_files)
 ```
 
 ```{r raman-engine}
-raman <- RamanEngine$new(analyses = raman_files)
+raman <- RamanEngine$new(
+  metadata = list(name = "BSA Quality Evaluation Raman Project"),
+  analyses = raman_files
+)
 
 # Modifying the replicate names to match the MS analyses
 raman$add_replicate_names(unique(ms$get_replicate_names())[1:4])
@@ -375,7 +378,10 @@ Statistic analysis is performed with the *StatisticEngine* for evaluation of the
 The fused data is used to create a PCA model within the *StatisticEngine* via a processing method based on the [mdatools](https://www.mdatools.com/docs/pca.html) package.
 
 ```{r pca-engine}
-stat <- StatisticEngine$new(analyses = fused_mat)
+stat <- StatisticEngine$new(
+  metadata = list(name = "BSA Quality Evaluation PCA Project"),
+  analyses = fused_mat
+)
 ```
 
 ```{r pca-data-raw}
@@ -416,7 +422,10 @@ plot(stat$model$model, show.labels = TRUE) # plot method from mdatools
 An alternative approach for the statistic analysis is the MCR pure model (also based on the  [mdatools](https://www.mdatools.com/docs/mcr--purity.html) R package) to evaluate the purity level of the BSA products.
 
 ```{r pca-engine-2}
-stat2 <- StatisticEngine$new(analyses = fused_mat)
+stat2 <- StatisticEngine$new(
+  metadata = list(name = "BSA Quality Evaluation MCR Pure Project"),
+  analyses = fused_mat
+)
 ```
 
 ```{r mcr-run}

@@ -1,5 +1,5 @@
 ---
-title: 'Identification of Intact Monoclonal Antibody Bevacizumab using LC coupled to HRMS'
+title: 'Identification of Intact Monoclonal Antibody with LC-HRMS'
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
@@ -12,7 +12,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{'Identification of Intact Monoclonal Antibody Bevacizumab using LC coupled to HRMS'}
+  %\VignetteIndexEntry{'Identification of Intact Monoclonal Antibody with LC-HRMS'}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -87,6 +87,7 @@ The `StreamFind` package provides a flexible and powerful framework for processi
 ```{r engine}
 # Starts engine for identification
 ms <- StreamFind::MassSpecEngine$new(
+  metadata = list(name = "Identification of Bevacizumab"),
   analyses = files,
   centroid = TRUE,
   levels = 1
@@ -142,8 +143,9 @@ ms$run(
 )
 ```
 
-```{r plot-spectra}
-plot_spectra(ms$Spectra)
+```{r plot-spectra, fig.alt="plot-spectra-static"}
+# plots only the spectra of the first analysis
+plot_spectra(ms$Spectra, analyses = 1, interactive = FALSE)
 ```
 
 ```{r spectra-charges}
@@ -183,8 +185,8 @@ ms$run(
 )
 ```
 
-```{r plot-spectra-deconvoluted}
-plot_spectra(ms$Spectra)
+```{r plot-spectra-deconvoluted, fig.alt="plot-spectra-static-deconvoluted"}
+plot_spectra(ms$Spectra, analyses = 1, interactive = FALSE)
 ```
 
 ```{r spectra-maxima}
@@ -198,6 +200,12 @@ ms$run(
 )
 ```
 
-```{r plot-spectra-maxima}
-plot_spectra_peaks(ms$Spectra, colorBy = "analyses+targets")
+```{r plot-spectra-maxima, fig.alt="plot-spectra-static-maxima"}
+# Plot spectra peaks for the first analysis
+plot_spectra_peaks(
+  ms$Spectra,
+  analyses = 1,
+  colorBy = "analyses+targets",
+  interactive = FALSE
+)
 ```
