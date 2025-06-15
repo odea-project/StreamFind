@@ -126,7 +126,7 @@ ms$run(
 
 ms$run(
   MassSpecMethod_FilterFeatures_StreamFind(
-    maxDeviationInReplicate = 40,
+    maxReplicateIntRSD = 40,
     blankThreshold = 5,
     minAbundanceInReplicate = 3
   )
