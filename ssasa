@@ -1,0 +1,19 @@
+get_cache_info           package:StreamFind            R Documentation
+
+_G_e_n_e_r_i_c '_g_e_t__c_a_c_h_e__i_n_f_o'
+
+_D_e_s_c_r_i_p_t_i_o_n:
+
+     S3 generic to get information about the cache of ‘x’.
+
+_U_s_a_g_e:
+
+     get_cache_info(x, ...)
+     
+_A_r_g_u_m_e_n_t_s:
+
+       x: An object from which the cache information will be retrieved.
+
+     ...: Additional arguments passed to the method.
+
+

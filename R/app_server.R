@@ -104,13 +104,34 @@ app_server <- function(input, output, session) {
     if (reactive_app_mode() %in% "WorkflowAssembler") {
       shinydashboard::sidebarMenu(
         shiny::actionButton("restart_app", "Restart", width = "90%"),
+        
         shinydashboard::menuItem("Project", tabName = "WorkflowAssembler-project", icon = NULL, selected = TRUE),
         shinydashboard::menuItem("Analyses", tabName = "WorkflowAssembler-analyses", icon = NULL),
         shinydashboard::menuItem("Explorer", tabName = "WorkflowAssembler-explorer", icon = NULL),
         shinydashboard::menuItem("Workflow", tabName = "WorkflowAssembler-workflow", icon = NULL),
         shinydashboard::menuItem("Results", tabName = "WorkflowAssembler-results", icon = NULL),
         shinydashboard::menuItem("Audit Trail", tabName = "WorkflowAssembler-audit", icon = NULL),
-        shinydashboard::menuItem("Configuration", tabName = "WorkflowAssembler-config", icon = NULL)
+        shinydashboard::menuItem("Configuration", tabName = "WorkflowAssembler-config", icon = NULL),
+        
+        # Cache Information Section at Bottom
+        shiny::div(
+          style = "position: absolute; bottom: 10px; left: 10px; right: 10px;",
+          shiny::div(
+            style = "color: #b8c7ce; font-size: 12px; margin-bottom: 8px;",
+            shiny::strong("CACHE INFORMATION")
+          ),
+          shiny::div(
+            style = "color: #b8c7ce; font-size: 11px; margin-bottom: 8px;",
+            "Cache Size: ",
+            shiny::textOutput("cache_size", inline = TRUE)
+          ),
+          shiny::actionButton(
+            "clear_cache_button",
+            "Clear Cache",
+            icon = shiny::icon("trash"),
+            style = "width: 90%; background-color: #3c8dbc; border-color: #367fa9; color: white;"
+          )
+        )
       )
     } else {
       shinydashboard::sidebarMenu(shiny::actionButton("restart_app", "Restart", width = "90%"))
