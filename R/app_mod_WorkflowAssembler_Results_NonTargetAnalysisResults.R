@@ -164,6 +164,91 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
       align-items: center;
       margin-right: 15px;
     }
+    .results-wrapper .nav-tabs {
+      background-color: #f8f9fa;
+      border-radius: 8px 8px 0 0;
+      padding: 0 15px;
+      margin-bottom: 0;
+      border-bottom: 2px solid #e3e6f0;
+    }
+
+    .results-wrapper .nav-tabs .nav-link {
+      border: none;
+      color: #5a5c69;
+      padding: 12px 20px;
+      font-weight: 500;
+      margin-right: 5px;
+      border-radius: 0;
+    }
+
+    .results-wrapper .nav-tabs .nav-link:hover {
+      border-color: transparent;
+      background-color: rgba(78, 115, 223, 0.1);
+      color: #4e73df;
+    }
+
+    .results-wrapper .nav-tabs .nav-link.active {
+      color: #4e73df;
+      background-color: white;
+      border-color: transparent transparent #4e73df transparent;
+      border-bottom: 3px solid #4e73df;
+      font-weight: 600;
+    }
+
+    .results-wrapper .tab-content {
+      background: white;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+      padding: 0;
+      margin-top: -1px;
+    }
+
+    .results-wrapper .tab-pane {
+      padding: 0;
+    }
+
+    .results-wrapper .tab-content .nav-tabs {
+      margin-bottom: 0;
+      background: transparent;
+      border-bottom: 2px solid #e3e6f0;
+      padding: 15px 20px 0 20px;
+    }
+
+    .results-wrapper .tab-content .tab-content {
+      padding: 20px;
+    }
+
+    /* Chromatogram icon styling */
+    .chromatogram-icon {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 4px;
+      background-color: #4e73df;
+      color: white;
+      transition: all 0.2s ease;
+      font-size: 14px;
+    }
+
+    .chromatogram-icon:hover {
+      background-color: #2e59d9;
+      transform: scale(1.1);
+      box-shadow: 0 2px 8px rgba(78, 115, 223, 0.3);
+    }
+
+    .chromatogram-modal .modal-dialog {
+      max-width: 90vw;
+      width: 90vw;
+    }
+
+    .chromatogram-modal .modal-body {
+      padding: 20px;
+      min-height: 500px;
+    }
+
   "))
   
   # Color palette for metrics
@@ -185,6 +270,35 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
     custom_css,
     .app_util_plot_maximize_js(),  # JavaScript functions
     .app_util_create_plot_modal(ns_full),  # Modal container
+
+    # Add chromatogram modal
+    shiny::div(
+      id = ns_full("chromatogram_modal"),
+      class = "modal fade chromatogram-modal",
+      tabindex = "-1",
+      role = "dialog",
+      shiny::div(
+        class = "modal-dialog modal-lg",
+        role = "document",
+        shiny::div(
+          class = "modal-content",
+          shiny::div(
+            class = "modal-header",
+            shiny::h4(class = "modal-title", "Group Chromatogram"),
+            shiny::tags$button(
+              type = "button",
+              class = "close",
+              `data-dismiss` = "modal",
+              shiny::span("×")
+            )
+          ),
+          shiny::div(
+            class = "modal-body",
+            plotly::plotlyOutput(ns_full("chromatogram_plot"), height = "500px")
+          )
+        )
+      )
+    ),
     
     shiny::div(style = "margin-top: -20px;",
       shinydashboard::tabBox(
@@ -373,6 +487,43 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                 )
               )
             ),
+
+            #  Buttons
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                  shiny::div(
+                    class = "card-body d-flex justify-content-center align-items-center",
+                    shiny::div(
+                      class = "btn-group",
+                      shiny::actionButton(
+                        ns_full("deselect_all_features"),
+                        "Deselect All", 
+                        icon = shiny::icon("times-circle"),
+                        class = "btn btn-outline-secondary btn-sm"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_features_csv"),
+                        "Export to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_selected_features_csv"),
+                        "Export Selected to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::actionButton(
+                        ns_full("remove_selected_features"),
+                        "Remove Selected Features", 
+                        icon = shiny::icon("trash-alt"),
+                        class = "btn btn-outline-danger btn-sm ml-2"
+                      )
+                    )
+                )
+              )
+            ),
             
             # Feature Details Row
             shiny::fluidRow(
@@ -433,50 +584,6 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                   )
                 )
               )
-            ),
-            
-            #  Buttons
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  class = "plot-container",
-                  shiny::div(
-                    class = "card-header",
-                    shiny::icon("cogs", class = "mr-2"), "Table Controls"
-                  ),
-                  shiny::div(
-                    class = "card-body d-flex justify-content-center align-items-center",
-                    shiny::div(
-                      class = "btn-group",
-                      shiny::actionButton(
-                        ns_full("deselect_all_features"),
-                        "Deselect All", 
-                        icon = shiny::icon("times-circle"),
-                        class = "btn btn-outline-secondary btn-sm"
-                      ),
-                      shiny::downloadButton(
-                        ns_full("export_features_csv"),
-                        "Export to CSV",
-                        icon = shiny::icon("file-csv"),
-                        class = "btn btn-outline-primary btn-sm ml-2"
-                      ),
-                      shiny::downloadButton(
-                        ns_full("export_selected_features_csv"),
-                        "Export Selected to CSV",
-                        icon = shiny::icon("file-csv"),
-                        class = "btn btn-outline-primary btn-sm ml-2"
-                      ),
-                      shiny::actionButton(
-                        ns_full("remove_selected_features"),
-                        "Remove Selected Features", 
-                        icon = shiny::icon("trash-alt"),
-                        class = "btn btn-outline-danger btn-sm ml-2"
-                      )
-                    )
-                  )
-                )
-              )
             )
           )
         ),
@@ -490,9 +597,11 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
               shiny::column(
                 width = 12,
                 shiny::div(
-                  class = "plot-container empty-state",
-                  shiny::div(class = "empty-state-icon", shiny::icon("object-group")),
-                  shiny::h4("Groups data will be displayed here", class = "text-muted")
+                  class = "mb-4",
+                  shiny::div(
+                    class = "table-wrapper",
+                    DT::dataTableOutput(ns_full("groups_table"))
+                  )
                 )
               )
             )
@@ -804,8 +913,9 @@ output$features_table <- DT::renderDT({
     features,
     escape = FALSE,
     options = list(
-      pageLength = 10,
+      pageLength = 15,
       scrollX = TRUE,
+      processing = TRUE,
       scrollY = "400px",
       columnDefs = list(
         list(width = "50px", targets = c(1)),
@@ -1300,6 +1410,7 @@ output$quality_table <- DT::renderDT({
     quality_data,
     options = list(
       pageLength = 5,
+      processing = TRUE,
       scrollX = TRUE,
       dom = "lfrtp",
       ordering = TRUE,
@@ -1319,20 +1430,185 @@ output$quality_table <- DT::renderDT({
     )
 })
 
+# Groups table for the Groups tab
+output$groups_table <- DT::renderDT({
+  # Fetch groups data
+  groups <- get_groups(nts_data())
+  
+  # Check if groups data is available
+  if (is.null(groups) || nrow(groups) == 0) {
+    return(DT::datatable(
+      data.frame(Message = "No groups data available"),
+      options = list(
+        dom = "t",
+        ordering = FALSE,
+        processing = TRUE,
+        paging = FALSE,
+        selection = "none"
+      ),
+      style = "bootstrap",
+      class = "table table-bordered",
+      rownames = FALSE,
+      selection = "none"
+    ))
+  }
+  
+  # Round numeric columns to 4 decimal places for readability
+  numeric_cols <- names(groups)[sapply(groups, is.numeric)]
+  for (col in numeric_cols) {
+    groups[[col]] <- round(groups[[col]], 4)
+  }
+  
+  # Add chromatogram column with clickable icons
+  groups$chromatogram <- sapply(1:nrow(groups), function(i) {
+    paste0('<div class="chromatogram-icon" onclick="showChromatogram(\'', 
+          groups$group[i], '\')" title="View chromatogram for ', groups$group[i], '">',
+          '<i class="fas fa-chart-line"></i></div>')
+  })
+  
+  # Reorder columns to put chromatogram as second column
+  col_order <- c("group", "chromatogram", setdiff(names(groups), c("group", "chromatogram")))
+  groups <- groups[, col_order, with = FALSE]
+  
+  # Find chromatogram column index (0-based for JavaScript)
+  chromatogram_col_index <- which(names(groups) == "chromatogram") - 1
+  
+  # Render the DataTable with basic styling
+  DT::datatable(
+    groups,
+    escape = FALSE,
+    selection = "none",
+    options = list(
+      pageLength = 15,
+      scrollX = TRUE,
+      processing = TRUE,
+      scrollY = "400px",
+      dom = 'rtp',
+      ordering = TRUE,
+      searching = FALSE,
+      select = FALSE,
+      columnDefs = list(
+        list(
+          targets = chromatogram_col_index,
+          orderable = FALSE,  # Disable sorting for chromatogram column
+          width = "80px",
+          className = "dt-center"
+        ),
+        list(width = "150px", targets = 0),  # group column
+        list(className = "dt-center", targets = chromatogram_col_index)
+      )
+    ),
+    style = "bootstrap",
+    class = "table table-striped table-hover",
+    rownames = FALSE,
+    filter = "none"
+  ) %>%
+    DT::formatStyle(
+      columns = names(groups),
+      fontSize = "14px",
+      padding = "8px 12px"
+    ) %>%
+    DT::formatStyle(
+      columns = "chromatogram",
+      textAlign = "center"
+    )
+})
+
+# Reactive value to store selected group for chromatogram
+selected_group <- shiny::reactiveVal(NULL)
+
+# Handle chromatogram click
+shiny::observeEvent(input$show_chromatogram, {
+  req(input$show_chromatogram$group)
+  selected_group(input$show_chromatogram$group)
+})
+
+# Chromatogram plot
+output$chromatogram_plot <- plotly::renderPlotly({
+  shiny::validate(
+    need(!is.null(selected_group()), "Please select a group to display the chromatogram.")
+  )
+  
+  # Generate the chromatogram plot using plot_groups
+  nts <- nts_data()
+  group_id <- selected_group()
+  
+  tryCatch({
+    # Call plot_groups function with the selected group
+    p <- plot_groups(nts, groups = data.frame(group = group_id))
+    
+    # Enhance the plotly object
+    p <- plotly::layout(p,
+      title = list(
+        text = paste("Chromatogram for Group:", group_id),
+        font = list(size = 18, color = "#333")
+      ),
+      xaxis = list(
+        title = list(text = "Retention Time (RT)", font = list(size = 14)),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      yaxis = list(
+        title = list(text = "Intensity", font = list(size = 14)),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      margin = list(l = 60, r = 40, t = 60, b = 60),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)"
+    )
+    
+    # Configure plotly
+    p <- plotly::config(p, 
+      displayModeBar = TRUE,
+      modeBarButtonsToRemove = c(
+        "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+        "hoverCompareCartesian", "lasso2d", "select2d"
+      ),
+      displaylogo = FALSE,
+      responsive = TRUE
+    )
+    
+    return(p)
+    
+  }, error = function(e) {
+    # Handle errors gracefully
+    plotly::plot_ly() %>%
+      plotly::add_text(x = 0.5, y = 0.5, text = paste("Error loading chromatogram:", e$message),
+                      textfont = list(size = 16, color = "red")) %>%
+      plotly::layout(
+        title = paste("Error: Group", group_id),
+        xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+        yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+      )
+  })
+})
+
 # JavaScript for UI interactions
 shiny::observeEvent(1, {
-  # Initialize tooltips
+  # Get the full namespace for use in JavaScript
+  ns_prefix <- paste0("WorkflowAssembler-", id)
+  
+  # Initialize tooltips and chromatogram functionality
   shiny::insertUI(
     selector = "head",
     where = "beforeEnd",
-    ui = shiny::tags$script(HTML("
+    ui = shiny::tags$script(HTML(paste0("
+      // Global function to show chromatogram
+      function showChromatogram(groupId) {
+        Shiny.setInputValue('", ns_prefix, "-show_chromatogram', {
+          group: groupId,
+          timestamp: Date.now()
+        });
+        $('#", ns_prefix, "-chromatogram_modal').modal('show');
+      }
+      
       $(document).ready(function(){
         // Initialize tooltips
         $('[data-toggle=\"tooltip\"]').tooltip();
         
         // Make status panel items clickable
         $('.status-item').css('cursor', 'pointer').click(function(){
-          // Toggle active class
           $('.status-item').removeClass('active');
           $(this).addClass('active');
         });
@@ -1343,7 +1619,7 @@ shiny::observeEvent(1, {
           $(this).addClass('active');
         });
       });
-    "))
+    ")))
   )
 }, once = TRUE)
   })
