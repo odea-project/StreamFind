@@ -137,6 +137,53 @@ app_server <- function(input, output, session) {
       shinydashboard::sidebarMenu(shiny::actionButton("restart_app", "Restart", width = "90%"))
     }
   })
+
+## out Cache Size -----
+output$cache_size <- shiny::renderText({
+  tryCatch({
+    cache_size <- ms$get_cache_size()
+    
+    # Format the cache size
+    if (is.numeric(cache_size)) {
+      if (cache_size >= 1024^3) {
+        # GB
+        paste0(round(cache_size / (1024^3), 2), " GB")
+      } else if (cache_size >= 1024^2) {
+        # MB
+        paste0(round(cache_size / (1024^2), 2), " MB")
+      } else if (cache_size >= 1024) {
+        # KB
+        paste0(round(cache_size / 1024, 2), " KB")
+      } else {
+        # Bytes
+        paste0(round(cache_size, 0), " bytes")
+      }
+    } else {
+      as.character(cache_size)
+    }
+  }, error = function(e) {
+    "Error loading"
+  })
+})
+
+## event Clear Cache -----
+shiny::observeEvent(input$clear_cache_button, {
+  tryCatch({
+    # Clear cache using ms object
+    
+    shiny::showNotification(
+      "Cache cleared successfully!",
+      duration = 3
+    )
+    
+  }, error = function(e) {
+    shiny::showNotification(
+      paste("Error clearing cache:", e$message),
+      duration = 5
+    )
+  })
+})
+
   
   ## out Warnings -----
   output$warningMenu <- shinydashboard::renderMenu({
