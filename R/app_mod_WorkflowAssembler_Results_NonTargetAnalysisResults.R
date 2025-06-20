@@ -3,7 +3,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
   ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))
   
   # Custom CSS for consistent styling
-  custom_css <- shiny::tags$style(HTML("
+  custom_css <- shiny::tags$style(shiny::HTML("
     .metric-card {
       border-radius: 8px;
       padding: 20px;
@@ -649,18 +649,18 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
 }
 #' @noRd
 S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- function(x,
-                                                                  id,
-                                                                  ns,
-                                                                  reactive_analyses,
-                                                                  reactive_volumes,
-                                                                  reactive_config) {
+                                                                                       id,
+                                                                                       ns,
+                                                                                       reactive_analyses,
+                                                                                       reactive_volumes,
+                                                                                       reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     # Reactive value to store NTS data
     nts_data <- shiny::reactiveVal()
 
     # Initialize with input NTS data
     shiny::observe({
-      shiny::validate(need(!is.null(x), "NTS data is not available"))
+      shiny::validate(shiny::need(!is.null(x), "NTS data is not available"))
       nts_data(x)
     })
     
@@ -697,62 +697,43 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
     
     # Status indicators with UI formatting
     # Dynamic status indicators with UI formatting
-output$has_features_ui <- shiny::renderUI({
-  value <- nts_data()@has_features
-  shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
-})
+    output$has_features_ui <- shiny::renderUI({
+      value <- nts_data()@has_features
+      shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+    })
 
-output$has_filtered_features_ui <- shiny::renderUI({
-  value <- nts_data()@has_filtered_features
-  shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
-})
+    output$has_filtered_features_ui <- shiny::renderUI({
+      value <- nts_data()@has_filtered_features
+      shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+    })
 
-output$has_groups_ui <- shiny::renderUI({
-  value <- nts_data()@has_groups
-  shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
-})
+    output$has_groups_ui <- shiny::renderUI({
+      value <- nts_data()@has_groups
+      shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+    })
 
-output$has_features_eic_ui <- shiny::renderUI({
-  value <- nts_data()@has_features_eic
-  shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
-})
+    output$has_features_eic_ui <- shiny::renderUI({
+      value <- nts_data()@has_features_eic
+      shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+    })
 
-# Dynamic MS1 check
-output$has_features_ms1_ui <- shiny::renderUI({
-  features <- get_features(nts_data())
-  if (nrow(features) > 0) {
-    mass_data <- features[1, .(mass)]
-    ms1_available <- !inherits(try(plot_features_ms1(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE), "try-error")
-    shiny::tags$span(class = ifelse(ms1_available, "status-yes", "status-no"), ifelse(ms1_available, "YES", "NO"))
-  } else {
-    shiny::tags$span(class = "status-no", "NO")
-  }
-})
+    # Dynamic MS1 check
+    output$has_features_ms1_ui <- shiny::renderUI({
+      value <- nts_data()@has_features_ms1
+      shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+    })
 
-# Dynamic MS2 check
-output$has_features_ms2_ui <- shiny::renderUI({
-  features <- get_features(nts_data())
-  if (nrow(features) > 0) {
-    mass_data <- features[1, .(mass)]
-    ms2_available <- !inherits(try(plot_features_ms2(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE), "try-error")
-    shiny::tags$span(class = ifelse(ms2_available, "status-yes", "status-no"), ifelse(ms2_available, "YES", "NO"))
-  } else {
-    shiny::tags$span(class = "status-no", "NO")
-  }
-})
+    # Dynamic MS2 check
+    output$has_features_ms2_ui <- shiny::renderUI({
+      value <- nts_data()@has_features_ms2
+      shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+    })
 
-# Dynamic Suspects check
-output$has_features_suspects_ui <- shiny::renderUI({
-  features <- get_features(nts_data())
-  cat("Debug: Suspects data structure\n")
-  print(str(features$suspects, max.level = 1))
-  if (nrow(features) > 0) {
-    suspects_available <- any(sapply(features$suspects, function(x) !is.null(x) && length(x) > 0 && !all(is.na(x))))
-    shiny::tags$span(class = ifelse(suspects_available, "status-yes", "status-no"), ifelse(suspects_available, "YES", "NO"))
-  } else {
-    shiny::tags$span(class = "status-no", "NO")
-  }
-})
+    # Dynamic Suspects check
+    output$has_features_suspects_ui <- shiny::renderUI({
+      value <- nts_data()@has_features_suspects
+      shiny::tags$span(class = ifelse(value, "status-yes", "status-no"), ifelse(value, "YES", "NO"))
+    })
     
     # Enhanced Features chart using plot_features_count with Plotly
     output$features_chart <- plotly::renderPlotly({
@@ -762,10 +743,11 @@ output$has_features_suspects_ui <- shiny::renderUI({
     color_by <- chart_color_by()
     
     # Call the base plot function
-    p <- plot_features_count(nts, colorBy = color_by)
+    p <- plot_features_count(nts, colorBy = color_by, showLegend = FALSE)
     
     # Enhance the plotly object
-    p <- plotly::layout(p,
+    p <- plotly::layout(
+      p,
       width = NULL,  # Ensure no fixed width
       autosize = TRUE,  # Enable dynamic resizing
       margin = list(l = 60, r = 40, t = 40, b = 60),
@@ -779,786 +761,44 @@ output$has_features_suspects_ui <- shiny::renderUI({
       ),
     
       xaxis = list(
+        title = NULL,
+        tickfont = list(size = 12),
+        gridcolor = "#eee",
+        categoryorder = "total descending"  # Ensure bars are ordered for better spacing
+      ),
+    
+      yaxis = list(
         title = list(
-          text = "Sample",
+          text = "Number of Features",
           font = list(size = 14, color = "#555")
         ),
-      tickfont = list(size = 12),
-      gridcolor = "#eee",
-      categoryorder = "total descending"  # Ensure bars are ordered for better spacing
-    ),
-    
-    yaxis = list(
-      title = list(
-        text = "Number of Features",
-        font = list(size = 14, color = "#555")
-      ),
-      tickfont = list(size = 12),
-      gridcolor = "#eee"
-    ),
-    
-    # Adjust bargap to stretch bars across the width
-    bargap = 0.1,
-    
-    # Improved legend
-    legend = list(
-      orientation = "h",
-      xanchor = "center",
-      x = 0.5,
-      y = -0.15,
-      bgcolor = "rgba(255,255,255,0.8)",
-      bordercolor = "rgba(0,0,0,0.1)",
-      borderwidth = 1
-    ),
-    
-    # Hover template
-    hoverlabel = list(
-      bgcolor = "white",
-      bordercolor = "#333",
-      font = list(size = 12, color = "#333")
-    )
-  )
-  
-  # Add interactive features
-  p <- plotly::config(p, 
-    displayModeBar = TRUE,
-    modeBarButtonsToRemove = c(
-      "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
-      "hoverCompareCartesian", "lasso2d", "select2d"
-    ),
-    displaylogo = FALSE,
-    responsive = TRUE
-  )
-  
-  return(p)
-})
-
-# Features table for the Features tab
-output$features_table <- DT::renderDT({
-  # Fetch features data
-  features <- get_features(nts_data())
-  
-  # Debug: Log features data structure
-  cat("Debug: Features data structure\n")
-  print(str(features, max.level = 2))
-  
-  # Debug: Check if plotting functions have access to ms1/ms2 data
-  if (nrow(features) > 0) {
-    cat("Debug: Checking MS1/MS2 data availability for first feature\n")
-    mass_data <- features[1, .(mass)]
-    ms1_plot <- try(plot_features_ms1(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE)
-    ms2_plot <- try(plot_features_ms2(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE)
-    cat("Debug: MS1 plot data available =", !inherits(ms1_plot, "try-error"), "\n")
-    cat("Debug: MS2 plot data available =", !inherits(ms2_plot, "try-error"), "\n")
-  } else {
-    cat("Debug: No features available\n")
-  }
-  
-  # Enhanced flag logic with fallback to plotting data
-  features$ms1_flag <- sapply(features$ms1, function(x) {
-    !is.null(x) && length(x) > 0 && !all(is.na(x))
-  })
-  features$ms2_flag <- sapply(features$ms2, function(x) {
-    !is.null(x) && length(x) > 0 && !all(is.na(x))
-  })
-  features$istd_flag <- sapply(features$istd, function(x) {
-    !is.null(x) && length(x) > 0 && !all(is.na(x))
-  })
-  # Removed suspects_flag calculation since we don't need the column
-
-  # Fallback: If flags are all FALSE but plots exist, infer from mass column
-  if (nrow(features) > 0 && !any(features$ms1_flag) && !inherits(try(plot_features_ms1(nts_data(), mass = features[1, .(mass)]), silent = TRUE), "try-error")) {
-    cat("Debug: Inferring MS1 flags from mass data\n")
-    features$ms1_flag <- !is.na(features$mass) & features$mass > 0
-  }
-  if (nrow(features) > 0 && !any(features$ms2_flag) && !inherits(try(plot_features_ms2(nts_data(), mass = features[1, .(mass)]), silent = TRUE), "try-error")) {
-    cat("Debug: Inferring MS2 flags from mass data\n")
-    features$ms2_flag <- !is.na(features$mass) & features$mass > 0
-  }
-
-  # Debug: Log flag counts
-  cat("Debug: MS1 flags =", sum(features$ms1_flag), "\n")
-  cat("Debug: MS2 flags =", sum(features$ms2_flag), "\n")
-
-  # Remove original nested list-columns
-  nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
-  features <- features[, !nested_cols, with = FALSE]
-
-  # Rename flags to final column names (excluding suspects)
-  data.table::setnames(features, 
-    old = c("ms1_flag", "ms2_flag", "istd_flag"), 
-    new = c("ms1", "ms2", "istd")
-  )
-
-  # Round numeric columns to 4 decimal places for readability
-  numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
-  for (col in numeric_cols) {
-    if (col %in% names(features)) {
-      features[[col]] <- round(features[[col]], 4)
-    }
-  }
-
-  # Add a new column for checkboxes (initially unchecked)
-  features$sel <- rep(FALSE, nrow(features))
-
-  # Reorder columns to place sel as the second column after analysis
-  setcolorder(features, c("sel", "analysis", setdiff(names(features), c("sel", "analysis"))))
-
-  # Determine the index of the 'filtered' and 'sel' columns (0-based for JavaScript)
-  filtered_col_index <- which(names(features) == "filtered") - 1
-  sel_col_index <- which(names(features) == "sel") - 1
-
-  # Render the DataTable with enhanced styling and checkbox rendering
-  DT::datatable(
-    features,
-    escape = FALSE,
-    options = list(
-      pageLength = 15,
-      scrollX = TRUE,
-      processing = TRUE,
-      scrollY = "400px",
-      columnDefs = list(
-        list(width = "50px", targets = c(1)),
-        list(width = "200px", targets = c(0)),
-        list(width = "200px", targets = c(2)),
-        list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
-        list(width = "80px", targets = c(12)),
-        list(width = "100px", targets = c(13)),
-        list(width = "80px", targets = c(14, 15, 16)),
-        list(width = "150px", targets = c(17)),
-        list(width = "80px", targets = c(18)),
-        list(width = "120px", targets = c(19)),
-        list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
-        list(className = "dt-left", targets = c(0, 2, 13, 14, 15, 16, 18, 19)),
-        list(className = "dt-center", targets = c(1)),
-        list(
-          targets = sel_col_index,
-          render = DT::JS(
-            "function(data, type, row, meta) {",
-            "  if (type === 'display') {",
-            "    var checked = data === true ? 'checked' : '';",
-            "    return '<input type=\"checkbox\" ' + checked + ' class=\"sel-checkbox\" data-row=\"' + meta.row + '\" />';",
-            "  }",
-            "  return data;",
-            "}"
-          ),
-          className = "dt-center"
-        ),
-        list(
-          targets = filtered_col_index,
-          render = DT::JS(
-            "function(data, type, row, meta) {",
-            "  if (type === 'display') {",
-            "    var checked = data === true ? 'checked' : '';",
-            "    return '<input type=\"checkbox\" ' + checked + ' disabled style=\"pointer-events: none;\" />';",
-            "  }",
-            "  return data;",
-            "}"
-          ),
-          className = "dt-center"
-        )
-      ),
-      selection = list(mode = "multiple", selected = NULL, target = "row"),
-      dom = 'rt<"bottom"lip>',
-      lengthMenu = c(5, 10, 25, 50, 100),
-      ordering = TRUE,
-      searching = FALSE,
-      searchHighlight = TRUE
-    ),
-    style = "bootstrap",
-    class = "table table-striped table-hover",
-    rownames = FALSE,
-    filter = "top",
-    selection = "multiple"
-  ) %>%
-    DT::formatStyle(
-      columns = names(features),
-      fontSize = "14px",
-      padding = "8px 12px"
-    ) %>%
-    DT::formatStyle(
-      columns = intersect(numeric_cols, names(features)),
-      backgroundColor = NULL,
-      color = NULL
-    )
-})
-
-shiny::observeEvent(input$deselect_all_features, {
-  DT::selectRows(DT::dataTableProxy("features_table"), NULL)
-})
-
-# Handler for removing selected features
-shiny::observeEvent(input$remove_selected_features, {
-  # Get selected features
-  selected <- selected_features()
-  
-  # Validate selection
-  if (is.null(selected) || nrow(selected) == 0) {
-    shiny::showNotification("No features selected for removal.", type = "warning")
-    return()
-  }
-  
-  # Get current NTS data
-  nts <- nts_data()
-  
-  # Create a copy to modify
-  feature_list <- nts$feature_list
-  
-  # Remove selected features
-  tryCatch({
-    for (i in seq_len(nrow(selected))) {
-      analysis_i <- selected$analysis[i]
-      feature_i <- selected$feature[i]
-      feature_list[[analysis_i]] <- feature_list[[analysis_i]][
-        !feature_list[[analysis_i]][["feature"]] %in% feature_i,
-      ]
-    }
-    
-    # Update NTS feature list
-    nts$feature_list <- feature_list
-    
-    # Update reactive nts_data
-    nts_data(nts)
-    
-    # Clear table selection
-    DT::selectRows(DT::dataTableProxy("features_table"), NULL)
-    
-    # Notify user
-    shiny::showNotification(
-      paste(nrow(selected), "features removed successfully."),
-      type = "message"
-    )
-  }, error = function(e) {
-    shiny::showNotification(
-      paste("Error removing features:", e$message),
-      type = "error"
-    )
-  })
-})
-
-# Handler for export to CSV
-output$export_features_csv <- shiny::downloadHandler(
-  filename = function() {
-    paste0("features_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
-  },
-  content = function(file) {
-    # Get all features data
-    features <- get_features(nts_data())
-
-    # Replace list-cols with flags because we flattened them
-    features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
-    features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
-    features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
-    
-    # Remove nested columns for CSV export
-    nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
-    export_features <- features[, !nested_cols, with = FALSE]
-    
-    # Export to CSV
-    write.csv(export_features, file, row.names = FALSE)
-  }
-)
-
-# Handler for export to CSV for selected features
-output$export_selected_features_csv <- shiny::downloadHandler(
-  filename = function() {
-    paste0("selected_features_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
-  },
-  content = function(file) {
-    selected_rows <- input$features_table_rows_selected
-    features <- get_features(nts_data())
-
-    # Replace list-cols with flags because we flattened them
-    features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
-    features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
-    features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
-
-    # Remove nested columns
-    nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
-
-    if (!is.null(selected_rows) && length(selected_rows) > 0) {
-      selected_features <- features[selected_rows, !nested_cols, with = FALSE]
-      write.csv(selected_features, file, row.names = FALSE)
-    } else {
-      # If no selection, export empty file or a message
-      write.csv(data.frame(Message = "No features selected"), file, row.names = FALSE)
-    }
-  }
-)
-
-# Reactive value to store selected features
-selected_features <- shiny::reactive({
-  selected_rows <- input$features_table_rows_selected
-  
-  # Fetch features data
-  features <- get_features(nts_data())
-  if (is.null(selected_rows) || length(selected_rows) == 0) {
-    return(NULL)
-  }
-  
-  # Data frame with analysis and feature columns for the selected rows
-  selected_data <- features[selected_rows, .(analysis, feature)]
-  
-  # Convert to data frame
-  as.data.frame(selected_data)
-})
-
-# Reactive value to store selected features with mass for MS1/MS2 plots
-selected_features_with_mass <- shiny::reactive({
-  selected_rows <- input$features_table_rows_selected
-  
-  # Fetch features data (including nested columns)
-  features <- get_features(nts_data())
-  if (is.null(selected_rows) || length(selected_rows) == 0) {
-    return(NULL)
-  }
-  
-  # Extract mass for the selected rows
-  selected_data <- features[selected_rows, .(mass)]
-  
-  # Convert to data frame
-  as.data.frame(selected_data)
-})
-
-# Reactive value to store quality data for selected features
-selected_quality_data <- shiny::reactive({
-  selected_rows <- input$features_table_rows_selected
-  
-  # Fetch features data (including nested columns)
-  features <- get_features(nts_data())
-  if (is.null(selected_rows) || length(selected_rows) == 0) {
-    return(NULL)
-  }
-  
-  # Extract quality data for the selected rows
-  quality_list <- features[selected_rows, "quality", with = FALSE]$quality
-  
-  # Check if quality_list is empty or NULL
-  if (length(quality_list) == 0 || all(sapply(quality_list, is.null))) {
-    return(data.frame(message = "No quality data available"))
-  }
-  
-  # Flatten the quality data
-  quality_data <- do.call(rbind, lapply(seq_along(quality_list), function(i) {
-    q <- quality_list[[i]]
-    if (is.null(q) || length(q) == 0) {
-      return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
-                        message = "No quality data"))
-    }
-    if (is.list(q) || is.vector(q)) {
-      # Convert named vector/list to data frame
-      df <- as.data.frame(t(unlist(q)))
-      # Add feature column
-      df$feature <- features[selected_rows[i], "feature", with = FALSE]$feature
-      return(df)
-    } else {
-      # If it's not a list or vector, return a placeholder
-      return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
-                        message = "Invalid quality data"))
-    }
-  }))
-  
-  # If the result is empty, return a placeholder
-  if (nrow(quality_data) == 0) {
-    return(data.frame(message = "No quality data available"))
-  }
-  
-  # Identify numeric columns to round
-  numeric_cols <- c("sn", "gauss_a", "gauss_u", "gauss_s", "gauss_f")
-  for (col in numeric_cols) {
-    if (col %in% names(quality_data)) {
-      quality_data[[col]] <- round(as.numeric(quality_data[[col]]), 3)  # Round to 3 decimal places
-    }
-  }
-  
-  # Reorder columns to put feature first
-  quality_data <- quality_data[, c("feature", setdiff(names(quality_data), "feature"))]
-  
-  return(quality_data)
-})
-
-# Feature peaks plot with Plotly
-output$feature_peaks_plot <- plotly::renderPlotly({
-  shiny::validate(
-    need(!is.null(selected_features()), "Please select one or more features from the table to display the plot.")
-  )
-  
-  # Generate the plot using plot_features
-  nts <- nts_data()
-  p <- plot_features(nts, features = selected_features())
-  
-  # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
-  p <- plotly::layout(p,
-    width = NULL,  # Ensure no fixed width
-    autosize = TRUE,  # Enable dynamic resizing
-    margin = list(l = 50, r = 30, t = 30, b = 50),
-    paper_bgcolor = "rgba(0,0,0,0)",
-    plot_bgcolor = "rgba(0,0,0,0)",
-    
-    # Axis labels
-    xaxis = list(
-      title = list(
-        text = "Retention Time (RT)",
-        font = list(size = 14, color = "#555")
-      ),
-      tickfont = list(size = 12),
-      gridcolor = "#eee"
-    ),
-    
-    yaxis = list(
-      title = list(
-        text = "Intensity",
-        font = list(size = 14, color = "#555")
-      ),
-      tickfont = list(size = 12),
-      gridcolor = "#eee"
-    ),
-    
-    # Legend
-    legend = list(
-      orientation = "v",
-      xanchor = "right",
-      yanchor = "top",
-      x = 0.98,
-      y = 0.98,
-      bgcolor = "rgba(255,255,255,0.8)",
-      bordercolor = "rgba(0,0,0,0.1)",
-      borderwidth = 1,
-      font = list(size = 12)
-    ),
-    
-    # Hover template
-    hoverlabel = list(
-      bgcolor = "white",
-      bordercolor = "#333",
-      font = list(size = 12, color = "#333")
-    )
-  )
-  
-  # Add interactive features
-  p <- plotly::config(p, 
-    displayModeBar = TRUE,
-    modeBarButtonsToRemove = c(
-      "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
-      "hoverCompareCartesian", "lasso2d", "select2d"
-    ),
-    displaylogo = FALSE,
-    responsive = TRUE
-  )
-  
-  return(p)
-})
-
-# MS1 plot with Plotly
-output$ms1_plot <- plotly::renderPlotly({
-  shiny::validate(
-    need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS1 plot.")
-  )
-  
-  # Generate the MS1 plot
-  nts <- nts_data()
-  mass_data <- selected_features_with_mass()
-  p <- plot_features_ms1(nts, mass = mass_data, legendNames = TRUE)
-  
-  # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
-  p <- plotly::layout(p,
-    width = NULL,  # Ensure no fixed width
-    autosize = TRUE,  # Enable dynamic resizing
-    margin = list(l = 50, r = 30, t = 30, b = 50),
-    paper_bgcolor = "rgba(0,0,0,0)",
-    plot_bgcolor = "rgba(0,0,0,0)",
-    
-    # Axis labels
-    xaxis = list(
-      title = list(
-        text = "m/z",
-        font = list(size = 14, color = "#555")
-      ),
-      tickfont = list(size = 12),
-      gridcolor = "#eee"
-    ),
-    
-    yaxis = list(
-      title = list(
-        text = "Intensity",
-        font = list(size = 14, color = "#555")
-      ),
-      tickfont = list(size = 12),
-      gridcolor = "#eee"
-    ),
-    
-    # Legend
-    legend = list(
-      orientation = "v",
-      xanchor = "right",
-      yanchor = "top",
-      x = 0.98,
-      y = 0.98,
-      bgcolor = "rgba(255,255,255,0.8)",
-      bordercolor = "rgba(0,0,0,0.1)",
-      borderwidth = 1,
-      font = list(size = 12)
-    )
-  )
-  
-  # Add interactive features
-  p <- plotly::config(p, 
-    displayModeBar = TRUE,
-    modeBarButtonsToRemove = c(
-      "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
-      "hoverCompareCartesian", "lasso2d", "select2d"
-    ),
-    displaylogo = FALSE,
-    responsive = TRUE
-  )
-  
-  return(p)
-})
-
-# MS2 plot with Plotly
-output$ms2_plot <- plotly::renderPlotly({
-  shiny::validate(
-    need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS2 plot.")
-  )
-  
-  # Generate the MS2 plot
-  nts <- nts_data()
-  mass_data <- selected_features_with_mass()
-  p <- plot_features_ms2(nts, mass = mass_data, legendNames = TRUE)
-  
-  # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
-  p <- plotly::layout(p,
-    width = NULL,  # Ensure no fixed width
-    autosize = TRUE,  # Enable dynamic resizing
-    margin = list(l = 50, r = 30, t = 30, b = 50),
-    paper_bgcolor = "rgba(0,0,0,0)",
-    plot_bgcolor = "rgba(0,0,0,0)",
-    
-    # Axis labels
-    xaxis = list(
-      title = list(
-        text = "m/z",
-        font = list(size = 14, color = "#555")
-      ),
-      tickfont = list(size = 12),
-      gridcolor = "#eee"
-    ),
-    
-    yaxis = list(
-      title = list(
-        text = "Intensity / Counts",
-        font = list(size = 14, color = "#555")
-      ),
-      tickfont = list(size = 12),
-      gridcolor = "#eee"
-    ),
-    
-    # Legend
-    legend = list(
-      orientation = "v",
-      xanchor = "right",
-      yanchor = "top",
-      x = 0.98,
-      y = 0.98,
-      bgcolor = "rgba(255,255,255,0.8)",
-      bordercolor = "rgba(0,0,0,0.1)",
-      borderwidth = 1,
-      font = list(size = 12)
-    )
-  )
-  
-  # Add interactive features
-  p <- plotly::config(p, 
-    displayModeBar = TRUE,
-    modeBarButtonsToRemove = c(
-      "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
-      "hoverCompareCartesian", "lasso2d", "select2d"
-    ),
-    displaylogo = FALSE,
-    responsive = TRUE
-  )
-  
-  return(p)
-})
-
-# Quality table
-output$quality_table <- DT::renderDT({
-  shiny::validate(
-    need(!is.null(selected_quality_data()), "Please select one or more features from the table to display the quality data.")
-  )
-  
-  # Fetch quality data
-  quality_data <- selected_quality_data()
-  
-  # Check if the data is a placeholder
-  if ("message" %in% names(quality_data) && ncol(quality_data) == 1) {
-    return(DT::datatable(
-      quality_data,
-      options = list(
-        dom = "t",
-        ordering = FALSE,
-        paging = FALSE
-      ),
-      style = "bootstrap",
-      class = "table table-bordered table-hover",
-      rownames = FALSE
-    ))
-  }
-  
-  # Render the DataTable
-  DT::datatable(
-    quality_data,
-    options = list(
-      pageLength = 5,
-      processing = TRUE,
-      scrollX = TRUE,
-      dom = "lfrtp",
-      ordering = TRUE,
-      lengthMenu = c(5, 10, 25),
-      columnDefs = list(
-        list(className = "dt-center", targets = "_all")
-      )
-    ),
-    style = "bootstrap",
-    class = "table table-striped table-hover",
-    rownames = FALSE
-  ) %>%
-    DT::formatStyle(
-      columns = names(quality_data),
-      fontSize = "14px",
-      padding = "8px 12px"
-    )
-})
-
-# Groups table for the Groups tab
-output$groups_table <- DT::renderDT({
-  # Fetch groups data
-  groups <- get_groups(nts_data())
-  
-  # Check if groups data is available
-  if (is.null(groups) || nrow(groups) == 0) {
-    return(DT::datatable(
-      data.frame(Message = "No groups data available"),
-      options = list(
-        dom = "t",
-        ordering = FALSE,
-        processing = TRUE,
-        paging = FALSE,
-        selection = "none"
-      ),
-      style = "bootstrap",
-      class = "table table-bordered",
-      rownames = FALSE,
-      selection = "none"
-    ))
-  }
-  
-  # Round numeric columns to 4 decimal places for readability
-  numeric_cols <- names(groups)[sapply(groups, is.numeric)]
-  for (col in numeric_cols) {
-    groups[[col]] <- round(groups[[col]], 4)
-  }
-  
-  # Add chromatogram column with clickable icons
-  groups$chromatogram <- sapply(1:nrow(groups), function(i) {
-    paste0('<div class="chromatogram-icon" onclick="showChromatogram(\'', 
-          groups$group[i], '\')" title="View chromatogram for ', groups$group[i], '">',
-          '<i class="fas fa-chart-line"></i></div>')
-  })
-  
-  # Reorder columns to put chromatogram as second column
-  col_order <- c("group", "chromatogram", setdiff(names(groups), c("group", "chromatogram")))
-  groups <- groups[, col_order, with = FALSE]
-  
-  # Find chromatogram column index (0-based for JavaScript)
-  chromatogram_col_index <- which(names(groups) == "chromatogram") - 1
-  
-  # Render the DataTable with basic styling
-  DT::datatable(
-    groups,
-    escape = FALSE,
-    selection = "none",
-    options = list(
-      pageLength = 15,
-      scrollX = TRUE,
-      processing = TRUE,
-      scrollY = "400px",
-      dom = 'rtp',
-      ordering = TRUE,
-      searching = FALSE,
-      select = FALSE,
-      columnDefs = list(
-        list(
-          targets = chromatogram_col_index,
-          orderable = FALSE,  # Disable sorting for chromatogram column
-          width = "80px",
-          className = "dt-center"
-        ),
-        list(width = "150px", targets = 0),  # group column
-        list(className = "dt-center", targets = chromatogram_col_index)
-      )
-    ),
-    style = "bootstrap",
-    class = "table table-striped table-hover",
-    rownames = FALSE,
-    filter = "none"
-  ) %>%
-    DT::formatStyle(
-      columns = names(groups),
-      fontSize = "14px",
-      padding = "8px 12px"
-    ) %>%
-    DT::formatStyle(
-      columns = "chromatogram",
-      textAlign = "center"
-    )
-})
-
-# Reactive value to store selected group for chromatogram
-selected_group <- shiny::reactiveVal(NULL)
-
-# Handle chromatogram click
-shiny::observeEvent(input$show_chromatogram, {
-  req(input$show_chromatogram$group)
-  selected_group(input$show_chromatogram$group)
-})
-
-# Chromatogram plot
-output$chromatogram_plot <- plotly::renderPlotly({
-  shiny::validate(
-    need(!is.null(selected_group()), "Please select a group to display the chromatogram.")
-  )
-  
-  # Generate the chromatogram plot using plot_groups
-  nts <- nts_data()
-  group_id <- selected_group()
-  
-  tryCatch({
-    # Call plot_groups function with the selected group
-    p <- plot_groups(nts, groups = data.frame(group = group_id))
-    
-    # Enhance the plotly object
-    p <- plotly::layout(p,
-      title = list(
-        text = paste("Chromatogram for Group:", group_id),
-        font = list(size = 18, color = "#333")
-      ),
-      xaxis = list(
-        title = list(text = "Retention Time (RT)", font = list(size = 14)),
         tickfont = list(size = 12),
         gridcolor = "#eee"
       ),
-      yaxis = list(
-        title = list(text = "Intensity", font = list(size = 14)),
-        tickfont = list(size = 12),
-        gridcolor = "#eee"
-      ),
-      margin = list(l = 60, r = 40, t = 60, b = 60),
-      paper_bgcolor = "rgba(0,0,0,0)",
-      plot_bgcolor = "rgba(0,0,0,0)"
-    )
     
-    # Configure plotly
+      # Adjust bargap to stretch bars across the width
+      bargap = 0.1,
+    
+      # Improved legend
+      # legend = list(
+      #   orientation = "h",
+      #   xanchor = "center",
+      #   x = 0.5,
+      #   y = -0.15,
+      #   bgcolor = "rgba(255,255,255,0.8)",
+      #   bordercolor = "rgba(0,0,0,0.1)",
+      #   borderwidth = 1
+      # ),
+    
+      # Hover template
+      hoverlabel = list(
+        bgcolor = "white",
+        bordercolor = "#333",
+        font = list(size = 12, color = "#333")
+      )
+    )
+  
+    # Add interactive features
     p <- plotly::config(p, 
       displayModeBar = TRUE,
       modeBarButtonsToRemove = c(
@@ -1570,57 +810,799 @@ output$chromatogram_plot <- plotly::renderPlotly({
     )
     
     return(p)
+  })
+
+  # Features table for the Features tab
+  output$features_table <- DT::renderDT({
+    # Fetch features data
+    features <- get_features(nts_data())
     
-  }, error = function(e) {
-    # Handle errors gracefully
-    plotly::plot_ly() %>%
-      plotly::add_text(x = 0.5, y = 0.5, text = paste("Error loading chromatogram:", e$message),
-                      textfont = list(size = 16, color = "red")) %>%
-      plotly::layout(
-        title = paste("Error: Group", group_id),
-        xaxis = list(showgrid = FALSE, showticklabels = FALSE),
-        yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+    # Debug: Log features data structure
+    # cat("Debug: Features data structure\n")
+    # print(str(features, max.level = 2))
+    
+    # Debug: Check if plotting functions have access to ms1/ms2 data
+    # if (nrow(features) > 0) {
+    #   cat("Debug: Checking MS1/MS2 data availability for first feature\n")
+    #   mass_data <- features[1, .(mass)]
+    #   ms1_plot <- try(plot_features_ms1(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE)
+    #   ms2_plot <- try(plot_features_ms2(nts_data(), mass = mass_data, legendNames = FALSE), silent = TRUE)
+    #   cat("Debug: MS1 plot data available =", !inherits(ms1_plot, "try-error"), "\n")
+    #   cat("Debug: MS2 plot data available =", !inherits(ms2_plot, "try-error"), "\n")
+    # } else {
+    #   cat("Debug: No features available\n")
+    # }
+    
+    # Enhanced flag logic with fallback to plotting data
+    features$ms1_flag <- sapply(features$ms1, function(x) {
+      !is.null(x) && length(x) > 0 && !all(is.na(x))
+    })
+    features$ms2_flag <- sapply(features$ms2, function(x) {
+      !is.null(x) && length(x) > 0 && !all(is.na(x))
+    })
+    features$istd_flag <- sapply(features$istd, function(x) {
+      !is.null(x) && length(x) > 0 && !all(is.na(x))
+    })
+    # Removed suspects_flag calculation since we don't need the column
+  
+    # Fallback: If flags are all FALSE but plots exist, infer from mass column
+    if (nrow(features) > 0 && !any(features$ms1_flag) && !inherits(try(plot_features_ms1(nts_data(), mass = features[1, .(mass)]), silent = TRUE), "try-error")) {
+      cat("Debug: Inferring MS1 flags from mass data\n")
+      features$ms1_flag <- !is.na(features$mass) & features$mass > 0
+    }
+    if (nrow(features) > 0 && !any(features$ms2_flag) && !inherits(try(plot_features_ms2(nts_data(), mass = features[1, .(mass)]), silent = TRUE), "try-error")) {
+      cat("Debug: Inferring MS2 flags from mass data\n")
+      features$ms2_flag <- !is.na(features$mass) & features$mass > 0
+    }
+  
+    # Debug: Log flag counts
+    cat("Debug: MS1 flags =", sum(features$ms1_flag), "\n")
+    cat("Debug: MS2 flags =", sum(features$ms2_flag), "\n")
+  
+    # Remove original nested list-columns
+    nested_cols <- c("eic", "ms1", "ms2", "quality", "annotation", "istd", "suspects", "formulas", "compounds")
+    features <- features[, !nested_cols, with = FALSE]
+  
+    # Rename flags to final column names (excluding suspects)
+    data.table::setnames(features, 
+      old = c("ms1_flag", "ms2_flag", "istd_flag"), 
+      new = c("ms1", "ms2", "istd")
+    )
+  
+    # Round numeric columns to 4 decimal places for readability
+    numeric_cols <- c("mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "area", "mass", "suppression_factor")
+    for (col in numeric_cols) {
+      if (col %in% names(features)) {
+        features[[col]] <- round(features[[col]], 4)
+      }
+    }
+  
+    # Add a new column for checkboxes (initially unchecked)
+    features$sel <- rep(FALSE, nrow(features))
+  
+    # Reorder columns to place sel as the second column after analysis
+    setcolorder(features, c("sel", "analysis", setdiff(names(features), c("sel", "analysis"))))
+  
+    # Determine the index of the 'filtered' and 'sel' columns (0-based for JavaScript)
+    filtered_col_index <- which(names(features) == "filtered") - 1
+    sel_col_index <- which(names(features) == "sel") - 1
+  
+    # Render the DataTable with enhanced styling and checkbox rendering
+    DT::datatable(
+      features,
+      escape = FALSE,
+      options = list(
+        pageLength = 15,
+        scrollX = TRUE,
+        processing = TRUE,
+        scrollY = "400px",
+        columnDefs = list(
+          list(width = "50px", targets = c(1)),
+          list(width = "200px", targets = c(0)),
+          list(width = "200px", targets = c(2)),
+          list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
+          list(width = "80px", targets = c(12)),
+          list(width = "100px", targets = c(13)),
+          list(width = "80px", targets = c(14, 15, 16)),
+          list(width = "150px", targets = c(17)),
+          list(width = "80px", targets = c(18)),
+          list(width = "120px", targets = c(19)),
+          list(className = "dt-right", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)),
+          list(className = "dt-left", targets = c(0, 2, 13, 14, 15, 16, 18, 19)),
+          list(className = "dt-center", targets = c(1)),
+          list(
+            targets = sel_col_index,
+            render = DT::JS(
+              "function(data, type, row, meta) {",
+              "  if (type === 'display') {",
+              "    var checked = data === true ? 'checked' : '';",
+              "    return '<input type=\"checkbox\" ' + checked + ' class=\"sel-checkbox\" data-row=\"' + meta.row + '\" />';",
+              "  }",
+              "  return data;",
+              "}"
+            ),
+            className = "dt-center"
+          ),
+          list(
+            targets = filtered_col_index,
+            render = DT::JS(
+              "function(data, type, row, meta) {",
+              "  if (type === 'display') {",
+              "    var checked = data === true ? 'checked' : '';",
+              "    return '<input type=\"checkbox\" ' + checked + ' disabled style=\"pointer-events: none;\" />';",
+              "  }",
+              "  return data;",
+              "}"
+            ),
+            className = "dt-center"
+          )
+        ),
+        selection = list(mode = "multiple", selected = NULL, target = "row"),
+        dom = 'rt<"bottom"lip>',
+        lengthMenu = c(5, 10, 25, 50, 100),
+        ordering = TRUE,
+        searching = FALSE,
+        searchHighlight = TRUE
+      ),
+      style = "bootstrap",
+      class = "table table-striped table-hover",
+      rownames = FALSE,
+      filter = "top",
+      selection = "multiple"
+    ) %>%
+      DT::formatStyle(
+        columns = names(features),
+        fontSize = "14px",
+        padding = "8px 12px"
+      ) %>%
+      DT::formatStyle(
+        columns = intersect(numeric_cols, names(features)),
+        backgroundColor = NULL,
+        color = NULL
       )
   })
-})
 
-# JavaScript for UI interactions
-shiny::observeEvent(1, {
-  # Get the full namespace for use in JavaScript
-  ns_prefix <- paste0("WorkflowAssembler-", id)
+  shiny::observeEvent(input$deselect_all_features, {
+    DT::selectRows(DT::dataTableProxy("features_table"), NULL)
+  })
+
+  # Handler for export to CSV
+  output$export_features_csv <- shiny::downloadHandler(
+    filename = function() {
+      paste0("features_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+    },
+    content = function(file) {
+      # Get all features data
+      features <- get_features(nts_data())
   
-  # Initialize tooltips and chromatogram functionality
-  shiny::insertUI(
-    selector = "head",
-    where = "beforeEnd",
-    ui = shiny::tags$script(HTML(paste0("
-      // Global function to show chromatogram
-      function showChromatogram(groupId) {
-        Shiny.setInputValue('", ns_prefix, "-show_chromatogram', {
-          group: groupId,
-          timestamp: Date.now()
-        });
-        $('#", ns_prefix, "-chromatogram_modal').modal('show');
+      # Replace list-cols with flags because we flattened them
+      features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
+      features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
+      features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
+      
+      # Remove nested columns for CSV export
+      nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
+      export_features <- features[, !nested_cols, with = FALSE]
+      
+      # Export to CSV
+      write.csv(export_features, file, row.names = FALSE)
+    }
+  )
+
+  # Handler for export to CSV for selected features
+  output$export_selected_features_csv <- shiny::downloadHandler(
+    filename = function() {
+      paste0("selected_features_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+    },
+    content = function(file) {
+      selected_rows <- input$features_table_rows_selected
+      features <- get_features(nts_data())
+  
+      # Replace list-cols with flags because we flattened them
+      features$ms1 <- sapply(features$ms1, function(x) !is.null(x) && length(x) > 0)
+      features$ms2 <- sapply(features$ms2, function(x) !is.null(x) && length(x) > 0)
+      features$istd <- sapply(features$istd, function(x) !is.null(x) && length(x) > 0)
+  
+      # Remove nested columns
+      nested_cols <- c("eic", "quality", "annotation", "suspects", "formulas", "compounds")
+  
+      if (!is.null(selected_rows) && length(selected_rows) > 0) {
+        selected_features <- features[selected_rows, !nested_cols, with = FALSE]
+        write.csv(selected_features, file, row.names = FALSE)
+      } else {
+        # If no selection, export empty file or a message
+        write.csv(data.frame(Message = "No features selected"), file, row.names = FALSE)
+      }
+    }
+  )
+
+  # Reactive value to store selected features
+  selected_features <- shiny::reactive({
+    selected_rows <- input$features_table_rows_selected
+    
+    # Fetch features data
+    features <- get_features(nts_data())
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      return(NULL)
+    }
+    
+    analysis <- NULL
+    feature <- NULL
+    
+    # Data frame with analysis and feature columns for the selected rows
+    selected_data <- features[selected_rows, .(analysis, feature)]
+    
+    # Convert to data frame
+    as.data.frame(selected_data)
+  })
+  
+  # Handler for removing selected features
+  shiny::observeEvent(input$remove_selected_features, {
+    # Get selected features
+    selected <- selected_features()
+    
+    # Validate selection
+    if (is.null(selected) || nrow(selected) == 0) {
+      shiny::showNotification("No features selected for removal.", type = "warning")
+      return()
+    }
+    
+    # Get current NTS data
+    nts <- nts_data()
+    
+    # Create a copy to modify
+    feature_list <- nts$feature_list
+    
+    # Remove selected features
+    tryCatch({
+      for (i in seq_len(nrow(selected))) {
+        analysis_i <- selected$analysis[i]
+        feature_i <- selected$feature[i]
+        feature_list[[analysis_i]] <- feature_list[[analysis_i]][
+          !feature_list[[analysis_i]][["feature"]] %in% feature_i,
+        ]
       }
       
-      $(document).ready(function(){
-        // Initialize tooltips
-        $('[data-toggle=\"tooltip\"]').tooltip();
-        
-        // Make status panel items clickable
-        $('.status-item').css('cursor', 'pointer').click(function(){
-          $('.status-item').removeClass('active');
-          $(this).addClass('active');
-        });
-        
-        // Enhance button group behavior
-        $('.btn-group .btn').click(function(){
-          $(this).siblings().removeClass('active');
-          $(this).addClass('active');
-        });
-      });
-    ")))
-  )
-}, once = TRUE)
+      # Update NTS feature list
+      nts$feature_list <- feature_list
+      
+      # Update reactive nts_data
+      nts_data(nts)
+      
+      # Clear table selection
+      DT::selectRows(DT::dataTableProxy("features_table"), NULL)
+      
+      # Notify user
+      shiny::showNotification(
+        paste(nrow(selected), "features removed successfully."),
+        type = "message"
+      )
+    }, error = function(e) {
+      shiny::showNotification(
+        paste("Error removing features:", e$message),
+        type = "error"
+      )
+    })
   })
-}
+
+  # Reactive value to store selected features with mass for MS1/MS2 plots
+  selected_features_with_mass <- shiny::reactive({
+    selected_rows <- input$features_table_rows_selected
+    
+    # Fetch features data (including nested columns)
+    features <- get_features(nts_data())
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      return(NULL)
+    }
+    
+    # Extract mass for the selected rows
+    selected_data <- features[selected_rows, .(mass)]
+    
+    # Convert to data frame
+    as.data.frame(selected_data)
+  })
+
+  # Reactive value to store quality data for selected features
+  selected_quality_data <- shiny::reactive({
+    selected_rows <- input$features_table_rows_selected
+    
+    # Fetch features data (including nested columns)
+    features <- get_features(nts_data())
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      return(NULL)
+    }
+    
+    # Extract quality data for the selected rows
+    quality_list <- features[selected_rows, "quality", with = FALSE]$quality
+    
+    # Check if quality_list is empty or NULL
+    if (length(quality_list) == 0 || all(sapply(quality_list, is.null))) {
+      return(data.frame(message = "No quality data available"))
+    }
+    
+    # Flatten the quality data
+    quality_data <- do.call(rbind, lapply(seq_along(quality_list), function(i) {
+      q <- quality_list[[i]]
+      if (is.null(q) || length(q) == 0) {
+        return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
+                          message = "No quality data"))
+      }
+      if (is.list(q) || is.vector(q)) {
+        # Convert named vector/list to data frame
+        df <- as.data.frame(t(unlist(q)))
+        # Add feature column
+        df$feature <- features[selected_rows[i], "feature", with = FALSE]$feature
+        return(df)
+      } else {
+        # If it's not a list or vector, return a placeholder
+        return(data.frame(feature = features[selected_rows[i], "feature", with = FALSE]$feature, 
+                          message = "Invalid quality data"))
+      }
+    }))
+    
+    # If the result is empty, return a placeholder
+    if (nrow(quality_data) == 0) {
+      return(data.frame(message = "No quality data available"))
+    }
+    
+    # Identify numeric columns to round
+    numeric_cols <- c("sn", "gauss_a", "gauss_u", "gauss_s", "gauss_f")
+    for (col in numeric_cols) {
+      if (col %in% names(quality_data)) {
+        quality_data[[col]] <- round(as.numeric(quality_data[[col]]), 3)  # Round to 3 decimal places
+      }
+    }
+    
+    # Reorder columns to put feature first
+    quality_data <- quality_data[, c("feature", setdiff(names(quality_data), "feature"))]
+    
+    return(quality_data)
+  })
+
+  # Feature peaks plot with Plotly
+  output$feature_peaks_plot <- plotly::renderPlotly({
+    shiny::validate(
+      need(!is.null(selected_features()), "Please select one or more features from the table to display the plot.")
+    )
+    
+    # Generate the plot using plot_features
+    nts <- nts_data()
+    p <- plot_features(nts, features = selected_features())
+    
+    # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
+    p <- plotly::layout(p,
+      width = NULL,  # Ensure no fixed width
+      autosize = TRUE,  # Enable dynamic resizing
+      margin = list(l = 50, r = 30, t = 30, b = 50),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)",
+      
+      # Axis labels
+      xaxis = list(
+        title = list(
+          text = "Retention Time (RT)",
+          font = list(size = 14, color = "#555")
+        ),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      
+      yaxis = list(
+        title = list(
+          text = "Intensity",
+          font = list(size = 14, color = "#555")
+        ),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      
+      # Legend
+      legend = list(
+        orientation = "v",
+        xanchor = "right",
+        yanchor = "top",
+        x = 0.98,
+        y = 0.98,
+        bgcolor = "rgba(255,255,255,0.8)",
+        bordercolor = "rgba(0,0,0,0.1)",
+        borderwidth = 1,
+        font = list(size = 12)
+      ),
+      
+      # Hover template
+      hoverlabel = list(
+        bgcolor = "white",
+        bordercolor = "#333",
+        font = list(size = 12, color = "#333")
+      )
+    )
+    
+    # Add interactive features
+    p <- plotly::config(p, 
+      displayModeBar = TRUE,
+      modeBarButtonsToRemove = c(
+        "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+        "hoverCompareCartesian", "lasso2d", "select2d"
+      ),
+      displaylogo = FALSE,
+      responsive = TRUE
+    )
+    
+    return(p)
+  })
+
+  # MS1 plot with Plotly
+  output$ms1_plot <- plotly::renderPlotly({
+    shiny::validate(
+      need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS1 plot.")
+    )
+    
+    # Generate the MS1 plot
+    nts <- nts_data()
+    mass_data <- selected_features_with_mass()
+    p <- plot_features_ms1(nts, mass = mass_data, legendNames = TRUE)
+    
+    # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
+    p <- plotly::layout(p,
+      width = NULL,  # Ensure no fixed width
+      autosize = TRUE,  # Enable dynamic resizing
+      margin = list(l = 50, r = 30, t = 30, b = 50),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)",
+      
+      # Axis labels
+      xaxis = list(
+        title = list(
+          text = "m/z",
+          font = list(size = 14, color = "#555")
+        ),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      
+      yaxis = list(
+        title = list(
+          text = "Intensity",
+          font = list(size = 14, color = "#555")
+        ),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      
+      # Legend
+      legend = list(
+        orientation = "v",
+        xanchor = "right",
+        yanchor = "top",
+        x = 0.98,
+        y = 0.98,
+        bgcolor = "rgba(255,255,255,0.8)",
+        bordercolor = "rgba(0,0,0,0.1)",
+        borderwidth = 1,
+        font = list(size = 12)
+      )
+    )
+    
+    # Add interactive features
+    p <- plotly::config(p, 
+      displayModeBar = TRUE,
+      modeBarButtonsToRemove = c(
+        "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+        "hoverCompareCartesian", "lasso2d", "select2d"
+      ),
+      displaylogo = FALSE,
+      responsive = TRUE
+    )
+    
+    return(p)
+  })
+
+  # MS2 plot with Plotly
+  output$ms2_plot <- plotly::renderPlotly({
+    shiny::validate(
+      need(!is.null(selected_features_with_mass()), "Please select one or more features from the table to display the MS2 plot.")
+    )
+    
+    # Generate the MS2 plot
+    nts <- nts_data()
+    mass_data <- selected_features_with_mass()
+    p <- plot_features_ms2(nts, mass = mass_data, legendNames = TRUE)
+    
+    # Ensure the plot is responsive by setting width = NULL and autosize = TRUE
+    p <- plotly::layout(p,
+      width = NULL,  # Ensure no fixed width
+      autosize = TRUE,  # Enable dynamic resizing
+      margin = list(l = 50, r = 30, t = 30, b = 50),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)",
+      
+      # Axis labels
+      xaxis = list(
+        title = list(
+          text = "m/z",
+          font = list(size = 14, color = "#555")
+        ),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      
+      yaxis = list(
+        title = list(
+          text = "Intensity / Counts",
+          font = list(size = 14, color = "#555")
+        ),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      
+      # Legend
+      legend = list(
+        orientation = "v",
+        xanchor = "right",
+        yanchor = "top",
+        x = 0.98,
+        y = 0.98,
+        bgcolor = "rgba(255,255,255,0.8)",
+        bordercolor = "rgba(0,0,0,0.1)",
+        borderwidth = 1,
+        font = list(size = 12)
+      )
+    )
+    
+    # Add interactive features
+    p <- plotly::config(p, 
+      displayModeBar = TRUE,
+      modeBarButtonsToRemove = c(
+        "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+        "hoverCompareCartesian", "lasso2d", "select2d"
+      ),
+      displaylogo = FALSE,
+      responsive = TRUE
+    )
+    
+    return(p)
+  })
+
+  # Quality table
+  output$quality_table <- DT::renderDT({
+    shiny::validate(
+      need(!is.null(selected_quality_data()), "Please select one or more features from the table to display the quality data.")
+    )
+    
+    # Fetch quality data
+    quality_data <- selected_quality_data()
+    
+    # Check if the data is a placeholder
+    if ("message" %in% names(quality_data) && ncol(quality_data) == 1) {
+      return(DT::datatable(
+        quality_data,
+        options = list(
+          dom = "t",
+          ordering = FALSE,
+          paging = FALSE
+        ),
+        style = "bootstrap",
+        class = "table table-bordered table-hover",
+        rownames = FALSE
+      ))
+    }
+    
+    # Render the DataTable
+    DT::datatable(
+      quality_data,
+      options = list(
+        pageLength = 5,
+        processing = TRUE,
+        scrollX = TRUE,
+        dom = "lfrtp",
+        ordering = TRUE,
+        lengthMenu = c(5, 10, 25),
+        columnDefs = list(
+          list(className = "dt-center", targets = "_all")
+        )
+      ),
+      style = "bootstrap",
+      class = "table table-striped table-hover",
+      rownames = FALSE
+    ) %>%
+      DT::formatStyle(
+        columns = names(quality_data),
+        fontSize = "14px",
+        padding = "8px 12px"
+      )
+  })
+
+  # Groups table for the Groups tab
+  output$groups_table <- DT::renderDT({
+    # Fetch groups data
+    groups <- get_groups(nts_data())
+    
+    # Check if groups data is available
+    if (is.null(groups) || nrow(groups) == 0) {
+      return(DT::datatable(
+        data.frame(Message = "No groups data available"),
+        options = list(
+          dom = "t",
+          ordering = FALSE,
+          processing = TRUE,
+          paging = FALSE,
+          selection = "none"
+        ),
+        style = "bootstrap",
+        class = "table table-bordered",
+        rownames = FALSE,
+        selection = "none"
+      ))
+    }
+    
+    # Round numeric columns to 4 decimal places for readability
+    numeric_cols <- names(groups)[sapply(groups, is.numeric)]
+    for (col in numeric_cols) {
+      groups[[col]] <- round(groups[[col]], 4)
+    }
+    
+    # Add chromatogram column with clickable icons
+    groups$chromatogram <- sapply(1:nrow(groups), function(i) {
+      paste0('<div class="chromatogram-icon" onclick="showChromatogram(\'', 
+            groups$group[i], '\')" title="View chromatogram for ', groups$group[i], '">',
+            '<i class="fas fa-chart-line"></i></div>')
+    })
+    
+    # Reorder columns to put chromatogram as second column
+    col_order <- c("group", "chromatogram", setdiff(names(groups), c("group", "chromatogram")))
+    groups <- groups[, col_order, with = FALSE]
+    
+    # Find chromatogram column index (0-based for JavaScript)
+    chromatogram_col_index <- which(names(groups) == "chromatogram") - 1
+    
+    # Render the DataTable with basic styling
+    DT::datatable(
+      groups,
+      escape = FALSE,
+      selection = "none",
+      options = list(
+        pageLength = 15,
+        scrollX = TRUE,
+        processing = TRUE,
+        scrollY = "400px",
+        dom = 'rtp',
+        ordering = TRUE,
+        searching = FALSE,
+        select = FALSE,
+        columnDefs = list(
+          list(
+            targets = chromatogram_col_index,
+            orderable = FALSE,  # Disable sorting for chromatogram column
+            width = "80px",
+            className = "dt-center"
+          ),
+          list(width = "150px", targets = 0),  # group column
+          list(className = "dt-center", targets = chromatogram_col_index)
+        )
+      ),
+      style = "bootstrap",
+      class = "table table-striped table-hover",
+      rownames = FALSE,
+      filter = "none"
+    ) %>%
+      DT::formatStyle(
+        columns = names(groups),
+        fontSize = "14px",
+        padding = "8px 12px"
+      ) %>%
+      DT::formatStyle(
+        columns = "chromatogram",
+        textAlign = "center"
+      )
+  })
+
+  # Reactive value to store selected group for chromatogram
+  selected_group <- shiny::reactiveVal(NULL)
+  
+  # Handle chromatogram click
+  shiny::observeEvent(input$show_chromatogram, {
+    shiny::req(input$show_chromatogram$group)
+    selected_group(input$show_chromatogram$group)
+  })
+  
+  # Chromatogram plot
+  output$chromatogram_plot <- plotly::renderPlotly({
+    shiny::validate(
+      need(!is.null(selected_group()), "Please select a group to display the chromatogram.")
+    )
+    
+    # Generate the chromatogram plot using plot_groups
+    nts <- nts_data()
+    group_id <- selected_group()
+    
+    tryCatch({
+      # Call plot_groups function with the selected group
+      p <- plot_groups(nts, groups = data.frame(group = group_id))
+      
+      # Enhance the plotly object
+      p <- plotly::layout(p,
+        title = list(
+          text = paste("Chromatogram for Group:", group_id),
+          font = list(size = 18, color = "#333")
+        ),
+        xaxis = list(
+          title = list(text = "Retention Time (RT)", font = list(size = 14)),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        yaxis = list(
+          title = list(text = "Intensity", font = list(size = 14)),
+          tickfont = list(size = 12),
+          gridcolor = "#eee"
+        ),
+        margin = list(l = 60, r = 40, t = 60, b = 60),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)"
+      )
+      
+      # Configure plotly
+      p <- plotly::config(p, 
+        displayModeBar = TRUE,
+        modeBarButtonsToRemove = c(
+          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+          "hoverCompareCartesian", "lasso2d", "select2d"
+        ),
+        displaylogo = FALSE,
+        responsive = TRUE
+      )
+      
+      return(p)
+      
+    }, error = function(e) {
+      # Handle errors gracefully
+      plotly::plot_ly() %>%
+        plotly::add_text(x = 0.5, y = 0.5, text = paste("Error loading chromatogram:", e$message),
+                        textfont = list(size = 16, color = "red")) %>%
+        plotly::layout(
+          title = paste("Error: Group", group_id),
+          xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+          yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+        )
+    })
+  })
+
+  # JavaScript for UI interactions
+  shiny::observeEvent(1, {
+    # Get the full namespace for use in JavaScript
+    ns_prefix <- paste0("WorkflowAssembler-", id)
+    
+    # Initialize tooltips and chromatogram functionality
+    shiny::insertUI(
+      selector = "head",
+      where = "beforeEnd",
+      ui = shiny::tags$script(shiny::HTML(paste0("
+        // Global function to show chromatogram
+        function showChromatogram(groupId) {
+          Shiny.setInputValue('", ns_prefix, "-show_chromatogram', {
+            group: groupId,
+            timestamp: Date.now()
+          });
+          $('#", ns_prefix, "-chromatogram_modal').modal('show');
+        }
+        
+        $(document).ready(function(){
+          // Initialize tooltips
+          $('[data-toggle=\"tooltip\"]').tooltip();
+          
+          // Make status panel items clickable
+          $('.status-item').css('cursor', 'pointer').click(function(){
+            $('.status-item').removeClass('active');
+            $(this).addClass('active');
+          });
+          
+          // Enhance button group behavior
+          $('.btn-group .btn').click(function(){
+            $(this).siblings().removeClass('active');
+            $(this).addClass('active');
+          });
+        });
+      ")))
+    )
+  }, once = TRUE)
+    })
+  }

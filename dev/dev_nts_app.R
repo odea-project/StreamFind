@@ -116,17 +116,9 @@ ms$run(
   )
 )
 
-# ms$run(
-#   MassSpecMethod_FilterFeatures_patRoon(
-#     maxReplicateIntRSD = 40,
-#     blankThreshold = 5,
-#     absMinReplicateAbundance = 3
-#   )
-# )
-
 ms$run(
   MassSpecMethod_FilterFeatures_StreamFind(
-    maxReplicateIntRSD = 40,
+    maxDeviationInReplicate = 40,
     blankThreshold = 5,
     minAbundanceInReplicate = 3
   )
@@ -177,24 +169,24 @@ ms$run(
   )
 )
 
-show(ms$NonTargetAnalysisResults)
+# show(ms$NonTargetAnalysisResults)
 
 # Access NonTargetAnalysisResults object and print to console
-nts <- ms$NonTargetAnalysisResults
-show(nts)
+# nts <- ms$NonTargetAnalysisResults
+# show(nts)
 
-nts@number_analyses
-nts@number_features
-nts@has_features
-nts@number_filtered_features
-nts@has_filtered_features
-nts@has_groups
-nts@has_features_eic
-nts@has_features_ms1
-nts@has_features_ms2
-nts@has_features_suspects
-nts@number_groups
-nts@group_names
+# nts@number_analyses
+# nts@number_features
+# nts@has_features
+# nts@number_filtered_features
+# nts@has_filtered_features
+# nts@has_groups
+# nts@has_features_eic
+# nts@has_features_ms1
+# nts@has_features_ms2
+# nts@has_features_suspects
+# nts@number_groups
+# nts@group_names
 
 # plot_matrix_suppression(ms$Analyses)
 # plot_features_count(nts, colorBy = "replicates") #imp
@@ -255,9 +247,16 @@ nts@group_names
 #fts <- ms$NTS$feature_list
 
 ms$save("ms.rds")
-
-ms$get_cache_size()
-
-devtools::load_all()
 options(shiny.launch.browser = FALSE)
-ms$run_app()
+
+# ms$get_cache_size()
+
+# like this we only need to run the three lines below after making changes in the app files
+devtools::load_all()
+run_app(file = "ms.rds")
+
+
+
+
+
+
