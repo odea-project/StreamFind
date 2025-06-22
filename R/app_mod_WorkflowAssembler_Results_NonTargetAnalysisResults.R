@@ -249,6 +249,50 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
       min-height: 500px;
     }
 
+    /* Fix for Groups table filter scrolling */
+    .dataTables_wrapper .dataTables_scrollHead {
+      overflow: visible !important;
+      position: relative;
+      z-index: 100;
+    }
+
+    .dataTables_wrapper .dataTables_scrollHeadInner {
+      overflow: visible !important;
+      position: relative;
+      z-index: 100;
+    }
+
+    .dataTables_wrapper thead tr:last-child th {
+      position: relative;
+      background: white;
+      z-index: 50;
+    }
+
+    .dataTables_wrapper thead tr:last-child th input,
+    .dataTables_wrapper thead tr:last-child th select {
+      position: relative !important;
+      z-index: 60 !important;
+      background: white !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      border: 1px solid #ced4da !important;
+    }
+
+    .dataTables_wrapper .dataTables_scrollBody {
+      position: relative;
+      z-index: 10;
+    }
+
+    .dataTables_wrapper .dataTables_scrollHead table {
+      position: relative;
+      z-index: 55;
+    }
+
+    .dataTables_wrapper .dataTables_scrollHead .dataTables_filter {
+      position: relative !important;
+      z-index: 70 !important;
+    }
+
   "))
   
   # Color palette for metrics
@@ -598,9 +642,33 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                 width = 12,
                 shiny::div(
                   class = "mb-4",
+                  
+                  # Add filter toggle checkbox
+                  shiny::div(
+                    class = "d-flex justify-content-end mb-2",
+                    shiny::div(
+                      class = "form-check",
+                      shiny::tags$input(
+                        type = "checkbox",
+                        class = "form-check-input",
+                        id = ns_full("show_filters_groups"),
+                        checked = TRUE
+                      ),
+                      shiny::tags$label(
+                        class = "form-check-label",
+                        `for` = ns_full("show_filters_groups"),
+                        "Show Filters"
+                      )
+                    )
+                  ),
+                  
+                  # Table wrapper
                   shiny::div(
                     class = "table-wrapper",
-                    DT::dataTableOutput(ns_full("groups_table"))
+                    shiny::div(
+                      class = "features-table-container",
+                      DT::dataTableOutput(ns_full("groups_table"))
+                    )
                   )
                 )
               )
@@ -1412,6 +1480,11 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
       )
   })
 
+  # Store filter visibility state
+  show_filters_groups <- shiny::reactive({
+    if (is.null(input$show_filters_groups)) TRUE else input$show_filters_groups
+  })
+
   # Groups table for the Groups tab
   output$groups_table <- DT::renderDT({
     # Fetch groups data
@@ -1467,23 +1540,26 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
         scrollY = "400px",
         dom = 'rtp',
         ordering = TRUE,
-        searching = FALSE,
+        searching = TRUE,
         select = FALSE,
         columnDefs = list(
           list(
             targets = chromatogram_col_index,
             orderable = FALSE,  # Disable sorting for chromatogram column
+            orderable = FALSE,  # Disable sorting for chromatogram column
+            searchable = FALSE,  # Disable search for chromatogram column
             width = "80px",
             className = "dt-center"
           ),
           list(width = "150px", targets = 0),  # group column
           list(className = "dt-center", targets = chromatogram_col_index)
-        )
+        ),
+        lengthMenu = c(5, 10, 25, 50, 100)
       ),
       style = "bootstrap",
       class = "table table-striped table-hover",
       rownames = FALSE,
-      filter = "none"
+      filter = if (show_filters_groups()) "top" else "none"  # Reactive filter
     ) %>%
       DT::formatStyle(
         columns = names(groups),

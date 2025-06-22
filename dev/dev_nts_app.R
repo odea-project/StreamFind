@@ -254,9 +254,3 @@ options(shiny.launch.browser = FALSE)
 # like this we only need to run the three lines below after making changes in the app files
 devtools::load_all()
 run_app(file = "ms.rds")
-
-
-
-
-
-
