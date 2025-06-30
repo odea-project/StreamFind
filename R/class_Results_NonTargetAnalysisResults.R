@@ -1043,6 +1043,7 @@ S7::method(map_features_intensity, NonTargetAnalysisResults) <- function(x,
                                                                          sec = 60,
                                                                          millisec = 5,
                                                                          filtered = FALSE,
+                                                                         correctIntensity = FALSE,
                                                                          legendNames = NULL,
                                                                          xLab = NULL,
                                                                          yLab = NULL,
@@ -1064,6 +1065,12 @@ S7::method(map_features_intensity, NonTargetAnalysisResults) <- function(x,
   if (nrow(fts) == 0) {
     message("\U2717 Features not found for the targets!")
     return(NULL)
+  }
+  
+  if (correctIntensity) {
+    if ("correction" %in% colnames(fts)) {
+      fts$intensity <- fts$intensity * fts$correction
+    }
   }
   
   fts <- .make_colorBy_varkey(fts, colorBy, legendNames)
@@ -5434,8 +5441,6 @@ S7::method(get_fold_change, NonTargetAnalysisResults) <- function(x,
   
   fc <- fc[!sel_nan, ]
   
-  # fc_av <- fc[, .(fc = mean(fc, na.rm = TRUE)), by = c("combination", "group")]
-  
   fc_category <- list(
     "Elimination" = c(0, eliminationThreshold),
     "Decrease" = c(eliminationThreshold, constantThreshold),
@@ -5456,7 +5461,7 @@ S7::method(get_fold_change, NonTargetAnalysisResults) <- function(x,
   
   for (i in seq_along(fc_category)) {
     fc$category[fc$fc >= fc_category[[i]][1] &
-                  fc$fc < fc_category[[i]][2]] <- names(fc_category)[i]
+                  fc$fc <= fc_category[[i]][2]] <- names(fc_category)[i]
   }
   
   sel_na_category <- is.na(fc$category)
