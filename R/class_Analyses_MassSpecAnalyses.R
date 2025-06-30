@@ -2289,7 +2289,7 @@ S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
       blanks <- rep(NA_character_, length(files))
     }
 
-    possible_ms_file_formats <- ".mzML$|.mzXML$|.d$"
+    possible_ms_file_formats <- ".mzML$|.mzXML$|.d$|.raw$|.wiff$"
 
     valid_files <- vapply(files,
       FUN.VALUE = FALSE,
@@ -2311,10 +2311,14 @@ S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
 
     names(replicates) <- as.character(files)
     names(blanks) <- as.character(files)
+    
+    files_to_convert <- vapply(files, function(x) grepl("d|raw|wiff", tools::file_ext(x)), FALSE)
 
-    if (any(vapply(files, function(x) tools::file_ext(x) == "d", FALSE))) {
-      files_to_convert <- files[tools::file_ext(files) == "d"]
+    if (any(files_to_convert)) {
+      files_to_convert <- files[files_to_convert]
       files_converted <- gsub(".d$", ".mzML", files_to_convert)
+      files_converted <- gsub(".raw$", ".mzML", files_converted)
+      files_converted <- gsub(".wiff$", ".mzML", files_converted)
 
       for (i in seq_along(files_converted)) {
         if (file.exists(files_converted[i])) {
@@ -2323,11 +2327,37 @@ S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
           } else {
             files[files == files_to_convert[i]] <- files_converted[i]
           }
+        } else {
+          dir_search <- dirname(files_converted[i])
+          
+          fl_already_converted <- list.files(
+            dir_search,
+            pattern = paste0("^", basename(tools::file_path_sans_ext(files_converted[i])), "-.*\\.mzML$"),
+            full.names = TRUE
+          )
+          
+          if (length(fl_already_converted) == 1) {
+            files_converted[i] <- fl_already_converted
+            files <- files[!files %in% fl_already_converted]
+            files[files == files_to_convert[i]] <- fl_already_converted
+            
+          } else if (length(fl_already_converted) > 1) {
+            warning(paste0(
+              "Multiple converted files found for: ",
+              basename(tools::file_path_sans_ext(files_to_convert[i])),
+              ". Please check the files!"
+            ))
+            return(NULL)
+          }
         }
       }
-
-      files_to_convert <- files[tools::file_ext(files) == "d"]
-
+      
+      files_to_convert_sel <- vapply(files, function(x) {
+        grepl("d|raw|wiff", tools::file_ext(x))
+      }, FALSE)
+      
+      files_to_convert <- files[files_to_convert_sel]
+      
       if (length(files_to_convert) > 0) {
         filter <- ""
 
@@ -2358,11 +2388,49 @@ S7::method(plot_matrix_suppression, MassSpecAnalyses) <- function(x,
               outputPath = NULL,
               optList = optList
             )
-
-            files <- c(
-              files[!files %in% files_to_convert],
-              files_converted[!files_converted %in% files]
-            )
+            
+            files <- files[!files %in% files_to_convert]
+            
+            for (i in seq_along(files_to_convert)) {
+              
+              dir_search <- dirname(files_to_convert[i])
+              
+              fl_converted_as_is <- list.files(
+                dir_search,
+                pattern = paste0(basename(tools::file_path_sans_ext(files_to_convert[i])), ".mzML$"),
+                full.names = TRUE
+              )
+              
+              if (length(fl_converted_as_is) == 1) {
+                
+                files <- c(files, fl_converted_as_is)
+                
+              } else if (length(fl_converted_as_is) > 1) {
+                warning(paste0(
+                  "Multiple converted files found for: ",
+                  basename(tools::file_path_sans_ext(files_to_convert[i])),
+                  ". Please check the files!"
+                ))
+              } else if (length(fl_converted_as_is) == 0) {
+                
+                fl_converted <- list.files(
+                  dir_search,
+                  pattern = paste0("^", basename(tools::file_path_sans_ext(files_to_convert[i])), "-.*\\.mzML$"),
+                  full.names = TRUE
+                )
+                
+                if (length(fl_converted) == 1) {
+                  files <- c(files, fl_converted)
+                  
+                } else if (length(fl_converted) > 1) {
+                  warning(paste0(
+                    "Multiple converted files found for: ",
+                    basename(tools::file_path_sans_ext(files_to_convert[i])),
+                    ". Please check the files!"
+                  ))
+                }
+              }
+            }
 
             exist_files <- vapply(files, function(x) file.exists(x), FALSE)
             files <- files[exist_files]
