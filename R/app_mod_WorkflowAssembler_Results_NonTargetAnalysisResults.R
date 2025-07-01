@@ -320,6 +320,35 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
       width: 100% !important;
     }
 
+    /* Single page layout styling */
+  .features-single-page {
+    height: calc(100vh - 200px);
+    overflow: hidden;
+  }
+
+  .features-table-side {
+    height: 100%;
+    overflow-y: auto;
+    border-right: 2px solid #e3e6f0;
+    padding-right: 15px;
+  }
+
+  .features-plots-side {
+    height: 100%;
+    overflow-y: auto;
+    padding-left: 15px;
+  }
+
+  /* Ensure tables fit properly in constrained space */
+  .dataTables_wrapper .dataTables_scrollBody {
+    max-height: calc(100vh - 400px) !important;
+  }
+
+  /* Plot container adjustments for single page */
+  .plot-container {
+    margin-bottom: 0;
+  }
+
   "))
   
   # Color palette for metrics
@@ -535,102 +564,87 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
           )
         ),
         
-        # Features Tab
+        # Features Tab - Single Page Layout
         shiny::tabPanel(
           title = shiny::tagList(shiny::icon("table", class = "mr-2"), "Features"),
           
-          shiny::div(class = "tab-content",
-            # Features Table
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  class = "mb-4",
-                  # Custom wrapper for table
-                  shiny::div(
-                    class = "table-wrapper",
-                    # DataTable output with custom class for styling
-                    shiny::div(
-                      class = "features-table-container",
-                      DT::dataTableOutput(ns_full("features_table"))
-                    )
-                  )
-                )
-              )
-            ),
-
-            #  Buttons
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                  shiny::div(
-                    class = "card-body d-flex justify-content-center align-items-center",
-                    shiny::div(
-                      class = "btn-group",
-                      shiny::actionButton(
-                        ns_full("deselect_all_features"),
-                        "Deselect All", 
-                        icon = shiny::icon("times-circle"),
-                        class = "btn btn-outline-secondary btn-sm"
-                      ),
-                      shiny::downloadButton(
-                        ns_full("export_features_csv"),
-                        "Export to CSV",
-                        icon = shiny::icon("file-csv"),
-                        class = "btn btn-outline-primary btn-sm ml-2"
-                      ),
-                      shiny::downloadButton(
-                        ns_full("export_selected_features_csv"),
-                        "Export Selected to CSV",
-                        icon = shiny::icon("file-csv"),
-                        class = "btn btn-outline-primary btn-sm ml-2"
-                      ),
-                      shiny::actionButton(
-                        ns_full("remove_selected_features"),
-                        "Remove Selected Features", 
-                        icon = shiny::icon("trash-alt"),
-                        class = "btn btn-outline-danger btn-sm ml-2"
-                      )
-                    )
+          shiny::div(class = "tab-content", style = "padding: 0; height: 100vh;",
+            # Top Controls Section
+            shiny::div(
+              class = "features-controls-bar",
+              style = "background-color: #f8f9fa; border-bottom: 1px solid #e3e6f0; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: center;",
+              shiny::div(
+                class = "btn-group",
+                shiny::actionButton(
+                  ns_full("deselect_all_features"),
+                  "Deselect All", 
+                  icon = shiny::icon("times-circle"),
+                  class = "btn btn-outline-secondary btn-sm"
+                ),
+                shiny::downloadButton(
+                  ns_full("export_features_csv"),
+                  "Export to CSV",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm ml-2"
+                ),
+                shiny::downloadButton(
+                  ns_full("export_selected_features_csv"),
+                  "Export Selected to CSV",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm ml-2"
+                ),
+                shiny::actionButton(
+                  ns_full("remove_selected_features"),
+                  "Remove Selected Features", 
+                  icon = shiny::icon("trash-alt"),
+                  class = "btn btn-outline-danger btn-sm ml-2"
                 )
               )
             ),
             
-            # Feature Details Row
-            shiny::fluidRow(
-              # Feature Peaks Plot
-              shiny::column(
-                width = 6,
+            # Main Content Row
+            shiny::div(
+              style = "display: flex; height: calc(100vh - 160px);", # Subtract header + controls height
+              
+              # Left Side - Features Table (60% width)
+              shiny::div(
+                style = "width: 60%; border-right: 2px solid #e3e6f0; padding: 15px; overflow: hidden;",
                 shiny::div(
-                  class = "plot-container",
-                  shiny::div(
-                    class = "card-header",
-                    shiny::icon("wave-square", class = "mr-2"), "Feature Peaks"
-                  ),
-                  shiny::div(
-                    class = "card-body p-0 position-relative",
-                    .app_util_create_maximize_button("feature_peaks_plot", ns_full),
-                    plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "auto")
-                  )
+                  class = "features-table-container",
+                  style = "height: 100%; overflow: hidden;",
+                  DT::dataTableOutput(ns_full("features_table"))
                 )
               ),
               
-              # Feature Details Tabs
-              shiny::column(
-                width = 6,
+              # Right Side - Feature Details Tabs (40% width)  
+              shiny::div(
+                style = "width: 40%; padding: 15px; overflow: hidden;",
                 shiny::div(
                   class = "plot-container p-0",
+                  style = "height: 100%;",
                   shiny::tabsetPanel(
                     id = ns_full("feature_details_tabs"),
                     type = "tabs",
+                    
+                    # Feature Peaks Tab
+                    shiny::tabPanel(
+                      title = "Feature Peaks",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button("feature_peaks_plot", ns_full),
+                        plotly::plotlyOutput(ns_full("feature_peaks_plot"), height = "100%")
+                      )
+                    ),
                     
                     # MS1 Tab
                     shiny::tabPanel(
                       title = "MS1",
                       shiny::div(
                         class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
                         .app_util_create_maximize_button("ms1_plot", ns_full),
-                        plotly::plotlyOutput(ns_full("ms1_plot"), height = "auto")
+                        plotly::plotlyOutput(ns_full("ms1_plot"), height = "100%")
                       )
                     ),
                     
@@ -639,8 +653,9 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                       title = "MS2",
                       shiny::div(
                         class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
                         .app_util_create_maximize_button("ms2_plot", ns_full),
-                        plotly::plotlyOutput(ns_full("ms2_plot"), height = "auto")
+                        plotly::plotlyOutput(ns_full("ms2_plot"), height = "100%")
                       )
                     ),
                     
@@ -649,6 +664,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                       title = "Quality",
                       shiny::div(
                         class = "p-3",
+                        style = "height: calc(100% - 50px); overflow: auto;",
                         DT::dataTableOutput(ns_full("quality_table"))
                       )
                     )
@@ -998,7 +1014,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
     filtered_col_index <- which(names(features) == "filtered") - 1
     sel_col_index <- which(names(features) == "sel") - 1
   
-    # Render the DataTable with enhanced styling and checkbox rendering
+    # Render the DataTable
     DT::datatable(
       features,
       escape = FALSE,
@@ -1006,7 +1022,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
         pageLength = 15,
         scrollX = TRUE,
         processing = TRUE,
-        scrollY = "400px",
+        scrollY = FALSE,
         columnDefs = list(
           list(width = "50px", targets = c(1)),
           list(width = "200px", targets = c(0)),
