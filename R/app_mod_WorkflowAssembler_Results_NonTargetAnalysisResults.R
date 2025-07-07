@@ -564,12 +564,12 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
           )
         ),
         
-        # Features Tab - Single Page Layout
+        # Features Tab - Single Page Layout with Adjustable Proportions
         shiny::tabPanel(
           title = shiny::tagList(shiny::icon("table", class = "mr-2"), "Features"),
           
           shiny::div(class = "tab-content", style = "padding: 0; height: 100vh;",
-            # Top Controls Section
+            # Top Controls Section - Fixed Height
             shiny::div(
               class = "features-controls-bar",
               style = "background-color: #f8f9fa; border-bottom: 1px solid #e3e6f0; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: center;",
@@ -602,13 +602,15 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
               )
             ),
             
-            # Main Content Row
+            # Main Content Row - Fill remaining height
             shiny::div(
-              style = "display: flex; height: calc(100vh - 160px);", # Subtract header + controls height
+              id = ns_full("main_content_container"),
+              style = "display: flex; height: calc(100vh - 200px);", # Leave space for proportion controls
               
-              # Left Side - Features Table (60% width)
+              # Left Side - Features Table (Dynamic width)
               shiny::div(
-                style = "width: 60%; border-right: 2px solid #e3e6f0; padding: 15px; overflow: hidden;",
+                id = ns_full("table_panel"),
+                style = "border-right: 2px solid #e3e6f0; padding: 15px; overflow: hidden;",
                 shiny::div(
                   class = "features-table-container",
                   style = "height: 100%; overflow: hidden;",
@@ -616,9 +618,10 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                 )
               ),
               
-              # Right Side - Feature Details Tabs (40% width)  
+              # Right Side - Feature Details Tabs (Dynamic width)  
               shiny::div(
-                style = "width: 40%; padding: 15px; overflow: hidden;",
+                id = ns_full("plots_panel"),
+                style = "padding: 15px; overflow: hidden;",
                 shiny::div(
                   class = "plot-container p-0",
                   style = "height: 100%;",
@@ -668,6 +671,54 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                         DT::dataTableOutput(ns_full("quality_table"))
                       )
                     )
+                  )
+                )
+              )
+            ),
+            
+            # Bottom Proportion Controls
+            shiny::div(
+              class = "proportion-controls",
+              style = "background-color: #f8f9fa; border-top: 1px solid #e3e6f0; padding: 10px 15px; height: 50px; display: flex; align-items: center; justify-content: center;",
+              shiny::div(
+                style = "display: flex; align-items: center; gap: 10px;",
+                shiny::span("Layout:", style = "font-weight: 500; margin-right: 10px;"),
+                shiny::div(
+                  class = "btn-group btn-group-sm",
+                  shiny::actionButton(
+                    ns_full("prop_20_80"),
+                    "20:80",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_30_70"),
+                    "30:70",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_40_60"),
+                    "40:60",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_50_50"),
+                    "50:50",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_60_40"),
+                    "60:40",
+                    class = "btn btn-outline-primary btn-sm active"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_70_30"),
+                    "70:30",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_80_20"),
+                    "80:20",
+                    class = "btn btn-outline-primary btn-sm"
                   )
                 )
               )
@@ -880,12 +931,7 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
       margin = list(l = 60, r = 40, t = 40, b = 60),
       paper_bgcolor = "rgba(0,0,0,0)",
       plot_bgcolor = "rgba(0,0,0,0)",
-    
-      # Better title and axis labels
-      title = list(
-        text = paste0("Feature Distribution by ", ifelse(color_by == "replicates", "Replicates", "Analysis")),
-        font = list(size = 18, color = "#333")
-      ),
+  
     
       xaxis = list(
         title = NULL,
@@ -1537,6 +1583,51 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
         fontSize = "14px",
         padding = "8px 12px"
       )
+  })
+
+  # Reactive value to store current layout proportions
+  layout_proportions <- shiny::reactiveVal(c(60, 40))  # Default 60:40
+
+  # Handle proportion button clicks
+  shiny::observeEvent(input$prop_20_80, { layout_proportions(c(20, 80)) })
+  shiny::observeEvent(input$prop_30_70, { layout_proportions(c(30, 70)) })
+  shiny::observeEvent(input$prop_40_60, { layout_proportions(c(40, 60)) })
+  shiny::observeEvent(input$prop_50_50, { layout_proportions(c(50, 50)) })
+  shiny::observeEvent(input$prop_60_40, { layout_proportions(c(60, 40)) })
+  shiny::observeEvent(input$prop_70_30, { layout_proportions(c(70, 30)) })
+  shiny::observeEvent(input$prop_80_20, { layout_proportions(c(80, 20)) })
+
+  # Update layout when proportions change
+  shiny::observe({
+    props <- layout_proportions()
+    table_width <- props[1]
+    plots_width <- props[2]
+    
+    # Create namespace prefix for server context
+    ns_prefix <- paste0("WorkflowAssembler-", id)
+    
+    # Update the CSS of the panels
+    shiny::insertUI(
+      selector = "head",
+      where = "beforeEnd",
+      ui = shiny::tags$style(shiny::HTML(paste0("
+        #", ns_prefix, "-table_panel { width: ", table_width, "% !important; }
+        #", ns_prefix, "-plots_panel { width: ", plots_width, "% !important; }
+      ")))
+    )
+    
+    # Update button active states with JavaScript
+    current_prop <- paste0(table_width, "_", plots_width)
+    button_id <- paste0("prop_", current_prop)
+    
+    shiny::insertUI(
+      selector = "head",
+      where = "beforeEnd",
+      ui = shiny::tags$script(shiny::HTML(paste0("
+        $('.proportion-controls .btn').removeClass('active');
+        $('#", ns_prefix, "-", button_id, "').addClass('active');
+      ")))
+    )
   })
 
   # Store filter visibility state
