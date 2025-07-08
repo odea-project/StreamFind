@@ -74,7 +74,7 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
     return(FALSE)
   }
   
-  if (!engine$Analyses@has_spectra) {
+  if (!engine$Analyses@has_results_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
@@ -96,12 +96,10 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
   }
   
   groupCols <- c("mz", "mass", "bins")
-  
-  groupCols <- groupCols[groupCols %in% colnames(spectra)]
-  
   if (grepl("replicates", x@parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
   if (grepl("chrom_peaks", x@parameters$by, fixed = FALSE)) groupCols <- c("chrom_peaks", groupCols)
   if (grepl("rt", x@parameters$by, fixed = FALSE)) groupCols <- c("rt", groupCols)
+  groupCols <- groupCols[groupCols %in% colnames(spectra)]
   
   if ("chrom_peaks" %in% groupCols) {
     if (engine$Analyses$has_results_chromatograms) {

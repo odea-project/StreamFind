@@ -53,7 +53,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_minmax) <- function(x, engine = 
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$Analyses$has_results_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
@@ -150,7 +150,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_snv) <- function(x, engine = NUL
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$Analyses$has_results_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
@@ -252,7 +252,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_scale) <- function(x, engine = N
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$Analyses$has_results_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
@@ -346,7 +346,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_blockweight) <- function(x, engi
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$Analyses$has_results_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
@@ -436,7 +436,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_meancenter) <- function(x, engin
     return(FALSE)
   }
   
-  if (!engine$Analyses$has_spectra) {
+  if (!engine$Analyses$has_results_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }

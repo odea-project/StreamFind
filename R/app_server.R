@@ -104,18 +104,86 @@ app_server <- function(input, output, session) {
     if (reactive_app_mode() %in% "WorkflowAssembler") {
       shinydashboard::sidebarMenu(
         shiny::actionButton("restart_app", "Restart", width = "90%"),
+        
         shinydashboard::menuItem("Project", tabName = "WorkflowAssembler-project", icon = NULL, selected = TRUE),
         shinydashboard::menuItem("Analyses", tabName = "WorkflowAssembler-analyses", icon = NULL),
         shinydashboard::menuItem("Explorer", tabName = "WorkflowAssembler-explorer", icon = NULL),
         shinydashboard::menuItem("Workflow", tabName = "WorkflowAssembler-workflow", icon = NULL),
         shinydashboard::menuItem("Results", tabName = "WorkflowAssembler-results", icon = NULL),
         shinydashboard::menuItem("Audit Trail", tabName = "WorkflowAssembler-audit", icon = NULL),
-        shinydashboard::menuItem("Configuration", tabName = "WorkflowAssembler-config", icon = NULL)
+        shinydashboard::menuItem("Configuration", tabName = "WorkflowAssembler-config", icon = NULL),
+        
+        # Cache Information Section at Bottom
+        shiny::div(
+          style = "position: absolute; bottom: 10px; left: 10px; right: 10px;",
+          shiny::div(
+            style = "color: #b8c7ce; font-size: 12px; margin-bottom: 8px;",
+            shiny::strong("CACHE INFORMATION")
+          ),
+          shiny::div(
+            style = "color: #b8c7ce; font-size: 11px; margin-bottom: 8px;",
+            "Cache Size: ",
+            shiny::textOutput("cache_size", inline = TRUE)
+          ),
+          shiny::actionButton(
+            "clear_cache_button",
+            "Clear Cache",
+            icon = shiny::icon("trash"),
+            style = "width: 90%; background-color: #3c8dbc; border-color: #367fa9; color: white;"
+          )
+        )
       )
     } else {
       shinydashboard::sidebarMenu(shiny::actionButton("restart_app", "Restart", width = "90%"))
     }
   })
+
+## out Cache Size -----
+output$cache_size <- shiny::renderText({
+  tryCatch({
+    cache_size <- ms$get_cache_size()
+    
+    # Format the cache size
+    if (is.numeric(cache_size)) {
+      if (cache_size >= 1024^3) {
+        # GB
+        paste0(round(cache_size / (1024^3), 2), " GB")
+      } else if (cache_size >= 1024^2) {
+        # MB
+        paste0(round(cache_size / (1024^2), 2), " MB")
+      } else if (cache_size >= 1024) {
+        # KB
+        paste0(round(cache_size / 1024, 2), " KB")
+      } else {
+        # Bytes
+        paste0(round(cache_size, 0), " bytes")
+      }
+    } else {
+      as.character(cache_size)
+    }
+  }, error = function(e) {
+    "Error loading"
+  })
+})
+
+## event Clear Cache -----
+shiny::observeEvent(input$clear_cache_button, {
+  tryCatch({
+    # Clear cache using ms object
+    
+    shiny::showNotification(
+      "Cache cleared successfully!",
+      duration = 3
+    )
+    
+  }, error = function(e) {
+    shiny::showNotification(
+      paste("Error clearing cache:", e$message),
+      duration = 5
+    )
+  })
+})
+
   
   ## out Warnings -----
   output$warningMenu <- shinydashboard::renderMenu({

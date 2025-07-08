@@ -49,6 +49,7 @@ AuditTrailEntry <- S7::new_class(
 #' @noRd
 `$<-.AuditTrailEntry` <- function(x, i, value) {
   S7::prop(x, i) <- value
+  x
 }
 
 # MARK: AuditTrail
@@ -110,6 +111,7 @@ length.AuditTrail <- function(x) {
 #' @noRd
 `[<-.AuditTrail` <- function(x, i, value) {
   x@entries[i] <- value
+  x
 }
 
 #' @export
@@ -122,6 +124,7 @@ length.AuditTrail <- function(x) {
 #' @noRd
 `[[<-.AuditTrail` <- function(x, i, value) {
   x@entries[[i]] <- value
+  x
 }
 
 #' @export
@@ -165,12 +168,12 @@ S7::method(as.list, AuditTrail) <- function(x, ...) {
 #' @noRd
 S7::method(as.data.frame, AuditTrail) <- function(x, ...) {
   if (length(x) == 0) return(data.table::data.table())
-  dt_list <- lapply(x, function(z) {
+  dt_list <- lapply(x@entries, function(z) {
     data.table::data.table(
-      time_stamp = z$time_stamp,
-      class = z$value_class,
-      parent = z$value_parent,
-      value = z$value
+      time_stamp = z@time_stamp,
+      class = z@value_class,
+      parent = z@value_parent,
+      value = z@value
     )
   })
   data.table::rbindlist(dt_list, fill = TRUE)

@@ -162,7 +162,7 @@
           if (engine_name %in% available_engines) {
             reactive_app_mode("WorkflowAssembler")
             reactive_engine_type(engine_name)
-            reactive_engine_save_file(engine_save_file$path)
+            reactive_engine_save_file(engine_save_file)
             reactive_clean_start(TRUE)
             reactive_show_init_modal(FALSE)
             shiny::removeModal()
@@ -176,7 +176,6 @@
         shiny::removeModal()
         if (!obj %in% "CoreEngine") {
           reactive_show_init_modal(FALSE)
-         批准
           reactive_app_mode("WorkflowAssembler")
           reactive_clean_start(TRUE)
         } else {
