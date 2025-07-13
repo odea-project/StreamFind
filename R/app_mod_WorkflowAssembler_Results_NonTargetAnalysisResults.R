@@ -601,6 +601,43 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                 )
               )
             ),
+
+            #  Buttons
+            shiny::fluidRow(
+              shiny::column(
+                width = 12,
+                  shiny::div(
+                    class = "card-body d-flex justify-content-center align-items-center",
+                    shiny::div(
+                      class = "btn-group",
+                      shiny::actionButton(
+                        ns_full("deselect_all_features"),
+                        "Deselect All", 
+                        icon = shiny::icon("times-circle"),
+                        class = "btn btn-outline-secondary btn-sm"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_features_csv"),
+                        "Export to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::downloadButton(
+                        ns_full("export_selected_features_csv"),
+                        "Export Selected to CSV",
+                        icon = shiny::icon("file-csv"),
+                        class = "btn btn-outline-primary btn-sm ml-2"
+                      ),
+                      shiny::actionButton(
+                        ns_full("remove_selected_features"),
+                        "Remove Selected Features", 
+                        icon = shiny::icon("trash-alt"),
+                        class = "btn btn-outline-danger btn-sm ml-2"
+                      )
+                    )
+                )
+              )
+            ),
             
             # Main Content Row - Fill remaining height
             shiny::div(
