@@ -866,6 +866,16 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                         .app_util_create_maximize_button("group_ms2_plot", ns_full),
                         plotly::plotlyOutput(ns_full("group_ms2_plot"), height = "100%")
                       )
+                    ),
+                    # Profile Tab
+                    shiny::tabPanel(
+                      title = "Profile",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button("group_profile_plot", ns_full),
+                        plotly::plotlyOutput(ns_full("group_profile_plot"), height = "100%")
+                      )
                     )
                   )
                 )
@@ -2164,6 +2174,80 @@ output$group_ms2_plot <- plotly::renderPlotly({
         xaxis = list(showgrid = FALSE, showticklabels = FALSE),
         yaxis = list(showgrid = FALSE, showticklabels = FALSE),
         margin = list(l = 50, r = 50, t = 50, b = 50)
+      )
+  })
+})
+
+# Group Profile Plot
+output$group_profile_plot <- plotly::renderPlotly({
+  shiny::validate(
+    need(!is.null(selected_groups()), "Please select one or more groups from the table to display the profile.")
+  )
+  
+  nts <- nts_data()
+  selected_group_data <- selected_groups()
+  
+  tryCatch({
+    p <- plot_groups_profile(nts, groups = selected_group_data)
+    
+    p <- plotly::layout(p,
+      width = NULL,
+      autosize = TRUE,
+      margin = list(l = 50, r = 30, t = 30, b = 50),
+      paper_bgcolor = "rgba(0,0,0,0)",
+      plot_bgcolor = "rgba(0,0,0,0)",
+      
+      xaxis = list(
+        title = list(
+          text = "Analysis",
+          font = list(size = 14, color = "#555")
+        ),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      
+      yaxis = list(
+        title = list(
+          text = "Normalized Intensity",
+          font = list(size = 14, color = "#555")
+        ),
+        tickfont = list(size = 12),
+        gridcolor = "#eee"
+      ),
+      
+      legend = list(
+        orientation = "v",
+        xanchor = "right",
+        yanchor = "top",
+        x = 0.98,
+        y = 0.98,
+        bgcolor = "rgba(255,255,255,0.8)",
+        bordercolor = "rgba(0,0,0,0.1)",
+        borderwidth = 1,
+        font = list(size = 12)
+      )
+    )
+    
+    p <- plotly::config(p, 
+      displayModeBar = TRUE,
+      modeBarButtonsToRemove = c(
+        "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+        "hoverCompareCartesian", "lasso2d", "select2d"
+      ),
+      displaylogo = FALSE,
+      responsive = TRUE
+    )
+    
+    return(p)
+    
+  }, error = function(e) {
+    plotly::plot_ly() %>%
+      plotly::add_text(x = 0.5, y = 0.5, text = paste("Error loading profile:", e$message),
+                      textfont = list(size = 16, color = "red")) %>%
+      plotly::layout(
+        title = "Error loading profile",
+        xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+        yaxis = list(showgrid = FALSE, showticklabels = FALSE)
       )
   })
 })
