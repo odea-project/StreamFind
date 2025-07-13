@@ -731,7 +731,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
           title = shiny::tagList(shiny::icon("object-group", class = "mr-2"), "Groups"),
           
           shiny::div(class = "tab-content", style = "padding: 0; height: 100vh;",
-            # Top Controls Section - Separate checkboxes and buttons like original
+            # Top Controls Section
             shiny::div(
               class = "features-controls-bar",
               style = "background-color: #f8f9fa; border-bottom: 1px solid #e3e6f0; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: space-between;",
@@ -799,7 +799,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
               )
             ),
             
-            # Main Content Row - EXACTLY like Features
+            # Main Content Row
             shiny::div(
               id = ns_full("groups_main_content_container"),
               style = "display: flex; height: calc(100vh - 200px);",
@@ -815,7 +815,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                 )
               ),
               
-              # Right Side - Plot Panel (EXACTLY like Features structure)
+              # Right Side - Plot Panel
               shiny::div(
                 id = ns_full("groups_plots_panel"),
                 style = "padding: 15px; overflow: hidden;",
@@ -826,7 +826,7 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                     id = ns_full("group_details_tabs"),
                     type = "tabs",
                     
-                    # Single Tab - Group Chromatogram
+                    # Group Chromatogram
                     shiny::tabPanel(
                       title = "Group Chromatogram",
                       shiny::div(
@@ -834,6 +834,16 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
                         style = "height: calc(100% - 50px); overflow: auto;",
                         .app_util_create_maximize_button("group_plot", ns_full),
                         plotly::plotlyOutput(ns_full("group_plot"), height = "100%")
+                      )
+                    ),
+                    # Group Overview Tab
+                    shiny::tabPanel(
+                      title = "Overview",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button("group_overview_plot", ns_full),
+                        plotly::plotlyOutput(ns_full("group_overview_plot"), height = "100%")
                       )
                     )
                   )
@@ -1928,6 +1938,50 @@ S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- fu
                         textfont = list(size = 16, color = "red")) %>%
         plotly::layout(
           title = "Error loading plot",
+          xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+          yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+        )
+    })
+  })
+
+  # Group Overview Plot
+  output$group_overview_plot <- plotly::renderPlotly({
+    shiny::validate(
+      need(!is.null(selected_groups()), "Please select one or more groups from the table to display the overview.")
+    )
+    
+    nts <- nts_data()
+    selected_group_data <- selected_groups()
+    
+    tryCatch({
+      p <- plot_groups_overview(nts, groups = selected_group_data)
+      
+      p <- plotly::layout(p,
+        width = NULL,
+        autosize = TRUE,
+        margin = list(l = 50, r = 30, t = 30, b = 50),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)"
+      )
+      
+      p <- plotly::config(p, 
+        displayModeBar = TRUE,
+        modeBarButtonsToRemove = c(
+          "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+          "hoverCompareCartesian", "lasso2d", "select2d"
+        ),
+        displaylogo = FALSE,
+        responsive = TRUE
+      )
+      
+      return(p)
+      
+    }, error = function(e) {
+      plotly::plot_ly() %>%
+        plotly::add_text(x = 0.5, y = 0.5, text = paste("Error loading overview:", e$message),
+                        textfont = list(size = 16, color = "red")) %>%
+        plotly::layout(
+          title = "Error loading overview",
           xaxis = list(showgrid = FALSE, showticklabels = FALSE),
           yaxis = list(showgrid = FALSE, showticklabels = FALSE)
         )
