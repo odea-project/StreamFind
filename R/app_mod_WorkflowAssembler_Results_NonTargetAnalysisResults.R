@@ -1,4 +1,4 @@
-# MARK: method
+# MARK: UI Module
 #' @noRd
 S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- function(x, id, ns) {
   ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))
@@ -931,46 +931,100 @@ S7::method(.mod_WorkflowAssembler_Result_UI, NonTargetAnalysisResults) <- functi
             )
           )
         ),
-        
-        # Subjects Tab
+
+        # Internal Standards Tab
         shiny::tabPanel(
-          title = shiny::tagList(shiny::icon("users", class = "mr-2"), "Subjects"),
+          title = shiny::tagList(shiny::icon("flask", class = "mr-2"), "Internal Standards"),
           
-          shiny::div(class = "tab-content",
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
+          shiny::div(class = "tab-content", style = "padding: 0; height: 100vh;",
+            # Top Controls Section
+            shiny::div(
+              class = "istd-controls-bar",
+              style = "background-color: #f8f9fa; border-bottom: 1px solid #e3e6f0; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: space-between;",
+              
+              # Left side - View toggle
+              shiny::div(
+                style = "display: flex; align-items: center; gap: 15px;",
                 shiny::div(
-                  class = "plot-container empty-state",
-                  shiny::div(class = "empty-state-icon", shiny::icon("users")),
-                  shiny::h4("Subject data will be displayed here", class = "text-muted")
+                  class = "form-check",
+                  style = "display: flex; align-items: center;",
+                  shiny::tags$input(
+                    type = "checkbox",
+                    class = "form-check-input",
+                    id = ns_full("show_istd_plot"),
+                    checked = TRUE,
+                    style = "margin-right: 5px;"
+                  ),
+                  shiny::tags$label(
+                    class = "form-check-label",
+                    `for` = ns_full("show_istd_plot"),
+                    "Show Plot View",
+                    style = "font-size: 13px; color: #5a5c69; margin: 0;"
+                  )
+                )
+              ),
+              
+              # Right side - Export button
+              shiny::div(
+                class = "btn-group",
+                shiny::downloadButton(
+                  ns_full("export_istd_csv"),
+                  "Export Internal Standards",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm"
+                )
+              )
+            ),
+            
+            # Main Content
+            shiny::div(
+              style = "height: calc(100vh - 110px); padding: 20px;",
+              
+              # Conditional content based on toggle
+              shiny::conditionalPanel(
+                condition = paste0("input['", ns_full("show_istd_plot"), "']"),
+                shiny::div(
+                  class = "plot-container",
+                  style = "height: 100%;",
+                  shiny::div(
+                    class = "card-header d-flex justify-content-between align-items-center",
+                    shiny::span(shiny::icon("flask", class = "mr-2"), "Internal Standards Quality Control"),
+                    .app_util_create_maximize_button("istd_plot", ns_full)
+                  ),
+                  shiny::div(
+                    class = "card-body p-3 position-relative",
+                    style = "height: calc(100% - 60px);",
+                    plotly::plotlyOutput(ns_full("istd_plot"), height = "100%")
+                  )
+                )
+              ),
+              
+              # Table view when plot is disabled
+              shiny::conditionalPanel(
+                condition = paste0("!input['", ns_full("show_istd_plot"), "']"),
+                shiny::div(
+                  class = "plot-container",
+                  style = "height: 100%;",
+                  shiny::div(
+                    class = "card-header",
+                    shiny::span(shiny::icon("table", class = "mr-2"), "Internal Standards Data")
+                  ),
+                  shiny::div(
+                    class = "card-body p-3",
+                    style = "height: calc(100% - 60px); overflow: auto;",
+                    DT::dataTableOutput(ns_full("istd_table"))
+                  )
                 )
               )
             )
           )
         ),
-        
-        # Fold Change Tab
-        shiny::tabPanel(
-          title = shiny::tagList(shiny::icon("chart-line", class = "mr-2"), "Fold Change"),
-          
-          shiny::div(class = "tab-content",
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  class = "plot-container empty-state",
-                  shiny::div(class = "empty-state-icon", shiny::icon("chart-line")),
-                  shiny::h4("Fold change data will be displayed here", class = "text-muted")
-                )
-              )
-            )
-          )
-        )
       )
     )
   )
 }
+
+# MARK: Server Module
 #' @noRd
 S7::method(.mod_WorkflowAssembler_Result_Server, NonTargetAnalysisResults) <- function(x,
                                                                                        id,
@@ -2295,6 +2349,128 @@ output$group_profile_plot <- plotly::renderPlotly({
       ")))
     )
   })
+
+  # Internal Standards Plot
+  output$istd_plot <- plotly::renderPlotly({
+    nts <- nts_data()
+    
+    tryCatch({
+      # Check if internal standards data exists
+      istd_data <- get_internal_standards(nts, average = TRUE)
+      
+      if (nrow(istd_data) == 0) {
+        # Create empty plot with message
+        plotly::plot_ly() %>%
+          plotly::add_text(
+            x = 0.5, y = 0.5, 
+            text = "No internal standards found\nRun FindInternalStandards method first",
+            textfont = list(size = 16, color = "#666")
+          ) %>%
+          plotly::layout(
+            title = "Internal Standards Not Available",
+            xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+            yaxis = list(showgrid = FALSE, showticklabels = FALSE),
+            margin = list(l = 50, r = 50, t = 50, b = 50)
+          )
+      } else {
+        # Generate the plot
+        p <- plot_internal_standards(nts)
+        
+        if (!is.null(p)) {
+          p <- plotly::config(p, 
+            displayModeBar = TRUE,
+            modeBarButtonsToRemove = c(
+              "sendDataToCloud", "autoScale2d", "hoverClosestCartesian",
+              "hoverCompareCartesian", "lasso2d", "select2d"
+            ),
+            displaylogo = FALSE,
+            responsive = TRUE
+          )
+        }
+        
+        return(p)
+      }
+      
+    }, error = function(e) {
+      plotly::plot_ly() %>%
+        plotly::add_text(
+          x = 0.5, y = 0.5, 
+          text = paste("Error loading internal standards:", e$message),
+          textfont = list(size = 14, color = "red")
+        ) %>%
+        plotly::layout(
+          title = "Error Loading Internal Standards",
+          xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+          yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+        )
+    })
+  })
+
+  # Internal Standards Table
+  output$istd_table <- DT::renderDT({
+    nts <- nts_data()
+    
+    tryCatch({
+      istd_data <- get_internal_standards(nts, average = TRUE)
+      
+      if (nrow(istd_data) == 0) {
+        return(DT::datatable(
+          data.frame(Message = "No internal standards found. Run FindInternalStandards method first."),
+          options = list(dom = "t", ordering = FALSE, paging = FALSE),
+          style = "bootstrap",
+          class = "table table-bordered",
+          rownames = FALSE
+        ))
+      }
+      
+      # Round numeric columns
+      numeric_cols <- names(istd_data)[sapply(istd_data, is.numeric)]
+      for (col in numeric_cols) {
+        istd_data[[col]] <- round(istd_data[[col]], 4)
+      }
+      
+      DT::datatable(
+        istd_data,
+        options = list(
+          pageLength = 15,
+          scrollX = TRUE,
+          processing = TRUE,
+          dom = 'rt<"bottom"lip>',
+          lengthMenu = c(5, 10, 25, 50),
+          ordering = TRUE,
+          searching = TRUE
+        ),
+        style = "bootstrap",
+        class = "table table-striped table-hover",
+        rownames = FALSE,
+        filter = "top"
+      ) %>%
+        DT::formatStyle(
+          columns = names(istd_data),
+          fontSize = "14px",
+          padding = "8px 12px"
+        )
+        
+    }, error = function(e) {
+      DT::datatable(
+        data.frame(Error = paste("Error loading data:", e$message)),
+        options = list(dom = "t", ordering = FALSE, paging = FALSE),
+        style = "bootstrap",
+        rownames = FALSE
+      )
+    })
+  })
+
+  # Export handler
+  output$export_istd_csv <- shiny::downloadHandler(
+    filename = function() {
+      paste0("internal_standards_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+    },
+    content = function(file) {
+      istd_data <- get_internal_standards(nts_data(), average = TRUE)
+      write.csv(istd_data, file, row.names = FALSE)
+    }
+  )
 
   # JavaScript for UI interactions
   shiny::observeEvent(1, {
