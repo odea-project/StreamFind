@@ -1,193 +1,97 @@
 # MARK: ConfigParameter
 # ConfigParameter -----
-#' @title Generic Configuration Parameter
+#' @title Configuration Parameter
 #' 
-#' @description Class representing a configuration parameter.
+#' @description The `ConfigParameter` S3 class represents a configuration parameter in StreamFind.
+#' The `ConfigParameter` is a list of at least two elements - `name` and `description`.
 #' 
 #' @param name Name of the parameter.
 #' @param description Description of the parameter.
 #' 
 #' @export
 #' 
-ConfigParameter <- S7::new_class(
-  name = "ConfigParameter",
-  package = "StreamFind",
-  properties = list(
-    name = S7::new_property(S7::class_character),
-    description = S7::new_property(S7::class_character)
-  ),
-  constructor = function(name = NA_character_, description = NA_character_) {
-    S7::new_object(S7::S7_object(), name = name, description = description)
-  },
-  validator = function(self) {
-    checkmate::assert_character(self@name)
-    checkmate::assert_character(self@description)
-    NULL
+ConfigParameter <- function(name = NA_character_, description = NA_character_) {
+  x <- structure(
+    list(
+      name = name,
+      description = description
+    ),
+    class = "ConfigParameter"
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid ConfigParameter object")
   }
-)
-
-#' @export
-#' @noRd
-`$.ConfigParameter` <- function(x, i) {
-  S7::prop(x, i)
 }
 
+#' @describeIn ConfigParameter Validate a `ConfigParameter` object.
+#' @param x An object to validate.
+#' @return NULL if the object is valid, otherwise an error is thrown.
 #' @export
-#' @noRd
-`$<-.ConfigParameter` <- function(x, i, value) {
-  S7::prop(x, i) <- value
-  x
+#' 
+validate_object.ConfigParameter = function(x) {
+  checkmate::assert_class(x, "list")
+  checkmate::assert_names(names(x), must.include = c("name", "description"))
+  checkmate::assert_character(x$name, len = 1)
+  checkmate::assert_character(x$description, len = 1)
+  checkmate::assert_choice(
+    class(x$value),
+    c("character", "numeric", "logical")
+  )
+  NULL
 }
 
 # MARK: Config
 # Config -----
 #' @title Generic Configuration
 #' 
-#' @description Class representing a configuration object composed of multiple
-#' [StreamFind::ConfigParameter] objects.
+#' @description The `Config` S3 class represents a configuration object and is essentially a list of
+#' [StreamFind::ConfigParameter] class objects.
 #' 
 #' @param parameters A list of [StreamFind::ConfigParameter] objects.
 #' 
-#' @slot parameters (getter/setter) A named list of [StreamFind::ConfigParameter] objects.
-#' @slot config_frame (getter) A data frame representation of the configuration parameters.
-#' 
 #' @export
 #' 
-Config <- S7::new_class(
-  name = "Config",
-  package = "StreamFind",
-  properties = list(
-    parameters = S7::new_property(S7::class_list),
-    config_frame = S7::new_property(
-      S7::class_data.frame,
-      getter = function(self) {
-        if (length(self@parameters) == 0) return(data.frame())
-        data.frame(
-          name = sapply(self@parameters, function(x) x@name),
-          value = sapply(self@parameters, function(x) as.character(x@value)),
-          description = sapply(self@parameters, function(x) x@description)
-        )
-      }
-    )
-  ),
-  constructor = function(parameters = list()) {
-    S7::new_object(
-      S7::S7_object(),
-      parameters = parameters
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_list(self@parameters)
-    
-    if (length(self@parameters) > 0) {
-      checkmate::assert_true(
-        all(vapply(self@parameters, function(x) is(x, "StreamFind::ConfigParameter"), FALSE))
-      )
+Config <- function(parameters = list()) {
+  if (is.list(parameters)) {
+    if (length(parameters) > 0) {
+      parameter_names <- vapply(parameters, function(x) {
+        if ("ConfigParameter" %in% class(x)) {
+          if (is.null(validate_object(x))) {
+            x$name
+          } else {
+            NA_character_
+          }
+        } else {
+          NA_character_
+        }
+      }, NA_character_)
+      
+      parameters <- parameters[!is.na(parameter_names)]
+      parameter_names <- parameter_names[!is.na(parameter_names)]
+      names(parameters) <- parameter_names
     }
-    NULL
+  } else {
+    stop("Parameters must be a list of ConfigParameter objects.")
   }
-)
-
-#' @export
-#' @noRd
-S7::method(names, Config) <- function(x) {
-  names(x@parameters)
+  
+  structure(
+    parameters,
+    class = "Config"
+  )
 }
 
-#' @export
-#' @noRd
-`$.StreamFind::Config` <- function(x, i) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.character(i)) {
-    return(parameters_list[[i]])
-  } else {
-    stop("Invalid parameters getter type")
+validate_object.Config = function(x) {
+  checkmate::assert_list(x)
+  if (length(x) > 0) {
+    for (i in seq_along(x)) {
+      if (!is.null(validate_object(x[[i]]))) {
+        stop(sprintf("Element %d is not a ConfigParameter object.", i))
+      }
+    }
   }
-}
-
-#' @export
-#' @noRd
-`$<-.StreamFind::Config` <- function(x, i, value) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.character(i)) {
-    parameters_list[[i]] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else {
-    stop("Invalid parameters setter type")
-  }
-}
-
-#' @export
-#' @noRd
-`[.StreamFind::Config` <- function(x, i) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.numeric(i)) {
-    return(parameters_list[i])
-  } else if (is.character(i)) {
-    return(parameters_list[i])
-  } else if (is.logical(i)) {
-    return(parameters_list[i])
-  } else {
-    stop("Invalid parameters subset type")
-  }
-}
-
-#' @export
-#' @noRd
-`[<-.StreamFind::Config` <- function(x, i, value) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.numeric(i)) {
-    parameters_list[i] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else if (is.character(i)) {
-    parameters_list[i] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else if (is.logical(i)) {
-    parameters_list[i] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else {
-    stop("Invalid parameters setter type")
-  }
-}
-
-#' @export
-#' @noRd
-`[[.StreamFind::Config` <- function(x, i) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.numeric(i)) {
-    return(parameters_list[[i]])
-  } else if (is.character(i)) {
-    return(parameters_list[[i]])
-  } else {
-    stop("Invalid parameters subset type")
-  }
-}
-
-#' @export
-#' @noRd
-`[[<-.StreamFind::Config` <- function(x, i, value) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.numeric(i)) {
-    parameters_list[i] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else if (is.character(i)) {
-    parameters_list[[i]] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else {
-    stop("Invalid parameters setter type")
-  }
+  NULL
 }
 
 # MARK: ENGINE CONFIGURATION
@@ -197,14 +101,12 @@ S7::method(names, Config) <- function(x) {
 ## ConfigCache -----
 #' @title Configuration Parameter for Caching
 #' 
-#' @description Class representing a configuration for the caching behavior.
+#' @description The `ConfigCache` class is a `ConfigParameter` for the caching behavior.
 #' 
-#' @slot value Logical indicating whether to enable or disable caching.
-#' @slot mode Character indicating the caching mode (e.g., "rds" or "sqlite").
-#' @slot folder Character indicating the folder for caching (for "rds" mode).
-#' @slot file Character indicating the file for caching (for "sqlite" mode).
-#' @slot size (getter) Size of the cache.
-#' @slot info (getter) Information about the cache.
+#' @param value Logical indicating whether to enable or disable caching.
+#' @param mode Character indicating the caching mode (e.g., "rds" or "sqlite").
+#' @param folder Character indicating the folder for caching (for "rds" mode).
+#' @param file Character indicating the file for caching (for "sqlite" mode).
 #' 
 #' @export
 #' 
@@ -217,43 +119,7 @@ ConfigCache <- S7::new_class(
     mode = S7::new_property(S7::class_character, default = "rds"),
     folder = S7::new_property(S7::class_character, default = "cache"),
     file = S7::new_property(S7::class_character, default = "cache.sqlite"),
-    size = S7::new_property(
-      S7::class_numeric,
-      getter = function(self) {
-        if ("sqlite" %in% self@mode) {
-          if (file.exists(self@file)) {
-            size <- file.size(self@file)
-          } else {
-            message("Cache file does not exist!")
-            return(NA_real_)
-          }
-        } else if ("rds" %in% self@mode) {
-          if (dir.exists(self@folder)) {
-            size <- sum(file.size(list.files(self@folder, full.names = TRUE)))
-          } else {
-            message("Cache folder does not exist!")
-            return(NA_real_)
-          }
-        } else {
-          message("Invalid cache mode!")
-          return(NA_real_)
-        }
-        if (size > 1024^3) {
-          size <- size / 1024^3
-          unit <- "GB"
-        } else if (size > 1024^2) {
-          size <- size / 1024^2
-          unit <- "MB"
-        } else if (size > 1024) {
-          size <- size / 1024
-          unit <- "KB"
-        } else {
-          unit <- "bytes"
-        }
-        names(size) <- unit
-        size
-      }
-    ),
+    
     info = S7::new_property(
       S7::class_data.frame,
       getter = function(self) {
@@ -304,6 +170,48 @@ ConfigCache <- S7::new_class(
     NULL
   }
 )
+
+#' @describeIn ConfigCache Get the size of the cache.
+#' @param x A `ConfigCache` object.
+#' @return A named numeric vector with the size of the cache in bytes, KB, MB, or GB.
+#' @export
+#' 
+size.ConfigCache <- function(x) {
+  if ("sqlite" %in% x$mode) {
+    if (file.exists(x$file)) {
+      size <- file.size(x$file)
+    } else {
+      message("Cache file does not exist!")
+      return(NA_real_)
+    }
+  } else if ("rds" %in% x$mode) {
+    if (dir.exists(x$folder)) {
+      size <- sum(file.size(list.files(x$folder, full.names = TRUE)))
+    } else {
+      message("Cache folder does not exist!")
+      return(NA_real_)
+    }
+  } else {
+    message("Invalid cache mode!")
+    return(NA_real_)
+  }
+  if (size > 1024^3) {
+    size <- size / 1024^3
+    unit <- "GB"
+  } else if (size > 1024^2) {
+    size <- size / 1024^2
+    unit <- "MB"
+  } else if (size > 1024) {
+    size <- size / 1024
+    unit <- "KB"
+  } else {
+    unit <- "bytes"
+  }
+  names(size) <- unit
+  size
+}
+
+in
 
 #' @export
 #' @noRd

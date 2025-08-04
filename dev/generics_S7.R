@@ -994,17 +994,6 @@ save <- S7::new_generic("save", "x")
 #' 
 save_cache <- S7::new_generic("save_cache", "x")
 
-#' @title Generic `show`
-#' 
-#' @description S7 generic to show data from `x`.
-#' 
-#' @param x An object from which the data will be shown.
-#' @param ... Additional arguments passed to the method.
-#' 
-#' @export
-#' 
-show <- S7::new_generic("show", "x")
-
 # T -----
 
 #' @title Generic `test`

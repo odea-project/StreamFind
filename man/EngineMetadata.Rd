@@ -4,24 +4,18 @@
 \alias{EngineMetadata}
 \title{Engine Metadata}
 \usage{
-EngineMetadata(entries = list(), engine = "CoreEngine")
+EngineMetadata(x = list(), data_type = NA_character_)
 }
 \arguments{
-\item{entries}{Named list with metadata entries. Note that all given elements must be named and of length one. If an element "name" is given, it must be type character. If an element "date" is given, it must be class \code{POSIXct} or \code{POSIXt}. If given "date" is character, conversion to class \code{POSIXct} or \code{POSIXt} is attempted.}
+\item{x}{A named list of metadata entries. Default is an empty list.}
 
-\item{engine}{A character string with the name of the engine. Default is "CoreEngine".}
+\item{data_type}{A character string with the data type of the engine.
+Default is \code{NA_character_}.}
 }
 \description{
-The \code{EngineMetadata} class is a subclass of the \link{Metadata} class. It is used to store metadata of data processing engines.
+The \code{EngineMetadata} class is a subclass of the \link{Metadata} class.
+It is used to store metadata of data processing engines.
 }
-\section{Slots}{
-
-\describe{
-\item{\code{entries}}{\code{List} object with metadata entries as elements of length one.}
-
-\item{\code{engine}}{A character string with the name of the engine.}
-}}
-
 \seealso{
 \link{Metadata}
 }

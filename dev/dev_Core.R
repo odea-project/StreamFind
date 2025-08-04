@@ -1,16 +1,52 @@
+library(StreamFind)
+
+## Metadata -----
+
+a <- Metadata()
+sloop::s3_dispatch(length(a))
+a["name"] <- "Ricardo"
+length(a)
+names(a)
+show(a)
+class(a)
+save(a)
+a <- read(Metadata(), "metadata.json")
+
+b <- EngineMetadata(data_type = "MassSpec")
+sloop::s3_dispatch(show(b))
+sloop::s3_class(b)
+length(b)
+show(b)
+
+# Config -----
+
+ConfigParameter()
+
 
 ## CoreEngine ------
 
 core_file = paste0("core.rds")
+
 core <- CoreEngine$new()
 show(core$Metadata)
 show(core$Workflow)
 show(core$Analyses)
 show(core$AuditTrail)
 as.data.frame(core$AuditTrail)
+
 core$save(core_file)
 core$load("core.rds")
 core <- CoreEngine$new(Metadata = list(file = "core.rds"))
+
+length(Metadata())
+
+
+a$entries
+
+
+
+?Metadata
+
 
 
 # dir_path <- paste0(getwd(), "/R")

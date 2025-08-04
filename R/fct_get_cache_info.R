@@ -17,7 +17,7 @@
 #'
 #' @export
 #' @noRd
-S7::method(get_cache_info, S7::class_character) <- function(x, ...) {
+get_cache_info.character <- function(x, ...) {
   
   caching_mode <- getOption("StreamFind_cache_mode")
   
@@ -43,7 +43,7 @@ S7::method(get_cache_info, S7::class_character) <- function(x, ...) {
 
 #' @export
 #' @noRd
-S7::method(get_cache_info, S7::class_missing) <- function(x, ...) {
+get_cache_info.missing <- function(x, ...) {
   caching_mode <- getOption("StreamFind_cache_mode")
   
   if (is.null(caching_mode)) {
