@@ -2,22 +2,29 @@
 % Please edit documentation in R/class_Config.R
 \name{Config}
 \alias{Config}
+\alias{validate_object.Config}
 \title{Generic Configuration}
 \usage{
 Config(parameters = list())
+
+\method{validate_object}{Config}(x)
 }
 \arguments{
 \item{parameters}{A list of \link{ConfigParameter} objects.}
+
+\item{x}{An object to validate.}
+}
+\value{
+A \code{Config} object as a list of \link{ConfigParameter} objects.
+
+NULL if the object is valid, otherwise an error is thrown.
 }
 \description{
-Class representing a configuration object composed of multiple
-\link{ConfigParameter} objects.
+The \code{Config} S3 class represents a configuration object and is essentially a list of
+\link{ConfigParameter} class objects.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(Config)}: Validate a \code{Config} object.
 
-\describe{
-\item{\code{parameters}}{(getter/setter) A named list of \link{ConfigParameter} objects.}
-
-\item{\code{config_frame}}{(getter) A data frame representation of the configuration parameters.}
 }}
-

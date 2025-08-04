@@ -2,20 +2,33 @@
 % Please edit documentation in R/class_Metadata.R
 \name{EngineMetadata}
 \alias{EngineMetadata}
+\alias{validate_object.EngineMetadata}
 \title{Engine Metadata}
 \usage{
-EngineMetadata(x = list(), data_type = NA_character_)
+EngineMetadata(entries = list(), data_type = NA_character_)
+
+\method{validate_object}{EngineMetadata}(x)
 }
 \arguments{
-\item{x}{A named list of metadata entries. Default is an empty list.}
+\item{entries}{A named list of metadata entries. Default is an empty list.}
 
 \item{data_type}{A character string with the data type of the engine.
 Default is \code{NA_character_}.}
+
+\item{x}{An \code{EngineMetadata} object.}
+}
+\value{
+\code{NULL} if the object is valid, otherwise an error is thrown.
 }
 \description{
 The \code{EngineMetadata} class is a subclass of the \link{Metadata} class.
 It is used to store metadata of data processing engines.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(EngineMetadata)}: Validates the \code{EngineMetadata} object.
+
+}}
 \seealso{
 \link{Metadata}
 }

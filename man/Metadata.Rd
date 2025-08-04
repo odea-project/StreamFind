@@ -2,6 +2,7 @@
 % Please edit documentation in R/class_Metadata.R
 \name{Metadata}
 \alias{Metadata}
+\alias{validate_object.Metadata}
 \alias{length.Metadata}
 \alias{names.Metadata}
 \alias{[.Metadata}
@@ -13,7 +14,9 @@
 \alias{show.Metadata}
 \title{Metadata}
 \usage{
-Metadata(x = list())
+Metadata(entries = list())
+
+\method{validate_object}{Metadata}(x)
 
 \method{length}{Metadata}(x)
 
@@ -34,6 +37,9 @@ Metadata(x = list())
 \method{show}{Metadata}(x)
 }
 \arguments{
+\item{entries}{A named list of metadata entries as elements. Default is an empty list.
+Elements must be of type character, numeric or POSIXt and must have length 1.}
+
 \item{x}{A \code{Metadata} object.}
 
 \item{i}{A numeric or character vector with the index or name of the entry to replace.}
@@ -45,10 +51,13 @@ The file format should be either "json" or "rds".}
 }
 \value{
 A \code{Metadata} S3 class object.
+
+\code{NULL} if the object is valid, otherwise an error is thrown.
 }
 \description{
 The \code{Metadata} S3 class holds information, such as name, date, author
-and file, as a named list with elements of length one.
+and file, as a named list with elements of length one. The \code{Metadata} is essentially
+a list therefore list methods are also applicable.
 }
 \details{
 If not given, elements name, author, date and file are set to \code{NA_character_},
@@ -56,6 +65,8 @@ If not given, elements name, author, date and file are set to \code{NA_character
 }
 \section{Methods (by generic)}{
 \itemize{
+\item \code{validate_object(Metadata)}: Validates the \code{Metadata} object.
+
 \item \code{length(Metadata)}: Returns the length of the metadata entries.
 
 \item \code{names(Metadata)}: Returns the names of the metadata entries.

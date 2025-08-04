@@ -2,14 +2,27 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigDurationNotifications}
 \alias{ConfigDurationNotifications}
+\alias{validate_object.ConfigDurationNotifications}
 \title{Configuration Parameter for Duration of Notifications}
 \usage{
 ConfigDurationNotifications(value = 10)
+
+\method{validate_object}{ConfigDurationNotifications}(x)
 }
 \arguments{
 \item{value}{Duration in seconds for pop-up notifications.}
+
+\item{x}{An object to validate.}
+}
+\value{
+NULL if the object is valid, otherwise an error is thrown.
 }
 \description{
 Class representing a configuration for the duration of pop-up notifications in the
 app, inhiberiting from \link{ConfigParameter}.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(ConfigDurationNotifications)}: Validate a \code{ConfigDurationNotifications} object.
+
+}}

@@ -21,11 +21,12 @@ show(b)
 # Config -----
 
 ConfigParameter()
+AppConfig()
 
 
 ## CoreEngine ------
 
-core_file = paste0("core.rds")
+core_file <- paste0("core.rds")
 
 core <- CoreEngine$new()
 show(core$Metadata)

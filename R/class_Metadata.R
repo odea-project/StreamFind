@@ -17,11 +17,9 @@
 #' @export
 #' 
 Metadata <- function(entries = list()) {
-  
   if (!is.list(entries)) {
     stop("Argument must be a named list!")
   }
-  
   if (length(entries) > 0) {
     entries_names <- names(entries)
     if (is.null(entries_names)) {
@@ -68,7 +66,7 @@ Metadata <- function(entries = list()) {
 #' @return `NULL` if the object is valid, otherwise an error is thrown.
 #' @export
 #' 
-validate_object.Metadata = function(x) {
+validate_object.Metadata <- function(x) {
   valid <- FALSE
   if (is.list(x)) {
     valid <- TRUE
@@ -264,4 +262,3 @@ validate_object.EngineMetadata <- function(x) {
   }
   NULL
 }
-

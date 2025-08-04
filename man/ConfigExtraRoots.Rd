@@ -2,14 +2,27 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigExtraRoots}
 \alias{ConfigExtraRoots}
+\alias{validate_object.ConfigExtraRoots}
 \title{Configuration Parameter for Extra Root Directories}
 \usage{
 ConfigExtraRoots(value = "")
+
+\method{validate_object}{ConfigExtraRoots}(x)
 }
 \arguments{
 \item{value}{Character string representing extra root directories for file selection.}
+
+\item{x}{An object to validate.}
+}
+\value{
+NULL if the object is valid, otherwise an error is thrown.
 }
 \description{
 Class representing a configuration for extra root directories for file selection
 in the app, inheriting from \link{ConfigParameter}.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(ConfigExtraRoots)}: Validate a \code{ConfigExtraRoots} object.
+
+}}

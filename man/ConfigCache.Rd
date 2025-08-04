@@ -2,26 +2,51 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigCache}
 \alias{ConfigCache}
+\alias{validate_object.ConfigCache}
+\alias{size.ConfigCache}
+\alias{info.ConfigCache}
 \title{Configuration Parameter for Caching}
 \usage{
-ConfigCache()
+ConfigCache(
+  value = TRUE,
+  mode = "rds",
+  folder = "cache",
+  file = "cache.sqlite"
+)
+
+\method{validate_object}{ConfigCache}(x)
+
+\method{size}{ConfigCache}(x)
+
+\method{info}{ConfigCache}(x)
+}
+\arguments{
+\item{value}{Logical indicating whether to enable or disable caching.}
+
+\item{mode}{Character indicating the caching mode (e.g., "rds" or "sqlite").}
+
+\item{folder}{Character indicating the folder for caching (for "rds" mode).}
+
+\item{file}{Character indicating the file for caching (for "sqlite" mode).}
+
+\item{x}{A \code{ConfigCache} object.}
+}
+\value{
+NULL if the object is valid, otherwise an error is thrown.
+
+A named numeric vector with the size of the cache in bytes, KB, MB, or GB.
+
+A \code{data.table} with the names and number of rows in each table for SQLite cache, or a list of files for RDS cache.
 }
 \description{
-Class representing a configuration for the caching behavior.
+The \code{ConfigCache} class is a \code{ConfigParameter} for the caching behavior.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(ConfigCache)}: Validate a \code{ConfigCache} object.
 
-\describe{
-\item{\code{value}}{Logical indicating whether to enable or disable caching.}
+\item \code{size(ConfigCache)}: Get the size of the cache.
 
-\item{\code{mode}}{Character indicating the caching mode (e.g., "rds" or "sqlite").}
+\item \code{info(ConfigCache)}: Get information about the cache.
 
-\item{\code{folder}}{Character indicating the folder for caching (for "rds" mode).}
-
-\item{\code{file}}{Character indicating the file for caching (for "sqlite" mode).}
-
-\item{\code{size}}{(getter) Size of the cache.}
-
-\item{\code{info}}{(getter) Information about the cache.}
 }}
-

@@ -2,15 +2,29 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigParameter}
 \alias{ConfigParameter}
-\title{Generic Configuration Parameter}
+\alias{validate_object.ConfigParameter}
+\title{Configuration Parameter}
 \usage{
 ConfigParameter(name = NA_character_, description = NA_character_)
+
+\method{validate_object}{ConfigParameter}(x)
 }
 \arguments{
 \item{name}{Name of the parameter.}
 
 \item{description}{Description of the parameter.}
+
+\item{x}{An object to validate.}
+}
+\value{
+NULL if the object is valid, otherwise an error is thrown.
 }
 \description{
-Class representing a configuration parameter.
+The \code{ConfigParameter} S3 class represents a configuration parameter in StreamFind.
+The \code{ConfigParameter} is a list of at least two elements - \code{name} and \code{description}.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(ConfigParameter)}: Validate a \code{ConfigParameter} object.
+
+}}
