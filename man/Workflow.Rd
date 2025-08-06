@@ -2,21 +2,79 @@
 % Please edit documentation in R/class_Workflow.R
 \name{Workflow}
 \alias{Workflow}
+\alias{validate_object.Workflow}
+\alias{info.Workflow}
+\alias{get_methods.Workflow}
+\alias{[.Workflow}
+\alias{[<-.Workflow}
+\alias{[[.Workflow}
+\alias{[[<-.Workflow}
+\alias{save.Workflow}
+\alias{read.Workflow}
+\alias{show.Workflow}
 \title{Workflow Manager}
 \usage{
 Workflow(processing_steps = list())
+
+\method{validate_object}{Workflow}(x)
+
+\method{info}{Workflow}(x)
+
+\method{get_methods}{Workflow}(x)
+
+\method{[}{Workflow}(x, i)
+
+\method{[}{Workflow}(x, i) <- value
+
+\method{[[}{Workflow}(x, i)
+
+\method{[[}{Workflow}(x, i) <- value
+
+\method{save}{Workflow}(x, file = "workflow.rds")
+
+\method{read}{Workflow}(x, file)
+
+\method{show}{Workflow}(x, ...)
 }
 \arguments{
 \item{processing_steps}{A list of \link{ProcessingStep} objects.}
+
+\item{x}{A Workflow object.}
+
+\item{i}{An index indicating which element to replace or a character to add a new element.}
+
+\item{value}{A \link{ProcessingStep} object to replace the selected element with.}
+
+\item{file}{A file path to read the Workflow object from.
+Supported formats are \code{.json} and \code{.rds}.}
+
+\item{...}{Additional arguments (not used).}
 }
 \description{
-The Workflow class is used to manage an ordered list of \link{ProcessingStep} objects of a specific type of data.
+The \code{Workflow} class is an ordered list of \link{ProcessingStep} objects
+dedicated to a specific type of data.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(Workflow)}: Validate a Workflow object, returning NULL if valid or an error if not.
 
-\describe{
-\item{\code{methods}}{(getter) A character vector of the methods of each processing step.}
+\item \code{info(Workflow)}: Convert a Workflow object to a data frame.
 
-\item{\code{overview}}{(getter) A data frame with an overview of processing steps in the workflow.}
+\item \code{get_methods(Workflow)}: Get the names of the methods in a Workflow object.
+
+\item \code{[}: Subset a Workflow object.
+
+\item \code{`[`(Workflow) <- value}: Replace elements in a Workflow object, returning a modified \code{Workflow}
+object.
+
+\item \code{[[}: Extract elements from a Workflow object using \code{[[}.
+
+\item \code{`[[`(Workflow) <- value}: Replace elements in a Workflow object using \verb{[[<-}.
+
+\item \code{save(Workflow)}: Save a Workflow object to a file.
+
+\item \code{read(Workflow)}: Read a Workflow object from a file.
+
+\item \code{show(Workflow)}: Show the contents of a Workflow object.
+
 }}
-

@@ -30,7 +30,7 @@
 #'
 MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
   name = "MassSpecMethod_FillFeatures_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(withinReplicate = TRUE,
                          filtered = TRUE,

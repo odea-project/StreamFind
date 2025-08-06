@@ -13,7 +13,7 @@
 #' @export
 #'
 RamanMethod_MergeSpectraTimeSeries_StreamFind <- S7::new_class("RamanMethod_MergeSpectraTimeSeries_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(preCut = 2) {
     S7::new_object(

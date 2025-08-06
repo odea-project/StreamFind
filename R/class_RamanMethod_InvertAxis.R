@@ -8,7 +8,7 @@
 #'
 RamanMethod_InvertAxis_intensity <- S7::new_class(
   "RamanMethod_InvertAxis_intensity",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function() {

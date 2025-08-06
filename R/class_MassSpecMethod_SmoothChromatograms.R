@@ -10,7 +10,7 @@
 #'
 MassSpecMethod_SmoothChromatograms_movingaverage <- S7::new_class(
   name = "MassSpecMethod_SmoothChromatograms_movingaverage",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(windowSize = 5) {
@@ -114,7 +114,7 @@ S7::method(run, MassSpecMethod_SmoothChromatograms_movingaverage) <- function(x,
 #'
 MassSpecMethod_SmoothChromatograms_savgol <- S7::new_class(
   name = "MassSpecMethod_SmoothChromatograms_savgol",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(fl = 11, forder = 4, dorder = 0) {

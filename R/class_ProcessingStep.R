@@ -9,6 +9,8 @@
 #' @param method A character string representing the method used (e.g., "BaselineCorrection").
 #' @param required A character vector of required preceding methods.
 #' @param algorithm A character string representing the algorithm used (e.g., "baseline_als").
+#' @param input_class A character string representing the class of the input data.
+#' @param output_class A character string representing the class of the output data.
 #' @param parameters A list of parameters for the processing step.
 #' @param number_permitted A numeric value indicating the number of permitted instances.
 #' @param version A character string representing the version of the processing step.
@@ -19,68 +21,94 @@
 #' additional information.
 #' @param doi A character string representing the DOI of the algorithm or additional information.
 #' 
-#' @slot call (getter) A character string representing the call to the processing step.
-#' 
 #' @export
 #' 
-ProcessingStep <- S7::new_class(
-  name = "ProcessingStep",
-  package = "StreamFind",
-  properties = list(
-    data_type = S7::new_property(S7::class_character, default = NA_character_),
-    method = S7::new_property(S7::class_character, default = NA_character_),
-    required = S7::new_property(S7::class_character, default = NA_character_),
-    algorithm = S7::new_property(S7::class_character, default = NA_character_),
-    parameters = S7::new_property(S7::class_list, default = list()),
-    number_permitted = S7::new_property(S7::class_numeric, default = NA_real_),
-    version = S7::new_property(S7::class_character, default = NA_character_),
-    software = S7::new_property(S7::class_character, default = NA_character_),
-    developer = S7::new_property(S7::class_character, default = NA_character_),
-    contact = S7::new_property(S7::class_character, default = NA_character_),
-    link = S7::new_property(S7::class_character, default = NA_character_),
-    doi = S7::new_property(S7::class_character, default = NA_character_),
-    call = S7::new_property(S7::class_character, getter = function(self) {
-      paste0(self@data_type, "Method_", self@method, "_", self@algorithm)
-    })
-  ),
-  validator = function(self) {
-    checkmate::assert_character(self@data_type, len = 1)
-    checkmate::assert_character(self@method, len = 1)
-    checkmate::assert_character(self@required)
-    checkmate::assert_true(
-      all(self@required %in% c(.get_available_methods(self@data_type), NA_character_))
-    )
-    checkmate::assert_character(self@algorithm, len = 1)
-    checkmate::assert_list(self@parameters)
-    checkmate::assert_numeric(self@number_permitted, len = 1)
-    checkmate::assert_character(self@version, len = 1)
-    checkmate::assert_character(self@software, len = 1)
-    checkmate::assert_character(self@developer, len = 1)
-    checkmate::assert_character(self@contact, len = 1)
-    checkmate::assert_character(self@link, len = 1)
-    checkmate::assert_character(self@doi, len = 1)
-    if (is.list(self@parameters)) {
-      lapply(names(self@parameters), function(x) {
-        param <- self@parameters[[x]]
-        invalid_param <- is.data.frame(param) || is.character(param) || is.numeric(param)
-        invalid_param <- invalid_param || is.integer(param) || is.logical(param) || is.null(param)
-        invalid_param <- !invalid_param
-        if (invalid_param) {
-          stop(
-            paste(
-              "Invalid type for parameter ", x, " in ", self$method,
-              "_", self$algorithm, "!", collapse = "", sep = ""
-            )
-          )
-        }
-      })
-    }
-    NULL
+ProcessingStep <- function(data_type = NA_character_,
+                           method = NA_character_,
+                           required = NA_character_,
+                           algorithm = NA_character_,
+                           input_class = NA_character_,
+                           output_class = NA_character_,
+                           parameters = list(),
+                           number_permitted = NA_real_,
+                           version = NA_character_,
+                           software = NA_character_,
+                           developer = NA_character_,
+                           contact = NA_character_,
+                           link = NA_character_,
+                           doi = NA_character_) {
+  x <- structure(
+    list(
+      data_type = data_type,
+      method = method,
+      required = required,
+      algorithm = algorithm,
+      input_class = input_class,
+      output_class = output_class,
+      parameters = parameters,
+      number_permitted = number_permitted,
+      version = version,
+      software = software,
+      developer = developer,
+      contact = contact,
+      link = link,
+      doi = doi
+    ),
+    class = c("ProcessingStep"),
+    call = paste0(data_type, "Method_", method, "_", algorithm)
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid ProcessingStep object!")
   }
-)
+}
 
+#' @describeIn ProcessingStep Validate the `ProcessingStep` object, returns `NULL` if valid.
+#' @param x A `ProcessingStep` object.
 #' @export
-#' @noRd
+#' 
+validate_object.ProcessingStep = function(x) {
+  checkmate::assert_character(x$data_type, len = 1)
+  checkmate::assert_character(x$method, len = 1)
+  checkmate::assert_character(x$required)
+  checkmate::assert_true(
+    all(x$required %in% c(.get_available_methods(x$data_type), NA_character_))
+  )
+  checkmate::assert_character(x$algorithm, len = 1)
+  checkmate::assert_character(x$input_class, len = 1)
+  checkmate::assert_character(x$output_class, len = 1)
+  checkmate::assert_list(x$parameters)
+  checkmate::assert_numeric(x$number_permitted, len = 1)
+  checkmate::assert_character(x$version, len = 1)
+  checkmate::assert_character(x$software, len = 1)
+  checkmate::assert_character(x$developer, len = 1)
+  checkmate::assert_character(x$contact, len = 1)
+  checkmate::assert_character(x$link, len = 1)
+  checkmate::assert_character(x$doi, len = 1)
+  if (is.list(x$parameters)) {
+    lapply(names(x$parameters), function(x) {
+      param <- x$parameters[[x]]
+      invalid_param <- is.data.frame(param) || is.character(param) || is.numeric(param)
+      invalid_param <- invalid_param || is.integer(param) || is.logical(param) || is.null(param)
+      invalid_param <- !invalid_param
+      if (invalid_param) {
+        stop(
+          paste(
+            "Invalid type for parameter ", x, " in ", self$method,
+            "_", self$algorithm, "!", collapse = "", sep = ""
+          )
+        )
+      }
+    })
+  }
+  NULL
+}
+
+#' @describeIn ProcessingStep Convert a list or JSON object to a `ProcessingStep` object.
+#' @param value A list or JSON object containing the parameters for the processing step.
+#' @export
+#' 
 as.ProcessingStep <- function(value) {
   if (length(value) == 1 && is.list(value)) value <- value[[1]]
   if (is.list(value)) {
@@ -100,41 +128,13 @@ as.ProcessingStep <- function(value) {
   return(do.call(settings_constructor, value$parameters))
 }
 
+#' @describeIn ProcessingStep Save a `ProcessingStep` object to a file in JSON or RDS format.
+#' @param x A `ProcessingStep` object.
+#' @param file A character string specifying the file path to save the object.
+#' The file extension should be `.json` or `.rds`.
 #' @export
-#' @noRd
-`$.StreamFind::ProcessingStep` <- function(x, i) {
-  S7::prop(x, i)
-}
-
-#' @export
-#' @noRd
-`$<-.StreamFind::ProcessingStep` <- function(x, i, value) {
-  S7::prop(x, i) <- value
-  x
-}
-
-#' @export
-#' @noRd
-S7::method(as.list, ProcessingStep) <- function(x, ...) {
-  list(
-    data_type = x@data_type,
-    method = x@method,
-    required = x@required,
-    algorithm = x@algorithm,
-    parameters = x@parameters,
-    number_permitted = x@number_permitted,
-    version = x@version,
-    software = x@software,
-    developer = x@developer,
-    contact = x@contact,
-    link = x@link,
-    doi = x@doi
-  )
-}
-
-#' @export
-#' @noRd
-S7::method(save, ProcessingStep) <- function(x, file = "settings.json") {
+#' 
+save.ProcessingStep <- function(x, file = "settings.json") {
   format <- tools::file_ext(file)
   if (format %in% "json") {
     x <- .convert_to_json(as.list(x))
@@ -147,9 +147,14 @@ S7::method(save, ProcessingStep) <- function(x, file = "settings.json") {
   invisible(NULL)
 }
 
+#' @describeIn ProcessingStep Read a `ProcessingStep` object from a file in JSON or RDS format,
+#' returning the updated object.
+#' @param x A `ProcessingStep` object.
+#' @param file A character string specifying the file path to read the object from.
+#' The file extension should be `.json` or `.rds`.
 #' @export
-#' @noRd
-S7::method(read, ProcessingStep) <- function(x, file) {
+#' 
+read.ProcessingStep <- function(x, file) {
   if (grepl(".json", file)) {
     if (file.exists(file)) {
       return(as.ProcessingStep(jsonlite::fromJSON(file)))
@@ -163,80 +168,85 @@ S7::method(read, ProcessingStep) <- function(x, file) {
   NULL
 }
 
+#' @describeIn ProcessingStep Show the details of a `ProcessingStep` object.
+#' @param x A `ProcessingStep` object.
+#' @param ... Additional arguments (not used).
 #' @export
-#' @noRd
-S7::method(show, ProcessingStep) <- function(x, ...) {
+#' 
+show.ProcessingStep <- function(x, ...) {
   cat("\n")
   cat("", class(x)[1], "\n")
   cat(
-    " data_type    ", x@data_type, "\n",
-    " method       ", x@method, "\n",
-    " required     ", paste(x@required, collapse = "; "), "\n",
-    " algorithm    ", x@algorithm, "\n",
-    " version      ", x@version, "\n",
-    " software     ", x@software, "\n",
-    " developer    ", x@developer, "\n",
-    " contact      ", x@contact, "\n",
-    " link         ", x@link, "\n",
-    " doi          ", x@doi, "\n",
+    " data_type    ", x$data_type, "\n",
+    " method       ", x$method, "\n",
+    " required     ", paste(x$required, collapse = "; "), "\n",
+    " algorithm    ", x$algorithm, "\n",
+    " input_class  ", x$input_class, "\n",
+    " output_class ", x$output_class, "\n",
+    " version      ", x$version, "\n",
+    " software     ", x$software, "\n",
+    " developer    ", x$developer, "\n",
+    " contact      ", x$contact, "\n",
+    " link         ", x$link, "\n",
+    " doi          ", x$doi, "\n",
     sep = ""
   )
-  if (isS4(x@parameters) || length(x@parameters) == 1) {
-    if (is.list(x@parameters)) {
-      if (isS4(x@parameters[[1]])) {
+  if (isS4(x$parameters) || length(x$parameters) == 1) {
+    if (is.list(x$parameters)) {
+      if (isS4(x$parameters[[1]])) {
         cat("\n")
-        print(x@parameters[[1]])
+        print(x$parameters[[1]])
       } else {
         cat("\n")
         cat(" parameters: ", "\n")
-        for (i in seq_len(length(x@parameters))) {
-          if (is.data.frame(x@parameters[[i]])) {
-            cat("  - ", names(x@parameters)[i], " (only head rows)", "\n")
+        for (i in seq_len(length(x$parameters))) {
+          if (is.data.frame(x$parameters[[i]])) {
+            cat("  - ", names(x$parameters)[i], " (only head rows)", "\n")
             cat("\n")
-            print(head(x@parameters[[i]]), quote = FALSE)
+            print(head(x$parameters[[i]]), quote = FALSE)
             cat("\n")
-          } else if (is.list(x@parameters[[i]])) {
-            cat("  - ", names(x@parameters)[i], ": ", "\n")
-            for (i2 in seq_len(length(x@parameters[[i]]))) {
-              cat("      - ", names(x@parameters[[i]])[i2], x@parameters[[i]][[i2]], "\n")
+          } else if (is.list(x$parameters[[i]])) {
+            cat("  - ", names(x$parameters)[i], ": ", "\n")
+            for (i2 in seq_len(length(x$parameters[[i]]))) {
+              cat("      - ", names(x$parameters[[i]])[i2], x$parameters[[i]][[i2]], "\n")
             }
-          } else if ("function" %in% is(x@parameters[[i]])) {
-            cat("  - ", names(x@parameters)[i])
-            quote(x@parameters[[i]])
+          } else if ("function" %in% is(x$parameters[[i]])) {
+            cat("  - ", names(x$parameters)[i])
+            quote(x$parameters[[i]])
             cat("\n")
           } else {
-            cat("  - ", names(x@parameters)[i], x@parameters[[i]], "\n")
+            cat("  - ", names(x$parameters)[i], x$parameters[[i]], "\n")
           }
         }
       }
     } else {
       cat("\n")
-      print(x@parameters)
+      print(x$parameters)
     }
   } else {
     cat("\n")
     cat(" parameters: ")
-    if (length(x@parameters) == 0) {
+    if (length(x$parameters) == 0) {
       cat("empty ", "\n")
     } else {
       cat("\n")
-      for (i in seq_len(length(x@parameters))) {
-        if (is.data.frame(x@parameters[[i]])) {
-          cat("  - ", names(x@parameters)[i], " (only head rows)", "\n")
+      for (i in seq_len(length(x$parameters))) {
+        if (is.data.frame(x$parameters[[i]])) {
+          cat("  - ", names(x$parameters)[i], " (only head rows)", "\n")
           cat("\n")
-          print(head(x@parameters[[i]]), quote = FALSE)
+          print(head(x$parameters[[i]]), quote = FALSE)
           cat("\n")
-        } else if (is.list(x@parameters[[i]])) {
-          cat("  - ", names(x@parameters)[i], ": ", "\n")
-          for (i2 in seq_len(length(x@parameters[[i]]))) {
-            cat("      - ", names(x@parameters[[i]])[i2], x@parameters[[i]][[i2]], "\n")
+        } else if (is.list(x$parameters[[i]])) {
+          cat("  - ", names(x$parameters)[i], ": ", "\n")
+          for (i2 in seq_len(length(x$parameters[[i]]))) {
+            cat("      - ", names(x$parameters[[i]])[i2], x$parameters[[i]][[i2]], "\n")
           }
-        } else if ("function" %in% is(x@parameters[[i]])) {
-          cat("  - ", names(x@parameters)[i], ":\n")
-          print(x@parameters[[i]])
+        } else if ("function" %in% is(x$parameters[[i]])) {
+          cat("  - ", names(x$parameters)[i], ":\n")
+          print(x$parameters[[i]])
           cat("\n")
         } else {
-          cat("  - ", names(x@parameters)[i], x@parameters[[i]], "\n")
+          cat("  - ", names(x$parameters)[i], x$parameters[[i]], "\n")
         }
       }
     }

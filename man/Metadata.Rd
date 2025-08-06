@@ -12,7 +12,7 @@
 \alias{save.Metadata}
 \alias{read.Metadata}
 \alias{show.Metadata}
-\title{Metadata}
+\title{Metadata S3 class}
 \usage{
 Metadata(entries = list())
 
@@ -51,8 +51,6 @@ The file format should be either "json" or "rds".}
 }
 \value{
 A \code{Metadata} S3 class object.
-
-\code{NULL} if the object is valid, otherwise an error is thrown.
 }
 \description{
 The \code{Metadata} S3 class holds information, such as name, date, author
@@ -65,7 +63,7 @@ If not given, elements name, author, date and file are set to \code{NA_character
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(Metadata)}: Validates the \code{Metadata} object.
+\item \code{validate_object(Metadata)}: Validates the \code{Metadata} object, returning \code{NULL} if valid.
 
 \item \code{length(Metadata)}: Returns the length of the metadata entries.
 
@@ -81,7 +79,7 @@ If not given, elements name, author, date and file are set to \code{NA_character
 
 \item \code{save(Metadata)}: Saves the metadata to a file.
 
-\item \code{read(Metadata)}: Reads metadata from a file.
+\item \code{read(Metadata)}: Reads metadata from a file, returning a \code{Metadata} object.
 
 \item \code{show(Metadata)}: Prints the metadata entries.
 

@@ -1,6 +1,6 @@
 # MARK: Metadata
 # Metadata -----
-#' @title Metadata
+#' @title Metadata S3 class
 #'
 #' @description The `Metadata` S3 class holds information, such as name, date, author
 #' and file, as a named list with elements of length one. The `Metadata` is essentially
@@ -61,9 +61,8 @@ Metadata <- function(entries = list()) {
   }
 }
 
-#' @describeIn Metadata Validates the `Metadata` object.
+#' @describeIn Metadata Validates the `Metadata` object, returning `NULL` if valid.
 #' @param x A `Metadata` object.
-#' @return `NULL` if the object is valid, otherwise an error is thrown.
 #' @export
 #' 
 validate_object.Metadata <- function(x) {
@@ -187,8 +186,8 @@ save.Metadata <- function(x, file = "metadata.json") {
   invisible(NULL)
 }
 
-#' @describeIn Metadata Reads metadata from a file.
-#' @param x A `Metadata` object (not used).
+#' @describeIn Metadata Reads metadata from a file, returning a `Metadata` object.
+#' @param x A `Metadata` object.
 #' @param file A character string with the file name to read the metadata from.
 #' The file format should be either "json" or "rds".
 #' @export
@@ -200,7 +199,7 @@ read.Metadata <- function(x, file) {
     }
   } else if (grepl(".rds", file)) {
     res <- readRDS(file)
-    if (is(res, "StreamFind::Metadata")) return(res)
+    if (is(res, "Metadata")) return(res)
   }
   NULL
 }
@@ -248,9 +247,8 @@ EngineMetadata <-  function(entries = list(), data_type = NA_character_) {
   }
 }
 
-#' @describeIn EngineMetadata Validates the `EngineMetadata` object.
+#' @describeIn EngineMetadata Validates the `EngineMetadata` object, returning `NULL` if valid.
 #' @param x An `EngineMetadata` object.
-#' @return `NULL` if the object is valid, otherwise an error is thrown.
 #' @export
 #' 
 validate_object.EngineMetadata <- function(x) {

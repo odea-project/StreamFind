@@ -12,7 +12,7 @@
 #'
 RamanMethod_FindChromPeaks_LocalMaxima <- S7::new_class(
   "RamanMethod_FindChromPeaks_LocalMaxima",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(minWidth = 0, maxWidth = 0, minHeight = 0) {
@@ -199,7 +199,7 @@ S7::method(run, RamanMethod_FindChromPeaks_LocalMaxima) <- function(x, engine = 
 #'
 RamanMethod_FindChromPeaks_pracma <- S7::new_class(
   name = "RamanMethod_FindChromPeaks_pracma",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(merge = TRUE,

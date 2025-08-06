@@ -43,7 +43,7 @@
 #'
 MassSpecMethod_LoadMSPeakLists_patRoon <- S7::new_class(
   name = "MassSpecMethod_LoadMSPeakLists_patRoon",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(maxMSRtWindow = 5,
@@ -194,7 +194,7 @@ S7::method(run, MassSpecMethod_LoadMSPeakLists_patRoon) <- function(x, engine = 
 #'
 MassSpecMethod_LoadMSPeakLists_StreamFind <- S7::new_class(
   name = "MassSpecMethod_LoadMSPeakLists_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(clusterMzWindow = 0.005,

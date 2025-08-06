@@ -54,7 +54,7 @@
 MassSpecAnalyses <- S7::new_class(
   name = "MassSpecAnalyses",
   package = "StreamFind",
-  parent = S7::new_S3_class("Analyses"),
+  parent = Analyses,
   properties = list(
 
     # MARK: analyses
@@ -570,13 +570,10 @@ MassSpecAnalyses <- S7::new_class(
   ## constructor -----
   constructor = function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
     analyses <- .get_MassSpecAnalysis_from_files(files, centroid, levels)
-    
-    browser()
-    
     S7::new_object(
       Analyses(),
-      #data_type = "MassSpec",
-      #possible_formats = c("mzML", "mzXML", "d", "raw"),
+      data_type = "MassSpec",
+      possible_formats = c("mzML", "mzXML", "d", "raw"),
       analyses = analyses
     )
   },
@@ -584,7 +581,7 @@ MassSpecAnalyses <- S7::new_class(
   # MARK: validator
   ## validator -----
   validator = function(self) {
-    #checkmate::assert_true(identical(self@possible_formats, c("mzML", "mzXML", "d", "raw")))
+    checkmate::assert_true(identical(self@possible_formats, c("mzML", "mzXML", "d", "raw")))
     if (length(self) > 0) {
       checkmate::assert_true(identical(names(self@analyses), unname(names(self))))
     }

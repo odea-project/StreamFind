@@ -286,7 +286,7 @@
 #' 
 MassSpecMethod_FindFeatures_xcms3_centwave <- S7::new_class(
   name = "MassSpecMethod_FindFeatures_xcms3_centwave",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(ppm = 12,
                          peakwidth = c(5, 60),
@@ -415,7 +415,7 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_centwave) <- function(x, engin
 #' 
 MassSpecMethod_FindFeatures_xcms3_matchedfilter <- S7::new_class(
   name = "MassSpecMethod_FindFeatures_xcms3_matchedfilter",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(binSize = 0.5,
                          impute = "none",
@@ -481,7 +481,7 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_matchedfilter) <- function(x, 
   .run_find_features_patRoon(x, engine)
 }
 
-#' MassSpecMethod_FindFeatures_openms S7 class
+#' MassSpecMethod_FindFeatures_openms class
 #' 
 #' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
 #' using the \href{https://www.openms.org/}{OpenMS}
@@ -556,108 +556,117 @@ S7::method(run, MassSpecMethod_FindFeatures_xcms3_matchedfilter) <- function(x, 
 #' 
 #' @export
 #' 
-MassSpecMethod_FindFeatures_openms <- S7::new_class(
-  name = "MassSpecMethod_FindFeatures_openms",
-  parent = ProcessingStep,
-  package = "StreamFind",
-  constructor = function(noiseThrInt = 1000,
-                         chromSNR = 3,
-                         chromFWHM = 7,
-                         mzPPM = 15,
-                         reEstimateMTSD = TRUE,
-                         traceTermCriterion = "sample_rate",
-                         traceTermOutliers = 5,
-                         minSampleRate = 1,
-                         minTraceLength = 4,
-                         maxTraceLength = 70,
-                         widthFiltering = "fixed",
-                         minFWHM = 4,
-                         maxFWHM = 35,
-                         traceSNRFiltering = TRUE,
-                         localRTRange = 0,
-                         localMZRange = 0,
-                         isotopeFilteringModel = "none",
-                         MZScoring13C = FALSE,
-                         useSmoothedInts = FALSE,
-                         intSearchRTWindow = 3,
-                         useFFMIntensities = FALSE,
-                         verbose = FALSE) {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "MassSpec",
-        method = "FindFeatures",
-        required = NA_character_,
-        algorithm = "openms",
-        parameters = list(
-          noiseThrInt = noiseThrInt,
-          chromSNR = chromSNR,
-          chromFWHM = chromFWHM,
-          mzPPM = mzPPM,
-          reEstimateMTSD = reEstimateMTSD,
-          traceTermCriterion = traceTermCriterion,
-          traceTermOutliers = traceTermOutliers,
-          minSampleRate = minSampleRate,
-          minTraceLength = minTraceLength,
-          maxTraceLength = maxTraceLength,
-          widthFiltering = widthFiltering,
-          minFWHM = minFWHM,
-          maxFWHM = maxFWHM,
-          traceSNRFiltering = traceSNRFiltering,
-          localRTRange = localRTRange,
-          localMZRange = localMZRange,
-          isotopeFilteringModel = isotopeFilteringModel,
-          MZScoring13C = MZScoring13C,
-          useSmoothedInts = useSmoothedInts,
-          intSearchRTWindow = intSearchRTWindow,
-          useFFMIntensities = useFFMIntensities,
-          verbose = verbose
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "openms",
-        developer = "Oliver Kohlbacher",
-        contact = "oliver.kohlbacher@uni-tuebingen.de",
-        link = "https://openms.de/",
-        doi = "https://doi.org/10.1038/nmeth.3959"
-      )
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
-    checkmate::assert_choice(self@method, "FindFeatures")
-    checkmate::assert_choice(self@algorithm, "openms")
-    checkmate::assert_numeric(self@parameters$noiseThrInt, len = 1)
-    checkmate::assert_numeric(self@parameters$chromSNR, len = 1)
-    checkmate::assert_numeric(self@parameters$chromFWHM, len = 1)
-    checkmate::assert_numeric(self@parameters$mzPPM, len = 1)
-    checkmate::assert_logical(self@parameters$reEstimateMTSD, len = 1)
-    checkmate::assert_choice(self@parameters$traceTermCriterion, c("outlier", "sample_rate"))
-    checkmate::assert_numeric(self@parameters$traceTermOutliers, len = 1)
-    checkmate::assert_numeric(self@parameters$minSampleRate, len = 1)
-    checkmate::assert_numeric(self@parameters$minTraceLength, len = 1)
-    checkmate::assert_numeric(self@parameters$maxTraceLength, len = 1)
-    checkmate::assert_choice(self@parameters$widthFiltering, c("fixed", "auto"))
-    checkmate::assert_numeric(self@parameters$minFWHM, len = 1)
-    checkmate::assert_numeric(self@parameters$maxFWHM, len = 1)
-    checkmate::assert_logical(self@parameters$traceSNRFiltering, len = 1)
-    checkmate::assert_numeric(self@parameters$localRTRange, len = 1)
-    checkmate::assert_numeric(self@parameters$localMZRange, len = 1)
-    checkmate::assert_choice(
-      self@parameters$isotopeFilteringModel,
-      c("none", "2%", "5%", "averagine")
-    )
-    checkmate::assert_logical(self@parameters$MZScoring13C, len = 1)
-    checkmate::assert_logical(self@parameters$useSmoothedInts, len = 1)
-    checkmate::assert_numeric(self@parameters$intSearchRTWindow, len = 1)
-    checkmate::assert_logical(self@parameters$useFFMIntensities, len = 1)
-    checkmate::assert_logical(self@parameters$verbose, len = 1)
-    NULL
+MassSpecMethod_FindFeatures_openms <- function(noiseThrInt = 1000,
+                                               chromSNR = 3,
+                                               chromFWHM = 7,
+                                               mzPPM = 15,
+                                               reEstimateMTSD = TRUE,
+                                               traceTermCriterion = "sample_rate",
+                                               traceTermOutliers = 5,
+                                               minSampleRate = 1,
+                                               minTraceLength = 4,
+                                               maxTraceLength = 70,
+                                               widthFiltering = "fixed",
+                                               minFWHM = 4,
+                                               maxFWHM = 35,
+                                               traceSNRFiltering = TRUE,
+                                               localRTRange = 0,
+                                               localMZRange = 0,
+                                               isotopeFilteringModel = "none",
+                                               MZScoring13C = FALSE,
+                                               useSmoothedInts = FALSE,
+                                               intSearchRTWindow = 3,
+                                               useFFMIntensities = FALSE,
+                                               verbose = FALSE) {
+  x <- structure(
+    list(
+      data_type = "MassSpec",
+      method = "FindFeatures",
+      required = NA_character_,
+      algorithm = "openms",
+      input_class = NA_character_,
+      output_class = "NonTargetAnalysisResults",
+      parameters = list(
+        noiseThrInt = noiseThrInt,
+        chromSNR = chromSNR,
+        chromFWHM = chromFWHM,
+        mzPPM = mzPPM,
+        reEstimateMTSD = reEstimateMTSD,
+        traceTermCriterion = traceTermCriterion,
+        traceTermOutliers = traceTermOutliers,
+        minSampleRate = minSampleRate,
+        minTraceLength = minTraceLength,
+        maxTraceLength = maxTraceLength,
+        widthFiltering = widthFiltering,
+        minFWHM = minFWHM,
+        maxFWHM = maxFWHM,
+        traceSNRFiltering = traceSNRFiltering,
+        localRTRange = localRTRange,
+        localMZRange = localMZRange,
+        isotopeFilteringModel = isotopeFilteringModel,
+        MZScoring13C = MZScoring13C,
+        useSmoothedInts = useSmoothedInts,
+        intSearchRTWindow = intSearchRTWindow,
+        useFFMIntensities = useFFMIntensities,
+        verbose = verbose
+      ),
+      number_permitted = 1,
+      version = as.character(packageVersion("StreamFind")),
+      software = "openms",
+      developer = "Oliver Kohlbacher",
+      contact = "oliver.kohlbacher@uni-tuebingen.de",
+      link = "https://openms.de/",
+      doi = "https://doi.org/10.1038/nmeth.3959"
+    ),
+    class = c("MassSpecMethod_FindFeatures_openms", "ProcessingStep")
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid parameters for MassSpecMethod_FindFeatures_openms.")
   }
-)
+}
+
+#' @describeIn MassSpecMethod_FindFeatures_openms Validate the
+#' `MassSpecMethod_FindFeatures_openms` object, returning `NULL` if valid.
+#' @param x A `MassSpecMethod_FindFeatures_openms` object.
+#' @export
+#'
+validate_object.MassSpecMethod_FindFeatures_openms <- function(x) {
+  checkmate::assert_choice(x$data_type, "MassSpec")
+  checkmate::assert_choice(x$method, "FindFeatures")
+  checkmate::assert_choice(x$algorithm, "openms")
+  checkmate::assert_numeric(x$parameters$noiseThrInt, len = 1)
+  checkmate::assert_numeric(x$parameters$chromSNR, len = 1)
+  checkmate::assert_numeric(x$parameters$chromFWHM, len = 1)
+  checkmate::assert_numeric(x$parameters$mzPPM, len = 1)
+  checkmate::assert_logical(x$parameters$reEstimateMTSD, len = 1)
+  checkmate::assert_choice(x$parameters$traceTermCriterion, c("outlier", "sample_rate"))
+  checkmate::assert_numeric(x$parameters$traceTermOutliers, len = 1)
+  checkmate::assert_numeric(x$parameters$minSampleRate, len = 1)
+  checkmate::assert_numeric(x$parameters$minTraceLength, len = 1)
+  checkmate::assert_numeric(x$parameters$maxTraceLength, len = 1)
+  checkmate::assert_choice(x$parameters$widthFiltering, c("fixed", "auto"))
+  checkmate::assert_numeric(x$parameters$minFWHM, len = 1)
+  checkmate::assert_numeric(x$parameters$maxFWHM, len = 1)
+  checkmate::assert_logical(x$parameters$traceSNRFiltering, len = 1)
+  checkmate::assert_numeric(x$parameters$localRTRange, len = 1)
+  checkmate::assert_numeric(x$parameters$localMZRange, len = 1)
+  checkmate::assert_choice(
+    x$parameters$isotopeFilteringModel,
+    c("none", "2%", "5%", "averagine")
+  )
+  checkmate::assert_logical(x$parameters$MZScoring13C, len = 1)
+  checkmate::assert_logical(x$parameters$useSmoothedInts, len = 1)
+  checkmate::assert_numeric(x$parameters$intSearchRTWindow, len = 1)
+  checkmate::assert_logical(x$parameters$useFFMIntensities, len = 1)
+  checkmate::assert_logical(x$parameters$verbose, len = 1)
+  NULL
+}
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_FindFeatures_openms) <- function(x, engine = NULL) {
+run.MassSpecMethod_FindFeatures_openms <- function(x, engine = NULL) {
   .run_find_features_patRoon(x, engine)
 }
 
@@ -693,7 +702,7 @@ S7::method(run, MassSpecMethod_FindFeatures_openms) <- function(x, engine = NULL
 #' 
 MassSpecMethod_FindFeatures_kpic2 <- S7::new_class(
   name = "MassSpecMethod_FindFeatures_kpic2",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(level = 500,
                          mztol = 0.01,
@@ -765,7 +774,7 @@ S7::method(run, MassSpecMethod_FindFeatures_kpic2) <- function(x, engine = NULL)
 #'
 MassSpecMethod_FindFeatures_qalgorithms <- S7::new_class(
   name = "MassSpecMethod_FindFeatures_qalgorithms",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(ppm = 5) {
     S7::new_object(

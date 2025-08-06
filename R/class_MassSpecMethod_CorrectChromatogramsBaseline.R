@@ -15,7 +15,7 @@
 #'
 MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- S7::new_class(
   name = "MassSpecMethod_CorrectChromatogramsBaseline_baseline_als",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(lambda = 5,
@@ -153,7 +153,7 @@ S7::method(run, MassSpecMethod_CorrectChromatogramsBaseline_baseline_als) <- fun
 #'
 MassSpecMethod_CorrectChromatogramsBaseline_airpls <- S7::new_class(
   name = "MassSpecMethod_CorrectChromatogramsBaseline_airpls",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(lambda = 10,

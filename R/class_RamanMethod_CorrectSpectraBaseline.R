@@ -12,7 +12,7 @@
 #' @export
 #'
 RamanMethod_CorrectSpectraBaseline_baseline_als <- S7::new_class("RamanMethod_CorrectSpectraBaseline_baseline_als",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(lambda = 5, p = 0.05, maxit = 10) {
@@ -134,7 +134,7 @@ S7::method(run, RamanMethod_CorrectSpectraBaseline_baseline_als) <- function(x, 
 #' @export
 #'
 RamanMethod_CorrectSpectraBaseline_airpls <- S7::new_class("RamanMethod_CorrectSpectraBaseline_airpls",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(lambda = 10, differences = 1, itermax = 20) {

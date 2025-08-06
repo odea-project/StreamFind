@@ -17,7 +17,7 @@
 #'
 MassSpecMethod_LoadSpectra_native <- S7::new_class(
   name = "MassSpecMethod_LoadSpectra_native",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(levels = 1,
@@ -133,7 +133,7 @@ S7::method(run, MassSpecMethod_LoadSpectra_native) <- function(x, engine = NULL)
 #'
 MassSpecMethod_LoadSpectra_chrompeaks <- S7::new_class(
   name = "MassSpecMethod_LoadSpectra_chrompeaks",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "chrompeaks",
   constructor = function(levels = 1, mzmin = 0, mzmax = 0, minIntensity = 0) {
     S7::new_object(

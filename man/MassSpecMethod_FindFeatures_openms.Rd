@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_openms}
 \alias{MassSpecMethod_FindFeatures_openms}
-\title{MassSpecMethod_FindFeatures_openms S7 class}
+\alias{validate_object.MassSpecMethod_FindFeatures_openms}
+\title{MassSpecMethod_FindFeatures_openms class}
 \usage{
 MassSpecMethod_FindFeatures_openms(
   noiseThrInt = 1000,
@@ -28,6 +29,8 @@ MassSpecMethod_FindFeatures_openms(
   useFFMIntensities = FALSE,
   verbose = FALSE
 )
+
+\method{validate_object}{MassSpecMethod_FindFeatures_openms}(x)
 }
 \arguments{
 \item{noiseThrInt}{Intensity threshold below which peaks are regarded as noise.}
@@ -103,6 +106,8 @@ experimental, may be less accurate and requires a recent version of OpenMS
 (>=2.7).}
 
 \item{verbose}{Logical of length one. When TRUE adds processing information to the console.}
+
+\item{x}{A \code{MassSpecMethod_FindFeatures_openms} object.}
 }
 \value{
 A \code{MassSpecMethod_FindFeatures_openms} object.
@@ -118,6 +123,12 @@ The function uses the package \pkg{patRoon} in the background.
 See the \link[patRoon]{findFeaturesOpenMS} function from the \pkg{patRoon} package for
 more information and requirements.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_FindFeatures_openms)}: Validate the
+\code{MassSpecMethod_FindFeatures_openms} object, returning \code{NULL} if valid.
+
+}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

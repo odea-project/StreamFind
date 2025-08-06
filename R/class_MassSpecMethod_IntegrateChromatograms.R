@@ -18,7 +18,7 @@
 #'
 MassSpecMethod_IntegrateChromatograms_pracma <- S7::new_class(
   name = "MassSpecMethod_IntegrateChromatograms_pracma",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(merge = TRUE,

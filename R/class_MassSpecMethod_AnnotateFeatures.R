@@ -25,7 +25,7 @@
 #'
 MassSpecMethod_AnnotateFeatures_StreamFind <- S7::new_class(
   name = "MassSpecMethod_AnnotateFeatures_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(rtWindowAlignment = 0.3,
                          maxIsotopes = 8,

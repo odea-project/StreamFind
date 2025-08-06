@@ -11,7 +11,6 @@ show(a)
 class(a)
 save(a)
 a <- read(Metadata(), "metadata.json")
-
 b <- EngineMetadata(data_type = "MassSpec")
 sloop::s3_dispatch(show(b))
 sloop::s3_class(b)
@@ -19,10 +18,38 @@ length(b)
 show(b)
 
 # Config -----
+a <- ConfigParameter()
+c <- ConfigCache()
+size(c)
+info(c)
+b <- AppConfig()
+e <- EngineConfig()
 
-ConfigParameter()
-AppConfig()
+# AuditTrail -----
 
+a <- AuditTrail()
+a <- add(a, Metadata())
+a <- add(a, EngineConfig())
+show(a)
+
+# Workflow -----
+
+proset <- ProcessingStep()
+show(proset)
+
+wf <- Workflow()
+wf[["a"]] <- MassSpecMethod_FindFeatures_openms()
+show(wf)
+?Workflow
+
+# Analyses -----
+
+a <- Analyses()
+
+path <- "C:/Users/apoli/Documents/example_files"
+ms_files <- list.files(path, pattern = ".mzML", full.names = TRUE)[1:3]
+
+a <- MassSpecAnalyses(ms_files)
 
 ## CoreEngine ------
 

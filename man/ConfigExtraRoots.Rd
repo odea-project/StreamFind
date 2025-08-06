@@ -12,10 +12,7 @@ ConfigExtraRoots(value = "")
 \arguments{
 \item{value}{Character string representing extra root directories for file selection.}
 
-\item{x}{An object to validate.}
-}
-\value{
-NULL if the object is valid, otherwise an error is thrown.
+\item{x}{A \code{ConfigExtraRoots} object.}
 }
 \description{
 Class representing a configuration for extra root directories for file selection
@@ -23,6 +20,6 @@ in the app, inheriting from \link{ConfigParameter}.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(ConfigExtraRoots)}: Validate a \code{ConfigExtraRoots} object.
+\item \code{validate_object(ConfigExtraRoots)}: Validates a \code{ConfigExtraRoots} object, returning NULL if valid.
 
 }}

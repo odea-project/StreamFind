@@ -3,21 +3,22 @@
 \name{Config}
 \alias{Config}
 \alias{validate_object.Config}
+\alias{show.Config}
 \title{Generic Configuration}
 \usage{
 Config(parameters = list())
 
 \method{validate_object}{Config}(x)
+
+\method{show}{Config}(x)
 }
 \arguments{
 \item{parameters}{A list of \link{ConfigParameter} objects.}
 
-\item{x}{An object to validate.}
+\item{x}{A \code{Config} object.}
 }
 \value{
 A \code{Config} object as a list of \link{ConfigParameter} objects.
-
-NULL if the object is valid, otherwise an error is thrown.
 }
 \description{
 The \code{Config} S3 class represents a configuration object and is essentially a list of
@@ -25,6 +26,8 @@ The \code{Config} S3 class represents a configuration object and is essentially 
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(Config)}: Validate a \code{Config} object.
+\item \code{validate_object(Config)}: Validates a \code{Config} object, returning NULL if valid.
+
+\item \code{show(Config)}: Prints the configuration parameters in a human-readable format.
 
 }}

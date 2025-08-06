@@ -16,7 +16,7 @@
 #' @export 
 #'
 RamanMethod_BinSpectra_StreamFind <- S7::new_class("RamanMethod_BinSpectra_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(binNames = c("rt"),

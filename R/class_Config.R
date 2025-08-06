@@ -1,23 +1,17 @@
 # MARK: ConfigParameter
 # ConfigParameter -----
 #' @title Configuration Parameter
-#' 
+#'
 #' @description The `ConfigParameter` S3 class represents a configuration parameter in StreamFind.
 #' The `ConfigParameter` is a list of at least two elements - `name` and `description`.
-#' 
+#'
 #' @param name Name of the parameter.
 #' @param description Description of the parameter.
-#' 
+#'
 #' @export
-#' 
+#'
 ConfigParameter <- function(name = NA_character_, description = NA_character_) {
-  x <- structure(
-    list(
-      name = name,
-      description = description
-    ),
-    class = "ConfigParameter"
-  )
+  x <- structure(list(name = name, description = description), class = "ConfigParameter")
   if (is.null(validate_object(x))) {
     return(x)
   } else {
@@ -25,11 +19,10 @@ ConfigParameter <- function(name = NA_character_, description = NA_character_) {
   }
 }
 
-#' @describeIn ConfigParameter Validate a `ConfigParameter` object.
+#' @describeIn ConfigParameter Validates a `ConfigParameter` object, returning NULL if valid.
 #' @param x An object to validate.
-#' @return NULL if the object is valid, otherwise an error is thrown.
 #' @export
-#' 
+#'
 validate_object.ConfigParameter <- function(x) {
   checkmate::assert_class(x, "ConfigParameter")
   checkmate::assert_list(x, min.len = 2, names = "named")
@@ -42,16 +35,16 @@ validate_object.ConfigParameter <- function(x) {
 # MARK: Config
 # Config -----
 #' @title Generic Configuration
-#' 
+#'
 #' @description The `Config` S3 class represents a configuration object and is essentially a list of
 #' [StreamFind::ConfigParameter] class objects.
-#' 
+#'
 #' @param parameters A list of [StreamFind::ConfigParameter] objects.
-#' 
+#'
 #' @return A `Config` object as a list of [StreamFind::ConfigParameter] objects.
-#' 
+#'
 #' @export
-#' 
+#'
 Config <- function(parameters = list()) {
   if (is.list(parameters)) {
     if (length(parameters) > 0) {
@@ -73,10 +66,7 @@ Config <- function(parameters = list()) {
   } else {
     stop("Parameters must be a list of ConfigParameter objects.")
   }
-  parameters <- structure(
-    parameters,
-    class = "Config"
-  )
+  parameters <- structure(parameters, class = "Config")
   if (is.null(validate_object(parameters))) {
     return(parameters)
   } else {
@@ -84,11 +74,10 @@ Config <- function(parameters = list()) {
   }
 }
 
-#' @describeIn Config Validate a `Config` object.
-#' @param x An object to validate.
-#' @return NULL if the object is valid, otherwise an error is thrown.
+#' @describeIn Config Validates a `Config` object, returning NULL if valid.
+#' @param x A `Config` object.
 #' @export
-#' 
+#'
 validate_object.Config <- function(x) {
   checkmate::assert_list(x)
   if (length(x) > 0) {
@@ -101,27 +90,61 @@ validate_object.Config <- function(x) {
   NULL
 }
 
+#' @describeIn Config Prints the configuration parameters in a human-readable format.
+#' @param x A `Config` object.
+#' @export
+#' 
+show.Config <- function(x) {
+  if (length(x) > 0) {
+    cat("Configuration Parameters:\n")
+    for (i in seq_along(x)) {
+      cat(sprintf("- name: %s\n", x[[i]]$name))
+      cat(sprintf("  description: %s\n", x[[i]]$description))
+      if (length(x[[i]]) > 2) {
+        for (j in seq_along(x[[i]])) {
+          if (!names(x[[i]])[j] %in% c("name", "description")) {
+            cat(sprintf("  %s: %s\n", names(x[[i]])[j], x[[i]][[j]]))
+          }
+        }
+      }
+    }
+  } else {
+    cat("No configuration parameters available.\n")
+  }
+}
+
 # MARK: ENGINE CONFIGURATION
 # ENGINE CONFIGURATION -----
 
 # MARK: ConfigCache
 ## ConfigCache -----
 #' @title Configuration Parameter for Caching
-#' 
+#'
 #' @description The `ConfigCache` class is a `ConfigParameter` for the caching behavior.
-#' 
+#'
 #' @param value Logical indicating whether to enable or disable caching.
 #' @param mode Character indicating the caching mode (e.g., "rds" or "sqlite").
 #' @param folder Character indicating the folder for caching (for "rds" mode).
 #' @param file Character indicating the file for caching (for "sqlite" mode).
 #' 
-#' @export
+#' @return A `ConfigCache` object, which is a list with the following elements:
+#' - `name`: Name of the cache configuration.
+#' - `description`: Description of the cache configuration.
+#' - `value`: Logical value indicating whether caching is enabled.
+#' - `mode`: Character string indicating the caching mode (e.g., "rds" or "sqlite").
+#' - `folder`: Character string indicating the folder for caching (for "rds" mode).
+#' - `file`: Character string indicating the file for caching (for "sqlite" mode).
 #' 
-ConfigCache <- function(value = TRUE, mode = "rds", folder = "cache", file = "cache.sqlite") {
+#' @export
+#'
+ConfigCache <- function(value = TRUE,
+                        mode = "rds",
+                        folder = "cache",
+                        file = "cache.sqlite") {
   x <- structure(
     list(
-      name = "Cache results",
-      description = "Enable/disable caching of results between processing steps.",
+      name = "Caching Configuration",
+      description = "Enable/disable caching.",
       value = value,
       mode = mode,
       folder = folder,
@@ -136,11 +159,10 @@ ConfigCache <- function(value = TRUE, mode = "rds", folder = "cache", file = "ca
   }
 }
 
-#' @describeIn ConfigCache Validate a `ConfigCache` object.
-#' @param x An object to validate.
-#' @return NULL if the object is valid, otherwise an error is thrown.
+#' @describeIn ConfigCache Validates a `ConfigCache` object, returning NULL if valid.
+#' @param x A `ConfigCache` object.
 #' @export
-#' 
+#'
 validate_object.ConfigCache <- function(x) {
   checkmate::assert_logical(x$value, max.len = 1)
   checkmate::assert_choice(x$mode, c("rds", "sqlite"))
@@ -150,11 +172,11 @@ validate_object.ConfigCache <- function(x) {
 }
 
 # MARK: size.ConfigCache
-#' @describeIn ConfigCache Get the size of the cache.
+#' @describeIn ConfigCache Get the size of the cache as a named numeric vector with the size of the
+#' cache in bytes, KB, MB, or GB.
 #' @param x A `ConfigCache` object.
-#' @return A named numeric vector with the size of the cache in bytes, KB, MB, or GB.
 #' @export
-#' 
+#'
 size.ConfigCache <- function(x) {
   if ("sqlite" %in% x$mode) {
     if (file.exists(x$file)) {
@@ -191,11 +213,11 @@ size.ConfigCache <- function(x) {
 }
 
 # MARK: info.ConfigCache
-#' @describeIn ConfigCache Get information about the cache.
+#' @describeIn ConfigCache Get information about the cache as a `data.table` with the names and
+#' number of rows in each table for SQLite cache, or a list of files for RDS cache.
 #' @param x A `ConfigCache` object.
-#' @return A `data.table` with the names and number of rows in each table for SQLite cache, or a list of files for RDS cache.
 #' @export
-#' 
+#'
 info.ConfigCache <- function(x) {
   if ("sqlite" %in% x$mode) {
     if (file.exists(x$file)) {
@@ -242,7 +264,10 @@ load_cache.ConfigCache <- function(x, category = NULL, ...) {
 
 #' @export
 #' @noRd
-save_cache.ConfigCache <- function(x, category = NULL, data = NULL, hash = NULL) {
+save_cache.ConfigCache <- function(x,
+                                   category = NULL,
+                                   data = NULL,
+                                   hash = NULL) {
   if (x$value) {
     if ("sqlite" %in% x$mode) {
       .save_cache_sqlite(category, data, hash, file = x$file)
@@ -281,19 +306,15 @@ clear_cache.ConfigCache <- function(x, what = NULL, ...) {
 #' @title Engine Configuration
 #' @description Class representing the engine configuration, inheriting from [StreamFind::Config].
 #' @export
-#' 
+#'
 EngineConfig <- function() {
-  x <- structure(
-    list(
-      "ConfigCache" = ConfigCache()
-    ),
-    class = c("EngineConfig", "Config")
-  )
+  x <- structure(list("ConfigCache" = ConfigCache()),
+                 class = c("EngineConfig", "Config"))
   if (is.null(validate_object(x))) {
     return(x)
   } else {
     stop("Invalid EngineConfig object")
-  } 
+  }
 }
 
 # MARK: APP CONFIGURATION
@@ -302,14 +323,14 @@ EngineConfig <- function() {
 # MARK: ConfigDurationNotifications
 ## ConfigDurationNotifications -----
 #' @title Configuration Parameter for Duration of Notifications
-#' 
+#'
 #' @description Class representing a configuration for the duration of pop-up notifications in the
 #' app, inhiberiting from [StreamFind::ConfigParameter].
-#' 
+#'
 #' @param value Duration in seconds for pop-up notifications.
-#' 
+#'
 #' @export
-#' 
+#'
 ConfigDurationNotifications <- function(value = 10) {
   x <- structure(
     list(
@@ -326,10 +347,11 @@ ConfigDurationNotifications <- function(value = 10) {
   }
 }
 
-#' @describeIn ConfigDurationNotifications Validate a `ConfigDurationNotifications` object.
-#' @param x An object to validate.
-#' @return NULL if the object is valid, otherwise an error is thrown.
+#' @describeIn ConfigDurationNotifications Validates a `ConfigDurationNotifications` object,
+#' returning NULL if valid.
+#' @param x A `ConfigDurationNotifications` object.
 #' @export
+#' 
 validate_object.ConfigDurationNotifications <- function(x) {
   checkmate::assert_character(x$name)
   checkmate::assert_character(x$description)
@@ -340,16 +362,16 @@ validate_object.ConfigDurationNotifications <- function(x) {
 # MARK: ConfigExtraRoots
 ## ConfigExtraRoots -----
 #' @title Configuration Parameter for Extra Root Directories
-#' 
+#'
 #' @description Class representing a configuration for extra root directories for file selection
 #' in the app, inheriting from [StreamFind::ConfigParameter].
-#' 
+#'
 #' @param value Character string representing extra root directories for file selection.
-#' 
+#'
 #' @export
-#' 
+#'
 ConfigExtraRoots <- function(value = "") {
-    x <- structure(
+  x <- structure(
     list(
       name = "Extra Root Directories",
       description = "Extra root directories for file selection. Add spaces between directories.",
@@ -357,14 +379,13 @@ ConfigExtraRoots <- function(value = "") {
     ),
     class = c("ConfigExtraRoots", "ConfigParameter")
   )
-    
+  
 }
 
-#' @describeIn ConfigExtraRoots Validate a `ConfigExtraRoots` object.
-#' @param x An object to validate.
-#' @return NULL if the object is valid, otherwise an error is thrown.
+#' @describeIn ConfigExtraRoots Validates a `ConfigExtraRoots` object, returning NULL if valid.
+#' @param x A `ConfigExtraRoots` object.
 #' @export
-#' 
+#'
 validate_object.ConfigExtraRoots <- function(x) {
   checkmate::assert_character(x$name)
   checkmate::assert_character(x$description)
@@ -380,7 +401,7 @@ validate_object.ConfigExtraRoots <- function(x) {
 #' @title App Configuration
 #' @description Class representing the app configuration, inheriting from [StreamFind::Config].
 #' @export
-#' 
+#'
 AppConfig <- function() {
   x <- structure(
     list(

@@ -256,7 +256,7 @@
 #'
 MassSpecMethod_GroupFeatures_xcms3_peakdensity <- S7::new_class(
   name = "MassSpecMethod_GroupFeatures_xcms3_peakdensity",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(bw = 5,
                          minFraction = 1,
@@ -400,7 +400,7 @@ S7::method(run, MassSpecMethod_GroupFeatures_xcms3_peakdensity) <- function(x, e
 #'
 MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- S7::new_class(
   name = "MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(bw = 5,
                          minFraction = 1,
@@ -558,7 +558,7 @@ S7::method(run, MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups) <- fu
 #'
 MassSpecMethod_GroupFeatures_openms <- S7::new_class(
   name = "MassSpecMethod_GroupFeatures_openms",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(rtalign = FALSE,
                          QT = FALSE,

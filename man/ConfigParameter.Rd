@@ -16,15 +16,12 @@ ConfigParameter(name = NA_character_, description = NA_character_)
 
 \item{x}{An object to validate.}
 }
-\value{
-NULL if the object is valid, otherwise an error is thrown.
-}
 \description{
 The \code{ConfigParameter} S3 class represents a configuration parameter in StreamFind.
 The \code{ConfigParameter} is a list of at least two elements - \code{name} and \code{description}.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(ConfigParameter)}: Validate a \code{ConfigParameter} object.
+\item \code{validate_object(ConfigParameter)}: Validates a \code{ConfigParameter} object, returning NULL if valid.
 
 }}

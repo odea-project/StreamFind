@@ -13,7 +13,7 @@
 #'
 MassSpecMethod_FilterChromPeaks_native <- S7::new_class(
   "MassSpecMethod_FilterChromPeaks_native",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(minIntensity = 0,
                          retentionTimeRange = c(NA_real_, NA_real_)) {

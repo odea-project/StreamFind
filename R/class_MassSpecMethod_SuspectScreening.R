@@ -20,7 +20,7 @@
 #'
 MassSpecMethod_SuspectScreening_StreamFind <- S7::new_class(
   name = "MassSpecMethod_SuspectScreening_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(database = data.table::data.table(
@@ -206,7 +206,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
 #'
 MassSpecMethod_SuspectScreening_forident <- S7::new_class(
   name = "MassSpecMethod_SuspectScreening_forident",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(addMS2 = FALSE,
@@ -435,7 +435,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_forident) <- function(x, engine 
 #'
 MassSpecMethod_SuspectScreening_patRoon <- S7::new_class(
   name = "MassSpecMethod_SuspectScreening_patRoon",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(suspects = data.table::data.table(),

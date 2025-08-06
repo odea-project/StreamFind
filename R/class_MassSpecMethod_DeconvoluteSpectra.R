@@ -13,7 +13,7 @@
 #'
 MassSpecMethod_DeconvoluteSpectra_native <- S7::new_class(
   name = "MassSpecMethod_DeconvoluteSpectra_native",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(clustVal = 0.1, window = 20) {

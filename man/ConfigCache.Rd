@@ -32,21 +32,27 @@ ConfigCache(
 \item{x}{A \code{ConfigCache} object.}
 }
 \value{
-NULL if the object is valid, otherwise an error is thrown.
-
-A named numeric vector with the size of the cache in bytes, KB, MB, or GB.
-
-A \code{data.table} with the names and number of rows in each table for SQLite cache, or a list of files for RDS cache.
+A \code{ConfigCache} object, which is a list with the following elements:
+\itemize{
+\item \code{name}: Name of the cache configuration.
+\item \code{description}: Description of the cache configuration.
+\item \code{value}: Logical value indicating whether caching is enabled.
+\item \code{mode}: Character string indicating the caching mode (e.g., "rds" or "sqlite").
+\item \code{folder}: Character string indicating the folder for caching (for "rds" mode).
+\item \code{file}: Character string indicating the file for caching (for "sqlite" mode).
+}
 }
 \description{
 The \code{ConfigCache} class is a \code{ConfigParameter} for the caching behavior.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(ConfigCache)}: Validate a \code{ConfigCache} object.
+\item \code{validate_object(ConfigCache)}: Validates a \code{ConfigCache} object, returning NULL if valid.
 
-\item \code{size(ConfigCache)}: Get the size of the cache.
+\item \code{size(ConfigCache)}: Get the size of the cache as a named numeric vector with the size of the
+cache in bytes, KB, MB, or GB.
 
-\item \code{info(ConfigCache)}: Get information about the cache.
+\item \code{info(ConfigCache)}: Get information about the cache as a \code{data.table} with the names and
+number of rows in each table for SQLite cache, or a list of files for RDS cache.
 
 }}

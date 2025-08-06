@@ -29,7 +29,7 @@
 #'
 MassSpecMethod_FilterFeatures_StreamFind <- S7::new_class(
   name = "MassSpecMethod_FilterFeatures_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(correctIntensity = TRUE,
                          minSnRatio = NA_real_,
@@ -787,7 +787,7 @@ S7::method(run, MassSpecMethod_FilterFeatures_StreamFind) <- function(x, engine 
 #'
 MassSpecMethod_FilterFeatures_patRoon <- S7::new_class(
   "MassSpecMethod_FilterFeatures_patRoon",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(absMinIntensity = NA_real_,
                          relMinIntensity = NA_real_,

@@ -33,6 +33,16 @@ clear_cache <- function(x, ...) {
 
 # G -----
 
+#' @title S3 generic `get_blanks`
+#' @description S3 generic to get blanks from `x`.
+#' @param x An object from which the blanks will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+get_blanks <- function(x, ...) {
+  UseMethod("get_blanks")
+}
+
 #' @title S3 generic `get_cache_info`
 #' @description S3 generic to get information about the cache of `x`.
 #' @param x An object from which the cache information will be retrieved.
@@ -81,6 +91,16 @@ get_components <- function(x, ...) {
 #' 
 get_compounds <- function(x, ...) {
   UseMethod("get_compounds")
+}
+
+#' @title S3 generic `get_concentrations`
+#' @description S3 generic to get concentrations from `x`.
+#' @param x An object from which the concentrations will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+get_concentrations <- function(x, ...) {
+  UseMethod("get_concentrations")
 }
 
 #' @title S3 generic `get_features`
@@ -203,6 +223,16 @@ get_matrix_suppression <- function(x, ...) {
   UseMethod("get_matrix_suppression")
 }
 
+#' @title S3 generic `get_methods`
+#' @description S3 generic to get methods from `x`.
+#' @param x An object from which the methods will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+get_methods <- function(x, ...) {
+  UseMethod("get_methods")
+}
+
 #' @title S3 generic `get_model_data`
 #' @description S3 generic to get model data from `x`.
 #' @param x An object from which the model data will be retrieved.
@@ -275,6 +305,16 @@ get_raw_spectra <- function(x, ...) {
   UseMethod("get_raw_spectra")
 }
 
+#' @title Generic `get_replicates`
+#' @description S3 generic to get replicates from `x`.
+#' @param x An object from which the replicates will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+get_replicates <- function(x, ...) {
+  UseMethod("get_replicates")
+}
+
 #' @title Generic `get_spectra`
 #' @description S3 generic to get spectra from `x`.
 #' @param x An object from which the spectra will be retrieved.
@@ -303,6 +343,16 @@ get_spectra_bpc <- function(x, ...) {
 #' 
 get_spectra_eic <- function(x, ...) {
   UseMethod("get_spectra_eic")
+}
+
+#' @title Generic `get_spectra_headers`
+#' @description S3 generic to get spectra headers from `x`.
+#' @param x An object from which the spectra headers will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+get_spectra_headers <- function(x, ...) {
+  UseMethod("get_spectra_headers")
 }
 
 #' @title Generic `get_spectra_matrix`
@@ -919,6 +969,36 @@ save <- function(x, ...) {
 #' 
 save_cache <- function(x, ...) {
   UseMethod("save_cache")
+}
+
+#' @title Generic `set_blanks`
+#' @description S3 generic to set blanks from `x`.
+#' @param x An object in which the blanks will be set.
+#' @param ... Additional arguments passed to the method.
+#' @export 
+#' 
+set_blanks <- function(x, ...) {
+  UseMethod("set_blanks")
+}
+
+#' @title Generic `set_concentrations`
+#' @description S3 generic to set concentrations in `x`.
+#' @param x An object in which the concentrations will be set.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+set_concentrations <- function(x, ...) {
+  UseMethod("set_concentrations")
+}
+
+#' @title Generic `set_replicates`
+#' @description S3 generic to set replicates in `x`.
+#' @param x An object in which the replicates will be set.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+set_replicates <- function(x, ...) {
+  UseMethod("set_replicates")
 }
 
 #' @title Generic `show`

@@ -10,7 +10,7 @@
 #'
 RamanMethod_SubtractScansSection_native <- S7::new_class(
   name = "RamanMethod_SubtractScansSection_native",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(sectionWindow = c(10, 200)) {
     S7::new_object(

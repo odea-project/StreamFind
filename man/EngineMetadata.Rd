@@ -17,16 +17,13 @@ Default is \code{NA_character_}.}
 
 \item{x}{An \code{EngineMetadata} object.}
 }
-\value{
-\code{NULL} if the object is valid, otherwise an error is thrown.
-}
 \description{
 The \code{EngineMetadata} class is a subclass of the \link{Metadata} class.
 It is used to store metadata of data processing engines.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(EngineMetadata)}: Validates the \code{EngineMetadata} object.
+\item \code{validate_object(EngineMetadata)}: Validates the \code{EngineMetadata} object, returning \code{NULL} if valid.
 
 }}
 \seealso{

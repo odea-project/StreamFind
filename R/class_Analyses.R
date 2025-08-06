@@ -1,135 +1,105 @@
 #' @title Generic Analyses
 #' 
-#' @description The Analyses class is used harmonize the interface to data entries or links to raw data files. Analyses child classes are used to enable a specific structure and methods for each type of data.
+#' @description The `Analyses` class is used to harmonize the interface to data or links to 
+#' raw data files. `Analyses` child classes are used to enable a specific structure and methods 
+#' for each type of data.
 #' 
-#' @param analyses A list of analyses, where each element is a data entry or a connection to a raw data file.
-#' @param results A list of results, where each element is specific \code{\link{Results}} child class.
-#' 
-#' @slot data_type (getter/setter) A character string indicating the type of data.
-#' @slot possible_formats (getter/setter) A character vector of possible formats for the raw data.
-#' @slot analyses (getter/setter) A list of analyses, where each element is a data entry or a connection to a raw data file.
-#' @slot results (getter/setter) A list of results, where each element is specific \code{\link{Results}} child class.
-#' @slot info (getter) A data frame containing information about the analyses.
+#' @param analyses A list of analyses, where each element is a data entry or a connection to a
+#' raw data file.
+#' @param results A list of results, where each element is specific \code{\link{Results}}
+#' child class.
 #' 
 #' @export
 #' 
-Analyses <- S7::new_class(
-  name = "Analyses",
-  package = "StreamFind",
-  properties = list(
-    
-    # data_type -----
-    data_type = S7::new_property(S7::class_character, default = NA_character_),
-
-    # possible_formats -----
-    possible_formats = S7::new_property(S7::class_character, default = NA_character_),
-
-    # analyses -----
-    analyses = S7::new_property(S7::class_list, default = list()),
-
-    # results -----
-    results = S7::new_property(S7::class_list, default = list()),
-
-    # info -----
-    info = S7::new_property(
-      S7::class_data.frame,
-      getter = function(self) {
-        if (length(self) > 0) {
-          df <- data.table::data.table(
-            "analysis" = names(self),
-            "class" = vapply(self@analyses, function(x) class(x)[1], "")
-          )
-          row.names(df) <- seq_len(nrow(df))
-          df
-        } else {
-          data.frame()
-        }
-      }
-    )
-  ),
-  constructor = function(analyses = list(), results = list()) {
-    S7::new_object(
-      S7::S7_object(),
-      data_type = NA_character_,
-      possible_formats = NA_character_,
+Analyses <- function(analyses = list(), results = list()) {
+  x <- structure(
+    list(
       analyses = analyses,
       results = results
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_true(grepl(self@data_type, is(self)) || is.na(self@data_type))
-    checkmate::assert_character(self@possible_formats)
-    checkmate::assert_true(
-      checkmate::test_list(self@analyses) || checkmate::test_data_frame(self@analyses)
-    )
-    checkmate::assert_list(self@results)
-    NULL
+    ),
+    class = c("Analyses"),
+    data_type = NA_character_,
+    possible_formats = NA_character_
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid Analyses object!")
   }
-)
+}
 
+#' @describeIn Analyses Validate the Analyses object, returning `NULL` if valid or an error if not.
+#' @param x An `Analyses` object.
 #' @export
-#' @noRd
-`$.StreamFind::Analyses` <- function(x, i) {
-  S7::prop(x, i)
+#'
+validate_object.Analyses <- function(x) {
+  checkmate::assert_true(grepl(attr(x, "data_type"), class(x)) || is.na(attr(x, "data_type")))
+  checkmate::assert_character(attr(x, "possible_formats"))
+  checkmate::assert_true(
+    checkmate::test_list(x$analyses) || checkmate::test_data_frame(x$analyses)
+  )
+  checkmate::assert_list(x$results)
+  NULL
 }
 
 #' @export
 #' @noRd
-`$<-.StreamFind::Analyses` <- function(x, i, value) {
-  S7::prop(x, i) <- value
-  x
-}
-
-#' @export
-#' @noRd
-S7::method(show, Analyses) <- function(x, ...) {
+info.Analyses <- function(x) {
   if (length(x) > 0) {
-    overview <- x@info
+    df <- data.table::data.table(
+      "analysis" = names(x),
+      "class" = vapply(x$analyses, function(z) class(z)[1], "")
+    )
+    row.names(df) <- seq_len(nrow(df))
+    df
+  } else {
+    data.frame()
+  }
+}
+
+#' @export
+#' @noRd
+show.Analyses <- function(x, ...) {
+  if (length(x) > 0) {
+    overview <- info(x)
     row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
     print(overview)
   } else {
     cat("empty \n")
   }
-
-  if (length(x@results) > 0) {
+  if (length(x$results) > 0) {
     cat("\n")
-    results_class <- vapply(x@results, is, "")
+    results_class <- vapply(x$results, is, "")
     cat(paste0("Result ", seq_len(length(results_class)), ": ", results_class), sep = "\n")
   }
 }
 
 #' @export
 #' @noRd
-S7::method(print, Analyses) <- function(x, ...) {
-  show(x)
+length.Analyses <- function(x) {
+  length(x$analyses)
 }
 
 #' @export
 #' @noRd
-S7::method(length, Analyses) <- function(x) {
-  length(x@analyses)
+names.Analyses <- function(x) {
+  names(x$analyses)
 }
 
 #' @export
 #' @noRd
-S7::method(names, Analyses) <- function(x) {
-  names(x@analyses)
+`[.Analyses` <- function(x, i) {
+  x$analyses[i]
 }
 
 #' @export
 #' @noRd
-`[.StreamFind::Analyses` <- function(x, i) {
-  x@analyses[i]
-}
-
-#' @export
-#' @noRd
-`[<-.StreamFind::Analyses` <- function(x, i, value) {
+`[<-.Analyses` <- function(x, i, value) {
   if (is(value, "list")) {
-    x@analyses[names(value)] <- value
+    x$analyses[names(value)] <- value
     if (length(x@results) > 0) {
       warning("All results removed!")
-      x@results <- list()
+      x$results <- list()
     }
   }
   x
@@ -137,18 +107,18 @@ S7::method(names, Analyses) <- function(x) {
 
 #' @export
 #' @noRd
-`[[.StreamFind::Analyses` <- function(x, i) {
-  x@analyses[[i]]
+`[[.Analyses` <- function(x, i) {
+  x$analyses[[i]]
 }
 
 #' @export
 #' @noRd
-`[[<-.StreamFind::Analyses` <- function(x, i, value) {
+`[[<-.Analyses` <- function(x, i, value) {
   if (is(value, "list")) {
-    x@analyses[[names(value)]] <- value
-    if (length(x@results) > 0) {
+    x$analyses[[names(value)]] <- value
+    if (length(x$results) > 0) {
       warning("All results removed!")
-      x@results <- list()
+      x$results <- list()
     }
   }
   x
@@ -156,13 +126,13 @@ S7::method(names, Analyses) <- function(x) {
 
 #' @export
 #' @noRd
-S7::method(as.list, Analyses) <- function(x, ...) {
-  list("analyses" = x@analyses, "results" = x@results)
+as.list.Analyses <- function(x, ...) {
+  list("analyses" = x$analyses, "results" = x$results)
 }
 
 #' @export
 #' @noRd
-S7::method(save, Analyses) <- function(x, file = "analyses.json") {
+save.Analyses <- function(x, file = "analyses.json") {
   format <- tools::file_ext(file)
   if (format %in% "json") {
     x <- .convert_to_json(as.list(x))
@@ -177,7 +147,7 @@ S7::method(save, Analyses) <- function(x, file = "analyses.json") {
 
 #' @export
 #' @noRd
-S7::method(add, Analyses) <- function(x, value) {
+add.Analyses <- function(x, value) {
   if (!is(value, "list")) {
     warning("Analysis must be a list!")
     return(x)
@@ -191,19 +161,19 @@ S7::method(add, Analyses) <- function(x, value) {
     warning("Analysis names already exist!")
     return(x)
   }
-  analyses <- c(x@analyses, value)
+  analyses <- c(x$analyses, value)
   analyses <- analyses[order(names(analyses))]
-  x@analyses <- analyses
-  if (length(x@results) > 0) {
+  x$analyses <- analyses
+  if (length(x$results) > 0) {
     warning("All results removed!")
-    x@results <- list()
+    x$results <- list()
   }
   x
 }
 
 #' @export
 #' @noRd
-S7::method(read, Analyses) <- function(x, file) {
+read.Analyses <- function(x, file) {
   if (grepl(".json", file)) {
     if (file.exists(file)) {
       return(Analyses(jsonlite::fromJSON(file)))

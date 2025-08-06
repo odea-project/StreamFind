@@ -10,7 +10,7 @@
 #'
 RamanMethod_SubtractBlankSpectra_StreamFind <- S7::new_class(
   "RamanMethod_SubtractBlankSpectra_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(negativeToZero = FALSE) {
     S7::new_object(

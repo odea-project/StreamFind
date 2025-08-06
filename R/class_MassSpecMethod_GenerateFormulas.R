@@ -63,7 +63,7 @@
 #'
 MassSpecMethod_GenerateFormulas_genform <- S7::new_class(
   name = "MassSpecMethod_GenerateFormulas_genform",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(MSPeakListsClusterMzWindow = 0.005,
                          MSPeakListsTopMost = 100,

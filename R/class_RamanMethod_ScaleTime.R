@@ -10,7 +10,7 @@
 #'
 RamanMethod_ScaleTime_native <- S7::new_class(
   "RamanMethod_ScaleTime_native",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(value = 0) {

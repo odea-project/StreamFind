@@ -12,10 +12,7 @@ ConfigDurationNotifications(value = 10)
 \arguments{
 \item{value}{Duration in seconds for pop-up notifications.}
 
-\item{x}{An object to validate.}
-}
-\value{
-NULL if the object is valid, otherwise an error is thrown.
+\item{x}{A \code{ConfigDurationNotifications} object.}
 }
 \description{
 Class representing a configuration for the duration of pop-up notifications in the
@@ -23,6 +20,7 @@ app, inhiberiting from \link{ConfigParameter}.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(ConfigDurationNotifications)}: Validate a \code{ConfigDurationNotifications} object.
+\item \code{validate_object(ConfigDurationNotifications)}: Validates a \code{ConfigDurationNotifications} object,
+returning NULL if valid.
 
 }}

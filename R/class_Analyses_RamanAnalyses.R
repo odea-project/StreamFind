@@ -25,7 +25,8 @@
 #' @export
 #' 
 RamanAnalyses <- S7::new_class("RamanAnalyses",
-  package = "StreamFind", parent = Analyses,
+  package = "StreamFind",
+  parent = S7::new_S3_class("Analyses"),
   properties = list(
 
     # MARK: analyses

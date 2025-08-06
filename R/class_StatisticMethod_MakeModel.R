@@ -29,7 +29,7 @@
 #'
 StatisticMethod_MakeModel_pca_mdatools <- S7::new_class(
   name = "StatisticMethod_MakeModel_pca_mdatools",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(center = FALSE,
                          scale = FALSE,
@@ -174,7 +174,7 @@ S7::method(run, StatisticMethod_MakeModel_pca_mdatools) <- function(x, engine = 
 #'
 StatisticMethod_MakeModel_mcrpure_mdatools <- S7::new_class(
   name = "StatisticMethod_MakeModel_mcrpure_mdatools",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(ncomp = NULL,
                          purevars = NULL,
@@ -303,7 +303,7 @@ S7::method(run, StatisticMethod_MakeModel_mcrpure_mdatools) <- function(x, engin
 #'
 StatisticMethod_MakeModel_mcrals_mdatools <- S7::new_class(
   name = "StatisticMethod_MakeModel_mcrals_mdatools",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(ncomp = NULL,
                          cont.solver = "mcrals.nnls",
@@ -452,7 +452,7 @@ S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(x, engine
 #' 
 StatisticMethod_MakeModel_knn <- S7::new_class(
   name = "StatisticMethod_MakeModel_knn",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(k = 3, l = 0) {
     S7::new_object(

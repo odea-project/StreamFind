@@ -8,7 +8,7 @@
 #'
 MassSpecMethod_NormalizeSpectra_minmax <- S7::new_class(
   name = "MassSpecMethod_NormalizeSpectra_minmax",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function() {
@@ -104,7 +104,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_minmax) <- function(x, engine = 
 #'
 MassSpecMethod_NormalizeSpectra_snv <- S7::new_class(
   name = "MassSpecMethod_NormalizeSpectra_snv",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(liftTozero = FALSE) {
@@ -207,7 +207,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_snv) <- function(x, engine = NUL
 #'
 MassSpecMethod_NormalizeSpectra_scale <- S7::new_class(
   name = "MassSpecMethod_NormalizeSpectra_scale",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function() {
@@ -301,7 +301,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_scale) <- function(x, engine = N
 #'
 MassSpecMethod_NormalizeSpectra_blockweight <- S7::new_class(
   name = "MassSpecMethod_NormalizeSpectra_blockweight",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function() {
@@ -391,7 +391,7 @@ S7::method(run, MassSpecMethod_NormalizeSpectra_blockweight) <- function(x, engi
 #'
 MassSpecMethod_NormalizeSpectra_meancenter <- S7::new_class(
   name = "MassSpecMethod_NormalizeSpectra_meancenter",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function() {

@@ -12,7 +12,7 @@
 #'
 MassSpecMethod_FindSpectraMaxima_native <- S7::new_class(
   name = "MassSpecMethod_FindSpectraMaxima_native",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(minWidth = 0, maxWidth = 0, minHeight = 0) {

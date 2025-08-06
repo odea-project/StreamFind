@@ -15,7 +15,7 @@
 #'
 MassSpecMethod_LoadFeaturesMS1_StreamFind <- S7::new_class(
   name = "MassSpecMethod_LoadFeaturesMS1_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(rtWindow = c(-2, 2),
@@ -129,7 +129,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS1_StreamFind) <- function(x, engine
 #'
 MassSpecMethod_LoadFeaturesMS2_StreamFind <- S7::new_class(
   name = "MassSpecMethod_LoadFeaturesMS2_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(isolationWindow = 1.3,
@@ -239,7 +239,7 @@ S7::method(run, MassSpecMethod_LoadFeaturesMS2_StreamFind) <- function(x, engine
 #'
 MassSpecMethod_LoadFeaturesEIC_StreamFind <- S7::new_class(
   name = "MassSpecMethod_LoadFeaturesEIC_StreamFind",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(filtered = FALSE, rtExpand = 120, mzExpand = 0, minIntensity = 0) {

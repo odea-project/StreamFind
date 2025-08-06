@@ -12,7 +12,7 @@
 #' @export
 #' 
 StatisticMethod_PrepareData_autoscale <- S7::new_class("StatisticMethod_PrepareData_autoscale",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(center = TRUE, scale = TRUE) {

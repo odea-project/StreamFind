@@ -32,7 +32,7 @@
 StatisticAnalyses <- S7::new_class(
   name = "StatisticAnalyses",
   package = "StreamFind",
-  parent = Analyses,
+  parent = S7::new_S3_class("Analyses"),
   properties = list(
 
     # MARK: analyses

@@ -13,7 +13,7 @@
 #'
 RamanMethod_FilterSpectra_native <- S7::new_class(
   "RamanMethod_FilterSpectra_native",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   
   constructor = function(onlyChromPeaksSpectra = FALSE, onlyTopChromPeaksSpectra = 0) {

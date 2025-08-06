@@ -12,7 +12,7 @@
 #' 
 StatisticMethod_Quantify_mcrals <- S7::new_class(
   "StatisticMethod_Quantify_mcrals",
-  parent = ProcessingStep,
+  parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
   constructor = function(regression = "linear", concentrations = NA_real_) {
     S7::new_object(
