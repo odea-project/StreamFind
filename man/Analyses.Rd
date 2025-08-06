@@ -12,14 +12,26 @@ Analyses(analyses = list(), results = list())
 \arguments{
 \item{analyses}{A list of analyses, where each element is a data entry or a connection to a raw data file.}
 
-\item{results}{A list of results, where each element is specific \code{\link{Results}} child class.}
+\item{results}{A list of results, where each element is a specific \code{\link{Results}} child class.}
 
 \item{x}{An \code{Analyses} object.}
 }
+\value{
+An object of class \code{Analyses}, which is a list containing:
+\itemize{
+\item \code{analyses}: A list of analyses, where each element is a data entry or a connection to a raw data file.
+\item \code{results}: A list of results, where each element is a specific \code{\link{Results}} child class.
+}
+The \code{Analyses} class has two attributes:
+\itemize{
+\item \code{data_type}: A character string indicating the type of data contained in the analyses.
+\item \code{possible_formats}: A character vector indicating the possible formats of the analyses.
+}
+}
 \description{
-The \code{Analyses} class is used harmonize the interface to data entries or links to
-raw data files. \code{Analyses} child classes are used to enable a specific structure and methods
-for each type of data.
+The \code{Analyses} class is used to harmonize the interface to data or links to
+raw data files and results across different types of data. \code{Analyses} child classes are used for
+specific data types, providing dedicated methods.
 }
 \section{Methods (by generic)}{
 \itemize{

@@ -1,13 +1,23 @@
 #' @title Generic Analyses
 #' 
 #' @description The `Analyses` class is used to harmonize the interface to data or links to 
-#' raw data files. `Analyses` child classes are used to enable a specific structure and methods 
-#' for each type of data.
+#' raw data files and results across different types of data. `Analyses` child classes are used for
+#' specific data types, providing dedicated methods.
 #' 
-#' @param analyses A list of analyses, where each element is a data entry or a connection to a
-#' raw data file.
-#' @param results A list of results, where each element is specific \code{\link{Results}}
-#' child class.
+#' @param analyses A list of analyses, where each element is a data entry or a connection to a raw data file.
+#' @param results A list of results, where each element is a specific \code{\link{Results}} child class.
+#' 
+#' @return
+#' An object of class `Analyses`, which is a list containing:
+#' \itemize{
+#'  \item `analyses`: A list of analyses, where each element is a data entry or a connection to a raw data file.
+#'  \item `results`: A list of results, where each element is a specific \code{\link{Results}} child class.
+#' }
+#' The `Analyses` class has two attributes:
+#' \itemize{
+#'  \item `data_type`: A character string indicating the type of data contained in the analyses.
+#'  \item `possible_formats`: A character vector indicating the possible formats of the analyses.
+#' }
 #' 
 #' @export
 #' 
@@ -15,11 +25,11 @@ Analyses <- function(analyses = list(), results = list()) {
   x <- structure(
     list(
       analyses = analyses,
-      results = results
+      results = results,
+      data_type = NA_character_,
+      possible_formats = NA_character_
     ),
-    class = c("Analyses"),
-    data_type = NA_character_,
-    possible_formats = NA_character_
+    class = c("Analyses")
   )
   if (is.null(validate_object(x))) {
     return(x)
@@ -33,8 +43,11 @@ Analyses <- function(analyses = list(), results = list()) {
 #' @export
 #'
 validate_object.Analyses <- function(x) {
-  checkmate::assert_true(grepl(attr(x, "data_type"), class(x)) || is.na(attr(x, "data_type")))
-  checkmate::assert_character(attr(x, "possible_formats"))
+  checkmate::assert_class(x, "Analyses")
+  checkmate::assert_names(names(x), must.include = c("analyses", "results", "data_type", "possible_formats"))
+  checkmate::assert_character(x$data_type, len = 1, null.ok = FALSE)
+  checkmate::assert_character(x$possible_formats, null.ok = FALSE)
+  checkmate::assert_true(grepl(x$data_type, class(x)[1]) || is.na(x$data_type))
   checkmate::assert_true(
     checkmate::test_list(x$analyses) || checkmate::test_data_frame(x$analyses)
   )
@@ -72,62 +85,6 @@ show.Analyses <- function(x, ...) {
     results_class <- vapply(x$results, is, "")
     cat(paste0("Result ", seq_len(length(results_class)), ": ", results_class), sep = "\n")
   }
-}
-
-#' @export
-#' @noRd
-length.Analyses <- function(x) {
-  length(x$analyses)
-}
-
-#' @export
-#' @noRd
-names.Analyses <- function(x) {
-  names(x$analyses)
-}
-
-#' @export
-#' @noRd
-`[.Analyses` <- function(x, i) {
-  x$analyses[i]
-}
-
-#' @export
-#' @noRd
-`[<-.Analyses` <- function(x, i, value) {
-  if (is(value, "list")) {
-    x$analyses[names(value)] <- value
-    if (length(x@results) > 0) {
-      warning("All results removed!")
-      x$results <- list()
-    }
-  }
-  x
-}
-
-#' @export
-#' @noRd
-`[[.Analyses` <- function(x, i) {
-  x$analyses[[i]]
-}
-
-#' @export
-#' @noRd
-`[[<-.Analyses` <- function(x, i, value) {
-  if (is(value, "list")) {
-    x$analyses[[names(value)]] <- value
-    if (length(x$results) > 0) {
-      warning("All results removed!")
-      x$results <- list()
-    }
-  }
-  x
-}
-
-#' @export
-#' @noRd
-as.list.Analyses <- function(x, ...) {
-  list("analyses" = x$analyses, "results" = x$results)
 }
 
 #' @export

@@ -3,6 +3,13 @@
 #ZLIB_CFLAGS := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_CFLAGS'))")
 #ZLIB_STATIC := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_LIBS_static'))")
 
+# Add simdutf include path and C++17 standard (required by simdutf)
+PKG_CPPFLAGS += -Isimdutf
+PKG_CXXFLAGS += -std=c++17
+
+# Exclude simdutf source files from compilation (they're included via simdutf_wrapper.cpp)
+SOURCES = $(filter-out simdutf/simdutf.cpp simdutf/amalgamation_demo.cpp, $(wildcard *.cpp) $(wildcard simdutf/*.cpp))
+
 RHDF5_LIBS = $(shell "$(R_HOME)/bin${R_ARCH_BIN}/Rscript" -e 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")')
 PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS)
 PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) $(RHDF5_LIBS)

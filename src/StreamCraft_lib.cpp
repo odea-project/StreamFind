@@ -9,6 +9,7 @@
 #include <cmath>
 #include <zlib.h>
 #include <omp.h>
+#include "simdutf/simdutf.h"
 
 // MARK: FUNCTIONS
 
@@ -451,54 +452,65 @@ std::string sc::encode_base64(const std::string &str)
 
 std::string sc::decode_base64(const std::string &encoded_string)
 {
-
-  std::string decoded_string;
-
-  decoded_string.reserve((encoded_string.size() * 3) / 4);
-
-  int val = 0;
-  int valb = -8;
-  for (char c : encoded_string)
-  {
-    if (c == '=')
-    {
-      valb -= 6;
-      continue;
-    }
-    if (c >= 'A' && c <= 'Z')
-    {
-      c -= 'A';
-    }
-    else if (c >= 'a' && c <= 'z')
-    {
-      c -= 'a' - 26;
-    }
-    else if (c >= '0' && c <= '9')
-    {
-      c -= '0' - 52;
-    }
-    else if (c == '+')
-    {
-      c = 62;
-    }
-    else if (c == '/')
-    {
-      c = 63;
-    }
-    else
-    {
-      continue;
-    }
-    val = (val << 6) + c;
-    valb += 6;
-    if (valb >= 0)
-    {
-      decoded_string.push_back(char((val >> valb) & 0xFF));
-      valb -= 8;
-    }
+  std::vector<uint8_t> buffer(
+  simdutf::maximal_binary_length_from_base64(encoded_string.data(), encoded_string.size()));
+  simdutf::result r = simdutf::base64_to_binary(
+    encoded_string.data(), encoded_string.size(), (char*)buffer.data()
+  );
+  if(r.error != simdutf::error_code::SUCCESS) {
+    std::cout << "output: error" << std::endl;
+  } else {
+    buffer.resize(r.count);
   }
+  return std::string(buffer.begin(), buffer.end());
 
-  return decoded_string;
+  // std::string decoded_string;
+
+  // decoded_string.reserve((encoded_string.size() * 3) / 4);
+
+  // int val = 0;
+  // int valb = -8;
+  // for (char c : encoded_string)
+  // {
+  //   if (c == '=')
+  //   {
+  //     valb -= 6;
+  //     continue;
+  //   }
+  //   if (c >= 'A' && c <= 'Z')
+  //   {
+  //     c -= 'A';
+  //   }
+  //   else if (c >= 'a' && c <= 'z')
+  //   {
+  //     c -= 'a' - 26;
+  //   }
+  //   else if (c >= '0' && c <= '9')
+  //   {
+  //     c -= '0' - 52;
+  //   }
+  //   else if (c == '+')
+  //   {
+  //     c = 62;
+  //   }
+  //   else if (c == '/')
+  //   {
+  //     c = 63;
+  //   }
+  //   else
+  //   {
+  //     continue;
+  //   }
+  //   val = (val << 6) + c;
+  //   valb += 6;
+  //   if (valb >= 0)
+  //   {
+  //     decoded_string.push_back(char((val >> valb) & 0xFF));
+  //     valb -= 8;
+  //   }
+  // }
+
+  // return decoded_string;
 };
 
 // MARK: MZXML

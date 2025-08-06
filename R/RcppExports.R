@@ -85,3 +85,7 @@ test_create_hdf5 <- function() {
     .Call(`_StreamFind_test_create_hdf5`)
 }
 
+test_simdutf <- function() {
+    .Call(`_StreamFind_test_simdutf`)
+}
+

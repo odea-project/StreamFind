@@ -1,9 +1,12 @@
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Explorer_UI, MassSpecAnalyses) <- function(x, id, ns) {
+#' @export
+#'
+.mod_WorkflowAssembler_Explorer_UI.MassSpecAnalyses <- function(x, id, ns) {
   ns2 <- shiny::NS(id)
 
   shinydashboard::tabBox(
-    width = 12, height = "1080px",
+    width = 12,
+    height = "1080px",
     shiny::tabPanel(
       "Spectra",
       shiny::fluidRow(
@@ -28,12 +31,14 @@ S7::method(.mod_WorkflowAssembler_Explorer_UI, MassSpecAnalyses) <- function(x, 
 }
 
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function(x,
-                                                                                 id,
-                                                                                 ns,
-                                                                                 reactive_analyses,
-                                                                                 reactive_volumes,
-                                                                                 reactive_config) {
+.mod_WorkflowAssembler_Explorer_Server.MassSpecAnalyses <- function(
+  x,
+  id,
+  ns,
+  reactive_analyses,
+  reactive_volumes,
+  reactive_config
+) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     has_results_spectra <- shiny::reactiveVal(FALSE)
@@ -46,7 +51,10 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     if (length(init_analyses) > 0) {
       has_results_spectra(max(init_analyses@spectra_number) > 0)
       has_results_chromatograms(max(init_analyses@chromatograms_number) > 0)
-      levels(as.numeric(unlist(strsplit(unique(init_analyses@spectra_level), ", "))))
+      levels(as.numeric(unlist(strsplit(
+        unique(init_analyses@spectra_level),
+        ", "
+      ))))
       rt_end(round(max(init_analyses@spectra_highest_rt), digits = 0))
       rt_start(round(min(init_analyses@spectra_lowest_rt), digits = 0))
     }
@@ -55,8 +63,13 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
       analyses <- reactive_analyses()
       if (length(analyses) > 0) {
         has_results_spectra(max(reactive_analyses()@spectra_number) > 0)
-        has_results_chromatograms(max(reactive_analyses()@chromatograms_number) > 0)
-        levels(as.numeric(unlist(strsplit(unique(reactive_analyses()@spectra_level), ", "))))
+        has_results_chromatograms(
+          max(reactive_analyses()@chromatograms_number) > 0
+        )
+        levels(as.numeric(unlist(strsplit(
+          unique(reactive_analyses()@spectra_level),
+          ", "
+        ))))
         rt_end(round(max(reactive_analyses()@spectra_highest_rt), digits = 0))
         rt_start(round(min(reactive_analyses()@spectra_lowest_rt), digits = 0))
       } else {
@@ -75,7 +88,7 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
       defaultRoot = "wd",
       session = session
     )
-    
+
     shinyFiles::shinyFileSave(
       input,
       "chrom_plot_save",
@@ -93,15 +106,17 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     )
 
     colorby_chromatograms <- c(
-      "targets", "analyses",
-      "replicates", "polarities",
+      "targets",
+      "analyses",
+      "replicates",
+      "polarities",
       "targets+polarities",
       "analyses+polarities",
       "replicates+polarities",
       "targets+analyses",
       "targets+replicates"
     )
-    
+
     # out Analyses Table -----
     output$spectraAnalysesTable <- DT::renderDT({
       analyses <- reactive_analyses()
@@ -110,7 +125,10 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
       }
       analyses_info <- analyses@info
       DT::datatable(
-        analyses_info[, c("analysis", "replicate", "blank", "polarity"), with = FALSE],
+        analyses_info[,
+          c("analysis", "replicate", "blank", "polarity"),
+          with = FALSE
+        ],
         selection = list(mode = "multiple", selected = 1, target = "row"),
         options = list(pageLength = 10)
       )
@@ -119,7 +137,10 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     # out Summary plot UI -----
     output$summary_plot_ui <- shiny::renderUI({
       if (length(reactive_analyses()) == 0) {
-        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
+        htmltools::div(
+          style = "margin-top: 20px;",
+          htmltools::h4("No analyses found!")
+        )
       } else if (has_results_spectra()) {
         if (!is.null(input$summary_plot_interactive)) {
           if (input$summary_plot_interactive) {
@@ -135,7 +156,10 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
           }
         }
       } else {
-        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No spectra found!"))
+        htmltools::div(
+          style = "margin-top: 20px;",
+          htmltools::h4("No spectra found!")
+        )
       }
     })
 
@@ -265,7 +289,9 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
       if (length(reactive_analyses()) == 0) {
         return()
       }
-      if (!is.null(input$summary_plot_type) && !input$summary_plot_interactive) {
+      if (
+        !is.null(input$summary_plot_type) && !input$summary_plot_interactive
+      ) {
         selected <- input$spectraAnalysesTable_rows_selected
         if (length(selected) == 0) {
           return()
@@ -318,14 +344,21 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
             level = input$summary_plot_level
           )
         }
-        fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$summary_plot_save)
+        fileinfo <- shinyFiles::parseSavePath(
+          reactive_volumes(),
+          input$summary_plot_save
+        )
         if (nrow(fileinfo) > 0) {
           utils::write.csv(csv, fileinfo$datapath, row.names = FALSE)
-          shiny::showNotification("File saved successfully!", duration = 5, type = "message")
+          shiny::showNotification(
+            "File saved successfully!",
+            duration = 5,
+            type = "message"
+          )
         }
       }
     })
-    
+
     # out Chromatograms Table -----
     output$chromAnalysesTable <- DT::renderDT({
       analyses <- reactive_analyses()
@@ -334,7 +367,10 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
       }
       analyses_info <- analyses@info
       DT::datatable(
-        analyses_info[, c("analysis", "replicate", "blank", "polarity"), with = FALSE],
+        analyses_info[,
+          c("analysis", "replicate", "blank", "polarity"),
+          with = FALSE
+        ],
         selection = list(mode = "multiple", selected = 1, target = "row"),
         options = list(pageLength = 10)
       )
@@ -343,7 +379,10 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     # out Chromatograms plot UI -----
     output$chrom_plot_ui <- shiny::renderUI({
       if (length(reactive_analyses()) == 0) {
-        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
+        htmltools::div(
+          style = "margin-top: 20px;",
+          htmltools::h4("No analyses found!")
+        )
       } else if (has_results_chromatograms()) {
         if (!is.null(input$summary_chrom_interactive)) {
           if (input$summary_chrom_interactive) {
@@ -353,7 +392,10 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
           }
         }
       } else {
-        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No chromatograms found!"))
+        htmltools::div(
+          style = "margin-top: 20px;",
+          htmltools::h4("No chromatograms found!")
+        )
       }
     })
 
@@ -445,10 +487,17 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
         return()
       }
       csv <- get_chromatograms(reactive_analyses(), analyses = selected)
-      fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$chrom_plot_save)
+      fileinfo <- shinyFiles::parseSavePath(
+        reactive_volumes(),
+        input$chrom_plot_save
+      )
       if (nrow(fileinfo) > 0) {
         utils::write.csv(csv, fileinfo$datapath, row.names = FALSE)
-        shiny::showNotification("File saved successfully!", duration = 5, type = "message")
+        shiny::showNotification(
+          "File saved successfully!",
+          duration = 5,
+          type = "message"
+        )
       }
     })
 
@@ -469,7 +518,10 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
     # out EICs plot UI -----
     output$eics_interface <- shiny::renderUI({
       if (length(reactive_analyses()) == 0) {
-        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
+        htmltools::div(
+          style = "margin-top: 20px;",
+          htmltools::h4("No analyses found!")
+        )
       } else if (has_results_spectra()) {
         htmltools::div(
           htmltools::div(
@@ -530,17 +582,24 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
             )
           ),
           htmltools::div(htmltools::br()),
-          htmltools::div(style = "margin-left: 20px;", shiny::uiOutput(ns(ns2("eics_targets")))),
+          htmltools::div(
+            style = "margin-left: 20px;",
+            shiny::uiOutput(ns(ns2("eics_targets")))
+          ),
           htmltools::div(htmltools::br()),
           shinycssloaders::withSpinner(
-            plotly::plotlyOutput(ns(ns2("eics_plotly")), height = "500px"), color = "black"
+            plotly::plotlyOutput(ns(ns2("eics_plotly")), height = "500px"),
+            color = "black"
           ),
           htmltools::div(htmltools::br()),
           shiny::column(12, shiny::uiOutput(ns(ns2("eics_plot_controls")))),
           htmltools::div(style = "margin-bottom: 20px;")
         )
       } else {
-        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No spectra found!"))
+        htmltools::div(
+          style = "margin-top: 20px;",
+          htmltools::h4("No spectra found!")
+        )
       }
     })
 
@@ -591,7 +650,8 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, MassSpecAnalyses) <- function
         return()
       }
       lapply(1:nrow(targets()), function(i) {
-        shiny::observeEvent(input[[paste0("eics_del_", i)]],
+        shiny::observeEvent(
+          input[[paste0("eics_del_", i)]],
           {
             unified <- targets()
             unified <- unified[-i, ]

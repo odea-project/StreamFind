@@ -26,7 +26,6 @@ b <- AppConfig()
 e <- EngineConfig()
 
 # AuditTrail -----
-
 a <- AuditTrail()
 a <- add(a, Metadata())
 a <- add(a, EngineConfig())
@@ -48,8 +47,20 @@ a <- Analyses()
 
 path <- "C:/Users/apoli/Documents/example_files"
 ms_files <- list.files(path, pattern = ".mzML", full.names = TRUE)[1:3]
+db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
+db <- db[, cols, with = FALSE]
+dbis <- db[grepl("IS", db$tag), ]
+dbsus <- db[!grepl("IS", db$tag), ]
 
 a <- MassSpecAnalyses(ms_files)
+#info(a)
+#get_spectra_tic(a, as_list = TRUE)
+#get_spectra_bpc(a)
+get_raw_spectra(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
+
+
+test_simdutf()
 
 ## CoreEngine ------
 

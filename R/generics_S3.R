@@ -33,6 +33,16 @@ clear_cache <- function(x, ...) {
 
 # G -----
 
+#' @title S3 generic `get_names`
+#' @description S3 generic to get names from `x`.
+#' @param x An object from which the names will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+get_names <- function(x, ...) {
+  UseMethod("get_names")
+}
+
 #' @title S3 generic `get_blanks`
 #' @description S3 generic to get blanks from `x`.
 #' @param x An object from which the blanks will be retrieved.
@@ -1054,3 +1064,25 @@ validate_object <- function(x, ...) {
 # Y -----
 
 # Z -----
+
+# App Generics -----
+
+#' @noRd
+.mod_WorkflowAssembler_Explorer_UI <- function(x, ...) {
+  UseMethod(".mod_WorkflowAssembler_Explorer_UI")
+}
+
+#' @noRd
+.mod_WorkflowAssembler_Explorer_Server <- function(x, ...) {
+  UseMethod(".mod_WorkflowAssembler_Explorer_Server")
+}
+
+#' @noRd
+.mod_WorkflowAssembler_Result_UI <- function(x, ...) {
+  UseMethod(".mod_WorkflowAssembler_Result_UI")
+}
+
+#' @noRd
+.mod_WorkflowAssembler_Result_Server <- function(x, ...) {
+  UseMethod(".mod_WorkflowAssembler_Result_Server")
+}

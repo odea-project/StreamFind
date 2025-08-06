@@ -2,90 +2,238 @@
 % Please edit documentation in R/class_Analyses_MassSpecAnalyses.R
 \name{MassSpecAnalyses}
 \alias{MassSpecAnalyses}
+\alias{validate_object.MassSpecAnalyses}
+\alias{get_names.MassSpecAnalyses}
+\alias{get_replicates.MassSpecAnalyses}
+\alias{set_replicates.MassSpecAnalyses}
+\alias{get_blanks.MassSpecAnalyses}
+\alias{set_blanks.MassSpecAnalyses}
+\alias{get_concentrations.MassSpecAnalyses}
+\alias{set_concentrations.MassSpecAnalyses}
+\alias{info.MassSpecAnalyses}
+\alias{add.MassSpecAnalyses}
+\alias{remove.MassSpecAnalyses}
+\alias{[.MassSpecAnalyses}
+\alias{[<-.MassSpecAnalyses}
+\alias{[[.MassSpecAnalyses}
+\alias{[[<-.MassSpecAnalyses}
+\alias{read.MassSpecAnalyses}
+\alias{get_spectra_tic.MassSpecAnalyses}
+\alias{get_spectra_bpc.MassSpecAnalyses}
+\alias{get_raw_spectra.MassSpecAnalyses}
 \title{Mass Spectrometry Analyses}
 \usage{
 MassSpecAnalyses(files = NULL, centroid = FALSE, levels = c(1, 2))
+
+\method{validate_object}{MassSpecAnalyses}(x)
+
+\method{get_names}{MassSpecAnalyses}(x)
+
+\method{get_replicates}{MassSpecAnalyses}(x)
+
+\method{set_replicates}{MassSpecAnalyses}(x, value)
+
+\method{get_blanks}{MassSpecAnalyses}(x)
+
+\method{set_blanks}{MassSpecAnalyses}(x, value)
+
+\method{get_concentrations}{MassSpecAnalyses}(x)
+
+\method{set_concentrations}{MassSpecAnalyses}(x, value)
+
+\method{info}{MassSpecAnalyses}(x)
+
+\method{add}{MassSpecAnalyses}(x, value)
+
+\method{remove}{MassSpecAnalyses}(x, value)
+
+\method{[}{MassSpecAnalyses}(x, i)
+
+\method{[}{MassSpecAnalyses}(x, i) <- value
+
+\method{[[}{MassSpecAnalyses}(x, i)
+
+\method{[[}{MassSpecAnalyses}(x, i) <- value
+
+\method{read}{MassSpecAnalyses}(x, file)
+
+\method{get_spectra_tic}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  levels = c(1, 2),
+  rt = NULL,
+  as_list = FALSE
+)
+
+\method{get_spectra_bpc}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  levels = c(1, 2),
+  rt = NULL,
+  as_list = FALSE
+)
+
+\method{get_raw_spectra}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  levels = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  allTraces = TRUE,
+  isolationWindow = 1.3,
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0
+)
 }
 \arguments{
 \item{files}{A character vector with the file paths of MS raw data files.}
 
 \item{centroid}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
 
-\item{levels}{Numeric vector with the MS levels to consider when centroiding data. Default is \code{c(1, 2)}.}
+\item{levels}{Integer vector with the levels of MS data.}
+
+\item{x}{An \code{MassSpecAnalyses} object.}
+
+\item{value}{A character vector with file paths to MS raw data files.}
+
+\item{i}{A numeric vector with the indices of the analyses to keep.}
+
+\item{file}{A character string with the file path to the \code{MassSpecAnalyses} object.}
+
+\item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{rt}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{as_list}{Logical (length 1). If \code{TRUE}, the result is returned as a list. Default is \code{FALSE}, returning a \code{data.table}.}
+
+\item{mass}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{mz}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{mobility}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{ppm}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{sec}{Numeric of length one with the time deviation, in seconds.}
+
+\item{millisec}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{id}{Character with the same length as \emph{m/z} and retention time
+targets to be used as identifier/s. When not given, the id is built as a
+combination of the \emph{m/z} and retention time ranges or values.}
+
+\item{allTraces}{Logical, when \code{TRUE} all level 2 data is returned.
+When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
+are returned, using the \code{isolationWindow} to calculate the mass window.}
+
+\item{isolationWindow}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{minIntensityMS1}{Numeric value with the minimum intensity of level 1
+data (i.e., MS1 data).}
+
+\item{minIntensityMS2}{Numeric value with the minimum intensity of level 2
+data (i.e., MS2 data).}
+}
+\value{
+An object of class \code{MassSpecAnalyses} as a list of two elements: \code{analyses} and \code{results}. Each element in \code{analyses} is a list with the following elements:
+\itemize{
+\item \code{name}: The name of the analysis.
+\item \code{replicate}: The name of the replicate for the analysis.
+\item \code{blank}: The name of the blank for the analysis.
+\item \code{file}: The file path of the analysis.
+\item \code{format}: The file format of the analysis.
+\item \code{type}: The type of the analysis (e.g., "MS", MS/MS).
+\item \code{spectra_number}: The number of spectra in the analysis.
+\item \code{spectra_headers}: A \code{data.table} with the headers of the spectra in the analysis.
+\item \code{chromatograms_number}: The number of chromatograms in the analysis.
+\item \code{chromatograms_headers}: A \code{data.table} with the headers of the chromatograms in the analysis.
+\item \code{metadata}: A list with metadata information for the analysis.
+\item \code{concentration}: The concentration for the analysis.
+The \code{results} element is a list of results, where each element is a specific \link{Results} child class.
+}
 }
 \description{
 The \code{MassSpecAnalyses} class represents mass spectrometry (MS) raw data files and holds results from processing MS data. It is a subclass of the \link{Analyses} class and provides methods to manage and inspect MS data. The \code{MassSpecAnalyses} class is built from a character vector of file paths to MS raw data files. The possible file formats are \emph{mzML} and \emph{mzXML}. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to \emph{mzML}. Note that conversion of vendor formats is only possible under Windows OS.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecAnalyses)}: Validate the MassSpecAnalyses object, returning \code{NULL} if valid or an error if not.
 
-\describe{
-\item{\code{analyses}}{(getter/setter) A list of objects representing individual mass spectrometry raw data files.}
+\item \code{get_names(MassSpecAnalyses)}: Get the names of the analyses in the \code{MassSpecAnalyses} object.
 
-\item{\code{replicates}}{(getter/setter) A character vector representing the names of the replicate name for each analysis.}
+\item \code{get_replicates(MassSpecAnalyses)}: Get the replicates of the analyses in the \code{MassSpecAnalyses} object.
 
-\item{\code{blanks}}{(getter/setter) A character vector representing the names of the blank name for each analysis.}
+\item \code{set_replicates(MassSpecAnalyses)}: Set the replicates of the analyses in the \code{MassSpecAnalyses} object.
 
-\item{\code{concentrations}}{(getter/setter) A numeric vector representing the concentration for each analysis.}
+\item \code{get_blanks(MassSpecAnalyses)}: Get the blanks of the analyses in the \code{MassSpecAnalyses} object.
 
-\item{\code{types}}{(getter) A character vector representing the type of each analysis.}
+\item \code{set_blanks(MassSpecAnalyses)}: Set the blanks of the analyses in the \code{MassSpecAnalyses} object.
 
-\item{\code{files}}{(getter) A character vector with the file path of each analysis.}
+\item \code{get_concentrations(MassSpecAnalyses)}: Get the concentrations of the analyses in the \code{MassSpecAnalyses} object.
 
-\item{\code{formats}}{(getter) A character vector with the file format of each analysis.}
+\item \code{set_concentrations(MassSpecAnalyses)}: Set the concentrations of the analyses in the \code{MassSpecAnalyses} object.
 
-\item{\code{instruments}}{(getter) A list with the instrument information for each analysis.}
+\item \code{info(MassSpecAnalyses)}: Get a summary of the \code{MassSpecAnalyses} object.
 
-\item{\code{software}}{(getter) A list with the software information for each analysis.}
+\item \code{add(MassSpecAnalyses)}: Add analyses to the \code{MassSpecAnalyses} object.
 
-\item{\code{spectra_number}}{(getter) A numeric vector with the number of spectra for each analysis.}
+\item \code{remove(MassSpecAnalyses)}: Remove analyses from the \code{MassSpecAnalyses} object.
 
-\item{\code{spectra_headers}}{(getter) A list with the headers of the spectra for each analysis.}
+\item \code{[}: Subset the \code{MassSpecAnalyses} object by indices, including the result elements:
+\code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms}.
 
-\item{\code{spectra_mode}}{(getter) A character vector with the mode of the spectra for each analysis.}
+\item \code{`[`(MassSpecAnalyses) <- value}: Add analyses to the \code{MassSpecAnalyses} object by indices.
 
-\item{\code{spectra_level}}{(getter) A character vector with the level of the spectra for each analysis.}
+\item \code{[[}: Subset the \code{MassSpecAnalyses} object by indices, including the result elements:
+\code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms}.
 
-\item{\code{spectra_lowest_mz}}{(getter) A numeric vector with the lowest m/z value for each analysis.}
+\item \code{`[[`(MassSpecAnalyses) <- value}: Add analyses to the \code{MassSpecAnalyses} object by indices.
 
-\item{\code{spectra_highest_mz}}{(getter) A numeric vector with the highest m/z value for each analysis.}
+\item \code{read(MassSpecAnalyses)}: Read a \code{MassSpecAnalyses} object from a file.
 
-\item{\code{spectra_lowest_rt}}{(getter) A numeric vector with the lowest retention time for each analysis.}
+\item \code{get_spectra_tic(MassSpecAnalyses)}: Get the total ion current (TIC) spectra for the specified analyses.
 
-\item{\code{spectra_highest_rt}}{(getter) A numeric vector with the highest retention time for each analysis.}
+\item \code{get_spectra_bpc(MassSpecAnalyses)}: Get the base peak chromatograms (BPC) spectra for the specified analyses.
 
-\item{\code{spectra_lowest_mobility}}{(getter) A numeric vector with the lowest mobility for each analysis.}
+\item \code{get_raw_spectra(MassSpecAnalyses)}: Get raw spectra data from specified analyses, returning a \code{data.table} with the spectra data.
 
-\item{\code{spectra_highest_mobility}}{(getter) A numeric vector with the highest mobility for each analysis.}
-
-\item{\code{spectra_polarity}}{(getter) A character vector with the polarity of the spectra for each analysis.}
-
-\item{\code{spectra_tic}}{(getter) A list with the total ion current (TIC) for each analysis.}
-
-\item{\code{spectra_bpc}}{(getter) A list with the base peak chromatogram (BPC) for each analysis.}
-
-\item{\code{chromatograms_number}}{(getter) A numeric vector with the number of chromatograms for each analysis.}
-
-\item{\code{chromatograms_headers}}{(getter) A list with the headers of the chromatograms for each analysis.}
-
-\item{\code{chromatograms_raw}}{(getter) A list with the raw chromatograms for each analysis.}
-
-\item{\code{info}}{(getter) A data frame with the information of each analysis.}
-
-\item{\code{has_ion_mobility}}{(getter) A logical vector indicating if the analyses have ion mobility data.}
-
-\item{\code{has_results_nts}}{(getter) A logical vector indicating if the analyses have NonTargetAnalysisResults results.}
-
-\item{\code{has_results_spectra}}{(getter) A logical vector indicating if the analyses have spectra results.}
-
-\item{\code{has_results_chromatograms}}{(getter) A logical vector indicating if the analyses have chromatograms results.}
-
-\item{\code{NonTargetAnalysisResults}}{(getter/setter) A list with the NonTargetAnalysisResults results for each analysis.}
-
-\item{\code{Spectra}}{(getter/setter) A list with the spectra results for each analysis.}
-
-\item{\code{Chromatograms}}{(getter/setter) A list with the chromatograms results for each analysis.}
 }}
+\note{
+Any existing results will be removed when adding new analyses.
 
+Any existing results will be removed when adding new analyses.
+
+Any existing results will be removed when adding new analyses.
+}
 \references{
 \insertRef{pugixml01}{StreamFind}
 

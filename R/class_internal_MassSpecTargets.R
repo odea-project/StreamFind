@@ -158,7 +158,7 @@ MassSpecTargets <- S7::new_class(
     if (!is.null(targets)) {
       
       if (is.null(polarities) && !"polarity" %in% colnames(targets)) {
-        targets <- lapply(c("positive", "negative"), function(p, t) {
+        targets <- lapply(c("1", "-1"), function(p, t) {
           t$polarity <- p
           t
         }, t = targets)
@@ -188,29 +188,22 @@ MassSpecTargets <- S7::new_class(
           warning("Polarity could not be defined!")
           targets <- data.table::data.table()
         }
-      } else {
-        if ("polarity" %in% colnames(targets) && nrow(targets) > 0) {
-          for (i in seq_len(nrow(targets))) {
-            if (targets$polarity[i] == 1) targets$polarity[i] <- "positive"
-            if (targets$polarity[i] == -1) targets$polarity[i] <- "negative"
-          }
-        }
       }
       
-      if (!all(grepl("positive|negative", targets$polarity))) {
+      if (!all(grepl("1|-1", targets$polarity))) {
         warning("Polarity must be either positive, negative or both!")
         targets <- data.table::data.table()
       }
       
       for (i in seq_len(nrow(targets))) {
-        if (grepl("positive", targets$polarity[i]) && grepl("negative", targets$polarity[i])) {
+        if (grepl("1", targets$polarity[i]) && grepl("-1", targets$polarity[i])) {
           if (cols_mz %in% colnames(targets) || all(cols_mz_ranges %in% colnames(targets))) {
             warning("Polarity is both positive and negative, but m/z is given! Not possible to define polarity for target.")
             targets <- targets[, -i]
           } else {
-            targets$polarity[i] <- "positive"
+            targets$polarity[i] <- "1"
             new_row <- targets[i, ]
-            new_row$polarity <- "negative"
+            new_row$polarity <- "-1"
             targets <- rbind(targets, new_row)
           }
         }
@@ -221,13 +214,13 @@ MassSpecTargets <- S7::new_class(
         # if m/z is not given, calculate from mass and polarity
         if (cols_mass %in% colnames(targets) && !cols_mz %in% colnames(targets) && !all(cols_mz_ranges %in% colnames(targets))) {
           pols <- rep(1, nrow(targets))
-          pols[targets$polarity %in% "negative"] <- -1
+          pols[targets$polarity == "-1"] <- -1
           targets$mz <- targets$mass + (1.007276 * pols)
         }
         
         if (!cols_mass %in% colnames(targets) && !cols_mz %in% colnames(targets) && all(cols_mass_ranges %in% colnames(targets))) {
           pols <- rep(1, nrow(targets))
-          pols[targets$polarity %in% "negative"] <- -1
+          pols[targets$polarity == -1] <- -1
           targets$mzmin <- targets$min + (1.007276 * pols)
           targets$mzmax <- targets$max + (1.007276 * pols)
         }
