@@ -2,10 +2,9 @@
 #' @title Mass Spectrometry Analyses
 #'
 #' @description The `MassSpecAnalyses` class represents mass spectrometry (MS) raw data files and holds results from processing MS data. It is a subclass of the [StreamFind::Analyses] class and provides methods to manage and inspect MS data. The `MassSpecAnalyses` class is built from a character vector of file paths to MS raw data files. The possible file formats are *mzML* and *mzXML*. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to *mzML*. Note that conversion of vendor formats is only possible under Windows OS.
-#'
-#' @param files A character vector with the file paths of MS raw data files.
-#' @param centroid Logical (length 1). Set to `TRUE` to centroid data when converting from vendor formats to mzML.
-#' @param levels Numeric vector with the MS levels to consider when centroiding data. Default is `c(1, 2)`.
+#' @template arg-ms-files
+#' @template arg-ms-centroid
+#' @template arg-ms-levels
 #'
 #' @return An object of class `MassSpecAnalyses` as a list of two elements: `analyses` and `results`. Each element in `analyses` is a list with the following elements:
 #'  - `name`: The name of the analysis.
@@ -20,7 +19,7 @@
 #'  - `chromatograms_headers`: A `data.table` with the headers of the chromatograms in the analysis.
 #'  - `metadata`: A list with metadata information for the analysis.
 #'  - `concentration`: The concentration for the analysis.
-#'  The `results` element is a list of results, where each element is a specific [StreamFind::Results] child class.
+#'  The `results` element is a list of results, where each element is a specific [StreamFind::Results] child class. Currently, the `MassSpecAnalyses` class supports the following results: [StreamFind::NonTargetAnalysisResults], [StreamFind::MassSpecSpectra], and [StreamFind::Chromatograms].
 #'
 #' @references
 #' \insertRef{pugixml01}{StreamFind}
@@ -50,7 +49,7 @@ MassSpecAnalyses <- function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
 }
 
 #' @describeIn MassSpecAnalyses Validate the MassSpecAnalyses object, returning `NULL` if valid or an error if not.
-#' @param x An `MassSpecAnalyses` object.
+#' @template arg-x-MassSpecAnalyses
 #' @export
 #'
 validate_object.MassSpecAnalyses = function(x) {
@@ -83,7 +82,7 @@ validate_object.MassSpecAnalyses = function(x) {
 
 # MARK: get_names
 #' @describeIn MassSpecAnalyses Get the names of the analyses in the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
+#' @template arg-x-MassSpecAnalyses
 #' @export
 #'
 get_names.MassSpecAnalyses <- function(x) {
@@ -92,7 +91,7 @@ get_names.MassSpecAnalyses <- function(x) {
 
 # MARK: get_replicates
 #' @describeIn MassSpecAnalyses Get the replicates of the analyses in the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
+#' @template arg-x-MassSpecAnalyses
 #' @export
 #'
 get_replicates.MassSpecAnalyses <- function(x) {
@@ -100,9 +99,9 @@ get_replicates.MassSpecAnalyses <- function(x) {
 }
 
 # MARK: set_replicates
-#' @describeIn MassSpecAnalyses Set the replicates of the analyses in the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
-#' @param value A character vector with the new replicates for each analysis.
+#' @describeIn MassSpecAnalyses Set the replicates of the analyses in the `MassSpecAnalyses` object. The argument `value` must be a character vector with the same length as the number of analyses in the object.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-value
 #' @export
 #'
 set_replicates.MassSpecAnalyses <- function(x, value) {
@@ -117,7 +116,7 @@ set_replicates.MassSpecAnalyses <- function(x, value) {
 
 # MARK: get_blanks
 #' @describeIn MassSpecAnalyses Get the blanks of the analyses in the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
+#' @template arg-x-MassSpecAnalyses
 #' @export
 #'
 get_blanks.MassSpecAnalyses <- function(x) {
@@ -125,9 +124,9 @@ get_blanks.MassSpecAnalyses <- function(x) {
 }
 
 # MARK: set_blanks
-#' @describeIn MassSpecAnalyses Set the blanks of the analyses in the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
-#' @param value A character vector with the new blanks for each analysis.
+#' @describeIn MassSpecAnalyses Set the blanks of the analyses in the `MassSpecAnalyses` object. The argument `value` must be a character vector with the same length as the number of analyses in the object.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-value
 #' @export
 #'
 set_blanks.MassSpecAnalyses <- function(x, value) {
@@ -142,7 +141,7 @@ set_blanks.MassSpecAnalyses <- function(x, value) {
 
 # MARK: get_concentrations
 #' @describeIn MassSpecAnalyses Get the concentrations of the analyses in the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
+#' @template arg-x-MassSpecAnalyses
 #' @export
 #'
 get_concentrations.MassSpecAnalyses <- function(x) {
@@ -150,9 +149,9 @@ get_concentrations.MassSpecAnalyses <- function(x) {
 }
 
 # MARK: set_concentrations
-#' @describeIn MassSpecAnalyses Set the concentrations of the analyses in the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
-#' @param value A numeric vector with the new concentrations for each analysis.
+#' @describeIn MassSpecAnalyses Set the concentrations of the analyses in the `MassSpecAnalyses` object. The argument `value` must be a numeric vector with the same length as the number of analyses in the object.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-value
 #' @export
 #'
 set_concentrations.MassSpecAnalyses <- function(x, value) {
@@ -170,7 +169,7 @@ set_concentrations.MassSpecAnalyses <- function(x, value) {
 
 # MARK: info
 #' @describeIn MassSpecAnalyses Get a summary of the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
+#' @template arg-x-MassSpecAnalyses
 #' @export
 #' 
 info.MassSpecAnalyses <- function(x) {
@@ -195,10 +194,9 @@ info.MassSpecAnalyses <- function(x) {
 }
 
 # MARK: add
-#' @describeIn MassSpecAnalyses Add analyses to the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
-#' @param value A character vector with file paths to MS raw data files.
-#' @note Any existing results will be removed when adding new analyses.
+#' @describeIn MassSpecAnalyses Add analyses to the `MassSpecAnalyses` object. The argument `value` can be a character vector with file paths to MS raw data files or a list of `MassSpecAnalysis` objects. If the files are valid, they will be converted to `MassSpecAnalysis` objects.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-value
 #' @export
 #'
 add.MassSpecAnalyses <- function(x, value) {
@@ -233,9 +231,9 @@ add.MassSpecAnalyses <- function(x, value) {
 }
 
 # MARK: remove
-#' @describeIn MassSpecAnalyses Remove analyses from the `MassSpecAnalyses` object.
-#' @param x An `MassSpecAnalyses` object.
-#' @param value A character vector with the names of the analyses to remove or a numeric vector with the indices of the analyses to remove.
+#' @describeIn MassSpecAnalyses Remove analyses from the `MassSpecAnalyses` object. The argument `value` can be a character vector with the names of the analyses to remove or a numeric vector with the indices of the analyses to remove. The method will also remove the corresponding results from `NonTargetAnalysisResults`, `Spectra`, and `Chromatograms` if available.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-value
 #' @export
 #'
 remove.MassSpecAnalyses <- function(x, value) {
@@ -275,9 +273,9 @@ remove.MassSpecAnalyses <- function(x, value) {
 
 # MARK: `[`
 #' @describeIn MassSpecAnalyses Subset the `MassSpecAnalyses` object by indices, including the result elements:
-#' `NonTargetAnalysisResults`, `Spectra`, and `Chromatograms`.
-#' @param x An `MassSpecAnalyses` object.
-#' @param i A numeric vector with the indices of the analyses to keep.
+#' `NonTargetAnalysisResults`, `Spectra`, and `Chromatograms`. The argument `i` can be a numeric vector with the indices of the analyses to keep.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-i
 #' @export
 #' 
 `[.MassSpecAnalyses` <- function(x, i) {
@@ -295,10 +293,10 @@ remove.MassSpecAnalyses <- function(x, value) {
 }
 
 # MARK: `[<-`
-#' @describeIn MassSpecAnalyses Add analyses to the `MassSpecAnalyses` object by indices.
-#' @param x An `MassSpecAnalyses` object.
-#' @param i A numeric vector with the indices of the analyses to keep.
-#' @param value A character vector with file paths to MS raw data files.
+#' @describeIn MassSpecAnalyses Add analyses to the `MassSpecAnalyses` object by indices. The argument `i` can be a numeric vector with the indices of the analyses to keep, and `value` can be a character vector with file paths to MS raw data files or a list of `MassSpecAnalysis` objects.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-i
+#' @template arg-value
 #' @export
 #' 
 `[<-.MassSpecAnalyses` <- function(x, i, value) {
@@ -308,9 +306,9 @@ remove.MassSpecAnalyses <- function(x, value) {
 
 # MARK: `[[`
 #' @describeIn MassSpecAnalyses Subset the `MassSpecAnalyses` object by indices, including the result elements:
-#' `NonTargetAnalysisResults`, `Spectra`, and `Chromatograms`.
-#' @param x An `MassSpecAnalyses` object.
-#' @param i A numeric vector with the indices of the analyses to keep.
+#' `NonTargetAnalysisResults`, `Spectra`, and `Chromatograms`. The argument `i` can be a numeric value with the index of the analysis to keep. The method returns a `MassSpecAnalyses` object with only the specified analysis.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-i
 #' @export
 #' 
 `[[.MassSpecAnalyses` <- function(x, i) {
@@ -328,10 +326,10 @@ remove.MassSpecAnalyses <- function(x, value) {
 }
 
 # MARK: `[[<-`
-#' @describeIn MassSpecAnalyses Add analyses to the `MassSpecAnalyses` object by indices.
-#' @param x An `MassSpecAnalyses` object.
-#' @param i A numeric vector with the indices of the analyses to keep.
-#' @param value A character vector with file paths to MS raw data files.
+#' @describeIn MassSpecAnalyses Add analyses to the `MassSpecAnalyses` object by indices. The argument `i` can be a numeric value with the index of the analysis to modify, and `value` can be a character vector with file path to an MS raw data file.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-i
+#' @template arg-value
 #' @export
 #' 
 `[[<-.MassSpecAnalyses` <- function(x, i, value) {
@@ -340,9 +338,9 @@ remove.MassSpecAnalyses <- function(x, value) {
 }
 
 # MARK: read
-#' @describeIn MassSpecAnalyses Read a `MassSpecAnalyses` object from a file.
-#' @param x An `MassSpecAnalyses` object.
-#' @param file A character string with the file path to the `MassSpecAnalyses` object.
+#' @describeIn MassSpecAnalyses Read a `MassSpecAnalyses` object from a file. The `file` can be in JSON or RDS format.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-file
 #' @export
 #' 
 read.MassSpecAnalyses <- function(x, file) {
@@ -364,11 +362,11 @@ read.MassSpecAnalyses <- function(x, file) {
 
 # MARK: get_spectra_tic
 #' @describeIn MassSpecAnalyses Get the total ion current (TIC) spectra for the specified analyses.
-#' @param x An `MassSpecAnalyses` object.
-#' @param analyses A character vector with the names of the analyses to get TIC spectra for. If `NULL`, all analyses are used.
-#' @param levels A numeric vector with the MS levels to consider. Default is `c(1, 2)`.
-#' @param rt A numeric vector with two values indicating the retention time range to filter the TIC spectra. If `NULL`, no filtering is applied.
-#' @param as_list Logical (length 1). If `TRUE`, the result is returned as a list. Default is `FALSE`, returning a `data.table`.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-rt
+#' @template arg-as_list
 #' @export
 #' 
 get_spectra_tic.MassSpecAnalyses <- function(
@@ -403,11 +401,11 @@ get_spectra_tic.MassSpecAnalyses <- function(
 
 # MARK: get_spectra_bpc
 #' @describeIn MassSpecAnalyses Get the base peak chromatograms (BPC) spectra for the specified analyses.
-#' @param x An `MassSpecAnalyses` object.
-#' @param analyses A character vector with the names of the analyses to get BPC spectra for. If `NULL`, all analyses are used.
-#' @param levels A numeric vector with the MS levels to consider. Default is `c(1, 2)`.
-#' @param rt A numeric vector with two values indicating the retention time range to filter the BPC spectra. If `NULL`, no filtering is applied.
-#' @param as_list Logical (length 1). If `TRUE`, the result is returned as a list. Default is `FALSE`, returning a `data.table`.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-rt
+#' @template arg-as_list
 #' @export
 #' 
 get_spectra_bpc.MassSpecAnalyses <- function(
@@ -438,12 +436,11 @@ get_spectra_bpc.MassSpecAnalyses <- function(
   })
   if (as_list) return(value)
   data.table::rbindlist(value, idcol = "analysis", fill = TRUE)
-  value
 }
 
 # MARK: get_raw_spectra
 #' @describeIn MassSpecAnalyses Get raw spectra data from specified analyses, returning a `data.table` with the spectra data.
-#' @param x An `MassSpecAnalyses` object.
+#' @template arg-x-MassSpecAnalyses
 #' @template arg-analyses
 #' @template arg-ms-levels
 #' @template arg-ms-mass
@@ -757,7 +754,7 @@ get_raw_spectra.MassSpecAnalyses <- function(
                   spec[[i]],
                   cache[[i]]$hash
                 )
-                # message("\U1f5ab Parsed spectra for ", i, " cached!")
+                message("\U1f5ab Parsed spectra for ", i, " cached!")
               }
             }
           }
@@ -808,8 +805,19 @@ get_raw_spectra.MassSpecAnalyses <- function(
 }
 
 # MARK: get_spectra_eic
+#' @describeIn MassSpecAnalyses Get extracted ion chromatograms (EIC) for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
 #' @export
-#' @noRd
+#' 
 get_spectra_eic.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -873,8 +881,22 @@ get_spectra_eic.MassSpecAnalyses <- function(
 }
 
 # MARK: get_spectra_ms1
+#' @describeIn MassSpecAnalyses Get MS1 spectra for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-ms-mzClust
+#' @template arg-ms-presence
+#' @template arg-ms-minIntensity
 #' @export
-#' @noRd
+#' 
 get_spectra_ms1.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -912,7 +934,12 @@ get_spectra_ms1.MassSpecAnalyses <- function(
   }
 
   if (!"id" %in% colnames(ms1)) {
-    if (x@has_ion_mobility) {
+
+    has_ion_mobility <- any(vapply(x$analyses[analyses], function(a) {
+      any(a$spectra_headers$mobility > 0)
+    }, logical(1)))
+
+    if (has_ion_mobility) {
       ms1$id <- paste(
         round(min(ms1$mz), 4),
         "-",
@@ -957,7 +984,7 @@ get_spectra_ms1.MassSpecAnalyses <- function(
 
   ms1_df <- ms1_df[order(ms1_df$analysis), ]
 
-  ms1_df$replicate <- x@replicates[ms1_df$analysis]
+  ms1_df$replicate <- get_replicates(x)[ms1_df$analysis]
 
   data.table::setcolorder(ms1_df, c("analysis", "replicate"))
 
@@ -965,8 +992,23 @@ get_spectra_ms1.MassSpecAnalyses <- function(
 }
 
 # MARK: get_spectra_ms2
+#' @describeIn MassSpecAnalyses Get MS2 spectra for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-ms-isolationWindow
+#' @template arg-ms-mzClust
+#' @template arg-ms-presence
+#' @template arg-ms-minIntensity
 #' @export
-#' @noRd
+#' 
 get_spectra_ms2.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -1006,7 +1048,12 @@ get_spectra_ms2.MassSpecAnalyses <- function(
   }
 
   if (!"id" %in% colnames(ms2)) {
-    if (x@has_ion_mobility) {
+
+    has_ion_mobility <- any(vapply(x$analyses[analyses], function(a) {
+      any(a$spectra_headers$mobility > 0)
+    }, logical(1)))
+
+    if (has_ion_mobility) {
       ms2$id <- paste(
         round(min(ms2$mz), 4),
         "-",
@@ -1051,7 +1098,7 @@ get_spectra_ms2.MassSpecAnalyses <- function(
 
   ms2_df <- ms2_df[order(ms2_df$analysis), ]
 
-  ms2_df$replicate <- x@replicates[ms2_df$analysis]
+  ms2_df$replicate <- get_replicates(x)[ms2_df$analysis]
 
   data.table::setcolorder(ms2_df, c("analysis", "replicate"))
 
@@ -1059,8 +1106,20 @@ get_spectra_ms2.MassSpecAnalyses <- function(
 }
 
 # MARK: plot_spectra_tic
+#' @describeIn MassSpecAnalyses Plot total ion current (TIC) spectra for the specified analyses.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-rt
+#' @template arg-labs
+#' @template arg-title
+#' @template arg-ms-colorBy
+#' @template arg-legendNames
+#' @template arg-ms-downsize
+#' @template arg-interactive
+#' @template arg-renderEngine
 #' @export
-#' @noRd
+#' 
 plot_spectra_tic.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -1167,8 +1226,19 @@ plot_spectra_tic.MassSpecAnalyses <- function(
 }
 
 # MARK: plot_spectra_bpc
+#' @describeIn MassSpecAnalyses Plot base peak chromatograms (BPC) spectra for the specified analyses.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-rt
+#' @template arg-labs
+#' @template arg-title
+#' @template arg-ms-colorBy
+#' @template arg-legendNames
+#' @template arg-interactive
+#' @template arg-renderEngine
 #' @export
-#' @noRd
+#' 
 plot_spectra_bpc.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -1270,8 +1340,25 @@ plot_spectra_bpc.MassSpecAnalyses <- function(
 }
 
 # MARK: plot_spectra_eic
+#' @describeIn MassSpecAnalyses Plot extracted ion chromatograms (EIC) for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-ms-colorBy
+#' @template arg-legendNames
+#' @template arg-labs
+#' @template arg-title
+#' @template arg-interactive
+#' @template arg-renderEngine
 #' @export
-#' @noRd
+#' 
 plot_spectra_eic.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -1389,8 +1476,26 @@ plot_spectra_eic.MassSpecAnalyses <- function(
 }
 
 # MARK: plot_spectra_xic
+#' @describeIn MassSpecAnalyses Plot spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-legendNames
+#' @template arg-ms-plotTargetMark
+#' @template arg-ms-targetsMark
+#' @template arg-ms-ppmMark
+#' @template arg-ms-secMark
+#' @template arg-ms-numberRows
+#' @template arg-renderEngine
 #' @export
-#' @noRd
+#' 
 plot_spectra_xic.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -1668,8 +1773,28 @@ plot_spectra_xic.MassSpecAnalyses <- function(
 }
 
 # MARK: plot_spectra_ms1
+#' @describeIn MassSpecAnalyses Plot MS1 spectra for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-ms-mzClust
+#' @template arg-ms-presence
+#' @template arg-ms-minIntensity
+#' @template arg-ms-colorBy
+#' @template arg-legendNames
+#' @template arg-labs
+#' @template arg-title
+#' @template arg-showText
+#' @template arg-interactive
 #' @export
-#' @noRd
+#' 
 plot_spectra_ms1.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -1819,8 +1944,29 @@ plot_spectra_ms1.MassSpecAnalyses <- function(
 }
 
 # MARK: plot_spectra_ms2
+#' @describeIn MassSpecAnalyses Plot MS2 spectra for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-ms-isolationWindow
+#' @template arg-ms-mzClust
+#' @template arg-ms-presence
+#' @template arg-ms-minIntensity
+#' @template arg-ms-colorBy
+#' @template arg-legendNames
+#' @template arg-labs
+#' @template arg-title
+#' @template arg-showText
+#' @template arg-interactive
 #' @export
-#' @noRd
+#'
 plot_spectra_ms2.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -1988,8 +2134,15 @@ plot_spectra_ms2.MassSpecAnalyses <- function(
 }
 
 # MARK: get_raw_chromatograms
+#' @describeIn MassSpecAnalyses Get raw chromatograms from the analyses.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-chromatograms
+#' @template arg-ms-rtmin
+#' @template arg-ms-rtmax
+#' @template arg-ms-minIntensity
 #' @export
-#' @noRd
+#' 
 get_raw_chromatograms.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -2004,7 +2157,7 @@ get_raw_chromatograms.MassSpecAnalyses <- function(
   }
 
   chroms_list <- lapply(
-    x@analyses[analyses],
+    x$analyses[analyses],
     function(z, chromatograms) {
       if (nrow(z$chromatograms_headers) == 0) {
         return(data.frame())
@@ -2094,8 +2247,24 @@ get_raw_chromatograms.MassSpecAnalyses <- function(
 }
 
 # MARK: load_spectra
+#' @describeIn MassSpecAnalyses Load spectra from the analyses, adding them to the results as a `MassSpecSpectra` object.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-ms-allTraces
+#' @template arg-ms-isolationWindow
+#' @template arg-ms-minIntensityMS1
+#' @template arg-ms-minIntensityMS2
 #' @export
-#' @noRd
+#' 
 load_spectra.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -2133,7 +2302,10 @@ load_spectra.MassSpecAnalyses <- function(
   )
 
   if (!is.null(cache$data)) {
-    x@Spectra <- cache$data
+    x$results[[class(cache$data)[1]]] <- cache$data
+    if (!is.null(validate_object(x))) {
+      stop("Loaded spectra are not valid!")
+    }
     message("\U2139 Spectra loaded from cache!")
     return(x)
   }
@@ -2162,24 +2334,27 @@ load_spectra.MassSpecAnalyses <- function(
     spec$replicate <- NULL
     spec <- split(spec, split_vector)
 
-    for (a in names(x)) {
+    for (a in get_names(x)) {
       if (!a %in% names(spec)) {
         spec[[a]] <- data.table::data.table()
       }
     }
 
-    spec <- spec[names(x)]
+    spec <- spec[get_names(x)]
 
     spec <- StreamFind::MassSpecSpectra(
       spec,
-      replicates = x@replicates,
+      replicates = get_replicates(x)[names(spec)],
       is_averaged = FALSE
     )
     if (!is.null(cache$hash)) {
       .save_cache_sqlite("load_spectra", spec, cache$hash)
       message("\U1f5ab Spectra cached!")
     }
-    x@Spectra <- spec
+    x$results[[class(spec)[1]]] <- spec
+    if (!is.null(validate_object(x))) {
+      stop("Loaded spectra are not valid!")
+    }
   } else {
     warning("Not done! Spectra not found.")
   }
@@ -2187,8 +2362,15 @@ load_spectra.MassSpecAnalyses <- function(
 }
 
 # MARK: load_chromatograms
+#' @describeIn MassSpecAnalyses Load chromatograms from the analyses, adding them to the results as a `Chromatograms` object.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-chromatograms
+#' @template arg-ms-rtmin
+#' @template arg-ms-rtmax
+#' @template arg-ms-minIntensity
 #' @export
-#' @noRd
+#' 
 load_chromatograms.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
@@ -2213,22 +2395,30 @@ load_chromatograms.MassSpecAnalyses <- function(
     chroms <- split(chroms, split_vector)
     chroms <- StreamFind::Chromatograms(
       chroms,
-      replicates = x@replicates[names(chroms)],
+      replicates = get_replicates(x)[names(chroms)],
       is_averaged = FALSE
     )
-    x@Chromatograms <- chroms
+    x$results[["Chromatograms"]] <- chroms
+    if (!is.null(validate_object(x))) {
+      stop("Loaded chromatograms are not valid!")
+    }
   } else {
     warning("Not done! Chromatograms not found.")
   }
-
   x
 }
 
 # MARK: get_matrix_suppression
+#' @describeIn MassSpecAnalyses Get TIC matrix suppression for the analyses using the blank replicate analyses as reference for the suppression factor. The `rtWindowVal` argument defines the retention time window in seconds for the suppression factor calculation. The calculation is based on the work from \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-ms-rtWindowVal
 #' @export
-#' @noRd
-get_matrix_suppression.MassSpecAnalyses <- function(x, rtWindow = 10) {
-  mpList <- .calculate_tic_matrix_suppression(x, rtWindow)
+#' 
+#' @references
+#' \insertRef{tisler01}{StreamFind}
+#' 
+get_matrix_suppression.MassSpecAnalyses <- function(x, rtWindowVal = 10) {
+  mpList <- .calculate_tic_matrix_suppression(x, rtWindowVal)
   if (is.null(mpList)) {
     return(data.table::data.table())
   }
@@ -2236,12 +2426,27 @@ get_matrix_suppression.MassSpecAnalyses <- function(x, rtWindow = 10) {
 }
 
 # MARK: plot_matrix_suppression
+#' @describeIn MassSpecAnalyses Plot TIC matrix suppression for the specified analyses. The `rtWindowVal` argument defines the retention time window in seconds for the suppression factor calculation. The calculation is based on the work from \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-rtWindowVal
+#' @template arg-labs
+#' @template arg-title
+#' @template arg-ms-colorBy
+#' @template arg-legendNames
+#' @template arg-ms-downsize
+#' @template arg-interactive
+#' @template arg-showLegend
+#' @template arg-renderEngine
 #' @export
-#' @noRd
+#' 
+#' @references
+#' \insertRef{tisler01}{StreamFind}
+#' 
 plot_matrix_suppression.MassSpecAnalyses <- function(
   x,
   analyses = NULL,
-  rtWindow = 10,
+  rtWindowVal = 10,
   xLab = NULL,
   yLab = NULL,
   title = NULL,
@@ -2253,7 +2458,7 @@ plot_matrix_suppression.MassSpecAnalyses <- function(
   renderEngine = "webgl"
 ) {
   analyses <- .check_analyses_argument(x, analyses)
-  mp <- get_matrix_suppression(x, rtWindow)
+  mp <- get_matrix_suppression(x, rtWindowVal)
   if (nrow(mp) == 0) {
     message("\U2717 TIC matrix suppression not found for the analyses!")
     return(NULL)

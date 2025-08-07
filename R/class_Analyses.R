@@ -73,7 +73,7 @@ info.Analyses <- function(x) {
 #' @export
 #' @noRd
 show.Analyses <- function(x, ...) {
-  if (length(x) > 0) {
+  if (length(x$analyses) > 0) {
     overview <- info(x)
     row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
     print(overview)

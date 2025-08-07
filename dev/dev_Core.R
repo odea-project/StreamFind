@@ -1,7 +1,6 @@
 library(StreamFind)
 
 ## Metadata -----
-
 a <- Metadata()
 sloop::s3_dispatch(length(a))
 a["name"] <- "Ricardo"
@@ -32,19 +31,17 @@ a <- add(a, EngineConfig())
 show(a)
 
 # Workflow -----
-
 proset <- ProcessingStep()
 show(proset)
-
 wf <- Workflow()
 wf[["a"]] <- MassSpecMethod_FindFeatures_openms()
 show(wf)
 ?Workflow
 
 # Analyses -----
-
 a <- Analyses()
 
+# MassSpecAnalyses -----
 path <- "C:/Users/apoli/Documents/example_files"
 ms_files <- list.files(path, pattern = ".mzML", full.names = TRUE)[1:3]
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
@@ -52,64 +49,32 @@ cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
 db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
-
 a <- MassSpecAnalyses(ms_files)
-#info(a)
-#get_spectra_tic(a, as_list = TRUE)
-#get_spectra_bpc(a)
+a <- set_replicates(a, c("sample", "sample", "sample"))
+get_replicates(a)
+get_blanks(a)
+info(a)
+get_spectra_tic(a, as_list = TRUE)
+get_spectra_bpc(a)
+plot_spectra_bpc(a, levels = 1)
 get_raw_spectra(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
+plot_spectra_ms1(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
+plot_spectra_ms2(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
+plot_spectra_eic(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
 
-
-test_simdutf()
-
-## CoreEngine ------
-
-core_file <- paste0("core.rds")
-
-core <- CoreEngine$new()
-show(core$Metadata)
-show(core$Workflow)
-show(core$Analyses)
-show(core$AuditTrail)
-as.data.frame(core$AuditTrail)
-
-core$save(core_file)
-core$load("core.rds")
-core <- CoreEngine$new(Metadata = list(file = "core.rds"))
-
-length(Metadata())
-
-
-a$entries
-
-
-
-?Metadata
-
-
-
-# dir_path <- paste0(getwd(), "/R")
-# 
-# # List all files that contain "Settings_" in their name
-# files <- list.files(dir_path, pattern = "Settings_", full.names = TRUE)
-# 
-# # Loop through the files and rename them
-# for (file in files) {
-#   # Generate new file name by replacing "Settings_" with "Method_"
-#   new_file <- sub("Settings_", "Method_", basename(file))
-#   
-#   # Create full path for the new file name
-#   new_path <- file.path(dirname(file), new_file)
-#   
-#   # Rename the file
-#   file.rename(file, new_path)
-#   
-#   # Print renamed files
-#   cat("Renamed:", file, "->", new_path, "\n")
-# }
-
-
-plot_spectra_baseline(raman$Analyses, colorBy = "replicates", interactive = TRUE)
+## Engine ------
+engine_file <- paste0("engine.rds")
+engine <- Engine$new()
+show(engine$Metadata)
+show(engine$Workflow)
+show(engine$Analyses)
+show(engine$AuditTrail)
+show(engine$Config)
+as.data.table(engine$AuditTrail)
+engine$save(engine_file)
+engine$Metadata[["name"]] <- "Ricardo"
+engine$load("engine.rds")
+engine <- Engine$new(Metadata = list(file = "engine.rds"))
 
 # Resources -------
 ms_files <- StreamFindData::get_ms_file_paths()
@@ -133,12 +98,19 @@ ms_files_df <- data.frame(
     rep("blank_pos", 3)
   )
 )
-
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
 db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
+
+engine <- Engine$new(
+  metadata = Metadata(list(name = "Ricardo")),
+  analyses = MassSpecAnalyses(ms_files_df)
+)
+
+
+
 
 #path <- "E:/example_ms_files"
 path <- "C:/Users/apoli/Documents/example_files"

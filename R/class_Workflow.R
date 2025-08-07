@@ -249,21 +249,8 @@ save.Workflow <- function(x, file = "workflow.rds") {
   if (length(x) > 0) {
     format <- tools::file_ext(file)
     if (format %in% "json") {
-      processing_steps <- lapply(x@processing_steps, function(s) {
-        list(
-          data_type = s@data_type,
-          method = s@method,
-          required = s@required,
-          algorithm = s@algorithm,
-          parameters = s@parameters,
-          number_permitted = s@number_permitted,
-          version = s@version,
-          software = s@software,
-          developer = s@developer,
-          contact = s@contact,
-          link = s@link,
-          doi = s@doi
-        )
+      processing_steps <- lapply(x, function(s) {
+        unclass(s)
       })
       names(processing_steps) <- names(x)
       processing_steps <- .convert_to_json(processing_steps)
@@ -291,7 +278,7 @@ read.Workflow <- function(x, file) {
     }
   } else if (grepl(".rds", file)) {
     res <- readRDS(file)
-    if (is(res, "StreamFind::Workflow")) {
+    if (is(res, "Workflow")) {
       return(res)
     } else {
       warning("File is not a Workflow object!")
@@ -323,10 +310,4 @@ show.Workflow <- function(x, ...) {
   } else {
     cat("empty")
   }
-}
-
-#' @export
-#' @noRd
-print.Workflow <- function(x, ...) {
-  show(x)
 }

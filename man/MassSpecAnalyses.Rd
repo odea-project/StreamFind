@@ -21,6 +21,20 @@
 \alias{get_spectra_tic.MassSpecAnalyses}
 \alias{get_spectra_bpc.MassSpecAnalyses}
 \alias{get_raw_spectra.MassSpecAnalyses}
+\alias{get_spectra_eic.MassSpecAnalyses}
+\alias{get_spectra_ms1.MassSpecAnalyses}
+\alias{get_spectra_ms2.MassSpecAnalyses}
+\alias{plot_spectra_tic.MassSpecAnalyses}
+\alias{plot_spectra_bpc.MassSpecAnalyses}
+\alias{plot_spectra_eic.MassSpecAnalyses}
+\alias{plot_spectra_xic.MassSpecAnalyses}
+\alias{plot_spectra_ms1.MassSpecAnalyses}
+\alias{plot_spectra_ms2.MassSpecAnalyses}
+\alias{get_raw_chromatograms.MassSpecAnalyses}
+\alias{load_spectra.MassSpecAnalyses}
+\alias{load_chromatograms.MassSpecAnalyses}
+\alias{get_matrix_suppression.MassSpecAnalyses}
+\alias{plot_matrix_suppression.MassSpecAnalyses}
 \title{Mass Spectrometry Analyses}
 \usage{
 MassSpecAnalyses(files = NULL, centroid = FALSE, levels = c(1, 2))
@@ -90,21 +104,241 @@ MassSpecAnalyses(files = NULL, centroid = FALSE, levels = c(1, 2))
   minIntensityMS1 = 0,
   minIntensityMS2 = 0
 )
+
+\method{get_spectra_eic}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL
+)
+
+\method{get_spectra_ms1}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000
+)
+
+\method{get_spectra_ms2}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 0
+)
+
+\method{plot_spectra_tic}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  levels = c(1, 2),
+  rt = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  legendNames = NULL,
+  downsize = 1,
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{plot_spectra_bpc}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  levels = c(1, 2),
+  rt = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  legendNames = NULL,
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{plot_spectra_eic}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{plot_spectra_xic}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  legendNames = NULL,
+  plotTargetMark = TRUE,
+  targetsMark = NULL,
+  ppmMark = 5,
+  secMark = 10,
+  numberRows = 1,
+  renderEngine = "webgl"
+)
+
+\method{plot_spectra_ms1}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showText = FALSE,
+  interactive = TRUE
+)
+
+\method{plot_spectra_ms2}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 0,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showText = TRUE,
+  interactive = TRUE
+)
+
+\method{get_raw_chromatograms}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  chromatograms = NULL,
+  rtmin = 0,
+  rtmax = 0,
+  minIntensity = NULL
+)
+
+\method{load_spectra}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  levels = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  allTraces = TRUE,
+  isolationWindow = 1.3,
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0
+)
+
+\method{load_chromatograms}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  chromatograms = NULL,
+  rtmin = 0,
+  rtmax = 0,
+  minIntensity = NULL
+)
+
+\method{get_matrix_suppression}{MassSpecAnalyses}(x, rtWindowVal = 10)
+
+\method{plot_matrix_suppression}{MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  rtWindowVal = 10,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  legendNames = NULL,
+  downsize = 1,
+  interactive = TRUE,
+  showLegend = TRUE,
+  renderEngine = "webgl"
+)
 }
 \arguments{
-\item{files}{A character vector with the file paths of MS raw data files.}
+\item{files}{A character vector with full file path/s of \emph{mzML}
+or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
+and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
+(character), the replicate group name (character) and the associated blank
+replicate group name (character). Note the file paths must have the extension
+\emph{.mzML} or \emph{.mzXML}.}
 
 \item{centroid}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
 
 \item{levels}{Integer vector with the levels of MS data.}
 
-\item{x}{An \code{MassSpecAnalyses} object.}
+\item{x}{A \code{MassSpecAnalyses} object.}
 
-\item{value}{A character vector with file paths to MS raw data files.}
+\item{value}{An object that highly depends on the method. Check the specific method documentation for details.}
 
-\item{i}{A numeric vector with the indices of the analyses to keep.}
+\item{i}{A character or numeric vector to perform subsetting. Check the specific method for details.}
 
-\item{file}{A character string with the file path to the \code{MassSpecAnalyses} object.}
+\item{file}{A string with a file path. Check the specific method or class for details on the file format.}
 
 \item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
@@ -162,6 +396,60 @@ data (i.e., MS1 data).}
 
 \item{minIntensityMS2}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
+
+\item{mzClust}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
+on the mass resolution of the MS data.}
+
+\item{presence}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
+spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
+
+\item{minIntensity}{Numeric (length 1) with the minimum intensity.}
+
+\item{xLab}{A string with the title for the x axis.}
+
+\item{yLab}{A string with the title for the y axis.}
+
+\item{title}{A string with the title.}
+
+\item{colorBy}{Character (length 1). One of \code{analyses} (the default), \code{polarities}, \code{levels}, \code{targets} or \code{replicates}.
+Mixed use (e.g. \code{analyses+polarities}) is also possible.}
+
+\item{legendNames}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{downsize}{An integer of length one to downsize the TIC plot. The default is 1.}
+
+\item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{renderEngine}{The engine to render the data. The default is "webgl".}
+
+\item{plotTargetMark}{Logical (length 1), set to \code{TRUE} to plot a target mark.}
+
+\item{targetsMark}{A data.frame with columns \code{mz} and \code{rt}, defining the
+\emph{m/z} and retention time values of each target. Note that the number
+of rows should match with the number of targets.}
+
+\item{ppmMark}{A numeric vector of length one to define the mass deviation,
+in ppm, of the target mark. The default is 5 ppm.}
+
+\item{secMark}{A numeric vector of length one to define the time deviation,
+in seconds, of the target mark. The default is 10 ppm.}
+
+\item{numberRows}{An integer vector of length one to define the number of
+rows to grid the plots. Note that each target is always plotted in one row
+for all selected analyses.}
+
+\item{showText}{Logical (length 1), set to \code{TRUE} to show the text annotations.}
+
+\item{chromatograms}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{rtmin}{Numeric (length 1) with the minimum retention time.}
+
+\item{rtmax}{Numeric (length 1) with the maximum retention time.}
+
+\item{rtWindowVal}{Numeric (length 1) with the retention time window value (in seconds).}
+
+\item{showLegend}{Logical (length 1). Set to \code{TRUE} to show legend.}
 }
 \value{
 An object of class \code{MassSpecAnalyses} as a list of two elements: \code{analyses} and \code{results}. Each element in \code{analyses} is a list with the following elements:
@@ -178,7 +466,7 @@ An object of class \code{MassSpecAnalyses} as a list of two elements: \code{anal
 \item \code{chromatograms_headers}: A \code{data.table} with the headers of the chromatograms in the analysis.
 \item \code{metadata}: A list with metadata information for the analysis.
 \item \code{concentration}: The concentration for the analysis.
-The \code{results} element is a list of results, where each element is a specific \link{Results} child class.
+The \code{results} element is a list of results, where each element is a specific \link{Results} child class. Currently, the \code{MassSpecAnalyses} class supports the following results: \link{NonTargetAnalysisResults}, \link{MassSpecSpectra}, and \link{Chromatograms}.
 }
 }
 \description{
@@ -192,33 +480,33 @@ The \code{MassSpecAnalyses} class represents mass spectrometry (MS) raw data fil
 
 \item \code{get_replicates(MassSpecAnalyses)}: Get the replicates of the analyses in the \code{MassSpecAnalyses} object.
 
-\item \code{set_replicates(MassSpecAnalyses)}: Set the replicates of the analyses in the \code{MassSpecAnalyses} object.
+\item \code{set_replicates(MassSpecAnalyses)}: Set the replicates of the analyses in the \code{MassSpecAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
 
 \item \code{get_blanks(MassSpecAnalyses)}: Get the blanks of the analyses in the \code{MassSpecAnalyses} object.
 
-\item \code{set_blanks(MassSpecAnalyses)}: Set the blanks of the analyses in the \code{MassSpecAnalyses} object.
+\item \code{set_blanks(MassSpecAnalyses)}: Set the blanks of the analyses in the \code{MassSpecAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
 
 \item \code{get_concentrations(MassSpecAnalyses)}: Get the concentrations of the analyses in the \code{MassSpecAnalyses} object.
 
-\item \code{set_concentrations(MassSpecAnalyses)}: Set the concentrations of the analyses in the \code{MassSpecAnalyses} object.
+\item \code{set_concentrations(MassSpecAnalyses)}: Set the concentrations of the analyses in the \code{MassSpecAnalyses} object. The argument \code{value} must be a numeric vector with the same length as the number of analyses in the object.
 
 \item \code{info(MassSpecAnalyses)}: Get a summary of the \code{MassSpecAnalyses} object.
 
-\item \code{add(MassSpecAnalyses)}: Add analyses to the \code{MassSpecAnalyses} object.
+\item \code{add(MassSpecAnalyses)}: Add analyses to the \code{MassSpecAnalyses} object. The argument \code{value} can be a character vector with file paths to MS raw data files or a list of \code{MassSpecAnalysis} objects. If the files are valid, they will be converted to \code{MassSpecAnalysis} objects.
 
-\item \code{remove(MassSpecAnalyses)}: Remove analyses from the \code{MassSpecAnalyses} object.
+\item \code{remove(MassSpecAnalyses)}: Remove analyses from the \code{MassSpecAnalyses} object. The argument \code{value} can be a character vector with the names of the analyses to remove or a numeric vector with the indices of the analyses to remove. The method will also remove the corresponding results from \code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms} if available.
 
 \item \code{[}: Subset the \code{MassSpecAnalyses} object by indices, including the result elements:
-\code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms}.
+\code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms}. The argument \code{i} can be a numeric vector with the indices of the analyses to keep.
 
-\item \code{`[`(MassSpecAnalyses) <- value}: Add analyses to the \code{MassSpecAnalyses} object by indices.
+\item \code{`[`(MassSpecAnalyses) <- value}: Add analyses to the \code{MassSpecAnalyses} object by indices. The argument \code{i} can be a numeric vector with the indices of the analyses to keep, and \code{value} can be a character vector with file paths to MS raw data files or a list of \code{MassSpecAnalysis} objects.
 
 \item \code{[[}: Subset the \code{MassSpecAnalyses} object by indices, including the result elements:
-\code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms}.
+\code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms}. The argument \code{i} can be a numeric value with the index of the analysis to keep. The method returns a \code{MassSpecAnalyses} object with only the specified analysis.
 
-\item \code{`[[`(MassSpecAnalyses) <- value}: Add analyses to the \code{MassSpecAnalyses} object by indices.
+\item \code{`[[`(MassSpecAnalyses) <- value}: Add analyses to the \code{MassSpecAnalyses} object by indices. The argument \code{i} can be a numeric value with the index of the analysis to modify, and \code{value} can be a character vector with file path to an MS raw data file.
 
-\item \code{read(MassSpecAnalyses)}: Read a \code{MassSpecAnalyses} object from a file.
+\item \code{read(MassSpecAnalyses)}: Read a \code{MassSpecAnalyses} object from a file. The \code{file} can be in JSON or RDS format.
 
 \item \code{get_spectra_tic(MassSpecAnalyses)}: Get the total ion current (TIC) spectra for the specified analyses.
 
@@ -226,18 +514,43 @@ The \code{MassSpecAnalyses} class represents mass spectrometry (MS) raw data fil
 
 \item \code{get_raw_spectra(MassSpecAnalyses)}: Get raw spectra data from specified analyses, returning a \code{data.table} with the spectra data.
 
+\item \code{get_spectra_eic(MassSpecAnalyses)}: Get extracted ion chromatograms (EIC) for the specified analyses and targets.
+
+\item \code{get_spectra_ms1(MassSpecAnalyses)}: Get MS1 spectra for the specified analyses and targets.
+
+\item \code{get_spectra_ms2(MassSpecAnalyses)}: Get MS2 spectra for the specified analyses and targets.
+
+\item \code{plot_spectra_tic(MassSpecAnalyses)}: Plot total ion current (TIC) spectra for the specified analyses.
+
+\item \code{plot_spectra_bpc(MassSpecAnalyses)}: Plot base peak chromatograms (BPC) spectra for the specified analyses.
+
+\item \code{plot_spectra_eic(MassSpecAnalyses)}: Plot extracted ion chromatograms (EIC) for the specified analyses and targets.
+
+\item \code{plot_spectra_xic(MassSpecAnalyses)}: Plot spectra extract ion chromatograms (EIC) and \emph{m/z} vs retention time from the analyses.
+
+\item \code{plot_spectra_ms1(MassSpecAnalyses)}: Plot MS1 spectra for the specified analyses and targets.
+
+\item \code{plot_spectra_ms2(MassSpecAnalyses)}: Plot MS2 spectra for the specified analyses and targets.
+
+\item \code{get_raw_chromatograms(MassSpecAnalyses)}: Get raw chromatograms from the analyses.
+
+\item \code{load_spectra(MassSpecAnalyses)}: Load spectra from the analyses, adding them to the results as a \code{MassSpecSpectra} object.
+
+\item \code{load_chromatograms(MassSpecAnalyses)}: Load chromatograms from the analyses, adding them to the results as a \code{Chromatograms} object.
+
+\item \code{get_matrix_suppression(MassSpecAnalyses)}: Get TIC matrix suppression for the analyses using the blank replicate analyses as reference for the suppression factor. The \code{rtWindowVal} argument defines the retention time window in seconds for the suppression factor calculation. The calculation is based on the work from \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}.
+
+\item \code{plot_matrix_suppression(MassSpecAnalyses)}: Plot TIC matrix suppression for the specified analyses. The \code{rtWindowVal} argument defines the retention time window in seconds for the suppression factor calculation. The calculation is based on the work from \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}.
+
 }}
-\note{
-Any existing results will be removed when adding new analyses.
-
-Any existing results will be removed when adding new analyses.
-
-Any existing results will be removed when adding new analyses.
-}
 \references{
 \insertRef{pugixml01}{StreamFind}
 
 \insertRef{proteo01}{StreamFind}
 
 \insertRef{proteo02}{StreamFind}
+
+\insertRef{tisler01}{StreamFind}
+
+\insertRef{tisler01}{StreamFind}
 }
