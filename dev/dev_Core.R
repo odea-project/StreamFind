@@ -104,13 +104,21 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
-engine <- Engine$new(
+engine <- MassSpecEngine$new(
   metadata = Metadata(list(name = "Ricardo")),
-  analyses = MassSpecAnalyses(ms_files_df)
+  analyses = ms_files_df,
 )
+engine$run(MassSpecMethod_FindFeatures_openms())
+engine$run(MassSpecMethod_AnnotateFeatures_StreamFind())
 
+?NonTargetAnalysisResults
+class(engine$ResultsList$NonTargetAnalysisResults)
 
-
+show(engine$Metadata)
+show(engine$Analyses)
+show(engine$Workflow)
+show(engine$AuditTrail)
+class(engine)
 
 #path <- "E:/example_ms_files"
 path <- "C:/Users/apoli/Documents/example_files"

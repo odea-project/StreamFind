@@ -3,7 +3,7 @@
 Quantification <- S7::new_class(
   name = "Quantification",
   package = "StreamFind",
-  parent = Results,
+  parent = S7::new_S3_class("Results"),
   
   properties = list(
     compounds = S7::new_property(S7::class_character, default = character()),

@@ -1,7 +1,7 @@
 # MARK: Engine
 # Engine -----
 #' @title Engine
-#' @description The [StreamFind::Engine] R6 class is used to harmonize the interface across different data types.
+#' @description The [StreamFind::Engine] R6 class is used to harmonize the interface across different data types for data management and processing.
 #' @template arg-core-metadata
 #' @template arg-core-workflow
 #' @template arg-core-analyses
@@ -13,7 +13,7 @@ Engine <- R6::R6Class(
   # MARK: private
   # private -----
   private = list(
-    .data_type = NULL,
+    .type = NULL,
     .Metadata = NULL,
     .Workflow = NULL,
     .Analyses = NULL,
@@ -35,7 +35,7 @@ Engine <- R6::R6Class(
         if (!is.null(validate_object(value))) {
           warning("Invalid EngineMetadata object! Not added.")
         } else {
-          if (attr(value, "data_type") %in% private$.data_type) {
+          if (attr(value, "type") %in% private$.type) {
             private$.Metadata <- value
           } else {
             warning("Metadata data type not matching with current engine! Not added.")
@@ -48,7 +48,7 @@ Engine <- R6::R6Class(
         if (!is.null(validate_object(value))) {
           warning("Invalid Metadata object! Not added.")
         } else {
-          private$.Metadata <- StreamFind::EngineMetadata(entries = value, data_type = private$.data_type)
+          private$.Metadata <- StreamFind::EngineMetadata(entries = value, type = private$.type)
           if (!is.null(private$.AuditTrail)) {
             private$.AuditTrail <- add(private$.AuditTrail, private$.Metadata)
           }
@@ -56,7 +56,7 @@ Engine <- R6::R6Class(
       } else if (is(value, "list")) {
         tryCatch(
           {
-            private$.Metadata <- StreamFind::EngineMetadata(entries = value, data_type = private$.data_type)
+            private$.Metadata <- StreamFind::EngineMetadata(entries = value, type = private$.type)
             if (!is.null(private$.AuditTrail)) {
               private$.AuditTrail <- add(private$.AuditTrail, private$.Metadata)
             }
@@ -75,9 +75,7 @@ Engine <- R6::R6Class(
     },
 
     # MARK: Workflow
-    #' @field Workflow A [StreamFind::Workflow] S7 class object. When settings can also be a list
-    #' of [StreamFind::ProcessingStep] objects or a full path string to an **rds** or **json** file
-    #' containing a [StreamFind::Workflow] object.
+    #' @field Workflow A [StreamFind::Workflow] S7 class object. When settings can also be a list of [StreamFind::ProcessingStep] objects or a full path string to an **rds** or **json** file containing a [StreamFind::Workflow] object.
     Workflow = function(value) {
       if (missing(value)) {
         return(private$.Workflow)
@@ -87,7 +85,7 @@ Engine <- R6::R6Class(
           warning("Invalid Workflow object! Not added.")
           return(invisible(self))
         }
-        if (attr(value, "data_type") %in% private$.data_type || length(value) == 0) {
+        if (attr(value, "type") %in% private$.type || length(value) == 0) {
           private$.Workflow <- value
         } else {
           warning("Workflow data type not matching with current engine! Not added.")
@@ -100,7 +98,7 @@ Engine <- R6::R6Class(
         tryCatch(
           {
             wf <- StreamFind::Workflow(value)
-            if (attr(wf, "data_type") %in% private$.data_type || length(wf) == 0) {
+            if (attr(wf, "type") %in% private$.type || length(wf) == 0) {
               private$.Workflow <- wf
               if (!is.null(private$.AuditTrail)) {
                 private$.AuditTrail <- add(private$.AuditTrail, private$.Workflow)
@@ -120,7 +118,7 @@ Engine <- R6::R6Class(
         tryCatch(
           {
             wf <- read(Workflow(), value)
-            if (attr(wf, "data_type") %in% private$.data_type || length(wf) == 0) {
+            if (attr(wf, "type") %in% private$.type || length(wf) == 0) {
               private$.Workflow <- wf
               if (!is.null(private$.AuditTrail)) {
               private$.AuditTrail <- add(private$.AuditTrail, private$.Workflow)
@@ -144,7 +142,7 @@ Engine <- R6::R6Class(
     },
 
     # MARK: Analyses
-    #' @field Analyses An [StreamFind::Analyses] S7 class object or a child of it.
+    #' @field Analyses An [StreamFind::Analyses] S7 class object or a child for a specific data type.
     Analyses = function(value) {
       if (missing(value)) {
         return(private$.Analyses)
@@ -154,7 +152,7 @@ Engine <- R6::R6Class(
           warning("Invalid Analyses or Analyses child object! Not added.")
           return(invisible(self))
         }
-        if (!grepl(value$data_type, private$.data_type)) {
+        if (!grepl(value$type, private$.type)) {
           warning("Analyses data type not matching with current engine! Not added.")
           return(invisible(self))
         }
@@ -186,9 +184,9 @@ Engine <- R6::R6Class(
       invisible(self)
     },
     
-    #MARK: Results
-    #' @field Results A named list of [StreamFind::Results] S7 class objects or a child of it.
-    Results = function(value) {
+    #MARK: ResultsList
+    #' @field ResultsList A named list of [StreamFind::Results] S7 class objects or a child for specific results.
+    ResultsList = function(value) {
       if (missing(value)) {
         return(private$.Analyses$results)
       }
@@ -197,8 +195,11 @@ Engine <- R6::R6Class(
           warning("Invalid Results or Results child object! Not added.")
           return(invisible(self))
         }
-        if (grepl(value[[i]]$data_type, private$.data_type)) {
+        if (grepl(value[[i]]$type, private$.type)) {
           private$.Analyses$results[[gsub("StreamFind::", "", is(value)[1])]] <- value
+          
+          browser()
+
           if (!is.null(private$.AuditTrail)) {
             private$.AuditTrail <- add(private$.AuditTrail, value)
           }
@@ -214,7 +215,7 @@ Engine <- R6::R6Class(
                   warning("Invalid Results or Results child object! Not added.")
                   next
                 }
-                if (grepl(value[[i]]$data_type, private$.data_type)) {
+                if (grepl(value[[i]]$type, private$.type)) {
                   private$.Analyses$results[[gsub("StreamFind::", "", is(value)[1])]] <- value[[i]]
                   if (!is.null(private$.AuditTrail)) {
                     private$.AuditTrail <- add(private$.AuditTrail, value[[i]])
@@ -268,15 +269,15 @@ Engine <- R6::R6Class(
       }
       invisible(self)
     },
-    # MARK: data_type
-    #' @field data_type A character string with the data type of the engine.
+    # MARK: type
+    #' @field type A character string with the data type of the engine.
     #' This is a read-only field.
-    data_type = function(value) {
+    type = function(value) {
       if (!missing(value)) {
-        warning("data_type is read-only! Not set.")
+        warning("type is read-only! Not set.")
         return(invisible(self))
       }
-      private$.data_type
+      private$.type
     }
   ),
   
@@ -286,12 +287,24 @@ Engine <- R6::R6Class(
     
     # MARK: initialize
     #' @description Creates an [StreamFind::Engine] R6 class object.
-    #' @param ... Additional arguments for data specific engines.
+    #' @param ... Additional arguments passed to the method, internal use only.
     initialize = function(metadata = NULL, workflow = NULL, analyses = NULL, ...) {
-      data_type <- gsub("Engine", "", is(self))
-      if (data_type == "") data_type <- NA_character_
-      private$.data_type <- data_type
-      private$.Metadata <- StreamFind::EngineMetadata(data_type = data_type)
+      dots <- list(...)
+      if ("type" %in% names(dots)) {
+        type <- dots$type
+      } else {
+        type <- NA_character_
+      }
+      checkmate::assert_character(type, len = 1, null.ok = TRUE)
+      checkmate::assert_true(type %in% c(NA_character_, DataTypes()$types))
+      if (is.na(type) && !is.null(analyses)) {
+        if (grepl("Analyses", class(analyses)[1])) {
+          type <- gsub("Analyses", "", class(analyses)[1])
+        }
+      }
+      checkmate::assert_true(type %in% c(NA_character_, "MassSpec", "Raman", "Statistic"))
+      private$.type <- type
+      private$.Metadata <- StreamFind::EngineMetadata(type = type)
       private$.AuditTrail <- StreamFind::AuditTrail()
       private$.Config <- StreamFind::EngineConfig()     
       if (!is.null(metadata)) {
@@ -344,32 +357,30 @@ Engine <- R6::R6Class(
       } else {
         self$Workflow <- Workflow()
       }
-      if (is.na(data_type)) {
+      if (is.na(type)) {
         private$.Analyses <- Analyses()
       } else {
-        Analyses_call <- paste0(data_type, "Analyses")
+        Analyses_call <- paste0(type, "Analyses")
         private$.Analyses <- do.call(Analyses_call, list())
-      }
-      if (!is.null(analyses)) {
-        tryCatch(
-          {
-            if (is(analyses, "Analyses")) {
-              if (!is.null(validate_object(analyses))) {
-                warning("Invalid Analyses object! Not added.")
-                return(invisible(self))
+        if (!is.null(analyses)) {
+          tryCatch(
+            {
+              if (is(analyses, "Analyses")) {
+                self$Analyses <- analyses
+              } else {
+                self$Analyses <- do.call(Analyses_call, c(list(analyses, dots)))
               }
-              self$Analyses <- analyses
-            } else {
-              warning("Analyses not added! Not valid.")
+            },
+            error = function(e) {
+              warning(e)
+            },
+            warning = function(w) {
+              warning(w)
             }
-          },
-          error = function(e) {
-            warning(e)
-          },
-          warning = function(w) {
-            warning(w)
-          }
-        )
+          )
+        } else {
+            private$.Analyses <- do.call(Analyses_call, list())
+        }
       }
       message("\U2713 Engine created!")
       invisible(self)
@@ -460,10 +471,10 @@ Engine <- R6::R6Class(
       }
       
       if (tools::file_ext(file) %in% "sqlite") {
-        hash <- .make_hash(paste0("Engine_", private$.data_type))
-        data <- .load_cache_sqlite_backend(file, paste0("Engine_", private$.data_type), hash)
+        hash <- .make_hash(paste0("Engine_", private$.type))
+        data <- .load_cache_sqlite_backend(file, paste0("Engine_", private$.type), hash)
         if (!is.null(data)) {
-          private$.data_type <- data$data_type
+          private$.type <- data$type
           private$.Metadata <- data$Metadata
           private$.Workflow <- data$Workflow
           private$.Analyses <- data$Analyses
@@ -477,7 +488,7 @@ Engine <- R6::R6Class(
       } else if (tools::file_ext(file) %in% "rds") {
         data <- readRDS(file)
         if (is(data, "list")) {
-          if (data$data_type %in% private$.data_type) {
+          if (data$type %in% private$.type) {
             private$.Metadata <- data$Metadata
             private$.Workflow <- data$Workflow
             private$.Analyses <- data$Analyses
@@ -501,7 +512,7 @@ Engine <- R6::R6Class(
     #' @description Prints a summary to the console.
     print = function() {
       cat("\n")
-      cat(paste0(private$.data_type, " Engine\n"))
+      cat(paste0(private$.type, " Engine\n"))
       cat("\n")
       cat("\n")
       cat("Metadata\n")
@@ -529,7 +540,7 @@ Engine <- R6::R6Class(
       if (is.na(file)) file <- self$Metadata[["file"]]
       if (is.na(file)) {
         file <- paste0(
-          getwd(), "/", is(self), "_", private$.data_type, "_", format(self$Metadata[["date"]], "%Y%m%d%H%M%S"), ".rds"
+          getwd(), "/", is(self), "_", private$.type, "_", format(self$Metadata[["date"]], "%Y%m%d%H%M%S"), ".rds"
         )
       }
       if (!self$Metadata[["file"]] %in% file) {
@@ -552,23 +563,23 @@ Engine <- R6::R6Class(
       
       if (tools::file_ext(file) %in% "sqlite") {
         data <- list(
-          data_type = private$.data_type,
+          type = private$.type,
           Metadata = self$Metadata,
           Workflow = self$Workflow,
           Analyses = self$Analyses,
           AuditTrail = self$AuditTrail,
           Config = self$Config
         )
-        hash <- .make_hash(paste0("Engine_", private$.data_type))
+        hash <- .make_hash(paste0("Engine_", private$.type))
         .save_cache_sqlite(
-          category = paste0("Engine_", private$.data_type),
+          category = paste0("Engine_", private$.type),
           data = data,
           hash = hash,
           file = file
         )
       } else if (tools::file_ext(file) %in% "rds") {
         data <- list(
-          data_type = private$.data_type,
+          type = private$.type,
           Metadata = self$Metadata,
           Workflow = self$Workflow,
           Analyses = self$Analyses,
@@ -606,16 +617,20 @@ Engine <- R6::R6Class(
         warning("Invalid ProcessingStep object! Not run.")
         return(invisible(self))
       }
-      data_type <- step$data_type
-      if (!checkmate::test_true(data_type %in% private$.data_type)) {
-        warning("Data type ", data_type, " not matching with current engine! Not done.")
+      type <- step$type
+      if (!checkmate::test_true(type %in% private$.type)) {
+        warning("Data type ", type, " not matching with current engine! Not done.")
         return(invisible(self))
       }
-      call <- step$call
-      available_processing_steps <- .get_available_processing_methods(step$data_type)
+      call <- class(step)[1]
+      available_processing_steps <- .get_available_processing_methods(step$type)
       if (!call %in% available_processing_steps) {
         warning(paste0(call, " not available!"))
         return(invisible(self))
+      }
+      if (length(private$.Workflow) == 0) {
+        private$.Workflow <- StreamFind::Workflow()
+        attr(private$.Workflow, "type") <- private$.type
       }
       message("\U2699 Running ", step$method, " using ", step$algorithm)
       config_cache <- self$Config[["ConfigCache"]]
@@ -710,7 +725,6 @@ Engine <- R6::R6Class(
     run_workflow = function() {
       if (length(self$Workflow) > 0) {
         steps <- self$Workflow
-        self$Workflow <- StreamFind::Workflow()
         if (length(self$Analyses$results) > 0) self$Analyses$results <- list()
         lapply(steps, function(x) self$run(x))
       } else {
@@ -730,7 +744,7 @@ Engine <- R6::R6Class(
     run_app = function() {
       self$save()
       file <- self$Metadata[["file"]]
-      data_type <- private$.data_type
+      type <- private$.type
       if (!requireNamespace("shiny", quietly = TRUE)) {
         warning("Shiny package not installed!")
         return(invisible(self))
@@ -755,7 +769,7 @@ Engine <- R6::R6Class(
         warning("sortable package not installed!")
         return(invisible(self))
       }
-      StreamFind::run_app(file = file, engine_type = data_type)
+      StreamFind::run_app(file = file, engine_type = type)
     }
   )
 )

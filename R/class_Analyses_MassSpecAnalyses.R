@@ -36,8 +36,8 @@ MassSpecAnalyses <- function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
     list(
       analyses = analyses,
       results = list(),
-      data_type = "MassSpec",
-      possible_formats = c("mzML", "mzXML", "d", "raw")
+      type = "MassSpec",
+      formats = DataTypes()$file_formats$MassSpec
     ),
     class = c("MassSpecAnalyses", "Analyses")
   )
@@ -55,7 +55,7 @@ MassSpecAnalyses <- function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
 validate_object.MassSpecAnalyses = function(x) {
   checkmate::assert_class(x, "MassSpecAnalyses")
   checkmate::assert_true(identical(
-    x$possible_formats,
+    x$formats,
     c("mzML", "mzXML", "d", "raw")
   ))
   if (length(x$analyses) > 0) {
@@ -201,7 +201,7 @@ info.MassSpecAnalyses <- function(x) {
 #'
 add.MassSpecAnalyses <- function(x, value) {
   if (is.character(value)) {
-    if (all(tools::file_ext(value) %in% x$possible_formats)) {
+    if (all(tools::file_ext(value) %in% x$formats)) {
       value <- .get_MassSpecAnalysis_from_files(value)
     } else {
       warning("File/s not valid!")

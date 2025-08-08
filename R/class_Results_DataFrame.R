@@ -3,7 +3,7 @@
 DataFrame <- S7::new_class(
   name = "DataFrame",
   package = "StreamFind",
-  parent = Results,
+  parent = S7::new_S3_class("Results"),
   properties = list(
     data = S7::new_property(S7::class_data.frame, default = data.frame())
   ),

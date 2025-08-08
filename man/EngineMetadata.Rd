@@ -5,14 +5,14 @@
 \alias{validate_object.EngineMetadata}
 \title{Engine Metadata}
 \usage{
-EngineMetadata(entries = list(), data_type = NA_character_)
+EngineMetadata(entries = list(), type = NA_character_)
 
 \method{validate_object}{EngineMetadata}(x)
 }
 \arguments{
 \item{entries}{A named list of metadata entries. Default is an empty list.}
 
-\item{data_type}{A character string with the data type of the engine.
+\item{type}{A character string with the data type of the engine.
 Default is \code{NA_character_}.}
 
 \item{x}{An \code{EngineMetadata} object.}

@@ -3,7 +3,7 @@
 Spectra <- S7::new_class(
   name = "Spectra",
   package = "StreamFind",
-  parent = Results,
+  parent = S7::new_S3_class("Results"),
   
   properties = list(
     spectra = S7::new_property(S7::class_list, default = list()),

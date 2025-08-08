@@ -2,15 +2,10 @@
 % Please edit documentation in R/class_ProcessingStep.R
 \name{ProcessingStep}
 \alias{ProcessingStep}
-\alias{validate_object.ProcessingStep}
-\alias{as.ProcessingStep}
-\alias{save.ProcessingStep}
-\alias{read.ProcessingStep}
-\alias{show.ProcessingStep}
-\title{Generic Processing Step}
+\title{Generic Processing Step Class}
 \usage{
 ProcessingStep(
-  data_type = NA_character_,
+  type = NA_character_,
   method = NA_character_,
   required = NA_character_,
   algorithm = NA_character_,
@@ -25,19 +20,9 @@ ProcessingStep(
   link = NA_character_,
   doi = NA_character_
 )
-
-\method{validate_object}{ProcessingStep}(x)
-
-as.ProcessingStep(value)
-
-\method{save}{ProcessingStep}(x, file = "settings.json")
-
-\method{read}{ProcessingStep}(x, file)
-
-\method{show}{ProcessingStep}(x, ...)
 }
 \arguments{
-\item{data_type}{A character string representing the data type (e.g., "MassSpec", "Raman").}
+\item{type}{A character string representing the data type (e.g., "MassSpec", "Raman").}
 
 \item{method}{A character string representing the method used (e.g., "BaselineCorrection").}
 
@@ -65,36 +50,7 @@ as.ProcessingStep(value)
 additional information.}
 
 \item{doi}{A character string representing the DOI of the algorithm or additional information.}
-
-\item{x}{A \code{ProcessingStep} object.}
-
-\item{value}{A list or JSON object containing the parameters for the processing step.}
-
-\item{file}{A character string specifying the file path to read the object from.
-The file extension should be \code{.json} or \code{.rds}.}
-
-\item{...}{Additional arguments (not used).}
 }
 \description{
-The \code{ProcessingStep} class is used to define a processing step within a
-\link{Workflow}. It contains information about the data type, method, algorithm,
-parameters, and other relevant metadata for the processing step. The \code{ProcessingStep} is the
-parent class of all processing methods in StreamFind.
+The \code{ProcessingStep} class is used to define a processing step within a \link{Workflow}. It contains information about the data type, method, algorithm, parameters, and other relevant metadata for the processing step. The \code{ProcessingStep} is the parent class of all processing methods in StreamFind.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(ProcessingStep)}: Validate the \code{ProcessingStep} object, returns \code{NULL} if valid.
-
-\item \code{save(ProcessingStep)}: Save a \code{ProcessingStep} object to a file in JSON or RDS format.
-
-\item \code{read(ProcessingStep)}: Read a \code{ProcessingStep} object from a file in JSON or RDS format,
-returning the updated object.
-
-\item \code{show(ProcessingStep)}: Show the details of a \code{ProcessingStep} object.
-
-}}
-\section{Functions}{
-\itemize{
-\item \code{as.ProcessingStep()}: Convert a list or JSON object to a \code{ProcessingStep} object.
-
-}}

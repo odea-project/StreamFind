@@ -23,51 +23,51 @@
 #'
 #' @export
 #'
-MassSpecMethod_AnnotateFeatures_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_AnnotateFeatures_StreamFind",
-  parent = S7::new_S3_class("ProcessingStep"),
-  package = "StreamFind",
-  constructor = function(rtWindowAlignment = 0.3,
-                         maxIsotopes = 8,
-                         maxCharge = 1,
-                         maxGaps = 1) {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "MassSpec",
-        method = "AnnotateFeatures",
-        required = "FindFeatures",
-        algorithm = "StreamFind",
-        parameters = list(
-          maxIsotopes = as.integer(maxIsotopes),
-          maxCharge = as.integer(maxCharge),
-          rtWindowAlignment = as.numeric(rtWindowAlignment),
-          maxGaps = as.integer(maxGaps)
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "StreamFind",
-        developer = "Ricardo Cunha",
-        contact = "cunha@iuta.de",
-        link = "https://odea-project.github.io/StreamFind",
-        doi = NA_character_
-      )
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
-    checkmate::assert_choice(self@method, "AnnotateFeatures")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
-    checkmate::assert_count(self@parameters$maxIsotopes)
-    checkmate::assert_count(self@parameters$maxCharge)
-    checkmate::assert_count(self@parameters$maxGaps)
-    checkmate::assert_number(self@parameters$rtWindowAlignment)
-    NULL
-  }
-)
+MassSpecMethod_AnnotateFeatures_StreamFind <- function(
+  rtWindowAlignment = 0.3,
+  maxIsotopes = 8,
+  maxCharge = 1,
+  maxGaps = 1
+) {
+  x <- ProcessingStep(
+    data_type = "MassSpec",
+    method = "AnnotateFeatures",
+    required = "FindFeatures",
+    algorithm = "StreamFind",
+    parameters = list(
+      maxIsotopes = as.integer(maxIsotopes),
+      maxCharge = as.integer(maxCharge),
+      rtWindowAlignment = as.numeric(rtWindowAlignment),
+      maxGaps = as.integer(maxGaps)
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+}
+
+#' @describeIn MassSpecMethod_AnnotateFeatures_StreamFind Validate the MassSpecMethod_AnnotateFeatures_StreamFind object, returning NULL if valid.
+#' @param x A `MassSpecMethod_AnnotateFeatures_StreamFind` object.
+#' @export
+#' 
+validate_object.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x) {
+  checkmate::assert_choice(x$data_type, "MassSpec")
+  checkmate::assert_choice(x$method, "AnnotateFeatures")
+  checkmate::assert_choice(x$algorithm, "StreamFind")
+  checkmate::assert_count(x$parameters$maxIsotopes)
+  checkmate::assert_count(x$parameters$maxCharge)
+  checkmate::assert_count(x$parameters$maxGaps)
+  checkmate::assert_number(x$parameters$rtWindowAlignment)
+  NULL
+}
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_AnnotateFeatures_StreamFind) <- function(x, engine = NULL) {
+run.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
@@ -78,21 +78,21 @@ S7::method(run, MassSpecMethod_AnnotateFeatures_StreamFind) <- function(x, engin
     return(FALSE)
   }
 
-  if (!engine$Analyses@has_results_nts) {
+  if (!is.null(engine$Analyses$results[["NonTargetAnalysisResults"]])) {
     warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$NonTargetAnalysisResults
+  nts <- engine$ResultsList$NonTargetAnalysisResults
 
-  if (!nts@has_features) {
+  if (length(nts$features) == 0) {
     warning("NonTargetAnalysisResults object is empty! Not done.")
     return(FALSE)
   }
 
-  feature_list <- nts@feature_list
+  feature_list <- nts$features
 
-  parameters <- x@parameters
+  parameters <- x$parameters
 
   tryCatch(
     {
@@ -104,8 +104,9 @@ S7::method(run, MassSpecMethod_AnnotateFeatures_StreamFind) <- function(x, engin
         maxGaps = as.integer(parameters$maxGaps)
       )
 
-      nts@feature_list <- feature_list
-      engine$NonTargetAnalysisResults <- nts
+      nts$features <- feature_list
+      validate_object(nts)
+      engine$ResultsList$NonTargetAnalysisResults <- nts
       message(paste0("\U2713 ", "Features annotated!"))
       TRUE
     },

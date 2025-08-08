@@ -2,24 +2,33 @@
 % Please edit documentation in R/class_Results.R
 \name{Results}
 \alias{Results}
-\title{Generic Results}
+\alias{validate_object.Results}
+\title{Generic Results Class}
 \usage{
 Results(
-  data_type = NA_character_,
-  name = NA_character_,
-  software = NA_character_,
+  type = NA_character_,
+  name = "Results",
+  software = "StreamFind",
   version = NA_character_
 )
+
+\method{validate_object}{Results}(x)
+}
+\arguments{
+\item{x}{An object of class \code{Results}.}
 }
 \description{
-The Results class is used to store results of data processing in
-\link{Analyses} child classes. Child classes of Results are implemented for diverse types
-of results for a given type of data.
+The \code{Results} class is used to store results of data processing in \link{Analyses} child classes. Child classes of \code{Results} are implemented for diverse types of results for a given type of data.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(Results)}: Validate the Results object, returning \code{NULL} if valid.
+
+}}
 \section{Slots}{
 
 \describe{
-\item{\code{data_type}}{A character string indicating the type of data.}
+\item{\code{type}}{A character string indicating the type of data.}
 
 \item{\code{name}}{A character string representing the name of the results.}
 

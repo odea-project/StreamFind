@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_xcms3_centwave}
 \alias{MassSpecMethod_FindFeatures_xcms3_centwave}
-\title{MassSpecMethod_FindFeatures_xcms3_centwave S7 class}
+\alias{validate_object.MassSpecMethod_FindFeatures_xcms3_centwave}
+\title{MassSpecMethod_FindFeatures_xcms3_centwave class}
 \usage{
 MassSpecMethod_FindFeatures_xcms3_centwave(
   ppm = 12,
@@ -18,6 +19,8 @@ MassSpecMethod_FindFeatures_xcms3_centwave(
   firstBaselineCheck = FALSE,
   extendLengthMSW = FALSE
 )
+
+\method{validate_object}{MassSpecMethod_FindFeatures_xcms3_centwave}(x)
 }
 \arguments{
 \item{ppm}{numeric(1) defining the maximal tolerated m/z deviation in consecutive scans in parts
@@ -68,6 +71,8 @@ running centWave rather than truncating with the EIC length. Uses the
 "open" method to extend the EIC to a integer base-2 length prior to being
 passed to convolve rather than the default "reflect" method.
 See https://github.com/sneumann/xcms/issues/445 for more information.}
+
+\item{x}{A \code{MassSpecMethod_FindFeatures_xcms3_centwave} object.}
 }
 \value{
 A \code{MassSpecMethod_FindFeatures_xcms3_centwave} object.
@@ -83,6 +88,11 @@ the package \pkg{patRoon} in the background.
 See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for
 more information and requirements.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_FindFeatures_xcms3_centwave)}: Validate the object, returning \code{NULL} if valid.
+
+}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

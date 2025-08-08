@@ -2,6 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_AnnotateFeatures.R
 \name{MassSpecMethod_AnnotateFeatures_StreamFind}
 \alias{MassSpecMethod_AnnotateFeatures_StreamFind}
+\alias{validate_object.MassSpecMethod_AnnotateFeatures_StreamFind}
 \title{Mass Spectrometry Method for Annotating Features in NonTargetAnalysisResults (StreamFind algorithm)}
 \usage{
 MassSpecMethod_AnnotateFeatures_StreamFind(
@@ -10,6 +11,8 @@ MassSpecMethod_AnnotateFeatures_StreamFind(
   maxCharge = 1,
   maxGaps = 1
 )
+
+\method{validate_object}{MassSpecMethod_AnnotateFeatures_StreamFind}(x)
 }
 \arguments{
 \item{rtWindowAlignment}{Numeric (length 1) with the proportion of the monoisotopic feature time
@@ -21,6 +24,8 @@ window to be used for retrieving isotopic candidates.}
 isotopes.}
 
 \item{maxGaps}{Numeric (length 1) with the maximum of allowed gaps in isotopic chains.}
+
+\item{x}{A \code{MassSpecMethod_AnnotateFeatures_StreamFind} object.}
 }
 \value{
 A \code{MassSpecMethod_AnnotateFeatures_StreamFind} object.
@@ -38,3 +43,8 @@ NH4+, CH3OH+, DMSO+, CH3CN+ for positive ionization and Cl-,Br-, -2H+Na, -2H+K, 
 CH3COO- for negative ionization. In-source fragments are not yet annotated in the current
 version but planned.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_AnnotateFeatures_StreamFind)}: Validate the MassSpecMethod_AnnotateFeatures_StreamFind object, returning NULL if valid.
+
+}}

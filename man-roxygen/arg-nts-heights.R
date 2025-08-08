@@ -1,0 +1,1 @@
+#' @param heights A numeric vector of length 2 or 3 to control the height of subplots. For `plot_groups_overview` the vector should have length 3 and for `plot_suspects` the vector should have length 2. The first value is the height of the first subplot, the second value is the height of the second subplot, and the third value (if present) is the height of the third subplot.

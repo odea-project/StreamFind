@@ -2,13 +2,18 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_qalgorithms}
 \alias{MassSpecMethod_FindFeatures_qalgorithms}
-\title{MassSpecMethod_FindFeatures_qalgorithms S7 class}
+\alias{validate_object.MassSpecMethod_FindFeatures_qalgorithms}
+\title{MassSpecMethod_FindFeatures_qalgorithms class}
 \usage{
 MassSpecMethod_FindFeatures_qalgorithms(ppm = 5)
+
+\method{validate_object}{MassSpecMethod_FindFeatures_qalgorithms}(x)
 }
 \arguments{
 \item{ppm}{numeric(1) defining the maximal tolerated m/z deviation in parts per million (ppm)
 only applicable for centroid data. For profile data, the ppm value is ignored.}
+
+\item{x}{A \code{MassSpecMethod_FindFeatures_qalgorithms} object.}
 }
 \description{
 The qAlgorithms uses a comprehensive peak model developed by
@@ -19,3 +24,8 @@ The qAlgorithms is best used with profile data but centroid data is also possibl
 uncertainty should by supplied in parts per million (ppm) to account for the m/z deviation in
 centroid data.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_FindFeatures_qalgorithms)}: Validate the object, returning \code{NULL} if valid.
+
+}}

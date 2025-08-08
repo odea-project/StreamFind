@@ -2,65 +2,898 @@
 % Please edit documentation in R/class_Results_NonTargetAnalysisResults.R
 \name{NonTargetAnalysisResults}
 \alias{NonTargetAnalysisResults}
+\alias{validate_object.NontargetAnalysisResults}
+\alias{show.NonTargetAnalysisResults}
+\alias{[.NonTargetAnalysisResults}
+\alias{[[.NonTargetAnalysisResults}
+\alias{get_features_count.NonTargetAnalysisResults}
+\alias{plot_features_count.NonTargetAnalysisResults}
+\alias{get_features.NonTargetAnalysisResults}
+\alias{map_features.NonTargetAnalysisResults}
+\alias{map_features_intensity.NonTargetAnalysisResults}
+\alias{get_features_eic.NonTargetAnalysisResults}
+\alias{plot_features.NonTargetAnalysisResults}
+\alias{get_features_ms1.NonTargetAnalysisResults}
+\alias{plot_features_ms1.NonTargetAnalysisResults}
+\alias{get_features_ms2.NonTargetAnalysisResults}
+\alias{plot_features_ms2.NonTargetAnalysisResults}
+\alias{get_groups.NonTargetAnalysisResults}
+\alias{plot_groups.NonTargetAnalysisResults}
+\alias{plot_groups_overview.NonTargetAnalysisResults}
+\alias{plot_groups_profile.NonTargetAnalysisResults}
+\alias{get_groups_ms1.NonTargetAnalysisResults}
+\alias{get_groups_ms2.NonTargetAnalysisResults}
+\alias{plot_groups_ms1.NonTargetAnalysisResults}
+\alias{plot_groups_ms2.NonTargetAnalysisResults}
+\alias{get_components.NonTargetAnalysisResults}
+\alias{map_components.NonTargetAnalysisResults}
+\alias{get_suspects.NonTargetAnalysisResults}
+\alias{plot_suspects.NonTargetAnalysisResults}
+\alias{get_internal_standards.NonTargetAnalysisResults}
+\alias{plot_internal_standards.NonTargetAnalysisResults}
+\alias{get_compounds.NonTargetAnalysisResults}
+\alias{get_fold_change.NonTargetAnalysisResults}
+\alias{plot_fold_change.NonTargetAnalysisResults}
+\alias{get_patRoon_features.NonTargetAnalysisResults}
+\alias{get_patRoon_MSPeakLists.NonTargetAnalysisResults}
+\alias{get_patRoon_compounds.NonTargetAnalysisResults}
 \title{Results class child for Non-target Analysis Workflows for Mass Spectrometry Data}
 \usage{
 NonTargetAnalysisResults(
-  analyses_info = data.table::data.table(),
-  spectra_headers = list(),
-  feature_list = list()
+  info = data.table::data.table(),
+  headers = list(),
+  features = list()
 )
+
+\method{validate_object}{NontargetAnalysisResults}(x)
+
+\method{show}{NonTargetAnalysisResults}(x)
+
+\method{[}{NonTargetAnalysisResults}(x, i, j)
+
+\method{[[}{NonTargetAnalysisResults}(x, value)
+
+\method{get_features_count}{NonTargetAnalysisResults}(x, analyses = NULL, filtered = FALSE)
+
+\method{plot_features_count}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  filtered = FALSE,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  showLegend = TRUE,
+  showHoverText = TRUE
+)
+
+\method{get_features}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE
+)
+
+\method{map_features}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  neutral_mass = TRUE,
+  filtered = FALSE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "replicates+targets",
+  showLegend = TRUE,
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{map_features_intensity}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  correctIntensity = FALSE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "replicates+targets",
+  renderEngine = "webgl"
+)
+
+\method{get_features_eic}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtExpand = 0,
+  mzExpand = 0,
+  filtered = FALSE,
+  useLoadedData = TRUE
+)
+
+\method{plot_features}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtExpand = 120,
+  mzExpand = 0.001,
+  useLoadedData = TRUE,
+  filtered = FALSE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{get_features_ms1}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-5, 100),
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000,
+  normalized = TRUE,
+  filtered = FALSE,
+  useLoadedData = TRUE
+)
+
+\method{plot_features_ms1}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-5, 100),
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000,
+  normalized = TRUE,
+  filtered = FALSE,
+  useLoadedData = TRUE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showText = FALSE,
+  interactive = TRUE
+)
+
+\method{get_features_ms2}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  isolationWindow = 1.3,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 0,
+  normalized = TRUE,
+  filtered = FALSE,
+  useLoadedData = TRUE
+)
+
+\method{plot_features_ms2}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 0,
+  normalized = TRUE,
+  filtered = FALSE,
+  useLoadedData = TRUE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showText = TRUE,
+  interactive = TRUE
+)
+
+\method{get_groups}{NonTargetAnalysisResults}(
+  x,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  intensities = TRUE,
+  average = FALSE,
+  sdValues = FALSE,
+  metadata = FALSE,
+  correctIntensity = FALSE
+)
+
+\method{plot_groups}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtExpand = 15,
+  mzExpand = 0.001,
+  filtered = FALSE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{plot_groups_overview}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtExpand = 120,
+  mzExpand = 0.005,
+  useLoadedData = TRUE,
+  correctIntensity = TRUE,
+  filtered = FALSE,
+  legendNames = NULL,
+  title = NULL,
+  heights = c(0.35, 0.5, 0.15),
+  renderEngine = "webgl"
+)
+
+\method{plot_groups_profile}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  correctIntensity = TRUE,
+  averaged = FALSE,
+  normalized = TRUE,
+  legendNames = NULL,
+  yLab = NULL,
+  title = NULL,
+  showLegend = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{get_groups_ms1}{NonTargetAnalysisResults}(
+  x,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-5, 90),
+  mzClustFeatures = 0.003,
+  presenceFeatures = 0.8,
+  minIntensityFeatures = 1000,
+  useLoadedData = TRUE,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000,
+  top = 25,
+  normalized = TRUE,
+  groupBy = "groups",
+  filtered = FALSE
+)
+
+\method{get_groups_ms2}{NonTargetAnalysisResults}(
+  x,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  isolationWindow = 1.3,
+  mzClustFeatures = 0.003,
+  presenceFeatures = 0.8,
+  minIntensityFeatures = 100,
+  useLoadedData = TRUE,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 100,
+  top = 25,
+  normalized = TRUE,
+  groupBy = "groups",
+  filtered = FALSE
+)
+
+\method{plot_groups_ms1}{NonTargetAnalysisResults}(
+  x,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtWindow = c(-2, 2),
+  mzWindow = c(-5, 90),
+  mzClustFeatures = 0.005,
+  presenceFeatures = 0.8,
+  minIntensityFeatures = 1000,
+  useLoadedData = TRUE,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 1000,
+  top = 25,
+  normalized = TRUE,
+  groupBy = "groups",
+  filtered = FALSE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showText = FALSE,
+  interactive = TRUE
+)
+
+\method{plot_groups_ms2}{NonTargetAnalysisResults}(
+  x,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  isolationWindow = 1.3,
+  mzClustFeatures = 0.003,
+  presenceFeatures = 0.8,
+  minIntensityFeatures = 100,
+  useLoadedData = TRUE,
+  mzClust = 0.003,
+  presence = TRUE,
+  minIntensity = 100,
+  top = 25,
+  normalized = TRUE,
+  groupBy = "groups",
+  filtered = FALSE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  showText = TRUE,
+  interactive = TRUE
+)
+
+\method{get_components}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE
+)
+
+\method{map_components}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE,
+  showLegend = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{get_suspects}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  database = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 5,
+  sec = 10,
+  millisec = 5,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCusiness = 0.7,
+  minFragments = 3,
+  filtered = FALSE
+)
+
+\method{plot_suspects}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  database = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 5,
+  sec = 10,
+  millisec = 5,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCusiness = 0.7,
+  minFragments = 3,
+  filtered = FALSE,
+  rtExpand = 120,
+  mzExpand = 0.005,
+  useLoadedData = TRUE,
+  legendNames = NULL,
+  colorBy = "replicates+targets",
+  heights = c(0.5, 0.5),
+  interactive = TRUE
+)
+
+\method{get_internal_standards}{NonTargetAnalysisResults}(x, average = TRUE)
+
+\method{plot_internal_standards}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  showPresence = TRUE,
+  showRecovery = TRUE,
+  showDeviations = TRUE,
+  showWidths = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{get_compounds}{NonTargetAnalysisResults}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  averaged = TRUE
+)
+
+\method{get_fold_change}{NonTargetAnalysisResults}(
+  x,
+  replicatesIn = NULL,
+  replicatesOut = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctIntensity = FALSE,
+  fillZerosWithLowerLimit = FALSE,
+  lowerLimit = NA_real_
+)
+
+\method{plot_fold_change}{NonTargetAnalysisResults}(
+  x,
+  replicatesIn = NULL,
+  replicatesOut = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctIntensity = FALSE,
+  fillZerosWithLowerLimit = FALSE,
+  lowerLimit = NA_real_,
+  normalized = TRUE,
+  yLab = NULL,
+  title = NULL,
+  interactive = TRUE,
+  showLegend = TRUE
+)
+
+\method{get_patRoon_features}{NonTargetAnalysisResults}(x, filtered = FALSE, featureGroups = TRUE)
+
+\method{get_patRoon_MSPeakLists}{NonTargetAnalysisResults}(
+  x,
+  mzClust = 0.005,
+  minIntensity = 0,
+  presence = 0.7,
+  top = 25,
+  normalized = FALSE
+)
+
+\method{get_patRoon_compounds}{NonTargetAnalysisResults}(x)
 }
 \arguments{
-\item{analyses_info}{A data frame containing information about the analyses.}
+\item{info}{A data frame containing information about the analyses.}
 
-\item{spectra_headers}{A list of data frames containing information about the spectra headers.}
+\item{headers}{A list of data frames containing information about the spectra headers.}
 
-\item{feature_list}{A list of data frames containing information about the features.}
+\item{features}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
+with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
+
+\item{x}{A \code{NonTargetAnalysisResults} object.}
+
+\item{i}{A character or numeric vector to perform subsetting. Check the specific method for details.}
+
+\item{j}{A character or numeric vector to perform subsetting. Check the specific method for details.}
+
+\item{value}{An object that highly depends on the method. Check the specific method documentation for details.}
+
+\item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{yLab}{A string with the title for the y axis.}
+
+\item{title}{A string with the title.}
+
+\item{colorBy}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
+\code{replicates}.}
+
+\item{showLegend}{Logical (length 1). Set to \code{TRUE} to show legend.}
+
+\item{showHoverText}{Logical (length 1), set to \code{TRUE} to show hovering text annotations.}
+
+\item{mass}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{mz}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{rt}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{mobility}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{ppm}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{sec}{Numeric of length one with the time deviation, in seconds.}
+
+\item{millisec}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{neutral_mass}{Logical, set to \code{TRUE} to return by neutral mass.}
+
+\item{legendNames}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{xLab}{A string with the title for the x axis.}
+
+\item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{renderEngine}{The engine to render the data. The default is "webgl".}
+
+\item{correctIntensity}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
+suppression before applying intensity based filters. Note that suppression factor as obtained by
+the processing method \code{CorrectMatrixSuppression} must be present. When not available the
+correction is ignored even if set to \code{TRUE}.}
+
+\item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
+retention time range.}
+
+\item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
+right the mass range.}
+
+\item{useLoadedData}{Logical of length one. Set to \code{TRUE} for using loaded data not raw data
+from files.}
+
+\item{rtWindow}{Numeric (length 2) with the retention time values (in seconds) for expanding left and right the
+retention time range. The first element expands left and the second expands right. Note that the first element
+should be negative to expand to the left.}
+
+\item{mzWindow}{Numeric (length 2) with the mass or mass-to-charge ratio (\emph{m/z}) values (in Da) for expanding
+left and right the mass range. The first element expands left and the second expands right. Note that the first
+element should be negative to expand to the left.}
+
+\item{mzClust}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
+on the mass resolution of the MS data.}
+
+\item{presence}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
+spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
+
+\item{minIntensity}{Numeric (length 1) with the minimum intensity.}
+
+\item{normalized}{A logical value indicating whether the result should be normalized.}
+
+\item{showText}{Logical (length 1), set to \code{TRUE} to show the text annotations.}
+
+\item{isolationWindow}{Numeric value with the isolation window (in Da)
+applied for ion isolation and fragmentation during acquisition of tandem
+data (i.e., MS2 data).}
+
+\item{groups}{A numeric or character vector with the number or ID of feature groups, respectively.}
+
+\item{intensities}{Logical (length 1). When \code{TRUE}, feature intensity values are returned.}
+
+\item{average}{Logical (length 1). When \code{TRUE}, feature intensities from each group are averaged and returned for
+each analysis replicate group.}
+
+\item{sdValues}{Lofical of length 1. If \code{TRUE}, the standard deviation values will be included in the output.}
+
+\item{metadata}{Logical of length 1. If \code{TRUE}, the metadata will be included in the output.}
+
+\item{heights}{A numeric vector of length 2 or 3 to control the height of subplots. For \code{plot_groups_overview} the vector should have length 3 and for \code{plot_suspects} the vector should have length 2. The first value is the height of the first subplot, the second value is the height of the second subplot, and the third value (if present) is the height of the third subplot.}
+
+\item{averaged}{A logical value indicating whether the data is averaged.}
+
+\item{mzClustFeatures}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces for
+features. Highly dependent on the mass resolution of the MS data.}
+
+\item{presenceFeatures}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present
+in any spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
+
+\item{minIntensityFeatures}{Numeric (length 1) with the minimum intensity for features.}
+
+\item{top}{Numeric of length 1 to set the top number of results to return.}
+
+\item{groupBy}{String with the way of grouping. Possible values are \code{groups} and \code{replicates} to group by feature
+groups or feature groups and replicates, respectively.}
+
+\item{ppmMS2}{Numeric (length 1) with the mass deviation for MS2, in ppm.}
+
+\item{mzrMS2}{Numeric (length 1). The m/z resolution for MS2 spectra.}
+
+\item{minCusiness}{Numeric (length 1). The minimum cusiness value for spectral comparison.}
+
+\item{minFragments}{Integer (length 1) with the minimum number of fragments.}
+
+\item{showPresence}{Logical (length 1). When \code{TRUE} the presence of the internal standards is plotted.}
+
+\item{showRecovery}{Logical (length 1). When \code{TRUE} the recovery of the internal standards is plotted.}
+
+\item{showDeviations}{Logical (length 1). When \code{TRUE} the deviations of the internal standards is plotted.}
+
+\item{showWidths}{Logical (length 1). When \code{TRUE} the widths of the internal standards is plotted.}
+
+\item{replicatesIn}{Character vector with the names of the replicates to be considered as
+the denominator.}
+
+\item{replicatesOut}{Character vector with the names of the replicates to be considered as
+the numerator.}
+
+\item{constantThreshold}{Numeric of length one. The threshold to consider a feature as
+constant.}
+
+\item{eliminationThreshold}{Numeric of length one. The threshold to consider a feature as
+eliminated.}
+
+\item{fillZerosWithLowerLimit}{Logical of length one. When \code{TRUE} the zero values are filled
+with the lower limit.}
+
+\item{lowerLimit}{Numeric of length one. The lower limit to fill the zero values.}
+
+\item{featureGroups}{Logical of length one. When \code{TRUE} the \code{featureGroups} class is returned.}
+}
+\value{
+An object of class \code{NonTargetAnalysisResults} with the following structure:
+\itemize{
+\item \code{type}: The type of the results, which is "MassSpec".
+\item \code{name}: The name of the results, which is "NonTargetAnalysisResults".
+\item \code{software}: The software used for the analysis, which is "StreamFind".
+\item \code{version}: The version of the software, as a character string.
+\item \code{info}: A data frame containing information about the analyses.
+\item \code{headers}: A list of data frames containing information about the spectra headers.
+\item \code{features}: A list of data frames containing information about the features.
+}
+The \code{info} data.table contains the following columns: analysis, replicate, blank, polarity and file. Each \code{features} data frame contains the following columns: feature, group, rt, mz, intensity, area, rtmin, rtmax, mzmin, mzmax, mass, polarity, adduct, filtered, filter, filled, correction, eic, ms1, ms2, quality, annotation, istd, suspects, formulas and compounds.
 }
 \description{
-The \code{NonTargetAnalysisResults} class is a child of the \link{Results} class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec"). It contains methods and properties specific to this type of analysis.
+The \code{NonTargetAnalysisResults} class is a child of the \link{Results} class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec").
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{show(NonTargetAnalysisResults)}: Prints a summary of the NonTargetAnalysisResults object.
 
-\describe{
-\item{\code{analyses_info}}{(getter/setter) A data frame containing information about the analyses.}
+\item \code{[}: Subsets the NonTargetAnalysisResults object by analyses (with \code{i}) or feature groups (\code{j}).
 
-\item{\code{spectra_headers}}{(getter/setter) A list of data frames containing information about the spectra headers.}
+\item \code{[[}: Subsets the NonTargetAnalysisResults object by feature groups. The argument \code{value} should be a character vector with the group names.
 
-\item{\code{feature_list}}{(getter/setter) A list of data frames containing information about the features.}
+\item \code{get_features_count(NonTargetAnalysisResults)}: Returns a data table with the number of features for each analysis.
 
-\item{\code{spectra_polarity}}{(getter) A character vector indicating the polarity of the spectra.}
+\item \code{plot_features_count(NonTargetAnalysisResults)}: Plots the number of features for each analysis as a bar plot.
 
-\item{\code{replicates}}{(getter/setter) A character vector indicating the replicates for each analysis.}
+\item \code{get_features(NonTargetAnalysisResults)}: Returns a data table with the features for the specified analyses and targets.
 
-\item{\code{blanks}}{(getter/setter) A character vector indicating the blanks for each analysis.}
+\item \code{map_features(NonTargetAnalysisResults)}: Maps features from the NonTargetAnalysisResults object.
 
-\item{\code{concentrations}}{(getter/setter) A numeric vector indicating the concentrations for each analysis.}
+\item \code{map_features_intensity(NonTargetAnalysisResults)}: Maps features intensity from the NonTargetAnalysisResults object.
 
-\item{\code{number_analyses}}{(getter) An integer indicating the number of analyses.}
+\item \code{get_features_eic(NonTargetAnalysisResults)}: Returns a data table with the extracted ion chromatograms (EIC) for features in the specified analyses and targets.
 
-\item{\code{number_features}}{(getter) An integer indicating the number of features.}
+\item \code{plot_features(NonTargetAnalysisResults)}: Plots features from the NonTargetAnalysisResults object according to the specified parameters.
 
-\item{\code{has_features}}{(getter) A logical indicating if features are present.}
+\item \code{get_features_ms1(NonTargetAnalysisResults)}: Returns a data table with MS1 features for the specified analyses and targets.
 
-\item{\code{has_filtered_features}}{(getter) A logical indicating if filtered features are present.}
+\item \code{plot_features_ms1(NonTargetAnalysisResults)}: Plots MS1 features from the NonTargetAnalysisResults object according to the specified parameters.
 
-\item{\code{number_filtered_features}}{(getter) An integer indicating the number of filtered features.}
+\item \code{get_features_ms2(NonTargetAnalysisResults)}: Returns a data table with MS2 features for the specified analyses and targets.
 
-\item{\code{has_groups}}{(getter) A logical indicating if groups are present.}
+\item \code{plot_features_ms2(NonTargetAnalysisResults)}: Plots MS2 features from the NonTargetAnalysisResults object according to the specified parameters.
 
-\item{\code{number_groups}}{(getter) An integer indicating the number of groups.}
+\item \code{get_groups(NonTargetAnalysisResults)}: Returns a data table with group information for the specified analyses and targets.
 
-\item{\code{group_names}}{(getter) A character vector indicating the names of the groups.}
+\item \code{plot_groups(NonTargetAnalysisResults)}: Plots groups from the NonTargetAnalysisResults object according to the specified parameters.
 
-\item{\code{has_features_ms1}}{(getter) A logical indicating if MS1 features are present.}
+\item \code{plot_groups_overview(NonTargetAnalysisResults)}: Plots an overview of groups from the NonTargetAnalysisResults object according to the specified parameters.
 
-\item{\code{has_features_ms2}}{(getter) A logical indicating if MS2 features are present.}
+\item \code{plot_groups_profile(NonTargetAnalysisResults)}: Plots the profile of groups from the NonTargetAnalysisResults object according to the specified parameters.
 
-\item{\code{has_features_eic}}{(getter) A logical indicating if EIC features are present.}
+\item \code{get_groups_ms1(NonTargetAnalysisResults)}: Extracts MS1 data for groups from the NonTargetAnalysisResults object according to the specified parameters.
 
-\item{\code{has_features_suspects}}{(getter) A logical indicating if suspect features are present.}
+\item \code{get_groups_ms2(NonTargetAnalysisResults)}: Extracts MS2 data for groups from the NonTargetAnalysisResults object according to the specified parameters.
 
-\item{\code{info}}{(getter) A data frame containing an overview of the number of features.}
+\item \code{plot_groups_ms1(NonTargetAnalysisResults)}: Plots MS1 traces for groups from the NonTargetAnalysisResults object according to the specified parameters.
+
+\item \code{plot_groups_ms2(NonTargetAnalysisResults)}: Plots MS2 traces for groups from the NonTargetAnalysisResults object according to the specified parameters.
+
+\item \code{get_components(NonTargetAnalysisResults)}: Extracts components based on annotation from the NonTargetAnalysisResults object according to the specified parameters.
+
+\item \code{map_components(NonTargetAnalysisResults)}: Maps components based on annotation from the NonTargetAnalysisResults object according to the specified parameters.
+
+\item \code{get_suspects(NonTargetAnalysisResults)}: Extracts feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the NonTargetAnalysisResults object if they were previously annotated.
+
+\item \code{plot_suspects(NonTargetAnalysisResults)}: Plots feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the NonTargetAnalysisResults object if they were previously annotated.
+
+\item \code{get_internal_standards(NonTargetAnalysisResults)}: Extracts internal standards from the NonTargetAnalysisResults object. If the NonTargetAnalysisResults object has groups, it averages the internal standards across replicates, when \code{average = TRUE}.
+
+\item \code{plot_internal_standards(NonTargetAnalysisResults)}: Plots internal standards from the NonTargetAnalysisResults object. If the NonTargetAnalysisResults object has groups, it averages the internal standards across replicates, when \code{average = TRUE}.
+
+\item \code{get_compounds(NonTargetAnalysisResults)}: Extracts compounds from the NonTargetAnalysisResults object. If the NonTargetAnalysisResults object has groups, it averages the compounds across replicates, when \code{averaged = TRUE}.
+
+\item \code{get_fold_change(NonTargetAnalysisResults)}: Gets a data.table with fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}.
+
+\item \code{plot_fold_change(NonTargetAnalysisResults)}: Plots the fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}.
+
+#' @param replicatesIn Character vector with the names of the replicates to be considered as
+the denominator.
+
+\item \code{get_patRoon_features(NonTargetAnalysisResults)}: Creates an S4 class \code{features} or \code{featureGroups}from the \pkg{patRoon} package.
+
+\item \code{get_patRoon_MSPeakLists(NonTargetAnalysisResults)}: Creates S4 class \code{MSPeakLists}. Note that feature groups are required. The MS and MSMS spectra of each feature are then average by \pkg{patRoon} to produce the feature group spectra.
+
+\item \code{get_patRoon_compounds(NonTargetAnalysisResults)}: Creates an S4 class \code{Compounds} from the \pkg{patRoon} package.
+
 }}
+\section{Functions}{
+\itemize{
+\item \code{validate_object(NontargetAnalysisResults)}: Validates the NonTargetAnalysisResults object, returning NULL if valid.
 
+}}

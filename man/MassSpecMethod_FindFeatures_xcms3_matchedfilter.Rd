@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_xcms3_matchedfilter}
 \alias{MassSpecMethod_FindFeatures_xcms3_matchedfilter}
-\title{MassSpecMethod_FindFeatures_xcms3_matchedfilter S7 class}
+\alias{validate_object.MassSpecMethod_FindFeatures_xcms3_matchedfilter}
+\title{MassSpecMethod_FindFeatures_xcms3_matchedfilter class}
 \usage{
 MassSpecMethod_FindFeatures_xcms3_matchedfilter(
   binSize = 0.5,
@@ -16,6 +17,8 @@ MassSpecMethod_FindFeatures_xcms3_matchedfilter(
   mzdiff = 0.5,
   index = FALSE
 )
+
+\method{validate_object}{MassSpecMethod_FindFeatures_xcms3_matchedfilter}(x)
 }
 \arguments{
 \item{binSize}{numeric(1) specifying the width of the bins/slices in m/z dimension.}
@@ -53,6 +56,8 @@ reduced to the one peak with the largest signal.}
 
 \item{index}{logical(1) specifying whether indices should be returned instead of values for m/z
 and retention times.}
+
+\item{x}{A \code{MassSpecMethod_FindFeatures_xcms3_matchedfilter} object.}
 }
 \value{
 A \code{MassSpecMethod_FindFeatures_xcms3_matchedfilter} object.
@@ -69,6 +74,11 @@ which is optimal/preferred for low resolution LC-MS data. The function uses the 
 See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for
 more information and requirements.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_FindFeatures_xcms3_matchedfilter)}: Validate the object, returning \code{NULL} if valid.
+
+}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

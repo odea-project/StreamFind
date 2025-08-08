@@ -165,7 +165,7 @@ Collate:
     'class_StatisticMethod_MakeModel.R'
     'class_StatisticMethod_PrepareData.R'
     'class_StatisticMethod_Quantify.R'
-    'engine_Engine.R'
+    'class_Engine.R'
     'engine_CoreEngine.R'
     'engine_MassSpecEngine.R'
     'engine_RamanEngine.R'

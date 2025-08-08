@@ -125,8 +125,7 @@ more information and requirements.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(MassSpecMethod_FindFeatures_openms)}: Validate the
-\code{MassSpecMethod_FindFeatures_openms} object, returning \code{NULL} if valid.
+\item \code{validate_object(MassSpecMethod_FindFeatures_openms)}: Validate the \code{MassSpecMethod_FindFeatures_openms} object, returning \code{NULL} if valid.
 
 }}
 \references{

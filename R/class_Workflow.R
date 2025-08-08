@@ -28,10 +28,10 @@ Workflow <- function(processing_steps = list()) {
       z
     })
   }
-  data_type <- NA_character_
+  type <- NA_character_
   if (length(processing_steps) > 0) {
-    data_type <- vapply(processing_steps, function(z) z$data_type, NA_character_)[1]
-    possible_methods <- .get_available_methods(data_type)
+    type <- vapply(processing_steps, function(z) z$type, NA_character_)[1]
+    possible_methods <- .get_available_methods(type)
     workflow_methods <- NA_character_
     for (i in seq_along(processing_steps)) {
       if (!processing_steps[[i]]$method %in% possible_methods) {
@@ -56,7 +56,7 @@ Workflow <- function(processing_steps = list()) {
     w_names <- paste0(w_idx, "_", w_names)
     names(processing_steps) <- w_names
   }
-  processing_steps <- structure(processing_steps, class = "Workflow", data_type = data_type)
+  processing_steps <- structure(processing_steps, class = "Workflow", type = type)
   if (is.null(validate_object(processing_steps))) {
     return(processing_steps)
   } else {
@@ -74,12 +74,12 @@ validate_object.Workflow <- function(x) {
     lapply(x, function(x) {
       checkmate::assert_true(is(x, "ProcessingStep"))
     })
-    data_type <- unique(vapply(x, function(z) z$data_type, NA_character_))
-    if (length(data_type) > 1) {
+    type <- unique(vapply(x, function(z) z$type, NA_character_))
+    if (length(type) > 1) {
       stop("All ProcessingStep objects must be for the same type of data!")
     }
     methods <- get_methods(x)
-    available_methods <- .get_available_processing_methods(data_type)
+    available_methods <- .get_available_processing_methods(type)
     if (!all(methods %in% available_methods)) {
       stop("All processing methods must be available for the defined type of data!")
     }
@@ -102,7 +102,7 @@ info.Workflow <- function(x) {
   if (length(x) > 0) {
     data.frame(
       index = seq_along(x),
-      data_type = vapply(x, function(z) z$data_type, NA_character_),
+      type = vapply(x, function(z) z$type, NA_character_),
       method = vapply(x, function(z) x$method, NA_character_),
       algorithm = vapply(x, function(z) x$algorithm, NA_character_),
       input_class = vapply(x, function(z) x$input_class, NA_character_),
@@ -127,7 +127,7 @@ info.Workflow <- function(x) {
 get_methods.Workflow <- function(x) {
   if (length(x) == 0) return(character())
   vapply(x, function(z) {
-    paste0(z$data_type, "Method_", z$method, "_", z$algorithm)
+    paste0(z$type, "Method_", z$method, "_", z$algorithm)
   }, NA_character_)
 }
 
@@ -152,8 +152,8 @@ get_methods.Workflow <- function(x) {
   value <- lapply(value, function(z) as.ProcessingStep(z))
   x <- NextMethod()
   if (length(x) > 0) {
-    data_type <- vapply(x, function(z) z$data_type, NA_character_)[1]
-    possible_methods <- .get_available_methods(data_type)
+    type <- vapply(x, function(z) z$type, NA_character_)[1]
+    possible_methods <- .get_available_methods(type)
     workflow_methods <- NA_character_
     for (ps in seq_along(x)) {
       if (!x[[ps]]$method %in% possible_methods) {
@@ -206,8 +206,8 @@ get_methods.Workflow <- function(x) {
   }
   x <- NextMethod()
   if (length(x) > 0) {
-    data_type <- vapply(x, function(z) z$data_type, NA_character_)[1]
-    possible_methods <- .get_available_methods(data_type)
+    type <- vapply(x, function(z) z$type, NA_character_)[1]
+    possible_methods <- .get_available_methods(type)
     workflow_methods <- NA_character_
     for (ps in seq_along(x)) {
       if (!x[[ps]]$method %in% possible_methods) {

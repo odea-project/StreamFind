@@ -1,8 +1,6 @@
 #' @title Generic Analyses
 #' 
-#' @description The `Analyses` class is used to harmonize the interface to data or links to 
-#' raw data files and results across different types of data. `Analyses` child classes are used for
-#' specific data types, providing dedicated methods.
+#' @description The `Analyses` class is used to harmonize the interface to data or links to raw data files and results across different types of data. `Analyses` child classes are used for specific data types, providing dedicated methods.
 #' 
 #' @param analyses A list of analyses, where each element is a data entry or a connection to a raw data file.
 #' @param results A list of results, where each element is a specific \code{\link{Results}} child class.
@@ -12,11 +10,8 @@
 #' \itemize{
 #'  \item `analyses`: A list of analyses, where each element is a data entry or a connection to a raw data file.
 #'  \item `results`: A list of results, where each element is a specific \code{\link{Results}} child class.
-#' }
-#' The `Analyses` class has two attributes:
-#' \itemize{
-#'  \item `data_type`: A character string indicating the type of data contained in the analyses.
-#'  \item `possible_formats`: A character vector indicating the possible formats of the analyses.
+#'  \item `type`: A character string indicating the type of data contained in the analyses.
+#'  \item `formats`: A character vector indicating the possible formats of the analyses.
 #' }
 #' 
 #' @export
@@ -26,8 +21,8 @@ Analyses <- function(analyses = list(), results = list()) {
     list(
       analyses = analyses,
       results = results,
-      data_type = NA_character_,
-      possible_formats = NA_character_
+      type = NA_character_,
+      formats = NA_character_
     ),
     class = c("Analyses")
   )
@@ -44,10 +39,10 @@ Analyses <- function(analyses = list(), results = list()) {
 #'
 validate_object.Analyses <- function(x) {
   checkmate::assert_class(x, "Analyses")
-  checkmate::assert_names(names(x), must.include = c("analyses", "results", "data_type", "possible_formats"))
-  checkmate::assert_character(x$data_type, len = 1, null.ok = FALSE)
-  checkmate::assert_character(x$possible_formats, null.ok = FALSE)
-  checkmate::assert_true(grepl(x$data_type, class(x)[1]) || is.na(x$data_type))
+  checkmate::assert_names(names(x), must.include = c("analyses", "results", "type", "formats"))
+  checkmate::assert_character(x$type, len = 1, null.ok = FALSE)
+  checkmate::assert_character(x$formats, null.ok = FALSE)
+  checkmate::assert_true(grepl(x$type, class(x)[1]) || is.na(x$type))
   checkmate::assert_true(
     checkmate::test_list(x$analyses) || checkmate::test_data_frame(x$analyses)
   )

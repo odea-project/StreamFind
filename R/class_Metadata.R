@@ -226,19 +226,19 @@ show.Metadata <- function(x) {
 #' It is used to store metadata of data processing engines.
 #' 
 #' @param entries A named list of metadata entries. Default is an empty list.
-#' @param data_type A character string with the data type of the engine.
+#' @param type A character string with the data type of the engine.
 #' Default is `NA_character_`.
 #' 
 #' @seealso [StreamFind::Metadata]
 #' 
 #' @export
 #' 
-EngineMetadata <-  function(entries = list(), data_type = NA_character_) {
+EngineMetadata <-  function(entries = list(), type = NA_character_) {
   entries <- Metadata(entries)
   entries <- structure(
     entries,
     class = c("EngineMetadata", "Metadata"),
-    data_type = data_type
+    type = type
   )
   if (is.null(validate_object(entries))) {
     return(entries)
@@ -252,7 +252,7 @@ EngineMetadata <-  function(entries = list(), data_type = NA_character_) {
 #' @export
 #' 
 validate_object.EngineMetadata <- function(x) {
-  checkmate::assert_character(attr(x, "data_type"))
+  checkmate::assert_character(attr(x, "type"))
   if ("file" %in% names(x)) {
     if (!is.na(x[["file"]])) {
       checkmate::assert_true(tools::file_ext(x[["file"]]) %in% c("sqlite", "rds"))
