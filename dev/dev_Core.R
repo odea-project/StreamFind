@@ -63,7 +63,7 @@ plot_spectra_ms2(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
 plot_spectra_eic(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
 
 ## Engine ------
-engine_file <- paste0("engine.rds")
+engine_file <- paste0("engine.json")
 engine <- Engine$new()
 show(engine$Metadata)
 show(engine$Workflow)
@@ -73,7 +73,7 @@ show(engine$Config)
 as.data.table(engine$AuditTrail)
 engine$save(engine_file)
 engine$Metadata[["name"]] <- "Ricardo"
-engine$load("engine.rds")
+engine$load("engine.json")
 engine <- Engine$new(Metadata = list(file = "engine.rds"))
 
 # Resources -------
@@ -109,7 +109,34 @@ engine <- MassSpecEngine$new(
   analyses = ms_files_df,
 )
 engine$run(MassSpecMethod_FindFeatures_openms())
+engine$run(
+  MassSpecMethod_CalculateFeaturesQuality_StreamFind(
+    filtered = FALSE,
+    rtExpand = 2,
+    mzExpand = 0.0005,
+    minTracesIntensity = 1000,
+    minNumberTraces = 6,
+    baseCut = 0
+  )
+)
+engine$run(MassSpecMethod_GroupFeatures_openms())
 engine$run(MassSpecMethod_AnnotateFeatures_StreamFind())
+
+
+
+save(engine$Analyses, "ms_analyses.json")
+
+data <- read(engine$Analyses, "ms_analyses.json")
+
+show(engine$ResultsList$NonTargetAnalysisResults)
+class(engine$ResultsList$NonTargetAnalysisResults)
+
+engine$ResultsList$NonTargetAnalysisResults$features[[1]]
+
+get_features(engine$ResultsList$NonTargetAnalysisResults, mass = dbsus, ppm = 15, sec = 60)
+
+engine$clear_cache()
+
 
 ?NonTargetAnalysisResults
 class(engine$ResultsList$NonTargetAnalysisResults)

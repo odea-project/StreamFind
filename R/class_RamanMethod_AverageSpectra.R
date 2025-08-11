@@ -86,7 +86,7 @@ S7::method(run, RamanMethod_AverageSpectra_native) <- function(x, engine = NULL)
   if (engine$Spectra$is_averaged) {
     spectra$replicate <- spectra$analysis
   } else {
-    rpl <- engine$Analyses$replicates
+    rpl <- get_replicates(engine$Analyses)
     spectra$replicate <- rpl[spectra$analysis]
   }
   
@@ -141,7 +141,7 @@ S7::method(run, RamanMethod_AverageSpectra_native) <- function(x, engine = NULL)
     split_str <- grouped_spectra$replicate
     grouped_spectra$replicate <- NULL
     grouped_spectra_list <- split(grouped_spectra, split_str)
-    names_spectra <- unique(engine$Analyses$replicates)
+    names_spectra <- unique(get_replicates(engine$Analyses))
     grouped_spectra_list <- grouped_spectra_list[names_spectra]
   } else {
     data.table::setorder(grouped_spectra, shift, analysis)

@@ -96,9 +96,9 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
   }
   
   groupCols <- c("mz", "mass", "bins")
-  if (grepl("replicates", x@parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
-  if (grepl("chrom_peaks", x@parameters$by, fixed = FALSE)) groupCols <- c("chrom_peaks", groupCols)
-  if (grepl("rt", x@parameters$by, fixed = FALSE)) groupCols <- c("rt", groupCols)
+  if (grepl("replicates", x$parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
+  if (grepl("chrom_peaks", x$parameters$by, fixed = FALSE)) groupCols <- c("chrom_peaks", groupCols)
+  if (grepl("rt", x$parameters$by, fixed = FALSE)) groupCols <- c("rt", groupCols)
   groupCols <- groupCols[groupCols %in% colnames(spectra)]
   
   if ("chrom_peaks" %in% groupCols) {
@@ -134,7 +134,7 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
     spectra$rt <- NULL
   }
   
-  if (x@parameters$weightedAveraged) {
+  if (x$parameters$weightedAveraged) {
     intensity <- NULL
     grouped_spectra <- spectra[, lapply(.SD, weighted.mean, w = intensity), by = groupCols]
     
@@ -152,12 +152,12 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
     split_str <- grouped_spectra$replicate
     grouped_spectra$replicate <- NULL
     grouped_spectra_list <- split(grouped_spectra, split_str)
-    for (r in unique(engine$Analyses$replicates)) {
+    for (r in unique(get_replicates(engine$Analyses))) {
       if (!r %in% names(grouped_spectra_list)) {
         grouped_spectra_list[[r]] <- data.table::data.table()
       }
     }
-    grouped_spectra_list <- grouped_spectra_list[unique(engine$Analyses$replicates)]
+    grouped_spectra_list <- grouped_spectra_list[unique(get_replicates(engine$Analyses))]
   } else {
     if ("mz" %in% colnames(grouped_spectra)) {
       setorder(grouped_spectra, mz, analysis)

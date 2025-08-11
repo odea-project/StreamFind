@@ -190,16 +190,14 @@ Engine <- R6::R6Class(
       if (missing(value)) {
         return(private$.Analyses$results)
       }
+
       if (is(value, "Results")) {
         if (!is.null(validate_object(value))) {
           warning("Invalid Results or Results child object! Not added.")
           return(invisible(self))
         }
-        if (grepl(value[[i]]$type, private$.type)) {
+        if (grepl(value$type, private$.type)) {
           private$.Analyses$results[[gsub("StreamFind::", "", is(value)[1])]] <- value
-          
-          browser()
-
           if (!is.null(private$.AuditTrail)) {
             private$.AuditTrail <- add(private$.AuditTrail, value)
           }
@@ -223,6 +221,8 @@ Engine <- R6::R6Class(
                 } else {
                   warning("Results data type not matching with current engine! Not added.")
                 }
+              } else {
+                warning("Invalid Results object in list! Not added.")
               }
             }
           },
@@ -443,13 +443,11 @@ Engine <- R6::R6Class(
     
     # MARK: load
     #' @description Loads engine data from an **sqlite** or **rds** file.
-    #'
     #' @param file A string with the full file path of the **sqlite** or **rds** file.
-    #'
     #' @return Invisible.
     #'
     load = function(file = NA_character_) {
-      if (is.na(file)) file <- self$Metadata[["file"]]      
+      if (is.na(file)) file <- self$Metadata[["file"]]
       if (!file.exists(file)) {
         warning("File does not exist!")
         return(invisible(self))
@@ -494,6 +492,26 @@ Engine <- R6::R6Class(
             private$.Analyses <- data$Analyses
             private$.AuditTrail <- data$AuditTrail
             private$.Config <- data$Config
+            self$Metadata[["file"]] <- file
+            message("\U2713 Engine data loaded from ", file, "!")
+          } else {
+            warning("Engine type not matching with current engine! Not done.")
+          }
+        } else {
+          warning("The object in file is not a list!")
+        }
+      } else if (tools::file_ext(file) %in% "json") {
+        data <- jsonlite::fromJSON(file)
+        if (is(data, "list")) {
+          if (data$type %in% private$.type) {
+            private$.Metadata <- StreamFind::EngineMetadata(entries = data$Metadata, type = private$.type)
+            private$.Workflow <- StreamFind::Workflow(data$Workflow)
+            
+            warning("Load Analyses or child Analyses objects not yet implemented!")
+            # TODO make a generic as.Analyses method for all analyses types
+
+            private$.AuditTrail <- AuditTrail(data$AuditTrail)
+            private$.Config <- EngineConfig(parameters = data$Config)
             self$Metadata[["file"]] <- file
             message("\U2713 Engine data loaded from ", file, "!")
           } else {
@@ -587,6 +605,18 @@ Engine <- R6::R6Class(
           Config = self$Config
         )
         saveRDS(data, file)
+      } else if (tools::file_ext(file) %in% "json") {
+        warning("Save Analyses or child Analyses objects not yet implemented!")
+        data <- list(
+          type = private$.type,
+          Metadata = self$Metadata,
+          Workflow = self$Workflow,
+          #Analyses = as.list(self$Analyses),
+          AuditTrail = private$.AuditTrail,
+          Config = private$.Config
+        )
+        data <- .convert_to_json(data)
+        write(data, file)
       } else {
         warning("File format not valid!")
         return(invisible(self))

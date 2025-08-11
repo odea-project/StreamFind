@@ -347,6 +347,8 @@ MassSpecMethod_FindFeatures_xcms3_centwave <- function(
     method = "FindFeatures",
     required = NA_character_,
     algorithm = "xcms3_centwave",
+    input_class = NA_character_,
+    output_class = "NonTargetAnalysisResults",
     parameters = list(
       ppm = as.numeric(ppm),
       peakwidth = as.numeric(peakwidth),
@@ -480,6 +482,8 @@ MassSpecMethod_FindFeatures_xcms3_matchedfilter <- function(
     method = "FindFeatures",
     required = NA_character_,
     algorithm = "xcms3_matchedfilter",
+    input_class = NA_character_,
+    output_class = "NonTargetAnalysisResults",
     parameters = list(
       class = as.character("MatchedFilterParam"),
       binSize = as.numeric(binSize),
@@ -778,6 +782,8 @@ MassSpecMethod_FindFeatures_kpic2 <- function(
     method = "FindFeatures",
     required = NA_character_,
     algorithm = "kpic2",
+    input_class = NA_character_,
+    output_class = "NonTargetAnalysisResults",
     parameters = list(
       kmeans = kmeans,
       level = level,
@@ -824,6 +830,7 @@ validate_object.MassSpecMethod_FindFeatures_kpic2 <- function(x) {
 
 #' @export
 #' @noRd
+#' 
 run.MassSpecMethod_FindFeatures_kpic2 <- function(x, engine = NULL) {
   .run_find_features_patRoon(x, engine)
 }
@@ -844,23 +851,21 @@ run.MassSpecMethod_FindFeatures_kpic2 <- function(x, engine = NULL) {
 #' @export
 #'
 MassSpecMethod_FindFeatures_qalgorithms <- function(ppm = 5) {
-  x <- structure(
-    list(
-      type = "MassSpec",
-      method = "FindFeatures",
-      required = NA_character_,
-      algorithm = "qalgorithms",
-      parameters = list(ppm = ppm),
-      number_permitted = 1,
-      version = as.character(packageVersion("StreamFind")),
-      software = "qAlgorithms",
-      developer = "Gerrit Renner",
-      contact = "gerrit.renner@uni-due.de",
-      link = "https://github.com/odea-project/qAlgorithms",
-      doi = "10.1021/acs.analchem.4c00494"
-    ),
-    class = c("MassSpecMethod_FindFeatures_qalgorithms", "ProcessingStep"),
-    call = paste0(type, "Method_", method, "_", algorithm)
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "FindFeatures",
+    required = NA_character_,
+    algorithm = "qalgorithms",
+    input_class = NA_character_,
+    output_class = "NonTargetAnalysisResults",
+    parameters = list(ppm = ppm),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "qAlgorithms",
+    developer = "Gerrit Renner",
+    contact = "gerrit.renner@uni-due.de",
+    link = "https://github.com/odea-project/qAlgorithms",
+    doi = "10.1021/acs.analchem.4c00494"
   )
   if (is.null(validate_object(x))) {
     return(x)

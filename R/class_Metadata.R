@@ -255,7 +255,7 @@ validate_object.EngineMetadata <- function(x) {
   checkmate::assert_character(attr(x, "type"))
   if ("file" %in% names(x)) {
     if (!is.na(x[["file"]])) {
-      checkmate::assert_true(tools::file_ext(x[["file"]]) %in% c("sqlite", "rds"))
+      checkmate::assert_true(tools::file_ext(x[["file"]]) %in% c("sqlite", "rds", "json"))
     }
   }
   NULL

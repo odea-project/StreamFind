@@ -30,10 +30,12 @@ MassSpecMethod_AnnotateFeatures_StreamFind <- function(
   maxGaps = 1
 ) {
   x <- ProcessingStep(
-    data_type = "MassSpec",
+    type = "MassSpec",
     method = "AnnotateFeatures",
     required = "FindFeatures",
     algorithm = "StreamFind",
+    input_class = "NonTargetAnalysisResults",
+    output_class = "NonTargetAnalysisResults",
     parameters = list(
       maxIsotopes = as.integer(maxIsotopes),
       maxCharge = as.integer(maxCharge),
@@ -48,14 +50,19 @@ MassSpecMethod_AnnotateFeatures_StreamFind <- function(
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid MassSpecMethod_AnnotateFeatures_StreamFind object!")
+  }
 }
 
 #' @describeIn MassSpecMethod_AnnotateFeatures_StreamFind Validate the MassSpecMethod_AnnotateFeatures_StreamFind object, returning NULL if valid.
 #' @param x A `MassSpecMethod_AnnotateFeatures_StreamFind` object.
 #' @export
-#' 
+#'
 validate_object.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x) {
-  checkmate::assert_choice(x$data_type, "MassSpec")
+  checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "AnnotateFeatures")
   checkmate::assert_choice(x$algorithm, "StreamFind")
   checkmate::assert_count(x$parameters$maxIsotopes)
@@ -67,6 +74,7 @@ validate_object.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x) {
 
 #' @export
 #' @noRd
+#'
 run.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
@@ -78,15 +86,15 @@ run.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  if (!is.null(engine$Analyses$results[["NonTargetAnalysisResults"]])) {
+  if (is.null(engine$Analyses$results[["NonTargetAnalysisResults"]])) {
     warning("No NonTargetAnalysisResults object available! Not done.")
     return(FALSE)
   }
 
   nts <- engine$ResultsList$NonTargetAnalysisResults
 
-  if (length(nts$features) == 0) {
-    warning("NonTargetAnalysisResults object is empty! Not done.")
+  if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
+    warning("NonTargetAnalysisResults object does not have features! Not done.")
     return(FALSE)
   }
 
@@ -106,7 +114,7 @@ run.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x, engine = NULL) {
 
       nts$features <- feature_list
       validate_object(nts)
-      engine$ResultsList$NonTargetAnalysisResults <- nts
+      engine$ResultsList <- nts
       message(paste0("\U2713 ", "Features annotated!"))
       TRUE
     },

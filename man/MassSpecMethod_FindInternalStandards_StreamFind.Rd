@@ -2,6 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindInternalStandards.R
 \name{MassSpecMethod_FindInternalStandards_StreamFind}
 \alias{MassSpecMethod_FindInternalStandards_StreamFind}
+\alias{validate_object.MassSpecMethod_FindInternalStandards_StreamFind}
 \title{MassSpecMethod_FindInternalStandards_StreamFind S7 class}
 \usage{
 MassSpecMethod_FindInternalStandards_StreamFind(
@@ -10,6 +11,8 @@ MassSpecMethod_FindInternalStandards_StreamFind(
   ppm = 5,
   sec = 10
 )
+
+\method{validate_object}{MassSpecMethod_FindInternalStandards_StreamFind}(x)
 }
 \arguments{
 \item{database}{A data.table with at least the columns name, mass, and rt indicating the name,
@@ -19,6 +22,8 @@ mass and retention time of the internal standards, respectively.}
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}
 
 \item{sec}{Numeric of length one with the time deviation, in seconds.}
+
+\item{x}{An object of class \code{MassSpecMethod_FindInternalStandards_StreamFind}.}
 }
 \value{
 A \code{MassSpecMethod_FindInternalStandards_StreamFind} object.
@@ -26,3 +31,8 @@ A \code{MassSpecMethod_FindInternalStandards_StreamFind} object.
 \description{
 Settings for finding internal standards using a data.frame.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_FindInternalStandards_StreamFind)}: Validate the object, returns NULL if valid.
+
+}}

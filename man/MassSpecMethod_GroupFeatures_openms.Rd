@@ -2,6 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_GroupFeatures.R
 \name{MassSpecMethod_GroupFeatures_openms}
 \alias{MassSpecMethod_GroupFeatures_openms}
+\alias{validate_object.MassSpecMethod_GroupFeatures_openms}
 \title{MassSpecMethod_GroupFeatures_openms S7 class}
 \usage{
 MassSpecMethod_GroupFeatures_openms(
@@ -13,6 +14,8 @@ MassSpecMethod_GroupFeatures_openms(
   maxGroupMZ = 0.008,
   verbose = FALSE
 )
+
+\method{validate_object}{MassSpecMethod_GroupFeatures_openms}(x)
 }
 \arguments{
 \item{rtalign}{Logical length one. Set to TRUE to enable retention time alignment.}
@@ -34,6 +37,8 @@ feature pairing when performing grouping.}
 
 \item{verbose}{Logical of length one. When TRUE adds processing information
 to the console.}
+
+\item{x}{A \code{MassSpecMethod_GroupFeatures_openms} object.}
 }
 \value{
 A \code{MassSpecMethod_GroupFeatures_openms} object.
@@ -48,6 +53,11 @@ The function uses the package \pkg{patRoon} in the background.
 See the \link[patRoon]{groupFeaturesOpenMS} function from the \pkg{patRoon} package for
 more information and requirements.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_GroupFeatures_openms)}: Validate the MassSpecMethod_GroupFeatures_openms object, returning NULL if valid.
+
+}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

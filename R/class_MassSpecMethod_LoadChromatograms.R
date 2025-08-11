@@ -78,7 +78,7 @@ S7::method(run, MassSpecMethod_LoadChromatograms_native) <- function(x, engine =
     return(FALSE)
   }
   
-  parameters <- x@parameters
+  parameters <- x$parameters
   
   analyses <- engine$Analyses
   

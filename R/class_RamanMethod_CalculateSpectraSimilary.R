@@ -86,7 +86,7 @@ S7::method(run, RamanMethod_CalculateSpectraSimilary_hqi) <- function(x, engine 
     
     if (engine$Analyses$Spectra$is_averaged) {
       reference_spectra_unique <- spectra_list[unique(references)]
-      rpls <- engine$Analyses$replicates
+      rpls <- get_replicates(engine$Analyses)
       names(references) <- rpls
       references <- references[!duplicated(names(references))]
       
@@ -97,7 +97,7 @@ S7::method(run, RamanMethod_CalculateSpectraSimilary_hqi) <- function(x, engine 
       
     } else {
       intensity <- NULL
-      rpls <- engine$Analyses$replicates
+      rpls <- get_replicates(engine$Analyses)
       rpls <- rpls[rpls %in% references]
       reference_spectra_av <- spectra_list[names(rpls)]
       reference_spectra_av <- data.table::rbindlist(reference_spectra_av, idcol = "analysis")

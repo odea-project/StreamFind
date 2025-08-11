@@ -35,30 +35,36 @@ validate_object.ConfigParameter <- function(x) {
 # MARK: Config
 # Config -----
 #' @title Generic Configuration
-#'
 #' @description The `Config` S3 class represents a configuration object and is essentially a list of
 #' [StreamFind::ConfigParameter] class objects.
-#'
 #' @param parameters A list of [StreamFind::ConfigParameter] objects.
-#'
 #' @return A `Config` object as a list of [StreamFind::ConfigParameter] objects.
-#'
 #' @export
 #'
 Config <- function(parameters = list()) {
   if (is.list(parameters)) {
     if (length(parameters) > 0) {
-      parameter_names <- vapply(parameters, function(x) {
+      parameters <- lapply(parameters, function(x) {
         if ("ConfigParameter" %in% class(x)) {
           if (is.null(validate_object(x))) {
-            x$name
+            x
           } else {
-            NA_character_
+            NULL
           }
+        } else if (is.list(x)) {
+          call_name <- x$name
+          if (is.null(call_name) || call_name == "") {
+            stop("Each list entry must have a 'name' element.")
+          }
+          x$name <- NULL
+          x$description <- NULL
+          x <- do.call(call_name, x)
         } else {
-          NA_character_
+          stop("Each entry must be an ConfigParameter object or a list that can be converted to one.")
         }
-      }, NA_character_)
+        x
+      })
+      parameter_names <- vapply(parameters, function(x) x$name, NA_character_)
       parameters <- parameters[!is.na(parameter_names)]
       parameter_names <- parameter_names[!is.na(parameter_names)]
       names(parameters) <- parameter_names
@@ -143,7 +149,7 @@ ConfigCache <- function(value = TRUE,
                         file = "cache.sqlite") {
   x <- structure(
     list(
-      name = "Caching Configuration",
+      name = "ConfigCache",
       description = "Enable/disable caching.",
       value = value,
       mode = mode,
@@ -307,9 +313,9 @@ clear_cache.ConfigCache <- function(x, what = NULL, ...) {
 #' @description Class representing the engine configuration, inheriting from [StreamFind::Config].
 #' @export
 #'
-EngineConfig <- function() {
-  x <- structure(list("ConfigCache" = ConfigCache()),
-                 class = c("EngineConfig", "Config"))
+EngineConfig <- function(parameters = list("ConfigCache" = ConfigCache())) {
+  x <- Config(parameters)
+  class(x) <- c("EngineConfig", "Config")
   if (is.null(validate_object(x))) {
     return(x)
   } else {
@@ -334,7 +340,7 @@ EngineConfig <- function() {
 ConfigDurationNotifications <- function(value = 10) {
   x <- structure(
     list(
-      name = "Duration of pop-up notifications",
+      name = "ConfigDurationNotifications",
       description = "Duration in seconds for pop-up notifications",
       value = as.numeric(value)
     ),
@@ -373,7 +379,7 @@ validate_object.ConfigDurationNotifications <- function(x) {
 ConfigExtraRoots <- function(value = "") {
   x <- structure(
     list(
-      name = "Extra Root Directories",
+      name = "ConfigExtraRoots",
       description = "Extra root directories for file selection. Add spaces between directories.",
       value = as.character(value)
     ),

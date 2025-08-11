@@ -2,6 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_GroupFeatures.R
 \name{MassSpecMethod_GroupFeatures_xcms3_peakdensity}
 \alias{MassSpecMethod_GroupFeatures_xcms3_peakdensity}
+\alias{validate_object.MassSpecMethod_GroupFeatures_xcms3_peakdensity}
 \title{MassSpecMethod_GroupFeatures_xcms3_peakdensity S7 class}
 \usage{
 MassSpecMethod_GroupFeatures_xcms3_peakdensity(
@@ -11,6 +12,8 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity(
   binSize = 0.008,
   maxFeatures = 100
 )
+
+\method{validate_object}{MassSpecMethod_GroupFeatures_xcms3_peakdensity}(x)
 }
 \arguments{
 \item{bw}{numeric(1) defining the bandwidth (standard deviation of the smoothing kernel) to be used. This argument
@@ -25,6 +28,8 @@ the features have to be detected to be considered a feature group.}
 \item{binSize}{numeric(1) defining the size of the overlapping slices in mz dimension.}
 
 \item{maxFeatures}{numeric(1) with the maximum number of feature groups to be identified in a single mz slice.}
+
+\item{x}{A \code{MassSpecMethod_GroupFeatures_xcms3_peakdensity} object.}
 }
 \value{
 A \code{MassSpecMethod_GroupFeatures_xcms3_peakdensity} object.
@@ -38,6 +43,11 @@ The function uses the package \pkg{patRoon} in the background.
 \details{
 See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_GroupFeatures_xcms3_peakdensity)}: Validate the MassSpecMethod_GroupFeatures_xcms3_peakdensity object, returning NULL if valid.
+
+}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

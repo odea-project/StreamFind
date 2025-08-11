@@ -67,6 +67,32 @@ info.Analyses <- function(x) {
 
 #' @export
 #' @noRd
+add.Analyses <- function(x, value) {
+  if (!is(value, "list")) {
+    warning("Analysis must be a list!")
+    return(x)
+  }
+  value_names <- names(value)
+  if (length(value_names) == 0) {
+    warning("Analysis names must be provided!")
+    return(x)
+  }
+  if (any(vapply(value_names, function(a) a %in% names(x), FALSE))) {
+    warning("Analysis names already exist!")
+    return(x)
+  }
+  analyses <- c(x$analyses, value)
+  analyses <- analyses[order(names(analyses))]
+  x$analyses <- analyses
+  if (length(x$results) > 0) {
+    warning("All results removed!")
+    x$results <- list()
+  }
+  x
+}
+
+#' @export
+#' @noRd
 show.Analyses <- function(x, ...) {
   if (length(x$analyses) > 0) {
     overview <- info(x)
@@ -95,32 +121,6 @@ save.Analyses <- function(x, file = "analyses.json") {
     warning("Invalid format!")
   }
   invisible(NULL)
-}
-
-#' @export
-#' @noRd
-add.Analyses <- function(x, value) {
-  if (!is(value, "list")) {
-    warning("Analysis must be a list!")
-    return(x)
-  }
-  value_names <- names(value)
-  if (length(value_names) == 0) {
-    warning("Analysis names must be provided!")
-    return(x)
-  }
-  if (any(vapply(value_names, function(a) a %in% names(x), FALSE))) {
-    warning("Analysis names already exist!")
-    return(x)
-  }
-  analyses <- c(x$analyses, value)
-  analyses <- analyses[order(names(analyses))]
-  x$analyses <- analyses
-  if (length(x$results) > 0) {
-    warning("All results removed!")
-    x$results <- list()
-  }
-  x
 }
 
 #' @export

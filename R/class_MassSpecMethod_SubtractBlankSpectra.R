@@ -70,9 +70,9 @@ S7::method(run, MassSpecMethod_SubtractBlankSpectra_StreamFind) <- function(x, e
   
   ntozero <- x$parameters$negativeToZero
   
-  blks <- engine$Analyses$blanks
-  names(blks) <- engine$Analyses$replicates
-  blk_anas <- engine$Analyses$replicates
+  blks <- get_blanks(engine$Analyses)
+  names(blks) <- get_replicates(engine$Analyses)
+  blk_anas <- get_replicates(engine$Analyses)
   blk_anas <- blk_anas[blk_anas %in% blks]
   
   spec_blk <- spec_list[names(spec_list) %in% c(blks, names(blk_anas))]
@@ -93,7 +93,7 @@ S7::method(run, MassSpecMethod_SubtractBlankSpectra_StreamFind) <- function(x, e
     if (nrow(z) == 0) return(z)
     
     if (!engine$Spectra$is_averaged) {
-      rp <- engine$Analyses$replicates[z$analysis[1]]
+      rp <- get_replicates(engine$Analyses)[z$analysis[1]]
       
     } else {
       rp <- z$analysis[1]

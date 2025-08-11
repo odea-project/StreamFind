@@ -93,6 +93,7 @@ validate_object.NontargetAnalysisResults = function(x) {
       }
     })
   }
+  NextMethod()
   NULL
 }
 
@@ -123,7 +124,9 @@ show.NonTargetAnalysisResults <- function(x) {
     "groups" = vapply(
       x$features,
       function(z) {
-        length(unique(z$group))
+        grs <- unique(z$group)
+        grs <- grs[!is.na(grs) & grs != ""]
+        length(grs)
       },
       integer(1)
     ),
@@ -132,11 +135,87 @@ show.NonTargetAnalysisResults <- function(x) {
   print(info)
 }
 
+#' @describeIn NonTargetAnalysisResults Converts a list object to a `NonTargetAnalysisResults` object if it is compatible.
+#' @template arg-value
+#' @export
+#' 
+as.NonTargetAnalysisResults <- function(value) {
+  if (is(value, "NonTargetAnalysisResults")) {
+    if(is.null(validate_object(value))) {
+      return(value)
+    } else {
+      stop("Invalid NonTargetAnalysisResults object.")
+    }
+  }
+  if (is.list(value)) {
+    if (all(c("info", "headers", "features") %in% names(value))) {
+      value$info <- data.table::as.data.table(value$info)
+      checkmate::assert_data_table(value$info)
+      checkmate::assert_true(all(c("analysis", "replicate", "blank", "polarity", "file") %in% colnames(value$info)))
+      value$headers <- lapply(value$headers, data.table::as.data.table)
+      checkmate::assert_list(value$headers)
+      lapply(value$headers, function(z) checkmate::assert_data_table(z))
+      checkmate::assert_true(
+        identical(
+          value$info$analysis,
+          names(value$headers)
+        )
+      )
+      checkmate::assert_list(value$features)
+      value$features <- lapply(value$features, function(z) {
+        z <- data.table::as.data.table(z)
+        if (nrow(z) == 0) return(z)
+        checkmate::assert_true(
+          all(
+            c(
+              "feature", "group", "rt", "mz", "intensity", "area",
+              "rtmin", "rtmax", "mzmin", "mzmax", "mass", "polarity",
+              "adduct", "filtered", "filter", "filled", "correction",
+              "eic", "ms1", "ms2", "quality", "annotation",
+              "istd", "suspects", "formulas", "compounds"
+            ) %in% colnames(z)
+          )
+        )
+        z$eic <- lapply(z$eic, data.table::as.data.table)
+        z$ms1 <- lapply(z$ms1, data.table::as.data.table)
+        z$ms2 <- lapply(z$ms2, data.table::as.data.table)
+        z$quality <- lapply(z$quality, data.table::as.data.table)
+        z$annotation <- lapply(z$annotation, data.table::as.data.table)
+        z$istd <- lapply(z$istd, data.table::as.data.table)
+        z$suspects <- lapply(z$suspects, data.table::as.data.table)
+        z$formulas <- lapply(z$formulas, data.table::as.data.table)
+        z$compounds <- lapply(z$compounds, data.table::as.data.table)
+        z
+      })
+      checkmate::assert_true(
+        identical(
+          value$info$analysis,
+          names(value$features)
+        )
+      )
+      nts <- NonTargetAnalysisResults(
+        info = value$info,
+        headers = value$headers,
+        features = value$features
+      )
+      if (is.null(validate_object(nts))) {
+        return(nts)
+      } else {
+        stop("Invalid NonTargetAnalysisResults object.")
+      }
+    } else {
+      stop("List does not contain required components for NonTargetAnalysisResults.")
+    }
+  } else {
+    stop("Value is not a list or NonTargetAnalysisResults object.")
+  }
+}
+
 # MARK: names
 #' @export
 #' @noRd
 names.NonTargetAnalysisResults <- function(x) {
-  names(x$info.analysis)
+  names(x$features)
 }
 
 # MARK: `[`
@@ -522,8 +601,6 @@ get_features.NonTargetAnalysisResults <- function(
     analyses,
     polarities
   )
-
-  targets <- targets@targets
 
   if (nrow(targets) > 0) {
     for (i in seq_len(nrow(targets))) {
@@ -2066,7 +2143,7 @@ get_groups.NonTargetAnalysisResults <- function(
   if (length(x$features) == 0) {
     return(data.table::data.table())
   }
-  if (!any(vapply(x$features, function(z) any(!is.na(z$group), FALSE)))) {
+  if (!any(vapply(x$features, function(z) any(!(is.na(z$group) || z$group %in% "")), FALSE))) {
     return(data.table::data.table())
   }
   fts <- get_features(
@@ -2819,7 +2896,9 @@ plot_groups_profile.NonTargetAnalysisResults <- function(
     fts$intensity <- as.numeric(fts$intensity_rel)
   }
 
-  if (averaged && any(vapply(x$features, function(x) any(!is.na(x$group)), FALSE))) {
+  if (
+    averaged && any(vapply(x$features, function(x) any(!is.na(x$group)), FALSE))
+  ) {
     group_cols <- c("replicate", "group", "polarity")
     if ("name" %in% colnames(fts)) {
       group_cols <- c(group_cols, "name")
@@ -6430,6 +6509,8 @@ get_patRoon_features.NonTargetAnalysisResults <- function(
   ana_info <- x$info
   ana_info <- ana_info[ana_info$analysis %in% names(feature_list), ]
   pols <- x$info$polarity
+  pols[pols == "1"] <- "positive"
+  pols[pols == "-1"] <- "negative"
   ana_info$path <- dirname(ana_info$file)
   data.table::setnames(ana_info, "replicate", "group", skip_absent = TRUE)
   data.table::setcolorder(

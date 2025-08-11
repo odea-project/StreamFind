@@ -7,6 +7,11 @@ DataTypes <- function() {
         "MassSpec" = c("mzML", "mzXML", "d", "raw"),
         "Raman" = c("asc", "sif", "json", "wdf", "sdf", "csv", "txt"),
         "Statistic" = c("csv")
+      ),
+      results = list(
+        "MassSpec" = c("NonTargetAnalysisResults", "MassSpecSpectra", "Chromatograms"),
+        "Raman" = c("RamanSpectra"),
+        "Statistic" = c("StatisticResults")
       )
     ),
     class = "DataTypes"

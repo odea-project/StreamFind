@@ -110,7 +110,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     return(FALSE)
   }
   
-  parameters <- x@parameters
+  parameters <- x$parameters
   
   suspect_features <- get_suspects(
     nts,

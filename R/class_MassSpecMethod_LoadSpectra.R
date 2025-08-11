@@ -91,7 +91,7 @@ S7::method(run, MassSpecMethod_LoadSpectra_native) <- function(x, engine = NULL)
     return(FALSE)
   }
   
-  parameters <- x@parameters
+  parameters <- x$parameters
   
   ranges <- data.frame(
     mzmin = parameters$mzmin,
@@ -200,7 +200,7 @@ S7::method(run, MassSpecMethod_LoadSpectra_chrompeaks) <- function(x, engine = N
     return(FALSE)
   }
   
-  parameters <- x@parameters
+  parameters <- x$parameters
   
   peaks <- engine$Chromatograms$peaks
   

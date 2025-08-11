@@ -188,8 +188,6 @@ S7::method(get_spectra, MassSpecSpectra) <- function(x,
   
   targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, analyses, polarities)
   
-  targets <- targets@targets
-  
   if ("polarity" %in% colnames(targets) && nrow(targets) > 0) {
     for (i in seq_len(nrow(targets))) {
       if (targets$polarity[i] == "positive") targets$polarity[i] <- 1

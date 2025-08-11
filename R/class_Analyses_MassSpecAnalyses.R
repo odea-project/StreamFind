@@ -338,6 +338,102 @@ remove.MassSpecAnalyses <- function(x, value) {
 }
 
 # MARK: read
+#' @describeIn MassSpecAnalyses Save a `MassSpecAnalyses` object to a file. The `file` can be in JSON or RDS format.
+#' @template arg-x-MassSpecAnalyses
+#' @template arg-file
+#' @export
+#' 
+save.MassSpecAnalyses <- function(x, file) {
+  format <- tools::file_ext(file)
+  if (format %in% "json") {
+    x <- .convert_to_json(x)
+    write(x, file)
+  } else if (format %in% "rds") {
+    saveRDS(x, file)
+  } else {
+    warning("Invalid format!")
+  }
+  invisible(NULL)
+}
+
+#' @describeIn MassSpecAnalyses Convert a valid list to a `MassSpecAnalyses` object. This method is used internally and should not be called directly.
+#' @template arg-value
+#' @export
+#' 
+as.MassSpecAnalyses <- function(value) {
+  if (is(value, "MassSpecAnalyses")) {
+    if (is.null(validate_object(value))) {
+      return(value)
+    } else {
+      stop("Invalid MassSpecAnalyses object!")
+    }
+  }
+  if (is.list(value)) {
+    if (!all(names(value) %in% c("analyses", "results", "type", "formats"))) {
+      stop("Value must be a list with 'analyses' and 'results' elements!")
+    }
+    value$analyses <- lapply(
+      value$analyses,
+      function(x) {
+        if (is.list(x) && all(c(
+          "name", "replicate", "blank", "file", "format",
+          "type", "spectra_number", "spectra_headers",
+          "chromatograms_number", "chromatograms_headers",
+          "metadata", "concentration"
+        ) %in% names(x))) {
+          return(list(
+            name = x$name,
+            replicate = x$replicate,
+            blank = x$blank,
+            file = x$file,
+            format = x$format,
+            type = x$type,
+            spectra_number = x$spectra_number,
+            spectra_headers = data.table::as.data.table(x$spectra_headers),
+            chromatograms_number = x$chromatograms_number,
+            chromatograms_headers = data.table::as.data.table(x$chromatograms_headers),
+            metadata = x$metadata,
+            concentration = x$concentration
+          ))
+        } else {
+          stop("Invalid MassSpecAnalysis object in list!")
+        }
+      }
+    )
+    if (length(value$results) > 0) {
+      possible_results <- DataTypes()$results$MassSpec
+      if (!all(names(value$results) %in% possible_results)) {
+        stop(paste("Invalid results in MassSpecAnalyses:", paste(names(value$results), collapse = ", ")))
+      }
+      value$results <- lapply(
+        value$results,
+        function(res) {
+          if (!is(res, "Results")) {
+            call_name <- res$name
+            call_name <- paste0("as.", call_name)
+            res <- do.call(call_name, list(res))
+          }
+          if (!is.null((validate_object(res)))) {
+            stop(paste("Invalid Results object:", res$name))
+          }
+          res
+        }
+      )
+    }
+    value <- structure(
+      value,
+      class = c("MassSpecAnalyses", "Analyses")
+    )
+    if (is.null(validate_object(value))) {
+      return(value)
+    } else {
+      stop("Invalid MassSpecAnalyses object!")
+    }
+  }
+  stop("Value must be a list or MassSpecAnalyses object!")
+}
+
+# MARK: read
 #' @describeIn MassSpecAnalyses Read a `MassSpecAnalyses` object from a file. The `file` can be in JSON or RDS format.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-file
@@ -346,10 +442,13 @@ remove.MassSpecAnalyses <- function(x, value) {
 read.MassSpecAnalyses <- function(x, file) {
   if (grepl(".json", file)) {
     if (file.exists(file)) {
-      json <- jsonlite::fromJSON(file)
-      browser()
-      # TODO add read method for MassSpecAnalyses NonTargetAnalysisResults and other results
-      return(Analyses(jsonlite::fromJSON(file)))
+      data <- jsonlite::fromJSON(file)
+      data <- as.MassSpecAnalyses(data)
+      if (is.null(validate_object(data))) {
+        return(data)
+      } else {
+        stop("Invalid MassSpecAnalyses object!")
+      }
     }
   } else if (grepl(".rds", file)) {
     res <- readRDS(file)
@@ -515,8 +614,6 @@ get_raw_spectra.MassSpecAnalyses <- function(
     analyses,
     polarities
   )
-
-  targets <- targets@targets
 
   num_cols <- c(
     "mz",
