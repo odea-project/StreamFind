@@ -177,14 +177,14 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
   }
 
   if (!engine$has_results_nts()) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
+  MassSpecResults_NonTargetAnalysis <- engine$MassSpecResults_NonTargetAnalysis
 
-  if (!NonTargetAnalysisResults@has_groups) {
-    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
+  if (!MassSpecResults_NonTargetAnalysis@has_groups) {
+    warning("MassSpecResults_NonTargetAnalysis object does not have feature groups! Not done.")
     return(FALSE)
   }
 
@@ -200,13 +200,13 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
   algorithm <- x$algorithm
   
   fg <- get_patRoon_features(
-    NonTargetAnalysisResults,
+    MassSpecResults_NonTargetAnalysis,
     filtered = FALSE,
     featureGroups = TRUE
   )
   
   mspl <- get_patRoon_MSPeakLists(
-    NonTargetAnalysisResults,
+    MassSpecResults_NonTargetAnalysis,
     MSPeakListsClusterMzWindow,
     MSPeakListsTopMost,
     MSPeakListsMinIntensityPre,
@@ -241,7 +241,7 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
     return(FALSE)
   }
 
-  feature_list <- NonTargetAnalysisResults$feature_list
+  feature_list <- MassSpecResults_NonTargetAnalysis$feature_list
 
   formulas_col <- lapply(names(feature_list), function(x, feature_list, formulas) {
     formula <- formulas@featureFormulas[[x]]
@@ -261,11 +261,11 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
     rep(list(NULL), nrow(feature_list[[x]]))
   }, feature_list = feature_list, formulas = formulas)
 
-  NonTargetAnalysisResults <- .add_features_column(NonTargetAnalysisResults, "formulas", formulas_col)
+  MassSpecResults_NonTargetAnalysis <- .add_features_column(MassSpecResults_NonTargetAnalysis, "formulas", formulas_col)
 
-  NonTargetAnalysisResults$formulas <- formulas
+  MassSpecResults_NonTargetAnalysis$formulas <- formulas
 
-  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
+  engine$MassSpecResults_NonTargetAnalysis <- MassSpecResults_NonTargetAnalysis
 
   message(paste0("\U2713 ", length(formulas), " formulas generated and added!"))
 

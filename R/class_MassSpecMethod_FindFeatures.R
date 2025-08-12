@@ -254,10 +254,10 @@
     fp = fp
   )
 
-  nts <- NonTargetAnalysisResults(analyses_info, headers, feature_list)
+  nts <- MassSpecResults_NonTargetAnalysis(analyses_info, headers, feature_list)
 
   if (is.null(validate_object(nts))) {
-    engine$Analyses$results[["NonTargetAnalysisResults"]] <- nts
+    engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]] <- nts
     TRUE
   } else {
     FALSE
@@ -348,7 +348,7 @@ MassSpecMethod_FindFeatures_xcms3_centwave <- function(
     required = NA_character_,
     algorithm = "xcms3_centwave",
     input_class = NA_character_,
-    output_class = "NonTargetAnalysisResults",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       ppm = as.numeric(ppm),
       peakwidth = as.numeric(peakwidth),
@@ -483,7 +483,7 @@ MassSpecMethod_FindFeatures_xcms3_matchedfilter <- function(
     required = NA_character_,
     algorithm = "xcms3_matchedfilter",
     input_class = NA_character_,
-    output_class = "NonTargetAnalysisResults",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       class = as.character("MatchedFilterParam"),
       binSize = as.numeric(binSize),
@@ -653,7 +653,7 @@ MassSpecMethod_FindFeatures_openms <- function(
     required = NA_character_,
     algorithm = "openms",
     input_class = NA_character_,
-    output_class = "NonTargetAnalysisResults",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       noiseThrInt = noiseThrInt,
       chromSNR = chromSNR,
@@ -783,7 +783,7 @@ MassSpecMethod_FindFeatures_kpic2 <- function(
     required = NA_character_,
     algorithm = "kpic2",
     input_class = NA_character_,
-    output_class = "NonTargetAnalysisResults",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       kmeans = kmeans,
       level = level,
@@ -857,7 +857,7 @@ MassSpecMethod_FindFeatures_qalgorithms <- function(ppm = 5) {
     required = NA_character_,
     algorithm = "qalgorithms",
     input_class = NA_character_,
-    output_class = "NonTargetAnalysisResults",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(ppm = ppm),
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),

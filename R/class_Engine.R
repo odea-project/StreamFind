@@ -26,29 +26,16 @@ Engine <- R6::R6Class(
   active = list(
 
     # MARK: Metadata
-    #' @field Metadata A [StreamFind::Metadata] or [StreamFind::EngineMetadata] object. When setting it can also be a named list with elements of length one.
+    #' @field Metadata A [StreamFind::Metadata] object. When setting it can also be a named list with elements of length one.
     Metadata = function(value) {
       if (missing(value)) {
         return(private$.Metadata)
       }
-      if (is(value, "EngineMetadata")) {
-        if (!is.null(validate_object(value))) {
-          warning("Invalid EngineMetadata object! Not added.")
-        } else {
-          if (attr(value, "type") %in% private$.type) {
-            private$.Metadata <- value
-          } else {
-            warning("Metadata data type not matching with current engine! Not added.")
-          }
-          if (!is.null(private$.AuditTrail)) {
-            private$.AuditTrail <- add(private$.AuditTrail, private$.Metadata)
-          }
-        }
-      } else if (is(value, "Metadata")) {
+      if (is(value, "Metadata")) {
         if (!is.null(validate_object(value))) {
           warning("Invalid Metadata object! Not added.")
         } else {
-          private$.Metadata <- StreamFind::EngineMetadata(entries = value, type = private$.type)
+          private$.Metadata <- value
           if (!is.null(private$.AuditTrail)) {
             private$.AuditTrail <- add(private$.AuditTrail, private$.Metadata)
           }
@@ -56,7 +43,7 @@ Engine <- R6::R6Class(
       } else if (is(value, "list")) {
         tryCatch(
           {
-            private$.Metadata <- StreamFind::EngineMetadata(entries = value, type = private$.type)
+            private$.Metadata <- Metadata(entries = value)
             if (!is.null(private$.AuditTrail)) {
               private$.AuditTrail <- add(private$.AuditTrail, private$.Metadata)
             }
@@ -69,7 +56,7 @@ Engine <- R6::R6Class(
           }
         )
       } else {
-        warning("Invalid EngineMetadata object! Not added.")
+        warning("Invalid Metadata object! Not added.")
       }
       invisible(self)
     },
@@ -97,7 +84,7 @@ Engine <- R6::R6Class(
       } else if (is(value, "list")) {
         tryCatch(
           {
-            wf <- StreamFind::Workflow(value)
+            wf <- Workflow(value)
             if (attr(wf, "type") %in% private$.type || length(wf) == 0) {
               private$.Workflow <- wf
               if (!is.null(private$.AuditTrail)) {
@@ -304,9 +291,9 @@ Engine <- R6::R6Class(
       }
       checkmate::assert_true(type %in% c(NA_character_, "MassSpec", "Raman", "Statistic"))
       private$.type <- type
-      private$.Metadata <- StreamFind::EngineMetadata(type = type)
-      private$.AuditTrail <- StreamFind::AuditTrail()
-      private$.Config <- StreamFind::EngineConfig()     
+      private$.Metadata <- Metadata()
+      private$.AuditTrail <- AuditTrail()
+      private$.Config <- EngineConfig()     
       if (!is.null(metadata)) {
         if (is(metadata, "Metadata")) {
           self$Metadata <- metadata
@@ -400,7 +387,7 @@ Engine <- R6::R6Class(
     clear_cache = function(value = NULL) {
       if (is.null(value)) value = "all"
       config_cache <- self$Config[["ConfigCache"]]
-      StreamFind::clear_cache(config_cache, value)
+      clear_cache(config_cache, value)
       message("\U2713 Cache cleared!")
     },
     
@@ -467,7 +454,6 @@ Engine <- R6::R6Class(
           }
         )
       }
-      
       if (tools::file_ext(file) %in% "sqlite") {
         hash <- .make_hash(paste0("Engine_", private$.type))
         data <- .load_cache_sqlite_backend(file, paste0("Engine_", private$.type), hash)
@@ -504,8 +490,8 @@ Engine <- R6::R6Class(
         data <- jsonlite::fromJSON(file)
         if (is(data, "list")) {
           if (data$type %in% private$.type) {
-            private$.Metadata <- StreamFind::EngineMetadata(entries = data$Metadata, type = private$.type)
-            private$.Workflow <- StreamFind::Workflow(data$Workflow)
+            private$.Metadata <- Metadata(entries = data$Metadata)
+            private$.Workflow <- Workflow(data$Workflow)
             
             warning("Load Analyses or child Analyses objects not yet implemented!")
             # TODO make a generic as.Analyses method for all analyses types
@@ -534,14 +520,14 @@ Engine <- R6::R6Class(
       cat("\n")
       cat("\n")
       cat("Metadata\n")
-      StreamFind::show(self$Metadata)
+      show(self$Metadata)
       cat("\n")
       cat("Workflow\n")
-      StreamFind::show(self$Workflow)
+      show(self$Workflow)
       cat("\n")
       cat("\n")
       cat("Analyses\n")
-      StreamFind::show(self$Analyses)
+      show(self$Analyses)
     },
     
     # MARK: save
@@ -659,7 +645,7 @@ Engine <- R6::R6Class(
         return(invisible(self))
       }
       if (length(private$.Workflow) == 0) {
-        private$.Workflow <- StreamFind::Workflow()
+        private$.Workflow <- Workflow()
         attr(private$.Workflow, "type") <- private$.type
       }
       message("\U2699 Running ", step$method, " using ", step$algorithm)
@@ -670,7 +656,7 @@ Engine <- R6::R6Class(
         engine_name <- self$Metadata[["name"]]
         if (is.null(engine_name) || is.na(engine_name)) engine_name <- is(self)
         cache_category <- paste0(engine_name, "_results_", step$method, "_", step$algorithm)
-        cache <- StreamFind::load_cache(
+        cache <- load_cache(
           config_cache,
           category = cache_category,
           as.list(self$Workflow),
@@ -697,7 +683,7 @@ Engine <- R6::R6Class(
                 step$method, ":\n", e, "\n",
                 "Results deleted from cache!"
               )
-              StreamFind::clear_cache(config_cache, cache_category)
+              clear_cache(config_cache, cache_category)
             },
             warning = function(w) {
               warning(
@@ -707,18 +693,18 @@ Engine <- R6::R6Class(
                   "Results deleted from cache!"
                 )
               )
-              StreamFind::clear_cache(config_cache, cache_category)
+              clear_cache(config_cache, cache_category)
             }
           )
         }
       }
       if (!processed) {
-        processed <- StreamFind::run(step, self)
+        processed <- run(step, self)
       }
       if (processed) {
         if (config_cache$value && !loaded_cached) {
           if (!is.null(cache$hash)) {
-            StreamFind::save_cache(
+            save_cache(
               config_cache,
               category = cache_category,
               data = self$Analyses$results,
@@ -799,7 +785,7 @@ Engine <- R6::R6Class(
         warning("sortable package not installed!")
         return(invisible(self))
       }
-      StreamFind::run_app(file = file, engine_type = type)
+      run_app(file = file, engine_type = is(self))
     }
   )
 )

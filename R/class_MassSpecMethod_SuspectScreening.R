@@ -99,14 +99,14 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NonTargetAnalysisResults
+  nts <- engine$MassSpecResults_NonTargetAnalysis
   
   if (!nts@has_features) {
-    warning("NonTargetAnalysisResults object is empty! Not done.")
+    warning("MassSpecResults_NonTargetAnalysis object is empty! Not done.")
     return(FALSE)
   }
   
@@ -170,7 +170,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_StreamFind) <- function(x, engin
     }, features, sus_col)
     
     nts$feature_list <- features
-    engine$NonTargetAnalysisResults <- nts
+    engine$MassSpecResults_NonTargetAnalysis <- nts
     TRUE
   } else {
     message("\U26a0 No suspects found!")
@@ -263,18 +263,18 @@ S7::method(run, MassSpecMethod_SuspectScreening_forident) <- function(x, engine 
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
   
-  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
+  MassSpecResults_NonTargetAnalysis <- engine$MassSpecResults_NonTargetAnalysis
   
-  if (NonTargetAnalysisResults@number_features == 0) {
-    warning("NonTargetAnalysisResults object is empty! Not done.")
+  if (MassSpecResults_NonTargetAnalysis@number_features == 0) {
+    warning("MassSpecResults_NonTargetAnalysis object is empty! Not done.")
     return(FALSE)
   }
   
-  if (NonTargetAnalysisResults$has_groups) {
+  if (MassSpecResults_NonTargetAnalysis$has_groups) {
     
     polarities <- unique(engine$get_spectra_polarity())
     
@@ -340,7 +340,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_forident) <- function(x, engine 
     
   } else {
     
-    if (NonTargetAnalysisResults$has_groups) {
+    if (MassSpecResults_NonTargetAnalysis$has_groups) {
       ms2 <- engine$get_groups_ms2()
       ms2 <- split(ms2, ms2$group)
       out_list$ms2 <- lapply(out_list$group, function(x, ms2) {
@@ -503,7 +503,7 @@ S7::method(run, MassSpecMethod_SuspectScreening_patRoon) <- function(x, engine =
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
   
@@ -512,17 +512,17 @@ S7::method(run, MassSpecMethod_SuspectScreening_patRoon) <- function(x, engine =
     return(FALSE)
   }
   
-  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
+  MassSpecResults_NonTargetAnalysis <- engine$MassSpecResults_NonTargetAnalysis
   
-  if (!NonTargetAnalysisResults@has_groups) {
-    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
+  if (!MassSpecResults_NonTargetAnalysis@has_groups) {
+    warning("MassSpecResults_NonTargetAnalysis object does not have feature groups! Not done.")
     return(FALSE)
   }
   
   parameters <- x$parameters
   
   res <- patRoon::screenSuspects(
-    fGroups = NonTargetAnalysisResults$features,
+    fGroups = MassSpecResults_NonTargetAnalysis$features,
     suspects = parameters$suspects,
     rtWindow = parameters$rtWindow,
     mzWindow = parameters$mzWindow,
@@ -535,9 +535,9 @@ S7::method(run, MassSpecMethod_SuspectScreening_patRoon) <- function(x, engine =
   
   suspect_list <- res@screenInfo
   
-  NonTargetAnalysisResults$features <- res
+  MassSpecResults_NonTargetAnalysis$features <- res
   
-  features <- NonTargetAnalysisResults$feature_list
+  features <- MassSpecResults_NonTargetAnalysis$feature_list
   
   features <- lapply(features, function(x, suspect_list) {
     
@@ -597,8 +597,8 @@ S7::method(run, MassSpecMethod_SuspectScreening_patRoon) <- function(x, engine =
     
   }, suspect_list = suspect_list)
   
-  NonTargetAnalysisResults$feature_list <- features
-  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
+  MassSpecResults_NonTargetAnalysis$feature_list <- features
+  engine$MassSpecResults_NonTargetAnalysis <- MassSpecResults_NonTargetAnalysis
   message("\U2713 Suspect screening done with patRoon!")
   TRUE
 }

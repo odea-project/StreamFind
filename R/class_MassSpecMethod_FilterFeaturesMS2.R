@@ -31,8 +31,8 @@ MassSpecMethod_FilterFeaturesMS2_native <- function(
     method = "FilterFeaturesMS2",
     required = "LoadFeaturesMS2",
     algorithm = "native",
-    input_class = "NonTargetAnalysisResults",
-    output_class = "NonTargetAnalysisResults",
+    input_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       top = as.integer(top),
       minIntensity = as.numeric(minIntensity),
@@ -83,12 +83,12 @@ run.MassSpecMethod_FilterFeaturesMS2_native <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  if (is.null(engine$Analyses$results[["NonTargetAnalysisResults"]])) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$NonTargetAnalysisResults
+  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
 
   if (
     !any(vapply(
@@ -98,7 +98,7 @@ run.MassSpecMethod_FilterFeaturesMS2_native <- function(x, engine = NULL) {
     ))
   ) {
     warning(
-      "NonTargetAnalysisResults object does not have feature groups! Not done."
+      "MassSpecResults_NonTargetAnalysis object does not have feature groups! Not done."
     )
     return(FALSE)
   }

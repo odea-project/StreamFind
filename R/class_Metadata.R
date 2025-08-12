@@ -1,18 +1,14 @@
 # MARK: Metadata
 # Metadata -----
-#' @title Metadata S3 class
+#' @title Metadata S3 Class
 #'
-#' @description The `Metadata` S3 class holds information, such as name, date, author
-#' and file, as a named list with elements of length one. The `Metadata` is essentially
-#' a list therefore list methods are also applicable.
+#' @description The `Metadata` S3 class holds information, such as name, date, author and file, as a named list with elements of length one. The `Metadata` is essentially a list therefore list methods are also applicable.
 #'
-#' @param entries A named list of metadata entries as elements. Default is an empty list.
-#' Elements must be of type character, numeric or POSIXt and must have length 1.
+#' @param entries A named list of metadata entries as elements. Default is an empty list. Elements must be of type character, numeric or POSIXt and must have length 1.
 #' 
-#' @details If not given, elements name, author, date and file are set to `NA_character_`,
-#' `NA_character_`, current system time and `NA_character_`, respectively.
+#' @details If not given, elements name, author, date and file are set to `NA_character_`, `NA_character_`, current system time and `NA_character_`, respectively.
 #' 
-#' @return A `Metadata` S3 class object.
+#' @return A `Metadata` S3 class object which is fundamentally a named list with metadata entries.
 #'
 #' @export
 #' 
@@ -106,6 +102,9 @@ validate_object.Metadata <- function(x) {
       if (!is.character(x[["file"]])) {
         warning("Metadata entry file must be character length 1!")
         valid <- FALSE
+      }
+      if (!is.na(x[["file"]])) {
+        checkmate::assert_true(tools::file_ext(x[["file"]]) %in% c("sqlite", "rds", "json"))
       }
     }
   }
@@ -216,47 +215,4 @@ show.Metadata <- function(x) {
     }
     cat(str, sep = "\n")
   }
-}
-
-# MARK: EngineMetadata
-# EngineMetadata -----
-#' @title Engine Metadata
-#' 
-#' @description The `EngineMetadata` class is a subclass of the [StreamFind::Metadata] class.
-#' It is used to store metadata of data processing engines.
-#' 
-#' @param entries A named list of metadata entries. Default is an empty list.
-#' @param type A character string with the data type of the engine.
-#' Default is `NA_character_`.
-#' 
-#' @seealso [StreamFind::Metadata]
-#' 
-#' @export
-#' 
-EngineMetadata <-  function(entries = list(), type = NA_character_) {
-  entries <- Metadata(entries)
-  entries <- structure(
-    entries,
-    class = c("EngineMetadata", "Metadata"),
-    type = type
-  )
-  if (is.null(validate_object(entries))) {
-    return(entries)
-  } else {
-    stop("Invalid EngineMetadata object!")
-  }
-}
-
-#' @describeIn EngineMetadata Validates the `EngineMetadata` object, returning `NULL` if valid.
-#' @param x An `EngineMetadata` object.
-#' @export
-#' 
-validate_object.EngineMetadata <- function(x) {
-  checkmate::assert_character(attr(x, "type"))
-  if ("file" %in% names(x)) {
-    if (!is.na(x[["file"]])) {
-      checkmate::assert_true(tools::file_ext(x[["file"]]) %in% c("sqlite", "rds", "json"))
-    }
-  }
-  NULL
 }

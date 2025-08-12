@@ -10,17 +10,17 @@
     return(FALSE)
   }
 
-  if (is.null(engine$Analyses$results[["NonTargetAnalysisResults"]])) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$NonTargetAnalysisResults
+  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
 
   if (
     sum(vapply(nts$features, function(z) nrow(z), 0)) == 0
   ) {
-    warning("NonTargetAnalysisResults object does not have features! Not done.")
+    warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
     return(FALSE)
   }
 
@@ -218,8 +218,8 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity <- function(
     method = "GroupFeatures",
     required = "FindFeatures",
     algorithm = "xcms3_peakdensity",
-    input_class = "NonTargetAnalysisResults",
-    output_class = "NonTargetAnalysisResults",
+    input_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       bw = bw,
       minFraction = minFraction,
@@ -383,8 +383,8 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- function(
     method = "GroupFeatures",
     required = "FindFeatures",
     algorithm = "xcms3_peakdensity_peakgroups",
-    input_class = "NonTargetAnalysisResults",
-    output_class = "NonTargetAnalysisResults",
+    input_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       bw = bw,
       minFraction = minFraction,
@@ -547,8 +547,8 @@ MassSpecMethod_GroupFeatures_openms <- function(
     method = "GroupFeatures",
     required = "FindFeatures",
     algorithm = "openms",
-    input_class = "NonTargetAnalysisResults",
-    output_class = "NonTargetAnalysisResults",
+    input_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       rtalign = rtalign,
       QT = QT,

@@ -1,17 +1,13 @@
-# MARK: NonTargetAnalysisResults
-# NonTargetAnalysisResults ----
-#' @title Results class child for Non-target Analysis Workflows for Mass Spectrometry Data
-#'
-#' @description The `NonTargetAnalysisResults` class is a child of the [StreamFind::Results] class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec").
-#'
+# MARK: MassSpecResults_NonTargetAnalysis
+#' @title MassSpecResults_NonTargetAnalysis S3 Class
+#' @description The `MassSpecResults_NonTargetAnalysis` class is a child of the [StreamFind::Results] class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec").
 #' @param info A data frame containing information about the analyses.
 #' @param headers A list of data frames containing information about the spectra headers.
 #' @param features A list of data frames containing information about the features.
-#'
-#' @return An object of class `NonTargetAnalysisResults` with the following structure:
+#' @return An object of class `MassSpecResults_NonTargetAnalysis` with the following structure:
 #' \itemize{
 #'   \item `type`: The type of the results, which is "MassSpec".
-#'   \item `name`: The name of the results, which is "NonTargetAnalysisResults".
+#'   \item `name`: The name of the results, which is "MassSpecResults_NonTargetAnalysis".
 #'   \item `software`: The software used for the analysis, which is "StreamFind".
 #'   \item `version`: The version of the software, as a character string.
 #'   \item `info`: A data frame containing information about the analyses.
@@ -19,10 +15,9 @@
 #'   \item `features`: A list of data frames containing information about the features.
 #' }
 #' The `info` data.table contains the following columns: analysis, replicate, blank, polarity and file. Each `features` data frame contains the following columns: feature, group, rt, mz, intensity, area, rtmin, rtmax, mzmin, mzmax, mass, polarity, adduct, filtered, filter, filled, correction, eic, ms1, ms2, quality, annotation, istd, suspects, formulas and compounds.
-#'
 #' @export
 #'
-NonTargetAnalysisResults <- function(
+MassSpecResults_NonTargetAnalysis <- function(
   info = data.table::data.table(),
   headers = list(),
   features = list()
@@ -30,29 +25,29 @@ NonTargetAnalysisResults <- function(
   x <- structure(
     list(
       type = "MassSpec",
-      name = "NonTargetAnalysisResults",
+      name = "MassSpecResults_NonTargetAnalysis",
       software = "StreamFind",
       version = as.character(packageVersion("StreamFind")),
       info = info,
       headers = headers,
       features = features
     ),
-    class = c("NonTargetAnalysisResults", "Results")
+    class = c("MassSpecResults_NonTargetAnalysis", "Results")
   )
   if (is.null(validate_object(x))) {
     return(x)
   } else {
-    stop("Invalid NonTargetAnalysisResults object.")
+    stop("Invalid MassSpecResults_NonTargetAnalysis object.")
   }
 }
 
-#' @describeIn NonTargetAnalysisResults Validates the NonTargetAnalysisResults object, returning NULL if valid.
+#' @describeIn MassSpecResults_NonTargetAnalysis Validates the MassSpecResults_NonTargetAnalysis object, returning NULL if valid.
 #' @template arg-nts-x
 #' @export
 #'
-validate_object.NontargetAnalysisResults = function(x) {
+validate_object.MassSpecResults_NonTargetAnalysis = function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_true(x$name == "NonTargetAnalysisResults")
+  checkmate::assert_true(x$name == "MassSpecResults_NonTargetAnalysis")
   checkmate::assert_true(x$software == "StreamFind")
   checkmate::assert_character(x$version, len = 1)
   if (length(features) > 0) {
@@ -98,11 +93,11 @@ validate_object.NontargetAnalysisResults = function(x) {
 }
 
 # MARK: show
-#' @describeIn NonTargetAnalysisResults Prints a summary of the NonTargetAnalysisResults object.
+#' @describeIn MassSpecResults_NonTargetAnalysis Prints a summary of the MassSpecResults_NonTargetAnalysis object.
 #' @template arg-nts-x
 #' @export
 #'
-show.NonTargetAnalysisResults <- function(x) {
+show.MassSpecResults_NonTargetAnalysis <- function(x) {
   cat("\n")
   cat(is(x))
   cat("\n")
@@ -135,16 +130,16 @@ show.NonTargetAnalysisResults <- function(x) {
   print(info)
 }
 
-#' @describeIn NonTargetAnalysisResults Converts a list object to a `NonTargetAnalysisResults` object if it is compatible.
+#' @describeIn MassSpecResults_NonTargetAnalysis Converts a list object to a `MassSpecResults_NonTargetAnalysis` object if it is compatible.
 #' @template arg-value
 #' @export
 #' 
-as.NonTargetAnalysisResults <- function(value) {
-  if (is(value, "NonTargetAnalysisResults")) {
+as.MassSpecResults_NonTargetAnalysis <- function(value) {
+  if (is(value, "MassSpecResults_NonTargetAnalysis")) {
     if(is.null(validate_object(value))) {
       return(value)
     } else {
-      stop("Invalid NonTargetAnalysisResults object.")
+      stop("Invalid MassSpecResults_NonTargetAnalysis object.")
     }
   }
   if (is.list(value)) {
@@ -193,7 +188,7 @@ as.NonTargetAnalysisResults <- function(value) {
           names(value$features)
         )
       )
-      nts <- NonTargetAnalysisResults(
+      nts <- MassSpecResults_NonTargetAnalysis(
         info = value$info,
         headers = value$headers,
         features = value$features
@@ -201,31 +196,31 @@ as.NonTargetAnalysisResults <- function(value) {
       if (is.null(validate_object(nts))) {
         return(nts)
       } else {
-        stop("Invalid NonTargetAnalysisResults object.")
+        stop("Invalid MassSpecResults_NonTargetAnalysis object.")
       }
     } else {
-      stop("List does not contain required components for NonTargetAnalysisResults.")
+      stop("List does not contain required components for MassSpecResults_NonTargetAnalysis.")
     }
   } else {
-    stop("Value is not a list or NonTargetAnalysisResults object.")
+    stop("Value is not a list or MassSpecResults_NonTargetAnalysis object.")
   }
 }
 
 # MARK: names
 #' @export
 #' @noRd
-names.NonTargetAnalysisResults <- function(x) {
+names.MassSpecResults_NonTargetAnalysis <- function(x) {
   names(x$features)
 }
 
 # MARK: `[`
-#' @describeIn NonTargetAnalysisResults Subsets the NonTargetAnalysisResults object by analyses (with `i`) or feature groups (`j`).
+#' @describeIn MassSpecResults_NonTargetAnalysis Subsets the MassSpecResults_NonTargetAnalysis object by analyses (with `i`) or feature groups (`j`).
 #' @template arg-nts-x
 #' @template arg-i
 #' @template arg-j
 #' @export
 #'
-`[.NonTargetAnalysisResults` <- function(x, i, j) {
+`[.MassSpecResults_NonTargetAnalysis` <- function(x, i, j) {
   if (length(x$features) == 0) {
     warning("No features found to subset!")
     return(x)
@@ -286,11 +281,11 @@ names.NonTargetAnalysisResults <- function(x) {
 }
 
 # MARK: `[[`
-#' @describeIn NonTargetAnalysisResults Subsets the NonTargetAnalysisResults object by feature groups. The argument `value` should be a character vector with the group names.
+#' @describeIn MassSpecResults_NonTargetAnalysis Subsets the MassSpecResults_NonTargetAnalysis object by feature groups. The argument `value` should be a character vector with the group names.
 #' @template arg-value
 #' @export
 #'
-`[[.NonTargetAnalysisResults` <- function(x, value) {
+`[[.MassSpecResults_NonTargetAnalysis` <- function(x, value) {
   if (!missing(value)) {
     if (length(x$features) == 0) {
       warning("No feature groups found to subset!")
@@ -309,13 +304,13 @@ names.NonTargetAnalysisResults <- function(x) {
 }
 
 # MARK: get_features_count
-#' @describeIn NonTargetAnalysisResults Returns a data table with the number of features for each analysis.
+#' @describeIn MassSpecResults_NonTargetAnalysis Returns a data table with the number of features for each analysis.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-filtered
 #' @export
 #'
-get_features_count.NonTargetAnalysisResults <- function(
+get_features_count.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   filtered = FALSE
@@ -351,7 +346,7 @@ get_features_count.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_features_count
-#' @describeIn NonTargetAnalysisResults Plots the number of features for each analysis as a bar plot.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots the number of features for each analysis as a bar plot.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-filtered
@@ -362,7 +357,7 @@ get_features_count.NonTargetAnalysisResults <- function(
 #' @template arg-showHoverText
 #' @export
 #'
-plot_features_count.NonTargetAnalysisResults <- function(
+plot_features_count.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   filtered = FALSE,
@@ -412,7 +407,7 @@ plot_features_count.NonTargetAnalysisResults <- function(
 
   info <- info[order(info$analysis), ]
 
-  colors_tag <- StreamFind:::.get_colors(info$analysis)
+  colors_tag <- .get_colors(info$analysis)
 
   if (is.null(yLab)) {
     yLab <- "Number of features"
@@ -448,7 +443,7 @@ plot_features_count.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_features
-#' @describeIn NonTargetAnalysisResults Returns a data table with the features for the specified analyses and targets.
+#' @describeIn MassSpecResults_NonTargetAnalysis Returns a data table with the features for the specified analyses and targets.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -462,7 +457,7 @@ plot_features_count.NonTargetAnalysisResults <- function(
 #' @template arg-ms-filtered
 #' @export
 #'
-get_features.NonTargetAnalysisResults <- function(
+get_features.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -676,7 +671,7 @@ get_features.NonTargetAnalysisResults <- function(
 }
 
 # MARK: map_features
-#' @describeIn NonTargetAnalysisResults Maps features from the NonTargetAnalysisResults object.
+#' @describeIn MassSpecResults_NonTargetAnalysis Maps features from the MassSpecResults_NonTargetAnalysis object.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -697,7 +692,7 @@ get_features.NonTargetAnalysisResults <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-map_features.NonTargetAnalysisResults <- function(
+map_features.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -890,7 +885,7 @@ map_features.NonTargetAnalysisResults <- function(
 }
 
 # MARK: map_features_intensity
-#' @describeIn NonTargetAnalysisResults Maps features intensity from the NonTargetAnalysisResults object.
+#' @describeIn MassSpecResults_NonTargetAnalysis Maps features intensity from the MassSpecResults_NonTargetAnalysis object.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -909,7 +904,7 @@ map_features.NonTargetAnalysisResults <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-map_features_intensity.NonTargetAnalysisResults <- function(
+map_features_intensity.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -984,7 +979,7 @@ map_features_intensity.NonTargetAnalysisResults <- function(
     color = ~var,
     type = "scatter",
     mode = "markers",
-    colors = StreamFind:::.get_colors(unique(fts$var)),
+    colors = .get_colors(unique(fts$var)),
     text = ~hT,
     hoverinfo = "text"
   ) %>%
@@ -998,7 +993,7 @@ map_features_intensity.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_features_eic
-#' @describeIn NonTargetAnalysisResults Returns a data table with the extracted ion chromatograms (EIC) for features in the specified analyses and targets.
+#' @describeIn MassSpecResults_NonTargetAnalysis Returns a data table with the extracted ion chromatograms (EIC) for features in the specified analyses and targets.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -1015,7 +1010,7 @@ map_features_intensity.NonTargetAnalysisResults <- function(
 #' @template arg-useLoadedData
 #' @export
 #'
-get_features_eic.NonTargetAnalysisResults <- function(
+get_features_eic.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -1172,7 +1167,7 @@ get_features_eic.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_features
-#' @describeIn NonTargetAnalysisResults Plots features from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots features from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -1193,7 +1188,7 @@ get_features_eic.NonTargetAnalysisResults <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-plot_features.NonTargetAnalysisResults <- function(
+plot_features.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -1419,7 +1414,7 @@ plot_features.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_features_ms1
-#' @describeIn NonTargetAnalysisResults Returns a data table with MS1 features for the specified analyses and targets.
+#' @describeIn MassSpecResults_NonTargetAnalysis Returns a data table with MS1 features for the specified analyses and targets.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -1440,7 +1435,7 @@ plot_features.NonTargetAnalysisResults <- function(
 #' @template arg-useLoadedData
 #' @export
 #'
-get_features_ms1.NonTargetAnalysisResults <- function(
+get_features_ms1.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -1570,7 +1565,7 @@ get_features_ms1.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_features_ms1
-#' @describeIn NonTargetAnalysisResults Plots MS1 features from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots MS1 features from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -1596,7 +1591,7 @@ get_features_ms1.NonTargetAnalysisResults <- function(
 #' @template arg-interactive
 #' @export
 #'
-plot_features_ms1.NonTargetAnalysisResults <- function(
+plot_features_ms1.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -1759,7 +1754,7 @@ plot_features_ms1.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_features_ms2
-#' @describeIn NonTargetAnalysisResults Returns a data table with MS2 features for the specified analyses and targets.
+#' @describeIn MassSpecResults_NonTargetAnalysis Returns a data table with MS2 features for the specified analyses and targets.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -1779,7 +1774,7 @@ plot_features_ms1.NonTargetAnalysisResults <- function(
 #' @template arg-useLoadedData
 #' @export
 #'
-get_features_ms2.NonTargetAnalysisResults <- function(
+get_features_ms2.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -1907,7 +1902,7 @@ get_features_ms2.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_features_ms2
-#' @describeIn NonTargetAnalysisResults Plots MS2 features from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots MS2 features from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -1932,7 +1927,7 @@ get_features_ms2.NonTargetAnalysisResults <- function(
 #' @template arg-interactive
 #' @export
 #'
-plot_features_ms2.NonTargetAnalysisResults <- function(
+plot_features_ms2.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -2105,7 +2100,7 @@ plot_features_ms2.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_groups
-#' @describeIn NonTargetAnalysisResults Returns a data table with group information for the specified analyses and targets.
+#' @describeIn MassSpecResults_NonTargetAnalysis Returns a data table with group information for the specified analyses and targets.
 #' @template arg-nts-x
 #' @template arg-ms-groups
 #' @template arg-ms-mass
@@ -2123,7 +2118,7 @@ plot_features_ms2.NonTargetAnalysisResults <- function(
 #' @template arg-ms-correctIntensity
 #' @export
 #'
-get_groups.NonTargetAnalysisResults <- function(
+get_groups.MassSpecResults_NonTargetAnalysis <- function(
   x,
   groups = NULL,
   mass = NULL,
@@ -2345,7 +2340,7 @@ get_groups.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_groups
-#' @describeIn NonTargetAnalysisResults Plots groups from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots groups from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-groups
@@ -2366,7 +2361,7 @@ get_groups.NonTargetAnalysisResults <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-plot_groups.NonTargetAnalysisResults <- function(
+plot_groups.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   groups = NULL,
@@ -2426,7 +2421,7 @@ plot_groups.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_groups_overview
-#' @describeIn NonTargetAnalysisResults Plots an overview of groups from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots an overview of groups from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-groups
@@ -2446,7 +2441,7 @@ plot_groups.NonTargetAnalysisResults <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-plot_groups_overview.NonTargetAnalysisResults <- function(
+plot_groups_overview.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   groups = NULL,
@@ -2811,7 +2806,7 @@ plot_groups_overview.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_groups_profile
-#' @describeIn NonTargetAnalysisResults Plots the profile of groups from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots the profile of groups from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-groups
@@ -2832,7 +2827,7 @@ plot_groups_overview.NonTargetAnalysisResults <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-plot_groups_profile.NonTargetAnalysisResults <- function(
+plot_groups_profile.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   groups = NULL,
@@ -3097,7 +3092,7 @@ plot_groups_profile.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_groups_ms1
-#' @describeIn NonTargetAnalysisResults Extracts MS1 data for groups from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Extracts MS1 data for groups from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-ms-groups
 #' @template arg-ms-mass
@@ -3122,7 +3117,7 @@ plot_groups_profile.NonTargetAnalysisResults <- function(
 #' @template arg-ms-filtered
 #' @export
 #'
-get_groups_ms1.NonTargetAnalysisResults <- function(
+get_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
   x,
   groups = NULL,
   mass = NULL,
@@ -3267,7 +3262,7 @@ get_groups_ms1.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_groups_ms2
-#' @describeIn NonTargetAnalysisResults Extracts MS2 data for groups from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Extracts MS2 data for groups from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-ms-groups
 #' @template arg-ms-mass
@@ -3291,7 +3286,7 @@ get_groups_ms1.NonTargetAnalysisResults <- function(
 #' @template arg-ms-filtered
 #' @export
 #'
-get_groups_ms2.NonTargetAnalysisResults <- function(
+get_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
   x,
   groups = NULL,
   mass = NULL,
@@ -3434,7 +3429,7 @@ get_groups_ms2.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_groups_ms1
-#' @describeIn NonTargetAnalysisResults Plots MS1 traces for groups from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots MS1 traces for groups from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-ms-groups
 #' @template arg-ms-mass
@@ -3464,7 +3459,7 @@ get_groups_ms2.NonTargetAnalysisResults <- function(
 #' @template arg-interactive
 #' @export
 #'
-plot_groups_ms1.NonTargetAnalysisResults <- function(
+plot_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
   x,
   groups = NULL,
   mass = NULL,
@@ -3651,7 +3646,7 @@ plot_groups_ms1.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_groups_ms2
-#' @describeIn NonTargetAnalysisResults Plots MS2 traces for groups from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots MS2 traces for groups from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-ms-groups
 #' @template arg-ms-mass
@@ -3680,7 +3675,7 @@ plot_groups_ms1.NonTargetAnalysisResults <- function(
 #' @template arg-interactive
 #' @export
 #'
-plot_groups_ms2.NonTargetAnalysisResults <- function(
+plot_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
   x,
   groups = NULL,
   mass = NULL,
@@ -3877,7 +3872,7 @@ plot_groups_ms2.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_components
-#' @describeIn NonTargetAnalysisResults Extracts components based on annotation from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Extracts components based on annotation from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -3891,7 +3886,7 @@ plot_groups_ms2.NonTargetAnalysisResults <- function(
 #' @template arg-ms-filtered
 #' @export
 #'
-get_components.NonTargetAnalysisResults <- function(
+get_components.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -4001,7 +3996,7 @@ get_components.NonTargetAnalysisResults <- function(
 }
 
 # MARK: map_components
-#' @describeIn NonTargetAnalysisResults Maps components based on annotation from the NonTargetAnalysisResults object according to the specified parameters.
+#' @describeIn MassSpecResults_NonTargetAnalysis Maps components based on annotation from the MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -4021,7 +4016,7 @@ get_components.NonTargetAnalysisResults <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-map_components.NonTargetAnalysisResults <- function(
+map_components.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -4215,7 +4210,7 @@ map_components.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_suspects
-#' @describeIn NonTargetAnalysisResults Extracts feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the NonTargetAnalysisResults object if they were previously annotated.
+#' @describeIn MassSpecResults_NonTargetAnalysis Extracts feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the MassSpecResults_NonTargetAnalysis object if they were previously annotated.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -4233,7 +4228,7 @@ map_components.NonTargetAnalysisResults <- function(
 #' @template arg-ms-filtered
 #' @export
 #'
-get_suspects.NonTargetAnalysisResults <- function(
+get_suspects.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   database = NULL,
@@ -4669,7 +4664,7 @@ get_suspects.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_suspects
-#' @describeIn NonTargetAnalysisResults Plots feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the NonTargetAnalysisResults object if they were previously annotated.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the MassSpecResults_NonTargetAnalysis object if they were previously annotated.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -4693,7 +4688,7 @@ get_suspects.NonTargetAnalysisResults <- function(
 #' @template arg-interactive
 #' @export
 #'
-plot_suspects.NonTargetAnalysisResults <- function(
+plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   database = NULL,
@@ -5178,12 +5173,12 @@ plot_suspects.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_internal_standards
-#' @describeIn NonTargetAnalysisResults Extracts internal standards from the NonTargetAnalysisResults object. If the NonTargetAnalysisResults object has groups, it averages the internal standards across replicates, when `average = TRUE`.
+#' @describeIn MassSpecResults_NonTargetAnalysis Extracts internal standards from the MassSpecResults_NonTargetAnalysis object. If the MassSpecResults_NonTargetAnalysis object has groups, it averages the internal standards across replicates, when `average = TRUE`.
 #' @template arg-nts-x
 #' @template arg-ms-average
 #' @export
 #'
-get_internal_standards.NonTargetAnalysisResults <- function(
+get_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
   x,
   average = TRUE
 ) {
@@ -5374,7 +5369,7 @@ get_internal_standards.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_internal_standards
-#' @describeIn NonTargetAnalysisResults Plots internal standards from the NonTargetAnalysisResults object. If the NonTargetAnalysisResults object has groups, it averages the internal standards across replicates, when `average = TRUE`.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots internal standards from the MassSpecResults_NonTargetAnalysis object. If the MassSpecResults_NonTargetAnalysis object has groups, it averages the internal standards across replicates, when `average = TRUE`.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-showPresence
@@ -5384,7 +5379,7 @@ get_internal_standards.NonTargetAnalysisResults <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-plot_internal_standards.NonTargetAnalysisResults <- function(
+plot_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   showPresence = TRUE,
@@ -5887,7 +5882,7 @@ plot_internal_standards.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_compounds
-#' @describeIn NonTargetAnalysisResults Extracts compounds from the NonTargetAnalysisResults object. If the NonTargetAnalysisResults object has groups, it averages the compounds across replicates, when `averaged = TRUE`.
+#' @describeIn MassSpecResults_NonTargetAnalysis Extracts compounds from the MassSpecResults_NonTargetAnalysis object. If the MassSpecResults_NonTargetAnalysis object has groups, it averages the compounds across replicates, when `averaged = TRUE`.
 #' @template arg-nts-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -5902,7 +5897,7 @@ plot_internal_standards.NonTargetAnalysisResults <- function(
 #' @template arg-averaged
 #' @export
 #'
-get_compounds.NonTargetAnalysisResults <- function(
+get_compounds.MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -6049,7 +6044,7 @@ get_compounds.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_fold_change
-#' @describeIn NonTargetAnalysisResults Gets a data.table with fold-change analysis between the `replicatesIn` and `replicatesOut`.
+#' @describeIn MassSpecResults_NonTargetAnalysis Gets a data.table with fold-change analysis between the `replicatesIn` and `replicatesOut`.
 #'
 #' @param replicatesIn Character vector with the names of the replicates to be considered as
 #' the denominator.
@@ -6066,7 +6061,7 @@ get_compounds.NonTargetAnalysisResults <- function(
 #'
 #' @export
 #'
-get_fold_change.NonTargetAnalysisResults <- function(
+get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
   x,
   replicatesIn = NULL,
   replicatesOut = NULL,
@@ -6233,7 +6228,7 @@ get_fold_change.NonTargetAnalysisResults <- function(
 }
 
 # MARK: plot_fold_change
-#' @describeIn NonTargetAnalysisResults Plots the fold-change analysis between the `replicatesIn` and `replicatesOut`.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots the fold-change analysis between the `replicatesIn` and `replicatesOut`.
 #'
 #' #' @param replicatesIn Character vector with the names of the replicates to be considered as
 #' the denominator.
@@ -6263,7 +6258,7 @@ get_fold_change.NonTargetAnalysisResults <- function(
 #' @template arg-showLegend
 #' @export
 #'
-plot_fold_change.NonTargetAnalysisResults <- function(
+plot_fold_change.MassSpecResults_NonTargetAnalysis <- function(
   x,
   replicatesIn = NULL,
   replicatesOut = NULL,
@@ -6470,13 +6465,13 @@ plot_fold_change.NonTargetAnalysisResults <- function(
 # patRoon Objects -----
 
 # MARK: get_patRoon_features
-#' @describeIn NonTargetAnalysisResults  Creates an S4 class `features` or `featureGroups`from the \pkg{patRoon} package.
+#' @describeIn MassSpecResults_NonTargetAnalysis  Creates an S4 class `features` or `featureGroups`from the \pkg{patRoon} package.
 #' @template arg-nts-x
 #' @template arg-ms-filtered
 #' @param featureGroups Logical of length one. When `TRUE` the `featureGroups` class is returned.
 #' @export
 #'
-get_patRoon_features.NonTargetAnalysisResults <- function(
+get_patRoon_features.MassSpecResults_NonTargetAnalysis <- function(
   x,
   filtered = FALSE,
   featureGroups = TRUE
@@ -6689,7 +6684,7 @@ get_patRoon_features.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_patRoon_MSPeakLists
-#' @describeIn NonTargetAnalysisResults Creates S4 class `MSPeakLists`. Note that feature groups are required. The MS and MSMS spectra of each feature are then average by \pkg{patRoon} to produce the feature group spectra.
+#' @describeIn MassSpecResults_NonTargetAnalysis Creates S4 class `MSPeakLists`. Note that feature groups are required. The MS and MSMS spectra of each feature are then average by \pkg{patRoon} to produce the feature group spectra.
 #' @template arg-nts-x
 #' @template arg-ms-mzClust
 #' @template arg-ms-minIntensity
@@ -6698,7 +6693,7 @@ get_patRoon_features.NonTargetAnalysisResults <- function(
 #' @template arg-normalized
 #' @export
 #'
-get_patRoon_MSPeakLists.NonTargetAnalysisResults <- function(
+get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis <- function(
   x,
   mzClust = 0.005,
   minIntensity = 0,
@@ -7072,12 +7067,12 @@ get_patRoon_MSPeakLists.NonTargetAnalysisResults <- function(
 }
 
 # MARK: get_patRoon_compounds
-#' @describeIn NonTargetAnalysisResults Creates an S4 class `Compounds` from the \pkg{patRoon} package.
+#' @describeIn MassSpecResults_NonTargetAnalysis Creates an S4 class `Compounds` from the \pkg{patRoon} package.
 #' @template arg-nts-x
 #' @template arg-ms-filtered
 #' @export
 #'
-get_patRoon_compounds.NonTargetAnalysisResults <- function(x) {
+get_patRoon_compounds.MassSpecResults_NonTargetAnalysis <- function(x) {
   comp <- get_compounds(x, filtered = FALSE)
 
   if (nrow(comp) == 0) {
@@ -7123,7 +7118,7 @@ get_patRoon_compounds.NonTargetAnalysisResults <- function(x) {
 # MARK: report
 #' @export
 #'
-report.NonTargetAnalysisResults <- function(
+report.MassSpecResults_NonTargetAnalysis <- function(
   x,
   filtered = FALSE,
   mzClust = 0.005,
@@ -7233,18 +7228,18 @@ report.NonTargetAnalysisResults <- function(
 # MARK: .add_features_column
 #' @noRd
 .add_features_column <- function(
-  NonTargetAnalysisResults = NULL,
+  MassSpecResults_NonTargetAnalysis = NULL,
   name = NULL,
   data = NULL
 ) {
-  if (!is(NonTargetAnalysisResults, "StreamFind::NonTargetAnalysisResults")) {
+  if (!is(MassSpecResults_NonTargetAnalysis, "StreamFind::MassSpecResults_NonTargetAnalysis")) {
     warning(
-      "NonTargetAnalysisResults object is not of class NonTargetAnalysisResults! Not done."
+      "MassSpecResults_NonTargetAnalysis object is not of class MassSpecResults_NonTargetAnalysis! Not done."
     )
-    return(NonTargetAnalysisResults)
+    return(MassSpecResults_NonTargetAnalysis)
   }
-  if (NonTargetAnalysisResults@has_features) {
-    feature_list <- NonTargetAnalysisResults@feature_list
+  if (MassSpecResults_NonTargetAnalysis@has_features) {
+    feature_list <- MassSpecResults_NonTargetAnalysis@feature_list
     feature_list <- Map(
       function(x, y) {
         if (nrow(x) == length(y)) {
@@ -7255,11 +7250,11 @@ report.NonTargetAnalysisResults <- function(
       feature_list,
       data
     )
-    NonTargetAnalysisResults$feature_list <- feature_list
+    MassSpecResults_NonTargetAnalysis$feature_list <- feature_list
   } else {
     warning("No features found! Not done.")
   }
-  NonTargetAnalysisResults
+  MassSpecResults_NonTargetAnalysis
 }
 
 # MARk: .make_features_hover_string

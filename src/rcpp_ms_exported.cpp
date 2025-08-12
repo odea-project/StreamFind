@@ -512,17 +512,17 @@ Rcpp::List rcpp_nts_load_features_eic(Rcpp::List info,
                                       float minTracesIntensity = 0)
 {
   
-  NonTargetAnalysisResults::NTS_DATA data(info, spectra_headers, feature_list);
+  MassSpecResults_NonTargetAnalysis::NTS_DATA data(info, spectra_headers, feature_list);
   
   if (!data.valid)
   {
-    Rcpp::Rcout << "Error: Invalid NonTargetAnalysisResults data!" << std::endl;
+    Rcpp::Rcout << "Error: Invalid MassSpecResults_NonTargetAnalysis data!" << std::endl;
     return feature_list;
   }
   
   for (int i = 0; i < data.size(); i++)
   {
-    NonTargetAnalysisResults::FEATURES &fts_i = data.features[i];
+    MassSpecResults_NonTargetAnalysis::FEATURES &fts_i = data.features[i];
     
     if (fts_i.size() == 0)
       continue;
@@ -534,7 +534,7 @@ Rcpp::List rcpp_nts_load_features_eic(Rcpp::List info,
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      const NonTargetAnalysisResults::FEATURE &ft_j = fts_i.get_feature(j);
+      const MassSpecResults_NonTargetAnalysis::FEATURE &ft_j = fts_i.get_feature(j);
       
       if (ft_j.filtered && !filtered)
         continue;
@@ -578,7 +578,7 @@ Rcpp::List rcpp_nts_load_features_eic(Rcpp::List info,
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      NonTargetAnalysisResults::FEATURE ft_j = fts_i.get_feature(j);
+      MassSpecResults_NonTargetAnalysis::FEATURE ft_j = fts_i.get_feature(j);
       
       if (ft_j.filtered && !filtered)
         continue;
@@ -624,10 +624,10 @@ Rcpp::List rcpp_ms_load_features_ms1(std::vector<std::string> analyses_names,
 
   std::vector<std::string> features_analyses_names = features.names();
 
-  int rtWindowMax_idx = NonTargetAnalysisResults::find_max_index(rtWindow);
-  int rtWindowMin_idx = NonTargetAnalysisResults::find_min_index(rtWindow);
-  int mzWindowMax_idx = NonTargetAnalysisResults::find_max_index(mzWindow);
-  int mzWindowMin_idx = NonTargetAnalysisResults::find_min_index(mzWindow);
+  int rtWindowMax_idx = MassSpecResults_NonTargetAnalysis::find_max_index(rtWindow);
+  int rtWindowMin_idx = MassSpecResults_NonTargetAnalysis::find_min_index(rtWindow);
+  int mzWindowMax_idx = MassSpecResults_NonTargetAnalysis::find_max_index(mzWindow);
+  int mzWindowMin_idx = MassSpecResults_NonTargetAnalysis::find_min_index(mzWindow);
 
   for (int i = 0; i < number_analyses; i++)
   {
@@ -720,7 +720,7 @@ Rcpp::List rcpp_ms_load_features_ms1(std::vector<std::string> analyses_names,
     
     const Rcpp::List &hd = headers[i];
     
-    const sc::MS_SPECTRA_HEADERS header = NonTargetAnalysisResults::as_MS_SPECTRA_HEADERS(hd);
+    const sc::MS_SPECTRA_HEADERS header = MassSpecResults_NonTargetAnalysis::as_MS_SPECTRA_HEADERS(hd);
 
     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header, minTracesIntensity, 0);
 
@@ -754,7 +754,7 @@ Rcpp::List rcpp_ms_load_features_ms1(std::vector<std::string> analyses_names,
           Rcpp::Named("mz") = res_j.mz,
           Rcpp::Named("intensity") = res_j.intensity);
 
-      Rcpp::List ms1_clustered = NonTargetAnalysisResults::cluster_spectra(ms1, mzClust, presence);
+      Rcpp::List ms1_clustered = MassSpecResults_NonTargetAnalysis::cluster_spectra(ms1, mzClust, presence);
 
       ms1_clustered.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
@@ -780,17 +780,17 @@ Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
                                       float mzClust,
                                       float presence)
 {
-  NonTargetAnalysisResults::NTS_DATA data(info, spectra_headers, feature_list);
+  MassSpecResults_NonTargetAnalysis::NTS_DATA data(info, spectra_headers, feature_list);
   
   if (!data.valid)
   {
-    Rcpp::Rcout << "Error: Invalid NonTargetAnalysisResults data!" << std::endl;
+    Rcpp::Rcout << "Error: Invalid MassSpecResults_NonTargetAnalysis data!" << std::endl;
     return feature_list;
   }
   
   for (int i = 0; i < data.size(); i++)
   {
-    NonTargetAnalysisResults::FEATURES &fts_i = data.features[i];
+    MassSpecResults_NonTargetAnalysis::FEATURES &fts_i = data.features[i];
     
     if (fts_i.size() == 0)
       continue;
@@ -800,14 +800,14 @@ Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
     sc::MS_TARGETS targets;
     int counter = 0;
     
-    int rtWindowMax_idx = NonTargetAnalysisResults::find_max_index(rtWindow);
-    int rtWindowMin_idx = NonTargetAnalysisResults::find_min_index(rtWindow);
-    int mzWindowMax_idx = NonTargetAnalysisResults::find_max_index(mzWindow);
-    int mzWindowMin_idx = NonTargetAnalysisResults::find_min_index(mzWindow);
+    int rtWindowMax_idx = MassSpecResults_NonTargetAnalysis::find_max_index(rtWindow);
+    int rtWindowMin_idx = MassSpecResults_NonTargetAnalysis::find_min_index(rtWindow);
+    int mzWindowMax_idx = MassSpecResults_NonTargetAnalysis::find_max_index(mzWindow);
+    int mzWindowMin_idx = MassSpecResults_NonTargetAnalysis::find_min_index(mzWindow);
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      const NonTargetAnalysisResults::FEATURE &ft_j = fts_i.get_feature(j);
+      const MassSpecResults_NonTargetAnalysis::FEATURE &ft_j = fts_i.get_feature(j);
       
       if (ft_j.filtered && !filtered)
         continue;
@@ -851,7 +851,7 @@ Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      NonTargetAnalysisResults::FEATURE ft_j = fts_i.get_feature(j);
+      MassSpecResults_NonTargetAnalysis::FEATURE ft_j = fts_i.get_feature(j);
       
       if (ft_j.filtered && !filtered)
         continue;
@@ -992,7 +992,7 @@ Rcpp::List rcpp_ms_load_features_ms2(std::vector<std::string> analyses_names,
     
     const Rcpp::List &hd = headers[i];
     
-    const sc::MS_SPECTRA_HEADERS header = NonTargetAnalysisResults::as_MS_SPECTRA_HEADERS(hd);
+    const sc::MS_SPECTRA_HEADERS header = MassSpecResults_NonTargetAnalysis::as_MS_SPECTRA_HEADERS(hd);
 
     sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header, 0, minTracesIntensity);
 
@@ -1024,7 +1024,7 @@ Rcpp::List rcpp_ms_load_features_ms2(std::vector<std::string> analyses_names,
           Rcpp::Named("mz") = res_j.mz,
           Rcpp::Named("intensity") = res_j.intensity);
 
-      Rcpp::List ms2_clustered = NonTargetAnalysisResults::cluster_spectra(ms2, mzClust, presence);
+      Rcpp::List ms2_clustered = MassSpecResults_NonTargetAnalysis::cluster_spectra(ms2, mzClust, presence);
 
       ms2_clustered.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
@@ -1049,17 +1049,17 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
                                       float mzClust,
                                       float presence)
 {
-  NonTargetAnalysisResults::NTS_DATA data(info, spectra_headers, feature_list);
+  MassSpecResults_NonTargetAnalysis::NTS_DATA data(info, spectra_headers, feature_list);
   
   if (!data.valid)
   {
-    Rcpp::Rcout << "Error: Invalid NonTargetAnalysisResults data!" << std::endl;
+    Rcpp::Rcout << "Error: Invalid MassSpecResults_NonTargetAnalysis data!" << std::endl;
     return feature_list;
   }
   
   for (int i = 0; i < data.size(); i++)
   {
-    NonTargetAnalysisResults::FEATURES fts_i = data.features[i];
+    MassSpecResults_NonTargetAnalysis::FEATURES fts_i = data.features[i];
     
     if (fts_i.size() == 0)
       continue;
@@ -1071,7 +1071,7 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      const NonTargetAnalysisResults::FEATURE &ft_j = fts_i.get_feature(j);
+      const MassSpecResults_NonTargetAnalysis::FEATURE &ft_j = fts_i.get_feature(j);
       
       if (ft_j.filtered && !filtered)
         continue;
@@ -1113,7 +1113,7 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      NonTargetAnalysisResults::FEATURE ft_j = fts_i.get_feature(j);
+      MassSpecResults_NonTargetAnalysis::FEATURE ft_j = fts_i.get_feature(j);
       
       if (ft_j.filtered && !filtered)
         continue;
@@ -1149,11 +1149,11 @@ Rcpp::List rcpp_nts_calculate_features_quality(Rcpp::List info,
                                                float baseCut = 0)
 {
   
-  NonTargetAnalysisResults::NTS_DATA data(info, spectra_headers, feature_list);
+  MassSpecResults_NonTargetAnalysis::NTS_DATA data(info, spectra_headers, feature_list);
   
   if (!data.valid)
   {
-    Rcpp::Rcout << "Error: Invalid NonTargetAnalysisResults data!" << std::endl;
+    Rcpp::Rcout << "Error: Invalid MassSpecResults_NonTargetAnalysis data!" << std::endl;
     return feature_list;
   }
   
@@ -1163,7 +1163,7 @@ Rcpp::List rcpp_nts_calculate_features_quality(Rcpp::List info,
   
   for (int i = 0; i < data.size(); i++)
   {
-    NonTargetAnalysisResults::FEATURES &fts_i = data.features[i];
+    MassSpecResults_NonTargetAnalysis::FEATURES &fts_i = data.features[i];
     
     if (fts_i.size() == 0)
       continue;
@@ -1175,7 +1175,7 @@ Rcpp::List rcpp_nts_calculate_features_quality(Rcpp::List info,
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      const NonTargetAnalysisResults::FEATURE &ft_j = fts_i.get_feature(j);
+      const MassSpecResults_NonTargetAnalysis::FEATURE &ft_j = fts_i.get_feature(j);
       
       if (ft_j.quality.feature != "")
         continue;
@@ -1227,7 +1227,7 @@ Rcpp::List rcpp_nts_calculate_features_quality(Rcpp::List info,
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      NonTargetAnalysisResults::FEATURE ft_j = fts_i.get_feature(j);
+      MassSpecResults_NonTargetAnalysis::FEATURE ft_j = fts_i.get_feature(j);
       
       if (ft_j.filtered && !filtered)
         continue;
@@ -1265,14 +1265,14 @@ Rcpp::List rcpp_nts_annotate_features(Rcpp::List feature_list,
                                      int maxCharge = 1,
                                      int maxGaps = 1)
 {
-  NonTargetAnalysisResults::ANNOTATION_ISOTOPE_SET isotopes;
+  MassSpecResults_NonTargetAnalysis::ANNOTATION_ISOTOPE_SET isotopes;
   std::vector<std::string> elements = {"C", "H", "N", "O", "S", "Cl", "Br", "Si"};
   isotopes.filter(elements);
   
   const int max_number_elements = 5;
   
   Rcpp::Rcout << "Building combinatorial isotopic chains with length " << max_number_elements << "...";
-  NonTargetAnalysisResults::ANNOTATION_ISOTOPE_COMBINATIONS combinations(isotopes, max_number_elements);
+  MassSpecResults_NonTargetAnalysis::ANNOTATION_ISOTOPE_COMBINATIONS combinations(isotopes, max_number_elements);
   Rcpp::Rcout << "Done!" << std::endl;
   
   const int number_analyses = feature_list.size();
@@ -1286,7 +1286,7 @@ Rcpp::List rcpp_nts_annotate_features(Rcpp::List feature_list,
   {
     const Rcpp::List &fts_ref = Rcpp::as<Rcpp::List>(feature_list[a]);
     
-    NonTargetAnalysisResults::FEATURES fts;
+    MassSpecResults_NonTargetAnalysis::FEATURES fts;
     fts.import_from_list(analyses_names[a], fts_ref);
     
     const int number_features = fts.size();
@@ -1300,12 +1300,12 @@ Rcpp::List rcpp_nts_annotate_features(Rcpp::List feature_list,
 
     for (int f = 0; f < number_features; f++)
     {
-      NonTargetAnalysisResults::FEATURE main_ft = fts.get_feature(f);
+      MassSpecResults_NonTargetAnalysis::FEATURE main_ft = fts.get_feature(f);
 
       if (main_ft.annotation.iso_cat != "")
         continue;
 
-      NonTargetAnalysisResults::ANNOTATION_CANDIDATE_CHAIN candidates_chain;
+      MassSpecResults_NonTargetAnalysis::ANNOTATION_CANDIDATE_CHAIN candidates_chain;
 
       candidates_chain.find_isotopic_candidates(main_ft, fts, f, maxIsotopes, rtWindowAlignment);
 
@@ -1341,7 +1341,7 @@ Rcpp::List rcpp_nts_annotate_features(Rcpp::List feature_list,
     for (int f = 0; f < number_features; f++)
     {
 
-      NonTargetAnalysisResults::FEATURE main_ft = fts.get_feature(f);
+      MassSpecResults_NonTargetAnalysis::FEATURE main_ft = fts.get_feature(f);
 
       // already annotated with adduct
       if (main_ft.annotation.adduct_cat != "")
@@ -1349,7 +1349,7 @@ Rcpp::List rcpp_nts_annotate_features(Rcpp::List feature_list,
         continue;
       }
 
-      NonTargetAnalysisResults::ANNOTATION_CANDIDATE_CHAIN adduct_candidates_chain;
+      MassSpecResults_NonTargetAnalysis::ANNOTATION_CANDIDATE_CHAIN adduct_candidates_chain;
       adduct_candidates_chain.find_adduct_candidates(main_ft, fts, f, rtWindowAlignment);
       const int number_candidates = adduct_candidates_chain.size();
 
@@ -1396,11 +1396,11 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
                                   float minGaussianFit = 0.5)
 {
   
-  NonTargetAnalysisResults::NTS_DATA data(info, spectra_headers, feature_list);
+  MassSpecResults_NonTargetAnalysis::NTS_DATA data(info, spectra_headers, feature_list);
   
   if (!data.valid)
   {
-    Rcpp::Rcout << "Error: Invalid NonTargetAnalysisResults data! Not filled." << std::endl;
+    Rcpp::Rcout << "Error: Invalid MassSpecResults_NonTargetAnalysis data! Not filled." << std::endl;
     return feature_list;
   }
   
@@ -1424,7 +1424,7 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
   
   for (int i = 0; i < number_analyses; i++)
   {
-    const NonTargetAnalysisResults::FEATURES &fts_i = data.features[i];
+    const MassSpecResults_NonTargetAnalysis::FEATURES &fts_i = data.features[i];
     
     if (fts_i.size() == 0)
       continue;
@@ -1450,14 +1450,14 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
   
   for (int i = 0; i < number_analyses; i++)
   {
-    const NonTargetAnalysisResults::FEATURES &fts_i = data.features[i];
+    const MassSpecResults_NonTargetAnalysis::FEATURES &fts_i = data.features[i];
     
     if (fts_i.size() == 0)
       continue;
     
     for (int j = 0; j < fts_i.size(); j++)
     {
-      const NonTargetAnalysisResults::FEATURE &ft_j = fts_i.get_feature(j);
+      const MassSpecResults_NonTargetAnalysis::FEATURE &ft_j = fts_i.get_feature(j);
       
       long_vector_analysis.push_back(data.analyses[i]);
       long_vector_replicate.push_back(data.replicates[i]);
@@ -1649,8 +1649,8 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
     const float min_rtmin = *std::min_element(fts_rtmin_k.begin(), fts_rtmin_k.end());
     const float max_rtmax = *std::max_element(fts_rtmax_k.begin(), fts_rtmax_k.end());
     
-    const float sd_mass = NonTargetAnalysisResults::standard_deviation(fts_mass_k, mean_mass);
-    const float sd_rt = NonTargetAnalysisResults::standard_deviation(fts_rt_k, mean_rt);
+    const float sd_mass = MassSpecResults_NonTargetAnalysis::standard_deviation(fts_mass_k, mean_mass);
+    const float sd_rt = MassSpecResults_NonTargetAnalysis::standard_deviation(fts_rt_k, mean_rt);
     
     for (int j = 0; j < number_analyses; j++)
     {
@@ -1739,7 +1739,7 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
       
       const int number_features_j = data.features[j].size();
       
-      NonTargetAnalysisResults::FEATURES &fts_j = data.features[j];
+      MassSpecResults_NonTargetAnalysis::FEATURES &fts_j = data.features[j];
       
       for (int k = 0; k < number_features_j; k++)
       {
@@ -1896,7 +1896,7 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
         continue;
       }
       
-      NonTargetAnalysisResults::FEATURE ft;
+      MassSpecResults_NonTargetAnalysis::FEATURE ft;
       ft.feature = id_i;
       ft.rt = tg_rt[i];
       ft.eic.import_from_ms_targets_spectra(res_i);

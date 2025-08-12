@@ -10,7 +10,7 @@
       "R6ClassGenerator" %in% is(get(x, envir = .GlobalEnv))
     })
   ]
-  available_engines <- available_engines[!available_engines %in% "CoreEngine"]
+  available_engines <- available_engines[!available_engines %in% c("Engine", "CoreEngine")]
   available_engines
 }
 

@@ -19,7 +19,7 @@
 #'  - `chromatograms_headers`: A `data.table` with the headers of the chromatograms in the analysis.
 #'  - `metadata`: A list with metadata information for the analysis.
 #'  - `concentration`: The concentration for the analysis.
-#'  The `results` element is a list of results, where each element is a specific [StreamFind::Results] child class. Currently, the `MassSpecAnalyses` class supports the following results: [StreamFind::NonTargetAnalysisResults], [StreamFind::MassSpecSpectra], and [StreamFind::Chromatograms].
+#'  The `results` element is a list of results, where each element is a specific [StreamFind::Results] child class. Currently, the `MassSpecAnalyses` class supports the following results: [StreamFind::MassSpecResults_NonTargetAnalysis], [StreamFind::MassSpecSpectra], and [StreamFind::Chromatograms].
 #'
 #' @references
 #' \insertRef{pugixml01}{StreamFind}
@@ -231,7 +231,7 @@ add.MassSpecAnalyses <- function(x, value) {
 }
 
 # MARK: remove
-#' @describeIn MassSpecAnalyses Remove analyses from the `MassSpecAnalyses` object. The argument `value` can be a character vector with the names of the analyses to remove or a numeric vector with the indices of the analyses to remove. The method will also remove the corresponding results from `NonTargetAnalysisResults`, `Spectra`, and `Chromatograms` if available.
+#' @describeIn MassSpecAnalyses Remove analyses from the `MassSpecAnalyses` object. The argument `value` can be a character vector with the names of the analyses to remove or a numeric vector with the indices of the analyses to remove. The method will also remove the corresponding results from `MassSpecResults_NonTargetAnalysis`, `Spectra`, and `Chromatograms` if available.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-value
 #' @export
@@ -240,8 +240,8 @@ remove.MassSpecAnalyses <- function(x, value) {
   if (is.character(value)) {
     x$analyses <- x$analyses[!get_names(x) %in% value]
     x$analyses <- x$analyses[order(names(x@analyses))]
-    if (!is.null(x$results[["NonTargetAnalysisResults"]])) {
-      x$results$NonTargetAnalysisResults <- x$results$NonTargetAnalysisResults[
+    if (!is.null(x$results[["MassSpecResults_NonTargetAnalysis"]])) {
+      x$results$MassSpecResults_NonTargetAnalysis <- x$results$MassSpecResults_NonTargetAnalysis[
         !get_names(x) %in% value
       ]
     }
@@ -256,8 +256,8 @@ remove.MassSpecAnalyses <- function(x, value) {
   } else if (is.numeric(value)) {
     x$analyses <- x$analyses[-value]
     x$analyses <- x$analyses[order(names(x$analyses))]
-    if (!is.null(x$results[["NonTargetAnalysisResults"]])) {
-      x$results$NonTargetAnalysisResults <- x$results$NonTargetAnalysisResults[
+    if (!is.null(x$results[["MassSpecResults_NonTargetAnalysis"]])) {
+      x$results$MassSpecResults_NonTargetAnalysis <- x$results$MassSpecResults_NonTargetAnalysis[
         -value
       ]
     }
@@ -273,15 +273,15 @@ remove.MassSpecAnalyses <- function(x, value) {
 
 # MARK: `[`
 #' @describeIn MassSpecAnalyses Subset the `MassSpecAnalyses` object by indices, including the result elements:
-#' `NonTargetAnalysisResults`, `Spectra`, and `Chromatograms`. The argument `i` can be a numeric vector with the indices of the analyses to keep.
+#' `MassSpecResults_NonTargetAnalysis`, `Spectra`, and `Chromatograms`. The argument `i` can be a numeric vector with the indices of the analyses to keep.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-i
 #' @export
 #' 
 `[.MassSpecAnalyses` <- function(x, i) {
   x$analyses <- x$analyses[i]
-  if (!is.null(x$results[["NonTargetAnalysisResults"]])) {
-    x$results$NonTargetAnalysisResults <- x$results$NonTargetAnalysisResults[i]
+  if (!is.null(x$results[["MassSpecResults_NonTargetAnalysis"]])) {
+    x$results$MassSpecResults_NonTargetAnalysis <- x$results$MassSpecResults_NonTargetAnalysis[i]
   }
   if (!is.null(x$results[["Spectra"]])) {
     x$results$Spectra <- x$results$Spectra[i]
@@ -306,15 +306,15 @@ remove.MassSpecAnalyses <- function(x, value) {
 
 # MARK: `[[`
 #' @describeIn MassSpecAnalyses Subset the `MassSpecAnalyses` object by indices, including the result elements:
-#' `NonTargetAnalysisResults`, `Spectra`, and `Chromatograms`. The argument `i` can be a numeric value with the index of the analysis to keep. The method returns a `MassSpecAnalyses` object with only the specified analysis.
+#' `MassSpecResults_NonTargetAnalysis`, `Spectra`, and `Chromatograms`. The argument `i` can be a numeric value with the index of the analysis to keep. The method returns a `MassSpecAnalyses` object with only the specified analysis.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-i
 #' @export
 #' 
 `[[.MassSpecAnalyses` <- function(x, i) {
   x$analyses <- x$analyses[[i]]
-  if (!is.null(x$results[["NonTargetAnalysisResults"]])) {
-    x$results$NonTargetAnalysisResults <- x$results$NonTargetAnalysisResults[[i]]
+  if (!is.null(x$results[["MassSpecResults_NonTargetAnalysis"]])) {
+    x$results$MassSpecResults_NonTargetAnalysis <- x$results$MassSpecResults_NonTargetAnalysis[[i]]
   }
   if (!is.null(x$results[["Spectra"]])) {
     x$results$Spectra <- x$results$Spectra[[i]]
@@ -766,26 +766,24 @@ get_raw_spectra.MassSpecAnalyses <- function(
       if ("analysis" %in% colnames(targets)) {
         targets <- targets[targets$analysis %in% a$name, ]
       }
-
       cache <- lapply(seq_len(nrow(targets)), function(i) {
-        .load_cache_sqlite(
-          paste0(
-            "parsed_ms_spectra_",
-            gsub("-|[/]|[.]|[() ]", "", targets$id[i])
-          ),
-          a$file,
-          levels,
-          targets[i, ],
-          minIntensityMS1,
-          minIntensityMS2
-        )
+        # .load_cache_sqlite(
+        #   paste0(
+        #     "parsed_ms_spectra_",
+        #     gsub("-|[/]|[.]|[() ]", "", targets$id[i])
+        #   ),
+        #   a$file,
+        #   levels,
+        #   targets[i, ],
+        #   minIntensityMS1,
+        #   minIntensityMS2
+        # )
       })
 
       names(cache) <- targets$id
       cached_targets_sel <- vapply(cache, function(z) !is.null(z$data), FALSE)
       cached_targets <- cache[cached_targets_sel]
       no_cached_targets <- targets[!cached_targets_sel, ]
-
       if (nrow(no_cached_targets) > 0) {
         message(
           "\U2699 Parsing spectra from ",
@@ -2379,9 +2377,9 @@ load_spectra.MassSpecAnalyses <- function(
   minIntensityMS1 = 0,
   minIntensityMS2 = 0
 ) {
-  cache <- .load_cache_sqlite(
+  cache <- load_cache(
     "load_spectra",
-    x,
+    info(x),
     analyses,
     levels,
     mass,
@@ -2397,7 +2395,7 @@ load_spectra.MassSpecAnalyses <- function(
     minIntensityMS1,
     minIntensityMS2
   )
-
+  
   if (!is.null(cache$data)) {
     x$results[[class(cache$data)[1]]] <- cache$data
     if (!is.null(validate_object(x))) {
@@ -2439,14 +2437,15 @@ load_spectra.MassSpecAnalyses <- function(
 
     spec <- spec[get_names(x)]
 
-    spec <- StreamFind::MassSpecSpectra(
+    spec <- MassSpecResults_Spectra(
       spec,
       replicates = get_replicates(x)[names(spec)],
       is_averaged = FALSE
     )
     if (!is.null(cache$hash)) {
-      .save_cache_sqlite("load_spectra", spec, cache$hash)
-      message("\U1f5ab Spectra cached!")
+      if (save_cache("load_spectra", spec, cache$hash)) {
+        message("\U1f5ab Spectra cached!")
+      }
     }
     x$results[[class(spec)[1]]] <- spec
     if (!is.null(validate_object(x))) {

@@ -7,7 +7,7 @@
 \alias{save.ProcessingStep}
 \alias{read.ProcessingStep}
 \alias{show.ProcessingStep}
-\title{Generic Processing Step Class}
+\title{Processing Step S3 Class}
 \usage{
 ProcessingStep(
   type = NA_character_,
@@ -74,6 +74,25 @@ additional information.}
 The file extension should be \code{.json} or \code{.rds}.}
 
 \item{...}{Additional arguments (not used).}
+}
+\value{
+A \code{ProcessingStep} object. Fundamentally, it is a list with class \code{ProcessingStep} and a data specific method class (e.g., \code{RamanMethod_AverageSpectra_native}) with the following elements:
+\itemize{
+\item \code{type}: The data type (e.g., "MassSpec", "Raman").
+\item \code{method}: The method used (e.g., "BaselineCorrection").
+\item \code{required}: A character vector of required preceding methods.
+\item \code{algorithm}: The algorithm used (e.g., "baseline_als").
+\item \code{input_class}: The class of the input data.
+\item \code{output_class}: The class of the output data.
+\item \code{parameters}: A list of parameters for the processing step.
+\item \code{number_permitted}: The number of permitted instances.
+\item \code{version}: The version of the processing step.
+\item \code{software}: The original software used.
+\item \code{developer}: The developer of the processing step.
+\item \code{contact}: The contact information for the developer.
+\item \code{link}: A link to the origin of the algorithm or additional information.
+\item \code{doi}: The DOI of the algorithm or additional information.
+}
 }
 \description{
 The \code{ProcessingStep} class is used to define a processing step within a \link{Workflow}. It contains information about the data type, method, algorithm, parameters, and other relevant metadata for the processing step. The \code{ProcessingStep} is the parent class of all processing methods in StreamFind.

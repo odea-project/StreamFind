@@ -1,13 +1,16 @@
 #' @noRd
-.mod_WorkflowAssembler_Analyses_UI <- function(id, ns) {
+.mod_WorkflowAssembler_Analyses_UI.MassSpecAnalyses <- function(x, id, ns) {
   ns2 <- shiny::NS(id)
   shiny::column(
     12,
     shinydashboard::box(
-      title = "Analyses",
+      title = NULL,
       width = 12,
       solidHeader = TRUE,
-      shiny::column(width = 12, shiny::uiOutput(ns(ns2("analyses_overview_buttons")))),
+      shiny::column(
+        width = 12,
+        shiny::uiOutput(ns(ns2("analyses_overview_buttons")))
+      ),
       shiny::uiOutput(ns(ns2("notes_analyses"))),
       shiny::column(12, DT::dataTableOutput(ns(ns2("AnalysesTable"))))
     )
@@ -15,72 +18,87 @@
 }
 
 #' @noRd
-.mod_WorkflowAssembler_Analyses_Server <- function(id,
-                                                   ns,
-                                                   reactive_analyses,
-                                                   reactive_warnings,
-                                                   reactive_volumes,
-                                                   reactive_config) {
+.mod_WorkflowAssembler_Analyses_Server.MassSpecAnalyses <- function(
+  x,
+  id,
+  ns,
+  reactive_analyses,
+  reactive_warnings,
+  reactive_volumes,
+  reactive_config
+) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
 
     .wrap_analyses_ui_in_divs <- function(elements) {
-      lapply(elements, function(x) {
+      lapply(elements, function(z) {
         htmltools::div(
           style = sprintf(
-            "min-width: %dpx; height: %dpx; display: flex; align-items: center;", 40, 40
+            "min-width: %dpx; height: %dpx; display: flex; align-items: center;",
+            40,
+            40
           ),
-          x
+          z
         )
       })
     }
 
     # out Analyses Table -----
-    output$AnalysesTable <- DT::renderDT({
-      analyses <- reactive_analyses()
-      analyses_info <- analyses@info
-      if (length(analyses) == 0) {
-        analyses_info <- data.frame()
-        edits <- FALSE
-      } else if ("replicate" %in% colnames(analyses_info)) {
-        edits <- list(
-          target = "column",
-          disable = list(columns = which(!colnames(analyses_info) %in% c("replicate", "blank")))
-        )
-      } else {
-        analyses_info <- data.frame()
-        edits <- FALSE
-      }
-      DT::datatable(
-        analyses_info,
-        selection = list(
-          mode = "multiple",
-          selected = NULL,
-          target = "cell",
-          selectable = matrix(
-            c(seq_len(nrow(analyses_info)), rep(1, nrow(analyses_info))),
-            ncol = 2
+    output$AnalysesTable <- DT::renderDT(
+      {
+        analyses <- reactive_analyses()
+        analyses_info <- info(analyses)
+        if (length(analyses) == 0) {
+          analyses_info <- data.frame()
+          edits <- FALSE
+        } else if ("replicate" %in% colnames(analyses_info)) {
+          edits <- list(
+            target = "column",
+            disable = list(
+              columns = which(
+                !colnames(analyses_info) %in% c("replicate", "blank")
+              )
+            )
           )
-        ),
-        editable = edits,
-        extensions = c("Scroller", "Buttons"),
-        options = list(
-          pageLength = 10,
-          deferRender = TRUE,
-          scrollY = 700,
-          scroller = TRUE,
-          dom = "Bfrtip",
-          buttons = c("copy", "csv", "pdf", "print")
+        } else {
+          analyses_info <- data.frame()
+          edits <- FALSE
+        }
+        DT::datatable(
+          analyses_info,
+          selection = list(
+            mode = "multiple",
+            selected = NULL,
+            target = "cell",
+            selectable = matrix(
+              c(seq_len(nrow(analyses_info)), rep(1, nrow(analyses_info))),
+              ncol = 2
+            )
+          ),
+          editable = edits,
+          extensions = c("Scroller", "Buttons"),
+          options = list(
+            pageLength = 10,
+            deferRender = TRUE,
+            scrollY = 700,
+            scroller = TRUE,
+            dom = "Bfrtip",
+            buttons = c("copy", "csv", "pdf", "print")
+          )
         )
-      )
-    },server = TRUE)
+      },
+      server = TRUE
+    )
 
     # event Analyses Table Editing -----
     shiny::observeEvent(input$AnalysesTable_cell_edit, {
       analyses <- reactive_analyses()
-      analyses_info <- analyses@info
-      analyses_info <- DT::editData(analyses@info, input$AnalysesTable_cell_edit)
-      analyses$replicates <- analyses_info$replicate
+      analyses_info <- info(analyses)
+      analyses_info <- DT::editData(
+        info(analyses),
+        input$AnalysesTable_cell_edit
+      )
+      analyses <- set_replicates(analyses, analyses_info$replicate)
       if (any(!(analyses_info$blank %in% analyses_info$replicate))) {
         shiny::showNotification(
           "Blanks must be in the replicate column!",
@@ -88,14 +106,14 @@
           type = "warning"
         )
       } else {
-        analyses$blanks <- analyses_info$blank
+        analyses <- set_blanks(analyses, analyses_info$blank)
       }
       reactive_analyses(analyses)
     })
 
     # out Analyses Overview Buttons -----
     output$analyses_overview_buttons <- shiny::renderUI({
-      filetypes <- reactive_analyses()@possible_formats
+      filetypes <- reactive_analyses()$formats
       filetypes <- gsub("[.]", "", filetypes)
       filetypes <- unlist(strsplit(filetypes, "[|]"))
       shinyFiles::shinyFileChoose(
@@ -119,17 +137,14 @@
           style = "margin-bottom: 20px;",
           shinyFiles::shinyFilesButton(
             ns(ns2("add_analyses_button")),
-            paste0(
-              "Add Analyses (",
-              paste(reactive_analyses()@possible_formats, collapse = "|"),
-              ")"
-            ),
+            "Add Analyses",
             paste0(
               "Select Analyses (",
-              paste(reactive_analyses()@possible_formats, collapse = "|"),
+              paste(reactive_analyses()$formats, collapse = "|"),
               ")"
             ),
-            multiple = TRUE, style = "width: 200px;"
+            multiple = TRUE,
+            style = "width: 200px;"
           ),
           shiny::actionButton(
             ns(ns2("remove_selected_analyses")),
@@ -147,14 +162,10 @@
           style = "margin-bottom: 20px;",
           shinyFiles::shinyFilesButton(
             ns(ns2("add_analyses_button")),
-            paste0(
-              "Add Analyses (",
-              paste(reactive_analyses()@possible_formats, collapse = "|"),
-              ")"
-            ),
+            "Add Analyses",
             paste0(
               "Select Analyses (",
-              paste(reactive_analyses()@possible_formats, collapse = "|"),
+              paste(reactive_analyses()$formats, collapse = "|"),
               ")"
             ),
             multiple = TRUE,
@@ -166,12 +177,19 @@
 
     # event Add analyses -----
     shiny::observeEvent(input$add_analyses_button, {
-      fileinfo <- shinyFiles::parseFilePaths(reactive_volumes(), input$add_analyses_button)
+      fileinfo <- shinyFiles::parseFilePaths(
+        reactive_volumes(),
+        input$add_analyses_button
+      )
       if (nrow(fileinfo) > 0) {
         files <- fileinfo$datapath
         number_files <- length(files)
         if (number_files > 0) {
-          if (all(tools::file_ext(files) %in% reactive_analyses()@possible_formats)) {
+          if (
+            all(
+              tools::file_ext(files) %in% reactive_analyses()$formats
+            )
+          ) {
             analyses <- reactive_analyses()
 
             # TODO add modal to accept remove results
@@ -179,7 +197,7 @@
             output$loading_spinner <- shiny::renderUI({
               htmltools::div(style = "height: 100px; width: 100px;")
             })
-            
+
             shiny::withProgress(message = "Loading files...", value = 0, {
               for (i in seq_len(number_files)) {
                 tryCatch(
@@ -187,22 +205,30 @@
                     analyses <- add(analyses, files[i])
                   },
                   error = function(e) {
-                    msg <- paste("Error for", files[i], ":", conditionMessage(e))
+                    msg <- paste(
+                      "Error for",
+                      files[i],
+                      ":",
+                      conditionMessage(e)
+                    )
                     shiny::showNotification(msg, duration = 10, type = "error")
                   }
                 )
                 shiny::incProgress(i / number_files)
               }
             })
-            
+
             output$loading_spinner <- shiny::renderUI({
               NULL
             })
-            
+
             reactive_analyses(analyses)
-            
           } else {
-            shiny::showNotification("Invalid file/s format/s!", duration = 10, type = "warning")
+            shiny::showNotification(
+              "Invalid file/s format/s!",
+              duration = 10,
+              type = "warning"
+            )
           }
         }
       }
@@ -212,7 +238,11 @@
     shiny::observeEvent(input$remove_selected_analyses, {
       analyses <- reactive_analyses()
       if (length(input$AnalysesTable_cells_selected) == 0) {
-        shiny::showNotification("No analyses selected!", duration = 10, type = "warning")
+        shiny::showNotification(
+          "No analyses selected!",
+          duration = 10,
+          type = "warning"
+        )
         return()
       }
       analyses <- remove(analyses, input$AnalysesTable_cells_selected[, 1])
@@ -223,7 +253,11 @@
     shiny::observeEvent(input$remove_all_analyses, {
       analyses <- reactive_analyses()
       if (length(analyses) == 0) {
-        shiny::showNotification("No analyses found!", duration = 10, type = "warning")
+        shiny::showNotification(
+          "No analyses found!",
+          duration = 10,
+          type = "warning"
+        )
         return()
       }
       analyses <- remove(analyses, seq_len(length(analyses)))
@@ -236,11 +270,27 @@
         style = "margin-bottom: 25px;margin-top: 25px;",
         shiny::tagList(
           shiny::tags$ul(
-            shiny::tags$li("Add analyses by selecting the 'Add Analyses' button."),
-            shiny::tags$li("Remove analyses by selecting the analysis cells in the table and clicking the 'Delete Selected Analyses' button."),
-            shiny::tags$li("Remove all analyses by clicking the 'Delete All Analyses' button."),
-            shiny::tags$li("Replicate and blank names can be edited in the table by double clicking the cell. Changes are saved by CTRL + ENTER."),
-            shiny::tags$li("Note that blank names must be in the replicate column otherwise are not considered as blanks.")
+            shiny::tags$li(
+              "Add analyses by selecting the 'Add Analyses' button."
+            ),
+            shiny::tags$li(
+              sprintf(
+                "Analyses can be added in the following formats: %s.",
+                paste(reactive_analyses()$formats, collapse = ", ")
+              )
+            ),
+            shiny::tags$li(
+              "Remove analyses by selecting the analysis cells in the table and clicking the 'Delete Selected Analyses' button."
+            ),
+            shiny::tags$li(
+              "Remove all analyses by clicking the 'Delete All Analyses' button."
+            ),
+            shiny::tags$li(
+              "Replicate and blank names can be edited in the table by double clicking the cell. Changes are saved by CTRL + ENTER."
+            ),
+            shiny::tags$li(
+              "Note that blank names must be in the replicate column otherwise are not considered as blanks."
+            )
           )
         )
       )

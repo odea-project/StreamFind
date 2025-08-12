@@ -17,6 +17,8 @@
 \alias{[<-.MassSpecAnalyses}
 \alias{[[.MassSpecAnalyses}
 \alias{[[<-.MassSpecAnalyses}
+\alias{save.MassSpecAnalyses}
+\alias{as.MassSpecAnalyses}
 \alias{read.MassSpecAnalyses}
 \alias{get_spectra_tic.MassSpecAnalyses}
 \alias{get_spectra_bpc.MassSpecAnalyses}
@@ -68,6 +70,10 @@ MassSpecAnalyses(files = NULL, centroid = FALSE, levels = c(1, 2))
 \method{[[}{MassSpecAnalyses}(x, i)
 
 \method{[[}{MassSpecAnalyses}(x, i) <- value
+
+\method{save}{MassSpecAnalyses}(x, file)
+
+as.MassSpecAnalyses(value)
 
 \method{read}{MassSpecAnalyses}(x, file)
 
@@ -466,7 +472,7 @@ An object of class \code{MassSpecAnalyses} as a list of two elements: \code{anal
 \item \code{chromatograms_headers}: A \code{data.table} with the headers of the chromatograms in the analysis.
 \item \code{metadata}: A list with metadata information for the analysis.
 \item \code{concentration}: The concentration for the analysis.
-The \code{results} element is a list of results, where each element is a specific \link{Results} child class. Currently, the \code{MassSpecAnalyses} class supports the following results: \link{NonTargetAnalysisResults}, \link{MassSpecSpectra}, and \link{Chromatograms}.
+The \code{results} element is a list of results, where each element is a specific \link{Results} child class. Currently, the \code{MassSpecAnalyses} class supports the following results: \link{MassSpecResults_NonTargetAnalysis}, \link{MassSpecSpectra}, and \link{Chromatograms}.
 }
 }
 \description{
@@ -494,17 +500,19 @@ The \code{MassSpecAnalyses} class represents mass spectrometry (MS) raw data fil
 
 \item \code{add(MassSpecAnalyses)}: Add analyses to the \code{MassSpecAnalyses} object. The argument \code{value} can be a character vector with file paths to MS raw data files or a list of \code{MassSpecAnalysis} objects. If the files are valid, they will be converted to \code{MassSpecAnalysis} objects.
 
-\item \code{remove(MassSpecAnalyses)}: Remove analyses from the \code{MassSpecAnalyses} object. The argument \code{value} can be a character vector with the names of the analyses to remove or a numeric vector with the indices of the analyses to remove. The method will also remove the corresponding results from \code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms} if available.
+\item \code{remove(MassSpecAnalyses)}: Remove analyses from the \code{MassSpecAnalyses} object. The argument \code{value} can be a character vector with the names of the analyses to remove or a numeric vector with the indices of the analyses to remove. The method will also remove the corresponding results from \code{MassSpecResults_NonTargetAnalysis}, \code{Spectra}, and \code{Chromatograms} if available.
 
 \item \code{[}: Subset the \code{MassSpecAnalyses} object by indices, including the result elements:
-\code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms}. The argument \code{i} can be a numeric vector with the indices of the analyses to keep.
+\code{MassSpecResults_NonTargetAnalysis}, \code{Spectra}, and \code{Chromatograms}. The argument \code{i} can be a numeric vector with the indices of the analyses to keep.
 
 \item \code{`[`(MassSpecAnalyses) <- value}: Add analyses to the \code{MassSpecAnalyses} object by indices. The argument \code{i} can be a numeric vector with the indices of the analyses to keep, and \code{value} can be a character vector with file paths to MS raw data files or a list of \code{MassSpecAnalysis} objects.
 
 \item \code{[[}: Subset the \code{MassSpecAnalyses} object by indices, including the result elements:
-\code{NonTargetAnalysisResults}, \code{Spectra}, and \code{Chromatograms}. The argument \code{i} can be a numeric value with the index of the analysis to keep. The method returns a \code{MassSpecAnalyses} object with only the specified analysis.
+\code{MassSpecResults_NonTargetAnalysis}, \code{Spectra}, and \code{Chromatograms}. The argument \code{i} can be a numeric value with the index of the analysis to keep. The method returns a \code{MassSpecAnalyses} object with only the specified analysis.
 
 \item \code{`[[`(MassSpecAnalyses) <- value}: Add analyses to the \code{MassSpecAnalyses} object by indices. The argument \code{i} can be a numeric value with the index of the analysis to modify, and \code{value} can be a character vector with file path to an MS raw data file.
+
+\item \code{save(MassSpecAnalyses)}: Save a \code{MassSpecAnalyses} object to a file. The \code{file} can be in JSON or RDS format.
 
 \item \code{read(MassSpecAnalyses)}: Read a \code{MassSpecAnalyses} object from a file. The \code{file} can be in JSON or RDS format.
 
@@ -541,6 +549,11 @@ The \code{MassSpecAnalyses} class represents mass spectrometry (MS) raw data fil
 \item \code{get_matrix_suppression(MassSpecAnalyses)}: Get TIC matrix suppression for the analyses using the blank replicate analyses as reference for the suppression factor. The \code{rtWindowVal} argument defines the retention time window in seconds for the suppression factor calculation. The calculation is based on the work from \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}.
 
 \item \code{plot_matrix_suppression(MassSpecAnalyses)}: Plot TIC matrix suppression for the specified analyses. The \code{rtWindowVal} argument defines the retention time window in seconds for the suppression factor calculation. The calculation is based on the work from \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}.
+
+}}
+\section{Functions}{
+\itemize{
+\item \code{as.MassSpecAnalyses()}: Convert a valid list to a \code{MassSpecAnalyses} object. This method is used internally and should not be called directly.
 
 }}
 \references{

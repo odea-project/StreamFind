@@ -152,14 +152,14 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
   }
   
   if (!engine$has_results_nts()) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
   
-  nts <- engine$NonTargetAnalysisResults
+  nts <- engine$MassSpecResults_NonTargetAnalysis
   
   if (!nts@has_groups) {
-    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
+    warning("MassSpecResults_NonTargetAnalysis object does not have feature groups! Not done.")
     return(FALSE)
   }
   
@@ -266,7 +266,7 @@ S7::method(run, MassSpecMethod_GenerateCompounds_metfrag) <- function(x, engine 
   
   nts@feature_list <- feature_list
   
-  engine$NonTargetAnalysisResults <- nts
+  engine$MassSpecResults_NonTargetAnalysis <- nts
   
   message(
     paste0("\U2713 ", length(compounds), " compounds generated and added to the feature list!")

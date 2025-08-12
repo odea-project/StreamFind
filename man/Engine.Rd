@@ -15,7 +15,7 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{Metadata}}{A \link{Metadata} or \link{EngineMetadata} object. When setting it can also be a named list with elements of length one.}
+\item{\code{Metadata}}{A \link{Metadata} object. When setting it can also be a named list with elements of length one.}
 
 \item{\code{Workflow}}{A \link{Workflow} S7 class object. When settings can also be a list of \link{ProcessingStep} objects or a full path string to an \strong{rds} or \strong{json} file containing a \link{Workflow} object.}
 

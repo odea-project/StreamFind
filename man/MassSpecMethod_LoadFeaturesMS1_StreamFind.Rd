@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadFeaturesMS1_MS2_EIC.R
 \name{MassSpecMethod_LoadFeaturesMS1_StreamFind}
 \alias{MassSpecMethod_LoadFeaturesMS1_StreamFind}
-\title{MassSpecMethod_LoadFeaturesMS1_StreamFind S7 class}
+\alias{validate_object.MassSpecMethod_LoadFeaturesMS1_StreamFind}
+\title{MassSpecMethod_LoadFeaturesMS1_StreamFind S3 Class}
 \usage{
 MassSpecMethod_LoadFeaturesMS1_StreamFind(
   rtWindow = c(-2, 2),
@@ -12,6 +13,8 @@ MassSpecMethod_LoadFeaturesMS1_StreamFind(
   minIntensity = 250,
   filtered = FALSE
 )
+
+\method{validate_object}{MassSpecMethod_LoadFeaturesMS1_StreamFind}(x)
 }
 \arguments{
 \item{rtWindow}{Numeric (length 2) with the retention time values (in seconds) for expanding left and right the
@@ -31,6 +34,8 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 \item{minIntensity}{Numeric (length 1) with the minimum intensity.}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{x}{A MassSpecMethod_LoadFeaturesMS1_StreamFind object.}
 }
 \value{
 A \code{MassSpecMethod_LoadFeaturesMS1_StreamFind} object.
@@ -38,3 +43,8 @@ A \code{MassSpecMethod_LoadFeaturesMS1_StreamFind} object.
 \description{
 Settings for loading MS1 spectra for features.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_LoadFeaturesMS1_StreamFind)}: Validator for the MassSpecMethod_LoadFeaturesMS1_StreamFind object, returning NULL if valid.
+
+}}

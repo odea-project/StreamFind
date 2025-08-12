@@ -1068,6 +1068,16 @@ validate_object <- function(x, ...) {
 # App Generics -----
 
 #' @noRd
+.mod_WorkflowAssembler_Analyses_UI <- function(x, ...) {
+  UseMethod(".mod_WorkflowAssembler_Analyses_UI")
+}
+
+#' @noRd
+.mod_WorkflowAssembler_Analyses_Server <- function(x, ...) {
+  UseMethod(".mod_WorkflowAssembler_Analyses_Server")
+}
+
+#' @noRd
 .mod_WorkflowAssembler_Explorer_UI <- function(x, ...) {
   UseMethod(".mod_WorkflowAssembler_Explorer_UI")
 }

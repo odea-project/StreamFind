@@ -5,8 +5,9 @@
 \alias{validate_object.AuditTrail}
 \alias{add.AuditTrail}
 \alias{as.data.table.AuditTrail}
-\alias{save.AuditTrail}
 \alias{show.AuditTrail}
+\alias{save.AuditTrail}
+\alias{read.AuditTrail}
 \title{Audit Trail Register}
 \usage{
 AuditTrail(entries = list())
@@ -17,17 +18,18 @@ AuditTrail(entries = list())
 
 \method{as.data.table}{AuditTrail}(x, ...)
 
+\method{show}{AuditTrail}(x, ...)
+
 \method{save}{AuditTrail}(x, file = "entries.json")
 
-\method{show}{AuditTrail}(x, ...)
+\method{read}{AuditTrail}(x, file)
 }
 \arguments{
 \item{x}{An \code{AuditTrail} object.}
 
 \item{value}{An object to be added to the \code{AuditTrail} as an entry.}
 
-\item{file}{A character string representing the file path where the \code{AuditTrail} should be saved.
-The file format can be either JSON or RDS.}
+\item{file}{A character string representing the file path from which the \code{AuditTrail} should be read. The possible formats are JSON or RDS.}
 }
 \description{
 The \link{AuditTrail} class is a list of \link{AuditTrailEntry} class
@@ -42,8 +44,10 @@ returning the updated \code{AuditTrail}.
 
 \item \code{as.data.table(AuditTrail)}: Convert the \code{AuditTrail} object to a data frame.
 
+\item \code{show(AuditTrail)}: Show the \code{AuditTrail} entries in a human-readable format.
+
 \item \code{save(AuditTrail)}: Save the \code{AuditTrail} object to a file.
 
-\item \code{show(AuditTrail)}: Show the \code{AuditTrail} entries in a human-readable format.
+\item \code{read(AuditTrail)}: Read an \code{AuditTrail} object from a file.
 
 }}

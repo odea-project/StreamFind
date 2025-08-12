@@ -3,7 +3,7 @@
 \name{MassSpecMethod_AnnotateFeatures_StreamFind}
 \alias{MassSpecMethod_AnnotateFeatures_StreamFind}
 \alias{validate_object.MassSpecMethod_AnnotateFeatures_StreamFind}
-\title{Mass Spectrometry Method for Annotating Features in NonTargetAnalysisResults (StreamFind algorithm)}
+\title{Mass Spectrometry Method for Annotating Features in MassSpecResults_NonTargetAnalysis (StreamFind algorithm)}
 \usage{
 MassSpecMethod_AnnotateFeatures_StreamFind(
   rtWindowAlignment = 0.3,

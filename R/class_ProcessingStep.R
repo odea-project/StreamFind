@@ -1,7 +1,6 @@
-#' @title Generic Processing Step Class
+#' @title Processing Step S3 Class
 #'
 #' @description The `ProcessingStep` class is used to define a processing step within a [StreamFind::Workflow]. It contains information about the data type, method, algorithm, parameters, and other relevant metadata for the processing step. The `ProcessingStep` is the parent class of all processing methods in StreamFind.
-#'
 #' @param type A character string representing the data type (e.g., "MassSpec", "Raman").
 #' @param method A character string representing the method used (e.g., "BaselineCorrection").
 #' @param required A character vector of required preceding methods.
@@ -17,6 +16,22 @@
 #' @param link A character string representing the link to the origin of the algorithm or link to
 #' additional information.
 #' @param doi A character string representing the DOI of the algorithm or additional information.
+#' 
+#' @return A `ProcessingStep` object. Fundamentally, it is a list with class `ProcessingStep` and a data specific method class (e.g., `RamanMethod_AverageSpectra_native`) with the following elements:
+#' - `type`: The data type (e.g., "MassSpec", "Raman").
+#' - `method`: The method used (e.g., "BaselineCorrection").
+#' - `required`: A character vector of required preceding methods.
+#' - `algorithm`: The algorithm used (e.g., "baseline_als").
+#' - `input_class`: The class of the input data.
+#' - `output_class`: The class of the output data.
+#' - `parameters`: A list of parameters for the processing step.
+#' - `number_permitted`: The number of permitted instances.
+#' - `version`: The version of the processing step.
+#' - `software`: The original software used.
+#' - `developer`: The developer of the processing step.
+#' - `contact`: The contact information for the developer.
+#' - `link`: A link to the origin of the algorithm or additional information.
+#' - `doi`: The DOI of the algorithm or additional information.
 #'
 #' @export
 #'
@@ -37,9 +52,10 @@ ProcessingStep <- function(
   doi = NA_character_
 ) {
   if (!is.na(method)) {
-    call <- paste0(type, "Method_", method, "_", algorithm)
+    call <- c(paste0(type, "Method_", method, "_", algorithm), "ProcessingStep")
+  } else {
+    call <- "ProcessingStep"
   }
-
   x <- structure(
     list(
       type = type,
@@ -57,7 +73,7 @@ ProcessingStep <- function(
       link = link,
       doi = doi
     ),
-    class = c(call, "ProcessingStep")
+    class = call
   )
   if (is.null(validate_object(x))) {
     return(x)

@@ -4,6 +4,7 @@
 \alias{Config}
 \alias{validate_object.Config}
 \alias{show.Config}
+\alias{as.data.table.Config}
 \title{Generic Configuration}
 \usage{
 Config(parameters = list())
@@ -11,6 +12,8 @@ Config(parameters = list())
 \method{validate_object}{Config}(x)
 
 \method{show}{Config}(x)
+
+\method{as.data.table}{Config}(x)
 }
 \arguments{
 \item{parameters}{A list of \link{ConfigParameter} objects.}
@@ -29,5 +32,7 @@ The \code{Config} S3 class represents a configuration object and is essentially 
 \item \code{validate_object(Config)}: Validates a \code{Config} object, returning NULL if valid.
 
 \item \code{show(Config)}: Prints the configuration parameters in a human-readable format.
+
+\item \code{as.data.table(Config)}: Converts the configuration parameters to a \code{data.table} for easy viewing.
 
 }}

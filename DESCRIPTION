@@ -1,6 +1,6 @@
 Package: StreamFind
-Title: Flexible Workflow Assembler for Advanced Data Analysis 
-Version: 0.2.0
+Title: Flexible Workflow Assembler for Advanced Data Analysis
+Version: 0.3.0
 Author: Ricardo Cunha [cre, aut, fnd] (<https://orcid.org/0000-0002-6791-0119>)
 Maintainer: Ricardo Cunha <cunha@iuta.de>
 Authors@R: c(
@@ -12,7 +12,7 @@ License: GPL (>= 3)
 URL: https://github.com/odea-project/StreamFind, https://odea-project.github.io/StreamFind/
 BugReports: https://github.com/odea-project/StreamFind/issues
 Depends: R (>= 4.3.0)
-Imports: 
+Imports:
     R6,
     S7,
     data.table,
@@ -40,7 +40,7 @@ Imports:
     ggplot2,
     dplyr,
     gridExtra
-Suggests: 
+Suggests:
     StreamFindData,
     mzR,
     patRoon,
@@ -70,7 +70,7 @@ Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-RdMacros: 
+RdMacros:
     Rdpack
 VignetteBuilder: knitr
 SystemRequirements: GNU make, C++17
@@ -86,6 +86,8 @@ Collate:
     'utils_fct_assets.R'
     'fct_get_cache_info.R'
     'fct_clear_cache.R'
+    'fct_load_cache.R'
+    'fct_save_cache.R'
     'fct_ms_convert_trim_files.R'
     'class_internal_DataTypes.R'
     'class_internal_MassSpecTargets.R'
@@ -97,10 +99,10 @@ Collate:
     'class_Results.R'
     'class_Results_Spectra.R'
     'class_Results_Spectra_RamanSpectra.R'
-    'class_Results_Spectra_MassSpecSpectra.R'
+    'class_MassSpecResults_Spectra.R'
     'class_Results_SpectraSimilarity.R'
     'class_Results_Chromatograms.R'
-    'class_Results_NonTargetAnalysisResults.R'
+    'class_MassSpecResults_NonTargetAnalysis.R'
     'class_Results_StatisticModel.R'
     'class_Results_DataFrame.R'
     'class_Results_Quantification.R'
@@ -172,10 +174,10 @@ Collate:
     'engine_StatisticEngine.R'
     'app_config.R'
     'app_utils.R'
-    'app_mod_WorkflowAssembler_Results_NonTargetAnalysisResults.R'
-    'app_mod_WorkflowAssembler_Result_Spectra.R'
+    'app_mod_WorkflowAssembler_MassSpecResults_NonTargetAnalysis.R'
+    'app_mod_WorkflowAssembler_MassSpecResults_Spectra.R'
     'app_mod_WorkflowAssembler_WorkflowTab.R'
-    'app_mod_WorkflowAssembler_Analyses.R'
+    'app_mod_WorkflowAssembler_MassSpecAnalyses.R'
     'app_mod_WorkflowAssembler_Explorer_MassSpec.R'
     'app_mod_WorkflowAssembler_Explorer_Raman.R'
     'app_mod_WorkflowAssembler_Metadata.R'

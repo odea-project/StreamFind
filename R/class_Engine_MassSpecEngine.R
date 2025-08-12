@@ -2,7 +2,7 @@
 # MassSpecEngine -----
 #' Mass Spectrometry Engine
 #' 
-#' @description The `MassSpecEngine` R6 class is a framework for parsing, processing and inspecting mass spectrometry (MS) data. The engine has *MassSpec* as data type. The *Analyses* active field has class [StreamFind::MassSpecAnalyses], where MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection) can be loaded from *mzML* and *mzXML*. See methods [StreamFind::MassSpecAnalyses] for more details. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF /WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS. The *results* active field is a list with that can hold the classes: [StreamFind::NonTargetAnalysisResults], [StreamFind::MassSpecSpectra] and [StreamFind::Chromatograms]. Note that the *MassSpecEngine* is a subclass of [StreamFind::Engine] and inherits all methods from the parent class.
+#' @description The `MassSpecEngine` R6 class is a framework for parsing, processing and inspecting mass spectrometry (MS) data. The engine has *MassSpec* as data type. The *Analyses* active field has class [StreamFind::MassSpecAnalyses], where MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection) can be loaded from *mzML* and *mzXML*. See methods [StreamFind::MassSpecAnalyses] for more details. If `msconvert` from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF /WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS. The *results* active field is a list with that can hold the classes: [StreamFind::MassSpecResults_NonTargetAnalysis], [StreamFind::MassSpecSpectra] and [StreamFind::Chromatograms]. Note that the *MassSpecEngine* is a subclass of [StreamFind::Engine] and inherits all methods from the parent class.
 #' 
 #' @note The `MassSpecEngine` is using several \href{https://github.com/rickhelmus/patRoon}{patRoon} assets for assembly of Non-Target Analysis (NTA) data processing workflows.
 #' 
@@ -28,17 +28,17 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
   # Active Bindings -----
   active = list(
 
-    # MARK: NonTargetAnalysisResults
-    ## NonTargetAnalysisResults -----
-    #' @field NonTargetAnalysisResults Get/Set for the `NonTargetAnalysisResults` results class.
-    NonTargetAnalysisResults = function(value) {
+    # MARK: MassSpecResults_NonTargetAnalysis
+    ## MassSpecResults_NonTargetAnalysis -----
+    #' @field MassSpecResults_NonTargetAnalysis Get/Set for the `MassSpecResults_NonTargetAnalysis` results class.
+    MassSpecResults_NonTargetAnalysis = function(value) {
       if (missing(value)) {
-        return(self$Analyses$results[["NonTargetAnalysisResults"]])
+        return(self$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])
       }
-      if (is(value, "StreamFind::NonTargetAnalysisResults")) {
-        self$Analyses$results$NonTargetAnalysisResults <- value
+      if (is(value, "StreamFind::MassSpecResults_NonTargetAnalysis")) {
+        self$Analyses$results$MassSpecResults_NonTargetAnalysis <- value
       } else {
-        warning("Value must be an NonTargetAnalysisResults results object! Not done.")
+        warning("Value must be an MassSpecResults_NonTargetAnalysis results object! Not done.")
       }
       invisible(self)
     },

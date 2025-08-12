@@ -3,7 +3,7 @@
 \name{ConfigParameter}
 \alias{ConfigParameter}
 \alias{validate_object.ConfigParameter}
-\title{Configuration Parameter}
+\title{ConfigParameter S3 Class}
 \usage{
 ConfigParameter(name = NA_character_, description = NA_character_)
 
@@ -17,8 +17,7 @@ ConfigParameter(name = NA_character_, description = NA_character_)
 \item{x}{An object to validate.}
 }
 \description{
-The \code{ConfigParameter} S3 class represents a configuration parameter in StreamFind.
-The \code{ConfigParameter} is a list of at least two elements - \code{name} and \code{description}.
+The \code{ConfigParameter} S3 class represents a configuration parameter in StreamFind. The \code{ConfigParameter} is a list of at least two elements - \code{name} and \code{description}.
 }
 \section{Methods (by generic)}{
 \itemize{

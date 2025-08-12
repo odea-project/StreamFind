@@ -4,7 +4,7 @@
 \alias{EngineConfig}
 \title{Engine Configuration}
 \usage{
-EngineConfig()
+EngineConfig(parameters = list(ConfigCache = ConfigCache()))
 }
 \description{
 Class representing the engine configuration, inheriting from \link{Config}.

@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadFeaturesMS1_MS2_EIC.R
 \name{MassSpecMethod_LoadFeaturesEIC_StreamFind}
 \alias{MassSpecMethod_LoadFeaturesEIC_StreamFind}
-\title{MassSpecMethod_LoadFeaturesEIC_StreamFind S7 class}
+\alias{validate_object.MassSpecMethod_LoadFeaturesEIC_StreamFind}
+\title{MassSpecMethod_LoadFeaturesEIC_StreamFind S3 Class}
 \usage{
 MassSpecMethod_LoadFeaturesEIC_StreamFind(
   filtered = FALSE,
@@ -10,6 +11,8 @@ MassSpecMethod_LoadFeaturesEIC_StreamFind(
   mzExpand = 0,
   minIntensity = 0
 )
+
+\method{validate_object}{MassSpecMethod_LoadFeaturesEIC_StreamFind}(x)
 }
 \arguments{
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
@@ -22,6 +25,8 @@ right the mass range.}
 
 \item{minIntensity}{Numeric of length one with the minimum intensity of traces to extract for
 EIC.}
+
+\item{x}{A \code{MassSpecMethod_LoadFeaturesEIC_StreamFind} object.}
 }
 \value{
 A \code{MassSpecMethod_LoadFeaturesEIC_StreamFind} object.
@@ -29,3 +34,8 @@ A \code{MassSpecMethod_LoadFeaturesEIC_StreamFind} object.
 \description{
 Settings for loading spectra EIC for feature groups.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_LoadFeaturesEIC_StreamFind)}: Validator for the MassSpecMethod_LoadFeaturesEIC_StreamFind object, returning NULL if valid.
+
+}}

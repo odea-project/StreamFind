@@ -12,7 +12,7 @@
 \alias{save.Metadata}
 \alias{read.Metadata}
 \alias{show.Metadata}
-\title{Metadata S3 class}
+\title{Metadata S3 Class}
 \usage{
 Metadata(entries = list())
 
@@ -37,8 +37,7 @@ Metadata(entries = list())
 \method{show}{Metadata}(x)
 }
 \arguments{
-\item{entries}{A named list of metadata entries as elements. Default is an empty list.
-Elements must be of type character, numeric or POSIXt and must have length 1.}
+\item{entries}{A named list of metadata entries as elements. Default is an empty list. Elements must be of type character, numeric or POSIXt and must have length 1.}
 
 \item{x}{A \code{Metadata} object.}
 
@@ -50,16 +49,13 @@ Elements must be of type character, numeric or POSIXt and must have length 1.}
 The file format should be either "json" or "rds".}
 }
 \value{
-A \code{Metadata} S3 class object.
+A \code{Metadata} S3 class object which is fundamentally a named list with metadata entries.
 }
 \description{
-The \code{Metadata} S3 class holds information, such as name, date, author
-and file, as a named list with elements of length one. The \code{Metadata} is essentially
-a list therefore list methods are also applicable.
+The \code{Metadata} S3 class holds information, such as name, date, author and file, as a named list with elements of length one. The \code{Metadata} is essentially a list therefore list methods are also applicable.
 }
 \details{
-If not given, elements name, author, date and file are set to \code{NA_character_},
-\code{NA_character_}, current system time and \code{NA_character_}, respectively.
+If not given, elements name, author, date and file are set to \code{NA_character_}, \code{NA_character_}, current system time and \code{NA_character_}, respectively.
 }
 \section{Methods (by generic)}{
 \itemize{

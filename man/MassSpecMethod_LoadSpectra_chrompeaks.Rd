@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadSpectra.R
 \name{MassSpecMethod_LoadSpectra_chrompeaks}
 \alias{MassSpecMethod_LoadSpectra_chrompeaks}
-\title{MassSpecMethod_LoadSpectra_chrompeaks S7 class}
+\alias{validate_object.MassSpecMethod_LoadSpectra_chrompeaks}
+\title{MassSpecMethod_LoadSpectra_chrompeaks S3 Class}
 \usage{
 MassSpecMethod_LoadSpectra_chrompeaks(
   levels = 1,
@@ -10,6 +11,8 @@ MassSpecMethod_LoadSpectra_chrompeaks(
   mzmax = 0,
   minIntensity = 0
 )
+
+\method{validate_object}{MassSpecMethod_LoadSpectra_chrompeaks}(x)
 }
 \arguments{
 \item{levels}{A numeric vector with the levels to be used.}
@@ -19,6 +22,8 @@ MassSpecMethod_LoadSpectra_chrompeaks(
 \item{mzmax}{A numeric vector with the maximum m/z values to be used.}
 
 \item{minIntensity}{A numeric value with the minimum intensity to be used.}
+
+\item{x}{A \code{MassSpecMethod_LoadSpectra_chrompeaks} object.}
 }
 \value{
 A \code{MassSpecMethod_LoadSpectra_chrompeaks} object.
@@ -26,3 +31,8 @@ A \code{MassSpecMethod_LoadSpectra_chrompeaks} object.
 \description{
 Loads spectra based on retention time dimensions of chromatographic peaks.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_LoadSpectra_chrompeaks)}: Validator for the MassSpecMethod_LoadSpectra_chrompeaks object, returning NULL if valid.
+
+}}

@@ -1,1 +1,1 @@
-#' @param x A `NonTargetAnalysisResults` object.
+#' @param x A `MassSpecResults_NonTargetAnalysis` object.

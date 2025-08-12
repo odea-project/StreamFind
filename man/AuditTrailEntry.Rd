@@ -21,8 +21,7 @@ AuditTrailEntry(time_stamp, value_class, value_parent, value)
 \item{x}{A \code{AuditTrailEntry} object.}
 }
 \description{
-The \link{AuditTrailEntry} class is used as an element in the
-\link{AuditTrail} list.
+The \link{AuditTrailEntry} class is used as an element in the \link{AuditTrail} list.
 }
 \section{Methods (by generic)}{
 \itemize{

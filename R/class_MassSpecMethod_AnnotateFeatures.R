@@ -1,4 +1,4 @@
-#' Mass Spectrometry Method for Annotating Features in NonTargetAnalysisResults (StreamFind algorithm)
+#' Mass Spectrometry Method for Annotating Features in MassSpecResults_NonTargetAnalysis (StreamFind algorithm)
 #'
 #' @description Method for annotation of isotopic and adduct features. The method uses the
 #' `maxIsotopes` to define the maximum length of the isotopic chain. The list of candidate features
@@ -34,8 +34,8 @@ MassSpecMethod_AnnotateFeatures_StreamFind <- function(
     method = "AnnotateFeatures",
     required = "FindFeatures",
     algorithm = "StreamFind",
-    input_class = "NonTargetAnalysisResults",
-    output_class = "NonTargetAnalysisResults",
+    input_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       maxIsotopes = as.integer(maxIsotopes),
       maxCharge = as.integer(maxCharge),
@@ -86,15 +86,15 @@ run.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  if (is.null(engine$Analyses$results[["NonTargetAnalysisResults"]])) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$NonTargetAnalysisResults
+  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
 
   if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
-    warning("NonTargetAnalysisResults object does not have features! Not done.")
+    warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
     return(FALSE)
   }
 

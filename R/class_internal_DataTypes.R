@@ -9,7 +9,7 @@ DataTypes <- function() {
         "Statistic" = c("csv")
       ),
       results = list(
-        "MassSpec" = c("NonTargetAnalysisResults", "MassSpecSpectra", "Chromatograms"),
+        "MassSpec" = c("MassSpecResults_NonTargetAnalysis", "MassSpecSpectra", "Chromatograms"),
         "Raman" = c("RamanSpectra"),
         "Statistic" = c("StatisticResults")
       )

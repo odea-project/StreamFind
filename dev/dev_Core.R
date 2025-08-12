@@ -10,11 +10,6 @@ show(a)
 class(a)
 save(a)
 a <- read(Metadata(), "metadata.json")
-b <- EngineMetadata(data_type = "MassSpec")
-sloop::s3_dispatch(show(b))
-sloop::s3_class(b)
-length(b)
-show(b)
 
 # Config -----
 a <- ConfigParameter()
@@ -42,8 +37,7 @@ show(wf)
 a <- Analyses()
 
 # MassSpecAnalyses -----
-path <- "C:/Users/apoli/Documents/example_files"
-ms_files <- list.files(path, pattern = ".mzML", full.names = TRUE)[1:3]
+ms_files <- StreamFindData::get_ms_file_paths()[1:3]
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
 db <- db[, cols, with = FALSE]
@@ -61,6 +55,8 @@ get_raw_spectra(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
 plot_spectra_ms1(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
 plot_spectra_ms2(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
 plot_spectra_eic(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
+a <- load_spectra(a, analyses = 1, mass = dbsus[15, ], ppm = 20, sec = 30)
+lapply(a$results, class)
 
 ## Engine ------
 engine_file <- paste0("engine.json")
@@ -76,7 +72,52 @@ engine$Metadata[["name"]] <- "Ricardo"
 engine$load("engine.json")
 engine <- Engine$new(Metadata = list(file = "engine.rds"))
 
-# Resources -------
+# MassSpecResults_Spectra -----
+ms_files <- StreamFindData::get_ms_file_paths()[1:3]
+db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
+db <- db[, cols, with = FALSE]
+dbis <- db[grepl("IS", db$tag), ]
+dbsus <- db[!grepl("IS", db$tag), ]
+
+engine <- MassSpecEngine$new(
+  metadata = Metadata(list(name = "Ricardo")),
+  analyses = ms_files,
+)
+
+engine$run(
+  MassSpecMethod_LoadSpectra_native(
+    mzmin = 200,
+    mzmax = 300,
+    rtmin = 1000,
+    rtmax = 1100,
+    minIntensity = 500,
+    levels = 1
+  )
+)
+
+#plot_spectra_3d(engine$Analyses$results$MassSpecResults_Spectra)
+#class(engine$Analyses$results$MassSpecResults_Spectra)
+
+engine$run(
+  MassSpecMethod_BinSpectra_StreamFind(
+    binNames = c("rt", "mz"),
+    binValues = c(10, 10),
+    byUnit = TRUE,
+    refBinAnalysis = 1
+  )
+)
+
+#plot_spectra(engine$Analyses$results$MassSpecResults_Spectra)
+plot_spectra_3d(engine$Analyses$results$MassSpecResults_Spectra)
+
+engine$ResultsList$MassSpecResults_Spectra$spectra[[1]]
+
+clear_cache("all")
+
+# MassSpecResults_NonTargetAnalysis -----
+
+## Resources -------
 ms_files <- StreamFindData::get_ms_file_paths()
 ms_files <- ms_files[grepl("blank|influent|o3sw", ms_files)]
 ms_files_df <- data.frame(
@@ -104,10 +145,7 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
-engine <- MassSpecEngine$new(
-  metadata = Metadata(list(name = "Ricardo")),
-  analyses = ms_files_df,
-)
+
 engine$run(MassSpecMethod_FindFeatures_openms())
 engine$run(
   MassSpecMethod_CalculateFeaturesQuality_StreamFind(
@@ -124,28 +162,55 @@ engine$run(MassSpecMethod_AnnotateFeatures_StreamFind())
 
 
 
+
+
+
+
+
+
+
 save(engine$Analyses, "ms_analyses.json")
-
 data <- read(engine$Analyses, "ms_analyses.json")
-
 show(engine$ResultsList$NonTargetAnalysisResults)
 class(engine$ResultsList$NonTargetAnalysisResults)
-
 engine$ResultsList$NonTargetAnalysisResults$features[[1]]
-
 get_features(engine$ResultsList$NonTargetAnalysisResults, mass = dbsus, ppm = 15, sec = 60)
-
 engine$clear_cache()
-
-
 ?NonTargetAnalysisResults
 class(engine$ResultsList$NonTargetAnalysisResults)
-
 show(engine$Metadata)
 show(engine$Analyses)
 show(engine$Workflow)
 show(engine$AuditTrail)
 class(engine)
+
+
+
+
+# App -----
+ms_files <- StreamFindData::get_ms_file_paths()[1:3]
+db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
+db <- db[, cols, with = FALSE]
+dbis <- db[grepl("IS", db$tag), ]
+dbsus <- db[!grepl("IS", db$tag), ]
+
+engine <- MassSpecEngine$new(
+  metadata = Metadata(list(name = "Ricardo")),
+  analyses = ms_files,
+)
+
+engine$save("engine.rds")
+show(engine$Metadata)
+engine$run_app()
+
+
+
+
+
+
+
+
 
 #path <- "E:/example_ms_files"
 path <- "C:/Users/apoli/Documents/example_files"

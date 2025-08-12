@@ -335,7 +335,7 @@ ms$run_workflow()
 
 # Results
 
-The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods in the *MassSpecEngine* or methods of the created Results class. Internally, the *MassSpecEngine* stores the results in the *NonTargetAnalysisResults* object, which can be accessed with `MassSpecEngine$NonTargetAnalysisResults`. Yet, the engine interface is recommended for accessing the results. However, the *NonTargetAnalysisResults* object can be used for more advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
+The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods in the *MassSpecEngine* or methods of the created Results class. Internally, the *MassSpecEngine* stores the results in the *MassSpecResults_NonTargetAnalysis* object, which can be accessed with `MassSpecEngine$MassSpecResults_NonTargetAnalysis`. Yet, the engine interface is recommended for accessing the results. However, the *MassSpecResults_NonTargetAnalysis* object can be used for more advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
 
 ## `data.table` objects
 
@@ -441,11 +441,11 @@ ms$plot_suspects(colorBy = "targets+replicates")
 
 ## Methods from patRoon
 
-The NonTargetAnalysisResults object holds methods to obtain original objects from the [patRoon](https://github.com/rickhelmus/patRoon) package. For instance, the S4 class `features` or `featureGroups` objects can be obtained via the `get_patRoon_features` method of the *NonTargetAnalysisResults* results. The `patRoon` package provides a comprehensive set of functions, as shown below. See more information in the [patRoon reference documentation](https://rickhelmus.github.io/patRoon/reference/index.html).
+The MassSpecResults_NonTargetAnalysis object holds methods to obtain original objects from the [patRoon](https://github.com/rickhelmus/patRoon) package. For instance, the S4 class `features` or `featureGroups` objects can be obtained via the `get_patRoon_features` method of the *MassSpecResults_NonTargetAnalysis* results. The `patRoon` package provides a comprehensive set of functions, as shown below. See more information in the [patRoon reference documentation](https://rickhelmus.github.io/patRoon/reference/index.html).
 
 ```{r pat-features}
 # Native patRoon object
-fGroups <- get_patRoon_features(ms$NonTargetAnalysisResults, filtered = FALSE, featureGroups = TRUE)
+fGroups <- get_patRoon_features(ms$MassSpecResults_NonTargetAnalysis, filtered = FALSE, featureGroups = TRUE)
 
 fGroups
 ```

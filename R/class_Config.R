@@ -1,13 +1,9 @@
 # MARK: ConfigParameter
 # ConfigParameter -----
-#' @title Configuration Parameter
-#'
-#' @description The `ConfigParameter` S3 class represents a configuration parameter in StreamFind.
-#' The `ConfigParameter` is a list of at least two elements - `name` and `description`.
-#'
+#' @title ConfigParameter S3 Class
+#' @description The `ConfigParameter` S3 class represents a configuration parameter in StreamFind. The `ConfigParameter` is a list of at least two elements - `name` and `description`.
 #' @param name Name of the parameter.
 #' @param description Description of the parameter.
-#'
 #' @export
 #'
 ConfigParameter <- function(name = NA_character_, description = NA_character_) {
@@ -117,6 +113,19 @@ show.Config <- function(x) {
   } else {
     cat("No configuration parameters available.\n")
   }
+}
+
+#' @describeIn Config Converts the configuration parameters to a `data.table` for easy viewing.
+#' @param x A `Config` object.
+#' @export
+#' 
+as.data.table.Config <- function(x) {
+  if (length(x) == 0) return(data.table::data.table())
+  data.table(
+    name = sapply(x, function(x) x$name),
+    value = sapply(x, function(x) as.character(x$value)),
+    description = sapply(x, function(x) x$description)
+  )
 }
 
 # MARK: ENGINE CONFIGURATION

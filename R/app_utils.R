@@ -15,9 +15,15 @@
 .app_util_get_volumes <- function() {
   os_type <- Sys.info()["sysname"]
   if (os_type == "Windows") {
-    drives <- system("wmic logicaldisk get name", intern = TRUE)
-    drives <- drives[grepl(":", drives)]
-    drives <- gsub("\\s+", "", drives)
+    # drives <- system("wmic logicaldisk get name", intern = TRUE)
+    # drives <- drives[grepl(":", drives)]
+    # drives <- gsub("\\s+", "", drives)
+    # names(drives) <- drives
+    drives <- system(
+      'powershell -NoProfile -Command "Get-PSDrive -PSProvider FileSystem | Select-Object -ExpandProperty Name"',
+      intern = TRUE
+    )
+    drives <- paste0(drives, ":")
     names(drives) <- drives
   } else {
     drives <- list.files("/media", full.names = TRUE)
@@ -174,7 +180,7 @@
         reactive_engine_save_file(NA_character_)
         reactive_engine_type(obj)
         shiny::removeModal()
-        if (!obj %in% "CoreEngine") {
+        if (!obj %in% "Engine") {
           reactive_show_init_modal(FALSE)
           reactive_app_mode("WorkflowAssembler")
           reactive_clean_start(TRUE)

@@ -1,5 +1,10 @@
+#' @export
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Result_UI, Spectra) <- function(x, id, ns) {
+.mod_WorkflowAssembler_Result_UI.MassSpecResults_Spectra <- function(
+  x,
+  id,
+  ns
+) {
   ns2 <- shiny::NS(id)
   shiny::fluidRow(
     shiny::column(12, DT::dataTableOutput(ns(ns2("spectraAnalysesTable")))),
@@ -8,13 +13,16 @@ S7::method(.mod_WorkflowAssembler_Result_UI, Spectra) <- function(x, id, ns) {
   )
 }
 
+#' @export
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Result_Server, Spectra) <- function(x,
-                                                                      id,
-                                                                      ns,
-                                                                      reactive_analyses,
-                                                                      reactive_volumes,
-                                                                      reactive_config) {
+.mod_WorkflowAssembler_Result_Server.MassSpecResults_Spectra <- function(
+  x,
+  id,
+  ns,
+  reactive_analyses,
+  reactive_volumes,
+  reactive_config
+) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
 
@@ -25,19 +33,24 @@ S7::method(.mod_WorkflowAssembler_Result_Server, Spectra) <- function(x,
       defaultRoot = "wd",
       session = session
     )
-    
+
     # out spectra plot UI -----
     output$spectra_plot_ui <- shiny::renderUI({
       if (length(reactive_analyses()) == 0) {
-        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No Spectra found!"))
+        htmltools::div(
+          style = "margin-top: 20px;",
+          htmltools::h4("No Spectra found!")
+        )
       } else if (!is.null(input$spectra_plot_interactive)) {
         if (input$spectra_plot_interactive) {
           shinycssloaders::withSpinner(
-            plotly::plotlyOutput(ns(ns2("spectra_plotly")), height = "600px"), color = "black"
+            plotly::plotlyOutput(ns(ns2("spectra_plotly")), height = "600px"),
+            color = "black"
           )
         } else {
           shinycssloaders::withSpinner(
-            shiny::plotOutput(ns(ns2("spectra_plot")), height = "600px"), color = "black"
+            shiny::plotOutput(ns(ns2("spectra_plot")), height = "600px"),
+            color = "black"
           )
         }
       }
@@ -99,8 +112,14 @@ S7::method(.mod_WorkflowAssembler_Result_Server, Spectra) <- function(x,
         return()
       }
       info <- analyses$info[, c("analysis", "replicate", "blank"), with = FALSE]
-      sel_analyses_names <- vapply(analyses$results$spectra$spectra, function(z) nrow(z) > 0, FALSE)
-      analyses_names <- names(analyses$results$spectra$spectra[sel_analyses_names])
+      sel_analyses_names <- vapply(
+        analyses$results$spectra$spectra,
+        function(z) nrow(z) > 0,
+        FALSE
+      )
+      analyses_names <- names(analyses$results$spectra$spectra[
+        sel_analyses_names
+      ])
       if (x$is_averaged) {
         info <- info[info$replicate %in% analyses_names, ]
       } else {
@@ -161,11 +180,22 @@ S7::method(.mod_WorkflowAssembler_Result_Server, Spectra) <- function(x,
         if (length(selected) == 0) {
           return()
         }
-        csv <- get_spectra(reactive_analyses(), analyses = selected, useRawData = FALSE)
-        fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$spectra_plot_save)
+        csv <- get_spectra(
+          reactive_analyses(),
+          analyses = selected,
+          useRawData = FALSE
+        )
+        fileinfo <- shinyFiles::parseSavePath(
+          reactive_volumes(),
+          input$spectra_plot_save
+        )
         if (nrow(fileinfo) > 0) {
           write.csv(csv, fileinfo$datapath, row.names = FALSE)
-          shiny::showNotification("File saved successfully!", duration = 5, type = "message")
+          shiny::showNotification(
+            "File saved successfully!",
+            duration = 5,
+            type = "message"
+          )
         }
       }
     })
