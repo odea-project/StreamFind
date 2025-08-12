@@ -109,6 +109,7 @@
                                                    reactive_saved_workflow,
                                                    reactive_results,
                                                    reactive_audit,
+                                                   reactive_engine_config,
                                                    reactive_warnings,
                                                    reactive_volumes,
                                                    reactive_config) {
@@ -399,7 +400,7 @@
 
     # obs Clear Workflow -----
     shiny::observeEvent(input$clear_workflow, {
-      reactive_workflow(StreamFind::Workflow())
+      reactive_workflow(Workflow())
     })
 
     # obs Save Workflow -----
@@ -457,8 +458,9 @@
           engine$run_workflow()
           reactive_analyses(engine$Analyses)
           reactive_workflow(engine$workflow)
-          reactive_results(engine$results)
-          reactive_audit(engine$audit_trail)
+          reactive_results(engine$Analyses$results)
+          reactive_audit(engine$AuditTrail)
+          reactive_engine_config(engine$Config)
           shiny::removeModal()
         },
         error = function(e) {

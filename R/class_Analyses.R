@@ -47,6 +47,10 @@ validate_object.Analyses <- function(x) {
     checkmate::test_list(x$analyses) || checkmate::test_data_frame(x$analyses)
   )
   checkmate::assert_list(x$results)
+  if (length(x$results) > 0) {
+    checkmate::assert_class(x$results[[1]], "Results")
+    lapply(x$results, function(z) checkmate::assert_true(is.null(validate_object(z))))
+  }
   NULL
 }
 
