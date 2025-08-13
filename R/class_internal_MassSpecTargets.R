@@ -199,6 +199,9 @@ MassSpecTargets <- function(
       }
     }
 
+    targets$polarity[targets$polarity %in% "positive"] <- "1"
+    targets$polarity[targets$polarity %in% "negative"] <- "-1"
+
     if (!all(grepl("1|-1", targets$polarity))) {
       warning("Polarity must be either positive, negative or both!")
       targets <- data.table::data.table()

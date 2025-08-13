@@ -171,9 +171,9 @@ Engine <- R6::R6Class(
       invisible(self)
     },
     
-    #MARK: ResultsList
-    #' @field ResultsList A named list of [StreamFind::Results] S7 class objects or a child for specific results.
-    ResultsList = function(value) {
+    #MARK: Results
+    #' @field Results A named list of [StreamFind::Results] S7 class objects or a child for specific results.
+    Results = function(value) {
       if (missing(value)) {
         return(private$.Analyses$results)
       }
@@ -742,6 +742,7 @@ Engine <- R6::R6Class(
       if (length(self$Workflow) > 0) {
         steps <- self$Workflow
         if (length(self$Analyses$results) > 0) self$Analyses$results <- list()
+        self$Workflow <- Workflow()
         lapply(steps, function(x) self$run(x))
       } else {
         warning("There are no processing steps to run!")

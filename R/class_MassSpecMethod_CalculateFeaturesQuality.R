@@ -104,7 +104,7 @@ run.MassSpecMethod_CalculateFeaturesQuality_StreamFind <- function(
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
   if (
     sum(vapply(nts$features, function(z) nrow(z), 0)) == 0
@@ -147,7 +147,7 @@ run.MassSpecMethod_CalculateFeaturesQuality_StreamFind <- function(
 
   tryCatch(
     {
-      engine$ResultsList <- nts
+      engine$Results <- nts
       return(TRUE)
     },
     error = function(e) {

@@ -50,7 +50,7 @@ validate_object.MassSpecResults_NonTargetAnalysis = function(x) {
   checkmate::assert_true(x$name == "MassSpecResults_NonTargetAnalysis")
   checkmate::assert_true(x$software == "StreamFind")
   checkmate::assert_character(x$version, len = 1)
-  if (length(features) > 0) {
+  if (length(x$features) > 0) {
     checkmate::assert_true(identical(x$info$analysis, names(x$features)))
     checkmate::assert_true(identical(x$info$analysis, names(x$headers)))
     fp <- c(
@@ -227,6 +227,7 @@ names.MassSpecResults_NonTargetAnalysis <- function(x) {
   }
   if (!missing(i)) {
     x$info <- x$info[i, ]
+    x$headers <- x$headers[i]
     x$features <- x$features[i]
   }
   if (!missing(j)) {
@@ -317,11 +318,14 @@ get_features_count.MassSpecResults_NonTargetAnalysis <- function(
 ) {
   analyses <- .check_analyses_argument(x, analyses)
   info <- data.table::data.table()
-  if (length()(x$features) > 0) {
+  if (length(x$features) > 0) {
     info <- data.table::data.table(
       "analysis" = x$info$analysis,
       "replicate" = x$info$replicate,
-      "features" = vapply(x$features, nrow, integer(1)),
+      "features" = vapply(x$features, function(z, filtered) {
+        if (filtered) return(nrow(z))
+        return(nrow(z[!z$filtered, ]))
+      }, integer(1), filtered = filtered),
       "filtered" = vapply(
         x$features,
         function(z) {
@@ -331,15 +335,21 @@ get_features_count.MassSpecResults_NonTargetAnalysis <- function(
       ),
       "groups" = vapply(
         x$features,
-        function(z) {
-          length(unique(z$group))
+        function(z, filtered) {
+          if (filtered) {
+            z <- z[!z$filtered, ]
+            zg <- unique(z$group)
+            zg <- zg[!is.na(zg) & zg != ""]
+            return(length(zg))
+          } else {
+            zg <- unique(z$group[!z$filtered])
+            zg <- zg[!is.na(zg) & zg != ""]
+            return(length(zg))
+          }
         },
-        integer(1)
+        integer(1), filtered = filtered
       )
     )
-    if (filtered) {
-      info$features <- info$filtered + info$features
-    }
     info <- info[info$analysis %in% analyses, ]
   }
   info
@@ -506,15 +516,15 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
       } else {
         fts <- fts[fts$feature %in% target_id, ]
       }
-
-      fts$replicate <- x$info$replicate[fts$analysis]
-
+      rpls <- x$info$replicate
+      names(rpls) <- x$info$analysis
+      fts$replicate <- rpls[fts$analysis]
       return(fts)
     } else if (is.numeric(target_id)) {
       fts <- fts[target_id, ]
-
-      fts$replicate <- x$info$replicate[fts$analysis]
-
+      rpls <- x$info$replicate
+      names(rpls) <- x$info$analysis
+      fts$replicate <- rpls[fts$analysis]
       return(fts)
     }
 
@@ -522,10 +532,8 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
       if (all(colnames(fts) %in% colnames(target_id))) {
         return(target_id)
       }
-
       if ("analysis" %in% colnames(target_id)) {
         sel <- rep(FALSE, nrow(fts))
-
         for (i in seq_len(nrow(target_id))) {
           sel[
             (fts$feature %in%
@@ -534,21 +542,18 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
               fts$group %in% target_id$group
           ] <- TRUE
         }
-
         fts <- fts[sel, ]
-
         if ("name" %in% colnames(target_id)) {
           ids <- target_id$name
           names(ids) <- target_id$feature
           fts$name <- ids[fts$feature]
         }
-
-        fts$replicate <- x$info$replicate[fts$analysis]
-
+        rpls <- x$info$replicate
+        names(rpls) <- x$info$analysis
+        fts$replicate <- rpls[fts$analysis]
         return(fts)
       } else if ("group" %in% colnames(target_id)) {
         sel <- rep(FALSE, nrow(fts))
-
         for (i in seq_len(nrow(target_id))) {
           sel[
             fts$feature %in%
@@ -556,25 +561,21 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
               fts$group %in% target_id$group
           ] <- TRUE
         }
-
         fts <- fts[sel, ]
-
         if ("name" %in% colnames(target_id)) {
           ids <- target_id$name
           names(ids) <- target_id$group
           ids <- ids[!duplicated(names(ids))]
           fts$name <- ids[fts$group]
         }
-
-        fts$replicate <- x$info$replicate[fts$analysis]
-
+        rpls <- x$info$replicate
+        names(rpls) <- x$info$analysis
+        fts$replicate <- rpls[fts$analysis]
         return(fts)
       }
     }
-
     return(data.table::data.table())
   }
-
   polarities <- vapply(
     x$headers[analyses],
     function(a) {
@@ -583,7 +584,6 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
     NA_character_
   )
   id <- NULL
-
   targets <- MassSpecTargets(
     mass,
     mz,
@@ -596,7 +596,6 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
     analyses,
     polarities
   )
-
   if (nrow(targets) > 0) {
     for (i in seq_len(nrow(targets))) {
       if (targets$rtmax[i] == 0) {
@@ -605,17 +604,14 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
       if (targets$mzmax[i] == 0) {
         targets$mzmax[i] <- max(fts$mzmax)
       }
-
       if ("mobility" %in% colnames(fts)) {
         if (targets$mobilitymax[i] == 0) {
           targets$mobilitymax[i] <- max(fts$mobility)
         }
       }
     }
-
     sel <- rep(FALSE, nrow(fts))
     ids <- rep(NA_character_, nrow(fts))
-
     for (i in seq_len(nrow(targets))) {
       if ("mobility" %in% colnames(fts)) {
         sel[
@@ -629,7 +625,6 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
               targets$mobilitymax[i]
             )
         ] <- TRUE
-
         ids[
           fts$analysis == targets$analysis[i] &
             fts$polarity == targets$polarity[i] &
@@ -648,7 +643,6 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
             data.table::between(fts$mz, targets$mzmin[i], targets$mzmax[i]) &
             data.table::between(fts$rt, targets$rtmin[i], targets$rtmax[i])
         ] <- TRUE
-
         ids[
           fts$analysis == targets$analysis[i] &
             fts$polarity == targets$polarity[i] &
@@ -657,16 +651,13 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
         ] <- targets$id[i]
       }
     }
-
     fts$name <- ids
-
-    fts$replicate <- x$info$replicate[fts$analysis]
-
+    rpls <- x$info$replicate
+    names(rpls) <- x$info$analysis
+    fts$replicate <- rpls[fts$analysis]
     return(fts[sel])
   }
-
   fts$replicate <- x$info$replicate[fts$analysis]
-
   fts
 }
 
@@ -1088,7 +1079,6 @@ get_features_eic.MassSpecResults_NonTargetAnalysis <- function(
     )
     fts_without_eic <- fts[!sel, ]
     fts_with_eic <- fts[sel, ]
-
     if (nrow(fts_without_eic) > 0) {
       fts_without_eic_ana_split_vector <- fts_without_eic$analysis
       fts_without_eic$analysis <- NULL
@@ -1099,7 +1089,6 @@ get_features_eic.MassSpecResults_NonTargetAnalysis <- function(
       ana_info <- x$info[
         x$info$analysis %in% names(fts_without_eic_list),
       ]
-
       fts_without_eic <- rcpp_ms_load_features_eic(
         analyses_names = ana_info$analysis,
         analyses_files = ana_info$file,
@@ -1110,20 +1099,17 @@ get_features_eic.MassSpecResults_NonTargetAnalysis <- function(
         mzExpand = mzExpand,
         minTracesIntensity = 0
       )
-
       fts_without_eic <- data.table::rbindlist(
         fts_without_eic,
         idcol = "analysis",
         fill = TRUE
       )
-
       fts <- data.table::rbindlist(
         list(fts_without_eic, fts_with_eic),
         fill = TRUE
       )
     }
   }
-
   eic_list <- lapply(
     seq_len(nrow(fts)),
     function(z, fts) {
@@ -1141,28 +1127,25 @@ get_features_eic.MassSpecResults_NonTargetAnalysis <- function(
     },
     fts = fts
   )
-
   eic <- data.table::rbindlist(eic_list, fill = TRUE)
-  eic$replicate <- x$info$replicate[eic$analysis]
+  rpls <- x$info$replicate
+  names(rpls) <- x$info$analysis
+  eic$replicate <- rpls[eic$analysis]
   data.table::setcolorder(eic, c("analysis", "replicate", "feature"))
-
   unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
   unique_eic_id <- paste0(eic$analysis, "-", eic$feature)
-
   if ("group" %in% colnames(fts)) {
     fgs <- fts$group
     names(fgs) <- unique_fts_id
     eic$group <- fgs[unique_eic_id]
     data.table::setcolorder(eic, c("analysis", "replicate", "group"))
   }
-
   if ("name" %in% colnames(fts)) {
     tar_ids <- fts$name
     names(tar_ids) <- unique_fts_id
     eic$name <- tar_ids[unique_eic_id]
     data.table::setcolorder(eic, c("analysis", "replicate", "name"))
   }
-
   eic
 }
 
@@ -2138,7 +2121,7 @@ get_groups.MassSpecResults_NonTargetAnalysis <- function(
   if (length(x$features) == 0) {
     return(data.table::data.table())
   }
-  if (!any(vapply(x$features, function(z) any(!(is.na(z$group) || z$group %in% "")), FALSE))) {
+  if (!any(vapply(x$features, function(z) any(!(is.na(z$group) | z$group %in% "")), FALSE))) {
     return(data.table::data.table())
   }
   fts <- get_features(
@@ -2169,6 +2152,7 @@ get_groups.MassSpecResults_NonTargetAnalysis <- function(
       if (average) {
         intensity <- NULL
         rpls <- x$info$replicate
+        names(rpls) <- x$info$analysis
         fts_temp <- data.table::copy(fts)
         fts_temp$analysis <- rpls[fts_temp$analysis]
         fts_av <- fts_temp[,
@@ -2242,7 +2226,7 @@ get_groups.MassSpecResults_NonTargetAnalysis <- function(
       annotation <- NULL
       istd <- NULL
 
-      max_presence <- nrow(x$analyses_info)
+      max_presence <- nrow(x$info)
 
       fts_meta <- fts[,
         .(
@@ -4612,7 +4596,7 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
                     )
 
                     ms2_unknown <- ms2[
-                      -fragments$exp_idx[!is.na(fragments$exp_idx)],
+                      unique(-fragments$exp_idx[!is.na(fragments$exp_idx)]),
                       c("mz", "intensity"),
                       with = FALSE
                     ]
@@ -5183,7 +5167,6 @@ get_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
   average = TRUE
 ) {
   istd <- get_features(x, filtered = TRUE)
-
   if ("istd" %in% colnames(istd)) {
     sel <- vapply(
       istd$istd,
@@ -5199,12 +5182,9 @@ get_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
       },
       FALSE
     )
-
     istd <- istd[sel, ]
-
     if (nrow(istd) > 0) {
       istd_l <- istd[["istd"]]
-
       istd_l2 <- lapply(
         seq_len(length(istd_l)),
         function(z, istd_l, istd) {
@@ -5216,13 +5196,9 @@ get_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
         istd = istd,
         istd_l = istd_l
       )
-
       istd <- data.table::rbindlist(istd_l2, fill = TRUE)
-
       istd$rtr <- round(istd$rtmax - istd$rtmin, digits = 1)
-
       istd$mzr <- round(istd$mzmax - istd$mzmin, digits = 4)
-
       if ("annotation" %in% colnames(istd)) {
         istd$iso_n <- vapply(
           istd$annotation,
@@ -5250,15 +5226,13 @@ get_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
         istd$iso_n <- NA_real_
         istd$iso_c <- NA_real_
       }
-
       if (
-        any(vapply(x$features, function(x) any(!is.na(x$group)), FALSE)) &&
+        any(vapply(x$features, function(x) any(!is.na(x$group) | x$group %in% ""), FALSE)) &&
           average
       ) {
         rpl <- x$info$replicate
-
+        names(rpl) <- x$info$analysis
         istd$replicate <- rpl[istd$analysis]
-
         cols <- c(
           "name",
           "rt",
@@ -5337,11 +5311,10 @@ get_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
           "analysis",
           "feature"
         )
-
         if (
           any(vapply(
-            self@feature_list,
-            function(x) any(!is.na(x$group)),
+            x$features,
+            function(x) any(!(is.na(x$group) | x$group == "")),
             FALSE
           ))
         ) {
@@ -5388,50 +5361,41 @@ plot_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
   showWidths = TRUE,
   renderEngine = "webgl"
 ) {
-  analyses <- .check_analyses_argument(x, analyses)
-
-  if (any(vapply(x$features, function(x) any(!is.na(x$group)), FALSE))) {
+  analyses <- .check_analyses_argument(x$features, analyses)
+  if (any(vapply(x$features[analyses], function(x) any(!(is.na(x$group) | x$group %in% "")), FALSE))) {
     istd <- get_internal_standards(x, average = TRUE)
-
     if (nrow(istd) == 0) {
       warning("Internal standards not found!")
       return(NULL)
     }
-
-    istd <- istd[istd$replicate %in% x$info$replicate[analyses], ]
-
+    rpls <- x$info$replicate
+    names(rpls) <- x$info$analysis
+    istd <- istd[istd$replicate %in% rpls[analyses], ]
     if (nrow(istd) == 0) {
       warning("Internal standards not found!")
       return(NULL)
     }
   } else {
     istd <- get_internal_standards(x, average = FALSE)
-
     if (nrow(istd) == 0) {
       warning("Internal standards not found!")
       return(NULL)
     }
-
     istd <- istd[istd$analysis %in% analyses, ]
-
     if (nrow(istd) == 0) {
       warning("Internal standards not found!")
       return(NULL)
     }
   }
-
   if (
     !("analysis" %in% colnames(istd)) &
       "replicate" %in% colnames(istd)
   ) {
     istd$analysis <- istd$replicate
   }
-
   analyses <- unique(istd$analysis)
-
   leg <- unique(istd$name)
   colors <- .get_colors(leg)
-
   showLegend <- TRUE
   showLegendPresence <- FALSE
   showLegendRecovery <- FALSE
@@ -6080,7 +6044,7 @@ get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
   fillZerosWithLowerLimit = FALSE,
   lowerLimit = NA_real_
 ) {
-  if (!any(vapply(x$features, function(x) any(!is.na(x$group))))) {
+  if (!any(vapply(x$features, function(x) any(!is.na(x$group) | x$group %in% ""), FALSE))) {
     warning("\U2717 Feature groups not found!")
     return(NULL)
   }
@@ -6185,11 +6149,8 @@ get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
   )
 
   fc <- data.table::rbindlist(fc)
-
   sel_nan <- is.nan(fc$fc)
-
   fc <- fc[!sel_nan, ]
-
   fc_category <- list(
     "Elimination" = c(0, eliminationThreshold),
     "Decrease" = c(eliminationThreshold, constantThreshold),
@@ -6197,7 +6158,6 @@ get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
     "Increase" = c(1 / constantThreshold, 1 / eliminationThreshold),
     "Formation" = c(1 / eliminationThreshold, Inf)
   )
-
   fc_boundaries <- c(
     paste0("(", 0, "-", eliminationThreshold, ")"),
     paste0("(", eliminationThreshold, "-", constantThreshold, ")"),
@@ -6205,18 +6165,14 @@ get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
     paste0("(", 1 / constantThreshold, "-", 1 / eliminationThreshold, ")"),
     paste0("(", 1 / eliminationThreshold, "-Inf)")
   )
-
   names(fc_boundaries) <- names(fc_category)
-
   for (i in seq_along(fc_category)) {
     fc$category[
       fc$fc >= fc_category[[i]][1] &
         fc$fc <= fc_category[[i]][2]
     ] <- names(fc_category)[i]
   }
-
   sel_na_category <- is.na(fc$category)
-
   fc <- fc[!sel_na_category, ]
   fc$category <- factor(fc$category, levels = names(fc_category))
   fc$bondaries <- paste(fc$category, fc_boundaries[fc$category], sep = "\n")

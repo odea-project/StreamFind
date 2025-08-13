@@ -78,12 +78,12 @@ run.MassSpecMethod_BinSpectra_StreamFind <- function(
     return(FALSE)
   }
 
-  if (is.null(engine$ResultsList$MassSpecResults_Spectra)) {
+  if (is.null(engine$Results$MassSpecResults_Spectra)) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
 
-  spec_list <- engine$ResultsList$MassSpecResults_Spectra$spectra
+  spec_list <- engine$Results$MassSpecResults_Spectra$spectra
 
   binNames = x$parameters$binNames
   binValues = x$parameters$binValues
@@ -217,9 +217,9 @@ run.MassSpecMethod_BinSpectra_StreamFind <- function(
   )
   tryCatch(
     {
-      org_spec <- engine$ResultsList$MassSpecResults_Spectra
+      org_spec <- engine$Results$MassSpecResults_Spectra
       org_spec$spectra <- spec_binned
-      engine$ResultsList <- org_spec
+      engine$Results <- org_spec
       message(paste0("\U2713 ", "Spectra binned!"))
       return(TRUE)
     },

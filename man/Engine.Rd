@@ -21,7 +21,7 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 
 \item{\code{Analyses}}{An \link{Analyses} S7 class object or a child for a specific data type.}
 
-\item{\code{ResultsList}}{A named list of \link{Results} S7 class objects or a child for specific results.}
+\item{\code{Results}}{A named list of \link{Results} S7 class objects or a child for specific results.}
 
 \item{\code{AuditTrail}}{An \link{AuditTrail} S7 class object. Only getter method.}
 

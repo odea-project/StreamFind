@@ -96,11 +96,11 @@ ms <- MassSpecEngine$new(
 ```
 
 ```{r show-ms}
-# MassSpecEngine class hierarchy
+# Engine class hierarchy
 class(ms)
 
-# Number of analyses
-length(ms$Analyses)
+# Analyses class hierarchy
+class(ms$Analyses)
 ```
 
 # *Metadata*
@@ -118,8 +118,8 @@ ms$Metadata <- list(
 # Gets and shows the metadata
 show(ms$Metadata)
 
-# Gets the MassSpecEngine date
-ms$Metadata@entries$date
+# Gets the date element from the Metadata
+ms$Metadata$date
 ```
 
 # Replicates and blanks
@@ -149,16 +149,16 @@ blks <- c(
 )
 
 # Amends replicate and blank names
-ms$add_replicate_names(rpls)
-ms$add_blank_names(blks)
+ms$Analyses <- set_replicates(ms$Analyses, rpls)
+ms$Analyses <- set_blanks(ms$Analyses, blks)
 
 # Replicates and blanks were amended
-ms$Analyses$info[, c(1:3, 5)]
+info(ms$Analyses)[, c(1:3, 5)]
 ```
 
 # *ProcessingStep*
 
-Data processing is performed by steps according to *ProcessingStep* objects. S7 *ProcessingStep* class objects are obtained via the respective [`[Engine type]Method_[method name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingStep* for the method `FindFeatures` using the algorithm *openms*. The parameters can be changed via the constructor arguments. Documentation for each *ProcessingStep* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
+Data processing is performed by steps according to *ProcessingStep* objects. *ProcessingStep* class objects are obtained via the respective [`[Engine type]Method_[method name]_[algorithm name]`](https://odea-project.github.io/StreamFind/reference/index.html#processing-settings-for-ms-data) constructor functions, attributing the respective subclass. Below we obtain the *ProcessingStep* for the method `FindFeatures` using the algorithm *openms*. The parameters can be changed via the constructor arguments. Documentation for each *ProcessingStep* subclass can be found in the [StreamFind reference documentation](https://odea-project.github.io/StreamFind/reference/index.html).
 
 ```{r ffs}
 # Gets ProcessingStep for finding features using the openms algorithm
@@ -333,13 +333,33 @@ The *Workflow* can be applied by `run_workflow()`, as demonstrated below. Note t
 ms$run_workflow()
 ```
 
+```{r}
+
+get_patRoon_MSPeakLists(ms$Results$MassSpecResults_NonTargetAnalysis)
+
+
+get_suspects(ms$Results$MassSpecResults_NonTargetAnalysis)
+
+nts <- ms$Results$MassSpecResults_NonTargetAnalysis
+fts <- get_features(nts, mass = db, ppm = 10, sec = 15)
+fts
+fts$quality[[17]]
+```
+
 # Results
 
-The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods in the *MassSpecEngine* or methods of the created Results class. Internally, the *MassSpecEngine* stores the results in the *MassSpecResults_NonTargetAnalysis* object, which can be accessed with `MassSpecEngine$MassSpecResults_NonTargetAnalysis`. Yet, the engine interface is recommended for accessing the results. However, the *MassSpecResults_NonTargetAnalysis* object can be used for more advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
+The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods of the [MassSpecResults_NonTargetAnalysis](https://odea-project.github.io/StreamFind/reference/MassSpecResults_NonTargetAnalysis.html) class. Internally, the *MassSpecEngine* stores the results in the results list of the [MassSpecAnalyses](https://odea-project.github.io/StreamFind/reference/MassSpecAnalyses.html) object, which can be accessed with `MassSpecEngine$Results$MassSpecResults_NonTargetAnalysis` as shown below. The *MassSpecResults_NonTargetAnalysis* object can be used for advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
+
+```{r results-access}
+# Accessing the MassSpecResults_NonTargetAnalysis from the Engine$Results
+nts <- ms$Results$MassSpecResults_NonTargetAnalysis
+
+class(nts)
+```
 
 ## `data.table` objects
 
-The features and feature groups can be obtained as `data.table` with the `MassSpecEngine$get_features()` and `MassSpecEngine$get_groups()` methods. The methods also allow to look for specific features/feature groups using mass, mass-to-charge ratio, retention time and drift time targets, as show below for a small set of compound targets where mass and retention time expected values are known. Note that drift time is only applicable for MS data with ion mobility separation.
+The features and feature groups can be obtained as `data.table` with the `get_features()` and `get_groups()` methods. The methods also allow to look for specific features/feature groups using mass, mass-to-charge ratio, retention time and drift time targets, as show below for a small set of compound targets where mass and retention time expected values are known. Note that drift time is only applicable for MS data with ion mobility separation.
 
 ```{r database-show}
 db
@@ -349,22 +369,22 @@ db
 # Compounds are searched by monoisotopic mass and retention time
 # ppm and sec set the mass (im ppm) and time (in seconds) allowed deviation, respectively
 # average applies a mean to the intensities in each analysis replicate group
-ms$get_groups(mass = db, ppm = 10, sec = 15, average = TRUE)
+get_groups(nts, mass = db, ppm = 10, sec = 15, average = TRUE)
 ```
 
 Already by inspection of the `data.table`, it is possible to see compounds detected in the influent but not in the effluent (e.g., Carbamazepine) or compounds that are appear to be reduced during ozonation (e.g., Metoprolol). Since positive and negative ionization mode were combined, there are compounds that appear in both polarities and are grouped by neutral monoisotopic mass (e.g., Candesartan and Diclofenac).
 
 ## `plot_groups` methods
 
-For a better overview of the results, the method `MassSpecEngine$plot_groups()` or even more detailed the method `MassSpecEngine$plot_groups_overview()` can be used.
+For a better overview of the results, the method `plot_groups()` or even more detailed the method `plot_groups_overview()` can be used.
 
 ```{r plot-groups}
 # set legendNames to TRUE for using the names in db as legend
-ms$plot_groups(mass = db, ppm = 10, sec = 15, legendNames = TRUE)
+plot_groups(nts, mass = db, ppm = 10, sec = 15, legendNames = TRUE)
 ```
 
 ```{r plot-groups-overview, fig.height=10}
-ms$plot_groups_overview(mass = db, ppm = 5, sec = 10, legendNames = TRUE)
+plot_groups_overview(nts, mass = db, ppm = 5, sec = 10, legendNames = TRUE)
 ```
 
 ## Filtered not removed
@@ -373,7 +393,7 @@ The *FilterFeatures* method was applied to filter features according to defined 
 
 ```{r show-filtered-is}
 # Set filtered to TRUE for showing filtered features/feature groups
-ms$get_groups(mass = db, ppm = 5, sec = 10, average = TRUE, filtered = TRUE)
+get_groups(nts, mass = db, ppm = 5, sec = 10, average = TRUE, filtered = TRUE)
 ```
 
 ## Internal Standards
@@ -387,15 +407,15 @@ db_is
 
 ```{r get_is}
 # Gets the internal standards evaluation data.table
-ms$get_internal_standards()[, 1:7]
+get_internal_standards(nts)[, 1:7]
 ```
 
 ```{r plot_is_qc, fig.height=10, fig.cap="Quality control of spiked internal standards"}
-ms$plot_internal_standards()
+plot_internal_standards(nts)
 ```
 
 ```{r plot_is_profile, fig.cap="Internal standards profile across analyses"}
-ms$plot_groups_profile(mass = db_is, ppm = 8, sec = 10, filtered = TRUE, legendNames = TRUE)
+plot_groups_profile(nts, mass = db_is, ppm = 8, sec = 10, filtered = TRUE, legendNames = TRUE)
 ```
 
 ## Components
@@ -404,7 +424,8 @@ The method *AnnotateFeatures* was applied to annotate the natural isotopes and a
 
 ```{r show-components}
 # Components of Diclofenac and Candesartan in analysis 11
-components_example <- ms$get_components(
+components_example <- get_components(
+  nts,
   analyses = 11,
   mass = db[db$name %in% c("Diclofenac", "Candesartan"), ],
   ppm = 5, sec = 10,
@@ -418,7 +439,8 @@ components_example[, c(2:6, 8, 30:34)]
 The components (i.e., isotopes and adducts) can also be visualized with the method `MassSpecEngine$map_components()`, as shown below for the internal standards added to analysis 11. Note that again the `filtered` argument was set to `TRUE` to return also filtered features, as the internal standards were likely excluded by blank subtraction.
 
 ```{r plot-components, fig.cap="Components (i.e., isotopes and adducts) of internal standards in analysis 11"}
-ms$map_components(
+map_components(
+  nts,
   analyses = 11,
   mass = db_is,
   ppm = 8, sec = 10,
@@ -432,11 +454,11 @@ ms$map_components(
 The methods `MassSpecEngine$get_suspects()` and `MassSpecEngine$plot_suspects()` can be used to inspect the suspect screening results. In the plot function, a second plot is added to compare the experimental fragmentation pattern (top) with the fragmentation pattern of the respective reference standard (down) added within the database. The `colorBy` argument can be set to *targets+replicates* to legend the plot with combined keys of suspect target names and analysis replicate names.
 
 ```{r get_suspects}
-ms$get_suspects()[, c(1, 5, 14)]
+get_suspects(nts)[, c(1, 5, 14)]
 ```
 
 ```{r plot-suspects, fig.height=10}
-ms$plot_suspects(colorBy = "targets+replicates")
+plot_suspects(nts, colorBy = "targets+replicates")
 ```
 
 ## Methods from patRoon
@@ -445,7 +467,7 @@ The MassSpecResults_NonTargetAnalysis object holds methods to obtain original ob
 
 ```{r pat-features}
 # Native patRoon object
-fGroups <- get_patRoon_features(ms$MassSpecResults_NonTargetAnalysis, filtered = FALSE, featureGroups = TRUE)
+fGroups <- get_patRoon_features(nts, filtered = FALSE, featureGroups = TRUE)
 
 fGroups
 ```
@@ -460,7 +482,8 @@ patRoon::plotUpSet(fGroups)
 The method `get_fold_change()` and correspondent `plot_fold_change()` can be used to calculate and plot the fold-change between influent and effluent samples. The method calculates the fold-change for each feature group and replicates, as shown below. The plot shows the fold-change for each feature group across the replicates. The fold-change is calculated according to [Bader et al. (2017)](https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037), leveraging the replicates variance to increase the significance of the fold-change. Formation is not in the plot as no new features were detected in the effluent of the wastewater ozonation treatment step.
 
 ```{r plot-fold-change}
-ms$plot_fold_change(
+plot_fold_change(
+  nts,
   replicatesIn = c("influent_neg", "influent_pos"),
   replicatesOut = c("effluent_neg", "effluent_pos"),
   filtered = FALSE,
@@ -468,7 +491,8 @@ ms$plot_fold_change(
   eliminationThreshold = 0.2,
   correctIntensity = TRUE,
   fillZerosWithLowerLimit = FALSE, # set to TRUE for filling zeros with lower limit argument
-  lowerLimit = 200
+  lowerLimit = 200,
+  normalized = FALSE
 )
 ```
 
@@ -481,11 +505,35 @@ patRoon::plotVolcano(
 )
 ```
 
+# Compounds
+
+```{r subset-pos}
+# clone the MassSpecEngine to avoid overwriting
+# R6 classes are reference classes so we need to clone to effectively copy
+ms_pos <- ms$clone()
+
+# subset with only positive analyses
+ms_pos$Analyses <- ms_pos$Analyses[info(ms_pos$Analyses)$polarity == "1"]
+
+# subsetting the Analyses, also subsets the Results
+ms_pos$Results$MassSpecResults_NonTargetAnalysis$info[, c(1, 4)]
+```
+
+```{r get-compounds, results='asis'}
+# Applies the generates compounds using MetFrag via the patRoon package
+ms_pos$run(
+  MassSpecMethod_GenerateCompounds_metfrag(
+    method = "CL",
+    database = "comptox"
+  )
+)
+```
+
 # More to come
 
 Future assets/functionalities:
 
 - Annotation of in-source fragments
-- Screening of transformation products using the *biotransformer* tool via patRoon
+- Screening of transformation products using the *biotransformer* via patRoon
 
 ***

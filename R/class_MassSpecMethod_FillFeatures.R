@@ -120,12 +120,12 @@ run.MassSpecMethod_FillFeatures_StreamFind <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
   if (
     !any(vapply(
       nts$features,
-      function(z) any(!(is.na(z$group) || z$group %in% "")),
+      function(z) any(!(is.na(z$group) | z$group %in% "")),
       FALSE
     ))
   ) {
@@ -159,7 +159,7 @@ run.MassSpecMethod_FillFeatures_StreamFind <- function(x, engine = NULL) {
   nts$features <- feature_list
   tryCatch(
     {
-      engine$ResultsList <- nts
+      engine$Results <- nts
       return(TRUE)
     },
     error = function(e) {

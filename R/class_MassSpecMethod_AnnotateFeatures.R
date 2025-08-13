@@ -91,7 +91,7 @@ run.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
   if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
     warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
@@ -114,7 +114,7 @@ run.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x, engine = NULL) {
 
       nts$features <- feature_list
       validate_object(nts)
-      engine$ResultsList <- nts
+      engine$Results <- nts
       message(paste0("\U2713 ", "Features annotated!"))
       TRUE
     },

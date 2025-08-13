@@ -111,13 +111,12 @@ engine$run(
 #plot_spectra(engine$Analyses$results$MassSpecResults_Spectra)
 plot_spectra_3d(engine$Analyses$results$MassSpecResults_Spectra)
 
-engine$ResultsList$MassSpecResults_Spectra$spectra[[1]]
+engine$Results$MassSpecResults_Spectra$spectra[[1]]
 
 clear_cache("all")
 
 # MassSpecResults_NonTargetAnalysis -----
-
-## Resources -------
+## Resources ----
 ms_files <- StreamFindData::get_ms_file_paths()
 ms_files <- ms_files[grepl("blank|influent|o3sw", ms_files)]
 ms_files_df <- data.frame(
@@ -145,8 +144,8 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
-
 engine$run(MassSpecMethod_FindFeatures_openms())
+
 engine$run(
   MassSpecMethod_CalculateFeaturesQuality_StreamFind(
     filtered = FALSE,
@@ -157,7 +156,9 @@ engine$run(
     baseCut = 0
   )
 )
+
 engine$run(MassSpecMethod_GroupFeatures_openms())
+
 engine$run(MassSpecMethod_AnnotateFeatures_StreamFind())
 
 
@@ -171,13 +172,13 @@ engine$run(MassSpecMethod_AnnotateFeatures_StreamFind())
 
 save(engine$Analyses, "ms_analyses.json")
 data <- read(engine$Analyses, "ms_analyses.json")
-show(engine$ResultsList$NonTargetAnalysisResults)
-class(engine$ResultsList$NonTargetAnalysisResults)
-engine$ResultsList$NonTargetAnalysisResults$features[[1]]
-get_features(engine$ResultsList$NonTargetAnalysisResults, mass = dbsus, ppm = 15, sec = 60)
+show(engine$Results$NonTargetAnalysisResults)
+class(engine$Results$NonTargetAnalysisResults)
+engine$Results$NonTargetAnalysisResults$features[[1]]
+get_features(engine$Results$NonTargetAnalysisResults, mass = dbsus, ppm = 15, sec = 60)
 engine$clear_cache()
 ?NonTargetAnalysisResults
-class(engine$ResultsList$NonTargetAnalysisResults)
+class(engine$Results$NonTargetAnalysisResults)
 show(engine$Metadata)
 show(engine$Analyses)
 show(engine$Workflow)

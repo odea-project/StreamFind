@@ -15,7 +15,7 @@
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
   if (
     sum(vapply(nts$features, function(z) nrow(z), 0)) == 0
@@ -163,7 +163,7 @@
   nts$features <- fl
   tryCatch(
     {
-      engine$ResultsList <- nts
+      engine$Results <- nts
       return(TRUE)
     },
     error = function(e) {

@@ -88,7 +88,7 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
   if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
     warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
@@ -141,7 +141,7 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
       any(!is.na(blks)) &
         any(vapply(
           nts$features,
-          function(z) any(!(is.na(z$group) || z$group %in% "")),
+          function(z) any(!(is.na(z$group) | z$group %in% "")),
           FALSE
         ))
     ) {
@@ -286,8 +286,7 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
     )
 
     nts$features <- features
-    engine$ResultsList <- nts
-
+    engine$Results <- nts
     message(
       "\U2713 ",
       length(unique(internal_standards$name)),

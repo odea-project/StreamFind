@@ -186,7 +186,7 @@ run.MassSpecMethod_LoadSpectra_chrompeaks <- function(
     return(FALSE)
   }
 
-  if (is.null(engine$ResultsList$MassSpecResults_Chromatograms)) {
+  if (is.null(engine$Results$MassSpecResults_Chromatograms)) {
     warning("No MassSpecResults_Chromatograms available! Not done.")
     return(FALSE)
   }

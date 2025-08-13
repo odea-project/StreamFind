@@ -124,7 +124,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
   if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
     warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
@@ -148,7 +148,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   .filter_excludeIsotopes <- function(value = NULL, engine) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -159,7 +159,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         return()
       }
 
-      features <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+      nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+      features <- nts$features
 
       features <- lapply(features, function(x) {
         if ("annotation" %in% colnames(x)) {
@@ -185,7 +186,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         x
       })
 
-      engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- features
+      nts$features <- features
+      engine$Results <- nts
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
@@ -194,7 +196,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   .filter_excludeAdducts <- function(value = NULL, engine) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -205,7 +207,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         return()
       }
 
-      features <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+      nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+      features <- nts$features
 
       features <- lapply(features, function(x) {
         if ("annotation" %in% colnames(x)) {
@@ -230,8 +233,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         }
         x
       })
-
-      engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- features
+      nts$features <- features
+      engine$Results <- nts
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
@@ -240,7 +243,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   .filter_minSnRatio <- function(value = 3, conservative = FALSE, engine) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -253,15 +256,15 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
 
       if (
         any(vapply(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
-          function(z) any(!(is.na(z$group) || z$group %in% "")),
+          engine$Results$MassSpecResults_NonTargetAnalysis$features,
+          function(z) any(!(is.na(z$group) | z$group %in% "")),
           FALSE
         )) &&
           conservative
       ) {
         rpl <- unique(get_replicates(engine$Analyses))
         groups <- get_groups(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis,
+          engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
           intensities = FALSE,
           average = TRUE,
@@ -271,7 +274,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         if (any(!is.na(groups$sn))) {
           groups_sel <- groups$sn < value
           groups <- groups$group[groups_sel]
-          feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+          nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+          feature_list <- nts$features
           feature_list <- lapply(
             feature_list,
             function(x, groups) {
@@ -286,12 +290,14 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             },
             groups = groups
           )
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+          nts$features <- feature_list
+          engine$Results <- nts
         } else {
           warning("There are no signal-to-noise ratio values in features!")
         }
       } else {
-        features <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+        nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+        features <- nts$features
         features <- lapply(features, function(x) {
           if ("quality" %in% colnames(x)) {
             qlt <- vapply(
@@ -316,7 +322,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           }
           x
         })
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- features
+        nts$features <- features
+        engine$Results <- nts
       }
     } else {
       warning("There are no features in the MassSpecEngine!")
@@ -330,7 +337,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   ) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -343,15 +350,15 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
 
       if (
         any(vapply(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
-          function(z) any(!(is.na(z$group) || z$group %in% "")),
+          engine$Results$MassSpecResults_NonTargetAnalysis$features,
+          function(z) any(!(is.na(z$group) | z$group %in% "")),
           FALSE
         )) &&
           conservative
       ) {
         rpl <- unique(get_replicates(engine$Analyses))
         groups <- get_groups(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis,
+          engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
           intensities = FALSE,
           average = TRUE,
@@ -360,7 +367,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         if (any(!is.na(groups$gauss_f))) {
           groups_sel <- groups$gauss_f < value
           groups <- groups$group[groups_sel]
-          feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+          nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+          feature_list <- nts$features
           feature_list <- lapply(
             feature_list,
             function(x, groups) {
@@ -375,12 +383,14 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             },
             groups = groups
           )
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+          nts$features <- feature_list
+          engine$Results <- nts
         } else {
           warning("There are no signal-to-noise ratio values in features!")
         }
       } else {
-        features <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+        nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+        features <- nts$features
         features <- lapply(features, function(x) {
           if ("quality" %in% colnames(x)) {
             qlt <- vapply(
@@ -405,7 +415,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           }
           x
         })
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- features
+        nts$features <- features
+        engine$Results <- nts
       }
     } else {
       warning("There are no features in the MassSpecEngine!")
@@ -420,7 +431,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   ) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -433,15 +444,15 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
 
       if (
         any(vapply(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
-          function(z) any(!(is.na(z$group) || z$group %in% "")),
+          engine$Results$MassSpecResults_NonTargetAnalysis$features,
+          function(z) any(!(is.na(z$group) | z$group %in% "")),
           FALSE
         )) &&
           conservative
       ) {
         rpl <- unique(get_replicates(engine$Analyses))
         groups <- get_groups(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis,
+          engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
@@ -455,7 +466,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           function(x) max(x) <= value
         )
         groups <- groups$group[groups_sel]
-        feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+        nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+        feature_list <- nts$features
         feature_list <- lapply(
           feature_list,
           function(x, groups) {
@@ -470,9 +482,11 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           },
           groups = groups
         )
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+        nts$features <- feature_list
+        engine$Results <- nts
       } else {
-        feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+        nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+        feature_list <- nts$features
         feature_list <- lapply(
           feature_list,
           function(x, correctIntensity) {
@@ -494,7 +508,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           },
           correctIntensity = correctIntensity
         )
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+        nts$features <- feature_list
+        engine$Results <- nts
       }
     } else {
       warning("There are no features in the MassSpecEngine!")
@@ -509,7 +524,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   ) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -522,8 +537,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
 
       if (
         any(vapply(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
-          function(z) any(!(is.na(z$group) || z$group %in% "")),
+          engine$Results$MassSpecResults_NonTargetAnalysis$features,
+          function(z) any(!(is.na(z$group) | z$group %in% "")),
           FALSE
         ))
       ) {
@@ -532,7 +547,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         names(rpl) <- unique(get_replicates(engine$Analyses))
 
         groups <- get_groups(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis,
+          engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
@@ -550,7 +565,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             function(x) min(x) > value
           )
           groups <- groups$group[groups_sel]
-          feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+          nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+          feature_list <- nts$features
           feature_list <- lapply(
             feature_list,
             function(x, groups) {
@@ -565,7 +581,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             },
             groups = groups
           )
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+          nts$features <- feature_list
+          engine$Results <- nts
         } else {
           groups_sel <- lapply(groups[, rpl, with = FALSE], function(x) {
             x > value
@@ -575,9 +592,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             x
           })
           names(groups_sel) <- names(rpl)
-
-          feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
-
+          nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+          feature_list <- nts$features
           feature_list <- Map(
             function(x, y) {
               if (nrow(x) > 0) {
@@ -606,7 +622,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             },
             groups_sel = groups_sel
           )
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+          nts$features <- feature_list
+          engine$Results <- nts
         }
       } else {
         warning(
@@ -621,7 +638,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   .filter_minAbundanceInReplicate <- function(value = 0, conservative, engine) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -634,8 +651,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
 
       if (
         any(vapply(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
-          function(z) any(!(is.na(z$group) || z$group %in% "")),
+          engine$Results$MassSpecResults_NonTargetAnalysis$features,
+          function(z) any(!(is.na(z$group) | z$group %in% "")),
           FALSE
         ))
       ) {
@@ -644,7 +661,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         names(rpl) <- unique(get_replicates(engine$Analyses))
 
         groups <- get_groups(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis,
+          engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
@@ -661,7 +678,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             function(x) max(x) < value
           )
           groups <- groups$group[groups_sel]
-          feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+          nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+          feature_list <- nts$features
           feature_list <- lapply(
             feature_list,
             function(x, groups) {
@@ -676,7 +694,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             },
             groups = groups
           )
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+          nts$features <- feature_list
+          engine$Results <- nts
         } else {
           groups_sel <- lapply(groups[, rpl, with = FALSE], function(x) {
             x < value
@@ -687,7 +706,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           })
           names(groups_sel) <- names(rpl)
 
-          feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+          nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+          feature_list <- nts$features
 
           feature_list <- Map(
             function(x, y) {
@@ -717,7 +737,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             },
             groups_sel = groups_sel
           )
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+          nts$features <- feature_list
+          engine$Results <- nts
         }
       } else {
         warning(
@@ -737,7 +758,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   ) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -750,8 +771,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
 
       if (
         any(vapply(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
-          function(z) any(!(is.na(z$group) || z$group %in% "")),
+          engine$Results$MassSpecResults_NonTargetAnalysis$features,
+          function(z) any(!(is.na(z$group) | z$group %in% "")),
           FALSE
         ))
       ) {
@@ -766,7 +787,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         rpl <- unique(info$replicate)
 
         groups <- get_groups(
-          engine$ResultsList$MassSpecResults_NonTargetAnalysis,
+          engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
           intensities = TRUE,
           average = TRUE,
@@ -804,7 +825,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         )
         names(groups_list) <- colnames(groups_rpl)
         groups_list <- data.table::as.data.table(groups_list)
-        feature_list <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+        nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+        feature_list <- nts$features
         if (conservative) {
           groups_sel <- apply(groups_list, MARGIN = 1, function(x) all(x))
           groups <- groups$group[groups_sel]
@@ -860,7 +882,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
 
           names(feature_list) <- analyses
         }
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- feature_list
+        nts$features <- feature_list
+        engine$Results <- nts
       } else {
         warning(
           "There are no feature groups but needed for the blankThreshold filter!"
@@ -874,7 +897,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   .filter_onlyWithMS2 <- function(value = NULL, engine) {
     if (
       sum(vapply(
-        engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+        engine$Results$MassSpecResults_NonTargetAnalysis$features,
         function(z) nrow(z),
         0
       )) > 0 &&
@@ -884,7 +907,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
       if (!value) {
         return()
       }
-      features <- engine$ResultsList$MassSpecResults_NonTargetAnalysis$features
+      nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+      features <- nts$features
       features <- lapply(features, function(x) {
         if ("ms2" %in% colnames(x)) {
           sel <- vapply(
@@ -910,7 +934,8 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         }
         x
       })
-      engine$ResultsList$MassSpecResults_NonTargetAnalysis$features <- features
+      nts$features <- features
+      engine$Results <- nts
     } else {
       warning("There are no features in the MassSpecEngine!")
     }
@@ -971,7 +996,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   }
 
   n_features_after <- sum(vapply(
-    engine$ResultsList$MassSpecResults_NonTargetAnalysis$features,
+    engine$Results$MassSpecResults_NonTargetAnalysis$features,
     function(x) sum(!x$filtered),
     0
   ))
@@ -1194,12 +1219,12 @@ run.MassSpecMethod_FilterFeatures_patRoon <- function(
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
   if (
     !any(vapply(
       nts$features,
-      function(z) any(!(is.na(z$group) || z$group %in% "")),
+      function(z) any(!(is.na(z$group) | z$group %in% "")),
       FALSE
     ))
   ) {
@@ -1273,7 +1298,7 @@ run.MassSpecMethod_FilterFeatures_patRoon <- function(
   nts$features <- feature_list
   tryCatch(
     {
-      engine$ResultsList <- nts
+      engine$Results <- nts
       return(TRUE)
     },
     error = function(e) {

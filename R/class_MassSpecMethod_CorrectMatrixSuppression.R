@@ -145,6 +145,11 @@ MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
     link = "https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357",
     doi = "10.1021/acs.analchem.1c00357"
   )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid MassSpecMethod_CorrectMatrixSuppression_TiChri object!")
+  }
 }
 
 #' @describeIn MassSpecMethod_CorrectMatrixSuppression_TiChri Validate the MassSpecMethod_CorrectMatrixSuppression_TiChri object, returning NULL if valid.
@@ -187,7 +192,7 @@ run.MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
     return(FALSE)
   }
 
-  nts <- engine$ResultsList$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
   if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
     warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
@@ -404,7 +409,7 @@ run.MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
   tryCatch(
     {
       nts$features <- feature_list
-      engine$ResultsList <- nts
+      engine$Results <- nts
       return(TRUE)
     },
     error = function(e) {

@@ -1,4 +1,5 @@
-#' @title Processing Step S3 Class
+# MARK: ProcessingStep
+#' @title Processing Step Class
 #'
 #' @description The `ProcessingStep` class is used to define a processing step within a [StreamFind::Workflow]. It contains information about the data type, method, algorithm, parameters, and other relevant metadata for the processing step. The `ProcessingStep` is the parent class of all processing methods in StreamFind.
 #' @param type A character string representing the data type (e.g., "MassSpec", "Raman").
@@ -82,6 +83,7 @@ ProcessingStep <- function(
   }
 }
 
+# MARK: ProcessingStep methods
 #' @describeIn ProcessingStep Validate the `ProcessingStep` object, returns `NULL` if valid.
 #' @param x A `ProcessingStep` object.
 #' @export
@@ -105,8 +107,8 @@ validate_object.ProcessingStep = function(x) {
   checkmate::assert_character(x$link, len = 1)
   checkmate::assert_character(x$doi, len = 1)
   if (is.list(x$parameters)) {
-    lapply(names(x$parameters), function(x) {
-      param <- x$parameters[[x]]
+    lapply(names(x$parameters), function(z) {
+      param <- x$parameters[[z]]
       invalid_param <- is.data.frame(param) ||
         is.character(param) ||
         is.numeric(param)
@@ -119,7 +121,7 @@ validate_object.ProcessingStep = function(x) {
         stop(
           paste(
             "Invalid type for parameter ",
-            x,
+            z,
             " in ",
             self$method,
             "_",
@@ -135,6 +137,7 @@ validate_object.ProcessingStep = function(x) {
   NULL
 }
 
+# MARK: as
 #' @describeIn ProcessingStep Convert a list or JSON object to a `ProcessingStep` object.
 #' @param value A list or JSON object containing the parameters for the processing step.
 #' @export
@@ -170,6 +173,7 @@ as.ProcessingStep <- function(value) {
   return(do.call(settings_constructor, value$parameters))
 }
 
+# MARK: save
 #' @describeIn ProcessingStep Save a `ProcessingStep` object to a file in JSON or RDS format.
 #' @param x A `ProcessingStep` object.
 #' @param file A character string specifying the file path to save the object.
@@ -189,6 +193,7 @@ save.ProcessingStep <- function(x, file = "settings.json") {
   invisible(NULL)
 }
 
+# MARK: read
 #' @describeIn ProcessingStep Read a `ProcessingStep` object from a file in JSON or RDS format,
 #' returning the updated object.
 #' @param x A `ProcessingStep` object.
@@ -210,6 +215,7 @@ read.ProcessingStep <- function(x, file) {
   NULL
 }
 
+# MARK: show
 #' @describeIn ProcessingStep Show the details of a `ProcessingStep` object.
 #' @param x A `ProcessingStep` object.
 #' @param ... Additional arguments (not used).

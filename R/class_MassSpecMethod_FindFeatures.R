@@ -205,7 +205,7 @@
     "0"
   )
 
-  analyses_info <- data.frame(
+  analyses_info <- data.table::data.table(
     "analysis" = analyses_names,
     "replicate" = vapply(engine$Analyses$analyses, function(z) z$replicate, NA_character_),
     "blank" = vapply(engine$Analyses$analyses, function(z) z$blank, NA_character_),

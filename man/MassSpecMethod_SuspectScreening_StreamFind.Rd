@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_StreamFind}
 \alias{MassSpecMethod_SuspectScreening_StreamFind}
-\title{MassSpecMethod_SuspectScreening_StreamFind S7 class}
+\alias{validate_object.MassSpecMethod_SuspectScreening_StreamFind}
+\title{MassSpecMethod_SuspectScreening_StreamFind Class}
 \usage{
 MassSpecMethod_SuspectScreening_StreamFind(
   database = data.table::data.table(name = character(), formula = character(), mass =
@@ -15,10 +16,11 @@ MassSpecMethod_SuspectScreening_StreamFind(
   minFragments = 3,
   filtered = FALSE
 )
+
+\method{validate_object}{MassSpecMethod_SuspectScreening_StreamFind}(x)
 }
 \arguments{
-\item{database}{A data.frame with at least the columns name and mass, indicating the name and
-neutral monoisotopic mass of the suspect targets.}
+\item{database}{A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets.}
 
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}
 
@@ -26,19 +28,24 @@ neutral monoisotopic mass of the suspect targets.}
 
 \item{ppmMS2}{Numeric (length 1) with the mass deviation for MS2, in ppm.}
 
-\item{mzrMS2}{Numeric length 1 with the absolute m/z range window for matching MS2 fragments with
-experimental MS2 traces.}
+\item{mzrMS2}{Numeric length 1 with the absolute m/z range window for matching MS2 fragments with experimental MS2 traces.}
 
-\item{minCusiness}{Numeric length 1 with the minimum cusiness value of the experimental and
-database fragments for a feature to be considered a suspect.}
+\item{minCusiness}{Numeric length 1 with the minimum cusiness value of the experimental and database fragments for a feature to be considered a suspect.}
 
 \item{minFragments}{Integer (length 1) with the minimum number of fragments.}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{x}{A \code{MassSpecMethod_SuspectScreening_StreamFind} object.}
 }
 \value{
 A \code{MassSpecMethod_SuspectScreening_StreamFind} object.
 }
 \description{
-Settings for performing suspect screening using a data.frame with target compounds.
+Processing method for suspect screening using a data.frame with target compounds.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_SuspectScreening_StreamFind)}: Validate the MassSpecMethod_SuspectScreening_StreamFind object, returning \code{NULL} if valid.
+
+}}

@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_GenerateCompounds.R
 \name{MassSpecMethod_GenerateCompounds_metfrag}
 \alias{MassSpecMethod_GenerateCompounds_metfrag}
-\title{MassSpecMethod_GenerateCompounds_metfrag S7 class}
+\alias{validate_object.MassSpecMethod_GenerateCompounds_metfrag}
+\title{MassSpecMethod_GenerateCompounds_metfrag Class}
 \usage{
 MassSpecMethod_GenerateCompounds_metfrag(
   method = "CL",
@@ -23,6 +24,8 @@ MassSpecMethod_GenerateCompounds_metfrag(
   postProcessingFilters = c("InChIKeyFilter"),
   maxCandidatesToStop = 100
 )
+
+\method{validate_object}{MassSpecMethod_GenerateCompounds_metfrag}(x)
 }
 \arguments{
 \item{method}{Character (length 1) with the method to be used for MetFrag execution: "CL" for MetFragCL and "R" for MetFragR.}
@@ -44,11 +47,9 @@ skipping the MetFrag query for a feature group.}
 
 \item{adduct}{Character (length 1) with the adduct to be used for the MetFrag annotation.}
 
-\item{database}{Character (length 1) with the database to be used for the MetFrag annotation. Valid values are:
-"pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv" and "csv".}
+\item{database}{Character (length 1) with the database to be used for the MetFrag annotation. Valid values are: "pubchem", "chemspider", "for-ident", "comptox", "pubchemlite", "kegg", "sdf", "psv" and "csv".}
 
-\item{extendedPubChem}{Extended PubChem database is used for the MetFrag annotation when \code{database} is "pubchem".
-Valid values are: FALSE (never use it), TRUE (always use it) or "auto" (default, use if specified scorings demand it).}
+\item{extendedPubChem}{Extended PubChem database is used for the MetFrag annotation when \code{database} is "pubchem". Valid values are: FALSE (never use it), TRUE (always use it) or "auto" (default, use if specified scorings demand it).}
 
 \item{chemSpiderToken}{Character (length 1) with the ChemSpider token to be used for the MetFrag annotation when
 \code{database} is "chemspider".}
@@ -61,23 +62,24 @@ Valid values are: FALSE (never use it), TRUE (always use it) or "auto" (default,
 
 \item{postProcessingFilters}{Character vector with the post-processing filters to be used for the MetFrag annotation.}
 
-\item{maxCandidatesToStop}{Numeric (length 1) with the maximum number of candidates to be returned before stopping the
-MetFrag query for a feature group.}
+\item{maxCandidatesToStop}{Numeric (length 1) with the maximum number of candidates to be returned before stopping the MetFrag query for a feature group.}
+
+\item{x}{A \code{MassSpecMethod_GenerateCompounds_metfrag} object.}
 }
 \value{
 A \code{MassSpecMethod_GenerateCompounds_metfrag} object.
 }
 \description{
-Settings for generating compounds using
-\href{https://ipb-halle.github.io/MetFrag/}{MetFrag}. The algorithm is used via the function
-\link[patRoon]{generateCompounds} from the package \pkg{patRoon}. Therefore, it is highly
-recommended to check the original documentation of the function in \pkg{patRoon} for more
-details.
+Settings for generating compounds using \href{https://ipb-halle.github.io/MetFrag/}{MetFrag}. The algorithm is used via the function \link[patRoon]{generateCompounds} from the package \pkg{patRoon}. Therefore, it is highly recommended to check the original documentation of the function in \pkg{patRoon} for more details.
 }
 \details{
-Detailed documentation can be found in \link[patRoon]{generateCompoundsMetFrag} and in
-the \href{https://ipb-halle.github.io/MetFrag/projects/metfragr/}{MetFrag} documentation.
+Detailed documentation can be found in \link[patRoon]{generateCompoundsMetFrag} and in the \href{https://ipb-halle.github.io/MetFrag/projects/metfragr/}{MetFrag} documentation.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_GenerateCompounds_metfrag)}: Validates the \code{MassSpecMethod_GenerateCompounds_metfrag} object, returns \code{NULL} if valid.
+
+}}
 \references{
 \insertRef{metfrag01}{StreamFind}
 

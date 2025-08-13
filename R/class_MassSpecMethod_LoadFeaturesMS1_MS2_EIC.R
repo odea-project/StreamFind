@@ -78,26 +78,24 @@ run.MassSpecMethod_LoadFeaturesMS1_StreamFind <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  if (!engine$has_results_nts()) {
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
     warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
-  if (!nts$has_features) {
-    warning(
-      "MassSpecResults_NonTargetAnalysis object does not have features! Not done."
-    )
+  if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
+    warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
     return(FALSE)
   }
 
   parameters <- x$parameters
 
   feature_list <- rcpp_nts_load_features_ms1(
-    nts$analyses_info,
-    nts$spectra_headers,
-    nts$feature_list,
+    nts$info,
+    nts$headers,
+    nts$features,
     filtered = parameters$filtered,
     rtWindow = parameters$rtWindow,
     mzWindow = parameters$mzWindow,
@@ -108,7 +106,8 @@ run.MassSpecMethod_LoadFeaturesMS1_StreamFind <- function(x, engine = NULL) {
 
   tryCatch(
     {
-      engine$MassSpecResults_NonTargetAnalysis$feature_list <- feature_list
+      nts$features <- feature_list
+      engine$Results <- nts
       message("\U2713 MS1 added to features!")
       return(TRUE)
     },
@@ -195,26 +194,24 @@ run.MassSpecMethod_LoadFeaturesMS2_StreamFind <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  if (!engine$has_results_nts()) {
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
     warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
-  if (!nts$has_features) {
-    warning(
-      "MassSpecResults_NonTargetAnalysis object does not have features! Not done."
-    )
+  if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
+    warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
     return(FALSE)
   }
 
   parameters <- x$parameters
 
   feature_list <- rcpp_nts_load_features_ms2(
-    nts$analyses_info,
-    nts$spectra_headers,
-    nts$feature_list,
+    nts$info,
+    nts$headers,
+    nts$features,
     filtered = parameters$filtered,
     minTracesIntensity = parameters$minIntensity,
     isolationWindow = parameters$isolationWindow,
@@ -224,7 +221,8 @@ run.MassSpecMethod_LoadFeaturesMS2_StreamFind <- function(x, engine = NULL) {
 
   tryCatch(
     {
-      engine$MassSpecResults_NonTargetAnalysis$feature_list <- feature_list
+      nts$features <- feature_list
+      engine$Results <- nts
       message("\U2713 MS2 added to features!")
       return(TRUE)
     },
@@ -306,25 +304,24 @@ run.MassSpecMethod_LoadFeaturesEIC_StreamFind <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  if (!engine$has_results_nts()) {
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
     warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$MassSpecResults_NonTargetAnalysis
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
-  if (!nts$has_features) {
-    warning(
-      "MassSpecResults_NonTargetAnalysis object does not have features! Not done."
-    )
+  if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
+    warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
     return(FALSE)
   }
+
   parameters <- x$parameters
 
   feature_list <- rcpp_nts_load_features_eic(
-    nts$analyses_info,
-    nts$spectra_headers,
-    nts$feature_list,
+    nts$info,
+    nts$headers,
+    nts$features,
     parameters$filtered,
     parameters$rtExpand,
     parameters$mzExpand,
@@ -333,7 +330,8 @@ run.MassSpecMethod_LoadFeaturesEIC_StreamFind <- function(x, engine = NULL) {
 
   tryCatch(
     {
-      engine$MassSpecResults_NonTargetAnalysis$feature_list <- feature_list
+      nts$features <- feature_list
+      engine$Results <- nts
       message("\U2713 EIC added to features!")
       return(TRUE)
     },
