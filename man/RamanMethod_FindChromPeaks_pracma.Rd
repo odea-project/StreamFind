@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_RamanMethod_FindChromPeaks.R
 \name{RamanMethod_FindChromPeaks_pracma}
 \alias{RamanMethod_FindChromPeaks_pracma}
-\title{\strong{RamanMethod_FindChromPeaks_pracma}}
+\alias{validate_object.RamanMethod_FindChromPeaks_pracma}
+\title{RamanMethod_FindChromPeaks_pracma Class}
 \usage{
 RamanMethod_FindChromPeaks_pracma(
   merge = TRUE,
@@ -13,6 +14,8 @@ RamanMethod_FindChromPeaks_pracma(
   maxPeakWidth = 120,
   minSN = 10
 )
+
+\method{validate_object}{RamanMethod_FindChromPeaks_pracma}(x)
 }
 \arguments{
 \item{merge}{Logical (length 1) indicating if the nearby peaks should be merged.}
@@ -28,6 +31,8 @@ RamanMethod_FindChromPeaks_pracma(
 \item{maxPeakWidth}{Numeric (length 1) with the maximum peak width.}
 
 \item{minSN}{Numeric (length 1) with the minimum signal-to-noise ratio.}
+
+\item{x}{A RamanMethod_FindChromPeaks_pracma object.}
 }
 \value{
 A RamanMethod_FindChromPeaks_pracma object.
@@ -36,3 +41,8 @@ A RamanMethod_FindChromPeaks_pracma object.
 Integrates chromatograms using the function \code{findpeaks} from the package
 \pkg{pracma} with natively added peak exclusion and evaluation steps.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_FindChromPeaks_pracma)}: Validate the RamanMethod_FindChromPeaks_pracma object, returning NULL if valid.
+
+}}

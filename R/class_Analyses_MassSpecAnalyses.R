@@ -56,7 +56,7 @@ validate_object.MassSpecAnalyses = function(x) {
   checkmate::assert_class(x, "MassSpecAnalyses")
   checkmate::assert_true(identical(
     x$formats,
-    c("mzML", "mzXML", "d", "raw")
+    DataTypes()$file_formats$MassSpec
   ))
   if (length(x$analyses) > 0) {
     lapply(x$analyses, function(a) {
@@ -80,21 +80,21 @@ validate_object.MassSpecAnalyses = function(x) {
 
 # MARK: Methods
 
-# MARK: get_names
+# MARK: get_analysis_names
 #' @describeIn MassSpecAnalyses Get the names of the analyses in the `MassSpecAnalyses` object.
 #' @template arg-x-MassSpecAnalyses
 #' @export
 #'
-get_names.MassSpecAnalyses <- function(x) {
+get_analysis_names.MassSpecAnalyses <- function(x) {
   vapply(x$analyses, function(x) x$name, NA_character_)
 }
 
-# MARK: get_replicates
+# MARK: get_replicate_names
 #' @describeIn MassSpecAnalyses Get the replicates of the analyses in the `MassSpecAnalyses` object.
 #' @template arg-x-MassSpecAnalyses
 #' @export
 #'
-get_replicates.MassSpecAnalyses <- function(x) {
+get_replicate_names.MassSpecAnalyses <- function(x) {
   vapply(x$analyses, function(x) x$replicate, NA_character_)
 }
 
@@ -114,12 +114,12 @@ set_replicates.MassSpecAnalyses <- function(x, value) {
   x
 }
 
-# MARK: get_blanks
+# MARK: get_blank_names
 #' @describeIn MassSpecAnalyses Get the blanks of the analyses in the `MassSpecAnalyses` object.
 #' @template arg-x-MassSpecAnalyses
 #' @export
 #'
-get_blanks.MassSpecAnalyses <- function(x) {
+get_blank_names.MassSpecAnalyses <- function(x) {
   vapply(x$analyses, function(x) x$blank, NA_character_)
 }
 
@@ -213,7 +213,7 @@ add.MassSpecAnalyses <- function(x, value) {
     warning("Analysis/s not valid!")
     return(x)
   }
-  if (any(vapply(value, function(a) a$name %in% get_names(x), FALSE))) {
+  if (any(vapply(value, function(a) a$name %in% get_analysis_names(x), FALSE))) {
     warning("Analysis names already exist!")
     return(x)
   }
@@ -238,19 +238,19 @@ add.MassSpecAnalyses <- function(x, value) {
 #'
 remove.MassSpecAnalyses <- function(x, value) {
   if (is.character(value)) {
-    x$analyses <- x$analyses[!get_names(x) %in% value]
-    x$analyses <- x$analyses[order(names(x@analyses))]
+    x$analyses <- x$analyses[!get_analysis_names(x) %in% value]
+    x$analyses <- x$analyses[order(names(x$analyses))]
     if (!is.null(x$results[["MassSpecResults_NonTargetAnalysis"]])) {
       x$results$MassSpecResults_NonTargetAnalysis <- x$results$MassSpecResults_NonTargetAnalysis[
-        !get_names(x) %in% value
+        !get_analysis_names(x) %in% value
       ]
     }
-    if (!is.null(x$results[["Spectra"]])) {
-      x$results$Spectra <- x$results$Spectra[!get_names(x) %in% value]
+    if (!is.null(x$results[["MassSpecSpectra"]])) {
+      x$results$MassSpecSpectra <- x$results$MassSpecSpectra[!get_analysis_names(x) %in% value]
     }
     if (!is.null(x$results[["Chromatograms"]])) {
       x$results$Chromatograms <- x$results$Chromatograms[
-        !get_names(x) %in% value
+        !get_analysis_names(x) %in% value
       ]
     }
   } else if (is.numeric(value)) {
@@ -261,8 +261,8 @@ remove.MassSpecAnalyses <- function(x, value) {
         -value
       ]
     }
-    if (!is.null(x$results[["Spectra"]])) {
-      x$results$Spectra <- x$results$Spectra[-value]
+    if (!is.null(x$results[["MassSpecSpectra"]])) {
+      x$results$MassSpecSpectra <- x$results$MassSpecSpectra[-value]
     }
     if (!is.null(x$results[["Chromatograms"]])) {
       x$results$Chromatograms <- x$results$Chromatograms[-value]
@@ -283,8 +283,8 @@ remove.MassSpecAnalyses <- function(x, value) {
   if (!is.null(x$results[["MassSpecResults_NonTargetAnalysis"]])) {
     x$results$MassSpecResults_NonTargetAnalysis <- x$results$MassSpecResults_NonTargetAnalysis[i]
   }
-  if (!is.null(x$results[["Spectra"]])) {
-    x$results$Spectra <- x$results$Spectra[i]
+  if (!is.null(x$results[["MassSpecSpectra"]])) {
+    x$results$MassSpecSpectra <- x$results$MassSpecSpectra[i]
   }
   if (!is.null(x$results[["Chromatograms"]])) {
     x$results$Chromatograms <- x$results$Chromatograms[i]
@@ -316,8 +316,8 @@ remove.MassSpecAnalyses <- function(x, value) {
   if (!is.null(x$results[["MassSpecResults_NonTargetAnalysis"]])) {
     x$results$MassSpecResults_NonTargetAnalysis <- x$results$MassSpecResults_NonTargetAnalysis[[i]]
   }
-  if (!is.null(x$results[["Spectra"]])) {
-    x$results$Spectra <- x$results$Spectra[[i]]
+  if (!is.null(x$results[["MassSpecSpectra"]])) {
+    x$results$MassSpecSpectra <- x$results$MassSpecSpectra[[i]]
   }
   if (!is.null(x$results[["Chromatograms"]])) {
     x$results$Chromatograms <- x$results$Chromatograms[[i]]
@@ -1079,7 +1079,7 @@ get_spectra_ms1.MassSpecAnalyses <- function(
 
   ms1_df <- ms1_df[order(ms1_df$analysis), ]
 
-  ms1_df$replicate <- get_replicates(x)[ms1_df$analysis]
+  ms1_df$replicate <- get_replicate_names(x)[ms1_df$analysis]
 
   data.table::setcolorder(ms1_df, c("analysis", "replicate"))
 
@@ -1193,7 +1193,7 @@ get_spectra_ms2.MassSpecAnalyses <- function(
 
   ms2_df <- ms2_df[order(ms2_df$analysis), ]
 
-  ms2_df$replicate <- get_replicates(x)[ms2_df$analysis]
+  ms2_df$replicate <- get_replicate_names(x)[ms2_df$analysis]
 
   data.table::setcolorder(ms2_df, c("analysis", "replicate"))
 
@@ -2429,17 +2429,17 @@ load_spectra.MassSpecAnalyses <- function(
     spec$replicate <- NULL
     spec <- split(spec, split_vector)
 
-    for (a in get_names(x)) {
+    for (a in get_analysis_names(x)) {
       if (!a %in% names(spec)) {
         spec[[a]] <- data.table::data.table()
       }
     }
 
-    spec <- spec[get_names(x)]
+    spec <- spec[get_analysis_names(x)]
 
     spec <- MassSpecResults_Spectra(
       spec,
-      replicates = get_replicates(x)[names(spec)],
+      replicates = get_replicate_names(x)[names(spec)],
       is_averaged = FALSE
     )
     if (!is.null(cache$hash)) {
@@ -2491,7 +2491,7 @@ load_chromatograms.MassSpecAnalyses <- function(
     chroms <- split(chroms, split_vector)
     chroms <- StreamFind::Chromatograms(
       chroms,
-      replicates = get_replicates(x)[names(chroms)],
+      replicates = get_replicate_names(x)[names(chroms)],
       is_averaged = FALSE
     )
     x$results[["Chromatograms"]] <- chroms

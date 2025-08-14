@@ -4,7 +4,7 @@
 \alias{MassSpecEngine}
 \title{Mass Spectrometry Engine}
 \description{
-The \code{MassSpecEngine} R6 class is a framework for parsing, processing and inspecting mass spectrometry (MS) data. The engine has \emph{MassSpec} as data type. The \emph{Analyses} active field has class \link{MassSpecAnalyses}, where MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection) can be loaded from \emph{mzML} and \emph{mzXML}. See methods \link{MassSpecAnalyses} for more details. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF /WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS. The \emph{results} active field is a list with that can hold the classes: \link{MassSpecResults_NonTargetAnalysis}, \link{MassSpecSpectra} and \link{Chromatograms}. Note that the \emph{MassSpecEngine} is a subclass of \link{Engine} and inherits all methods from the parent class.
+The \code{MassSpecEngine} R6 class is a framework for parsing, processing and inspecting mass spectrometry (MS) data. The engine has \emph{MassSpec} as data type. The \emph{Analyses} active field has class \link{MassSpecAnalyses}, where MS data (i.e., spectra and chromatograms, including chromatograms produced by UV detection) can be loaded from \emph{mzML} and \emph{mzXML}. See methods \link{MassSpecAnalyses} for more details. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF /WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS. The \emph{results} active field is a list that can hold the classes: \link{MassSpecResults_NonTargetAnalysis}, \link{MassSpecSpectra} and \link{Chromatograms}. Note that the \emph{MassSpecEngine} is a subclass of \link{Engine} and inherits all methods from the parent class.
 }
 \note{
 The \code{MassSpecEngine} is using several \href{https://github.com/rickhelmus/patRoon}{patRoon} assets for assembly of Non-Target Analysis (NTA) data processing workflows.
@@ -90,21 +90,11 @@ with a full path to a file.}
 \item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
 with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
-\item{\code{analyses}}{A \code{MassSpecAnalyses} S7 class object or a \verb{character vector} with full file
-paths to mzML files or a \code{data.frame} with \code{colnames}: "file", "replicate" and "blank". The
-"replicate" column is used to group the analyses and the "blank" column is used to identify
-the blank samples. The "file" column is the full path to the mzML files. If \code{msconvert} from
-\href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI
-(i.e., must be added to the environmental variables), the engine can also load vendor formats
-(i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF
-/ WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only
-possible under Windows OS.}
+\item{\code{analyses}}{A \link{MassSpecAnalyses} class object or a \verb{character vector} with full file paths to mzML files or a \code{data.frame} with \code{colnames}: "file", "replicate" and "blank". The "replicate" column is used to group the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full path to the mzML files. If \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF / WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.}
 
-\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from
-vendor formats to mzML.}
+\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
 
-\item{\code{levels}}{Numeric vector with the MS levels to consider when centroiding data. Default
-is \code{c(1, 2)}.}
+\item{\code{levels}}{Numeric vector with the MS levels to consider when centroiding data. Default is \code{c(1, 2)}.}
 }
 \if{html}{\out{</div>}}
 }

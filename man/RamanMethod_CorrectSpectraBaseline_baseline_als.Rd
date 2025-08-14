@@ -2,13 +2,16 @@
 % Please edit documentation in R/class_RamanMethod_CorrectSpectraBaseline.R
 \name{RamanMethod_CorrectSpectraBaseline_baseline_als}
 \alias{RamanMethod_CorrectSpectraBaseline_baseline_als}
-\title{\strong{RamanMethod_CorrectSpectraBaseline_baseline_als}}
+\alias{validate_object.RamanMethod_CorrectSpectraBaseline_baseline_als}
+\title{RamanMethod_CorrectSpectraBaseline_baseline_als Class}
 \usage{
 RamanMethod_CorrectSpectraBaseline_baseline_als(
   lambda = 5,
   p = 0.05,
   maxit = 10
 )
+
+\method{validate_object}{RamanMethod_CorrectSpectraBaseline_baseline_als}(x)
 }
 \arguments{
 \item{lambda}{Numeric (length 1) with the 2nd derivative constraint.}
@@ -16,6 +19,8 @@ RamanMethod_CorrectSpectraBaseline_baseline_als(
 \item{p}{Numeric (length 1) with the weighting of positive residuals.}
 
 \item{maxit}{Integer (length 1) with the maximum number of iterations.}
+
+\item{x}{RamanMethod_CorrectSpectraBaseline_baseline_als object.}
 }
 \value{
 A RamanMethod_CorrectSpectraBaseline_baseline_als object.
@@ -24,3 +29,8 @@ A RamanMethod_CorrectSpectraBaseline_baseline_als object.
 Performs baseline correction to spectra using the Asymmetric Least Squares (ALS) algorithm from the
 \pkg{baseline} package.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_CorrectSpectraBaseline_baseline_als)}: Validate the RamanMethod_CorrectSpectraBaseline_baseline_als object, returning NULL if valid.
+
+}}

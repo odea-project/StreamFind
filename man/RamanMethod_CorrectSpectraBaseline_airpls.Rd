@@ -2,13 +2,16 @@
 % Please edit documentation in R/class_RamanMethod_CorrectSpectraBaseline.R
 \name{RamanMethod_CorrectSpectraBaseline_airpls}
 \alias{RamanMethod_CorrectSpectraBaseline_airpls}
-\title{\strong{RamanMethod_CorrectSpectraBaseline_airpls}}
+\alias{validate_object.RamanMethod_CorrectSpectraBaseline_airpls}
+\title{RamanMethod_CorrectSpectraBaseline_airpls Class}
 \usage{
 RamanMethod_CorrectSpectraBaseline_airpls(
   lambda = 10,
   differences = 1,
   itermax = 20
 )
+
+\method{validate_object}{RamanMethod_CorrectSpectraBaseline_airpls}(x)
 }
 \arguments{
 \item{lambda}{Numeric (length 1) with the smoothing intensity. the higher the \code{lambda} the higher the smoothing.}
@@ -16,6 +19,8 @@ RamanMethod_CorrectSpectraBaseline_airpls(
 \item{differences}{Integer (length 1) indicating the order of the difference of penalties}
 
 \item{itermax}{Integer (length 1) with the maximum number of iterations.}
+
+\item{x}{A RamanMethod_CorrectSpectraBaseline_airpls object.}
 }
 \value{
 A RamanMethod_CorrectSpectraBaseline_airpls object.
@@ -24,6 +29,11 @@ A RamanMethod_CorrectSpectraBaseline_airpls object.
 Performs baseline correction using adaptive iteratively reweighted Penalized Least Squares (airPLS)
 based on the algorithm from Zhi-Min Zhang.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_CorrectSpectraBaseline_airpls)}: Validate the RamanMethod_CorrectSpectraBaseline_airpls object, returning NULL if valid.
+
+}}
 \references{
 \insertRef{airpls01}{StreamFind}
 }

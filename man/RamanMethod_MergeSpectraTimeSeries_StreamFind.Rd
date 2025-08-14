@@ -2,12 +2,17 @@
 % Please edit documentation in R/class_RamanMethod_MergeSpectraTimeSeries.R
 \name{RamanMethod_MergeSpectraTimeSeries_StreamFind}
 \alias{RamanMethod_MergeSpectraTimeSeries_StreamFind}
-\title{\strong{RamanMethod_MergeSpectraTimeSeries_StreamFind}}
+\alias{validate_object.RamanMethod_MergeSpectraTimeSeries_StreamFind}
+\title{RamanMethod_MergeSpectraTimeSeries_StreamFind}
 \usage{
 RamanMethod_MergeSpectraTimeSeries_StreamFind(preCut = 2)
+
+\method{validate_object}{RamanMethod_MergeSpectraTimeSeries_StreamFind}(x)
 }
 \arguments{
 \item{preCut}{The number of pre Raman scans to exclude when merging.}
+
+\item{x}{A RamanMethod_MergeSpectraTimeSeries_StreamFind object.}
 }
 \value{
 A RamanMethod_MergeSpectraTimeSeries_StreamFind object.
@@ -15,3 +20,8 @@ A RamanMethod_MergeSpectraTimeSeries_StreamFind object.
 \description{
 Merges Raman spectra based on time series data. It collapses data files into a single file.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_MergeSpectraTimeSeries_StreamFind)}: Validate the RamanMethod_MergeSpectraTimeSeries_StreamFind object, returning NULL if valid.
+
+}}

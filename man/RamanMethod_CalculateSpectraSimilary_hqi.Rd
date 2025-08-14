@@ -2,12 +2,15 @@
 % Please edit documentation in R/class_RamanMethod_CalculateSpectraSimilary.R
 \name{RamanMethod_CalculateSpectraSimilary_hqi}
 \alias{RamanMethod_CalculateSpectraSimilary_hqi}
-\title{\strong{RamanMethod_CalculateSpectraSimilary_hqi}}
+\alias{validate_object.RamanMethod_CalculateSpectraSimilary_hqi}
+\title{RamanMethod_CalculateSpectraSimilary_hqi Class}
 \usage{
 RamanMethod_CalculateSpectraSimilary_hqi(
   reference = data.frame(),
   method = "pearson"
 )
+
+\method{validate_object}{RamanMethod_CalculateSpectraSimilary_hqi}(x)
 }
 \arguments{
 \item{reference}{data.frame with the reference spectra to be used for similarity. The data.frame
@@ -16,6 +19,8 @@ the shift values of the analyses.}
 
 \item{method}{character(1) indicating the method to be used for the similarity calculation. The
 available methods are "pearson", "kendall", and "spearman".}
+
+\item{x}{A RamanMethod_CalculateSpectraSimilary_hqi object.}
 }
 \value{
 A RamanMethod_CalculateSpectraSimilary_hqi object.
@@ -25,3 +30,8 @@ Calculate the similarity between Raman spectra based on predefined reference
 spectra. The similarity is assessed by estimating the high quality index (HQI) and P-value
 between a given analysis and the associated reference.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_CalculateSpectraSimilary_hqi)}: Validate the RamanMethod_CalculateSpectraSimilary_hqi object, returning NULL if valid.
+
+}}

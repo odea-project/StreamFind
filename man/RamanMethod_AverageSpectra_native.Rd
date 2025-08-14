@@ -2,14 +2,19 @@
 % Please edit documentation in R/class_RamanMethod_AverageSpectra.R
 \name{RamanMethod_AverageSpectra_native}
 \alias{RamanMethod_AverageSpectra_native}
+\alias{validate_object.RamanMethod_AverageSpectra_native}
 \title{Raman Method to Average Spectra (native algorithm)}
 \usage{
 RamanMethod_AverageSpectra_native(by = "replicates")
+
+\method{validate_object}{RamanMethod_AverageSpectra_native}(x)
 }
 \arguments{
 \item{by}{Character (length 1) with the grouping variable for averaging. Possible variables are
 \code{replicates}, \code{chrom_peaks}, \code{rt}, \code{replicates+chrom_peaks}, \code{replicates+rt}, \code{chrom_peaks+rt},
 \code{replicates+chrom_peaks+rt}.}
+
+\item{x}{A RamanMethod_AverageSpectra_native object.}
 }
 \value{
 A RamanMethod_AverageSpectra_native object.
@@ -17,3 +22,8 @@ A RamanMethod_AverageSpectra_native object.
 \description{
 Averages spectra based on variables.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_AverageSpectra_native)}: Validate the RamanMethod_AverageSpectra_native object, returning NULL if valid.
+
+}}

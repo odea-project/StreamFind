@@ -33,24 +33,24 @@ clear_cache <- function(x, ...) {
 
 # G -----
 
-#' @title S3 generic `get_names`
+#' @title S3 generic `get_analysis_names`
 #' @description S3 generic to get names from `x`.
 #' @param x An object from which the names will be retrieved.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' 
-get_names <- function(x, ...) {
-  UseMethod("get_names")
+get_analysis_names <- function(x, ...) {
+  UseMethod("get_analysis_names")
 }
 
-#' @title S3 generic `get_blanks`
+#' @title S3 generic `get_blank_names`
 #' @description S3 generic to get blanks from `x`.
 #' @param x An object from which the blanks will be retrieved.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' 
-get_blanks <- function(x, ...) {
-  UseMethod("get_blanks")
+get_blank_names <- function(x, ...) {
+  UseMethod("get_blank_names")
 }
 
 #' @title S3 generic `get_cache_info`
@@ -315,14 +315,14 @@ get_raw_spectra <- function(x, ...) {
   UseMethod("get_raw_spectra")
 }
 
-#' @title Generic `get_replicates`
+#' @title Generic `get_replicate_names`
 #' @description S3 generic to get replicates from `x`.
 #' @param x An object from which the replicates will be retrieved.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' 
-get_replicates <- function(x, ...) {
-  UseMethod("get_replicates")
+get_replicate_names <- function(x, ...) {
+  UseMethod("get_replicate_names")
 }
 
 #' @title Generic `get_spectra`

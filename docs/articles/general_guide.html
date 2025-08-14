@@ -479,9 +479,9 @@ processing the Raman spectra is created and added to the active field
 <span><span class="va">raman</span><span class="op">$</span><span class="fu">run_workflow</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Gets the names of the results in the Analyses object</span></span>
-<span><span class="co"># A RamanSpectra (Results child class) is now added with the processed spectra</span></span>
+<span><span class="co"># A RamanResults_Spectra (Results child class) is now added with the processed spectra</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">raman</span><span class="op">$</span><span class="va">Analyses</span><span class="op">@</span><span class="va">results</span><span class="op">)</span></span></code></pre></div>
-<pre><code>[1] "RamanSpectra"</code></pre>
+<pre><code>[1] "RamanResults_Spectra"</code></pre>
 <p>The method <code><a href="../reference/run.html">run()</a></code> can be used to applied a single
 <code>ProcessingStep</code> object to the data. Note that the
 <code>ProcessingStep</code> step is always added to the bottom of the
@@ -516,7 +516,7 @@ methods, as shown below. The results are always added as S7
 <div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># The spectra results were added</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">raman</span><span class="op">$</span><span class="va">Analyses</span><span class="op">$</span><span class="va">results</span><span class="op">)</span></span></code></pre></div>
-<pre><code>[1] "RamanSpectra"</code></pre>
+<pre><code>[1] "RamanResults_Spectra"</code></pre>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Results can be obtained with the dedicated active fields</span></span>
 <span><span class="co"># The Results active fields are engine specific</span></span>

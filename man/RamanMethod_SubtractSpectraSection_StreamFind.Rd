@@ -2,17 +2,22 @@
 % Please edit documentation in R/class_RamanMethod_SubtractSpectraSection.R
 \name{RamanMethod_SubtractSpectraSection_StreamFind}
 \alias{RamanMethod_SubtractSpectraSection_StreamFind}
-\title{\strong{RamanMethod_SubtractSpectraSection_StreamFind}}
+\alias{validate_object.RamanMethod_SubtractSpectraSection_StreamFind}
+\title{RamanMethod_SubtractSpectraSection_StreamFind Class}
 \usage{
 RamanMethod_SubtractSpectraSection_StreamFind(
   sectionVal = "rt",
   sectionWindow = c(10, 200)
 )
+
+\method{validate_object}{RamanMethod_SubtractSpectraSection_StreamFind}(x)
 }
 \arguments{
 \item{sectionVal}{Character (length 1) with the variable to be used for sectioning.}
 
 \item{sectionWindow}{Numeric (length 2) with the window for the sectioning.}
+
+\item{x}{A RamanMethod_SubtractSpectraSection_StreamFind object.}
 }
 \value{
 A RamanMethod_SubtractSpectraSection_StreamFind object.
@@ -20,3 +25,8 @@ A RamanMethod_SubtractSpectraSection_StreamFind object.
 \description{
 Subtracts a section of the spectra based on a variable (i.e. column name).
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_SubtractSpectraSection_StreamFind)}: Validate the RamanMethod_SubtractSpectraSection_StreamFind object, returning NULL if valid.
+
+}}

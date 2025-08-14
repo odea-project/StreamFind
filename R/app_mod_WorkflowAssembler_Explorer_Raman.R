@@ -1,8 +1,9 @@
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Explorer_UI, RamanAnalyses) <- function(x, id, ns) {
+.mod_WorkflowAssembler_Explorer_UI.RamanAnalyses <- function(x, id, ns) {
   ns2 <- shiny::NS(id)
   shinydashboard::tabBox(
-    width = 12, height = "1080px",
+    width = 12,
+    height = "1080px",
     shiny::tabPanel(
       "Spectra",
       shiny::fluidRow(
@@ -15,12 +16,14 @@ S7::method(.mod_WorkflowAssembler_Explorer_UI, RamanAnalyses) <- function(x, id,
 }
 
 #' @noRd
-S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
-                                                                              id,
-                                                                              ns,
-                                                                              reactive_analyses,
-                                                                              reactive_volumes,
-                                                                              reactive_config) {
+.mod_WorkflowAssembler_Explorer_Server.RamanAnalyses <- function(
+  x,
+  id,
+  ns,
+  reactive_analyses,
+  reactive_volumes,
+  reactive_config
+) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
 
@@ -35,15 +38,20 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
     # out summary plot UI -----
     output$summary_plot_ui <- shiny::renderUI({
       if (length(reactive_analyses()) == 0) {
-        htmltools::div(style = "margin-top: 20px;", htmltools::h4("No analyses found!"))
+        htmltools::div(
+          style = "margin-top: 20px;",
+          htmltools::h4("No analyses found!")
+        )
       } else if (!is.null(input$summary_plot_interactive)) {
         if (input$summary_plot_interactive) {
           shinycssloaders::withSpinner(
-            plotly::plotlyOutput(ns(ns2("summary_plotly")), height = "600px"), color = "black"
+            plotly::plotlyOutput(ns(ns2("summary_plotly")), height = "600px"),
+            color = "black"
           )
         } else {
           shinycssloaders::withSpinner(
-            shiny::plotOutput(ns(ns2("summary_plot")), height = "600px"), color = "black"
+            shiny::plotOutput(ns(ns2("summary_plot")), height = "600px"),
+            color = "black"
           )
         }
       }
@@ -164,10 +172,17 @@ S7::method(.mod_WorkflowAssembler_Explorer_Server, RamanAnalyses) <- function(x,
           analyses = selected,
           useRawData = input$summary_plot_raw
         )
-        fileinfo <- shinyFiles::parseSavePath(reactive_volumes(), input$summary_plot_save)
+        fileinfo <- shinyFiles::parseSavePath(
+          reactive_volumes(),
+          input$summary_plot_save
+        )
         if (nrow(fileinfo) > 0) {
           write.csv(csv, fileinfo$datapath, row.names = FALSE)
-          shiny::showNotification("File saved successfully!", duration = 5, type = "message")
+          shiny::showNotification(
+            "File saved successfully!",
+            duration = 5,
+            type = "message"
+          )
         }
       }
     })

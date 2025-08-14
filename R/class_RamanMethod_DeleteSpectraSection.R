@@ -1,7 +1,7 @@
-#' **RamanMethod_DeleteSpectraSection_native**
+#' @title RamanMethod_DeleteSpectraSection_native Class
 #'
 #' @description Deletes a section of the spectra between *shift* minimum and maximum values.
-#' 
+#'
 #' @param min Numeric vector (length 1) with the minimum shift value to delete.
 #' @param max Numeric vector (length 1) with the maximum shift value to delete.
 #'
@@ -9,69 +9,72 @@
 #'
 #' @export
 #'
-RamanMethod_DeleteSpectraSection_native <- S7::new_class(
-  "RamanMethod_DeleteSpectraSection_native",
-  parent = S7::new_S3_class("ProcessingStep"),
-  package = "StreamFind",
-  
-  constructor = function(min = NULL, max = NULL) {
-    S7::new_object(ProcessingStep(
-      data_type = "Raman",
-      method = "DeleteSpectraSection",
-      required = NA_character_,
-      algorithm = "native",
-      parameters = list(
-        min = min,
-        max = max
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
-  },
-  
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "Raman")
-    checkmate::assert_choice(self@method, "DeleteSpectraSection")
-    checkmate::assert_choice(self@algorithm, "native")
-    checkmate::assert_numeric(self@parameters$min, len = 1)
-    checkmate::assert_numeric(self@parameters$max, len = 1)
-    NULL
+RamanMethod_DeleteSpectraSection_native <- function(min = NULL, max = NULL) {
+  x <- ProcessingStep(
+    type = "Raman",
+    method = "DeleteSpectraSection",
+    required = NA_character_,
+    algorithm = "native",
+    parameters = list(
+      min = min,
+      max = max
+    ),
+    number_permitted = Inf,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid RamanMethod_DeleteSpectraSection_native object!")
   }
-)
+}
+
+#' @describeIn RamanMethod_DeleteSpectraSection_native Validate the RamanMethod_DeleteSpectraSection_native object, returning NULL if valid.
+#' @param x A RamanMethod_DeleteSpectraSection_native object.
+#' @export
+#'
+validate_object.RamanMethod_DeleteSpectraSection_native <- function(x) {
+  checkmate::assert_choice(x$type, "Raman")
+  checkmate::assert_choice(x$method, "DeleteSpectraSection")
+  checkmate::assert_choice(x$algorithm, "native")
+  checkmate::assert_numeric(x$parameters$min, len = 1)
+  checkmate::assert_numeric(x$parameters$max, len = 1)
+  NextMethod()
+  NULL
+}
 
 #' @export
 #' @noRd
-S7::method(run, RamanMethod_DeleteSpectraSection_native) <- function(x, engine = NULL) {
-  
+run.RamanMethod_DeleteSpectraSection_native <- function(x, engine = NULL) {
   if (!is(engine, "RamanEngine")) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-  
+
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
+
   if (!engine$Analyses$has_spectra) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
-  
+
   shiftmin <- x$parameters$min
   shiftmax <- x$parameters$max
-  
+
   spec_list <- engine$Spectra$spectra
-  
+
   if (!(is.null(shiftmin) && is.null(shiftmax))) {
     shiftrange <- c(shiftmin, shiftmax)
     shiftrange <- sort(shiftrange)
-    
+
     spec_list <- lapply(spec_list, function(z) {
       if (nrow(z) > 0 && "shift" %in% colnames(z)) {
         sel <- (z$shift >= shiftrange[1]) & (z$shift <= shiftrange[2])
@@ -82,7 +85,7 @@ S7::method(run, RamanMethod_DeleteSpectraSection_native) <- function(x, engine =
       z
     })
   }
-  
+
   engine$Spectra$spectra <- spec_list
   message(paste0("\U2713 ", "Spectra section deleted!"))
   invisible(TRUE)

@@ -2,13 +2,16 @@
 % Please edit documentation in R/class_RamanMethod_AddShiftValues.R
 \name{RamanMethod_AddShiftValues_native}
 \alias{RamanMethod_AddShiftValues_native}
-\title{Raman Method for Adding Shift Values to Spectra (native algorithm)}
+\alias{validate_object.RamanMethod_AddShiftValues_native}
+\title{RamanMethod_AddShiftValues_native Class}
 \usage{
 RamanMethod_AddShiftValues_native(
   mode = "analyses",
   index = NA_integer_,
   shifts = NA_real_
 )
+
+\method{validate_object}{RamanMethod_AddShiftValues_native}(x)
 }
 \arguments{
 \item{mode}{A character string. The mode to be used, possible values are \code{analyses} or \code{custom}
@@ -18,6 +21,8 @@ for copying from analyses or adding custom shift values, respectively.}
 values from.}
 
 \item{shifts}{A numeric vector with the shift values to be added to the spectra.}
+
+\item{A}{RamanMethod_AddShiftValues_native object.}
 }
 \value{
 A RamanMethod_AddShiftValues_native object.
@@ -28,3 +33,8 @@ the other analyses. When more than one analyses are selected, the shift values a
 the selected but them averaged before being added to the other analyses. If the column "rt" is
 present in the spectra, the shift values are added to each retention time.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_AddShiftValues_native)}: Validate the RamanMethod_AddShiftValues_native object, returning NULL if valid.
+
+}}

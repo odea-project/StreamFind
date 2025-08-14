@@ -135,7 +135,7 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
       digits = 1
     )
   } else {
-    blks <- get_blanks(engine$Analyses)
+    blks <- get_blank_names(engine$Analyses)
 
     if (
       any(!is.na(blks)) &
@@ -145,7 +145,7 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
           FALSE
         ))
     ) {
-      rpls <- get_replicates(engine$Analyses)
+      rpls <- get_replicate_names(engine$Analyses)
 
       internal_standards$replicate <- rpls[internal_standards$analysis]
 

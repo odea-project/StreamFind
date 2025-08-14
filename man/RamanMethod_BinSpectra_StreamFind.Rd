@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_RamanMethod_BinSpectra.R
 \name{RamanMethod_BinSpectra_StreamFind}
 \alias{RamanMethod_BinSpectra_StreamFind}
-\title{\strong{RamanMethod_BinSpectra_StreamFind}}
+\alias{validate_object.RamanMethod_BinSpectra_StreamFind}
+\title{RamanMethod_BinSpectra_StreamFind Class}
 \usage{
 RamanMethod_BinSpectra_StreamFind(
   binNames = c("rt"),
@@ -10,6 +11,8 @@ RamanMethod_BinSpectra_StreamFind(
   byUnit = FALSE,
   refBinAnalysis = NULL
 )
+
+\method{validate_object}{RamanMethod_BinSpectra_StreamFind}(x)
 }
 \arguments{
 \item{binNames}{Character with the variable names for building the bins. Possible values are \emph{rt} and \emph{shift}. Note
@@ -23,6 +26,8 @@ actual values. For instance, if the bin is 10 and \code{binName} is \emph{rt}, t
 of binNames and binValues is used.}
 
 \item{refBinAnalysis}{The analysis index to use a reference for creating the bins.}
+
+\item{x}{A RamanMethod_BinSpectra_StreamFind object.}
 }
 \value{
 A RamanMethod_BinSpectra_StreamFind object.
@@ -30,3 +35,8 @@ A RamanMethod_BinSpectra_StreamFind object.
 \description{
 Bins spectral data based on variables.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_BinSpectra_StreamFind)}: Validate the RamanMethod_BinSpectra_StreamFind object, returning NULL if valid.
+
+}}

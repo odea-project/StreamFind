@@ -93,7 +93,7 @@ Collate:
     'class_Workflow.R'
     'class_Results.R'
     'class_Results_Spectra.R'
-    'class_Results_Spectra_RamanSpectra.R'
+    'class_Results_Spectra_RamanResults_Spectra.R'
     'class_Results_Spectra_MassSpecSpectra.R'
     'class_Results_SpectraSimilarity.R'
     'class_Results_Chromatograms.R'

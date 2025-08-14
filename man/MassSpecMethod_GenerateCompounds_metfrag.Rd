@@ -16,7 +16,7 @@ MassSpecMethod_GenerateCompounds_metfrag(
   fragAbsMzDev = 0.005,
   adduct = character(),
   database = "comptox",
-  extendedPubChem = FALSE,
+  extendedPubChem = "auto",
   chemSpiderToken = "",
   scoreTypes = patRoon::compoundScorings("metfrag", "comptox", onlyDefault = TRUE)$name,
   scoreWeights = 1,

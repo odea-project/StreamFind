@@ -264,7 +264,7 @@ corr_spectra_4$rt <- corr_spectra_4$rt - 68.545
 corr_spectra_4 <- corr_spectra_4[corr_spectra_4$rt > 0, ]
 corr_spectra[[4]] <- corr_spectra_4
 corr_spectra <- lapply(corr_spectra, function(x) x[x$rt < 800, ])
-raman$Spectra <- StreamFind::RamanSpectra(spectra = corr_spectra)
+raman$Spectra <- StreamFind::RamanResults_Spectra(spectra = corr_spectra)
 ```
 
 ```{r raman-plot-chroms, fig.cap="Time series chromatogram for each BSA product. Each data point is a Raman spectrum at a specific retention time."}

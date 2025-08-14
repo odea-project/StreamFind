@@ -152,12 +152,12 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
     split_str <- grouped_spectra$replicate
     grouped_spectra$replicate <- NULL
     grouped_spectra_list <- split(grouped_spectra, split_str)
-    for (r in unique(get_replicates(engine$Analyses))) {
+    for (r in unique(get_replicate_names(engine$Analyses))) {
       if (!r %in% names(grouped_spectra_list)) {
         grouped_spectra_list[[r]] <- data.table::data.table()
       }
     }
-    grouped_spectra_list <- grouped_spectra_list[unique(get_replicates(engine$Analyses))]
+    grouped_spectra_list <- grouped_spectra_list[unique(get_replicate_names(engine$Analyses))]
   } else {
     if ("mz" %in% colnames(grouped_spectra)) {
       setorder(grouped_spectra, mz, analysis)

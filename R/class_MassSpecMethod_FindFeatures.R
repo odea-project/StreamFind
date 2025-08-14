@@ -196,7 +196,7 @@
 
   names(feature_list) <- patRoon::analyses(pat)
 
-  analyses_names <- get_names(engine$Analyses)
+  analyses_names <- get_analysis_names(engine$Analyses)
 
   pols <- vapply(
     engine$Analyses$analyses, function(a) {

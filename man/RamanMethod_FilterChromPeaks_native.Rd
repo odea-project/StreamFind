@@ -2,13 +2,16 @@
 % Please edit documentation in R/class_RamanMethod_FilterChromPeaks.R
 \name{RamanMethod_FilterChromPeaks_native}
 \alias{RamanMethod_FilterChromPeaks_native}
-\title{\strong{RamanMethod_FilterChromPeaks_native}}
+\alias{validate_object.RamanMethod_FilterChromPeaks_native}
+\title{RamanMethod_FilterChromPeaks_native Class}
 \usage{
 RamanMethod_FilterChromPeaks_native(
   minIntensity = 0,
   minSignalNoiseRatio = 0,
   rtRange = c(0, 0)
 )
+
+\method{validate_object}{RamanMethod_FilterChromPeaks_native}(x)
 }
 \arguments{
 \item{minIntensity}{Numeric (length 1) with the minimum intensity to keep a chromatographic peak.}
@@ -17,6 +20,8 @@ RamanMethod_FilterChromPeaks_native(
 chromatographic peak.}
 
 \item{rtRange}{Numeric (length 2) with the retention time range to keep chromatographic peaks.}
+
+\item{x}{A RamanMethod_FilterChromPeaks_native object.}
 }
 \value{
 A RamanMethod_FilterChromPeaks_native object.
@@ -24,3 +29,8 @@ A RamanMethod_FilterChromPeaks_native object.
 \description{
 Settings for filtering chromatographic peaks.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_FilterChromPeaks_native)}: Validate the RamanMethod_FilterChromPeaks_native object, returning NULL if valid.
+
+}}

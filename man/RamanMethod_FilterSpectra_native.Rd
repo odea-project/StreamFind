@@ -2,12 +2,15 @@
 % Please edit documentation in R/class_RamanMethod_FilterSpectra.R
 \name{RamanMethod_FilterSpectra_native}
 \alias{RamanMethod_FilterSpectra_native}
-\title{\strong{RamanMethod_FilterSpectra_native}}
+\alias{validate_object.RamanMethod_FilterSpectra_native}
+\title{RamanMethod_FilterSpectra_native Class}
 \usage{
 RamanMethod_FilterSpectra_native(
   onlyChromPeaksSpectra = FALSE,
   onlyTopChromPeaksSpectra = 0
 )
+
+\method{validate_object}{RamanMethod_FilterSpectra_native}(x)
 }
 \arguments{
 \item{onlyChromPeaksSpectra}{Logical (length 1) for keeping only spectra with chromatographic
@@ -15,6 +18,8 @@ peaks.}
 
 \item{onlyTopChromPeaksSpectra}{Numeric (length 1) with the number of top spectra to keep for
 each chromatographic peak.}
+
+\item{x}{A RamanMethod_FilterSpectra_native object.}
 }
 \value{
 A RamanMethod_FilterSpectra_native object.
@@ -22,3 +27,8 @@ A RamanMethod_FilterSpectra_native object.
 \description{
 Various filter options for Raman spectra.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_FilterSpectra_native)}: Validate the RamanMethod_FilterSpectra_native object, returning NULL if valid.
+
+}}

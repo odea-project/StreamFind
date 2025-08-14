@@ -2,12 +2,17 @@
 % Please edit documentation in R/class_RamanMethod_SmoothSpectra.R
 \name{RamanMethod_SmoothSpectra_movingaverage}
 \alias{RamanMethod_SmoothSpectra_movingaverage}
-\title{\strong{RamanMethod_SmoothSpectra_movingaverage}}
+\alias{validate_object.RamanMethod_SmoothSpectra_movingaverage}
+\title{RamanMethod_SmoothSpectra_movingaverage}
 \usage{
 RamanMethod_SmoothSpectra_movingaverage(windowSize = 5)
+
+\method{validate_object}{RamanMethod_SmoothSpectra_movingaverage}(x)
 }
 \arguments{
 \item{windowSize}{Numeric (length 1) with the window size for the moving average.}
+
+\item{x}{A RamanMethod_SmoothSpectra_movingaverage object.}
 }
 \value{
 A RamanMethod_SmoothSpectra_movingaverage object.
@@ -15,3 +20,8 @@ A RamanMethod_SmoothSpectra_movingaverage object.
 \description{
 Smooths spectra using the moving average algorithm.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_SmoothSpectra_movingaverage)}: Validate the RamanMethod_SmoothSpectra_movingaverage object, returning NULL if valid.
+
+}}

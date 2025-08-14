@@ -2,14 +2,19 @@
 % Please edit documentation in R/class_RamanMethod_DeleteScansSection.R
 \name{RamanMethod_DeleteScansSection_native}
 \alias{RamanMethod_DeleteScansSection_native}
-\title{\strong{RamanMethod_DeleteScansSection_native}}
+\alias{validate_object.RamanMethod_DeleteScansSection_native}
+\title{RamanMethod_DeleteScansSection_native Class}
 \usage{
 RamanMethod_DeleteScansSection_native(min = 0, max = 0)
+
+\method{validate_object}{RamanMethod_DeleteScansSection_native}(x)
 }
 \arguments{
 \item{min}{Numeric vector (length 1) with the minimum scan value to delete.}
 
 \item{max}{Numeric vector (length 1) with the maximum scan value to delete.}
+
+\item{x}{A RamanMethod_DeleteScansSection_native object.}
 }
 \value{
 A RamanMethod_DeleteScansSection_native object.
@@ -19,3 +24,8 @@ Deletes a section of the spectra based on a minimum and maximum scan number. Not
 that both values are should be positive and represent the scan unit (e.g., retention time) and
 not the scan number.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_DeleteScansSection_native)}: Validate the RamanMethod_DeleteScansSection_native object, returning NULL if valid.
+
+}}

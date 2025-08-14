@@ -143,7 +143,7 @@ Engine <- R6::R6Class(
           warning("Analyses data type not matching with current engine! Not added.")
           return(invisible(self))
         }
-        names_analyses <- get_names(private$.Analyses)
+        names_analyses <- get_analysis_names(private$.Analyses)
         old_results <- list()
         if (length(names_analyses) > 0) {
           if (length(private$.Analyses$results) > 0) {
@@ -152,10 +152,10 @@ Engine <- R6::R6Class(
         }
         private$.Analyses <- value
         if (!is.null(private$.AuditTrail)) {
-          if (length(names_analyses) == 0 || !identical(get_names(private$.Analyses), get_names(value))) {
+          if (length(names_analyses) == 0 || !identical(get_analysis_names(private$.Analyses), get_analysis_names(value))) {
             private$.AuditTrail <- add(private$.AuditTrail, value)
           }
-          if (length(get_names(private$.Analyses)) > 0) {
+          if (length(get_analysis_names(private$.Analyses)) > 0) {
             if (length(private$.Analyses$results) > 0) {
               for (r in names(private$.Analyses$results)) {
                 if (!identical(private$.Analyses$results[[r]], old_results[[r]])) {
@@ -282,6 +282,7 @@ Engine <- R6::R6Class(
       } else {
         type <- NA_character_
       }
+      dots[["type"]] <- NULL
       checkmate::assert_character(type, len = 1, null.ok = TRUE)
       checkmate::assert_true(type %in% c(NA_character_, DataTypes()$types))
       if (is.na(type) && !is.null(analyses)) {
@@ -355,7 +356,7 @@ Engine <- R6::R6Class(
               if (is(analyses, "Analyses")) {
                 self$Analyses <- analyses
               } else {
-                self$Analyses <- do.call(Analyses_call, c(list(analyses, dots)))
+                self$Analyses <- do.call(Analyses_call, c(list(analyses), dots))
               }
             },
             error = function(e) {

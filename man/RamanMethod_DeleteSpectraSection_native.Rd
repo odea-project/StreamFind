@@ -2,14 +2,19 @@
 % Please edit documentation in R/class_RamanMethod_DeleteSpectraSection.R
 \name{RamanMethod_DeleteSpectraSection_native}
 \alias{RamanMethod_DeleteSpectraSection_native}
-\title{\strong{RamanMethod_DeleteSpectraSection_native}}
+\alias{validate_object.RamanMethod_DeleteSpectraSection_native}
+\title{RamanMethod_DeleteSpectraSection_native Class}
 \usage{
 RamanMethod_DeleteSpectraSection_native(min = NULL, max = NULL)
+
+\method{validate_object}{RamanMethod_DeleteSpectraSection_native}(x)
 }
 \arguments{
 \item{min}{Numeric vector (length 1) with the minimum shift value to delete.}
 
 \item{max}{Numeric vector (length 1) with the maximum shift value to delete.}
+
+\item{x}{A RamanMethod_DeleteSpectraSection_native object.}
 }
 \value{
 A RamanMethod_DeleteSpectraSection_native object.
@@ -17,3 +22,8 @@ A RamanMethod_DeleteSpectraSection_native object.
 \description{
 Deletes a section of the spectra between \emph{shift} minimum and maximum values.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_DeleteSpectraSection_native)}: Validate the RamanMethod_DeleteSpectraSection_native object, returning NULL if valid.
+
+}}

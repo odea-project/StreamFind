@@ -2,42 +2,258 @@
 % Please edit documentation in R/class_Analyses_RamanAnalyses.R
 \name{RamanAnalyses}
 \alias{RamanAnalyses}
-\title{Raman Spectroscopy Analyses}
+\alias{validate_object.RamanAnalyses}
+\alias{get_analysis_names.RamanAnalyses}
+\alias{get_replicate_names.RamanAnalyses}
+\alias{set_replicates.RamanAnalyses}
+\alias{get_blank_names.RamanAnalyses}
+\alias{set_blanks.RamanAnalyses}
+\alias{get_concentrations.RamanAnalyses}
+\alias{set_concentrations.RamanAnalyses}
+\alias{info.RamanAnalyses}
+\alias{add.RamanAnalyses}
+\alias{remove.RamanAnalyses}
+\alias{[.RamanAnalyses}
+\alias{get_spectra.RamanAnalyses}
+\alias{get_spectra_matrix.RamanAnalyses}
+\alias{plot_spectra.RamanAnalyses}
+\alias{plot_spectra_3d.RamanAnalyses}
+\alias{plot_spectra_baseline.RamanAnalyses}
+\alias{plot_chromatograms.RamanAnalyses}
+\alias{get_chromatograms_peaks.RamanAnalyses}
+\alias{plot_chromatograms_peaks.RamanAnalyses}
+\title{RamanAnalyses Class}
 \usage{
 RamanAnalyses(files = NULL)
+
+\method{validate_object}{RamanAnalyses}(x)
+
+\method{get_analysis_names}{RamanAnalyses}(x)
+
+\method{get_replicate_names}{RamanAnalyses}(x)
+
+\method{set_replicates}{RamanAnalyses}(x, value)
+
+\method{get_blank_names}{RamanAnalyses}(x)
+
+\method{set_blanks}{RamanAnalyses}(x, value)
+
+\method{get_concentrations}{RamanAnalyses}(x)
+
+\method{set_concentrations}{RamanAnalyses}(x, value)
+
+\method{info}{RamanAnalyses}(x)
+
+\method{add}{RamanAnalyses}(x, value)
+
+\method{remove}{RamanAnalyses}(x, value)
+
+\method{[}{RamanAnalyses}(x, i)
+
+\method{get_spectra}{RamanAnalyses}(
+  x,
+  analyses = NULL,
+  targets = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = NULL,
+  useRawData = FALSE
+)
+
+\method{get_spectra_matrix}{RamanAnalyses}(
+  x,
+  analyses = NULL,
+  targets = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = NULL,
+  useRawData = FALSE
+)
+
+\method{plot_spectra}{RamanAnalyses}(
+  x,
+  analyses = NULL,
+  targets = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = NULL,
+  useRawData = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{plot_spectra_3d}{RamanAnalyses}(
+  x,
+  analyses = NULL,
+  targets = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = NULL,
+  useRawData = FALSE,
+  legendNames = TRUE,
+  colorBy = "analyses",
+  xLab = NULL,
+  yLab = NULL,
+  zLab = NULL,
+  renderEngine = "webgl"
+)
+
+\method{plot_spectra_baseline}{RamanAnalyses}(
+  x,
+  analyses = NULL,
+  targets = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{plot_chromatograms}{RamanAnalyses}(
+  x,
+  analyses = NULL,
+  targets = NULL,
+  rt = NULL,
+  shift = NULL,
+  minIntensity = NULL,
+  useRawData = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "analyses",
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
+
+\method{get_chromatograms_peaks}{RamanAnalyses}(x, analyses = NULL, targets = NULL, rt = NULL)
+
+\method{plot_chromatograms_peaks}{RamanAnalyses}(
+  x,
+  analyses = NULL,
+  targets = NULL,
+  rt = NULL,
+  title = NULL,
+  legendNames = TRUE,
+  colorBy = "targets",
+  xlim = NULL,
+  ylim = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
 }
 \arguments{
-\item{files}{A \code{character} vector with full file paths to "asc", "sif", "json", "wdf", "sdf",
-"csv" and/or "txt" raman files or a \code{data.frame} with colnames \code{file}, \code{replicate} and \code{blank}.
-The "replicate" column is used to group the analyses and the "blank" column is used to identify
-the blank samples. The "file" column is the full to the raman files.}
+\item{files}{A \code{character} vector with full file paths to "asc", "sif", "json", "wdf", "sdf", "csv" and/or "txt" raman files or a \code{data.frame} with colnames \code{file}, \code{replicate} and \code{blank}. The "replicate" column is used to group the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full to the raman files.}
+
+\item{x}{A \code{RamanAnalyses} object to validate.}
+
+\item{value}{An object that highly depends on the method. Check the specific method documentation for details.}
+
+\item{i}{A character or numeric vector to perform subsetting. Check the specific method for details.}
+
+\item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{targets}{A \code{character} vector with the names of the targets (i.e., group or id) to filter the spectra by.}
+
+\item{rt}{Numeric of length two with the minimum and maximum retention time, in seconds.}
+
+\item{shift}{Numeric of length two with the minimum and maximum shift, in cm\if{html}{\out{<sup>}}-1\if{html}{\out{</sup>}}.}
+
+\item{minIntensity}{Numeric (length 1) with the minimum intensity.}
+
+\item{useRawData}{Logical of length one. Set to \code{TRUE} for parsing raw data not data in
+results/processed.}
+
+\item{xLab}{A string with the title for the x axis.}
+
+\item{yLab}{A string with the title for the y axis.}
+
+\item{title}{A string with the title.}
+
+\item{colorBy}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
+\code{replicates}.}
+
+\item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{renderEngine}{The engine to render the data. The default is "webgl".}
+
+\item{legendNames}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{zLab}{A string with the title for the z axis.}
+
+\item{xlim}{A length one or two numeric vector for setting the \emph{x} limits of the plot.}
+
+\item{ylim}{A length one or two numeric vector for setting the \emph{y} limits of the plot.}
+}
+\value{
+A \code{RamanAnalyses} object which is fundamentally a list with each element representing a Raman analysis. Each analysis is a list with the following elements:
+\itemize{
+\item \code{name}: The name of the analysis.
+\item \code{replicate}: The replicate identifier for the analysis.
+\item \code{blank}: The blank sample identifier for the analysis.
+\item \code{concentration}: The concentration of the sample in the analysis.
+\item \code{reference}: The reference sample identifier for the analysis.
+\item \code{file}: The file path to the Raman data file.
+\item \code{type}: The type of analysis, which is "Raman".
+\item \code{metadata}: A list containing metadata for the analysis.
+\item \code{spectra}: A \code{data.table} containing the Raman spectra data, with columns for shift, intensity, and optionally other parameters like rt and id.
+The \code{results} element is a list that can hold results. Possible results is currently only \link{RamanResults_Spectra}.
+}
 }
 \description{
 The RamanAnalyses class is used to store a list of Raman spectra.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanAnalyses)}: Validate the RamanAnalyses object, returning \code{NULL} if valid.
 
-\describe{
-\item{\code{analyses}}{A \code{list} of Raman spectra.}
+\item \code{get_analysis_names(RamanAnalyses)}: Get the names of the analyses in the \code{RamanAnalyses} object.
 
-\item{\code{replicates}}{(getter and setter) A \code{character} vector with the names of the replicates.}
+\item \code{get_replicate_names(RamanAnalyses)}: Get the replicates of the analyses in the \code{RamanAnalyses} object.
 
-\item{\code{blanks}}{(getter and setter) A \code{character} vector with the names of the blanks.}
+\item \code{set_replicates(RamanAnalyses)}: Set the replicates of the analyses in the \code{RamanAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
 
-\item{\code{concentrations}}{(getter and setter) A \code{numeric} vector with the concentrations of each
-analysis.}
+\item \code{get_blank_names(RamanAnalyses)}: Get the blanks of the analyses in the \code{RamanAnalyses} object.
 
-\item{\code{references}}{(getter and setter) A \code{character} vector with the names of the reference for
-each analysis.}
+\item \code{set_blanks(RamanAnalyses)}: Set the blanks of the analyses in the \code{RamanAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
 
-\item{\code{types}}{(getter) A \code{character} vector with the names of the types of each analysis.}
+\item \code{get_concentrations(RamanAnalyses)}: Get the concentrations of the analyses in the \code{RamanAnalyses} object.
 
-\item{\code{files}}{(getter) A \code{character} vector with the names of the files of each analysis.}
+\item \code{set_concentrations(RamanAnalyses)}: Set the concentrations of the analyses in the \code{RamanAnalyses} object. The argument \code{value} must be a numeric vector with the same length as the number of analyses in the object.
 
-\item{\code{info}}{(getter) A \code{data.frame} with the information of each analysis.}
+\item \code{info(RamanAnalyses)}: Get a summary \code{data.table} of the \code{RamanAnalyses} object.
 
-\item{\code{has_spectra}}{(getter) A \code{logical} value indicating if the object has spectra.}
+\item \code{add(RamanAnalyses)}: Add Raman analyses to the \code{RamanAnalyses} object. The argument \code{value} can be a character vector with full file paths to "asc", "sif", "json", "wdf", "sdf", "csv" and/or "txt" raman files or a list of \code{RamanAnalysis} objects.
 
-\item{\code{Spectra}}{(getter and setter) \code{RamanSpectraResults}.}
+\item \code{remove(RamanAnalyses)}: Remove Raman analyses from the \code{RamanAnalyses} object. The argument \code{value} can be a character vector with the names of the analyses or a numeric vector with the indices of the analyses to remove.
+
+\item \code{[}: Subset the \code{RamanAnalyses} object by analyses. The argument \code{i} can be a character vector with the names of the analyses or a numeric vector with the indices of the analyses to keep.
+
+\item \code{get_spectra(RamanAnalyses)}: Get the spectra from the \code{RamanAnalyses} object.
+
+\item \code{get_spectra_matrix(RamanAnalyses)}: Get the spectra matrix from the \code{RamanAnalyses} object.
+
+\item \code{plot_spectra(RamanAnalyses)}: Plot the spectra from the \code{RamanAnalyses} object.
+
+\item \code{plot_spectra_3d(RamanAnalyses)}: Plot the spectra in 3D from the \code{RamanAnalyses} object.
+
+\item \code{plot_spectra_baseline(RamanAnalyses)}: Plot the baseline-corrected spectra from the \code{RamanAnalyses} object.
+
+\item \code{plot_chromatograms(RamanAnalyses)}: Plot the chromatograms from the \code{RamanAnalyses} object when the spectra have a time dimension.
+
+\item \code{get_chromatograms_peaks(RamanAnalyses)}: Get the chromatograms peaks from the \code{RamanAnalyses} object.
+
+\item \code{plot_chromatograms_peaks(RamanAnalyses)}: Plot the chromatograms peaks from the \code{RamanAnalyses} object.
+
 }}
-

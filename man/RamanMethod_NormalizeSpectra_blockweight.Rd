@@ -2,9 +2,15 @@
 % Please edit documentation in R/class_RamanMethod_NormalizeSpectra.R
 \name{RamanMethod_NormalizeSpectra_blockweight}
 \alias{RamanMethod_NormalizeSpectra_blockweight}
-\title{\strong{RamanMethod_NormalizeSpectra_blockweight}}
+\alias{validate_object.RamanMethod_NormalizeSpectra_blockweight}
+\title{RamanMethod_NormalizeSpectra_blockweight Class}
 \usage{
 RamanMethod_NormalizeSpectra_blockweight()
+
+\method{validate_object}{RamanMethod_NormalizeSpectra_blockweight}(x)
+}
+\arguments{
+\item{A}{RamanMethod_NormalizeSpectra_blockweight object.}
 }
 \value{
 A RamanMethod_NormalizeSpectra_blockweight object.
@@ -12,3 +18,8 @@ A RamanMethod_NormalizeSpectra_blockweight object.
 \description{
 Normalizes spectra using block weighting for downstream data evaluation.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_NormalizeSpectra_blockweight)}: Validate the RamanMethod_NormalizeSpectra_blockweight object, returning NULL if valid.
+
+}}

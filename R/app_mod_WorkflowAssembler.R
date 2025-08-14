@@ -2,12 +2,14 @@
 .mod_WorkflowAssembler_UI <- function(id) {
   ns <- shiny::NS(id)
   shinydashboard::tabItems(
-    shinydashboard::tabItem(tabName = ns("project"),
+    shinydashboard::tabItem(
+      tabName = ns("project"),
       shiny::fluidRow(
         shiny::uiOutput(ns("wdir")),
         shiny::column(
           width = 12,
-          shiny::uiOutput(ns("save_engine")), shiny::uiOutput(ns("reset_engine"))
+          shiny::uiOutput(ns("save_engine")),
+          shiny::uiOutput(ns("reset_engine"))
         ),
         shiny::uiOutput(ns("engine_save_file_ui")),
         shiny::fluidRow(shiny::uiOutput(ns("metadata_ui")))
@@ -41,11 +43,13 @@
 }
 
 #' @noRd
-.mod_WorkflowAssembler_Server <- function(id,
-                                          reactive_clean_start,
-                                          reactive_engine_type,
-                                          reactive_engine_save_file,
-                                          reactive_warnings) {
+.mod_WorkflowAssembler_Server <- function(
+  id,
+  reactive_clean_start,
+  reactive_engine_type,
+  reactive_engine_save_file,
+  reactive_warnings
+) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
     # _Global Constants/Mutable -----
@@ -53,7 +57,7 @@
     volumes <- .app_util_get_volumes()
     engine <- NULL
     analyses_class_dummy <- NULL
-    
+
     # _Global Reactive Variables -----
     reactive_wdir <- shiny::reactiveVal(getwd())
     reactive_volumes <- shiny::reactiveVal(volumes)
@@ -70,19 +74,23 @@
     reactive_audit_saved <- shiny::reactiveVal(NULL)
     reactive_engine_config_saved <- shiny::reactiveVal(NULL)
     reactive_config <- shiny::reactiveVal(AppConfig())
-    
+
     ## obs Engine Save File -----
     shiny::observeEvent(reactive_engine_save_file(), {
       engine_save_file <- reactive_engine_save_file()
       if (!is.na(engine_save_file)) {
         if (!grepl(".sqlite$|.rds$", engine_save_file)) {
-          msg <- paste("The file", engine_save_file, "is not an sqlite or rds file!")
+          msg <- paste(
+            "The file",
+            engine_save_file,
+            "is not an sqlite or rds file!"
+          )
           shiny::showNotification(msg, duration = 10, type = "error")
           reactive_engine_save_file(NA_character_)
         }
       }
     })
-    
+
     ## obs Clean Start -----
     shiny::observeEvent(reactive_clean_start(), {
       if (reactive_clean_start()) {
@@ -94,20 +102,45 @@
         engine_data_type <- gsub("Engine", "", engine_type)
         analyses_data_type <- paste0(engine_data_type, "Analyses")
         analyses_call <- get(analyses_data_type, envir = envSF)
-        analyses_class_dummy <<- suppressMessages(do.call(analyses_call, list()))
-        
+        analyses_class_dummy <<- suppressMessages(do.call(
+          analyses_call,
+          list()
+        ))
+
         if (!is.na(reactive_engine_save_file())) {
-          tryCatch({
-            engine$load(reactive_engine_save_file())
-          }, warning = function(w) {
-            msg <- paste("Warning for", reactive_engine_save_file(), ":", conditionMessage(w))
-            reactive_warnings(.app_util_add_notifications(reactive_warnings(), "load_engine", msg))
-          }, error = function(e) {
-            msg <- paste("Error for", reactive_engine_save_file(), ":", conditionMessage(e))
-            reactive_warnings(.app_util_add_notifications(reactive_warnings(), "load_engine", msg))
-          })
+          tryCatch(
+            {
+              engine$load(reactive_engine_save_file())
+            },
+            warning = function(w) {
+              msg <- paste(
+                "Warning for",
+                reactive_engine_save_file(),
+                ":",
+                conditionMessage(w)
+              )
+              reactive_warnings(.app_util_add_notifications(
+                reactive_warnings(),
+                "load_engine",
+                msg
+              ))
+            },
+            error = function(e) {
+              msg <- paste(
+                "Error for",
+                reactive_engine_save_file(),
+                ":",
+                conditionMessage(e)
+              )
+              reactive_warnings(.app_util_add_notifications(
+                reactive_warnings(),
+                "load_engine",
+                msg
+              ))
+            }
+          )
         }
-        
+
         reactive_metadata(engine$Metadata)
         reactive_analyses(engine$Analyses)
         reactive_workflow(engine$Workflow)
@@ -123,9 +156,9 @@
         reactive_clean_start(FALSE)
       }
     })
-    
+
     # _Warnings -----
-    
+
     ## obs Unsaved engine -----
     shiny::observe({
       has_unsaved_changes <- "unsaved_changes" %in% names(reactive_warnings())
@@ -142,14 +175,18 @@
           .app_util_add_notifications(
             reactive_warnings(),
             "unsaved_changes",
-            "Unsaved changes in the engine!")
+            "Unsaved changes in the engine!"
           )
+        )
       }
       if (equal_history) {
-        reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
+        reactive_warnings(.app_util_remove_notifications(
+          reactive_warnings(),
+          "unsaved_changes"
+        ))
       }
     })
-    
+
     ## out Save engine -----
     output$save_engine <- shiny::renderUI({
       if ("unsaved_changes" %in% names(reactive_warnings())) {
@@ -161,30 +198,38 @@
           session = session
         )
         filename <- reactive_engine_save_file()
-        if (is.na(filename)) filename <- reactive_engine_type()
-        
+        if (is.na(filename)) {
+          filename <- reactive_engine_type()
+        }
+
         if (grepl(".sqlite", filename)) {
           extensions <- list(sqlite = "sqlite", rds = "rds")
         } else {
           extensions <- list(rds = "rds", sqlite = "sqlite")
         }
-        
-        htmltools::div(style = "margin-bottom: 20px;",
+
+        htmltools::div(
+          style = "margin-bottom: 20px;",
           shinyFiles::shinySaveButton(
             ns("save_engine_button_file"),
             label = "Save Engine",
             title = "Save the engine as .sqlite or .rds",
             class = "btn-success",
             filename = gsub(".sqlite|.rds", "", basename(filename)),
-            filetype = extensions, style = "width: 200px;")
+            filetype = extensions,
+            style = "width: 200px;"
+          )
         )
       }
     })
-    
+
     ## event Save -----
     shiny::observeEvent(input$save_engine_button, {
       engine$save(reactive_engine_save_file())
-      reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
+      reactive_warnings(.app_util_remove_notifications(
+        reactive_warnings(),
+        "unsaved_changes"
+      ))
       reactive_metadata(engine$Metadata)
       reactive_analyses(engine$Analyses)
       reactive_workflow(engine$Workflow)
@@ -198,7 +243,7 @@
       reactive_audit_saved(engine$AuditTrail)
       reactive_engine_config_saved(engine$Config)
     })
-    
+
     ## event Save Engine File -----
     shiny::observeEvent(input$save_engine_button_file, {
       shiny::req(input$save_engine_button_file)
@@ -213,7 +258,10 @@
         engine$Workflow <- reactive_workflow()
         engine$Analyses$results <- reactive_results()
         engine$save(file_path)
-        reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
+        reactive_warnings(.app_util_remove_notifications(
+          reactive_warnings(),
+          "unsaved_changes"
+        ))
         reactive_metadata(engine$Metadata)
         reactive_analyses(engine$Analyses)
         reactive_workflow(engine$Workflow)
@@ -229,11 +277,12 @@
         reactive_engine_config_saved(engine$Config)
       }
     })
-    
+
     ## out Reset engine -----
     output$reset_engine <- shiny::renderUI({
       if ("unsaved_changes" %in% names(reactive_warnings())) {
-        htmltools::div(style = "margin-bottom: 20px;",
+        htmltools::div(
+          style = "margin-bottom: 20px;",
           shiny::actionButton(
             ns("reset_engine_button"),
             label = "Discard Changes",
@@ -243,11 +292,14 @@
         )
       }
     })
-    
+
     ## event Reset -----
     shiny::observeEvent(input$reset_engine_button, {
       if (is.na(reactive_engine_save_file())) {
-        reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
+        reactive_warnings(.app_util_remove_notifications(
+          reactive_warnings(),
+          "unsaved_changes"
+        ))
         reactive_metadata(engine$Metadata)
         reactive_analyses(engine$Analyses)
         reactive_workflow(engine$Workflow)
@@ -262,7 +314,10 @@
         reactive_engine_config_saved(engine$Config)
       } else {
         engine$load(reactive_engine_save_file())
-        reactive_warnings(.app_util_remove_notifications(reactive_warnings(), "unsaved_changes"))
+        reactive_warnings(.app_util_remove_notifications(
+          reactive_warnings(),
+          "unsaved_changes"
+        ))
         reactive_metadata(engine$Metadata)
         reactive_analyses(engine$Analyses)
         reactive_workflow(engine$Workflow)
@@ -277,9 +332,9 @@
         reactive_engine_config_saved(engine$Config)
       }
     })
-    
+
     # _Project -----
-    
+
     ## out Working Directory -----
     output$wdir <- shiny::renderUI({
       shinyFiles::shinyDirChoose(
@@ -303,11 +358,14 @@
         htmltools::HTML(paste("  ", reactive_wdir()))
       )
     })
-    
+
     ## event Change Working Directory -----
     shiny::observeEvent(input$set_wdir_button, {
       shiny::req(input$set_wdir_button)
-      file_info <- shinyFiles::parseDirPath(roots = reactive_volumes(), input$set_wdir_button)
+      file_info <- shinyFiles::parseDirPath(
+        roots = reactive_volumes(),
+        input$set_wdir_button
+      )
       if (length(file_info) > 0) {
         setwd(file_info)
         reactive_wdir(file_info)
@@ -315,22 +373,33 @@
         reactive_volumes(volumes)
       }
     })
-    
+
     ## out Engine Save File -----
     output$engine_save_file_ui <- shiny::renderUI({
       if (!is.na(reactive_engine_save_file())) {
-        shinydashboard::box(width = 12, title =  "Engine Save File", solidHeader = TRUE,
-          htmltools::div(style = "margin-bottom: 20px;", shiny::p(reactive_engine_save_file()))
+        shinydashboard::box(
+          width = 12,
+          title = "Engine Save File",
+          solidHeader = TRUE,
+          htmltools::div(
+            style = "margin-bottom: 20px;",
+            shiny::p(reactive_engine_save_file())
+          )
         )
       }
     })
-    
+
     ## module Headers -----
     output$metadata_ui <- shiny::renderUI({
-      .mod_WorkflowAssembler_Metadata_Server("metadata", ns, reactive_metadata, reactive_config)
+      .mod_WorkflowAssembler_Metadata_Server(
+        "metadata",
+        ns,
+        reactive_metadata,
+        reactive_config
+      )
       .mod_WorkflowAssembler_Metadata_UI("metadata", ns)
     })
-    
+
     # _Analyses -----
     output$analyses_ui <- shiny::renderUI({
       engine_type <- reactive_engine_type()
@@ -347,7 +416,10 @@
         paste0(engine_data_type, "Analyses"),
         envir = asNamespace("StreamFind")
       )
-      analyses_class_dummy <<- suppressMessages(do.call(analyses_dummy_call, list()))
+      analyses_class_dummy <<- suppressMessages(do.call(
+        analyses_dummy_call,
+        list()
+      ))
       .mod_WorkflowAssembler_Analyses_Server(
         analyses_class_dummy,
         "analyses",
@@ -359,36 +431,48 @@
       )
       .mod_WorkflowAssembler_Analyses_UI(analyses_class_dummy, "analyses", ns)
     })
-    
+
     # _Explorer -----
     output$explorer_ui <- shiny::renderUI({
       if (is.null(analyses_class_dummy)) {
-        shiny::showNotification("No analyses class defined!", duration = 5, type = "warning")
+        shiny::showNotification(
+          "No analyses class defined!",
+          duration = 5,
+          type = "warning"
+        )
         return(htmltools::div(" "))
       }
-      
-      tryCatch({
-        .mod_WorkflowAssembler_Explorer_Server(
-          analyses_class_dummy,
-          "summary",
-          ns,
-          reactive_analyses,
-          reactive_volumes,
-          reactive_config
-        )
-        .mod_WorkflowAssembler_Explorer_UI(analyses_class_dummy, "summary", ns)
-      }, error = function(e) {
-        msg <- paste(
-          "Explorer not rendering for class ",
-          class(analyses_class_dummy)[1], ":",
-          conditionMessage(e),
-          collapse = ""
-        )
-        shiny::showNotification(msg, duration = 10, type = "error")
-        shiny::div(style = "color: red;", msg)
-      })
+
+      tryCatch(
+        {
+          .mod_WorkflowAssembler_Explorer_Server(
+            analyses_class_dummy,
+            "summary",
+            ns,
+            reactive_analyses,
+            reactive_volumes,
+            reactive_config
+          )
+          .mod_WorkflowAssembler_Explorer_UI(
+            analyses_class_dummy,
+            "summary",
+            ns
+          )
+        },
+        error = function(e) {
+          msg <- paste(
+            "Explorer not rendering for class ",
+            class(analyses_class_dummy)[1],
+            ":",
+            conditionMessage(e),
+            collapse = ""
+          )
+          shiny::showNotification(msg, duration = 10, type = "error")
+          shiny::div(style = "color: red;", msg)
+        }
+      )
     })
-    
+
     # _Workflow -----
     output$workflow_ui <- shiny::renderUI({
       engine_type <- reactive_engine_type()
@@ -400,10 +484,12 @@
         )
         return(htmltools::div(" "))
       }
-      
+
       .mod_WorkflowAssembler_workflow_Server(
-        "workflow", ns,
-        engine, engine_type,
+        "workflow",
+        ns,
+        engine,
+        engine_type,
         reactive_analyses,
         reactive_workflow,
         reactive_saved_workflow,
@@ -414,34 +500,55 @@
         reactive_volumes,
         reactive_config
       )
-      
+
       .mod_WorkflowAssembler_workflow_UI("workflow", ns)
     })
-    
-# _Results -----
+
+    # _Results -----
     output$results_ui <- shiny::renderUI({
-      
       if (reactive_engine_type() %in% "Engine") {
-        shiny::showNotification("Results not implemented for Engine without an assigned data type!", duration = 5, type = "warning")
+        shiny::showNotification(
+          "Results not implemented for Engine without an assigned data type!",
+          duration = 5,
+          type = "warning"
+        )
         return(htmltools::div(" "))
       }
-      
+
       res <- reactive_results()
-      
+
       if (length(res) > 0) {
         result_methods <- methods(.mod_WorkflowAssembler_Result_Server)
         tab_list <- list()
         for (i in seq_along(res)) {
-          has_result_method <- any(vapply(result_methods, function(z) grepl(class(res[[1]])[1], z), FALSE))
-          
+          has_result_method <- any(vapply(
+            result_methods,
+            function(z) grepl(class(res[[1]])[1], z),
+            FALSE
+          ))
+
           if (has_result_method) {
-            .mod_WorkflowAssembler_Result_Server(res[[i]], paste0("tab_", names(res)[i]), ns, reactive_analyses, reactive_volumes)
+            .mod_WorkflowAssembler_Result_Server(
+              res[[i]],
+              paste0("tab_", names(res)[i]),
+              ns,
+              reactive_analyses,
+              reactive_volumes
+            )
             tab_list[[i]] <- shiny::tabPanel(
-              title = class(res[[i]])[1], 
-              .mod_WorkflowAssembler_Result_UI(res[[i]], paste0("tab_", names(res)[i]), ns)
+              title = class(res[[i]])[1],
+              .mod_WorkflowAssembler_Result_UI(
+                res[[i]],
+                paste0("tab_", names(res)[i]),
+                ns
+              )
             )
           } else {
-            shiny::showNotification(paste("No results method for", class(res[[i]]), "!"), duration = 5, type = "warning")
+            shiny::showNotification(
+              paste("No results method for", class(res[[i]]), "!"),
+              duration = 5,
+              type = "warning"
+            )
             tab_list[[i]] <- shiny::tabPanel(
               title = class(res[[i]])[1],
               htmltools::div(paste0(" ", i, ": ", class(res[[i]])[1]))
@@ -450,13 +557,16 @@
         }
         shiny::div(
           class = "results-wrapper",
-          do.call(shiny::tabsetPanel, c(list(type = "tabs", id = "results_tabs"), tab_list))
-        )       
+          do.call(
+            shiny::tabsetPanel,
+            c(list(type = "tabs", id = "results_tabs"), tab_list)
+          )
+        )
       } else {
         htmltools::div(htmltools::h4("No results found!"))
       }
     })
-    
+
     # _Audit -----
     output$audit_ui <- DT::renderDT({
       audit_trail <- reactive_audit()
@@ -487,10 +597,10 @@
         DT::datatable(data.table::data.table())
       }
     })
-    
+
     # TODO update configuration based on the golem-config.yml?
     reactive_config_change_trigger <- shiny::reactiveVal(0)
-    
+
     # _Config -----
     output$config_ui <- DT::renderDT({
       config <- reactive_config()
@@ -504,7 +614,7 @@
         editable = list(target = "cell", columns = c("value"))
       )
     })
-    
+
     # event Config Table Editing -----
     shiny::observeEvent(input$config_ui_cell_edit, {
       info <- input$config_ui_cell_edit
@@ -519,12 +629,22 @@
           reactive_config(config)
         },
         error = function(e) {
-          msg <- paste("Error in modifying ", name_value, ":", conditionMessage(e))
+          msg <- paste(
+            "Error in modifying ",
+            name_value,
+            ":",
+            conditionMessage(e)
+          )
           shiny::showNotification(msg, duration = 10, type = "error")
           reactive_config_change_trigger(reactive_config_change_trigger() + 1)
         },
         warning = function(w) {
-          msg <- paste("Warning in modifying ", name_value, ":", conditionMessage(w))
+          msg <- paste(
+            "Warning in modifying ",
+            name_value,
+            ":",
+            conditionMessage(w)
+          )
           shiny::showNotification(msg, duration = 10, type = "warning")
           reactive_config_change_trigger(reactive_config_change_trigger() + 1)
         }
@@ -533,55 +653,61 @@
 
     ## out Cache Size -----
     output$cache_size <- shiny::renderText({
-      tryCatch({
-        config <- reactive_engine_config()
-        audit <- reactive_audit()
-        cache_size <- size(config[["ConfigCache"]])
-        if (is.numeric(cache_size)) {
-          if (cache_size >= 1024^3) {
-            paste0(round(cache_size / (1024^3), 2), " GB")
-          } else if (cache_size >= 1024^2) {
-            paste0(round(cache_size / (1024^2), 2), " MB")
-          } else if (cache_size >= 1024) {
-            paste0(round(cache_size / 1024, 2), " KB")
+      tryCatch(
+        {
+          config <- reactive_engine_config()
+          audit <- reactive_audit()
+          cache_size <- size(config[["ConfigCache"]])
+          if (is.numeric(cache_size)) {
+            if (cache_size >= 1024^3) {
+              paste0(round(cache_size / (1024^3), 2), " GB")
+            } else if (cache_size >= 1024^2) {
+              paste0(round(cache_size / (1024^2), 2), " MB")
+            } else if (cache_size >= 1024) {
+              paste0(round(cache_size / 1024, 2), " KB")
+            } else {
+              paste0(round(cache_size, 0), " bytes")
+            }
           } else {
-            paste0(round(cache_size, 0), " bytes")
+            as.character(cache_size)
           }
-        } else {
-          as.character(cache_size)
+        },
+        error = function(e) {
+          shiny::showNotification(
+            paste("Error calculating cache size:", e$message),
+            duration = 5,
+            type = "error"
+          )
         }
-      }, error = function(e) {
-        shiny::showNotification(
-          paste("Error calculating cache size:", e$message),
-          duration = 5,
-          type = "error"
-        )
-      })
+      )
     })
 
     ## event Clear Cache -----
     shiny::observeEvent(input$clear_cache_button, {
-      tryCatch({
-        config <- reactive_engine_config()
-        if (size(config[["ConfigCache"]]) == 0) {
+      tryCatch(
+        {
+          config <- reactive_engine_config()
+          if (size(config[["ConfigCache"]]) == 0) {
+            shiny::showNotification(
+              "Cache is already empty!",
+              duration = 3
+            )
+            return()
+          }
+          clear_cache(config[["ConfigCache"]], "all")
           shiny::showNotification(
-            "Cache is already empty!",
+            "Cache cleared successfully!",
             duration = 3
           )
-          return()
+          reactive_engine_config(config)
+        },
+        error = function(e) {
+          shiny::showNotification(
+            paste("Error clearing cache:", e$message),
+            duration = 5
+          )
         }
-        clear_cache(config[["ConfigCache"]], "all")
-        shiny::showNotification(
-          "Cache cleared successfully!",
-          duration = 3
-        )
-        reactive_engine_config(config)
-      }, error = function(e) {
-        shiny::showNotification(
-          paste("Error clearing cache:", e$message),
-          duration = 5
-        )
-      })
+      )
     })
   })
 }

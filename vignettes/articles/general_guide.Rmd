@@ -249,7 +249,7 @@ show(raman$Workflow)
 raman$run_workflow()
 
 # Gets the names of the results in the Analyses object
-# A RamanSpectra (Results child class) is now added with the processed spectra
+# A RamanResults_Spectra (Results child class) is now added with the processed spectra
 names(raman$Analyses@results)
 ```
 

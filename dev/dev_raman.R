@@ -419,7 +419,7 @@ sec_hem <- e_sec$get_spectra(rt = c(366.216 - 10, 366.216 + 10))
 
 
 
-averageRamanSpectra <- function(spectra) {
+averageRamanResults_Spectra <- function(spectra) {
   if (length(unique(spectra$analysis)) > 1) {
     split_vec <- spectra$analysis
     spectra[["analysis"]] <- NULL

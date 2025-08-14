@@ -2,12 +2,17 @@
 % Please edit documentation in R/class_RamanMethod_SubtractScansSection.R
 \name{RamanMethod_SubtractScansSection_native}
 \alias{RamanMethod_SubtractScansSection_native}
-\title{\strong{RamanMethod_SubtractScansSection_native}}
+\alias{validate_object.RamanMethod_SubtractScansSection_native}
+\title{RamanMethod_SubtractScansSection_native Class}
 \usage{
 RamanMethod_SubtractScansSection_native(sectionWindow = c(10, 200))
+
+\method{validate_object}{RamanMethod_SubtractScansSection_native}(x)
 }
 \arguments{
 \item{sectionWindow}{Numeric (length 2) with the window for the sectioning.}
+
+\item{x}{A RamanMethod_SubtractScansSection_native object.}
 }
 \value{
 A RamanMethod_SubtractScansSection_native object.
@@ -15,3 +20,8 @@ A RamanMethod_SubtractScansSection_native object.
 \description{
 Subtracts the spectra of a section of the scans to all other spectra.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_SubtractScansSection_native)}: Validate the RamanMethod_SubtractScansSection_native object, returning NULL if valid.
+
+}}

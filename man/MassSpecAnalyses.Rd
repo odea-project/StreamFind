@@ -3,10 +3,10 @@
 \name{MassSpecAnalyses}
 \alias{MassSpecAnalyses}
 \alias{validate_object.MassSpecAnalyses}
-\alias{get_names.MassSpecAnalyses}
-\alias{get_replicates.MassSpecAnalyses}
+\alias{get_analysis_names.MassSpecAnalyses}
+\alias{get_replicate_names.MassSpecAnalyses}
 \alias{set_replicates.MassSpecAnalyses}
-\alias{get_blanks.MassSpecAnalyses}
+\alias{get_blank_names.MassSpecAnalyses}
 \alias{set_blanks.MassSpecAnalyses}
 \alias{get_concentrations.MassSpecAnalyses}
 \alias{set_concentrations.MassSpecAnalyses}
@@ -43,13 +43,13 @@ MassSpecAnalyses(files = NULL, centroid = FALSE, levels = c(1, 2))
 
 \method{validate_object}{MassSpecAnalyses}(x)
 
-\method{get_names}{MassSpecAnalyses}(x)
+\method{get_analysis_names}{MassSpecAnalyses}(x)
 
-\method{get_replicates}{MassSpecAnalyses}(x)
+\method{get_replicate_names}{MassSpecAnalyses}(x)
 
 \method{set_replicates}{MassSpecAnalyses}(x, value)
 
-\method{get_blanks}{MassSpecAnalyses}(x)
+\method{get_blank_names}{MassSpecAnalyses}(x)
 
 \method{set_blanks}{MassSpecAnalyses}(x, value)
 
@@ -482,13 +482,13 @@ The \code{MassSpecAnalyses} class represents mass spectrometry (MS) raw data fil
 \itemize{
 \item \code{validate_object(MassSpecAnalyses)}: Validate the MassSpecAnalyses object, returning \code{NULL} if valid or an error if not.
 
-\item \code{get_names(MassSpecAnalyses)}: Get the names of the analyses in the \code{MassSpecAnalyses} object.
+\item \code{get_analysis_names(MassSpecAnalyses)}: Get the names of the analyses in the \code{MassSpecAnalyses} object.
 
-\item \code{get_replicates(MassSpecAnalyses)}: Get the replicates of the analyses in the \code{MassSpecAnalyses} object.
+\item \code{get_replicate_names(MassSpecAnalyses)}: Get the replicates of the analyses in the \code{MassSpecAnalyses} object.
 
 \item \code{set_replicates(MassSpecAnalyses)}: Set the replicates of the analyses in the \code{MassSpecAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
 
-\item \code{get_blanks(MassSpecAnalyses)}: Get the blanks of the analyses in the \code{MassSpecAnalyses} object.
+\item \code{get_blank_names(MassSpecAnalyses)}: Get the blanks of the analyses in the \code{MassSpecAnalyses} object.
 
 \item \code{set_blanks(MassSpecAnalyses)}: Set the blanks of the analyses in the \code{MassSpecAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
 

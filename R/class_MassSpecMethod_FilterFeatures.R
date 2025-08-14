@@ -262,7 +262,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         )) &&
           conservative
       ) {
-        rpl <- unique(get_replicates(engine$Analyses))
+        rpl <- unique(get_replicate_names(engine$Analyses))
         groups <- get_groups(
           engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
@@ -356,7 +356,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         )) &&
           conservative
       ) {
-        rpl <- unique(get_replicates(engine$Analyses))
+        rpl <- unique(get_replicate_names(engine$Analyses))
         groups <- get_groups(
           engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
@@ -450,7 +450,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
         )) &&
           conservative
       ) {
-        rpl <- unique(get_replicates(engine$Analyses))
+        rpl <- unique(get_replicate_names(engine$Analyses))
         groups <- get_groups(
           engine$Results$MassSpecResults_NonTargetAnalysis,
           filtered = FALSE,
@@ -542,9 +542,9 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           FALSE
         ))
       ) {
-        rpl <- unique(get_replicates(engine$Analyses))
+        rpl <- unique(get_replicate_names(engine$Analyses))
         rpl <- paste(rpl, "_sd", sep = "")
-        names(rpl) <- unique(get_replicates(engine$Analyses))
+        names(rpl) <- unique(get_replicate_names(engine$Analyses))
 
         groups <- get_groups(
           engine$Results$MassSpecResults_NonTargetAnalysis,
@@ -602,7 +602,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
               x
             },
             feature_list,
-            get_replicates(engine$Analyses)
+            get_replicate_names(engine$Analyses)
           )
 
           feature_list <- lapply(
@@ -656,9 +656,9 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           FALSE
         ))
       ) {
-        rpl <- unique(get_replicates(engine$Analyses))
+        rpl <- unique(get_replicate_names(engine$Analyses))
         rpl <- paste(rpl, "_n", sep = "")
-        names(rpl) <- unique(get_replicates(engine$Analyses))
+        names(rpl) <- unique(get_replicate_names(engine$Analyses))
 
         groups <- get_groups(
           engine$Results$MassSpecResults_NonTargetAnalysis,
@@ -717,7 +717,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
               x
             },
             feature_list,
-            get_replicates(engine$Analyses)
+            get_replicate_names(engine$Analyses)
           )
 
           feature_list <- lapply(

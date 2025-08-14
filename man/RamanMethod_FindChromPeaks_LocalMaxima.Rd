@@ -2,13 +2,16 @@
 % Please edit documentation in R/class_RamanMethod_FindChromPeaks.R
 \name{RamanMethod_FindChromPeaks_LocalMaxima}
 \alias{RamanMethod_FindChromPeaks_LocalMaxima}
-\title{\strong{RamanMethod_FindChromPeaks_LocalMaxima}}
+\alias{validate_object.RamanMethod_FindChromPeaks_LocalMaxima}
+\title{RamanMethod_FindChromPeaks_LocalMaxima Class}
 \usage{
 RamanMethod_FindChromPeaks_LocalMaxima(
   minWidth = 0,
   maxWidth = 0,
   minHeight = 0
 )
+
+\method{validate_object}{RamanMethod_FindChromPeaks_LocalMaxima}(x)
 }
 \arguments{
 \item{minWidth}{Numeric (length 1) with the minimum width of a peak.}
@@ -16,6 +19,8 @@ RamanMethod_FindChromPeaks_LocalMaxima(
 \item{maxWidth}{Numeric (length 1) with the maximum width of a peak.}
 
 \item{minHeight}{Numeric (length 1) with the minimum height of a peak.}
+
+\item{x}{A RamanMethod_FindChromPeaks_LocalMaxima object.}
 }
 \value{
 A RamanMethod_FindChromPeaks_LocalMaxima object.
@@ -23,3 +28,8 @@ A RamanMethod_FindChromPeaks_LocalMaxima object.
 \description{
 Finds peak maxima in the chromatographic dimension of multiple Raman spectra.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_FindChromPeaks_LocalMaxima)}: Validate the RamanMethod_FindChromPeaks_LocalMaxima object, returning NULL if valid.
+
+}}

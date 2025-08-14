@@ -1,5 +1,4 @@
 # MARK: RamanEngine
-# RamanEngine -----
 #' Raman Spectroscopy Engine
 #'
 #' @description The *RamanEngine* R6 class is a framework for parsing, processing, inspecting and 

@@ -2,12 +2,17 @@
 % Please edit documentation in R/class_RamanMethod_SubtractBlankSpectra.R
 \name{RamanMethod_SubtractBlankSpectra_StreamFind}
 \alias{RamanMethod_SubtractBlankSpectra_StreamFind}
-\title{\strong{RamanMethod_SubtractBlankSpectra_StreamFind}}
+\alias{validate_object.RamanMethod_SubtractBlankSpectra_StreamFind}
+\title{RamanMethod_SubtractBlankSpectra_StreamFind Class}
 \usage{
 RamanMethod_SubtractBlankSpectra_StreamFind(negativeToZero = FALSE)
+
+\method{validate_object}{RamanMethod_SubtractBlankSpectra_StreamFind}(x)
 }
 \arguments{
 \item{negativeToZero}{Logical (length 1) indicating if negative values should be set to zero.}
+
+\item{x}{A RamanMethod_SubtractBlankSpectra_StreamFind object.}
 }
 \value{
 A RamanMethod_SubtractBlankSpectra_StreamFind object.
@@ -15,3 +20,8 @@ A RamanMethod_SubtractBlankSpectra_StreamFind object.
 \description{
 Subtracts the blank spectra to each analysis according to the blank assignment.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_SubtractBlankSpectra_StreamFind)}: Validate the RamanMethod_SubtractBlankSpectra_StreamFind object, returning NULL if valid.
+
+}}

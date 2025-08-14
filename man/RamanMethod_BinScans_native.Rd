@@ -2,6 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_BinScans.R
 \name{RamanMethod_BinScans_native}
 \alias{RamanMethod_BinScans_native}
+\alias{validate_object.RamanMethod_BinScans_native}
 \title{Raman Method for Binning Time Scans (native algorithm)}
 \usage{
 RamanMethod_BinScans_native(
@@ -10,6 +11,8 @@ RamanMethod_BinScans_native(
   global = FALSE,
   refAnalysis = NA_integer_
 )
+
+\method{validate_object}{RamanMethod_BinScans_native}(x)
 }
 \arguments{
 \item{mode}{Character (length 1) with the binning mode. Possible values are \code{scans} and \code{time}.
@@ -22,6 +25,8 @@ the binning is done by time unit (e.g., seconds or minutes).}
 over all analyses. If \code{FALSE}, the binning is performed for each analysis.}
 
 \item{refAnalysis}{Integer (length 1) with the reference analysis index to use for binning.}
+
+\item{x}{A RamanMethod_BinScans_native object.}
 }
 \value{
 A RamanMethod_BinScans_native object.
@@ -29,3 +34,8 @@ A RamanMethod_BinScans_native object.
 \description{
 Merges scans by averaging spectra according to a given binning size.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(RamanMethod_BinScans_native)}: Validate the RamanMethod_BinScans_native object, returning NULL if valid.
+
+}}

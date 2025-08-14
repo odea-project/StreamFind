@@ -45,8 +45,8 @@ dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 a <- MassSpecAnalyses(ms_files)
 a <- set_replicates(a, c("sample", "sample", "sample"))
-get_replicates(a)
-get_blanks(a)
+get_replicate_names(a)
+get_blank_names(a)
 info(a)
 get_spectra_tic(a, as_list = TRUE)
 get_spectra_bpc(a)
@@ -189,6 +189,7 @@ class(engine)
 
 
 # App -----
+library(StreamFind)
 ms_files <- StreamFindData::get_ms_file_paths()[1:3]
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
@@ -204,6 +205,44 @@ engine <- MassSpecEngine$new(
 engine$save("engine.rds")
 show(engine$Metadata)
 engine$run_app()
+
+
+
+# RamanAnalyses -----
+raman_files <- StreamFindData::get_raman_file_paths()[1:2]
+a <- RamanAnalyses(raman_files)
+info(a)
+plot_spectra(a, analyses = 1)
+
+# RamanEngine -----
+raman_files <- StreamFindData::get_raman_file_paths()[1:2]
+b <- RamanEngine$new(metadata = list(name = "test engine for Raman analysis"), analyses = raman_files)
+b$save("raman.rds")
+show(b$Metadata)
+b$run_app()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -337,6 +376,7 @@ clear_cache("calculate_quality")
 clear_cache("fill_features")
 
 ms$analyses@analyses[[1]]
+
 
 
 
