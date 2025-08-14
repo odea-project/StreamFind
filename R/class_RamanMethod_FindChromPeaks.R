@@ -62,35 +62,28 @@ run.RamanMethod_FindChromPeaks_LocalMaxima <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No Spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  if (!engine$Spectra$has_results_chromatograms) {
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  if (!any(vapply(spec_obj$spectra, function(s) "rt" %in% colnames(s), logical(1)))) {
     warning("No chromatograms available! Not done.")
     return(FALSE)
   }
-
   parameters <- x$parameters
-
-  spectra <- engine$Spectra$spectra
-
+  spectra <- spec_obj$spectra
   chrom_peaks <- lapply(spectra, function(s) {
     if (nrow(s) == 0) {
       return(data.table::data.table())
     }
-
     intensity <- NULL
-
     s <- s[, .(intensity = sum(intensity)), by = "rt"]
-
     find_relevant_peaks <- function(x, y, min_width, max_width, min_height) {
       peaks <- numeric(0)
       peaks_left <- numeric(0)
@@ -100,11 +93,9 @@ run.RamanMethod_FindChromPeaks_LocalMaxima <- function(x, engine = NULL) {
       heights_right <- numeric(0)
       peak_bases <- numeric(0)
       peak_areas <- numeric(0)
-
       is_peak <- function(i, y) {
         y[i] > y[i - 1] && y[i] > y[i + 1]
       }
-
       i <- 2
       while (i < length(y) - 1) {
         if (is_peak(i, y)) {
@@ -156,7 +147,6 @@ run.RamanMethod_FindChromPeaks_LocalMaxima <- function(x, engine = NULL) {
         }
         i <- i + 1
       }
-
       return(data.table::data.table(
         peak = seq_along(peaks),
         rt = x[peaks],
@@ -178,7 +168,6 @@ run.RamanMethod_FindChromPeaks_LocalMaxima <- function(x, engine = NULL) {
       max_width = parameters$maxWidth,
       min_height = parameters$minHeight
     )
-
     if (FALSE) {
       plot(
         s$rt,
@@ -200,13 +189,12 @@ run.RamanMethod_FindChromPeaks_LocalMaxima <- function(x, engine = NULL) {
         pch = 19
       )
     }
-
     return(peak_results)
   })
 
   names(chrom_peaks) <- names(spectra)
-
-  engine$Spectra$chrom_peaks <- chrom_peaks
+  spec_obj$chrom_peaks <- chrom_peaks
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Chromatograms peaks found and added!"))
   TRUE
 }
@@ -292,39 +280,31 @@ run.RamanMethod_FindChromPeaks_pracma <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No Spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  if (!engine$Spectra$has_results_chromatograms) {
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  if (!any(vapply(spec_obj$spectra, function(s) "rt" %in% colnames(s), logical(1)))) {
     warning("No chromatograms available! Not done.")
     return(FALSE)
   }
-
   parameters <- x$parameters
-
-  spectra <- engine$Spectra$spectra
-
+  spectra <- spec_obj$spectra
   chrom_peaks <- lapply(spectra, function(s) {
     if (nrow(s) == 0) {
       return(data.table::data.table())
     }
-
     if (!"rt" %in% colnames(s)) {
       return(data.table::data.table())
     }
-
     intenisty <- NULL
-
     s <- s[, .(intensity = sum(intensity)), by = "rt"]
-
     pks <- .find_peaks(
       s,
       "rt",
@@ -336,28 +316,22 @@ run.RamanMethod_FindChromPeaks_pracma <- function(x, engine = NULL) {
       parameters$minPeakWidth,
       parameters$minSN
     )
-
     if (nrow(pks) == 0) {
       return(data.table::data.table())
     }
-
     pks$idx <- NULL
-
     data.table::setnames(
       pks,
       c("xVal", "min", "max"),
       c("rt", "rtmin", "rtmax"),
       skip_absent = TRUE
     )
-
     data.table::setcolorder(pks, c("peak"))
-
     pks
   })
-
   names(chrom_peaks) <- names(spectra)
-
-  engine$Spectra$chrom_peaks <- chrom_peaks
+  spec_obj$chrom_peaks <- chrom_peaks
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Chromatograms peaks found and added!"))
   TRUE
 }

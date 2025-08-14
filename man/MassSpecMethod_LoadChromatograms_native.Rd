@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadChromatograms.R
 \name{MassSpecMethod_LoadChromatograms_native}
 \alias{MassSpecMethod_LoadChromatograms_native}
-\title{MassSpecMethod_LoadChromatograms_native}
+\alias{validate_object.MassSpecMethod_LoadChromatograms_native}
+\title{MassSpecMethod_LoadChromatograms_native Class}
 \usage{
 MassSpecMethod_LoadChromatograms_native(
   chromatograms = 1,
@@ -10,6 +11,8 @@ MassSpecMethod_LoadChromatograms_native(
   rtmax = 0,
   minIntensity = 0
 )
+
+\method{validate_object}{MassSpecMethod_LoadChromatograms_native}(x)
 }
 \arguments{
 \item{chromatograms}{A numeric or character vector with the chromatogram indices or names to be
@@ -20,6 +23,8 @@ used, respectively.}
 \item{rtmax}{A numeric vector with the maximum retention time values to be used.}
 
 \item{minIntensity}{A numeric value with the minimum intensity to be used.}
+
+\item{x}{A MassSpecMethod_LoadChromatograms_native object.}
 }
 \value{
 A \code{MassSpecMethod_LoadChromatograms_native} object.
@@ -27,3 +32,8 @@ A \code{MassSpecMethod_LoadChromatograms_native} object.
 \description{
 Loads chromatograms from mass spectrometry analyses.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_LoadChromatograms_native)}: Validate the MassSpecMethod_LoadChromatograms_native object, returning NULL if valid.
+
+}}

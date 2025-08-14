@@ -2,12 +2,17 @@
 % Please edit documentation in R/class_MassSpecMethod_SubtractBlankSpectra.R
 \name{MassSpecMethod_SubtractBlankSpectra_StreamFind}
 \alias{MassSpecMethod_SubtractBlankSpectra_StreamFind}
-\title{MassSpecMethod_SubtractBlankSpectra_StreamFind S7 class}
+\alias{validate_object.MassSpecMethod_SubtractBlankSpectra_StreamFind}
+\title{MassSpecMethod_SubtractBlankSpectra_StreamFind Class}
 \usage{
 MassSpecMethod_SubtractBlankSpectra_StreamFind(negativeToZero = FALSE)
+
+\method{validate_object}{MassSpecMethod_SubtractBlankSpectra_StreamFind}(x)
 }
 \arguments{
 \item{negativeToZero}{Logical (length 1) indicating if negative values should be set to zero.}
+
+\item{x}{A MassSpecMethod_SubtractBlankSpectra_StreamFind object.}
 }
 \value{
 A MassSpecMethod_SubtractBlankSpectra_StreamFind object.
@@ -15,3 +20,8 @@ A MassSpecMethod_SubtractBlankSpectra_StreamFind object.
 \description{
 Subtracts the blank spectra to each analysis according to the blank assignment.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_SubtractBlankSpectra_StreamFind)}: Validate the MassSpecMethod_SubtractBlankSpectra_StreamFind object, returning NULL if valid.
+
+}}

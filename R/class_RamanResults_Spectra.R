@@ -63,12 +63,12 @@ show.RamanResults_Spectra <- function(x) {
   if (length(x$spectra) > 0) {
     cat("Number spectra: ", length(x$spectra), "\n")
     cat("Averaged: ", x$is_averaged, "\n")
-    if (x$has_peaks) {
+    if (length(x$peaks) > 0) {
       cat("Number peaks: ", vapply(x$peaks, nrow, 0), "\n")
     } else {
       cat("Number peaks: ", 0, "\n")
     }
-    if (x$has_chrom_peaks) {
+    if (length(x$chrom_peaks) > 0) {
       cat("Number chrom peaks: ", vapply(x$chrom_peaks, nrow, 0), "\n")
     } else {
       cat("Number chrom peaks: ", 0, "\n")

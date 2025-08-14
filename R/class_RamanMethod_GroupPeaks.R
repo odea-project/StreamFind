@@ -51,42 +51,30 @@ run.RamanMethod_GroupPeaks_native <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  if (!engine$Spectra$has_chrom_peaks) {
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  if (length(spec_obj$chrom_peaks) == 0) {
     warning("No chromatographic peaks found! Not done.")
     return(FALSE)
   }
-
   fillMissingPeaks <- x$parameters$fillMissingPeaks
-
-  chrom_peaks <- engine$Spectra$chrom_peaks
-
-  spec_list <- engine$Spectra$spectra
-
+  chrom_peaks <- spec_obj$chrom_peaks
+  spec_list <- spec_obj$spectra
   analyses_names <- names(chrom_peaks)
-
   chrom_peaks <- rbindlist(chrom_peaks, idcol = "analysis")
-
   peak_numbers <- unique(chrom_peaks$peak)
-
   number_peaks <- length(peak_numbers)
-
   chrom_peaks$group <- NA_character_
-
   group_number <- 1
-
   filled_peaks <- 0
-
   for (p in seq_len(nrow(chrom_peaks))) {
     if (!is.na(chrom_peaks$group[p])) {
       next
@@ -102,7 +90,6 @@ run.RamanMethod_GroupPeaks_native <- function(x, engine = NULL) {
       round(mean(temp$rt), digits = 0)
     )
     chrom_peaks$group[sel_peaks] <- group_name
-
     if (fillMissingPeaks && any(!analyses_names %in% temp$analysis)) {
       temp_rtmax <- max(temp$rtmax)
       temp_rtmin <- min(temp$rtmin)
@@ -161,14 +148,12 @@ run.RamanMethod_GroupPeaks_native <- function(x, engine = NULL) {
     }
     group_number <- group_number + 1
   }
-
   setorder(chrom_peaks, analysis, rt)
-
   split_analysis_vec <- chrom_peaks$analysis
   chrom_peaks$analysis <- NULL
   chrom_peaks <- split(chrom_peaks, split_analysis_vec)
-
-  engine$Spectra$chrom_peaks <- chrom_peaks
+  spec_obj$chrom_peaks <- chrom_peaks
+  engine$Results <- spec_obj
   message(paste0(
     "\U2713 ",
     "Chromatographic peaks grouped into ",

@@ -2,9 +2,12 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothSpectra.R
 \name{MassSpecMethod_SmoothSpectra_savgol}
 \alias{MassSpecMethod_SmoothSpectra_savgol}
-\title{MassSpecMethod_SmoothSpectra_savgol S7 class}
+\alias{validate_object.MassSpecMethod_SmoothSpectra_savgo}
+\title{MassSpecMethod_SmoothSpectra_savgol Class}
 \usage{
 MassSpecMethod_SmoothSpectra_savgol(fl = 11, forder = 4, dorder = 0)
+
+\method{validate_object}{MassSpecMethod_SmoothSpectra_savgo}(x)
 }
 \arguments{
 \item{fl}{Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.}
@@ -14,6 +17,8 @@ MassSpecMethod_SmoothSpectra_savgol(fl = 11, forder = 4, dorder = 0)
 
 \item{dorder}{Numeric (length 1) with the order of the derivative
 (0 = smoothing, 1 = first derivative, etc.).}
+
+\item{x}{A MassSpecMethod_SmoothSpectra_savgol object.}
 }
 \value{
 A MassSpecMethod_SmoothSpectra_savgol object.
@@ -21,3 +26,8 @@ A MassSpecMethod_SmoothSpectra_savgol object.
 \description{
 Smooths spectra using the Savitzky-Golay algorithm from the \pkg{pracma} package.
 }
+\section{Functions}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_SmoothSpectra_savgo)}: Validate the MassSpecMethod_SmoothSpectra_savgol object, returning NULL if valid.
+
+}}

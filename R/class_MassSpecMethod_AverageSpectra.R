@@ -1,8 +1,8 @@
-#' Mass Spectrometry Method for Averaging Spectra (StreamFind algorithm)
+#' @title MassSpecMethod_AverageSpectra_StreamFind Class
 #'
 #' @description Averages spectra based on variables.
-#' 
-#' @param by Character (length 1) with the grouping variable for averaging. Possible variables are 
+#'
+#' @param by Character (length 1) with the grouping variable for averaging. Possible variables are
 #' `replicates`, `chrom_peaks`, `rt`, `replicates+chrom_peaks`, `replicates+rt`, `chrom_peaks+rt`,
 #' `replicates+chrom_peaks+rt`.
 #' @param weightedAveraged Logical (length 1) for weighted averaging.
@@ -11,99 +11,101 @@
 #'
 #' @export
 #'
-MassSpecMethod_AverageSpectra_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_AverageSpectra_StreamFind",
-  parent = S7::new_S3_class("ProcessingStep"),
-  package = "StreamFind",
-  
-  constructor = function(by = "replicates", weightedAveraged = TRUE) {
-    
-    S7::new_object(
-      ProcessingStep(
-        data_type = "MassSpec",
-        method = "AverageSpectra",
-        required = "LoadSpectra",
-        algorithm = "StreamFind",
-        parameters = list(
-          by = by,
-          weightedAveraged = weightedAveraged
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "StreamFind",
-        developer = "Ricardo Cunha",
-        contact = "cunha@iuta.de",
-        link = "https://odea-project.github.io/StreamFind",
-        doi = NA_character_
-      )
-    )
-  },
-  
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
-    checkmate::assert_choice(self@method, "AverageSpectra")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
-    checkmate::assert_choice(
-      self@parameters$by,
-      c(
-        "replicates",
-        "chrom_peaks",
-        "rt",
-        "replicates+chrom_peaks",
-        "replicates+rt",
-        "chrom_peaks+rt",
-        "replicates+chrom_peaks+rt"
-      )
-    )
-    checkmate::assert_logical(self@parameters$weightedAveraged, max.len = 1)
-    NULL
+MassSpecMethod_AverageSpectra_StreamFind <- function(
+  by = "replicates",
+  weightedAveraged = TRUE
+) {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "AverageSpectra",
+    required = "LoadSpectra",
+    algorithm = "StreamFind",
+    parameters = list(
+      by = by,
+      weightedAveraged = weightedAveraged
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid MassSpecMethod_AverageSpectra_StreamFind object!")
   }
-)
+}
+#' @describeIn MassSpecMethod_AverageSpectra_StreamFind Validate the MassSpecMethod_AverageSpectra_StreamFind object, returning NULL if valid.
+#' @param x A MassSpecMethod_AverageSpectra_StreamFind object.
+#' @export
+#'
+validate_object.MassSpecMethod_AverageSpectra_StreamFind <- function(x) {
+  checkmate::assert_choice(x$type, "MassSpec")
+  checkmate::assert_choice(x$method, "AverageSpectra")
+  checkmate::assert_choice(x$algorithm, "StreamFind")
+  checkmate::assert_choice(
+    x$parameters$by,
+    c(
+      "replicates",
+      "chrom_peaks",
+      "rt",
+      "replicates+chrom_peaks",
+      "replicates+rt",
+      "chrom_peaks+rt",
+      "replicates+chrom_peaks+rt"
+    )
+  )
+  checkmate::assert_logical(x$parameters$weightedAveraged, max.len = 1)
+  NextMethod()
+  NULL
+}
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine = NULL) {
-  
+run.MassSpecMethod_AverageSpectra_StreamFind <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
-  
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
-  if (!engine$Analyses@has_results_spectra) {
+  if (is.null(engine$Results[["MassSpecResults_Spectra"]])) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
-  
-  if (engine$Spectra@is_averaged) {
+  spec_obj <- engine$Results[["MassSpecResults_Spectra"]]
+  if (spec_obj$is_averaged) {
     warning("Spectra are already averaged! Not done.")
     return(FALSE)
   }
-  
-  spectra_list <- engine$Spectra@spectra
-  
-  spectra <- data.table::rbindlist(spectra_list, idcol = "analysis", fill = TRUE)
-  
-  if (engine$Spectra@is_averaged) {
-    spectra$replicate <- spectra$analysis
-  } else {
-    rpl <- engine$Analyses@replicates
-    spectra$replicate <- rpl[spectra$analysis]
-  }
-  
+  spectra_list <- spec_obj$spectra
+  spectra <- data.table::rbindlist(
+    spectra_list,
+    idcol = "analysis",
+    fill = TRUE
+  )
+  rpl <- spec_obj$replicates
+  spectra$replicate <- rpl[spectra$analysis]
   groupCols <- c("mz", "mass", "bins")
-  if (grepl("replicates", x$parameters$by, fixed = FALSE)) groupCols <- c("replicate", groupCols)
-  if (grepl("chrom_peaks", x$parameters$by, fixed = FALSE)) groupCols <- c("chrom_peaks", groupCols)
-  if (grepl("rt", x$parameters$by, fixed = FALSE)) groupCols <- c("rt", groupCols)
+  if (grepl("replicates", x$parameters$by, fixed = FALSE)) {
+    groupCols <- c("replicate", groupCols)
+  }
+  if (grepl("chrom_peaks", x$parameters$by, fixed = FALSE)) {
+    groupCols <- c("chrom_peaks", groupCols)
+  }
+  if (grepl("rt", x$parameters$by, fixed = FALSE)) {
+    groupCols <- c("rt", groupCols)
+  }
   groupCols <- groupCols[groupCols %in% colnames(spectra)]
-  
   if ("chrom_peaks" %in% groupCols) {
-    if (engine$Analyses$has_results_chromatograms) {
-      if (engine$chromatograms$has_peaks) {
+    if (!is.null(engine$Results[["MassSpecResults_Chromatograms"]])) {
+      chrom_obj <- engine$Results[["MassSpecResults_Chromatograms"]]
+      if (length(chrom_obj$peaks) > 0) {
         if (!"id" %in% colnames(spectra)) {
           warning(
             "Filter spectra to keep only from chromatographic peaks ",
@@ -119,30 +121,37 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
       }
     }
   }
-  
   if ("replicate" %in% groupCols) {
     spectra$analysis <- NULL
   } else {
     groupCols <- c("analysis", groupCols)
   }
-  
   if ("id" %in% colnames(spectra) && !"id" %in% groupCols) {
     spectra$id <- NULL
   }
-  
   if (!"rt" %in% groupCols) {
     spectra$rt <- NULL
   }
-  
   if (x$parameters$weightedAveraged) {
     intensity <- NULL
-    grouped_spectra <- spectra[, lapply(.SD, weighted.mean, w = intensity), by = groupCols]
-    
+    grouped_spectra <- spectra[,
+      lapply(.SD, weighted.mean, w = intensity),
+      by = groupCols
+    ]
   } else {
     other_cols <- setdiff(colnames(spectra), groupCols)
-    grouped_spectra <- spectra[, .(intensity = mean(intensity)), by = groupCols, .SDcols = other_cols]
+    # grouped_spectra <- spectra[,
+    #   .(intensity = mean(intensity)),
+    #   by = groupCols,
+    #   .SDcols = other_cols
+    # ]
+    grouped_spectra <- spectra[
+      ,
+      lapply(.SD, mean),
+      by = groupCols,
+      .SDcols = other_cols
+    ]
   }
-  
   if ("replicate" %in% groupCols) {
     if ("mz" %in% colnames(grouped_spectra)) {
       setorder(grouped_spectra, mz, replicate)
@@ -157,7 +166,9 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
         grouped_spectra_list[[r]] <- data.table::data.table()
       }
     }
-    grouped_spectra_list <- grouped_spectra_list[unique(get_replicate_names(engine$Analyses))]
+    grouped_spectra_list <- grouped_spectra_list[unique(get_replicate_names(
+      engine$Analyses
+    ))]
   } else {
     if ("mz" %in% colnames(grouped_spectra)) {
       setorder(grouped_spectra, mz, analysis)
@@ -174,11 +185,9 @@ S7::method(run, MassSpecMethod_AverageSpectra_StreamFind) <- function(x, engine 
     }
     grouped_spectra_list <- grouped_spectra_list[names(engine$Analyses)]
   }
-  
-  spectra <- engine$Spectra
-  spectra$spectra <- grouped_spectra_list
-  spectra$is_averaged <- TRUE
-  engine$Spectra <- spectra
+  spec_obj$spectra <- grouped_spectra_list
+  spec_obj$is_averaged <- TRUE
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Averaged spectra!"))
   invisible(TRUE)
 }

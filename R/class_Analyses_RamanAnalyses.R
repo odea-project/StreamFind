@@ -99,13 +99,13 @@ get_replicate_names.RamanAnalyses <- function(x) {
   vapply(x$analyses, function(x) x$replicate, NA_character_)
 }
 
-# MARK: set_replicates
+# MARK: set_replicate_names
 #' @describeIn RamanAnalyses Set the replicates of the analyses in the `RamanAnalyses` object. The argument `value` must be a character vector with the same length as the number of analyses in the object.
 #' @template arg-raman-x
 #' @template arg-value
 #' @export
 #'
-set_replicates.RamanAnalyses <- function(x, value) {
+set_replicate_names.RamanAnalyses <- function(x, value) {
   if (length(value) != length(x$analyses)) {
     stop("Length of value must be equal to the number of analyses!")
   }
@@ -124,13 +124,13 @@ get_blank_names.RamanAnalyses <- function(x) {
   vapply(x$analyses, function(x) x$blank, NA_character_)
 }
 
-# MARK: set_blanks
+# MARK: set_blank_names
 #' @describeIn RamanAnalyses Set the blanks of the analyses in the `RamanAnalyses` object. The argument `value` must be a character vector with the same length as the number of analyses in the object.
 #' @template arg-raman-x
 #' @template arg-value
 #' @export
 #'
-set_blanks.RamanAnalyses <- function(x, value) {
+set_blank_names.RamanAnalyses <- function(x, value) {
   if (length(value) != length(x$analyses)) {
     stop("Length of value must be equal to the number of analyses!")
   }

@@ -72,30 +72,25 @@ run.MassSpecMethod_BinSpectra_StreamFind <- function(
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (is.null(engine$Results$MassSpecResults_Spectra)) {
+  if (is.null(engine$Results[["MassSpecResults_Spectra"]])) {
     warning("No spectra results object available! Not done.")
     return(FALSE)
   }
-
-  spec_list <- engine$Results$MassSpecResults_Spectra$spectra
-
+  spec_obj <- engine$Results[["MassSpecResults_Spectra"]]
+  spec_list <- spec_obj$spectra
   binNames = x$parameters$binNames
   binValues = x$parameters$binValues
   byUnit = x$parameters$byUnit
   refBinAnalysis = x$parameters$refBinAnalysis
-
   useRefBins <- FALSE
   ref_bins_seq_list <- NULL
   ref_bin_matrix <- NULL
   ref_bin_key <- NULL
   . <- NULL
-
   if (!is.na(refBinAnalysis)) {
     if (is.integer(refBinAnalysis) && length(refBinAnalysis) == 1) {
       refBinAnalysis <- names(spec_list)[refBinAnalysis]
@@ -113,7 +108,6 @@ run.MassSpecMethod_BinSpectra_StreamFind <- function(
   } else {
     refSpec <- data.table::rbindlist(spec_list)
   }
-
   if (byUnit && !is.null(binNames)) {
     if (!all(names(binNames) %in% colnames(refSpec))) {
       stop("Names in bins not found in spectra columns")
@@ -135,14 +129,12 @@ run.MassSpecMethod_BinSpectra_StreamFind <- function(
     })
     if (length(ref_bin_key) > 0) useRefBins <- TRUE
   }
-
   spec_binned <- lapply(
     spec_list,
     function(z, ref_bin_key, ref_bin_matrix, binNames, binValues, byUnit) {
       if (nrow(z) == 0) {
         return(data.table::data.table())
       }
-
       if (!byUnit && binNames[1] %in% colnames(z)) {
         intensity <- NULL
         unitVal <- unique(z[[binNames[1]]])
@@ -217,9 +209,8 @@ run.MassSpecMethod_BinSpectra_StreamFind <- function(
   )
   tryCatch(
     {
-      org_spec <- engine$Results$MassSpecResults_Spectra
-      org_spec$spectra <- spec_binned
-      engine$Results <- org_spec
+      spec_obj$spectra <- spec_binned
+      engine$Results <- spec_obj
       message(paste0("\U2713 ", "Spectra binned!"))
       return(TRUE)
     },

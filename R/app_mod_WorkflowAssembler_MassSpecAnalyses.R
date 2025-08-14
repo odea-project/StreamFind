@@ -98,7 +98,7 @@
         info(analyses),
         input$AnalysesTable_cell_edit
       )
-      analyses <- set_replicates(analyses, analyses_info$replicate)
+      analyses <- set_replicate_names(analyses, analyses_info$replicate)
       if (any(!(analyses_info$blank %in% analyses_info$replicate))) {
         shiny::showNotification(
           "Blanks must be in the replicate column!",
@@ -106,7 +106,7 @@
           type = "warning"
         )
       } else {
-        analyses <- set_blanks(analyses, analyses_info$blank)
+        analyses <- set_blank_names(analyses, analyses_info$blank)
       }
       reactive_analyses(analyses)
     })

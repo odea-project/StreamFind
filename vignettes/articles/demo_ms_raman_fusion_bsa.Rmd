@@ -40,7 +40,8 @@ knitr::opts_chunk$set(
   comment = ""
 )
 
-main_dir <- "C:/Users/apoli/Documents/example_files/isoft/BSA_products"
+main_dir <- "E:/example_files/isoft/BSA_products"
+#main_dir <- "C:/Users/apoli/Documents/example_files/isoft/BSA_products"
 all_files <- list.files(main_dir, full.names = TRUE)
 ms_files <- all_files[grepl(".d$", all_files)]
 raman_files <- list.files(main_dir, pattern = ".asc$", full.names = TRUE)
@@ -90,16 +91,19 @@ ms <- StreamFind::MassSpecEngine$new(
 )
 
 # Changes the analysis replicate names
-ms$add_replicate_names(sub("_\\d+$", "", ms$get_analysis_names()))
+ms$Analyses <- set_replicate_names(
+  ms$Analyses,
+  sub("_\\d+$", "", get_analysis_names(ms$Analyses))
+)
 
 # Overview
-ms$Analyses$info[, c(1:2, 4, 5)]
+info(ms$Analyses)[, c(1:2, 4, 5)]
 ```
 
 ```{r plot-spectra, fig.cap="Total ion chromatograms (TIC) for each analysis replicate."}
 # Note that the TIC chromatograms are not yet loaded (see below)
 # In plot_spectra_tic, the TIC from spectra headers are used
-ms$plot_spectra_tic(colorBy = "replicates")
+plot_spectra_tic(ms$Analyses, colorBy = "replicates")
 ```
 
 As pre-processing, the following steps are applied:
@@ -113,7 +117,6 @@ The individual processing steps are applied according to *ProcessingStep* object
 ```{r load-chroms}
 # Loads the TIC chromatograms
 ms$run(MassSpecMethod_LoadChromatograms_native(chromatograms = "TIC"))
-ms$Analyses$has_results_chromatograms
 ```
 
 ```{r smooth-chroms}
@@ -122,7 +125,10 @@ ms$run(MassSpecMethod_SmoothChromatograms_movingaverage(windowSize = 5))
 ```
 
 ```{r plot-chroms, fig.cap="Smoothed TICs for each analysis replicate."}
-ms$plot_chromatograms(colorBy = "replicates+targets", normalized = FALSE)
+plot_chromatograms(
+  ms$Results$MassSpecResults_Chromatograms,
+  colorBy = "replicates+targets", normalized = FALSE
+)
 ```
 
 ```{r localmaxima-chroms}
@@ -141,19 +147,25 @@ ms$run(ps_maxima)
 ```
 
 ```{r plot-chrom-peaks,fig.cap="TIC with integrated peaks."}
-ms$plot_chromatograms_peaks(colorBy = "replicates+targets")
+plot_chromatograms_peaks(
+  ms$Results$MassSpecResults_Chromatograms,
+  colorBy = "replicates+targets"
+)
 ```
 
 The average retention time of the peaks was `r mean(data.table::rbindlist(ms$Chromatograms$peaks)$rt)` seconds with a standard deviation of `r sd(data.table::rbindlist(ms$Chromatograms$peaks)$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges. The *m/z* range needs to be defined once and is equal to all other analyses if the compound of interest is BSA. As for the retention time, shifts might occur due to the chromatographic separation.
 
 ```{r rt-av}
 # Average retention time of the main peak
-rt_av <- mean(data.table::rbindlist(ms$Chromatograms$peaks)$rt)
+rt_av <- mean(
+  data.table::rbindlist(ms$Results$MassSpecResults_Chromatograms$peaks)$rt
+)
 rt_av
 ```
 
 ```{r plot-spectra-raw, fig.cap="Spectra of BSA for the first analysis at the peak maximum."}
-ms$plot_spectra_ms1(
+plot_spectra_ms1(
+  ms$Analyses,
   analyses = 1,
   rt = rt_av,
   sec = 0.5,
@@ -229,11 +241,14 @@ show(ms$Workflow)
 ```
 
 ```{r plot-charges, fig.cap="Charges for the extracted spectra."}
-plot_spectra_charges(ms$Spectra, colorBy = "analyses")
+plot_spectra_charges(
+  ms$Results$MassSpecResults_Spectra,
+  colorBy = "analyses"
+)
 ```
 
 ```{r plot_spectra,fig.cap="Deconvoluted and pre-processed spectra for each analysis."}
-plot_spectra(ms$Spectra, colorBy = "replicates")
+plot_spectra(ms$Results$MassSpecResults_Spectra, colorBy = "replicates")
 ```
 
 ## Raman
@@ -252,30 +267,37 @@ raman <- RamanEngine$new(
 )
 
 # Modifying the replicate names to match the MS analyses
-raman$add_replicate_names(unique(ms$get_replicate_names())[1:4])
+raman$Analyses <- set_replicate_names(
+  raman$Analyses,
+  unique(get_replicate_names(ms$Analyses))[1:4]
+)
 
-raman$Analyses$info[, c(1:2, 5)]
+info(raman$Analyses)[, c(1:2, 5)]
 ```
 
 ```{r correct-raman-rt, include=FALSE}
-corr_spectra <- raman$Spectra$spectra
+corr_spectra <- lapply(raman$Analyses$analyses, function(x) x$spectra)
 corr_spectra_4 <- corr_spectra[[4]]
 corr_spectra_4$rt <- corr_spectra_4$rt - 68.545
 corr_spectra_4 <- corr_spectra_4[corr_spectra_4$rt > 0, ]
 corr_spectra[[4]] <- corr_spectra_4
 corr_spectra <- lapply(corr_spectra, function(x) x[x$rt < 800, ])
-raman$Spectra <- StreamFind::RamanResults_Spectra(spectra = corr_spectra)
+raman$Analyses$analyses <- Map(function(x, y) {
+  x$spectra <- y
+  x
+}, raman$Analyses$analyses, corr_spectra)
 ```
 
 ```{r raman-plot-chroms, fig.cap="Time series chromatogram for each BSA product. Each data point is a Raman spectrum at a specific retention time."}
-raman$plot_chromatograms(
+plot_chromatograms(
+  raman$Analyses,
   yLab = "Abbundance sum for each spectrum",
   colorBy = "analyses"
 )
 ```
 
 ```{r raman-plot_spectra-raw, fig.cap="Raw averaged Raman spectra for each BSA product between 430 and 440 seconds."}
-raman$plot_spectra(rt = c(430, 440), colorBy = "analyses")
+plot_spectra(raman$Analyses, rt = c(430, 440), colorBy = "analyses")
 ```
 
 As for MS data, the workflow for Raman data is also assembled using an ordered list of *ProcessingStep* objects.
@@ -349,11 +371,11 @@ raman$run_workflow()
 ```
 
 ```{r raman-plot_spectra-baseline, fig.cap="Baseline correction for each spectra."}
-raman$plot_spectra_baseline(colorBy = "replicates")
+plot_spectra_baseline(raman$Analyses, colorBy = "replicates")
 ```
 
 ```{r raman-plot_spectra, fig.cap="Processed Raman spectra for each BSA product."}
-raman$plot_spectra(colorBy = "replicates")
+plot_spectra(raman$Analyses, colorBy = "replicates")
 ```
 
 # Fusion
@@ -361,7 +383,7 @@ raman$plot_spectra(colorBy = "replicates")
 The fusion of MS and Raman data is performed by combining the processed data from both engines. The data is then merged into a single data frame for statistical evaluation using a *StatisticEngine*, as shown in the next chapter.
 
 ```{r fusion}
-ms_mat <- get_spectra_matrix(ms$Spectra)
+ms_mat <- get_spectra_matrix(ms$Results[["MassSpecResults_Spectra"]])
 raman_mat <- get_spectra_matrix(raman$Analyses)
 fused_mat <- cbind(ms_mat, raman_mat)
 attr(fused_mat, "xaxis.name") = "Keys"

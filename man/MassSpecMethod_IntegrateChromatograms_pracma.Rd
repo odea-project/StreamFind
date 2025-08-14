@@ -2,7 +2,8 @@
 % Please edit documentation in R/class_MassSpecMethod_IntegrateChromatograms.R
 \name{MassSpecMethod_IntegrateChromatograms_pracma}
 \alias{MassSpecMethod_IntegrateChromatograms_pracma}
-\title{MassSpecMethod_IntegrateChromatograms_pracma S7 class}
+\alias{validate_object.MassSpecMethod_IntegrateChromatograms_pracma}
+\title{MassSpecMethod_IntegrateChromatograms_pracma Class}
 \usage{
 MassSpecMethod_IntegrateChromatograms_pracma(
   merge = TRUE,
@@ -13,6 +14,8 @@ MassSpecMethod_IntegrateChromatograms_pracma(
   maxPeakWidth = 120,
   minSN = 10
 )
+
+\method{validate_object}{MassSpecMethod_IntegrateChromatograms_pracma}(x)
 }
 \arguments{
 \item{merge}{Logical (length 1) indicating if the nearby peaks should be merged.}
@@ -28,6 +31,8 @@ MassSpecMethod_IntegrateChromatograms_pracma(
 \item{maxPeakWidth}{Numeric (length 1) with the maximum peak width.}
 
 \item{minSN}{Numeric (length 1) with the minimum signal-to-noise ratio.}
+
+\item{x}{A MassSpecMethod_IntegrateChromatograms_pracma object.}
 }
 \value{
 A MassSpecMethod_IntegrateChromatograms_pracma object.
@@ -37,3 +42,8 @@ Integrates chromatograms using the function \code{findpeaks} from the package
 \pkg{pracma} with natively
 added peak exclusion and evaluation steps.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_IntegrateChromatograms_pracma)}: Validate the MassSpecMethod_IntegrateChromatograms_pracma object, returning NULL if valid.
+
+}}

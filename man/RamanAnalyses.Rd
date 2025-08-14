@@ -5,9 +5,9 @@
 \alias{validate_object.RamanAnalyses}
 \alias{get_analysis_names.RamanAnalyses}
 \alias{get_replicate_names.RamanAnalyses}
-\alias{set_replicates.RamanAnalyses}
+\alias{set_replicate_names.RamanAnalyses}
 \alias{get_blank_names.RamanAnalyses}
-\alias{set_blanks.RamanAnalyses}
+\alias{set_blank_names.RamanAnalyses}
 \alias{get_concentrations.RamanAnalyses}
 \alias{set_concentrations.RamanAnalyses}
 \alias{info.RamanAnalyses}
@@ -32,11 +32,11 @@ RamanAnalyses(files = NULL)
 
 \method{get_replicate_names}{RamanAnalyses}(x)
 
-\method{set_replicates}{RamanAnalyses}(x, value)
+\method{set_replicate_names}{RamanAnalyses}(x, value)
 
 \method{get_blank_names}{RamanAnalyses}(x)
 
-\method{set_blanks}{RamanAnalyses}(x, value)
+\method{set_blank_names}{RamanAnalyses}(x, value)
 
 \method{get_concentrations}{RamanAnalyses}(x)
 
@@ -222,11 +222,11 @@ The RamanAnalyses class is used to store a list of Raman spectra.
 
 \item \code{get_replicate_names(RamanAnalyses)}: Get the replicates of the analyses in the \code{RamanAnalyses} object.
 
-\item \code{set_replicates(RamanAnalyses)}: Set the replicates of the analyses in the \code{RamanAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
+\item \code{set_replicate_names(RamanAnalyses)}: Set the replicates of the analyses in the \code{RamanAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
 
 \item \code{get_blank_names(RamanAnalyses)}: Get the blanks of the analyses in the \code{RamanAnalyses} object.
 
-\item \code{set_blanks(RamanAnalyses)}: Set the blanks of the analyses in the \code{RamanAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
+\item \code{set_blank_names(RamanAnalyses)}: Set the blanks of the analyses in the \code{RamanAnalyses} object. The argument \code{value} must be a character vector with the same length as the number of analyses in the object.
 
 \item \code{get_concentrations(RamanAnalyses)}: Get the concentrations of the analyses in the \code{RamanAnalyses} object.
 

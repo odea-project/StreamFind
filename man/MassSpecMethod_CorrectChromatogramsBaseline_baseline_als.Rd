@@ -3,7 +3,8 @@
 %   R/class_MassSpecMethod_CorrectChromatogramsBaseline.R
 \name{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als}
 \alias{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als}
-\title{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als S7 class}
+\alias{validate_object.MassSpecMethod_CorrectChromatogramsBaseline_baseline_als}
+\title{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als Class}
 \usage{
 MassSpecMethod_CorrectChromatogramsBaseline_baseline_als(
   lambda = 5,
@@ -11,6 +12,8 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als(
   maxit = 10,
   liftByLowestNegativeToZero = FALSE
 )
+
+\method{validate_object}{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als}(x)
 }
 \arguments{
 \item{lambda}{Numeric (length 1) with the 2nd derivative constraint.}
@@ -21,6 +24,8 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als(
 
 \item{liftByLowestNegativeToZero}{Logical (length 1) indicating if the corrected chromatogram
 should be lifted by the lowest negative value to zero.}
+
+\item{x}{A MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object.}
 }
 \value{
 A MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object.
@@ -29,3 +34,8 @@ A MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object.
 Performs baseline correction to chromatograms using the Asymmetric Least Squares
 (ALS) algorithm from the \pkg{baseline} package.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_CorrectChromatogramsBaseline_baseline_als)}: Validates the MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object, returning NULL if valid.
+
+}}

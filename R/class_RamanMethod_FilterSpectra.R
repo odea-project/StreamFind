@@ -60,31 +60,28 @@ run.RamanMethod_FilterSpectra_native <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
 
   if (x$parameters$onlyChromPeaksSpectra) {
-    if (!engine$Spectra$has_chrom_peaks) {
+    if (length(spec_obj$chrom_peaks) == 0) {
       warning("No chromatographic peaks found! Not done.")
       return(FALSE)
     }
-
-    spec_list <- engine$Spectra$spectra
-    chrom_peaks <- engine$Spectra$chrom_peaks
-
+    spec_list <- spec_obj$spectra
+    chrom_peaks <- spec_obj$chrom_peaks
     if (!identical(names(chrom_peaks), names(spec_list))) {
       warning("Chromatograms and spectra do not match! Not done.")
       return(FALSE)
     }
-
     sub_spectra <- Map(
       function(z, y) {
         z$id <- NA_character_
@@ -104,27 +101,22 @@ run.RamanMethod_FilterSpectra_native <- function(x, engine = NULL) {
       spec_list,
       chrom_peaks
     )
-
-    engine$Spectra$spectra <- sub_spectra
+    spec_obj$spectra <- sub_spectra
     message(paste0("\U2713 ", "Only spectra from chromatographic peaks kept!"))
   }
 
   topSpectra <- x$parameters$onlyTopChromPeaksSpectra
-
   if (topSpectra > 0) {
-    if (!engine$Spectra$has_chrom_peaks) {
+    if (length(spec_obj$chrom_peaks) == 0) {
       warning("No chromatographic peaks found! Not done.")
       return(FALSE)
     }
-
-    spec_list <- engine$Spectra$spectra
-    chrom_peaks <- engine$Spectra$chrom_peaks
-
+    spec_list <- spec_obj$spectra
+    chrom_peaks <- spec_obj$chrom_peaks
     if (!identical(names(chrom_peaks), names(spec_list))) {
       warning("Chromatograms and spectra do not match! Not done.")
       return(FALSE)
     }
-
     sub_spectra <- Map(
       function(z, y) {
         intensity <- NULL
@@ -150,10 +142,9 @@ run.RamanMethod_FilterSpectra_native <- function(x, engine = NULL) {
       spec_list,
       chrom_peaks
     )
-
-    engine$Spectra$spectra <- sub_spectra
+    spec_obj$spectra <- sub_spectra
     message(paste0("\U2713 ", "Only spectra from chromatographic peaks kept!"))
   }
-
+  engine$Results <- spec_obj
   invisible(TRUE)
 }

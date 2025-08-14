@@ -98,13 +98,13 @@ get_replicate_names.MassSpecAnalyses <- function(x) {
   vapply(x$analyses, function(x) x$replicate, NA_character_)
 }
 
-# MARK: set_replicates
+# MARK: set_replicate_names
 #' @describeIn MassSpecAnalyses Set the replicates of the analyses in the `MassSpecAnalyses` object. The argument `value` must be a character vector with the same length as the number of analyses in the object.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-value
 #' @export
 #'
-set_replicates.MassSpecAnalyses <- function(x, value) {
+set_replicate_names.MassSpecAnalyses <- function(x, value) {
   if (length(value) != length(x$analyses)) {
     stop("Length of value must be equal to the number of analyses!")
   }
@@ -123,13 +123,13 @@ get_blank_names.MassSpecAnalyses <- function(x) {
   vapply(x$analyses, function(x) x$blank, NA_character_)
 }
 
-# MARK: set_blanks
+# MARK: set_blank_names
 #' @describeIn MassSpecAnalyses Set the blanks of the analyses in the `MassSpecAnalyses` object. The argument `value` must be a character vector with the same length as the number of analyses in the object.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-value
 #' @export
 #'
-set_blanks.MassSpecAnalyses <- function(x, value) {
+set_blank_names.MassSpecAnalyses <- function(x, value) {
   if (length(value) != length(x$analyses)) {
     stop("Length of value must be equal to the number of analyses!")
   }
@@ -2246,20 +2246,17 @@ get_raw_chromatograms.MassSpecAnalyses <- function(
   rtmax = 0,
   minIntensity = NULL
 ) {
-  analyses <- .check_analyses_argument(x, analyses)
+  analyses <- .check_analyses_argument(x$analyses, analyses)
   if (is.null(analyses)) {
     return(data.table::data.table())
   }
-
   chroms_list <- lapply(
     x$analyses[analyses],
     function(z, chromatograms) {
       if (nrow(z$chromatograms_headers) == 0) {
         return(data.frame())
       }
-
       idx <- z$chromatograms_headers$index
-
       if (is.numeric(chromatograms)) {
         idx <- idx[chromatograms + 1]
       } else if (is.character(chromatograms)) {
@@ -2269,13 +2266,12 @@ get_raw_chromatograms.MassSpecAnalyses <- function(
       } else if (!is.null(chromatograms)) {
         return(data.table::data.table())
       }
-
-      cache <- StreamFind:::.load_cache_sqlite(
-        "parsed_ms_chromatograms",
-        z$file,
-        idx
-      )
-
+      # cache <- StreamFind:::.load_cache_sqlite(
+      #   "parsed_ms_chromatograms",
+      #   z$file,
+      #   idx
+      # )
+      cache <- NULL
       if (!is.null(cache$data)) {
         message("\U2139 Chromatograms loaded from cache!")
         return(cache$data)
@@ -2289,22 +2285,18 @@ get_raw_chromatograms.MassSpecAnalyses <- function(
       )
 
       chrom <- rcpp_parse_ms_chromatograms(z, idx)
-
       message(" Done!")
 
       if (nrow(chrom) == 0) {
         warning("Parsing chromatograms failed!")
         return(data.table::data.table())
       }
-
       if (!"analysis" %in% colnames(chrom)) {
         chrom$analysis <- z$name
       }
-
       if (!"replicate" %in% colnames(chrom)) {
         chrom$replicate <- z$replicate
       }
-
       if (!is.null(cache$hash)) {
         StreamFind:::.save_cache_sqlite(
           "parsed_ms_chromatograms",
@@ -2313,7 +2305,6 @@ get_raw_chromatograms.MassSpecAnalyses <- function(
         )
         message("\U1f5ab Parsed chromatograms cached!")
       }
-
       chrom
     },
     chromatograms = chromatograms
@@ -2321,19 +2312,15 @@ get_raw_chromatograms.MassSpecAnalyses <- function(
 
   if (length(chroms_list) == length(analyses)) {
     chroms <- data.table::rbindlist(chroms_list, fill = TRUE)
-
     if (nrow(chroms) > 0) {
       data.table::setcolorder(chroms, c("analysis", "replicate"))
     }
-
     if (is.numeric(minIntensity)) {
       chroms <- chroms[chroms$intensity > minIntensity, ]
     }
-
     if (is.numeric(rtmin) && is.numeric(rtmax)) {
       if (rtmax > 0) chroms <- chroms[chroms$rt >= rtmin & chroms$rt <= rtmax]
     }
-
     chroms
   } else {
     warning("Defined analyses or chromatograms not found!")
@@ -2489,15 +2476,15 @@ load_chromatograms.MassSpecAnalyses <- function(
     chroms$analysis <- NULL
     chroms$replicate <- NULL
     chroms <- split(chroms, split_vector)
-    chroms <- StreamFind::Chromatograms(
+    chroms <- MassSpecResults_Chromatograms(
       chroms,
       replicates = get_replicate_names(x)[names(chroms)],
       is_averaged = FALSE
     )
-    x$results[["Chromatograms"]] <- chroms
-    if (!is.null(validate_object(x))) {
+    if (!is.null(validate_object(chroms))) {
       stop("Loaded chromatograms are not valid!")
     }
+    x$results[["MassSpecResults_Chromatograms"]] <- chroms
   } else {
     warning("Not done! Chromatograms not found.")
   }

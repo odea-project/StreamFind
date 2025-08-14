@@ -981,14 +981,14 @@ save_cache <- function(x, ...) {
   UseMethod("save_cache")
 }
 
-#' @title Generic `set_blanks`
+#' @title Generic `set_blank_names`
 #' @description S3 generic to set blanks from `x`.
 #' @param x An object in which the blanks will be set.
 #' @param ... Additional arguments passed to the method.
 #' @export 
 #' 
-set_blanks <- function(x, ...) {
-  UseMethod("set_blanks")
+set_blank_names <- function(x, ...) {
+  UseMethod("set_blank_names")
 }
 
 #' @title Generic `set_concentrations`
@@ -1001,14 +1001,14 @@ set_concentrations <- function(x, ...) {
   UseMethod("set_concentrations")
 }
 
-#' @title Generic `set_replicates`
+#' @title Generic `set_replicate_names`
 #' @description S3 generic to set replicates in `x`.
 #' @param x An object in which the replicates will be set.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' 
-set_replicates <- function(x, ...) {
-  UseMethod("set_replicates")
+set_replicate_names <- function(x, ...) {
+  UseMethod("set_replicate_names")
 }
 
 #' @title Generic `show`

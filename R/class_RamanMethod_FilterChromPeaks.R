@@ -62,28 +62,24 @@ run.RamanMethod_FilterChromPeaks_native <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  if (!engine$Spectra$has_chrom_peaks) {
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  if (length(spec_obj$chrom_peaks) == 0) {
     warning("No chromatographic peaks found! Not done.")
     return(FALSE)
   }
-
   minIntensity <- x$parameters$minIntensity
   minSN <- x$parameters$minSignalNoiseRatio
   rtr <- sort(x$parameters$rtRange)
-
-  chrom_peaks <- engine$Spectra$chrom_peaks
-
+  chrom_peaks <- spec_obj$chrom_peaks
   chrom_peaks <- lapply(
     chrom_peaks,
     function(z, minIntensity, minSN) {
@@ -97,8 +93,8 @@ run.RamanMethod_FilterChromPeaks_native <- function(x, engine = NULL) {
     minIntensity = minIntensity,
     minSN = minSN
   )
-
-  engine$Spectra$chrom_peaks <- chrom_peaks
+  spec_obj$chrom_peaks <- chrom_peaks
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Chromatographic peaks filtered!"))
   TRUE
 }

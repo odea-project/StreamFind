@@ -48,19 +48,17 @@ run.RamanMethod_NormalizeSpectra_minmax <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(spec_list, function(z) {
     if (nrow(z) > 0) {
       if (("rt" %in% colnames(z)) && ("shift" %in% colnames(z))) {
@@ -84,8 +82,8 @@ run.RamanMethod_NormalizeSpectra_minmax <- function(x, engine = NULL) {
 
     z
   })
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra normalized!"))
   invisible(TRUE)
 }
@@ -143,21 +141,18 @@ run.RamanMethod_NormalizeSpectra_snv <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+ if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   liftTozero <- x$parameters$liftTozero
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(spec_list, function(z) {
     if (nrow(z) > 0) {
       if (("rt" %in% colnames(z)) && ("shift" %in% colnames(z))) {
@@ -184,8 +179,8 @@ run.RamanMethod_NormalizeSpectra_snv <- function(x, engine = NULL) {
 
     z
   })
-
-  x$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra normalized!"))
   invisible(TRUE)
 }
@@ -239,19 +234,17 @@ run.RamanMethod_NormalizeSpectra_scale <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(spec_list, function(z) {
     if (nrow(z) > 0) {
       if (("rt" %in% colnames(z)) && ("shift" %in% colnames(z))) {
@@ -272,8 +265,8 @@ run.RamanMethod_NormalizeSpectra_scale <- function(x, engine = NULL) {
 
     z
   })
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra normalized!"))
   invisible(TRUE)
 }
@@ -327,19 +320,17 @@ run.RamanMethod_NormalizeSpectra_blockweight <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(spec_list, function(z) {
     if (nrow(z) > 0) {
       if (("rt" %in% colnames(z)) && ("shift" %in% colnames(z))) {
@@ -358,8 +349,8 @@ run.RamanMethod_NormalizeSpectra_blockweight <- function(x, engine = NULL) {
 
     z
   })
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra normalized!"))
   invisible(TRUE)
 }
@@ -413,19 +404,17 @@ run.RamanMethod_NormalizeSpectra_meancenter <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(spec_list, function(z) {
     if (nrow(z) > 0) {
       if (("rt" %in% colnames(z)) && ("shift" %in% colnames(z))) {
@@ -446,8 +435,8 @@ run.RamanMethod_NormalizeSpectra_meancenter <- function(x, engine = NULL) {
 
     z
   })
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra normalized!"))
   invisible(TRUE)
 }

@@ -71,35 +71,30 @@ run.RamanMethod_CalculateSpectraSimilary_hqi <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  spectra_list <- engine$Spectra$spectra
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  spectra_list <- spec_obj$spectra
   reference_spectra_added <- x$parameters$reference
   similarity_method <- x$parameters$method
-
   if (nrow(reference_spectra_added) == 0) {
-    references <- engine$Analyses$references
+    references <- vapply(engine$Analyses$analyses, function(a) a$reference, NA_character_)
     if (any(is.na(references))) {
       warning("At least one reference spectra is not indicated! Not done.")
       return(FALSE)
     }
-
-    if (engine$Analyses$Spectra$is_averaged) {
+    if (spec_obj$is_averaged) {
       reference_spectra_unique <- spectra_list[unique(references)]
       rpls <- get_replicate_names(engine$Analyses)
       names(references) <- rpls
       references <- references[!duplicated(names(references))]
-
       reference_spectra <- lapply(names(spectra_list), function(r) {
         rpl <- references[[r]]
         reference_spectra_unique[[rpl]]
@@ -114,14 +109,11 @@ run.RamanMethod_CalculateSpectraSimilary_hqi <- function(x, engine = NULL) {
         idcol = "analysis"
       )
       reference_spectra_av$replicate <- rpls[reference_spectra_av$analysis]
-
       reference_spectra_av <- reference_spectra_av[,
         .(intensity = mean(intensity)),
         by = c("replicate", "shift")
       ]
-
       reference_spectra_av <- split(reference_spectra_av, by = "replicate")
-
       reference_spectra <- lapply(names(spectra_list), function(r) {
         rpl <- references[[r]]
         reference_spectra_av[[rpl]]
@@ -129,52 +121,41 @@ run.RamanMethod_CalculateSpectraSimilary_hqi <- function(x, engine = NULL) {
     }
   } else {
     ref_shifts <- reference_spectra_added$shift
-
     if (!all(ref_shifts %in% spectra_list[[1]]$shift)) {
       warning(
         "Reference spectra shift values do not match the analyses! Not done."
       )
       return(FALSE)
     }
-
     reference_spectra <- lapply(spectra_list, function(z) {
       reference_spectra_added
     })
   }
-
   names(reference_spectra) <- names(spectra_list)
-
   similarity <- Map(
     function(a, r) {
       intensity <- NULL
-
       if (nrow(a) == 0) {
         return(data.table::data.table())
       }
-
       if (nrow(r) == 0) {
         return(data.table::data.table())
       }
-
       a_spec <- a[, .(intensity = mean(intensity)), by = "shift"]
       r_spec <- r[, .(intensity = mean(intensity)), by = "shift"]
-
       HQI <- stats::cor(
         a_spec$intensity,
         r_spec$intensity,
         method = similarity_method
       )
       HQI <- HQI^2
-
       ttest <- stats::cor.test(
         a_spec$intensity,
         r_spec$intensity,
         method = similarity_method,
         conf.level = 0.95
       )
-
       pvalue <- ttest$p.value
-
       data.table::data.table(
         "HQI" = HQI,
         "pValue" = pvalue,
@@ -190,10 +171,7 @@ run.RamanMethod_CalculateSpectraSimilary_hqi <- function(x, engine = NULL) {
     spectra_list,
     reference_spectra
   )
-
-  results <- engine$Analyses$results
-  results[["SpectraSimilary"]] <- SpectraSimilarity(similarity)
-  engine$Analyses$results <- results
+  engine$Results <- SpectraSimilarity(similarity)
   message(paste0("\U2713 ", "Spectra similarity added!"))
   invisible(TRUE)
 }

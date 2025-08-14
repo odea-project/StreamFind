@@ -65,37 +65,28 @@ run.RamanMethod_AverageSpectra_native <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  if (engine$Spectra$is_averaged) {
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  if (spec_obj$is_averaged) {
     warning("Spectra are already averaged! Not done.")
     return(FALSE)
   }
-
-  spectra_list <- engine$Spectra$spectra
-
+  spectra_list <- spec_obj$spectra
   spectra <- data.table::rbindlist(
     spectra_list,
     idcol = "analysis",
     fill = TRUE
   )
-
-  if (engine$Spectra$is_averaged) {
-    spectra$replicate <- spectra$analysis
-  } else {
-    rpl <- get_replicate_names(engine$Analyses)
-    spectra$replicate <- rpl[spectra$analysis]
-  }
-
+  rpl <- get_replicate_names(engine$Analyses)
+  spectra$replicate <- rpl[spectra$analysis]
   groupCols <- "shift"
   if (grepl("chrom_peaks", x$parameters$by, fixed = FALSE)) {
     groupCols <- c("chrom_peaks", groupCols)
@@ -106,9 +97,8 @@ run.RamanMethod_AverageSpectra_native <- function(x, engine = NULL) {
   if (grepl("replicates", x$parameters$by, fixed = FALSE)) {
     groupCols <- c("replicate", groupCols)
   }
-
   if ("chrom_peaks" %in% groupCols) {
-    if (engine$Spectra$has_chrom_peaks) {
+    if (length(spec_obj$chrom_peaks) > 0) {
       if (!"id" %in% colnames(spectra)) {
         warning(
           "Filter spectra to keep only from chromatographic peaks 
@@ -127,27 +117,21 @@ run.RamanMethod_AverageSpectra_native <- function(x, engine = NULL) {
       return(FALSE)
     }
   }
-
   if ("replicate" %in% groupCols) {
     spectra$analysis <- NULL
   } else {
     groupCols <- c("analysis", groupCols)
     spectra$replicate <- NULL
   }
-
   if ("id" %in% colnames(spectra) && !"id" %in% groupCols) {
     spectra$id <- NULL
   }
-
   if ("group" %in% colnames(spectra) && !"group" %in% groupCols) {
     spectra$group <- NULL
   }
-
   .SD <- NULL
   shift <- NULL
-
   grouped_spectra <- spectra[, lapply(.SD, mean), by = groupCols]
-
   if ("replicate" %in% groupCols) {
     data.table::setorder(grouped_spectra, shift, replicate)
     split_str <- grouped_spectra$replicate
@@ -163,13 +147,11 @@ run.RamanMethod_AverageSpectra_native <- function(x, engine = NULL) {
     names_spectra <- names(engine$Analyses)
     grouped_spectra_list <- grouped_spectra_list[names_spectra]
   }
-
-  spectra <- engine$Spectra
-  spectra$spectra <- grouped_spectra_list
+  spec_obj$spectra <- grouped_spectra_list
   if ("replicate" %in% groupCols) {
-    spectra$is_averaged <- TRUE
+    spec_obj$is_averaged <- TRUE
   }
-  engine$Spectra <- spectra
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Averaged spectra!"))
   invisible(TRUE)
 }

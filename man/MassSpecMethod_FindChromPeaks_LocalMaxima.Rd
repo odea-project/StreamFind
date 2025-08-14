@@ -2,13 +2,16 @@
 % Please edit documentation in R/class_MassSpecMethod_FindChromPeaks.R
 \name{MassSpecMethod_FindChromPeaks_LocalMaxima}
 \alias{MassSpecMethod_FindChromPeaks_LocalMaxima}
-\title{MassSpecMethod_FindChromPeaks_LocalMaxima S7 class}
+\alias{validate_object.MassSpecMethod_FindChromPeaks_LocalMaxima}
+\title{MassSpecMethod_FindChromPeaks_LocalMaxima Class}
 \usage{
 MassSpecMethod_FindChromPeaks_LocalMaxima(
   minWidth = 0,
   maxWidth = 0,
   minHeight = 0
 )
+
+\method{validate_object}{MassSpecMethod_FindChromPeaks_LocalMaxima}(x)
 }
 \arguments{
 \item{minWidth}{Numeric (length 1) with the minimum width of a peak.}
@@ -16,6 +19,8 @@ MassSpecMethod_FindChromPeaks_LocalMaxima(
 \item{maxWidth}{Numeric (length 1) with the maximum width of a peak.}
 
 \item{minHeight}{Numeric (length 1) with the minimum height of a peak.}
+
+\item{x}{A MassSpecMethod_FindChromPeaks_LocalMaxima object.}
 }
 \value{
 A MassSpecMethod_FindChromPeaks_LocalMaxima object.
@@ -23,3 +28,8 @@ A MassSpecMethod_FindChromPeaks_LocalMaxima object.
 \description{
 Finds peak maxima in chromatograms.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_FindChromPeaks_LocalMaxima)}: Validate the MassSpecMethod_FindChromPeaks_LocalMaxima object, returning NULL if valid.
+
+}}

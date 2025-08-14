@@ -69,28 +69,24 @@ run.RamanMethod_BinScans_native <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
+  spec_list <- spec_obj$spectra
   binning_mode <- x$parameters$mode
   binning_value <- x$parameters$value
   binning_global <- x$parameters$global
   binning_refAnalysis <- x$parameters$refAnalysis
-
   if (binning_global) {
     warning("Not yet implemented")
     return(FALSE)
-
     if (is.na(binning_refAnalysis)) {
       binning_refAnalysis <- 1
     }
@@ -98,27 +94,21 @@ run.RamanMethod_BinScans_native <- function(x, engine = NULL) {
       warning("Reference analysis index is out of range!")
       return(FALSE)
     }
-
     refSpec <- spec_list[[binning_refAnalysis]]
   }
-
   spec_binned <- lapply(spec_list, function(z) {
     if (nrow(z) == 0) {
       return(data.table::data.table())
     }
-
     if (!"rt" %in% colnames(z)) {
       warning("No retention time column found in spectra!")
       return(z)
     }
-
     urts <- unique(z$rt)
     ushifts <- unique(z$shift)
     urts_size <- length(urts)
     ushifts_size <- length(ushifts)
-
     .SD <- NULL
-
     if ("scans" %in% binning_mode) {
       bin_key <- cut(
         seq_len(urts_size),
@@ -145,11 +135,10 @@ run.RamanMethod_BinScans_native <- function(x, engine = NULL) {
       z$rt <- bin_key
       z <- z[, lapply(.SD, mean), by = c("rt", "shift")]
     }
-
     z
   })
-
-  engine$Spectra$spectra <- spec_binned
+  spec_obj$spectra <- spec_binned
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Scans binned!"))
   TRUE
 }

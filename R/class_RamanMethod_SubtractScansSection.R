@@ -53,23 +53,20 @@ run.RamanMethod_SubtractScansSection_native <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   sectionWindow = x$parameters$sectionWindow
-  spec_list <- engine$Spectra$spectra
-
+  spec_list <- spec_obj$spectra
   intensity <- NULL
   . <- NULL
-
   spec_cut <- lapply(spec_list, function(z) {
     if (nrow(z) == 0) {
       return(data.table::data.table())
@@ -102,8 +99,8 @@ run.RamanMethod_SubtractScansSection_native <- function(x, engine = NULL) {
 
     res
   })
-
-  engine$Spectra$spectra <- spec_cut
+  spec_obj$spectra <- spec_cut
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Scans section subtracted!"))
   TRUE
 }

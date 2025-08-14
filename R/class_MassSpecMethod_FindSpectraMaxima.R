@@ -1,7 +1,7 @@
-#' MassSpecMethod_FindSpectraMaxima_native S7 class
+#' @title MassSpecMethod_FindSpectraMaxima_native Class
 #'
 #' @description Finds maximum peaks in continuous spectra.
-#' 
+#'
 #' @param minWidth Numeric (length 1) with the minimum width of a peak.
 #' @param maxWidth Numeric (length 1) with the maximum width of a peak.
 #' @param minHeight Numeric (length 1) with the minimum height of a peak.
@@ -10,79 +10,78 @@
 #'
 #' @export
 #'
-MassSpecMethod_FindSpectraMaxima_native <- S7::new_class(
-  name = "MassSpecMethod_FindSpectraMaxima_native",
-  parent = S7::new_S3_class("ProcessingStep"),
-  package = "StreamFind",
-  
-  constructor = function(minWidth = 0, maxWidth = 0, minHeight = 0) {
-    
-    S7::new_object(
-      ProcessingStep(
-        data_type = "MassSpec",
-        method = "FindSpectraMaxima",
-        required = "LoadSpectra",
-        algorithm = "native",
-        parameters = list(
-          minWidth = as.numeric(minWidth),
-          maxWidth = as.numeric(maxWidth),
-          minHeight = as.numeric(minHeight)
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "StreamFind",
-        developer = "Ricardo Cunha",
-        contact = "cunha@iuta.de",
-        link = "https://odea-project.github.io/StreamFind",
-        doi = NA_character_
-      )
-    )
-  },
-  
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
-    checkmate::assert_choice(self@method, "FindSpectraMaxima")
-    checkmate::assert_choice(self@algorithm, "native")
-    checkmate::assert_number(self@parameters$minWidth)
-    checkmate::assert_number(self@parameters$maxWidth)
-    checkmate::assert_number(self@parameters$minHeight)
-    NULL
+MassSpecMethod_FindSpectraMaxima_native <- function(
+  minWidth = 0,
+  maxWidth = 0,
+  minHeight = 0
+) {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "FindSpectraMaxima",
+    required = "LoadSpectra",
+    algorithm = "native",
+    parameters = list(
+      minWidth = as.numeric(minWidth),
+      maxWidth = as.numeric(maxWidth),
+      minHeight = as.numeric(minHeight)
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid MassSpecMethod_FindSpectraMaxima_native object!")
   }
-)
+}
+
+#' @describeIn MassSpecMethod_FindSpectraMaxima_native Validate the MassSpecMethod_FindSpectraMaxima_native object, returning NULL if valid.
+#' @param x A MassSpecMethod_FindSpectraMaxima_native object.
+#' @export
+#'
+validate_object.MassSpecMethod_FindSpectraMaxima_native <- function(x) {
+  checkmate::assert_choice(x$type, "MassSpec")
+  checkmate::assert_choice(x$method, "FindSpectraMaxima")
+  checkmate::assert_choice(x$algorithm, "native")
+  checkmate::assert_number(x$parameters$minWidth)
+  checkmate::assert_number(x$parameters$maxWidth)
+  checkmate::assert_number(x$parameters$minHeight)
+  NextMethod()
+  NULL
+}
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_FindSpectraMaxima_native) <- function(x, engine = NULL) {
-  
+run.MassSpecMethod_FindSpectraMaxima_native <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
-  
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
-  if (!engine$has_results_spectra()) {
-    warning("No Spectra results object available! Not done.")
+  if (is.null(engine$Results[["MassSpecResults_Spectra"]])) {
+    warning("No spectra results object available! Not done.")
     return(FALSE)
   }
-  
   parameters <- x$parameters
-  
-  spectra <- engine$Spectra$spectra
-  
+  spec_obj <- engine$Results[["MassSpecResults_Spectra"]]
+  spectra <- spec_obj$spectra
   spectra_peaks <- lapply(spectra, function(s) {
-    
-    if (nrow(s) == 0) return(data.table::data.table())
-    
+    if (nrow(s) == 0) {
+      return(data.table::data.table())
+    }
+
     s <- split(s, s$id)
-    
+
     s <- lapply(s, function(z) {
-      
       find_relevant_peaks <- function(x, y, min_width, max_width, min_height) {
-        
         peaks <- numeric(0)
         peaks_left <- numeric(0)
         peaks_right <- numeric(0)
@@ -90,39 +89,45 @@ S7::method(run, MassSpecMethod_FindSpectraMaxima_native) <- function(x, engine =
         heights_left <- numeric(0)
         heights_right <- numeric(0)
         peak_bases <- numeric(0)
-        
+
         is_peak <- function(i, y) {
           y[i] > y[i - 1] && y[i] > y[i + 1]
         }
-        
-        i <- 2  
+
+        i <- 2
         while (i < length(y) - 1) {
-          
           if (is_peak(i, y)) {
-            
             left <- i
-            while (left > 1 &&
-                   y[left - 1] < y[i] &&
-                   x[i] - x[left] <= max_width/1.5) left <- left - 1
-            
+            while (
+              left > 1 &&
+                y[left - 1] < y[i] &&
+                x[i] - x[left] <= max_width / 1.5
+            ) {
+              left <- left - 1
+            }
+
             right <- i
-            while (right < length(y) &&
-                   y[right + 1] < y[i] &&
-                   x[right] - x[i] <= max_width/1.5) right <- right + 1
-            
-            
+            while (
+              right < length(y) &&
+                y[right + 1] < y[i] &&
+                x[right] - x[i] <= max_width / 1.5
+            ) {
+              right <- right + 1
+            }
+
             peak_width <- x[right] - x[left]
             peak_left <- x[left]
             peak_right <- x[right]
             peak_height_right <- y[i] - y[right]
             peak_height_left <- y[i] - y[left]
-            
-            if (peak_height_right >= min_height &&
+
+            if (
+              peak_height_right >= min_height &&
                 peak_height_left >= min_height &&
-                peak_width >= min_width) {
-              
+                peak_width >= min_width
+            ) {
               which_max <- which.max(y[left:right]) + left - 1
-              
+
               peaks <- c(peaks, which_max)
               peaks_left <- c(peaks_left, peak_left)
               peaks_right <- c(peaks_right, peak_right)
@@ -135,10 +140,17 @@ S7::method(run, MassSpecMethod_FindSpectraMaxima_native) <- function(x, engine =
           }
           i <- i + 1
         }
-        
+
         return(data.table::data.table(
           id = unique(z$id),
-          peak = paste0("S", unique(z$id), "_P", seq_along(peaks), "_M", round(x[peaks], 0)),
+          peak = paste0(
+            "S",
+            unique(z$id),
+            "_P",
+            seq_along(peaks),
+            "_M",
+            round(x[peaks], 0)
+          ),
           mass = x[peaks],
           min = peaks_left,
           max = peaks_right,
@@ -150,32 +162,52 @@ S7::method(run, MassSpecMethod_FindSpectraMaxima_native) <- function(x, engine =
           sn = y[peaks] / y[peak_bases]
         ))
       }
-      
+
       peak_results <- find_relevant_peaks(
-        z$mass, z$intensity,
+        z$mass,
+        z$intensity,
         min_width = parameters$minWidth,
         max_width = parameters$maxWidth,
         min_height = parameters$minHeight
       )
 
       if (FALSE) {
-        plot(z$mass, z$intensity, type = "l", main = "Chromatogram with Relevant Peaks")
-        points(peak_results$peak, peak_results$peak_intensity, col = "red", pch = 19)
-        points(peak_results$peak_left, peak_results$peak_intensity, col = "green", pch = 19)
-        points(peak_results$peak_right, peak_results$peak_intensity, col = "green", pch = 19)
+        plot(
+          z$mass,
+          z$intensity,
+          type = "l",
+          main = "Chromatogram with Relevant Peaks"
+        )
+        points(
+          peak_results$peak,
+          peak_results$peak_intensity,
+          col = "red",
+          pch = 19
+        )
+        points(
+          peak_results$peak_left,
+          peak_results$peak_intensity,
+          col = "green",
+          pch = 19
+        )
+        points(
+          peak_results$peak_right,
+          peak_results$peak_intensity,
+          col = "green",
+          pch = 19
+        )
       }
-      
+
       peak_results
     })
-    
+
     all_pks <- data.table::rbindlist(s, fill = TRUE)
-    
+
     all_pks
   })
-  
   names(spectra_peaks) <- names(spectra)
-  
-  engine$Spectra$peaks <- spectra_peaks
+  spec_obj$peaks <- spectra_peaks
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra integrated!"))
   TRUE
 }

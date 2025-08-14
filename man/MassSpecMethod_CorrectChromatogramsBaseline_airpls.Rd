@@ -3,13 +3,16 @@
 %   R/class_MassSpecMethod_CorrectChromatogramsBaseline.R
 \name{MassSpecMethod_CorrectChromatogramsBaseline_airpls}
 \alias{MassSpecMethod_CorrectChromatogramsBaseline_airpls}
-\title{MassSpecMethod_CorrectChromatogramsBaseline_airpls S7 class}
+\alias{validate_object.MassSpecMethod_CorrectChromatogramsBaseline_airpls}
+\title{MassSpecMethod_CorrectChromatogramsBaseline_airpls Class}
 \usage{
 MassSpecMethod_CorrectChromatogramsBaseline_airpls(
   lambda = 10,
   differences = 1,
   itermax = 20
 )
+
+\method{validate_object}{MassSpecMethod_CorrectChromatogramsBaseline_airpls}(x)
 }
 \arguments{
 \item{lambda}{Numeric (length 1) with the smoothing intensity. the higher the \code{lambda} the
@@ -18,6 +21,8 @@ higher the smoothing.}
 \item{differences}{Integer (length 1) indicating the order of the difference of penalties}
 
 \item{itermax}{Integer (length 1) with the maximum number of iterations.}
+
+\item{x}{A MassSpecMethod_CorrectChromatogramsBaseline_airpls object.}
 }
 \value{
 A MassSpecMethod_CorrectChromatogramsBaseline_airpls object.
@@ -26,6 +31,11 @@ A MassSpecMethod_CorrectChromatogramsBaseline_airpls object.
 Performs baseline correction using adaptive iteratively reweighted Penalized Least
 Squares (airPLS) based on the algorithm from Zhi-Min Zhang.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_CorrectChromatogramsBaseline_airpls)}: Validates the MassSpecMethod_CorrectChromatogramsBaseline_airpls object, returning NULL if valid.
+
+}}
 \references{
 \insertRef{airpls01}{StreamFind}
 }

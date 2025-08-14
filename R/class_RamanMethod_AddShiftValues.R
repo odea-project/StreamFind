@@ -66,35 +66,29 @@ run.RamanMethod_AddShiftValues_native <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   algo_mode <- x$parameters$mode
   shifts <- x$parameters$shifts
   index <- as.integer(x$parameters$index)
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_list <- spec_obj$spectra
   if (algo_mode %in% "analyses") {
     if (is.na(index)) {
       index <- seq_len(length(spec_list))
     }
-
     shifts_list <- spec_list[index]
-
     if (length(spec_list) == 0) {
       warning("No analyses selected! Not done.")
       return(FALSE)
     }
-
     shifts_list <- lapply(shifts_list, function(z) {
       if (nrow(z) == 0) {
         return(NULL)
@@ -111,14 +105,11 @@ run.RamanMethod_AddShiftValues_native <- function(x, engine = NULL) {
         return(z$shift)
       }
     })
-
     shifts <- shifts_list[[1]]
-
     if (is.null(shifts)) {
       warning("No shift values found! Not done.")
       return(FALSE)
     }
-
     if (length(shifts_list) > 1) {
       for (i in 2:length(shifts_list)) {
         if (!is.null(shifts_list[[i]])) shifts <- shifts + shifts_list[[i]]
@@ -131,9 +122,7 @@ run.RamanMethod_AddShiftValues_native <- function(x, engine = NULL) {
       return(FALSE)
     }
   }
-
   shifts <- round(shifts, digits = 0)
-
   spec_list <- lapply(
     spec_list,
     function(z, shifts) {
@@ -154,8 +143,8 @@ run.RamanMethod_AddShiftValues_native <- function(x, engine = NULL) {
     },
     shifts = shifts
   )
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Shift values added!"))
   TRUE
 }

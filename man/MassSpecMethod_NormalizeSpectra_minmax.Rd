@@ -2,9 +2,15 @@
 % Please edit documentation in R/class_MassSpecMethod_NormalizeSpectra.R
 \name{MassSpecMethod_NormalizeSpectra_minmax}
 \alias{MassSpecMethod_NormalizeSpectra_minmax}
-\title{MassSpecMethod_NormalizeSpectra_minmax S7 class}
+\alias{validate_object.MassSpecMethod_NormalizeSpectra_minmax}
+\title{MassSpecMethod_NormalizeSpectra_minmax Class}
 \usage{
 MassSpecMethod_NormalizeSpectra_minmax()
+
+\method{validate_object}{MassSpecMethod_NormalizeSpectra_minmax}(x)
+}
+\arguments{
+\item{x}{A MassSpecMethod_NormalizeSpectra_minmax object.}
 }
 \value{
 A MassSpecMethod_NormalizeSpectra_minmax object.
@@ -12,3 +18,8 @@ A MassSpecMethod_NormalizeSpectra_minmax object.
 \description{
 Normalizes spectra using the min-max algorithm.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_NormalizeSpectra_minmax)}: Validate the MassSpecMethod_NormalizeSpectra_minmax object, returning NULL if valid.
+
+}}

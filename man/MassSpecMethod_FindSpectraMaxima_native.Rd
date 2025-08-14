@@ -2,13 +2,16 @@
 % Please edit documentation in R/class_MassSpecMethod_FindSpectraMaxima.R
 \name{MassSpecMethod_FindSpectraMaxima_native}
 \alias{MassSpecMethod_FindSpectraMaxima_native}
-\title{MassSpecMethod_FindSpectraMaxima_native S7 class}
+\alias{validate_object.MassSpecMethod_FindSpectraMaxima_native}
+\title{MassSpecMethod_FindSpectraMaxima_native Class}
 \usage{
 MassSpecMethod_FindSpectraMaxima_native(
   minWidth = 0,
   maxWidth = 0,
   minHeight = 0
 )
+
+\method{validate_object}{MassSpecMethod_FindSpectraMaxima_native}(x)
 }
 \arguments{
 \item{minWidth}{Numeric (length 1) with the minimum width of a peak.}
@@ -16,6 +19,8 @@ MassSpecMethod_FindSpectraMaxima_native(
 \item{maxWidth}{Numeric (length 1) with the maximum width of a peak.}
 
 \item{minHeight}{Numeric (length 1) with the minimum height of a peak.}
+
+\item{x}{A MassSpecMethod_FindSpectraMaxima_native object.}
 }
 \value{
 A MassSpecMethod_FindSpectraMaxima_native object.
@@ -23,3 +28,8 @@ A MassSpecMethod_FindSpectraMaxima_native object.
 \description{
 Finds maximum peaks in continuous spectra.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_FindSpectraMaxima_native)}: Validate the MassSpecMethod_FindSpectraMaxima_native object, returning NULL if valid.
+
+}}

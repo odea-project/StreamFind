@@ -50,21 +50,18 @@ run.RamanMethod_SmoothSpectra_movingaverage <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   windowSize <- x$parameters$windowSize
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(
     spec_list,
     function(x, windowSize) {
@@ -87,8 +84,8 @@ run.RamanMethod_SmoothSpectra_movingaverage <- function(x, engine = NULL) {
     },
     windowSize = windowSize
   )
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra smoothed!"))
   invisible(TRUE)
 }
@@ -153,28 +150,24 @@ run.RamanMethod_SmoothSpectra_savgol <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   if (!requireNamespace("pracma", quietly = TRUE)) {
     warning("Package pracma not found but required! Not done.")
     return(FALSE)
   }
-
   fl <- x$parameters$fl
   forder <- x$parameters$forder
   dorder <- x$parameters$dorder
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(
     spec_list,
     function(x, fl, forder, dorder) {
@@ -209,8 +202,8 @@ run.RamanMethod_SmoothSpectra_savgol <- function(x, engine = NULL) {
     forder = forder,
     dorder = dorder
   )
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra smoothed!"))
   invisible(TRUE)
 }

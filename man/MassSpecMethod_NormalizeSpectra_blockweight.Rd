@@ -2,9 +2,15 @@
 % Please edit documentation in R/class_MassSpecMethod_NormalizeSpectra.R
 \name{MassSpecMethod_NormalizeSpectra_blockweight}
 \alias{MassSpecMethod_NormalizeSpectra_blockweight}
-\title{MassSpecMethod_NormalizeSpectra_blockweight S7 class}
+\alias{validate_object.MassSpecMethod_NormalizeSpectra_blockweight}
+\title{MassSpecMethod_NormalizeSpectra_blockweight Class}
 \usage{
 MassSpecMethod_NormalizeSpectra_blockweight()
+
+\method{validate_object}{MassSpecMethod_NormalizeSpectra_blockweight}(x)
+}
+\arguments{
+\item{x}{A MassSpecMethod_NormalizeSpectra_blockweight object.}
 }
 \value{
 A MassSpecMethod_NormalizeSpectra_blockweight object.
@@ -12,3 +18,8 @@ A MassSpecMethod_NormalizeSpectra_blockweight object.
 \description{
 Normalizes spectra using block weighting for downstream data evaluation.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_NormalizeSpectra_blockweight)}: Validate the MassSpecMethod_NormalizeSpectra_blockweight object, returning NULL if valid.
+
+}}

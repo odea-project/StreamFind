@@ -44,7 +44,7 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 a <- MassSpecAnalyses(ms_files)
-a <- set_replicates(a, c("sample", "sample", "sample"))
+a <- set_replicate_names(a, c("sample", "sample", "sample"))
 get_replicate_names(a)
 get_blank_names(a)
 info(a)

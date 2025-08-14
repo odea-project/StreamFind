@@ -850,7 +850,7 @@ plot_spectra_charges.MassSpecResults_Spectra <- function(
   interactive = TRUE,
   renderEngine = "webgl"
 ) {
-  analyses <- .check_analyses_argument(x, analyses)
+  analyses <- .check_analyses_argument(x$spectra, analyses)
   if (is.null(analyses)) {
     return(NULL)
   }
@@ -1035,9 +1035,8 @@ get_spectra_matrix.MassSpecResults_Spectra <- function(
     warning("No spectra results object available!")
     return(matrix())
   }
-  analyses <- .check_analyses_argument(x, analyses)
+  analyses <- .check_analyses_argument(x$spectra, analyses)
   spec_list <- x$spectra
-
   if (x$is_averaged) {
     rpl <- x$replicates
     rpl <- unique(rpl[rpl %in% analyses])
@@ -1095,7 +1094,7 @@ get_spectra_peaks.MassSpecResults_Spectra <- function(
   x,
   analyses = NULL
 ) {
-  analyses <- .check_analyses_argument(x, analyses)
+  analyses <- .check_analyses_argument(x$spectra, analyses)
   if (is.null(analyses)) {
     return(data.table::data.table())
   }

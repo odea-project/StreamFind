@@ -2,13 +2,16 @@
 % Please edit documentation in R/class_MassSpecMethod_CorrectSpectraBaseline.R
 \name{MassSpecMethod_CorrectSpectraBaseline_baseline_als}
 \alias{MassSpecMethod_CorrectSpectraBaseline_baseline_als}
-\title{MassSpecMethod_CorrectSpectraBaseline_baseline_als S7 class}
+\alias{validate_object.MassSpecMethod_CorrectSpectraBaseline_baseline_als}
+\title{MassSpecMethod_CorrectSpectraBaseline_baseline_als Class}
 \usage{
 MassSpecMethod_CorrectSpectraBaseline_baseline_als(
   lambda = 5,
   p = 0.05,
   maxit = 10
 )
+
+\method{validate_object}{MassSpecMethod_CorrectSpectraBaseline_baseline_als}(x)
 }
 \arguments{
 \item{lambda}{Numeric (length 1) with the 2nd derivative constraint.}
@@ -16,6 +19,8 @@ MassSpecMethod_CorrectSpectraBaseline_baseline_als(
 \item{p}{Numeric (length 1) with the weighting of positive residuals.}
 
 \item{maxit}{Integer (length 1) with the maximum number of iterations.}
+
+\item{x}{A MassSpecMethod_CorrectSpectraBaseline_baseline_als object.}
 }
 \value{
 A MassSpecMethod_CorrectSpectraBaseline_baseline_als object.
@@ -24,3 +29,8 @@ A MassSpecMethod_CorrectSpectraBaseline_baseline_als object.
 Performs baseline correction to spectra using the Asymmetric Least Squares (ALS)
 algorithm from the \pkg{baseline} package.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_CorrectSpectraBaseline_baseline_als)}: Validates the MassSpecMethod_CorrectSpectraBaseline_baseline_als object, returning NULL if valid.
+
+}}

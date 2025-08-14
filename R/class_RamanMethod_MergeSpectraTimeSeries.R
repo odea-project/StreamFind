@@ -54,31 +54,25 @@ run.RamanMethod_MergeSpectraTimeSeries_StreamFind <- function(
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   preCut <- x$parameters$preCut
-
   rpls <- get_replicate_names(engine$Analyses)
-
   urpls <- unique(rpls)
-
   unified <- lapply(urpls, function(x) {
     anas <- names(rpls)[rpls %in% x]
     anasl <- engine$Analyses$analyses[anas]
-
     cached_merged_analysis <- FALSE
     merged_analysis <- NULL
     cache <- .load_cache_sqlite("merged_raman_analysis", x, anas, anasl)
-
     if (!is.null(cache$data)) {
       merged_analysis <- cache$data
       if (!is.null(merged_analysis)) {
@@ -88,46 +82,29 @@ run.RamanMethod_MergeSpectraTimeSeries_StreamFind <- function(
     } else {
       merged_analysis <- NULL
     }
-
     if (is.null(merged_analysis) & !cached_merged_analysis) {
       rtvec <- vapply(
         anasl,
         function(z) as.numeric(z$metadata$`Accumulate Cycle Time (secs)`),
         NA_real_
       )
-
       rtvec <- cumsum(unname(rtvec))
-
       spectral <- lapply(anasl, function(z) z$spectra)
-
       spectral <- spectral[-(1:preCut)]
-
       names(spectral) <- as.character(rtvec[-(1:preCut)])
-
       spectra <- data.table::rbindlist(spectral, idcol = "rt")
-
       spectra$rt <- as.numeric(spectra$rt)
-
       data.table::setcolorder(spectra, c("rt"))
-
       message("\U2699 Writting unified analysis file...", appendLF = FALSE)
-
       ana_name <- x
-
       ana_dir <- dirname(anasl[[1]]$file)
-
       ana_ext <- file_ext(anasl[[1]]$file)
-
       new_file <- paste0(ana_dir, "/", ana_name, ".", ana_ext)
-
       ana_metadata <- anasl[[1]]$metadata
-
       if (file.exists(new_file)) {
         file.remove(new_file)
       }
-
       rcpp_write_asc_file(file = new_file, ana_metadata, as.matrix(spectra))
-
       merged_analysis <- list(
         "name" = ana_name,
         "replicate" = ana_name,
@@ -136,9 +113,7 @@ run.RamanMethod_MergeSpectraTimeSeries_StreamFind <- function(
         "metadata" = ana_metadata,
         "spectra" = spectra
       )
-
       message(" Done!")
-
       if (!is.null(cache$hash)) {
         .save_cache_sqlite("merged_raman_analysis", merged_analysis, cache$hash)
         message("\U1f5ab Merged Raman analysis cached!")
@@ -154,12 +129,9 @@ run.RamanMethod_MergeSpectraTimeSeries_StreamFind <- function(
         message(" Done!")
       }
     }
-
     merged_analysis
   })
-
   names(unified) <- urpls
-
   if (!is.null(unified)) {
     if (
       all(
@@ -169,8 +141,8 @@ run.RamanMethod_MergeSpectraTimeSeries_StreamFind <- function(
       to_remove <- names(engine$Analyses)[
         get_replicate_names(engine$Analyses) %in% names(unified)
       ]
-      suppressMessages(engine$remove_analyses(to_remove))
-      engine$add_analyses(unified)
+      suppressMessages(remove(engine$Analyses, to_remove))
+      engine$Analyses <- add(engine$Analyses, unified)
       TRUE
     } else {
       FALSE

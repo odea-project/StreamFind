@@ -47,6 +47,11 @@ MassSpecMethod_LoadSpectra_native <- function(
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid MassSpecMethod_LoadSpectra_native object!")
+  }
 }
 
 #' @describeIn MassSpecMethod_LoadSpectra_native Validator for the MassSpecMethod_LoadSpectra_native object, returning NULL if valid.
@@ -65,6 +70,7 @@ validate_object.MassSpecMethod_LoadSpectra_native <- function(x) {
   checkmate::assert_numeric(x$parameters$mobilitymin, len = 1)
   checkmate::assert_numeric(x$parameters$mobilitymax, len = 1)
   checkmate::assert_numeric(x$parameters$minIntensity, len = 1)
+  NextMethod()
   NULL
 }
 
@@ -127,7 +133,7 @@ MassSpecMethod_LoadSpectra_chrompeaks <- function(
   minIntensity = 0
 ) {
   x <- ProcessingStep(
-    data_type = "MassSpec",
+    type = "MassSpec",
     method = "LoadSpectra",
     required = "FindChromPeaks",
     algorithm = "chrompeaks",
@@ -147,6 +153,11 @@ MassSpecMethod_LoadSpectra_chrompeaks <- function(
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_
   )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid MassSpecMethod_LoadSpectra_chrompeaks object!")
+  }
 }
 
 #' @describeIn MassSpecMethod_LoadSpectra_chrompeaks Validator for the MassSpecMethod_LoadSpectra_chrompeaks object, returning NULL if valid.
@@ -161,6 +172,7 @@ validate_object.MassSpecMethod_LoadSpectra_chrompeaks <- function(x) {
   checkmate::assert_numeric(x$parameters$mzmin, len = 1)
   checkmate::assert_numeric(x$parameters$mzmax, len = 1)
   checkmate::assert_numeric(x$parameters$minIntensity, len = 1)
+  NextMethod()
   NULL
 }
 
@@ -175,43 +187,29 @@ run.MassSpecMethod_LoadSpectra_chrompeaks <- function(
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (sum(vapply(engine$Analyses, function(z) z$spectra_number, 0)) == 0) {
+  if (sum(vapply(engine$Analyses$analyses, function(z) z$spectra_number, 0)) == 0) {
     warning("There are no spectra! Not done.")
     return(FALSE)
   }
-
-  if (is.null(engine$Results$MassSpecResults_Chromatograms)) {
+  if (is.null(engine$Results[["MassSpecResults_Chromatograms"]])) {
     warning("No MassSpecResults_Chromatograms available! Not done.")
     return(FALSE)
   }
-
-  browser()
-  browser()
-  browser()
-
-  if (!engine$Chromatograms$has_peaks) {
+  chroms_obj <- engine$Results[["MassSpecResults_Chromatograms"]]
+  if (length(chroms_obj$peaks) == 0) {
     warning("No chromatograms peaks available! Not done.")
     return(FALSE)
   }
-
   parameters <- x$parameters
-
-  peaks <- engine$Chromatograms$peaks
-
+  peaks <- chroms_obj$peaks
   peaks <- data.table::rbindlist(peaks, idcol = "analysis", fill = TRUE)
-
   peaks$mzmin <- parameters$mzmin
-
   peaks$mzmax <- parameters$mzmax
-
   peaks$id <- peaks$peak
-
   tryCatch(
     {
       engine$Analyses <- load_spectra(

@@ -52,21 +52,18 @@ run.RamanMethod_ScaleTime_native <- function(x, engine = NULL) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   value <- x$parameters$value
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_list <- spec_obj$spectra
   if (value > 0) {
     spec_list <- lapply(spec_list, function(z) {
       if (nrow(z) > 0 && "rt" %in% colnames(z)) {
@@ -77,8 +74,8 @@ run.RamanMethod_ScaleTime_native <- function(x, engine = NULL) {
       z
     })
   }
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Time variable scaled!"))
   invisible(TRUE)
 }

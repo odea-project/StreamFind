@@ -2,12 +2,17 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothSpectra.R
 \name{MassSpecMethod_SmoothSpectra_movingaverage}
 \alias{MassSpecMethod_SmoothSpectra_movingaverage}
-\title{MassSpecMethod_SmoothSpectra_movingaverage S7 class}
+\alias{validate_object.MassSpecMethod_SmoothSpectra_movingaverage}
+\title{MassSpecMethod_SmoothSpectra_movingaverage Class}
 \usage{
 MassSpecMethod_SmoothSpectra_movingaverage(windowSize = 5)
+
+\method{validate_object}{MassSpecMethod_SmoothSpectra_movingaverage}(x)
 }
 \arguments{
 \item{windowSize}{Numeric (length 1) with the window size for the moving average.}
+
+\item{x}{A MassSpecMethod_SmoothSpectra_movingaverage object.}
 }
 \value{
 A MassSpecMethod_SmoothSpectra_movingaverage object.
@@ -15,3 +20,8 @@ A MassSpecMethod_SmoothSpectra_movingaverage object.
 \description{
 Smooths spectra using the moving average algorithm.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(MassSpecMethod_SmoothSpectra_movingaverage)}: Validate the MassSpecMethod_SmoothSpectra_movingaverage object, returning NULL if valid.
+
+}}

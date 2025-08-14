@@ -66,39 +66,33 @@ run.RamanMethod_CorrectSpectraBaseline_baseline_als <- function(
     warning("Package baseline not found but required! Not done.")
     return(FALSE)
   }
-
   if (!is(engine, "RamanEngine")) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   baseline_method <- "als"
-
   baseline_args <- list(
     lambda = x$parameters$lambda,
     p = x$parameters$p,
     maxit = x$parameters$maxit
   )
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(
     spec_list,
     function(x, baseline_method, baseline_args) {
       if (nrow(x) > 0) {
         if ("rt" %in% colnames(x)) {
           temp_x <- split(x, x$rt)
-
           temp_x <- lapply(temp_x, function(z) {
             baseline_data <- .baseline_correction(
               z$intensity,
@@ -110,7 +104,6 @@ run.RamanMethod_CorrectSpectraBaseline_baseline_als <- function(
             z$intensity <- baseline_data$corrected
             z
           })
-
           x <- data.table::rbindlist(temp_x)
         } else {
           baseline_data <- .baseline_correction(
@@ -123,14 +116,13 @@ run.RamanMethod_CorrectSpectraBaseline_baseline_als <- function(
           x$intensity <- baseline_data$corrected
         }
       }
-
       x
     },
     baseline_method = baseline_method,
     baseline_args = baseline_args
   )
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra beseline corrected!"))
   TRUE
 }
@@ -207,28 +199,24 @@ run.RamanMethod_CorrectSpectraBaseline_airpls <- function(
     warning("Package Matrix not found but required! Not done.")
     return(FALSE)
   }
-
   if (!is(engine, "RamanEngine")) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   lambda = x$parameters$lambda
   differences = x$parameters$differences
   itermax = x$parameters$itermax
-
-  spec_list <- engine$Spectra$spectra
-
+  spec_list <- spec_obj$spectra
   spec_list <- lapply(
     spec_list,
     function(z, lambda, differences, itermax) {
@@ -275,8 +263,8 @@ run.RamanMethod_CorrectSpectraBaseline_airpls <- function(
     differences = differences,
     itermax = itermax
   )
-
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra beseline corrected!"))
   invisible(TRUE)
 }
