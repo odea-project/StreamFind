@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">StreamFind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,7 +44,7 @@
     <div class="section level2">
       <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a></h2>
 
-      <div class="section-desc"><p>StreamFind is built with two main class systems: R6 and S7. The R6 system is used for data processing engine classes, which are the main user interface for reading, processing, and inspecting different types of data. The S7 system is used for classes to manage metadata, analyses, data processing, results, audit trail and configuration. Below all classes exposed to the user are listed.</p></div>
+      <div class="section-desc"><p>StreamFind is built with two main class systems: R6 and S3. The R6 system is used for data processing engine classes, which are used for project managing. The S3 system is used for classes to manage metadata, analyses, data processing, results, audit trail and configuration. Below all classes exposed to the user are listed.</p></div>
 
 
     </div><div class="section level2">
@@ -60,10 +60,10 @@
 
       <dl><dt>
 
-          <code><a href="CoreEngine.html">CoreEngine</a></code>
+          <code><a href="Engine.html">Engine</a></code>
 
         </dt>
-        <dd>Core Engine (Internal Use Only)</dd>
+        <dd>Engine</dd>
       </dl><dl><dt>
 
           <code><a href="MassSpecEngine.html">MassSpecEngine</a></code>
@@ -81,9 +81,9 @@
           <code><a href="StatisticEngine.html">StatisticEngine</a></code>
 
         </dt>
-        <dd>Statistical Analysis Engine</dd>
+        <dd>StatisticEngine Class</dd>
       </dl></div><div class="section level2">
-      <h2 id="metadata-s-">Metadata (S7)<a class="anchor" aria-label="anchor" href="#metadata-s-"></a></h2>
+      <h2 id="metadata-s-">Metadata (S3)<a class="anchor" aria-label="anchor" href="#metadata-s-"></a></h2>
 
       <div class="section-desc"><p>Metadata classes are used to manage metadata (e.g., date, author and description) of main classes, such as the R6 engine classes.</p></div>
 
@@ -95,18 +95,12 @@
 
       <dl><dt>
 
-          <code><a href="EngineMetadata.html">EngineMetadata()</a></code>
+          <code><a href="Metadata.html">Metadata()</a></code> <code><a href="Metadata.html">validate_object(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">length(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">names(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">`[`(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">`[&lt;-`(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">`[[`(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">`[[&lt;-`(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">save(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">read(<i>&lt;Metadata&gt;</i>)</a></code> <code><a href="Metadata.html">show(<i>&lt;Metadata&gt;</i>)</a></code>
 
         </dt>
-        <dd>Engine Metadata</dd>
-      </dl><dl><dt>
-
-          <code><a href="Metadata.html">Metadata()</a></code>
-
-        </dt>
-        <dd>Generic Metadata</dd>
+        <dd>Metadata S3 Class</dd>
       </dl></div><div class="section level2">
-      <h2 id="analyses-s-">Analyses (S7)<a class="anchor" aria-label="anchor" href="#analyses-s-"></a></h2>
+      <h2 id="analyses-s-">Analyses (S3)<a class="anchor" aria-label="anchor" href="#analyses-s-"></a></h2>
 
       <div class="section-desc"><p>Analyses represent data (i.e., actual data or links to raw data files) and results. Analyses child classes are implemented for each type of data.</p></div>
 
@@ -118,30 +112,30 @@
 
       <dl><dt>
 
-          <code><a href="Analyses.html">Analyses()</a></code>
+          <code><a href="Analyses.html">Analyses()</a></code> <code><a href="Analyses.html">validate_object(<i>&lt;Analyses&gt;</i>)</a></code>
 
         </dt>
         <dd>Generic Analyses</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecAnalyses.html">MassSpecAnalyses()</a></code>
+          <code><a href="MassSpecAnalyses.html">MassSpecAnalyses()</a></code> <code><a href="MassSpecAnalyses.html">validate_object(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_analysis_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_replicate_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">set_replicate_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_blank_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">set_blank_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_concentrations(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">set_concentrations(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">info(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">add(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">remove(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">`[`(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">`[&lt;-`(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">`[[`(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">`[[&lt;-`(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">save(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">as.MassSpecAnalyses()</a></code> <code><a href="MassSpecAnalyses.html">read(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_tic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_bpc(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_raw_spectra(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_eic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_ms1(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_ms2(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_tic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_bpc(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_eic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_xic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_ms1(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_ms2(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_raw_chromatograms(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">load_spectra(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">load_chromatograms(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_matrix_suppression(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_matrix_suppression(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code>
 
         </dt>
         <dd>Mass Spectrometry Analyses</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanAnalyses.html">RamanAnalyses()</a></code>
+          <code><a href="RamanAnalyses.html">RamanAnalyses()</a></code> <code><a href="RamanAnalyses.html">validate_object(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_analysis_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_replicate_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">set_replicate_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_blank_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">set_blank_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_concentrations(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">set_concentrations(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">info(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">add(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">remove(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">`[`(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_spectra(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_spectra_matrix(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_spectra(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_spectra_3d(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_spectra_baseline(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_chromatograms(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_chromatograms_peaks(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_chromatograms_peaks(<i>&lt;RamanAnalyses&gt;</i>)</a></code>
 
         </dt>
-        <dd>Raman Spectroscopy Analyses</dd>
+        <dd>RamanAnalyses Class</dd>
       </dl><dl><dt>
 
-          <code><a href="StatisticAnalyses.html">StatisticAnalyses()</a></code>
+          <code><a href="StatisticAnalyses.html">StatisticAnalyses()</a></code> <code><a href="StatisticAnalyses.html">validate_object(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">get_analysis_names(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">get_analysis_classes(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">set_analysis_classes(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">get_concentrations(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">set_concentrations(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">info(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">add(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">remove(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">`[&lt;-`(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">`[[&lt;-`(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">plot_data(<i>&lt;StatisticAnalyses&gt;</i>)</a></code>
 
         </dt>
-        <dd>Statistical Analyses (Tabular Data Input)</dd>
+        <dd>StatisticAnalyses Class</dd>
       </dl></div><div class="section level2">
-      <h2 id="data-processing-s-">Data Processing (S7)<a class="anchor" aria-label="anchor" href="#data-processing-s-"></a></h2>
+      <h2 id="data-processing-s-">Data Processing (S3)<a class="anchor" aria-label="anchor" href="#data-processing-s-"></a></h2>
 
       <div class="section-desc"><p>Data processing is governed by the Workflow class which consists of a sequence of ProcessingStep class objects. Processing methods for a specific type of data are implemented as child classes of the ProcessingStep class.</p></div>
 
@@ -153,16 +147,16 @@
 
       <dl><dt>
 
-          <code><a href="Workflow.html">Workflow()</a></code>
+          <code><a href="Workflow.html">Workflow()</a></code> <code><a href="Workflow.html">validate_object(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">info(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">get_methods(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">`[`(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">`[&lt;-`(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">`[[`(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">`[[&lt;-`(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">save(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">read(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">show(<i>&lt;Workflow&gt;</i>)</a></code>
 
         </dt>
         <dd>Workflow Manager</dd>
       </dl><dl><dt>
 
-          <code><a href="ProcessingStep.html">ProcessingStep()</a></code>
+          <code><a href="ProcessingStep.html">ProcessingStep()</a></code> <code><a href="ProcessingStep.html">validate_object(<i>&lt;ProcessingStep&gt;</i>)</a></code> <code><a href="ProcessingStep.html">as.ProcessingStep()</a></code> <code><a href="ProcessingStep.html">save(<i>&lt;ProcessingStep&gt;</i>)</a></code> <code><a href="ProcessingStep.html">read(<i>&lt;ProcessingStep&gt;</i>)</a></code> <code><a href="ProcessingStep.html">show(<i>&lt;ProcessingStep&gt;</i>)</a></code>
 
         </dt>
-        <dd>Generic Processing Step</dd>
+        <dd>Processing Step Class</dd>
       </dl></div><div class="section level2">
       <h2 id="mass-spectrometry-methods">Mass Spectrometry Methods<a class="anchor" aria-label="anchor" href="#mass-spectrometry-methods"></a></h2>
 
@@ -176,334 +170,322 @@
 
       <dl><dt>
 
-          <code><a href="MassSpecMethod_AnnotateFeatures_StreamFind.html">MassSpecMethod_AnnotateFeatures_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_AnnotateFeatures_StreamFind.html">MassSpecMethod_AnnotateFeatures_StreamFind()</a></code> <code><a href="MassSpecMethod_AnnotateFeatures_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_AnnotateFeatures_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>Mass Spectrometry Method for Annotating Features in NonTargetAnalysisResults (StreamFind algorithm)</dd>
+        <dd>Mass Spectrometry Method for Annotating Features in MassSpecResults_NonTargetAnalysis (StreamFind algorithm)</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_AverageSpectra_StreamFind.html">MassSpecMethod_AverageSpectra_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_AverageSpectra_StreamFind.html">MassSpecMethod_AverageSpectra_StreamFind()</a></code> <code><a href="MassSpecMethod_AverageSpectra_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_AverageSpectra_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>Mass Spectrometry Method for Averaging Spectra (StreamFind algorithm)</dd>
+        <dd>MassSpecMethod_AverageSpectra_StreamFind Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_BinSpectra_StreamFind.html">MassSpecMethod_BinSpectra_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_BinSpectra_StreamFind.html">MassSpecMethod_BinSpectra_StreamFind()</a></code> <code><a href="MassSpecMethod_BinSpectra_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_BinSpectra_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>Mass Spectrometry Method for Binning Spectra (StreamFind algorithm)</dd>
+        <dd>MassSpecMethod_BinSpectra_StreamFind Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_CalculateFeaturesQuality_StreamFind.html">MassSpecMethod_CalculateFeaturesQuality_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_CalculateFeaturesQuality_StreamFind.html">MassSpecMethod_CalculateFeaturesQuality_StreamFind()</a></code> <code><a href="MassSpecMethod_CalculateFeaturesQuality_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_CalculateFeaturesQuality_StreamFind&gt;</i>)</a></code>
 
         </dt>
         <dd>Mass Spectrometry Method to Calculate Features Quality (StreamFind algorithm)</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_CalculateSpectraCharges_native.html">MassSpecMethod_CalculateSpectraCharges_native()</a></code>
+          <code><a href="MassSpecMethod_CalculateSpectraCharges_native.html">MassSpecMethod_CalculateSpectraCharges_native()</a></code> <code><a href="MassSpecMethod_CalculateSpectraCharges_native.html">validate_object(<i>&lt;MassSpecMethod_CalculateSpectraCharges_native&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_CalculateSpectraCharges_native S7 class</dd>
+        <dd>MassSpecMethod_CalculateSpectraCharges_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_ClusterSpectra_StreamFind.html">MassSpecMethod_ClusterSpectra_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_ClusterSpectra_StreamFind.html">MassSpecMethod_ClusterSpectra_StreamFind()</a></code> <code><a href="MassSpecMethod_ClusterSpectra_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_ClusterSpectra_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_ClusterSpectra_StreamFind S7 class</dd>
+        <dd>MassSpecMethod_ClusterSpectra_StreamFind Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_CorrectChromatogramsBaseline_airpls.html">MassSpecMethod_CorrectChromatogramsBaseline_airpls()</a></code>
+          <code><a href="MassSpecMethod_CorrectChromatogramsBaseline_airpls.html">MassSpecMethod_CorrectChromatogramsBaseline_airpls()</a></code> <code><a href="MassSpecMethod_CorrectChromatogramsBaseline_airpls.html">validate_object(<i>&lt;MassSpecMethod_CorrectChromatogramsBaseline_airpls&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_CorrectChromatogramsBaseline_airpls S7 class</dd>
+        <dd>MassSpecMethod_CorrectChromatogramsBaseline_airpls Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_CorrectChromatogramsBaseline_baseline_als.html">MassSpecMethod_CorrectChromatogramsBaseline_baseline_als()</a></code>
+          <code><a href="MassSpecMethod_CorrectChromatogramsBaseline_baseline_als.html">MassSpecMethod_CorrectChromatogramsBaseline_baseline_als()</a></code> <code><a href="MassSpecMethod_CorrectChromatogramsBaseline_baseline_als.html">validate_object(<i>&lt;MassSpecMethod_CorrectChromatogramsBaseline_baseline_als&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_CorrectChromatogramsBaseline_baseline_als S7 class</dd>
+        <dd>MassSpecMethod_CorrectChromatogramsBaseline_baseline_als Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_CorrectMatrixSuppression_TiChri.html">MassSpecMethod_CorrectMatrixSuppression_TiChri()</a></code>
+          <code><a href="MassSpecMethod_CorrectMatrixSuppression_TiChri.html">MassSpecMethod_CorrectMatrixSuppression_TiChri()</a></code> <code><a href="MassSpecMethod_CorrectMatrixSuppression_TiChri.html">validate_object(<i>&lt;MassSpecMethod_CorrectMatrixSuppression_TiChri&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_CorrectMatrixSuppression_TiChri S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_CorrectSpectraBaseline_airpls.html">MassSpecMethod_CorrectSpectraBaseline_airpls()</a></code>
+          <code><a href="MassSpecMethod_CorrectSpectraBaseline_airpls.html">MassSpecMethod_CorrectSpectraBaseline_airpls()</a></code> <code><a href="MassSpecMethod_CorrectSpectraBaseline_airpls.html">validate_object(<i>&lt;MassSpecMethod_CorrectSpectraBaseline_airpls&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_CorrectSpectraBaseline_airpls S7 class</dd>
+        <dd>MassSpecMethod_CorrectSpectraBaseline_airpls Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_CorrectSpectraBaseline_baseline_als.html">MassSpecMethod_CorrectSpectraBaseline_baseline_als()</a></code>
+          <code><a href="MassSpecMethod_CorrectSpectraBaseline_baseline_als.html">MassSpecMethod_CorrectSpectraBaseline_baseline_als()</a></code> <code><a href="MassSpecMethod_CorrectSpectraBaseline_baseline_als.html">validate_object(<i>&lt;MassSpecMethod_CorrectSpectraBaseline_baseline_als&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_CorrectSpectraBaseline_baseline_als S7 class</dd>
+        <dd>MassSpecMethod_CorrectSpectraBaseline_baseline_als Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_DeconvoluteSpectra_native.html">MassSpecMethod_DeconvoluteSpectra_native()</a></code>
+          <code><a href="MassSpecMethod_DeconvoluteSpectra_native.html">MassSpecMethod_DeconvoluteSpectra_native()</a></code> <code><a href="MassSpecMethod_DeconvoluteSpectra_native.html">validate_object(<i>&lt;MassSpecMethod_DeconvoluteSpectra_native&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_DeconvoluteSpectra_native S7 class</dd>
+        <dd>MassSpecMethod_DeconvoluteSpectra_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FillFeatures_StreamFind.html">MassSpecMethod_FillFeatures_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_FillFeatures_StreamFind.html">MassSpecMethod_FillFeatures_StreamFind()</a></code> <code><a href="MassSpecMethod_FillFeatures_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_FillFeatures_StreamFind&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_FillFeatures_StreamFind S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FilterChromPeaks_native.html">MassSpecMethod_FilterChromPeaks_native()</a></code>
+          <code><a href="MassSpecMethod_FilterChromPeaks_native.html">MassSpecMethod_FilterChromPeaks_native()</a></code> <code><a href="MassSpecMethod_FilterChromPeaks_native.html">validate_object(<i>&lt;MassSpecMethod_FilterChromPeaks_native&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FilterChromPeaks_native S7 class</dd>
+        <dd>MassSpecMethod_FilterChromPeaks_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FilterFeaturesMS2_native.html">MassSpecMethod_FilterFeaturesMS2_native()</a></code>
+          <code><a href="MassSpecMethod_FilterFeaturesMS2_native.html">MassSpecMethod_FilterFeaturesMS2_native()</a></code> <code><a href="MassSpecMethod_FilterFeaturesMS2_native.html">validate_object(<i>&lt;MassSpecMethod_FilterFeaturesMS2_native&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_FilterFeaturesMS2_native S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FilterFeatures_patRoon.html">MassSpecMethod_FilterFeatures_patRoon()</a></code>
+          <code><a href="MassSpecMethod_FilterFeatures_patRoon.html">MassSpecMethod_FilterFeatures_patRoon()</a></code> <code><a href="MassSpecMethod_FilterFeatures_patRoon.html">validate_object(<i>&lt;MassSpecMethod_FilterFeatures_patRoon&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_FilterFeatures_patRoon S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FilterFeatures_StreamFind.html">MassSpecMethod_FilterFeatures_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_FilterFeatures_StreamFind.html">MassSpecMethod_FilterFeatures_StreamFind()</a></code> <code><a href="MassSpecMethod_FilterFeatures_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_FilterFeatures_StreamFind&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_FilterFeatures_StreamFind S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindChromPeaks_LocalMaxima.html">MassSpecMethod_FindChromPeaks_LocalMaxima()</a></code>
+          <code><a href="MassSpecMethod_FindChromPeaks_LocalMaxima.html">MassSpecMethod_FindChromPeaks_LocalMaxima()</a></code> <code><a href="MassSpecMethod_FindChromPeaks_LocalMaxima.html">validate_object(<i>&lt;MassSpecMethod_FindChromPeaks_LocalMaxima&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FindChromPeaks_LocalMaxima S7 class</dd>
+        <dd>MassSpecMethod_FindChromPeaks_LocalMaxima Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindChromPeaks_pracma.html">MassSpecMethod_FindChromPeaks_pracma()</a></code>
+          <code><a href="MassSpecMethod_FindChromPeaks_pracma.html">MassSpecMethod_FindChromPeaks_pracma()</a></code> <code><a href="MassSpecMethod_FindChromPeaks_pracma.html">validate_object(<i>&lt;MassSpecMethod_FindChromPeaks_pracma&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FindChromPeaks_pracma S7 class</dd>
+        <dd>MassSpecMethod_FindChromPeaks_pracma Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindFeatures_kpic2.html">MassSpecMethod_FindFeatures_kpic2()</a></code>
+          <code><a href="MassSpecMethod_FindFeatures_kpic2.html">MassSpecMethod_FindFeatures_kpic2()</a></code> <code><a href="MassSpecMethod_FindFeatures_kpic2.html">validate_object(<i>&lt;MassSpecMethod_FindFeatures_kpic2&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FindFeatures_kpic2 S7 class</dd>
+        <dd>MassSpecMethod_FindFeatures_kpic2 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindFeatures_openms.html">MassSpecMethod_FindFeatures_openms()</a></code>
+          <code><a href="MassSpecMethod_FindFeatures_openms.html">MassSpecMethod_FindFeatures_openms()</a></code> <code><a href="MassSpecMethod_FindFeatures_openms.html">validate_object(<i>&lt;MassSpecMethod_FindFeatures_openms&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FindFeatures_openms S7 class</dd>
+        <dd>MassSpecMethod_FindFeatures_openms class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindFeatures_qalgorithms.html">MassSpecMethod_FindFeatures_qalgorithms()</a></code>
+          <code><a href="MassSpecMethod_FindFeatures_qalgorithms.html">MassSpecMethod_FindFeatures_qalgorithms()</a></code> <code><a href="MassSpecMethod_FindFeatures_qalgorithms.html">validate_object(<i>&lt;MassSpecMethod_FindFeatures_qalgorithms&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FindFeatures_qalgorithms S7 class</dd>
+        <dd>MassSpecMethod_FindFeatures_qalgorithms class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindFeatures_xcms3_centwave.html">MassSpecMethod_FindFeatures_xcms3_centwave()</a></code>
+          <code><a href="MassSpecMethod_FindFeatures_xcms3_centwave.html">MassSpecMethod_FindFeatures_xcms3_centwave()</a></code> <code><a href="MassSpecMethod_FindFeatures_xcms3_centwave.html">validate_object(<i>&lt;MassSpecMethod_FindFeatures_xcms3_centwave&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FindFeatures_xcms3_centwave S7 class</dd>
+        <dd>MassSpecMethod_FindFeatures_xcms3_centwave class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindFeatures_xcms3_matchedfilter.html">MassSpecMethod_FindFeatures_xcms3_matchedfilter()</a></code>
+          <code><a href="MassSpecMethod_FindFeatures_xcms3_matchedfilter.html">MassSpecMethod_FindFeatures_xcms3_matchedfilter()</a></code> <code><a href="MassSpecMethod_FindFeatures_xcms3_matchedfilter.html">validate_object(<i>&lt;MassSpecMethod_FindFeatures_xcms3_matchedfilter&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FindFeatures_xcms3_matchedfilter S7 class</dd>
+        <dd>MassSpecMethod_FindFeatures_xcms3_matchedfilter class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindInternalStandards_StreamFind.html">MassSpecMethod_FindInternalStandards_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_FindInternalStandards_StreamFind.html">MassSpecMethod_FindInternalStandards_StreamFind()</a></code> <code><a href="MassSpecMethod_FindInternalStandards_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_FindInternalStandards_StreamFind&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_FindInternalStandards_StreamFind S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_FindSpectraMaxima_native.html">MassSpecMethod_FindSpectraMaxima_native()</a></code>
+          <code><a href="MassSpecMethod_FindSpectraMaxima_native.html">MassSpecMethod_FindSpectraMaxima_native()</a></code> <code><a href="MassSpecMethod_FindSpectraMaxima_native.html">validate_object(<i>&lt;MassSpecMethod_FindSpectraMaxima_native&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_FindSpectraMaxima_native S7 class</dd>
+        <dd>MassSpecMethod_FindSpectraMaxima_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_GenerateCompounds_metfrag.html">MassSpecMethod_GenerateCompounds_metfrag()</a></code>
+          <code><a href="MassSpecMethod_GenerateCompounds_metfrag.html">MassSpecMethod_GenerateCompounds_metfrag()</a></code> <code><a href="MassSpecMethod_GenerateCompounds_metfrag.html">validate_object(<i>&lt;MassSpecMethod_GenerateCompounds_metfrag&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_GenerateCompounds_metfrag S7 class</dd>
+        <dd>MassSpecMethod_GenerateCompounds_metfrag Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_GenerateFormulas_genform.html">MassSpecMethod_GenerateFormulas_genform()</a></code>
+          <code><a href="MassSpecMethod_GenerateFormulas_genform.html">MassSpecMethod_GenerateFormulas_genform()</a></code> <code><a href="MassSpecMethod_GenerateFormulas_genform.html">validate_object(<i>&lt;MassSpecMethod_GenerateFormulas_genform&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_GenerateFormulas_genform S7 class</dd>
+        <dd>MassSpecMethod_GenerateFormulas_genform Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_GroupFeatures_openms.html">MassSpecMethod_GroupFeatures_openms()</a></code>
+          <code><a href="MassSpecMethod_GroupFeatures_openms.html">MassSpecMethod_GroupFeatures_openms()</a></code> <code><a href="MassSpecMethod_GroupFeatures_openms.html">validate_object(<i>&lt;MassSpecMethod_GroupFeatures_openms&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_GroupFeatures_openms S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_GroupFeatures_xcms3_peakdensity.html">MassSpecMethod_GroupFeatures_xcms3_peakdensity()</a></code>
+          <code><a href="MassSpecMethod_GroupFeatures_xcms3_peakdensity.html">MassSpecMethod_GroupFeatures_xcms3_peakdensity()</a></code> <code><a href="MassSpecMethod_GroupFeatures_xcms3_peakdensity.html">validate_object(<i>&lt;MassSpecMethod_GroupFeatures_xcms3_peakdensity&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_GroupFeatures_xcms3_peakdensity S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups.html">MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups()</a></code>
+          <code><a href="MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups.html">MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups()</a></code> <code><a href="MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups.html">validate_object(<i>&lt;MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups&gt;</i>)</a></code>
 
         </dt>
         <dd>MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_IntegrateChromatograms_pracma.html">MassSpecMethod_IntegrateChromatograms_pracma()</a></code>
+          <code><a href="MassSpecMethod_IntegrateChromatograms_pracma.html">MassSpecMethod_IntegrateChromatograms_pracma()</a></code> <code><a href="MassSpecMethod_IntegrateChromatograms_pracma.html">validate_object(<i>&lt;MassSpecMethod_IntegrateChromatograms_pracma&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_IntegrateChromatograms_pracma S7 class</dd>
+        <dd>MassSpecMethod_IntegrateChromatograms_pracma Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_IntegrateSpectra_StreamFind.html">MassSpecMethod_IntegrateSpectra_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_IntegrateSpectra_StreamFind.html">MassSpecMethod_IntegrateSpectra_StreamFind()</a></code> <code><a href="MassSpecMethod_IntegrateSpectra_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_IntegrateSpectra_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_IntegrateSpectra_StreamFind S7 class</dd>
+        <dd>MassSpecMethod_IntegrateSpectra_StreamFind Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_LoadChromatograms_native.html">MassSpecMethod_LoadChromatograms_native()</a></code>
+          <code><a href="MassSpecMethod_LoadChromatograms_native.html">MassSpecMethod_LoadChromatograms_native()</a></code> <code><a href="MassSpecMethod_LoadChromatograms_native.html">validate_object(<i>&lt;MassSpecMethod_LoadChromatograms_native&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_LoadChromatograms_native</dd>
+        <dd>MassSpecMethod_LoadChromatograms_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_LoadFeaturesEIC_StreamFind.html">MassSpecMethod_LoadFeaturesEIC_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_LoadFeaturesEIC_StreamFind.html">MassSpecMethod_LoadFeaturesEIC_StreamFind()</a></code> <code><a href="MassSpecMethod_LoadFeaturesEIC_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_LoadFeaturesEIC_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_LoadFeaturesEIC_StreamFind S7 class</dd>
+        <dd>MassSpecMethod_LoadFeaturesEIC_StreamFind S3 Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_LoadFeaturesMS1_StreamFind.html">MassSpecMethod_LoadFeaturesMS1_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_LoadFeaturesMS1_StreamFind.html">MassSpecMethod_LoadFeaturesMS1_StreamFind()</a></code> <code><a href="MassSpecMethod_LoadFeaturesMS1_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_LoadFeaturesMS1_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_LoadFeaturesMS1_StreamFind S7 class</dd>
+        <dd>MassSpecMethod_LoadFeaturesMS1_StreamFind S3 Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_LoadFeaturesMS2_StreamFind.html">MassSpecMethod_LoadFeaturesMS2_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_LoadFeaturesMS2_StreamFind.html">MassSpecMethod_LoadFeaturesMS2_StreamFind()</a></code> <code><a href="MassSpecMethod_LoadFeaturesMS2_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_LoadFeaturesMS2_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_LoadFeaturesMS2_StreamFind S7 class</dd>
+        <dd>MassSpecMethod_LoadFeaturesMS2_StreamFind S3 Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_LoadMSPeakLists_patRoon.html">MassSpecMethod_LoadMSPeakLists_patRoon()</a></code>
+          <code><a href="MassSpecMethod_LoadSpectra_chrompeaks.html">MassSpecMethod_LoadSpectra_chrompeaks()</a></code> <code><a href="MassSpecMethod_LoadSpectra_chrompeaks.html">validate_object(<i>&lt;MassSpecMethod_LoadSpectra_chrompeaks&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_LoadMSPeakLists_patRoon S7 class</dd>
+        <dd>MassSpecMethod_LoadSpectra_chrompeaks S3 Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_LoadMSPeakLists_StreamFind.html">MassSpecMethod_LoadMSPeakLists_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_LoadSpectra_native.html">MassSpecMethod_LoadSpectra_native()</a></code> <code><a href="MassSpecMethod_LoadSpectra_native.html">validate_object(<i>&lt;MassSpecMethod_LoadSpectra_native&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_LoadMSPeakLists_StreamFind S7 class</dd>
+        <dd>MassSpecMethod_LoadSpectra_native S3 Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_LoadSpectra_chrompeaks.html">MassSpecMethod_LoadSpectra_chrompeaks()</a></code>
+          <code><a href="MassSpecMethod_NormalizeSpectra_blockweight.html">MassSpecMethod_NormalizeSpectra_blockweight()</a></code> <code><a href="MassSpecMethod_NormalizeSpectra_blockweight.html">validate_object(<i>&lt;MassSpecMethod_NormalizeSpectra_blockweight&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_LoadSpectra_chrompeaks S7 class</dd>
+        <dd>MassSpecMethod_NormalizeSpectra_blockweight Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_LoadSpectra_native.html">MassSpecMethod_LoadSpectra_native()</a></code>
+          <code><a href="MassSpecMethod_NormalizeSpectra_meancenter.html">MassSpecMethod_NormalizeSpectra_meancenter()</a></code> <code><a href="MassSpecMethod_NormalizeSpectra_meancenter.html">validate_object(<i>&lt;MassSpecMethod_NormalizeSpectra_meancenter&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_LoadSpectra_native S7 class</dd>
+        <dd>MassSpecMethod_NormalizeSpectra_meancenter Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_NormalizeSpectra_blockweight.html">MassSpecMethod_NormalizeSpectra_blockweight()</a></code>
+          <code><a href="MassSpecMethod_NormalizeSpectra_minmax.html">MassSpecMethod_NormalizeSpectra_minmax()</a></code> <code><a href="MassSpecMethod_NormalizeSpectra_minmax.html">validate_object(<i>&lt;MassSpecMethod_NormalizeSpectra_minmax&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_NormalizeSpectra_blockweight S7 class</dd>
+        <dd>MassSpecMethod_NormalizeSpectra_minmax Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_NormalizeSpectra_meancenter.html">MassSpecMethod_NormalizeSpectra_meancenter()</a></code>
+          <code><a href="MassSpecMethod_NormalizeSpectra_scale.html">MassSpecMethod_NormalizeSpectra_scale()</a></code> <code><a href="MassSpecMethod_NormalizeSpectra_scale.html">validate_object(<i>&lt;MassSpecMethod_NormalizeSpectra_scale&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_NormalizeSpectra_meancenter S7 class</dd>
+        <dd>MassSpecMethod_NormalizeSpectra_scale Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_NormalizeSpectra_minmax.html">MassSpecMethod_NormalizeSpectra_minmax()</a></code>
+          <code><a href="MassSpecMethod_NormalizeSpectra_snv.html">MassSpecMethod_NormalizeSpectra_snv()</a></code> <code><a href="MassSpecMethod_NormalizeSpectra_snv.html">validate_object(<i>&lt;MassSpecMethod_NormalizeSpectra_snv&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_NormalizeSpectra_minmax S7 class</dd>
+        <dd>MassSpecMethod_NormalizeSpectra_snv Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_NormalizeSpectra_scale.html">MassSpecMethod_NormalizeSpectra_scale()</a></code>
+          <code><a href="MassSpecMethod_QuantifyChromatographicPeaks_native.html">MassSpecMethod_QuantifyChromatographicPeaks_native()</a></code> <code><a href="MassSpecMethod_QuantifyChromatographicPeaks_native.html">validate_object(<i>&lt;MassSpecMethod_QuantifyChromatographicPeaks_native&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_NormalizeSpectra_scale S7 class</dd>
+        <dd>MassSpecMethod_QuantifyChromatographicPeaks_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_NormalizeSpectra_snv.html">MassSpecMethod_NormalizeSpectra_snv()</a></code>
+          <code><a href="MassSpecMethod_SmoothChromatograms_movingaverage.html">MassSpecMethod_SmoothChromatograms_movingaverage()</a></code> <code><a href="MassSpecMethod_SmoothChromatograms_movingaverage.html">validate_object(<i>&lt;MassSpecMethod_SmoothChromatograms_movingaverage&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_NormalizeSpectra_snv S7 class</dd>
+        <dd>MassSpecMethod_SmoothChromatograms_movingaverage Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_QuantifyChromatographicPeaks_native.html">MassSpecMethod_QuantifyChromatographicPeaks_native()</a></code>
+          <code><a href="MassSpecMethod_SmoothChromatograms_savgol.html">MassSpecMethod_SmoothChromatograms_savgol()</a></code> <code><a href="MassSpecMethod_SmoothChromatograms_savgol.html">validate_object(<i>&lt;MassSpecMethod_SmoothChromatograms_savgol&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_QuantifyChromatographicPeaks_native S7 class</dd>
+        <dd>MassSpecMethod_SmoothChromatograms_savgol Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_SmoothChromatograms_movingaverage.html">MassSpecMethod_SmoothChromatograms_movingaverage()</a></code>
+          <code><a href="MassSpecMethod_SmoothSpectra_movingaverage.html">MassSpecMethod_SmoothSpectra_movingaverage()</a></code> <code><a href="MassSpecMethod_SmoothSpectra_movingaverage.html">validate_object(<i>&lt;MassSpecMethod_SmoothSpectra_movingaverage&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_SmoothChromatograms_movingaverage S7 class</dd>
+        <dd>MassSpecMethod_SmoothSpectra_movingaverage Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_SmoothChromatograms_savgol.html">MassSpecMethod_SmoothChromatograms_savgol()</a></code>
+          <code><a href="MassSpecMethod_SmoothSpectra_savgol.html">MassSpecMethod_SmoothSpectra_savgol()</a></code> <code><a href="MassSpecMethod_SmoothSpectra_savgol.html">validate_object(<i>&lt;MassSpecMethod_SmoothSpectra_savgo&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_SmoothChromatograms_savgol S7 class</dd>
+        <dd>MassSpecMethod_SmoothSpectra_savgol Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_SmoothSpectra_movingaverage.html">MassSpecMethod_SmoothSpectra_movingaverage()</a></code>
+          <code><a href="MassSpecMethod_SubtractBlankSpectra_StreamFind.html">MassSpecMethod_SubtractBlankSpectra_StreamFind()</a></code> <code><a href="MassSpecMethod_SubtractBlankSpectra_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_SubtractBlankSpectra_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_SmoothSpectra_movingaverage S7 class</dd>
+        <dd>MassSpecMethod_SubtractBlankSpectra_StreamFind Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_SmoothSpectra_savgol.html">MassSpecMethod_SmoothSpectra_savgol()</a></code>
+          <code><a href="MassSpecMethod_SuspectScreening_forident.html">MassSpecMethod_SuspectScreening_forident()</a></code> <code><a href="MassSpecMethod_SuspectScreening_forident.html">validate_object(<i>&lt;MassSpecMethod_SuspectScreening_forident&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_SmoothSpectra_savgol S7 class</dd>
+        <dd>MassSpecMethod_SuspectScreening_forident Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_SubtractBlankSpectra_StreamFind.html">MassSpecMethod_SubtractBlankSpectra_StreamFind()</a></code>
+          <code><a href="MassSpecMethod_SuspectScreening_patRoon.html">MassSpecMethod_SuspectScreening_patRoon()</a></code> <code><a href="MassSpecMethod_SuspectScreening_patRoon.html">validate_object(<i>&lt;MassSpecMethod_SuspectScreening_patRoon&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_SubtractBlankSpectra_StreamFind S7 class</dd>
+        <dd>MassSpecMethod_SuspectScreening_patRoon Class</dd>
       </dl><dl><dt>
 
-          <code><a href="MassSpecMethod_SuspectScreening_forident.html">MassSpecMethod_SuspectScreening_forident()</a></code>
+          <code><a href="MassSpecMethod_SuspectScreening_StreamFind.html">MassSpecMethod_SuspectScreening_StreamFind()</a></code> <code><a href="MassSpecMethod_SuspectScreening_StreamFind.html">validate_object(<i>&lt;MassSpecMethod_SuspectScreening_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd>MassSpecMethod_SuspectScreening_forident S7 class</dd>
-      </dl><dl><dt>
-
-          <code><a href="MassSpecMethod_SuspectScreening_patRoon.html">MassSpecMethod_SuspectScreening_patRoon()</a></code>
-
-        </dt>
-        <dd>MassSpecMethod_SuspectScreening_patRoon S7 class</dd>
-      </dl><dl><dt>
-
-          <code><a href="MassSpecMethod_SuspectScreening_StreamFind.html">MassSpecMethod_SuspectScreening_StreamFind()</a></code>
-
-        </dt>
-        <dd>MassSpecMethod_SuspectScreening_StreamFind S7 class</dd>
+        <dd>MassSpecMethod_SuspectScreening_StreamFind Class</dd>
       </dl></div><div class="section level2">
       <h2 id="raman-spectroscopy-methods">Raman Spectroscopy Methods<a class="anchor" aria-label="anchor" href="#raman-spectroscopy-methods"></a></h2>
 
@@ -517,172 +499,172 @@
 
       <dl><dt>
 
-          <code><a href="RamanMethod_AddShiftValues_native.html">RamanMethod_AddShiftValues_native()</a></code>
+          <code><a href="RamanMethod_AddShiftValues_native.html">RamanMethod_AddShiftValues_native()</a></code> <code><a href="RamanMethod_AddShiftValues_native.html">validate_object(<i>&lt;RamanMethod_AddShiftValues_native&gt;</i>)</a></code>
 
         </dt>
-        <dd>Raman Method for Adding Shift Values to Spectra (native algorithm)</dd>
+        <dd>RamanMethod_AddShiftValues_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_AverageSpectra_native.html">RamanMethod_AverageSpectra_native()</a></code>
+          <code><a href="RamanMethod_AverageSpectra_native.html">RamanMethod_AverageSpectra_native()</a></code> <code><a href="RamanMethod_AverageSpectra_native.html">validate_object(<i>&lt;RamanMethod_AverageSpectra_native&gt;</i>)</a></code>
 
         </dt>
         <dd>Raman Method to Average Spectra (native algorithm)</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_BinScans_native.html">RamanMethod_BinScans_native()</a></code>
+          <code><a href="RamanMethod_BinScans_native.html">RamanMethod_BinScans_native()</a></code> <code><a href="RamanMethod_BinScans_native.html">validate_object(<i>&lt;RamanMethod_BinScans_native&gt;</i>)</a></code>
 
         </dt>
         <dd>Raman Method for Binning Time Scans (native algorithm)</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_BinSpectra_StreamFind.html">RamanMethod_BinSpectra_StreamFind()</a></code>
+          <code><a href="RamanMethod_BinSpectra_StreamFind.html">RamanMethod_BinSpectra_StreamFind()</a></code> <code><a href="RamanMethod_BinSpectra_StreamFind.html">validate_object(<i>&lt;RamanMethod_BinSpectra_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_BinSpectra_StreamFind</strong></dd>
+        <dd>RamanMethod_BinSpectra_StreamFind Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_CalculateSpectraSimilary_hqi.html">RamanMethod_CalculateSpectraSimilary_hqi()</a></code>
+          <code><a href="RamanMethod_CalculateSpectraSimilary_hqi.html">RamanMethod_CalculateSpectraSimilary_hqi()</a></code> <code><a href="RamanMethod_CalculateSpectraSimilary_hqi.html">validate_object(<i>&lt;RamanMethod_CalculateSpectraSimilary_hqi&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_CalculateSpectraSimilary_hqi</strong></dd>
+        <dd>RamanMethod_CalculateSpectraSimilary_hqi Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_CorrectSpectraBaseline_airpls.html">RamanMethod_CorrectSpectraBaseline_airpls()</a></code>
+          <code><a href="RamanMethod_CorrectSpectraBaseline_airpls.html">RamanMethod_CorrectSpectraBaseline_airpls()</a></code> <code><a href="RamanMethod_CorrectSpectraBaseline_airpls.html">validate_object(<i>&lt;RamanMethod_CorrectSpectraBaseline_airpls&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_CorrectSpectraBaseline_airpls</strong></dd>
+        <dd>RamanMethod_CorrectSpectraBaseline_airpls Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_CorrectSpectraBaseline_baseline_als.html">RamanMethod_CorrectSpectraBaseline_baseline_als()</a></code>
+          <code><a href="RamanMethod_CorrectSpectraBaseline_baseline_als.html">RamanMethod_CorrectSpectraBaseline_baseline_als()</a></code> <code><a href="RamanMethod_CorrectSpectraBaseline_baseline_als.html">validate_object(<i>&lt;RamanMethod_CorrectSpectraBaseline_baseline_als&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_CorrectSpectraBaseline_baseline_als</strong></dd>
+        <dd>RamanMethod_CorrectSpectraBaseline_baseline_als Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_DeleteScansSection_native.html">RamanMethod_DeleteScansSection_native()</a></code>
+          <code><a href="RamanMethod_DeleteScansSection_native.html">RamanMethod_DeleteScansSection_native()</a></code> <code><a href="RamanMethod_DeleteScansSection_native.html">validate_object(<i>&lt;RamanMethod_DeleteScansSection_native&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_DeleteScansSection_native</strong></dd>
+        <dd>RamanMethod_DeleteScansSection_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_DeleteSpectraSection_native.html">RamanMethod_DeleteSpectraSection_native()</a></code>
+          <code><a href="RamanMethod_DeleteSpectraSection_native.html">RamanMethod_DeleteSpectraSection_native()</a></code> <code><a href="RamanMethod_DeleteSpectraSection_native.html">validate_object(<i>&lt;RamanMethod_DeleteSpectraSection_native&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_DeleteSpectraSection_native</strong></dd>
+        <dd>RamanMethod_DeleteSpectraSection_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_FilterChromPeaks_native.html">RamanMethod_FilterChromPeaks_native()</a></code>
+          <code><a href="RamanMethod_FilterChromPeaks_native.html">RamanMethod_FilterChromPeaks_native()</a></code> <code><a href="RamanMethod_FilterChromPeaks_native.html">validate_object(<i>&lt;RamanMethod_FilterChromPeaks_native&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_FilterChromPeaks_native</strong></dd>
+        <dd>RamanMethod_FilterChromPeaks_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_FilterSpectra_native.html">RamanMethod_FilterSpectra_native()</a></code>
+          <code><a href="RamanMethod_FilterSpectra_native.html">RamanMethod_FilterSpectra_native()</a></code> <code><a href="RamanMethod_FilterSpectra_native.html">validate_object(<i>&lt;RamanMethod_FilterSpectra_native&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_FilterSpectra_native</strong></dd>
+        <dd>RamanMethod_FilterSpectra_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_FindChromPeaks_LocalMaxima.html">RamanMethod_FindChromPeaks_LocalMaxima()</a></code>
+          <code><a href="RamanMethod_FindChromPeaks_LocalMaxima.html">RamanMethod_FindChromPeaks_LocalMaxima()</a></code> <code><a href="RamanMethod_FindChromPeaks_LocalMaxima.html">validate_object(<i>&lt;RamanMethod_FindChromPeaks_LocalMaxima&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_FindChromPeaks_LocalMaxima</strong></dd>
+        <dd>RamanMethod_FindChromPeaks_LocalMaxima Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_FindChromPeaks_pracma.html">RamanMethod_FindChromPeaks_pracma()</a></code>
+          <code><a href="RamanMethod_FindChromPeaks_pracma.html">RamanMethod_FindChromPeaks_pracma()</a></code> <code><a href="RamanMethod_FindChromPeaks_pracma.html">validate_object(<i>&lt;RamanMethod_FindChromPeaks_pracma&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_FindChromPeaks_pracma</strong></dd>
+        <dd>RamanMethod_FindChromPeaks_pracma Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_GroupPeaks_native.html">RamanMethod_GroupPeaks_native()</a></code>
+          <code><a href="RamanMethod_GroupPeaks_native.html">RamanMethod_GroupPeaks_native()</a></code> <code><a href="RamanMethod_GroupPeaks_native.html">validate_object(<i>&lt;RamanMethod_GroupPeaks_native&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_GroupPeaks_native</strong></dd>
+        <dd>RamanMethod_GroupPeaks_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_InvertAxis_intensity.html">RamanMethod_InvertAxis_intensity()</a></code>
+          <code><a href="RamanMethod_InvertAxis_intensity.html">RamanMethod_InvertAxis_intensity()</a></code> <code><a href="RamanMethod_InvertAxis_intensity.html">validate_object(<i>&lt;RamanMethod_InvertAxis_intensity&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_InvertAxis_intensity</strong></dd>
+        <dd>RamanMethod_InvertAxis_intensity Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_MergeSpectraTimeSeries_StreamFind.html">RamanMethod_MergeSpectraTimeSeries_StreamFind()</a></code>
+          <code><a href="RamanMethod_MergeSpectraTimeSeries_StreamFind.html">RamanMethod_MergeSpectraTimeSeries_StreamFind()</a></code> <code><a href="RamanMethod_MergeSpectraTimeSeries_StreamFind.html">validate_object(<i>&lt;RamanMethod_MergeSpectraTimeSeries_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_MergeSpectraTimeSeries_StreamFind</strong></dd>
+        <dd>RamanMethod_MergeSpectraTimeSeries_StreamFind</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_NormalizeSpectra_blockweight.html">RamanMethod_NormalizeSpectra_blockweight()</a></code>
+          <code><a href="RamanMethod_NormalizeSpectra_blockweight.html">RamanMethod_NormalizeSpectra_blockweight()</a></code> <code><a href="RamanMethod_NormalizeSpectra_blockweight.html">validate_object(<i>&lt;RamanMethod_NormalizeSpectra_blockweight&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_NormalizeSpectra_blockweight</strong></dd>
+        <dd>RamanMethod_NormalizeSpectra_blockweight Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_NormalizeSpectra_meancenter.html">RamanMethod_NormalizeSpectra_meancenter()</a></code>
+          <code><a href="RamanMethod_NormalizeSpectra_meancenter.html">RamanMethod_NormalizeSpectra_meancenter()</a></code> <code><a href="RamanMethod_NormalizeSpectra_meancenter.html">validate_object(<i>&lt;RamanMethod_NormalizeSpectra_meancenter&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_NormalizeSpectra_meancenter</strong></dd>
+        <dd>RamanMethod_NormalizeSpectra_meancenter Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_NormalizeSpectra_minmax.html">RamanMethod_NormalizeSpectra_minmax()</a></code>
+          <code><a href="RamanMethod_NormalizeSpectra_minmax.html">RamanMethod_NormalizeSpectra_minmax()</a></code> <code><a href="RamanMethod_NormalizeSpectra_minmax.html">validate_object(<i>&lt;RamanMethod_NormalizeSpectra_minmax&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_NormalizeSpectra_minmax</strong></dd>
+        <dd>RamanMethod_NormalizeSpectra_minmax Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_NormalizeSpectra_scale.html">RamanMethod_NormalizeSpectra_scale()</a></code>
+          <code><a href="RamanMethod_NormalizeSpectra_scale.html">RamanMethod_NormalizeSpectra_scale()</a></code> <code><a href="RamanMethod_NormalizeSpectra_scale.html">validate_object(<i>&lt;RamanMethod_NormalizeSpectra_scale&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_NormalizeSpectra_scale</strong></dd>
+        <dd>RamanMethod_NormalizeSpectra_scale Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_NormalizeSpectra_snv.html">RamanMethod_NormalizeSpectra_snv()</a></code>
+          <code><a href="RamanMethod_NormalizeSpectra_snv.html">RamanMethod_NormalizeSpectra_snv()</a></code> <code><a href="RamanMethod_NormalizeSpectra_snv.html">validate_object(<i>&lt;RamanMethod_NormalizeSpectra_snv&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_NormalizeSpectra_snv</strong></dd>
+        <dd>RamanMethod_NormalizeSpectra_snv Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_RemoveCosmicRays_native.html">RamanMethod_RemoveCosmicRays_native()</a></code>
+          <code><a href="RamanMethod_RemoveCosmicRays_native.html">RamanMethod_RemoveCosmicRays_native()</a></code> <code><a href="RamanMethod_RemoveCosmicRays_native.html">validate_object(<i>&lt;RamanMethod_RemoveCosmicRays_native&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_RemoveCosmicRays_native</strong></dd>
+        <dd>RamanMethod_RemoveCosmicRays_native</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_ScaleTime_native.html">RamanMethod_ScaleTime_native()</a></code>
+          <code><a href="RamanMethod_ScaleTime_native.html">RamanMethod_ScaleTime_native()</a></code> <code><a href="RamanMethod_ScaleTime_native.html">validate_object(<i>&lt;RamanMethod_ScaleTime_native&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_ScaleTime_native</strong></dd>
+        <dd>RamanMethod_ScaleTime_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_SmoothSpectra_movingaverage.html">RamanMethod_SmoothSpectra_movingaverage()</a></code>
+          <code><a href="RamanMethod_SmoothSpectra_movingaverage.html">RamanMethod_SmoothSpectra_movingaverage()</a></code> <code><a href="RamanMethod_SmoothSpectra_movingaverage.html">validate_object(<i>&lt;RamanMethod_SmoothSpectra_movingaverage&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_SmoothSpectra_movingaverage</strong></dd>
+        <dd>RamanMethod_SmoothSpectra_movingaverage</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_SmoothSpectra_savgol.html">RamanMethod_SmoothSpectra_savgol()</a></code>
+          <code><a href="RamanMethod_SmoothSpectra_savgol.html">RamanMethod_SmoothSpectra_savgol()</a></code> <code><a href="RamanMethod_SmoothSpectra_savgol.html">validate_object(<i>&lt;RamanMethod_SmoothSpectra_savgol&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_SmoothSpectra_savgol</strong></dd>
+        <dd>RamanMethod_SmoothSpectra_savgol Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_SubtractBlankSpectra_StreamFind.html">RamanMethod_SubtractBlankSpectra_StreamFind()</a></code>
+          <code><a href="RamanMethod_SubtractBlankSpectra_StreamFind.html">RamanMethod_SubtractBlankSpectra_StreamFind()</a></code> <code><a href="RamanMethod_SubtractBlankSpectra_StreamFind.html">validate_object(<i>&lt;RamanMethod_SubtractBlankSpectra_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_SubtractBlankSpectra_StreamFind</strong></dd>
+        <dd>RamanMethod_SubtractBlankSpectra_StreamFind Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_SubtractScansSection_native.html">RamanMethod_SubtractScansSection_native()</a></code>
+          <code><a href="RamanMethod_SubtractScansSection_native.html">RamanMethod_SubtractScansSection_native()</a></code> <code><a href="RamanMethod_SubtractScansSection_native.html">validate_object(<i>&lt;RamanMethod_SubtractScansSection_native&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_SubtractScansSection_native</strong></dd>
+        <dd>RamanMethod_SubtractScansSection_native Class</dd>
       </dl><dl><dt>
 
-          <code><a href="RamanMethod_SubtractSpectraSection_StreamFind.html">RamanMethod_SubtractSpectraSection_StreamFind()</a></code>
+          <code><a href="RamanMethod_SubtractSpectraSection_StreamFind.html">RamanMethod_SubtractSpectraSection_StreamFind()</a></code> <code><a href="RamanMethod_SubtractSpectraSection_StreamFind.html">validate_object(<i>&lt;RamanMethod_SubtractSpectraSection_StreamFind&gt;</i>)</a></code>
 
         </dt>
-        <dd><strong>RamanMethod_SubtractSpectraSection_StreamFind</strong></dd>
+        <dd>RamanMethod_SubtractSpectraSection_StreamFind Class</dd>
       </dl></div><div class="section level2">
       <h2 id="statistic-methods">Statistic Methods<a class="anchor" aria-label="anchor" href="#statistic-methods"></a></h2>
 
@@ -708,16 +690,16 @@
         <dd>StatisticMethod_MakeModel_mcrals_mdatools S7 class</dd>
       </dl><dl><dt>
 
-          <code><a href="StatisticMethod_MakeModel_mcrpure_mdatools.html">StatisticMethod_MakeModel_mcrpure_mdatools()</a></code>
+          <code><a href="StatisticMethod_MakeModel_mcrpure_mdatools.html">StatisticMethod_MakeModel_mcrpure_mdatools()</a></code> <code><a href="StatisticMethod_MakeModel_mcrpure_mdatools.html">validate_object(<i>&lt;StatisticMethod_MakeModel_mcrpure_mdatools&gt;</i>)</a></code>
 
         </dt>
-        <dd>StatisticMethod_MakeModel_mcrpure_mdatools S7 class</dd>
+        <dd>StatisticMethod_MakeModel_mcrpure_mdatools Class</dd>
       </dl><dl><dt>
 
-          <code><a href="StatisticMethod_MakeModel_pca_mdatools.html">StatisticMethod_MakeModel_pca_mdatools()</a></code>
+          <code><a href="StatisticMethod_MakeModel_pca_mdatools.html">StatisticMethod_MakeModel_pca_mdatools()</a></code> <code><a href="StatisticMethod_MakeModel_pca_mdatools.html">validate_object(<i>&lt;StatisticMethod_MakeModel_pca_mdatools&gt;</i>)</a></code>
 
         </dt>
-        <dd>StatisticMethod_MakeModel_pca_mdatools S7 class</dd>
+        <dd>StatisticMethod_MakeModel_pca_mdatools Class</dd>
       </dl><dl><dt>
 
           <code><a href="StatisticMethod_PrepareData_autoscale.html">StatisticMethod_PrepareData_autoscale()</a></code>
@@ -731,7 +713,7 @@
         </dt>
         <dd>Method for Quantification using an MCR-ALS model</dd>
       </dl></div><div class="section level2">
-      <h2 id="results-s-">Results (S7)<a class="anchor" aria-label="anchor" href="#results-s-"></a></h2>
+      <h2 id="results-s-">Results (S3)<a class="anchor" aria-label="anchor" href="#results-s-"></a></h2>
 
       <div class="section-desc"><p>The Results classes represent results of specific data processing methods. Results child classes are implemented for each processing method but can be reused/updated across processing methods. For instance, normalizing averaged spectra will update the spectra results.</p></div>
 
@@ -743,18 +725,60 @@
 
       <dl><dt>
 
-          <code><a href="NonTargetAnalysisResults.html">NonTargetAnalysisResults()</a></code>
+          <code><a href="MassSpecResults_Chromatograms.html">MassSpecResults_Chromatograms()</a></code> <code><a href="MassSpecResults_Chromatograms.html">validate_object(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">show(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">`[`(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">get_chromatograms(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">plot_chromatograms(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">plot_chromatograms_baseline(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">get_chromatograms_peaks(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">plot_chromatograms_peaks(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code>
 
         </dt>
-        <dd>Results class child for Non-target Analysis Workflows for Mass Spectrometry Data</dd>
+        <dd>MassSpecResults_Chromatograms Class</dd>
       </dl><dl><dt>
 
-          <code><a href="Results.html">Results()</a></code>
+          <code><a href="MassSpecResults_NonTargetAnalysis.html">MassSpecResults_NonTargetAnalysis()</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">validate_object(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">show(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">as.MassSpecResults_NonTargetAnalysis()</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">`[`(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">`[[`(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features_count(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_features_count(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">map_features(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">map_features_intensity(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features_eic(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_features(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features_ms1(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_features_ms1(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features_ms2(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_features_ms2(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_groups(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups_overview(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups_profile(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_groups_ms1(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_groups_ms2(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups_ms1(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups_ms2(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_components(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">map_components(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_suspects(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_suspects(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_internal_standards(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_internal_standards(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_compounds(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_fold_change(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_fold_change(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_patRoon_features(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_patRoon_MSPeakLists(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_patRoon_compounds(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code>
 
         </dt>
-        <dd>Generic Results</dd>
+        <dd>MassSpecResults_NonTargetAnalysis S3 Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecResults_Spectra.html">MassSpecResults_Spectra()</a></code> <code><a href="MassSpecResults_Spectra.html">validate_object(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">show(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">`[`(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">get_spectra(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">plot_spectra(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">plot_spectra_3d(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">plot_spectra_charges(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">get_spectra_matrix(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">get_spectra_peaks(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">plot_spectra_peaks(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code>
+
+        </dt>
+        <dd>MassSpecResults_Spectra S3 Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="RamanResults_Spectra.html">RamanResults_Spectra()</a></code> <code><a href="RamanResults_Spectra.html">validate_object(<i>&lt;RamanResults_Spectra&gt;</i>)</a></code> <code><a href="RamanResults_Spectra.html">show(<i>&lt;RamanResults_Spectra&gt;</i>)</a></code> <code><a href="RamanResults_Spectra.html">`[`(<i>&lt;RamanResults_Spectra&gt;</i>)</a></code> <code><a href="RamanResults_Spectra.html">`[[`(<i>&lt;RamanResults_Spectra&gt;</i>)</a></code>
+
+        </dt>
+        <dd>RamanResults_Spectra Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="RamanResults_SpectraSimilarity.html">RamanResults_SpectraSimilarity()</a></code> <code><a href="RamanResults_SpectraSimilarity.html">validate_object(<i>&lt;RamanResults_SpectraSimilarity&gt;</i>)</a></code> <code><a href="RamanResults_SpectraSimilarity.html">show(<i>&lt;RamanResults_SpectraSimilarity&gt;</i>)</a></code>
+
+        </dt>
+        <dd>RamanResults_SpectraSimilarity Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="Results.html">Results()</a></code> <code><a href="Results.html">validate_object(<i>&lt;Results&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Generic Results Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="StatisticResults_MCRPURE_mdatools.html">StatisticResults_MCRPURE_mdatools()</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">validate_object(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">summary(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_overview(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">get_model_data(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">predict(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">test(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_explained_variance(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_cumulative_explained_variance(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_resolved_spectra(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_contributions(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code>
+
+        </dt>
+        <dd>StatisticResults_MCRPURE_mdatools Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="StatisticResults_Model.html">StatisticResults_Model()</a></code> <code><a href="StatisticResults_Model.html">validate_object(<i>&lt;StatisticResults_Model&gt;</i>)</a></code> <code><a href="StatisticResults_Model.html">show(<i>&lt;StatisticResults_Model&gt;</i>)</a></code>
+
+        </dt>
+        <dd>StatisticResults_Model Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="StatisticResults_PCA_mdatools.html">StatisticResults_PCA_mdatools()</a></code> <code><a href="StatisticResults_PCA_mdatools.html">validate_object(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">summary(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">get_model_data(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">predict(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">test(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_explained_variance(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_cumulative_explained_variance(<i>&lt;StatisticResults_Model&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_scores(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_loadings(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_residuals(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_residual_distance(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_overview(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code>
+
+        </dt>
+        <dd>StatisticResults_PCA_mdatools Class</dd>
       </dl></div><div class="section level2">
-      <h2 id="configuration-s-">Configuration (S7)<a class="anchor" aria-label="anchor" href="#configuration-s-"></a></h2>
+      <h2 id="configuration-s-">Configuration (S3)<a class="anchor" aria-label="anchor" href="#configuration-s-"></a></h2>
 
       <div class="section-desc"><p>Configuration is governed by Config class which consists of a list of ConfigParameter class objects. Childs of both Config and ConfigParameter classes are implemented for specific use cases.</p></div>
 
@@ -772,34 +796,34 @@
         <dd>App Configuration</dd>
       </dl><dl><dt>
 
-          <code><a href="Config.html">Config()</a></code>
+          <code><a href="Config.html">Config()</a></code> <code><a href="Config.html">validate_object(<i>&lt;Config&gt;</i>)</a></code> <code><a href="Config.html">show(<i>&lt;Config&gt;</i>)</a></code> <code><a href="Config.html">as.data.table(<i>&lt;Config&gt;</i>)</a></code>
 
         </dt>
         <dd>Generic Configuration</dd>
       </dl><dl><dt>
 
-          <code><a href="ConfigCache.html">ConfigCache()</a></code>
+          <code><a href="ConfigCache.html">ConfigCache()</a></code> <code><a href="ConfigCache.html">validate_object(<i>&lt;ConfigCache&gt;</i>)</a></code> <code><a href="ConfigCache.html">size(<i>&lt;ConfigCache&gt;</i>)</a></code> <code><a href="ConfigCache.html">info(<i>&lt;ConfigCache&gt;</i>)</a></code>
 
         </dt>
         <dd>Configuration Parameter for Caching</dd>
       </dl><dl><dt>
 
-          <code><a href="ConfigDurationNotifications.html">ConfigDurationNotifications()</a></code>
+          <code><a href="ConfigDurationNotifications.html">ConfigDurationNotifications()</a></code> <code><a href="ConfigDurationNotifications.html">validate_object(<i>&lt;ConfigDurationNotifications&gt;</i>)</a></code>
 
         </dt>
         <dd>Configuration Parameter for Duration of Notifications</dd>
       </dl><dl><dt>
 
-          <code><a href="ConfigExtraRoots.html">ConfigExtraRoots()</a></code>
+          <code><a href="ConfigExtraRoots.html">ConfigExtraRoots()</a></code> <code><a href="ConfigExtraRoots.html">validate_object(<i>&lt;ConfigExtraRoots&gt;</i>)</a></code>
 
         </dt>
         <dd>Configuration Parameter for Extra Root Directories</dd>
       </dl><dl><dt>
 
-          <code><a href="ConfigParameter.html">ConfigParameter()</a></code>
+          <code><a href="ConfigParameter.html">ConfigParameter()</a></code> <code><a href="ConfigParameter.html">validate_object(<i>&lt;ConfigParameter&gt;</i>)</a></code>
 
         </dt>
-        <dd>Generic Configuration Parameter</dd>
+        <dd>ConfigParameter S3 Class</dd>
       </dl><dl><dt>
 
           <code><a href="EngineConfig.html">EngineConfig()</a></code>
@@ -807,7 +831,7 @@
         </dt>
         <dd>Engine Configuration</dd>
       </dl></div><div class="section level2">
-      <h2 id="audit-trail-s-">Audit Trail (S7)<a class="anchor" aria-label="anchor" href="#audit-trail-s-"></a></h2>
+      <h2 id="audit-trail-s-">Audit Trail (S3)<a class="anchor" aria-label="anchor" href="#audit-trail-s-"></a></h2>
 
       <div class="section-desc"><p>Audit trail is governed by a specific classes, registering all changes made to the data within an engine.</p></div>
 
@@ -819,13 +843,13 @@
 
       <dl><dt>
 
-          <code><a href="AuditTrail.html">AuditTrail()</a></code>
+          <code><a href="AuditTrail.html">AuditTrail()</a></code> <code><a href="AuditTrail.html">validate_object(<i>&lt;AuditTrail&gt;</i>)</a></code> <code><a href="AuditTrail.html">add(<i>&lt;AuditTrail&gt;</i>)</a></code> <code><a href="AuditTrail.html">as.data.table(<i>&lt;AuditTrail&gt;</i>)</a></code> <code><a href="AuditTrail.html">show(<i>&lt;AuditTrail&gt;</i>)</a></code> <code><a href="AuditTrail.html">save(<i>&lt;AuditTrail&gt;</i>)</a></code> <code><a href="AuditTrail.html">read(<i>&lt;AuditTrail&gt;</i>)</a></code>
 
         </dt>
         <dd>Audit Trail Register</dd>
       </dl><dl><dt>
 
-          <code><a href="AuditTrailEntry.html">AuditTrailEntry()</a></code>
+          <code><a href="AuditTrailEntry.html">AuditTrailEntry()</a></code> <code><a href="AuditTrailEntry.html">validate_object(<i>&lt;AuditTrailEntry&gt;</i>)</a></code>
 
         </dt>
         <dd>Generic Entry for Audit Trail</dd>
@@ -874,133 +898,181 @@
           <code><a href="add.html">add()</a></code>
 
         </dt>
-        <dd>Generic <code>add</code></dd>
+        <dd>S3 generic <code>add</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="size.html">size()</a></code>
+
+        </dt>
+        <dd>Generic <code>size</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="validate_object.html">validate_object()</a></code>
+
+        </dt>
+        <dd>S3 generic <code>validate_object</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="info.html">info()</a></code>
+
+        </dt>
+        <dd>Generic <code>info</code></dd>
       </dl><dl><dt>
 
           <code><a href="clear_cache.html">clear_cache()</a></code>
 
         </dt>
-        <dd>Generic <code>clear_cache</code></dd>
+        <dd>S3 generic <code>clear_cache</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="get_analysis_classes.html">get_analysis_classes()</a></code>
+
+        </dt>
+        <dd>S3 generic <code>get_analysis_classes</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="get_analysis_names.html">get_analysis_names()</a></code>
+
+        </dt>
+        <dd>S3 generic <code>get_analysis_names</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="get_blank_names.html">get_blank_names()</a></code>
+
+        </dt>
+        <dd>S3 generic <code>get_blank_names</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_cache_info.html">get_cache_info()</a></code>
 
         </dt>
-        <dd>Generic <code>get_cache_info</code></dd>
+        <dd>S3 generic <code>get_cache_info</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_chromatograms.html">get_chromatograms()</a></code>
 
         </dt>
-        <dd>Generic <code>get_chromatograms</code></dd>
+        <dd>S3 generic <code>get_chromatograms</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_chromatograms_peaks.html">get_chromatograms_peaks()</a></code>
 
         </dt>
-        <dd>Generic <code>get_chromatograms_peaks</code></dd>
+        <dd>S3 generic <code>get_chromatograms_peaks</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_components.html">get_components()</a></code>
 
         </dt>
-        <dd>Generic <code>get_components</code></dd>
+        <dd>S3 generic <code>get_components</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_compounds.html">get_compounds()</a></code>
 
         </dt>
-        <dd>Generic <code>get_compounds</code></dd>
+        <dd>S3 generic <code>get_compounds</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="get_concentrations.html">get_concentrations()</a></code>
+
+        </dt>
+        <dd>S3 generic <code>get_concentrations</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_features.html">get_features()</a></code>
 
         </dt>
-        <dd>Generic <code>get_features</code></dd>
+        <dd>S3 generic <code>get_features</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_features_count.html">get_features_count()</a></code>
 
         </dt>
-        <dd>Generic <code>get_features_count</code></dd>
+        <dd>S3 generic <code>get_features_count</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_features_eic.html">get_features_eic()</a></code>
 
         </dt>
-        <dd>Generic <code>get_features_eic</code></dd>
+        <dd>S3 generic <code>get_features_eic</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_features_ms1.html">get_features_ms1()</a></code>
 
         </dt>
-        <dd>Generic <code>get_features_ms1</code></dd>
+        <dd>S3 generic <code>get_features_ms1</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_features_ms2.html">get_features_ms2()</a></code>
 
         </dt>
-        <dd>Generic <code>get_features_ms2</code></dd>
+        <dd>S3 generic <code>get_features_ms2</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_fold_change.html">get_fold_change()</a></code>
 
         </dt>
-        <dd>Generic <code>get_fold_change</code></dd>
+        <dd>S3 generic <code>get_fold_change</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_formulas.html">get_formulas()</a></code>
 
         </dt>
-        <dd>Generic <code>get_formulas</code></dd>
+        <dd>S3 generic <code>get_formulas</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_groups.html">get_groups()</a></code>
 
         </dt>
-        <dd>Generic <code>get_groups</code></dd>
+        <dd>S3 generic <code>get_groups</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_groups_ms1.html">get_groups_ms1()</a></code>
 
         </dt>
-        <dd>Generic <code>get_groups_ms1</code></dd>
+        <dd>S3 generic <code>get_groups_ms1</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_groups_ms2.html">get_groups_ms2()</a></code>
 
         </dt>
-        <dd>Generic <code>get_groups_ms2</code></dd>
+        <dd>S3 generic <code>get_groups_ms2</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_internal_standards.html">get_internal_standards()</a></code>
 
         </dt>
-        <dd>Generic <code>get_internal_standards</code></dd>
+        <dd>S3 generic <code>get_internal_standards</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_matrix_suppression.html">get_matrix_suppression()</a></code>
 
         </dt>
-        <dd>Generic <code>get_matrix_suppression</code></dd>
+        <dd>S3 generic <code>get_matrix_suppression</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="get_methods.html">get_methods()</a></code>
+
+        </dt>
+        <dd>S3 generic <code>get_methods</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_model_data.html">get_model_data()</a></code>
 
         </dt>
-        <dd>Generic <code>get_model_data</code></dd>
+        <dd>S3 generic <code>get_model_data</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_model_prediction.html">get_model_prediction()</a></code>
 
         </dt>
-        <dd>Generic <code>get_model_prediction</code></dd>
+        <dd>S3 generic <code>get_model_prediction</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_patRoon_compounds.html">get_patRoon_compounds()</a></code>
 
         </dt>
-        <dd>Generic <code>get_patRoon_compounds</code></dd>
+        <dd>S3 generic <code>get_patRoon_compounds</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_patRoon_features.html">get_patRoon_features()</a></code>
@@ -1027,6 +1099,12 @@
         <dd>Generic <code>get_raw_spectra</code></dd>
       </dl><dl><dt>
 
+          <code><a href="get_replicate_names.html">get_replicate_names()</a></code>
+
+        </dt>
+        <dd>Generic <code>get_replicate_names</code></dd>
+      </dl><dl><dt>
+
           <code><a href="get_spectra.html">get_spectra()</a></code>
 
         </dt>
@@ -1043,6 +1121,12 @@
 
         </dt>
         <dd>Generic <code>get_spectra_eic</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="get_spectra_headers.html">get_spectra_headers()</a></code>
+
+        </dt>
+        <dd>Generic <code>get_spectra_headers</code></dd>
       </dl><dl><dt>
 
           <code><a href="get_spectra_matrix.html">get_spectra_matrix()</a></code>
@@ -1079,6 +1163,84 @@
 
         </dt>
         <dd>Generic <code>get_suspects</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecAnalyses.html">MassSpecAnalyses()</a></code> <code><a href="MassSpecAnalyses.html">validate_object(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_analysis_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_replicate_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">set_replicate_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_blank_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">set_blank_names(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_concentrations(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">set_concentrations(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">info(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">add(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">remove(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">`[`(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">`[&lt;-`(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">`[[`(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">`[[&lt;-`(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">save(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">as.MassSpecAnalyses()</a></code> <code><a href="MassSpecAnalyses.html">read(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_tic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_bpc(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_raw_spectra(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_eic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_ms1(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_spectra_ms2(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_tic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_bpc(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_eic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_xic(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_ms1(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_spectra_ms2(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_raw_chromatograms(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">load_spectra(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">load_chromatograms(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">get_matrix_suppression(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="MassSpecAnalyses.html">plot_matrix_suppression(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Mass Spectrometry Analyses</dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecResults_Chromatograms.html">MassSpecResults_Chromatograms()</a></code> <code><a href="MassSpecResults_Chromatograms.html">validate_object(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">show(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">`[`(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">get_chromatograms(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">plot_chromatograms(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">plot_chromatograms_baseline(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">get_chromatograms_peaks(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code> <code><a href="MassSpecResults_Chromatograms.html">plot_chromatograms_peaks(<i>&lt;MassSpecResults_Chromatograms&gt;</i>)</a></code>
+
+        </dt>
+        <dd>MassSpecResults_Chromatograms Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecResults_NonTargetAnalysis.html">MassSpecResults_NonTargetAnalysis()</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">validate_object(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">show(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">as.MassSpecResults_NonTargetAnalysis()</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">`[`(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">`[[`(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features_count(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_features_count(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">map_features(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">map_features_intensity(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features_eic(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_features(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features_ms1(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_features_ms1(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_features_ms2(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_features_ms2(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_groups(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups_overview(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups_profile(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_groups_ms1(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_groups_ms2(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups_ms1(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_groups_ms2(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_components(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">map_components(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_suspects(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_suspects(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_internal_standards(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_internal_standards(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_compounds(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_fold_change(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">plot_fold_change(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_patRoon_features(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_patRoon_MSPeakLists(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code> <code><a href="MassSpecResults_NonTargetAnalysis.html">get_patRoon_compounds(<i>&lt;MassSpecResults_NonTargetAnalysis&gt;</i>)</a></code>
+
+        </dt>
+        <dd>MassSpecResults_NonTargetAnalysis S3 Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="MassSpecResults_Spectra.html">MassSpecResults_Spectra()</a></code> <code><a href="MassSpecResults_Spectra.html">validate_object(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">show(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">`[`(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">get_spectra(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">plot_spectra(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">plot_spectra_3d(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">plot_spectra_charges(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">get_spectra_matrix(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">get_spectra_peaks(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code> <code><a href="MassSpecResults_Spectra.html">plot_spectra_peaks(<i>&lt;MassSpecResults_Spectra&gt;</i>)</a></code>
+
+        </dt>
+        <dd>MassSpecResults_Spectra S3 Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="RamanAnalyses.html">RamanAnalyses()</a></code> <code><a href="RamanAnalyses.html">validate_object(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_analysis_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_replicate_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">set_replicate_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_blank_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">set_blank_names(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_concentrations(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">set_concentrations(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">info(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">add(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">remove(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">`[`(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_spectra(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_spectra_matrix(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_spectra(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_spectra_3d(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_spectra_baseline(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_chromatograms(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">get_chromatograms_peaks(<i>&lt;RamanAnalyses&gt;</i>)</a></code> <code><a href="RamanAnalyses.html">plot_chromatograms_peaks(<i>&lt;RamanAnalyses&gt;</i>)</a></code>
+
+        </dt>
+        <dd>RamanAnalyses Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="StatisticAnalyses.html">StatisticAnalyses()</a></code> <code><a href="StatisticAnalyses.html">validate_object(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">get_analysis_names(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">get_analysis_classes(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">set_analysis_classes(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">get_concentrations(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">set_concentrations(<i>&lt;MassSpecAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">info(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">add(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">remove(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">`[&lt;-`(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">`[[&lt;-`(<i>&lt;StatisticAnalyses&gt;</i>)</a></code> <code><a href="StatisticAnalyses.html">plot_data(<i>&lt;StatisticAnalyses&gt;</i>)</a></code>
+
+        </dt>
+        <dd>StatisticAnalyses Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="StatisticResults_MCRPURE_mdatools.html">StatisticResults_MCRPURE_mdatools()</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">validate_object(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">summary(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_overview(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">get_model_data(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">predict(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">test(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_explained_variance(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_cumulative_explained_variance(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_resolved_spectra(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_MCRPURE_mdatools.html">plot_contributions(<i>&lt;StatisticResults_MCRPURE_mdatools&gt;</i>)</a></code>
+
+        </dt>
+        <dd>StatisticResults_MCRPURE_mdatools Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="StatisticResults_PCA_mdatools.html">StatisticResults_PCA_mdatools()</a></code> <code><a href="StatisticResults_PCA_mdatools.html">validate_object(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">summary(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">get_model_data(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">predict(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">test(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_explained_variance(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_cumulative_explained_variance(<i>&lt;StatisticResults_Model&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_scores(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_loadings(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_residuals(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_residual_distance(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code> <code><a href="StatisticResults_PCA_mdatools.html">plot_overview(<i>&lt;StatisticResults_PCA_mdatools&gt;</i>)</a></code>
+
+        </dt>
+        <dd>StatisticResults_PCA_mdatools Class</dd>
+      </dl><dl><dt>
+
+          <code><a href="Workflow.html">Workflow()</a></code> <code><a href="Workflow.html">validate_object(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">info(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">get_methods(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">`[`(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">`[&lt;-`(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">`[[`(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">`[[&lt;-`(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">save(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">read(<i>&lt;Workflow&gt;</i>)</a></code> <code><a href="Workflow.html">show(<i>&lt;Workflow&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Workflow Manager</dd>
+      </dl><dl><dt>
+
+          <code><a href="set_analysis_classes.html">set_analysis_classes()</a></code>
+
+        </dt>
+        <dd>Generic <code>set_analysis_classes</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="set_blank_names.html">set_blank_names()</a></code>
+
+        </dt>
+        <dd>Generic <code>set_blank_names</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="set_concentrations.html">set_concentrations()</a></code>
+
+        </dt>
+        <dd>Generic <code>set_concentrations</code></dd>
+      </dl><dl><dt>
+
+          <code><a href="set_replicate_names.html">set_replicate_names()</a></code>
+
+        </dt>
+        <dd>Generic <code>set_replicate_names</code></dd>
       </dl><dl><dt>
 
           <code><a href="load.html">load()</a></code>
@@ -1255,6 +1417,12 @@
         <dd>Generic <code>plot_matrix_suppression</code></dd>
       </dl><dl><dt>
 
+          <code><a href="plot_overview.html">plot_overview()</a></code>
+
+        </dt>
+        <dd>Generic <code>plot_overview</code></dd>
+      </dl><dl><dt>
+
           <code><a href="plot_residuals.html">plot_residuals()</a></code>
 
         </dt>
@@ -1384,7 +1552,7 @@
           <code><a href="save.html">save()</a></code>
 
         </dt>
-        <dd>Generic <code>save</code></dd>
+        <dd>S3 generic <code>save</code></dd>
       </dl><dl><dt>
 
           <code><a href="save_cache.html">save_cache()</a></code>

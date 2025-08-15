@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">StreamFind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -60,7 +60,7 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9">
-<p><img src="reference/figures/logos.png" alt="Logo" width="100%" style="display: block; margin: auto;"></p>
+<p><img src="reference/figures/readme_logos.png" alt="Logo" width="100%" style="display: block; margin: auto;"></p>
 <p>StreamFind R package is developed within the project <a href="https://www.bildung-forschung.digital/digitalezukunft/de/bildung/digital-_und_datenkompetenzen/datenkompetenzen_wissenschaftlichen_nachwuchs/Projekte/stream_find.html" class="external-link">“Flexible data analysis and workflow designer to identify chemicals in the water cycle”</a> funded by the <a href="https://www.bmbf.de" class="external-link">German Federal Ministry of Education and Research (BMBF)</a>. The development is carried out by the <a href="https://www.iuta.de" class="external-link">Institut für Umwelt &amp; Energie, Technik &amp; Analytik e. V. (IUTA)</a>, the <a href="https://www.fzi.de/" class="external-link">Forschungszentrum Informatik (FZI)</a> and supporting partners. StreamFind is intended to be a platform for assembling processing workflows for different types of data (e.g. mass spectrometry (MS) and spectroscopy data) with applications in different fields (e.g. environmental studies of the water cycle and quality control of pharmaceuticals). StreamFind aims to stimulate the use of advanced data analysis (e.g. non-target screening, statistical analysis, etc.) in routine studies, to promote standardization of data structure and processing, and to facilitate retrospective data evaluation. The StreamFind platform is aimed at scientists, but also at technicians due to its comprehensive documentation, its well categorized set of integrated modular processing methods and its embedded graphical user interface.</p>
 <p>The StreamFind development is ongoing, please <a href="mailto:cunha@iuta.de">contact us</a> for questions or collaboration.</p>
 <div class="section level2">
@@ -90,8 +90,8 @@
 <h2 id="docker-setup">Docker Setup<a class="anchor" aria-label="anchor" href="#docker-setup"></a>
 </h2>
 <p>The StreamFind can also be used via the <a href="https://www.docker.com/products/docker-desktop/" class="external-link">Docker</a> container. The Docker container is a pre-configured environment with all the necessary dependencies installed. The Docker container can be built and started with the following commands.</p>
-<p>Build the Docker container:<br><code>docker build -t my-r-app .</code></p>
-<p>Start the Docker container:<br><code>docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app</code></p>
+<p>Build the Docker container: <code>docker build -t my-r-app .</code></p>
+<p>Start the Docker container: <code>docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app</code></p>
 <p>Once the container is up, you’ll be prompted to select the service you want to run:</p>
 <ul>
 <li>
@@ -114,7 +114,7 @@
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<p>The StreamFind is open source due to public funding and the extensive contribution from scientific literature as well as existing open source software. Below, we reference the research and software that is used within StreamFind. Please note that each open source software or research that StreamFind uses relies on other contributions. Therefore, we recommend to search within each citation for other contributions.<br><br></p>
+<p>The StreamFind is open source due to public funding and the extensive contribution from scientific literature as well as existing open source software. Below, we reference the research and software that is used within StreamFind. Please note that each open source software or research that StreamFind uses relies on other contributions. Therefore, we recommend to search within each citation for other contributions. <br></p>
 <div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
 <div id="ref-xcms03" class="csl-entry">
 Benton, H. Paul, Elizabeth J. Want, and Timothy M. D. Ebbels. 2010. “Correction of Mass Calibration Gaps in Liquid Chromatography-Mass Spectrometry Metabolomics Data.” <em>BIOINFORMATICS</em> 26: 2488.

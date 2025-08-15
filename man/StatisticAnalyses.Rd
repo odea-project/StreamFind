@@ -2,7 +2,19 @@
 % Please edit documentation in R/class_Analyses_StatisticAnalyses.R
 \name{StatisticAnalyses}
 \alias{StatisticAnalyses}
-\title{Statistical Analyses (Tabular Data Input)}
+\alias{validate_object.StatisticAnalyses}
+\alias{get_analysis_names.StatisticAnalyses}
+\alias{get_analysis_classes.StatisticAnalyses}
+\alias{set_analysis_classes.StatisticAnalyses}
+\alias{get_concentrations.StatisticAnalyses}
+\alias{set_concentrations.MassSpecAnalyses}
+\alias{info.StatisticAnalyses}
+\alias{add.StatisticAnalyses}
+\alias{remove.StatisticAnalyses}
+\alias{[<-.StatisticAnalyses}
+\alias{[[<-.StatisticAnalyses}
+\alias{plot_data.StatisticAnalyses}
+\title{StatisticAnalyses Class}
 \usage{
 StatisticAnalyses(
   analyses = NULL,
@@ -10,53 +22,115 @@ StatisticAnalyses(
   concentrations = numeric(),
   ...
 )
+
+\method{validate_object}{StatisticAnalyses}(x)
+
+\method{get_analysis_names}{StatisticAnalyses}(x)
+
+\method{get_analysis_classes}{StatisticAnalyses}(x)
+
+\method{set_analysis_classes}{StatisticAnalyses}(x, value)
+
+\method{get_concentrations}{StatisticAnalyses}(x)
+
+\method{set_concentrations}{MassSpecAnalyses}(x, value)
+
+\method{info}{StatisticAnalyses}(x)
+
+\method{add}{StatisticAnalyses}(x, value, ...)
+
+\method{remove}{StatisticAnalyses}(x, value)
+
+\method{[}{StatisticAnalyses}(x, i) <- value
+
+\method{[[}{StatisticAnalyses}(x, i) <- value
+
+\method{plot_data}{StatisticAnalyses}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  transpose = FALSE,
+  interactive = TRUE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorGroups = NULL,
+  xTickLabelsShow = TRUE
+)
 }
 \arguments{
-\item{analyses}{A \code{character} vector with full file path to \code{.csv} file with variable names as
-first row and analyses names as first column or a \code{data.frame} or \code{matrix} object.}
+\item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
 \item{classes}{A \code{character} vector with the classes of the analyses.}
 
 \item{concentrations}{A \code{numeric} vector with the concentrations of the analyses.}
 
-\item{...}{Additional arguments passed to the constructor.}
+\item{...}{Additional arguments passed to \code{read.csv} whet a file path is given.}
+
+\item{x}{A \code{StatisticAnalyses} object.}
+
+\item{value}{An object that highly depends on the method. Check the specific method documentation for details.}
+
+\item{i}{A character or numeric vector to perform subsetting. Check the specific method for details.}
+
+\item{features}{A numeric vector with the feature/variable indices (i.e., columns of data frame).}
+
+\item{transpose}{Logical, if TRUE the data is transposed (e.g., column names are used as legend when plotting).}
+
+\item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{xLab}{A string with the title for the x axis.}
+
+\item{yLab}{A string with the title for the y axis.}
+
+\item{title}{A string with the title.}
+
+\item{colorGroups}{A factor character vector with the color groups for the data.}
+
+\item{xTickLabelsShow}{Logical, if TRUE the x-axis tick labels are shown.}
+}
+\value{
+A \code{StatisticAnalyses} object, which is a list with the following components:
+\itemize{
+\item \code{analyses}: A \code{data.frame} or \code{matrix} with the analyses data, where the row names are the analyses names and the column names are the variable names.
+\item \code{classes}: A \code{character} vector with the classes of the analyses.
+\item \code{concentrations}: A \code{numeric} vector with the concentrations of the analyses.
+\item \code{results}: A list with the results of the analyses.
+\item \code{type}: A \code{character} vector with the type of the analyses, which is \code{"Statistic"}.
+\item \code{formats}: A \code{character} vector with the file formats of the analyses, which is \code{"csv"}.
+}
 }
 \description{
-The StatisticAnalyses class is used for statistical analysis of tabular data.
+The \code{StatisticAnalyses} class is used for tabular data statistical analysis.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(StatisticAnalyses)}: Validate the StatisticAnalyses object, returns \code{NULL} if valid.
 
-\describe{
-\item{\code{analyses}}{A \code{data.frame} with the analyses data.}
+\item \code{get_analysis_names(StatisticAnalyses)}: Get the names of the analyses, which is the row names of the \code{analyses} data frame.
 
-\item{\code{type}}{A \code{character} vector with the type of analyses.}
+\item \code{get_analysis_classes(StatisticAnalyses)}: Get the classes assigned to each analysis.
 
-\item{\code{classes}}{A \code{character} vector with the classes of the analyses.}
+\item \code{set_analysis_classes(StatisticAnalyses)}: Set the classes of the analyses, where the argument \code{value} must be a character vector with the same length as the number of analyses.
 
-\item{\code{concentrations}}{A \code{numeric} vector with the concentrations of the analyses.}
+\item \code{get_concentrations(StatisticAnalyses)}: Get the concentration values of each analysis.
 
-\item{\code{info}}{(getter) A \code{data.frame} with the information of the analyses.}
+\item \code{info(StatisticAnalyses)}: Get a data frame with the analyses, features, classes and concentrations.
 
-\item{\code{number_variables}}{(getter) A \code{numeric} with the number of variables in the analyses.}
+\item \code{add(StatisticAnalyses)}: Add new analyses to the \code{StatisticAnalyses} object, where the argument \code{value} must be a csv file or directly a data frame with the same column names as the existing analyses.
 
-\item{\code{has_data}}{(getter) A \code{logical} indicating if the analyses has data.}
+\item \code{remove(StatisticAnalyses)}: Remove analyses from the \code{StatisticAnalyses} object, where the argument \code{value} can be a character vector with the names of the analyses or a numeric vector with the indices of the analyses to remove.
 
-\item{\code{data}}{(getter/setter) A \code{list} with the data of the analyses.}
+\item \code{`[`(StatisticAnalyses) <- value}: Add new analyses to the \code{StatisticAnalyses} object, where the argument \code{value} must be a csv file or directly a data frame with the same column names as the existing analyses.
 
-\item{\code{has_model}}{(getter) A \code{logical} indicating if the analyses has a model.}
+\item \code{`[[`(StatisticAnalyses) <- value}: Add new analyses to the \code{StatisticAnalyses} object, where the argument \code{value} must be a csv file or directly a data frame with the same column names as the existing analyses.
 
-\item{\code{model}}{(getter/setter) A \code{list} with the model of the analyses.}
+\item \code{plot_data(StatisticAnalyses)}: Plot the data of the \code{StatisticAnalyses} object.
 
-\item{\code{has_test}}{(getter) A \code{logical} indicating if the analyses has a test.}
-
-\item{\code{test}}{(getter) A \code{list} with the test of the analyses.}
-
-\item{\code{has_prediction}}{(getter) A \code{logical} indicating if the analyses has a prediction.}
-
-\item{\code{prediction}}{(getter) A \code{list} with the prediction of the analyses.}
-
-\item{\code{has_quantification}}{(getter) A \code{logical} indicating if the analyses has a quantification.}
-
-\item{\code{quantification}}{(getter/setter) A \code{list} with the quantification of the analyses.}
 }}
+\section{Functions}{
+\itemize{
+\item \code{set_concentrations(MassSpecAnalyses)}: Set the concentrations of the analyses, where the argument \code{value} must be a numeric vector with the same length as the number of analyses.
 
+}}

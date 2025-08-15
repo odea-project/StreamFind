@@ -40,8 +40,8 @@ knitr::opts_chunk$set(
   comment = ""
 )
 
-main_dir <- "E:/example_files/isoft/BSA_products"
-#main_dir <- "C:/Users/apoli/Documents/example_files/isoft/BSA_products"
+#main_dir <- "E:/example_files/isoft/BSA_products"
+main_dir <- "C:/Users/apoli/Documents/example_files/isoft/BSA_products"
 all_files <- list.files(main_dir, full.names = TRUE)
 ms_files <- all_files[grepl(".d$", all_files)]
 raman_files <- list.files(main_dir, pattern = ".asc$", full.names = TRUE)
@@ -153,7 +153,7 @@ plot_chromatograms_peaks(
 )
 ```
 
-The average retention time of the peaks was `r mean(data.table::rbindlist(ms$Chromatograms$peaks)$rt)` seconds with a standard deviation of `r sd(data.table::rbindlist(ms$Chromatograms$peaks)$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges. The *m/z* range needs to be defined once and is equal to all other analyses if the compound of interest is BSA. As for the retention time, shifts might occur due to the chromatographic separation.
+The average retention time of the peaks was `r mean(data.table::rbindlist(ms$Results$MassSpecResults_Chromatograms$peaks)$rt)` seconds with a standard deviation of `r sd(data.table::rbindlist(ms$Results$MassSpecResults_Chromatograms$peaks)$rt)`. The following step is to estimate the *m/z* range of BSA for deconvolution of charges. The *m/z* range needs to be defined once and is equal to all other analyses if the compound of interest is BSA. As for the retention time, shifts might occur due to the chromatographic separation.
 
 ```{r rt-av}
 # Average retention time of the main peak
@@ -422,21 +422,24 @@ stat$run(
     gamma = 0.02
   )
 )
-summary(stat$model) # summary method is from mdatools
+summary(stat$Results$StatisticResults_PCA_mdatools$model) # summary method is from mdatools
 ```
 
 ```{r pca-results, fig.cap="Overview plot for the PCA model."}
-plot(stat$model)
+plot_overview(stat$Results$StatisticResults_PCA_mdatools)
 ```
 
 ```{r pca-loadings, fig.cap="PCA loadings plot for the fused data."}
 # Adds a color key to the loadings plot to evaluate the contribution of each dataset (i.e., MS and Raman)
-plot_loadings(stat$Analyses, colorKey = rep(c("MS", "Raman"), c(ncol(ms_mat), ncol(raman_mat))))
+plot_loadings(
+  stat$Results$StatisticResults_PCA_mdatools,
+  colorKey = rep(c("MS", "Raman"), c(ncol(ms_mat), ncol(raman_mat)))
+)
 ```
 
 ```{r pca-model-mdatools, fig.cap="PCA summary plot using the original mdatools R package.", fig.height=9}
 # The mdatools S3 class model object is obtained via the active binding of the StatisticEngine
-plot(stat$model$model, show.labels = TRUE) # plot method from mdatools
+plot(stat$Results$StatisticResults_PCA_mdatools$model, show.labels = TRUE) # plot method from mdatools
 ```
 
 ## MCR purity
@@ -452,16 +455,16 @@ stat2 <- StatisticEngine$new(
 
 ```{r mcr-run}
 stat2$run(StatisticMethod_MakeModel_mcrpure_mdatools(ncomp = 1, offset = 0.05))
-summary(stat2$model)
+summary(stat2$Results$StatisticResults_MCRPURE_mdatools$model)
 ```
 
 ```{r mcr-model, fig.cap="Overview plot of the MCR pure model."}
-plot(stat2$model)
+plot_overview(stat2$Results$StatisticResults_MCRPURE_mdatools)
 ```
 
 ```{r mcr-data}
 # Gets the most pure feature for the component
-get_model_data(stat2$model)$purity
+get_model_data(stat2$Results$StatisticResults_MCRPURE_mdatools)$purity
 ```
 
 -----

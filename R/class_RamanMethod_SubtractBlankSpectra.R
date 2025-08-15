@@ -96,7 +96,7 @@ run.RamanMethod_SubtractBlankSpectra_StreamFind <- function(x, engine = NULL) {
       return(z)
     }
 
-    if (!engine$Spectra$is_averaged) {
+    if (!engine$Results[["RamanResults_Spectra"]]$is_averaged) {
       rp <- get_replicate_names(engine$Analyses)[z$analysis[1]]
     } else {
       rp <- z$analysis[1]

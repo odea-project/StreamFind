@@ -1,122 +1,121 @@
-#' StatisticMethod_MakeModel_pca_mdatools S7 class
-#'
-#' @description Makes a Principle Component Analysis (PCA) model based on the R package
-#' \pkg{mdatools}.
-#' 
+#' @title StatisticMethod_MakeModel_pca_mdatools Class
+#' @description Makes a Principle Component Analysis (PCA) model based on the R package \pkg{mdatools}.
 #' @param center Logical (length 1) indicating if the data should be centered.
 #' @param scale Logical (length 1) indicating if the data should be scaled.
 #' @param ncomp Integer (length 1) with the number of components to be calculated.
 #' @param exclrows Integer vector with the row indices to be excluded.
 #' @param exclcols Integer vector with the column indices to be excluded.
 #' @param x.test A `data.frame` with the test data.
-#' @param method Character (length 1) with the method to be used for PCA. Possible values are
-#' "svd" and "nipals".
+#' @param method Character (length 1) with the method to be used for PCA. Possible values are "svd" and "nipals".
 #' @param rand Integer (length 1) with the random seed.
-#' @param lim.type Character (length 1) with the type of limit for the PCA. Possible values are
-#' "jm" Jackson-Mudholkar approach approach, "chisq" based on chi-square distribution, "ddmoments"
-#' and "ddrobust" related to data driven method. It is highly recommended to concult the original
-#' documentation in \link[mdatools]{pca} for more information.
+#' @param lim.type Character (length 1) with the type of limit for the PCA. Possible values are "jm" Jackson-Mudholkar approach approach, "chisq" based on chi-square distribution, "ddmoments" and "ddrobust" related to data driven method. It is highly recommended to concult the original documentation in \link[mdatools]{pca} for more information.
 #' @param alpha Numeric (length 1) with the alpha value for the PCA.
 #' @param gamma Numeric (length 1) with the gamma value for the PCA.
 #' @param info Character (length 1) with additional information.
-#' 
 #' @references
 #' \insertRef{mdatools01}{StreamFind}
 #'
 #' @return A StatisticMethod_MakeModel_pca_mdatools object.
-#'
 #' @export
 #'
-StatisticMethod_MakeModel_pca_mdatools <- S7::new_class(
-  name = "StatisticMethod_MakeModel_pca_mdatools",
-  parent = S7::new_S3_class("ProcessingStep"),
-  package = "StreamFind",
-  constructor = function(center = FALSE,
-                         scale = FALSE,
-                         ncomp = NULL,
-                         exclrows = NULL,
-                         exclcols = NULL,
-                         x.test = NULL,
-                         method = "svd",
-                         rand = NULL,
-                         lim.type = "ddmoments",
-                         alpha = 0.05,
-                         gamma = 0.01,
-                         info = "") {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "Statistic",
-        method = "MakeModel",
-        required = NA_character_,
-        algorithm = "pca_mdatools",
-        parameters = list(
-          center = center,
-          scale = scale,
-          ncomp = ncomp,
-          exclrows = exclrows,
-          exclcols = exclcols,
-          x.test = x.test,
-          method = method,
-          rand = rand,
-          lim.type = lim.type,
-          alpha = alpha,
-          gamma = gamma,
-          info = info
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "mdatools",
-        developer = "Sergey Kucheryavskiy",
-        contact = "svk@bio.aau.dk",
-        link = "https://github.com/svkucheryavski/mdatools",
-        doi = "10.1016/j.chemolab.2020.103937"
-      )
-    )
-  },
-  
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "Statistic")
-    checkmate::assert_choice(self@method, "MakeModel")
-    checkmate::assert_choice(self@algorithm, "pca_mdatools")
-    checkmate::assert_logical(self@parameters$center, len = 1)
-    checkmate::assert_logical(self@parameters$scale, len = 1)
-    checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
-    checkmate::assert_number(self@parameters$exclrows, null.ok = TRUE)
-    checkmate::assert_number(self@parameters$exclcols, null.ok = TRUE)
-    checkmate::assert_data_frame(self@parameters$x.test, null.ok = TRUE)
-    checkmate::assert_choice(self@parameters$method, c("svd", "nipals"))
-    checkmate::assert_number(self@parameters$rand, null.ok = TRUE)
-    checkmate::assert_choice(self@parameters$lim.type, c("jm", "chisq", "ddmoments", "ddrobust"))
-    checkmate::assert_number(self@parameters$alpha)
-    checkmate::assert_number(self@parameters$gamma)
-    checkmate::assert_character(self@parameters$info)
-    NULL
+StatisticMethod_MakeModel_pca_mdatools <- function(
+  center = FALSE,
+  scale = FALSE,
+  ncomp = NULL,
+  exclrows = NULL,
+  exclcols = NULL,
+  x.test = NULL,
+  method = "svd",
+  rand = NULL,
+  lim.type = "ddmoments",
+  alpha = 0.05,
+  gamma = 0.01,
+  info = ""
+) {
+  x <- ProcessingStep(
+    type = "Statistic",
+    method = "MakeModel",
+    required = NA_character_,
+    algorithm = "pca_mdatools",
+    parameters = list(
+      center = center,
+      scale = scale,
+      ncomp = ncomp,
+      exclrows = exclrows,
+      exclcols = exclcols,
+      x.test = x.test,
+      method = method,
+      rand = rand,
+      lim.type = lim.type,
+      alpha = alpha,
+      gamma = gamma,
+      info = info
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid StatisticMethod_MakeModel_pca_mdatools object!")
   }
-)
+}
+
+#' @describeIn StatisticMethod_MakeModel_pca_mdatools Validate the object, returns NULL if valid.
+#' @param x A StatisticMethod_MakeModel_pca_mdatools object.
+#' @export
+#'
+validate_object.StatisticMethod_MakeModel_pca_mdatools <- function(x) {
+  checkmate::assert_choice(x$type, "Statistic")
+  checkmate::assert_choice(x$method, "MakeModel")
+  checkmate::assert_choice(x$algorithm, "pca_mdatools")
+  checkmate::assert_logical(x$parameters$center, len = 1)
+  checkmate::assert_logical(x$parameters$scale, len = 1)
+  checkmate::assert_number(x$parameters$ncomp, null.ok = TRUE)
+  checkmate::assert_number(x$parameters$exclrows, null.ok = TRUE)
+  checkmate::assert_number(x$parameters$exclcols, null.ok = TRUE)
+  checkmate::assert_data_frame(x$parameters$x.test, null.ok = TRUE)
+  checkmate::assert_choice(x$parameters$method, c("svd", "nipals"))
+  checkmate::assert_number(x$parameters$rand, null.ok = TRUE)
+  checkmate::assert_choice(
+    x$parameters$lim.type,
+    c("jm", "chisq", "ddmoments", "ddrobust")
+  )
+  checkmate::assert_number(x$parameters$alpha)
+  checkmate::assert_number(x$parameters$gamma)
+  checkmate::assert_character(x$parameters$info)
+  NextMethod()
+  NULL
+}
 
 #' @export
 #' @noRd
-S7::method(run, StatisticMethod_MakeModel_pca_mdatools) <- function(x, engine = NULL) {
-  
+run.StatisticMethod_MakeModel_pca_mdatools <- function(
+  x,
+  engine = NULL
+) {
   if (!requireNamespace("mdatools", quietly = TRUE)) {
     warning("The package 'mdatools' is not available! Not done.")
     return(FALSE)
   }
-  
   if (!is(engine, "StatisticEngine")) {
     warning("Engine is not a StatisticEngine object!")
     return(FALSE)
   }
-  
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
   mat <- engine$Analyses$analyses
-  
   ncomp = x$parameters$ncomp
-  if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
+  if (is.null(ncomp)) {
+    ncomp = min(nrow(mat) - 1, ncol(mat), 20)
+  }
   center <- x$parameters$center
   scale <- x$parameters$scale
   exclrows <- x$parameters$exclrows
@@ -128,7 +127,6 @@ S7::method(run, StatisticMethod_MakeModel_pca_mdatools) <- function(x, engine = 
   alpha <- x$parameters$alpha
   gamma <- x$parameters$gamma
   info <- x$parameters$info
-  
   m <- mdatools::pca(
     x = mat,
     ncomp = ncomp,
@@ -136,7 +134,7 @@ S7::method(run, StatisticMethod_MakeModel_pca_mdatools) <- function(x, engine = 
     scale = scale,
     exclrows = exclrows,
     exclcols = exclcols,
-    x.test = x.test, 
+    x.test = x.test,
     method = method,
     rand = rand,
     lim.type = lim.type,
@@ -144,117 +142,114 @@ S7::method(run, StatisticMethod_MakeModel_pca_mdatools) <- function(x, engine = 
     gamma = gamma,
     info = info
   )
-  
-  engine$model <- StreamFind::PCA(model = m)
+  engine$Results <- StatisticResults_PCA_mdatools(model = m)
   message(paste0("\U2713 ", "PCA model added!"))
   TRUE
 }
 
-#' StatisticMethod_MakeModel_mcrpure_mdatools S7 class
-#'
-#' @description Makes a Multivariate Curve Resolution (MCR) purity model based on the R package
-#' \pkg{mdatools}.
-#' 
+#' @title StatisticMethod_MakeModel_mcrpure_mdatools Class
+#' @description Makes a Multivariate Curve Resolution (MCR) purity model based on the R package \pkg{mdatools}.
 #' @param ncomp Integer (length 1) with the number of components to be calculated.
 #' @param purevars Integer vector with the indices of the pure variables (optional).
-#' @param offset Numeric (length 1) offset for correcting noise in computing maximum angles
-#' (should be value within 0 and 1).
+#' @param offset Numeric (length 1) offset for correcting noise in computing maximum angles (should be value within 0 and 1).
 #' @param exclrows Integer vector with the row indices to be excluded.
 #' @param exclcols Integer vector with the column indices to be excluded.
 #' @param info Character (length 1) with additional information.
-#' 
 #' @references
 #' \insertRef{mdatools01}{StreamFind}
-#' 
+#'
 #' \insertRef{mdatools02}{StreamFind}
 #'
 #' @return A StatisticMethod_MakeModel_mcrpure_mdatools object.
-#'
 #' @export
 #'
-StatisticMethod_MakeModel_mcrpure_mdatools <- S7::new_class(
-  name = "StatisticMethod_MakeModel_mcrpure_mdatools",
-  parent = S7::new_S3_class("ProcessingStep"),
-  package = "StreamFind",
-  constructor = function(ncomp = NULL,
-                         purevars = NULL,
-                         offset = 0.05,
-                         exclrows = NULL,
-                         exclcols = NULL,
-                         info = "") {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "Statistic",
-        method = "MakeModel",
-        required = NA_character_,
-        algorithm = "mcrpure_mdatools",
-        parameters = list(
-          ncomp = ncomp,
-          purevars = purevars,
-          offset = offset,
-          exclrows = exclrows,
-          exclcols = exclcols,
-          info = info
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "mdatools",
-        developer = "Sergey Kucheryavskiy",
-        contact = "svk@bio.aau.dk",
-        link = "https://github.com/svkucheryavski/mdatools",
-        doi = "10.1016/j.chemolab.2020.103937"
-      )
-    )
-  },
-  
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "Statistic")
-    checkmate::assert_choice(self@method, "MakeModel")
-    checkmate::assert_choice(self@algorithm, "mcrpure_mdatools")
-    checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
-    checkmate::assert_number(self@parameters$purevars, null.ok = TRUE)
-    checkmate::assert_number(self@parameters$offset, null.ok = TRUE)
-    checkmate::assert_number(self@parameters$exclrows, null.ok = TRUE)
-    checkmate::assert_number(self@parameters$exclcols, null.ok = TRUE)
-    checkmate::assert_character(self@parameters$info)
-    NULL
-  }
-)
+StatisticMethod_MakeModel_mcrpure_mdatools <- function(
+  ncomp = NULL,
+  purevars = NULL,
+  offset = 0.05,
+  exclrows = NULL,
+  exclcols = NULL,
+  info = ""
+) {
+  x <- ProcessingStep(
+    type = "Statistic",
+    method = "MakeModel",
+    required = NA_character_,
+    algorithm = "mcrpure_mdatools",
+    parameters = list(
+      ncomp = ncomp,
+      purevars = purevars,
+      offset = offset,
+      exclrows = exclrows,
+      exclcols = exclcols,
+      info = info
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+}
+
+#' @describeIn StatisticMethod_MakeModel_mcrpure_mdatools Validate the object, returns NULL if valid.
+#' @param x A StatisticMethod_MakeModel_mcrpure_mdatools object.
+#' @export
+#' 
+validate_object.StatisticMethod_MakeModel_mcrpure_mdatools <- function(x) {
+  checkmate::assert_choice(x$type, "Statistic")
+  checkmate::assert_choice(x$method, "MakeModel")
+  checkmate::assert_choice(x$algorithm, "mcrpure_mdatools")
+  checkmate::assert_number(x$parameters$ncomp, null.ok = TRUE)
+  checkmate::assert_number(x$parameters$purevars, null.ok = TRUE)
+  checkmate::assert_number(x$parameters$offset, null.ok = TRUE)
+  checkmate::assert_number(x$parameters$exclrows, null.ok = TRUE)
+  checkmate::assert_number(x$parameters$exclcols, null.ok = TRUE)
+  checkmate::assert_character(x$parameters$info)
+  NextMethod()
+  NULL
+}
 
 #' @export
 #' @noRd
-S7::method(run, StatisticMethod_MakeModel_mcrpure_mdatools) <- function(x, engine = NULL) {
-  
+run.StatisticMethod_MakeModel_mcrpure_mdatools <- function(
+  x,
+  engine = NULL
+) {
   if (!requireNamespace("mdatools", quietly = TRUE)) {
     warning("The package 'mdatools' is not available! Not done.")
     return(FALSE)
   }
-  
+
   if (!is(engine, "StatisticEngine")) {
     warning("Engine is not a StatisticEngine object!")
     return(FALSE)
   }
-  
+
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
+
   mat <- engine$Analyses$analyses
-  
+
   if (nrow(mat) < 2) {
     warning("The data matrix must have at least 2 rows! Not done.")
     return(FALSE)
   }
-  
+
   ncomp = x$parameters$ncomp
-  if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
-  purevars <- x$parameters$purevars 
+  if (is.null(ncomp)) {
+    ncomp = min(nrow(mat) - 1, ncol(mat), 20)
+  }
+  purevars <- x$parameters$purevars
   offset <- x$parameters$offset
   exclrows <- x$parameters$exclrows
   exclcols <- x$parameters$exclcols
   info <- x$parameters$info
-  
+
   m <- mdatools::mcrpure(
     x = mat,
     ncomp = ncomp,
@@ -264,10 +259,10 @@ S7::method(run, StatisticMethod_MakeModel_mcrpure_mdatools) <- function(x, engin
     exclcols = exclcols,
     info = info
   )
-  
+
   attr(m$resspec, "features") <- colnames(mat)
   attr(m$rescont, "analyses") <- rownames(mat)
-  engine$model <- StreamFind::MCRPURE(model = m)
+  engine$Results <- StatisticResults_MCRPURE_mdatools(model = m)
   message(paste0("\U2713 ", "MCR purity model added!"))
   TRUE
 }
@@ -276,7 +271,7 @@ S7::method(run, StatisticMethod_MakeModel_mcrpure_mdatools) <- function(x, engin
 #'
 #' @description Makes a Multivariate Curve Resolution (MCR) model using Alternating Least Squares
 #' (ALS) based on the R package \pkg{mdatools}.
-#' 
+#'
 #' @param ncomp Integer (length 1) with the number of components to be calculated.
 #' @param cont.solver Character (length 1) with the name of the to solve the pure components
 #' contributions (see details in \link[mdatools]{mcrals}).
@@ -288,13 +283,13 @@ S7::method(run, StatisticMethod_MakeModel_mcrpure_mdatools) <- function(x, engin
 #' @param max.niter Integer (length 1) with the maximum number of iterations.
 #' @param tol Numeric (length 1) with the tolerance for convergence.
 #' @param info Character (length 1) with additional information.
-#' 
+#'
 #' @note The functionality to define the initial pure components spectra as well as forcing
 #' concentration and spectra values are not included in this integration of \link[mdatools]{mcrals}.
-#' 
+#'
 #' @references
 #' \insertRef{mdatools01}{StreamFind}
-#' 
+#'
 #' \insertRef{mdatools02}{StreamFind}
 #'
 #' @return A StatisticMethod_MakeModel_mcrals_mdatools object.
@@ -305,15 +300,17 @@ StatisticMethod_MakeModel_mcrals_mdatools <- S7::new_class(
   name = "StatisticMethod_MakeModel_mcrals_mdatools",
   parent = S7::new_S3_class("ProcessingStep"),
   package = "StreamFind",
-  constructor = function(ncomp = NULL,
-                         cont.solver = "mcrals.nnls",
-                         spec.solver = "mcrals.nnls",
-                         exclrows = NULL,
-                         exclcols = NULL,
-                         verbose = FALSE,
-                         max.niter = 100,
-                         tol = 10^-6,
-                         info = "") {
+  constructor = function(
+    ncomp = NULL,
+    cont.solver = "mcrals.nnls",
+    spec.solver = "mcrals.nnls",
+    exclrows = NULL,
+    exclcols = NULL,
+    verbose = FALSE,
+    max.niter = 100,
+    tol = 10^-6,
+    info = ""
+  ) {
     S7::new_object(
       ProcessingStep(
         data_type = "Statistic",
@@ -343,63 +340,73 @@ StatisticMethod_MakeModel_mcrals_mdatools <- S7::new_class(
       )
     )
   },
-  
+
   validator = function(self) {
-    checkmate::assert_choice(self@data_type, "Statistic")
-    checkmate::assert_choice(self@method, "MakeModel")
-    checkmate::assert_choice(self@algorithm, "mcrals_mdatools")
-    checkmate::assert_number(self@parameters$ncomp, null.ok = TRUE)
-    checkmate::assert_choice(self@parameters$cont.solver, c("mcrals.nnls", "mcrals.ols"))
-    checkmate::assert_choice(self@parameters$spec.solver, c("mcrals.nnls", "mcrals.ols"))
-    checkmate::assert_number(self@parameters$exclrows, null.ok = TRUE)
-    checkmate::assert_number(self@parameters$exclcols, null.ok = TRUE)
-    checkmate::assert_logical(self@parameters$verbose, max.len = 1)
-    checkmate::assert_number(self@parameters$max.niter)
-    checkmate::assert_number(self@parameters$tol)
-    checkmate::assert_character(self@parameters$info)
+    checkmate::assert_choice(x$data_type, "Statistic")
+    checkmate::assert_choice(x$method, "MakeModel")
+    checkmate::assert_choice(x$algorithm, "mcrals_mdatools")
+    checkmate::assert_number(x$parameters$ncomp, null.ok = TRUE)
+    checkmate::assert_choice(
+      x$parameters$cont.solver,
+      c("mcrals.nnls", "mcrals.ols")
+    )
+    checkmate::assert_choice(
+      x$parameters$spec.solver,
+      c("mcrals.nnls", "mcrals.ols")
+    )
+    checkmate::assert_number(x$parameters$exclrows, null.ok = TRUE)
+    checkmate::assert_number(x$parameters$exclcols, null.ok = TRUE)
+    checkmate::assert_logical(x$parameters$verbose, max.len = 1)
+    checkmate::assert_number(x$parameters$max.niter)
+    checkmate::assert_number(x$parameters$tol)
+    checkmate::assert_character(x$parameters$info)
     NULL
   }
 )
 
 #' @export
 #' @noRd
-S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(x, engine = NULL) {
-  
+S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(
+  x,
+  engine = NULL
+) {
   if (!requireNamespace("mdatools", quietly = TRUE)) {
     warning("The package 'mdatools' is not available! Not done.")
     return(FALSE)
   }
-  
+
   if (!is(engine, "StatisticEngine")) {
     warning("Engine is not a StatisticEngine object!")
     return(FALSE)
   }
-  
+
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
+
   mat <- engine$Analyses$analyses
-  
+
   ncomp = x$parameters$ncomp
-  if (is.null(ncomp)) ncomp = min(nrow(mat) - 1, ncol(mat), 20)
+  if (is.null(ncomp)) {
+    ncomp = min(nrow(mat) - 1, ncol(mat), 20)
+  }
   spec.ini <- matrix(runif(ncol(mat) * ncomp), ncol(mat), ncomp)
   cont.forced <- matrix(NA, nrow(mat), ncomp)
   spec.forced <- matrix(NA, ncol(mat), ncomp)
-  
+
   if (x$parameters$cont.solver == "mcrals.nnls") {
     cont.solver <- mdatools::mcrals.nnls
   } else if (x$parameters$cont.solver == "mcrals.ols") {
     cont.solver <- mdatools::mcrals.ols
   }
-  
+
   if (x$parameters$spec.solver == "mcrals.nnls") {
     spec.solver <- mdatools::mcrals.nnls
   } else if (x$parameters$spec.solver == "mcrals.ols") {
     spec.solver <- mdatools::mcrals.ols
   }
-  
+
   cont.constraints <- x$parameters$cont.constraints
   spec.constraints <- x$parameters$spec.constraints
   exclrows <- x$parameters$exclrows
@@ -408,7 +415,7 @@ S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(x, engine
   max.niter <- x$parameters$max.niter
   tol <- x$parameters$tol
   info <- x$parameters$info
-  
+
   m <- mdatools::mcrals(
     x = mat,
     ncomp = ncomp,
@@ -426,7 +433,7 @@ S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(x, engine
     tol = tol,
     info = info
   )
-  
+
   attr(m$resspec, "features") <- colnames(mat)
   attr(m$rescont, "analyses") <- rownames(mat)
   engine$model <- StreamFind::MCRALS(model = m)
@@ -438,18 +445,18 @@ S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(x, engine
 #'
 #' @description Makes a classification model using the k-nearest neighbors (knn) algorithm from
 #' package \pkg{class}.
-#' 
+#'
 #' @param k Integer (length 1) with the number of neighbors to be used.
 #' @param l Integer (length 1) with the minimum vote for definite decision, otherwise doubt.
 #' (More precisely, less than k-l dissenting votes are allowed, even if k is increased by ties.)
-#' 
+#'
 #' @references
 #' \insertRef{class01}{StreamFind}
-#' 
+#'
 #' @return A StatisticMethod_MakeModel_knn object.
 #'
 #' @export
-#' 
+#'
 StatisticMethod_MakeModel_knn <- S7::new_class(
   name = "StatisticMethod_MakeModel_knn",
   parent = S7::new_S3_class("ProcessingStep"),
@@ -476,13 +483,13 @@ StatisticMethod_MakeModel_knn <- S7::new_class(
       )
     )
   },
-  
+
   validator = function(self) {
-    checkmate::assert_choice(self@data_type, "Statistic")
-    checkmate::assert_choice(self@method, "MakeModel")
-    checkmate::assert_choice(self@algorithm, "knn")
-    checkmate::assert_number(self@parameters$k)
-    checkmate::assert_number(self@parameters$l)
+    checkmate::assert_choice(x$data_type, "Statistic")
+    checkmate::assert_choice(x$method, "MakeModel")
+    checkmate::assert_choice(x$algorithm, "knn")
+    checkmate::assert_number(x$parameters$k)
+    checkmate::assert_number(x$parameters$l)
     NULL
   }
 )
@@ -490,36 +497,37 @@ StatisticMethod_MakeModel_knn <- S7::new_class(
 #' @export
 #' @noRd
 S7::method(run, StatisticMethod_MakeModel_knn) <- function(x, engine = NULL) {
-  
   if (!requireNamespace("class", quietly = TRUE)) {
     warning("The package 'class' is not available! Not done.")
     return(FALSE)
   }
-  
+
   if (!is(engine, "StatisticEngine")) {
     warning("Engine is not a StatisticEngine object!")
     return(FALSE)
   }
-  
+
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
+
   train = engine$Analyses$analyses
   cl = engine$Analyses$classes
-  
+
   if (nrow(train) != length(cl)) {
-    warning("The number of rows in the training data must be equal to the number of classes! Not done.")
+    warning(
+      "The number of rows in the training data must be equal to the number of classes! Not done."
+    )
     return(FALSE)
   }
-  
+
   conditions <- list(
     train = train,
     cl = cl,
     args = x$parameters
   )
-  
+
   func <- class::knn
   engine$model <- StreamFind::KNN(
     model = list("func" = func, "conditions" = conditions, "res" = list())

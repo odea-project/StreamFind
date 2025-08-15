@@ -171,7 +171,7 @@ run.RamanMethod_CalculateSpectraSimilary_hqi <- function(x, engine = NULL) {
     spectra_list,
     reference_spectra
   )
-  engine$Results <- SpectraSimilarity(similarity)
+  engine$Results <- RamanResults_SpectraSimilarity(similarity)
   message(paste0("\U2713 ", "Spectra similarity added!"))
   invisible(TRUE)
 }

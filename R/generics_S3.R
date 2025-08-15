@@ -33,6 +33,16 @@ clear_cache <- function(x, ...) {
 
 # G -----
 
+#' @title S3 generic `get_analysis_classes`
+#' @description S3 generic to get analysis classes from `x`.
+#' @param x An object from which the analysis classes will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+get_analysis_classes <- function(x, ...) {
+  UseMethod("get_analysis_classes")
+}
+
 #' @title S3 generic `get_analysis_names`
 #' @description S3 generic to get names from `x`.
 #' @param x An object from which the names will be retrieved.
@@ -745,6 +755,16 @@ plot_matrix_suppression <- function(x, ...) {
   UseMethod("plot_matrix_suppression")
 }
 
+#' @title Generic `plot_overview`
+#' @description S3 generic to plot an overview from `x`.
+#' @param x An object from which the overview will be plotted.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+plot_overview <- function(x, ...) {
+  UseMethod("plot_overview")
+}
+
 #' @title Generic `plot_residuals`
 #' @description S3 generic to plot residuals from `x`.
 #' @param x An object from which the residuals will be plotted.
@@ -979,6 +999,16 @@ save <- function(x, ...) {
 #' 
 save_cache <- function(x, ...) {
   UseMethod("save_cache")
+}
+
+#' @title Generic `set_analysis_classes`
+#' @description S3 generic to set analysis classes in `x`.
+#' @param x An object in which the analysis classes will be set.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' 
+set_analysis_classes <- function(x, ...) {
+  UseMethod("set_analysis_classes")
 }
 
 #' @title Generic `set_blank_names`

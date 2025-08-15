@@ -231,7 +231,7 @@ names.MassSpecResults_NonTargetAnalysis <- function(x) {
     x$features <- x$features[i]
   }
   if (!missing(j)) {
-    if (any(vapply(x$features, function(z) all(is.na(z$group), FALSE)))) {
+    if (all(vapply(x$features, function(z) all(is.na(z$group) | z$group %in% ""), FALSE))) {
       warning("No feature groups found to subset!")
     } else if (is.character(j) || is.numeric(j)) {
       x$features <- lapply(x$features, function(z) {
@@ -5980,7 +5980,7 @@ get_compounds.MassSpecResults_NonTargetAnalysis <- function(
   compounds <- data.table::rbindlist(compounds, fill = TRUE)
 
   if (nrow(compounds) > 0) {
-    if (averaged && any(vapply(x$features, function(x) any(!is.na(x$group))))) {
+    if (averaged && any(vapply(x$features, function(z) !all(is.na(z$group) | z$group %in% ""), FALSE))) {
       data.table::setcolorder(
         compounds,
         c("group", "rt", "mass", "polarity", "compoundName")

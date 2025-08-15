@@ -52,8 +52,8 @@ options(
   )
 )
 
-path <- "E:/example_files/isoft/240819_BVCZ"
-#path <- "C:/Users/apoli/Documents/example_files/isoft/240819_BVCZ"
+#path <- "E:/example_files/isoft/240819_BVCZ"
+path <- "C:/Users/apoli/Documents/example_files/isoft/240819_BVCZ"
 files <- list.files(path = path, pattern = "\\.d$", full.names = TRUE)[-15]
 ```
 
@@ -127,7 +127,7 @@ chroms = data.frame("name" = unique(ms$Analyses$analyses[[1]]$chromatograms_head
 chroms
 ```
 
-The chromatogram of interest is the `r data.frame("name" = unique(ms$get_chromatograms_headers()[["id"]]))$name[2]`, which is the second, and we know that our analyte elutes between 250 and 400 seconds.
+The chromatogram of interest is the `r data.frame("name" = unique(ms$Analyses$analyses[[1]]$chromatograms_headers$id))$name[2]`, which is the second, and we know that our analyte elutes between 250 and 400 seconds.
 
 # Workflow
 

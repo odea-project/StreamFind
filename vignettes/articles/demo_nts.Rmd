@@ -516,7 +516,15 @@ ms_pos <- ms$clone()
 ms_pos$Analyses <- ms_pos$Analyses[info(ms_pos$Analyses)$polarity == "1"]
 
 # subsetting the Analyses, also subsets the Results
-ms_pos$Results$MassSpecResults_NonTargetAnalysis$info[, c(1, 4)]
+show(ms_pos$Results$MassSpecResults_NonTargetAnalysis)
+
+# feature groups of interest for compounds generation showncase
+grs <- get_groups(nts, mass = db, ppm = 10, sec = 15)[["group"]]
+grs
+
+# subsetting on feature groups
+ms_pos$Results <- ms_pos$Results$MassSpecResults_NonTargetAnalysis[, grs]
+show(ms_pos$Results$MassSpecResults_NonTargetAnalysis)
 ```
 
 ```{r get-compounds, results='asis'}
@@ -527,6 +535,11 @@ ms_pos$run(
     database = "comptox"
   )
 )
+```
+
+```{r}
+# extract annotated compounds from the MassSpecResults_NonTargetAnalysis
+get_compounds(ms_pos$Results$MassSpecResults_NonTargetAnalysis)[, c(1, 2, 3, 6, 7, 16, 20)]
 ```
 
 # More to come
