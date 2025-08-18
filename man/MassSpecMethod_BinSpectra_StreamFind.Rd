@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_BinSpectra.R
 \name{MassSpecMethod_BinSpectra_StreamFind}
 \alias{MassSpecMethod_BinSpectra_StreamFind}
-\alias{validate_object.MassSpecMethod_BinSpectra_StreamFind}
 \title{MassSpecMethod_BinSpectra_StreamFind Class}
 \usage{
 MassSpecMethod_BinSpectra_StreamFind(
@@ -11,8 +10,6 @@ MassSpecMethod_BinSpectra_StreamFind(
   byUnit = TRUE,
   refBinAnalysis = NA_integer_
 )
-
-\method{validate_object}{MassSpecMethod_BinSpectra_StreamFind}(x)
 }
 \arguments{
 \item{binNames}{Character with the variable names for building the bins. Possible values are \emph{rt}, \emph{mz}, \emph{mass}, \emph{mobility}. Note that the \code{binNames} must be in the spectra column names.}
@@ -22,8 +19,6 @@ MassSpecMethod_BinSpectra_StreamFind(
 \item{byUnit}{Logical of length one to bin by unit, meaning that the binning is performed by the number of units not actual values. For instance, if the bin is 10 and \code{binName} is \emph{rt}, then the binning is performed by 10 seconds not 10 values for each bin. If byUnit is \code{FALSE}, then the binning is performed by the actual values but only the first of binNames and binValues is used.}
 
 \item{refBinAnalysis}{The analysis index to use a reference for creating the bins.}
-
-\item{x}{A \code{MassSpecMethod_BinSpectra_StreamFind} object.}
 }
 \value{
 A MassSpecMethod_BinSpectra_StreamFind object.
@@ -31,8 +26,3 @@ A MassSpecMethod_BinSpectra_StreamFind object.
 \description{
 Bins spectral data based on variables.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_BinSpectra_StreamFind)}: Validator for the MassSpecMethod_BinSpectra_StreamFind object, returning NULL if valid.
-
-}}

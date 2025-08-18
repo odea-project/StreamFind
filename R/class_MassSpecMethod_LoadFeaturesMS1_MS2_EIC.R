@@ -48,10 +48,8 @@ MassSpecMethod_LoadFeaturesMS1_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_LoadFeaturesMS1_StreamFind Validator for the MassSpecMethod_LoadFeaturesMS1_StreamFind object, returning NULL if valid.
-#' @param x A MassSpecMethod_LoadFeaturesMS1_StreamFind object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_LoadFeaturesMS1_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "LoadFeaturesMS1")
@@ -165,10 +163,8 @@ MassSpecMethod_LoadFeaturesMS2_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_LoadFeaturesMS2_StreamFind Validator for the MassSpecMethod_LoadFeaturesMS2_StreamFind object, returning NULL if valid.
-#' @param x A `MassSpecMethod_LoadFeaturesMS2_StreamFind` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_LoadFeaturesMS2_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "LoadFeaturesMS2")
@@ -276,10 +272,8 @@ MassSpecMethod_LoadFeaturesEIC_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_LoadFeaturesEIC_StreamFind Validator for the MassSpecMethod_LoadFeaturesEIC_StreamFind object, returning NULL if valid.
-#' @param x A `MassSpecMethod_LoadFeaturesEIC_StreamFind` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_LoadFeaturesEIC_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "LoadFeaturesEIC")

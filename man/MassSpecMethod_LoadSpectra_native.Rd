@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadSpectra.R
 \name{MassSpecMethod_LoadSpectra_native}
 \alias{MassSpecMethod_LoadSpectra_native}
-\alias{validate_object.MassSpecMethod_LoadSpectra_native}
 \title{MassSpecMethod_LoadSpectra_native S3 Class}
 \usage{
 MassSpecMethod_LoadSpectra_native(
@@ -15,8 +14,6 @@ MassSpecMethod_LoadSpectra_native(
   mobilitymax = 0,
   minIntensity = 0
 )
-
-\method{validate_object}{MassSpecMethod_LoadSpectra_native}(x)
 }
 \arguments{
 \item{levels}{A numeric vector with the levels to be used.}
@@ -34,8 +31,6 @@ MassSpecMethod_LoadSpectra_native(
 \item{mobilitymax}{A numeric vector with the maximum mobility values to be used.}
 
 \item{minIntensity}{A numeric value with the minimum intensity to be used.}
-
-\item{x}{A \code{MassSpecMethod_LoadSpectra_native} object.}
 }
 \value{
 A \code{MassSpecMethod_LoadSpectra_native} object.
@@ -43,8 +38,3 @@ A \code{MassSpecMethod_LoadSpectra_native} object.
 \description{
 Loads spectra from mass spectrometry data using time and m/z dimensions. Ion mobility dimensions are also supported.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_LoadSpectra_native)}: Validator for the MassSpecMethod_LoadSpectra_native object, returning NULL if valid.
-
-}}

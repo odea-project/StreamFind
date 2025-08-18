@@ -107,9 +107,8 @@ MassSpecMethod_GenerateCompounds_metfrag <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_GenerateCompounds_metfrag Validates the `MassSpecMethod_GenerateCompounds_metfrag` object, returns `NULL` if valid.
-#' @param x A `MassSpecMethod_GenerateCompounds_metfrag` object.
 #' @export
+#' @noRd
 validate_object.MassSpecMethod_GenerateCompounds_metfrag <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "GenerateCompounds")

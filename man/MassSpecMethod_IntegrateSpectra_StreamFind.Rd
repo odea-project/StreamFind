@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_IntegrateSpectra.R
 \name{MassSpecMethod_IntegrateSpectra_StreamFind}
 \alias{MassSpecMethod_IntegrateSpectra_StreamFind}
-\alias{validate_object.MassSpecMethod_IntegrateSpectra_StreamFind}
 \title{MassSpecMethod_IntegrateSpectra_StreamFind Class}
 \usage{
 MassSpecMethod_IntegrateSpectra_StreamFind(
@@ -14,8 +13,6 @@ MassSpecMethod_IntegrateSpectra_StreamFind(
   maxPeakWidth = 120,
   minSN = 10
 )
-
-\method{validate_object}{MassSpecMethod_IntegrateSpectra_StreamFind}(x)
 }
 \arguments{
 \item{merge}{Logical (length 1) indicating if the nearby peaks should be merged.}
@@ -31,8 +28,6 @@ MassSpecMethod_IntegrateSpectra_StreamFind(
 \item{maxPeakWidth}{Numeric (length 1) with the maximum peak width.}
 
 \item{minSN}{Numeric (length 1) with the minimum signal-to-noise ratio.}
-
-\item{x}{A MassSpecMethod_IntegrateSpectra_StreamFind object.}
 }
 \value{
 A MassSpecMethod_IntegrateSpectra_StreamFind object.
@@ -41,8 +36,3 @@ A MassSpecMethod_IntegrateSpectra_StreamFind object.
 Integrates Spectra using the function \code{findpeaks} from the package \pkg{pracma}
 with natively added peak exclusion and evaluation steps.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_IntegrateSpectra_StreamFind)}: Validate the MassSpecMethod_IntegrateSpectra_StreamFind object, returning NULL if valid.
-
-}}

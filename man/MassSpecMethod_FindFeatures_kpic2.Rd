@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_kpic2}
 \alias{MassSpecMethod_FindFeatures_kpic2}
-\alias{validate_object.MassSpecMethod_FindFeatures_kpic2}
 \title{MassSpecMethod_FindFeatures_kpic2 class}
 \usage{
 MassSpecMethod_FindFeatures_kpic2(
@@ -14,8 +13,6 @@ MassSpecMethod_FindFeatures_kpic2(
   kmeans = TRUE,
   alpha = 0.3
 )
-
-\method{validate_object}{MassSpecMethod_FindFeatures_kpic2}(x)
 }
 \arguments{
 \item{level}{Mass traces are only retained if their maximum values are over \code{level}.}
@@ -33,8 +30,6 @@ PICs (i.e., features). If \code{FALSE}, \link[KPIC]{getPIC} is used.}
 
 \item{alpha}{If \code{kmeans} is \code{TRUE}, alpha is the parameter of forecasting.
 If \code{kmeans} is \code{FALSE}, alpha is not used.}
-
-\item{x}{A \code{MassSpecMethod_FindFeatures_kpic2} object.}
 }
 \value{
 A \code{MassSpecMethod_FindFeatures_kpic2} object.
@@ -48,11 +43,6 @@ using the package \href{https://github.com/hcji/KPIC2}{KPIC}. The function uses 
 See the \link[patRoon]{findFeaturesKPIC2} function from the \pkg{patRoon} package for
 more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_FindFeatures_kpic2)}: Validate the object, returning \code{NULL} if valid.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

@@ -1,4 +1,4 @@
-#' MassSpecMethod_FilterFeaturesMS2_native S7 class
+#' MassSpecMethod_FilterFeaturesMS2_native Class
 #'
 #' @description Settings for filtering (i.e., cleaning) non-relevant traces in features MS2
 #' spectrum.
@@ -52,10 +52,8 @@ MassSpecMethod_FilterFeaturesMS2_native <- function(
   )
 }
 
-#' @describeIn MassSpecMethod_FilterFeaturesMS2_native Validate the MassSpecMethod_FilterFeaturesMS2_native object, returning NULL if valid.
-#' @param x A `MassSpecMethod_FilterFeaturesMS2_native` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_FilterFeaturesMS2_native <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FilterFeaturesMS2")

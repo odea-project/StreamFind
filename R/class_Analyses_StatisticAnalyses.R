@@ -1,5 +1,5 @@
 # MARK: StatisticAnalyses
-#' @title StatisticAnalyses Class
+#' @title Analyses class and methods for handling statistical analysis data
 #' @description The `StatisticAnalyses` class is used for tabular data statistical analysis.
 #' @param analyses A `character` vector with full file path to `.csv` file with variable names as first row and analyses names as first column or a `data.frame` or `matrix` object, where the row names are the analyses names and the column names are the variable names.
 #' @param classes A `character` vector with the classes of the analyses.

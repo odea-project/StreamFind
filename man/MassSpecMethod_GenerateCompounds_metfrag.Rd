@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_GenerateCompounds.R
 \name{MassSpecMethod_GenerateCompounds_metfrag}
 \alias{MassSpecMethod_GenerateCompounds_metfrag}
-\alias{validate_object.MassSpecMethod_GenerateCompounds_metfrag}
 \title{MassSpecMethod_GenerateCompounds_metfrag Class}
 \usage{
 MassSpecMethod_GenerateCompounds_metfrag(
@@ -24,8 +23,6 @@ MassSpecMethod_GenerateCompounds_metfrag(
   postProcessingFilters = c("InChIKeyFilter"),
   maxCandidatesToStop = 100
 )
-
-\method{validate_object}{MassSpecMethod_GenerateCompounds_metfrag}(x)
 }
 \arguments{
 \item{method}{Character (length 1) with the method to be used for MetFrag execution: "CL" for MetFragCL and "R" for MetFragR.}
@@ -63,8 +60,6 @@ skipping the MetFrag query for a feature group.}
 \item{postProcessingFilters}{Character vector with the post-processing filters to be used for the MetFrag annotation.}
 
 \item{maxCandidatesToStop}{Numeric (length 1) with the maximum number of candidates to be returned before stopping the MetFrag query for a feature group.}
-
-\item{x}{A \code{MassSpecMethod_GenerateCompounds_metfrag} object.}
 }
 \value{
 A \code{MassSpecMethod_GenerateCompounds_metfrag} object.
@@ -75,11 +70,6 @@ Settings for generating compounds using \href{https://ipb-halle.github.io/MetFra
 \details{
 Detailed documentation can be found in \link[patRoon]{generateCompoundsMetFrag} and in the \href{https://ipb-halle.github.io/MetFrag/projects/metfragr/}{MetFrag} documentation.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_GenerateCompounds_metfrag)}: Validates the \code{MassSpecMethod_GenerateCompounds_metfrag} object, returns \code{NULL} if valid.
-
-}}
 \references{
 \insertRef{metfrag01}{StreamFind}
 

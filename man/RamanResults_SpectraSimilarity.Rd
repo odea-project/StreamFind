@@ -4,7 +4,7 @@
 \alias{RamanResults_SpectraSimilarity}
 \alias{validate_object.RamanResults_SpectraSimilarity}
 \alias{show.RamanResults_SpectraSimilarity}
-\title{RamanResults_SpectraSimilarity Class}
+\title{Constructor and methods to handle Raman spectra similarity results}
 \usage{
 RamanResults_SpectraSimilarity(data = list())
 

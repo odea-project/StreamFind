@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_StatisticMethod_MakeModel.R
 \name{StatisticMethod_MakeModel_mcrpure_mdatools}
 \alias{StatisticMethod_MakeModel_mcrpure_mdatools}
-\alias{validate_object.StatisticMethod_MakeModel_mcrpure_mdatools}
 \title{StatisticMethod_MakeModel_mcrpure_mdatools Class}
 \usage{
 StatisticMethod_MakeModel_mcrpure_mdatools(
@@ -13,8 +12,6 @@ StatisticMethod_MakeModel_mcrpure_mdatools(
   exclcols = NULL,
   info = ""
 )
-
-\method{validate_object}{StatisticMethod_MakeModel_mcrpure_mdatools}(x)
 }
 \arguments{
 \item{ncomp}{Integer (length 1) with the number of components to be calculated.}
@@ -28,8 +25,6 @@ StatisticMethod_MakeModel_mcrpure_mdatools(
 \item{exclcols}{Integer vector with the column indices to be excluded.}
 
 \item{info}{Character (length 1) with additional information.}
-
-\item{x}{A StatisticMethod_MakeModel_mcrpure_mdatools object.}
 }
 \value{
 A StatisticMethod_MakeModel_mcrpure_mdatools object.
@@ -37,11 +32,6 @@ A StatisticMethod_MakeModel_mcrpure_mdatools object.
 \description{
 Makes a Multivariate Curve Resolution (MCR) purity model based on the R package \pkg{mdatools}.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(StatisticMethod_MakeModel_mcrpure_mdatools)}: Validate the object, returns NULL if valid.
-
-}}
 \references{
 \insertRef{mdatools01}{StreamFind}
 

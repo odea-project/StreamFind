@@ -30,10 +30,8 @@ RamanMethod_MergeSpectraTimeSeries_StreamFind <- function(preCut = 2) {
   }
 }
 
-#' @describeIn RamanMethod_MergeSpectraTimeSeries_StreamFind Validate the RamanMethod_MergeSpectraTimeSeries_StreamFind object, returning NULL if valid.
-#' @param x A RamanMethod_MergeSpectraTimeSeries_StreamFind object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_MergeSpectraTimeSeries_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "MergeSpectraTimeSeries")

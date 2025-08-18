@@ -2,17 +2,12 @@
 % Please edit documentation in R/class_RamanMethod_GroupPeaks.R
 \name{RamanMethod_GroupPeaks_native}
 \alias{RamanMethod_GroupPeaks_native}
-\alias{validate_object.RamanMethod_GroupPeaks_native}
 \title{RamanMethod_GroupPeaks_native Class}
 \usage{
 RamanMethod_GroupPeaks_native(fillMissingPeaks = TRUE)
-
-\method{validate_object}{RamanMethod_GroupPeaks_native}(x)
 }
 \arguments{
 \item{fillMissingPeaks}{Logical (length 1) for filling missing peaks.}
-
-\item{x}{A RamanMethod_GroupPeaks_native object.}
 }
 \value{
 A RamanMethod_GroupPeaks_native object.
@@ -20,8 +15,3 @@ A RamanMethod_GroupPeaks_native object.
 \description{
 Groups peaks across analyses.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(RamanMethod_GroupPeaks_native)}: Validate the RamanMethod_GroupPeaks_native object, returning NULL if valid.
-
-}}

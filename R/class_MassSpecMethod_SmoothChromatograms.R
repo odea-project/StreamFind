@@ -30,10 +30,8 @@ MassSpecMethod_SmoothChromatograms_movingaverage <- function(windowSize = 5) {
   }
 }
 
-#' @describeIn MassSpecMethod_SmoothChromatograms_movingaverage Validate the MassSpecMethod_SmoothChromatograms_movingaverage object, returning NULL if valid.
-#' @param x A MassSpecMethod_SmoothChromatograms_movingaverage object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_SmoothChromatograms_movingaverage <- function(
   x
 ) {
@@ -139,10 +137,8 @@ MassSpecMethod_SmoothChromatograms_savgol <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_SmoothChromatograms_savgol Validate the MassSpecMethod_SmoothChromatograms_savgol object, returning NULL if valid.
-#' @param x A MassSpecMethod_SmoothChromatograms_savgol object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_SmoothChromatograms_savgol <- function(self) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SmoothChromatograms")

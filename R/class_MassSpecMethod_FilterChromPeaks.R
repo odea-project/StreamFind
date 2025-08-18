@@ -38,9 +38,8 @@ MassSpecMethod_FilterChromPeaks_native <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FilterChromPeaks_native Validate the MassSpecMethod_FilterChromPeaks_native object, returning NULL if valid.
-#' @param x A MassSpecMethod_FilterChromPeaks_native object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_FilterChromPeaks_native <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

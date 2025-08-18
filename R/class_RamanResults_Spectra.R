@@ -1,4 +1,4 @@
-#' @title RamanResults_Spectra Class
+#' @title Constructor and methods to handle Raman spectra results
 #' @description The `RamanResults_Spectra` class is used to store Raman spectra results, including peak information and whether the spectra are averaged.
 #' @param spectra A list of spectra data, where each element is a `data.table` representing a Raman spectrum.
 #' @param is_averaged A logical value indicating whether the spectra are averaged.

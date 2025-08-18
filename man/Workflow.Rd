@@ -12,7 +12,7 @@
 \alias{save.Workflow}
 \alias{read.Workflow}
 \alias{show.Workflow}
-\title{Workflow Manager}
+\title{Generic (top level) Workflow class and methods}
 \usage{
 Workflow(processing_steps = list())
 
@@ -51,8 +51,7 @@ Supported formats are \code{.json} and \code{.rds}.}
 \item{...}{Additional arguments (not used).}
 }
 \description{
-The \code{Workflow} class is an ordered list of \link{ProcessingStep} objects
-dedicated to a specific type of data.
+The \code{Workflow} class is an ordered list of \link{ProcessingStep} objects dedicated to a specific type of data.
 }
 \section{Methods (by generic)}{
 \itemize{

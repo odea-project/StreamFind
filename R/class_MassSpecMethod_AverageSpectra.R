@@ -38,9 +38,9 @@ MassSpecMethod_AverageSpectra_StreamFind <- function(
     stop("Invalid MassSpecMethod_AverageSpectra_StreamFind object!")
   }
 }
-#' @describeIn MassSpecMethod_AverageSpectra_StreamFind Validate the MassSpecMethod_AverageSpectra_StreamFind object, returning NULL if valid.
-#' @param x A MassSpecMethod_AverageSpectra_StreamFind object.
+
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_AverageSpectra_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

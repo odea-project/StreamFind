@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_StreamFind}
 \alias{MassSpecMethod_SuspectScreening_StreamFind}
-\alias{validate_object.MassSpecMethod_SuspectScreening_StreamFind}
 \title{MassSpecMethod_SuspectScreening_StreamFind Class}
 \usage{
 MassSpecMethod_SuspectScreening_StreamFind(
@@ -16,8 +15,6 @@ MassSpecMethod_SuspectScreening_StreamFind(
   minFragments = 3,
   filtered = FALSE
 )
-
-\method{validate_object}{MassSpecMethod_SuspectScreening_StreamFind}(x)
 }
 \arguments{
 \item{database}{A data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets.}
@@ -35,8 +32,6 @@ MassSpecMethod_SuspectScreening_StreamFind(
 \item{minFragments}{Integer (length 1) with the minimum number of fragments.}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-
-\item{x}{A \code{MassSpecMethod_SuspectScreening_StreamFind} object.}
 }
 \value{
 A \code{MassSpecMethod_SuspectScreening_StreamFind} object.
@@ -44,8 +39,3 @@ A \code{MassSpecMethod_SuspectScreening_StreamFind} object.
 \description{
 Processing method for suspect screening using a data.frame with target compounds.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_SuspectScreening_StreamFind)}: Validate the MassSpecMethod_SuspectScreening_StreamFind object, returning \code{NULL} if valid.
-
-}}

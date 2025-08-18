@@ -2,15 +2,9 @@
 % Please edit documentation in R/class_RamanMethod_NormalizeSpectra.R
 \name{RamanMethod_NormalizeSpectra_minmax}
 \alias{RamanMethod_NormalizeSpectra_minmax}
-\alias{validate_object.RamanMethod_NormalizeSpectra_minmax}
 \title{RamanMethod_NormalizeSpectra_minmax Class}
 \usage{
 RamanMethod_NormalizeSpectra_minmax()
-
-\method{validate_object}{RamanMethod_NormalizeSpectra_minmax}(x)
-}
-\arguments{
-\item{A}{RamanMethod_NormalizeSpectra_minmax object.}
 }
 \value{
 A RamanMethod_NormalizeSpectra_minmax object.
@@ -18,8 +12,3 @@ A RamanMethod_NormalizeSpectra_minmax object.
 \description{
 Normalizes spectra using the min-max algorithm.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(RamanMethod_NormalizeSpectra_minmax)}: Validate the RamanMethod_NormalizeSpectra_minmax object, returning NULL if valid.
-
-}}

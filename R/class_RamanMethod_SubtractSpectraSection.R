@@ -36,10 +36,8 @@ RamanMethod_SubtractSpectraSection_StreamFind <- function(
   }
 }
 
-#' @describeIn RamanMethod_SubtractSpectraSection_StreamFind Validate the RamanMethod_SubtractSpectraSection_StreamFind object, returning NULL if valid.
-#' @param x A RamanMethod_SubtractSpectraSection_StreamFind object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_SubtractSpectraSection_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "SubtractSpectraSection")

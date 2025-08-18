@@ -39,9 +39,8 @@ MassSpecMethod_DeconvoluteSpectra_native <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_DeconvoluteSpectra_native Validate the MassSpecMethod_DeconvoluteSpectra_native object, returning NULL if valid.
-#' @param x A MassSpecMethod_DeconvoluteSpectra_native object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_DeconvoluteSpectra_native <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

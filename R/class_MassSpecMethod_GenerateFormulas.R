@@ -138,10 +138,8 @@ MassSpecMethod_GenerateFormulas_genform <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_GenerateFormulas_genform Validate the `MassSpecMethod_GenerateFormulas_genform` object, returning NULL if valid.
-#' @param x A `MassSpecMethod_GenerateFormulas_genform` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_GenerateFormulas_genform <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "GenerateFormulas")

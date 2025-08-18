@@ -28,10 +28,8 @@ RamanMethod_InvertAxis_intensity <- function() {
   }
 }
 
-#' @describeIn RamanMethod_InvertAxis_intensity Validate the RamanMethod_InvertAxis_intensity object, returning NULL if valid.
-#' @param x A RamanMethod_InvertAxis_intensity object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_InvertAxis_intensity = function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "InvertAxis")

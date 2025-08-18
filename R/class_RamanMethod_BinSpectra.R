@@ -47,10 +47,8 @@ RamanMethod_BinSpectra_StreamFind <- function(
   }
 }
 
-#' @describeIn RamanMethod_BinSpectra_StreamFind Validate the RamanMethod_BinSpectra_StreamFind object, returning NULL if valid.
-#' @param x A RamanMethod_BinSpectra_StreamFind object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_BinSpectra_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "BinSpectra")

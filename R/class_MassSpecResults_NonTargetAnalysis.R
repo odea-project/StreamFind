@@ -1,5 +1,5 @@
 # MARK: MassSpecResults_NonTargetAnalysis
-#' @title MassSpecResults_NonTargetAnalysis S3 Class
+#' @title Constructor and methods to handle non-target analysis results for mass spectrometry data
 #' @description The `MassSpecResults_NonTargetAnalysis` class is a child of the [StreamFind::Results] class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec").
 #' @param info A data frame containing information about the analyses.
 #' @param headers A list of data frames containing information about the spectra headers.

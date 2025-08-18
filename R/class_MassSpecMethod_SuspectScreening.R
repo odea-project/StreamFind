@@ -57,10 +57,8 @@ MassSpecMethod_SuspectScreening_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_SuspectScreening_StreamFind Validate the MassSpecMethod_SuspectScreening_StreamFind object, returning `NULL` if valid.
-#' @param x A `MassSpecMethod_SuspectScreening_StreamFind` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_SuspectScreening_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SuspectScreening")
@@ -222,10 +220,8 @@ MassSpecMethod_SuspectScreening_forident <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_SuspectScreening_forident Validate the MassSpecMethod_SuspectScreening_forident object, returning `NULL` if valid.
-#' @param x A `MassSpecMethod_SuspectScreening_forident` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_SuspectScreening_forident <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SuspectScreening")
@@ -456,10 +452,8 @@ MassSpecMethod_SuspectScreening_patRoon <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_SuspectScreening_patRoon Validate the MassSpecMethod_SuspectScreening_patRoon object, returning `NULL` if valid.
-#' @param x A `MassSpecMethod_SuspectScreening_patRoon` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_SuspectScreening_patRoon <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SuspectScreening")

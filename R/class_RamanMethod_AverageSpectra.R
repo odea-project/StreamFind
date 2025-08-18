@@ -34,10 +34,8 @@ RamanMethod_AverageSpectra_native <- function(by = "replicates") {
   }
 }
 
-#' @describeIn RamanMethod_AverageSpectra_native Validate the RamanMethod_AverageSpectra_native object, returning NULL if valid.
-#' @param x A RamanMethod_AverageSpectra_native object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_AverageSpectra_native <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "AverageSpectra")

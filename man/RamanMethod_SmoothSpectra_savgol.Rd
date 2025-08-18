@@ -2,12 +2,9 @@
 % Please edit documentation in R/class_RamanMethod_SmoothSpectra.R
 \name{RamanMethod_SmoothSpectra_savgol}
 \alias{RamanMethod_SmoothSpectra_savgol}
-\alias{validate_object.RamanMethod_SmoothSpectra_savgol}
 \title{RamanMethod_SmoothSpectra_savgol Class}
 \usage{
 RamanMethod_SmoothSpectra_savgol(fl = 11, forder = 4, dorder = 0)
-
-\method{validate_object}{RamanMethod_SmoothSpectra_savgol}(x)
 }
 \arguments{
 \item{fl}{Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.}
@@ -15,8 +12,6 @@ RamanMethod_SmoothSpectra_savgol(fl = 11, forder = 4, dorder = 0)
 \item{forder}{Numeric (length 1) with the order of the filter (2 = quadratic filter, 4 = quartic).}
 
 \item{dorder}{Numeric (length 1) with the order of the derivative (0 = smoothing, 1 = first derivative, etc.).}
-
-\item{x}{A RamanMethod_SmoothSpectra_savgol object.}
 }
 \value{
 A RamanMethod_SmoothSpectra_savgol object.
@@ -24,8 +19,3 @@ A RamanMethod_SmoothSpectra_savgol object.
 \description{
 Smooths spectra using the Savitzky-Golay algorithm from the \pkg{pracma} package.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(RamanMethod_SmoothSpectra_savgol)}: Validate the RamanMethod_SmoothSpectra_savgol object, returning NULL if valid.
-
-}}

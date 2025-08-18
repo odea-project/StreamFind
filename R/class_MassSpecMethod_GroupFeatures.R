@@ -173,7 +173,7 @@
   )
 }
 
-#' MassSpecMethod_GroupFeatures_xcms3_peakdensity S7 class
+#' MassSpecMethod_GroupFeatures_xcms3_peakdensity Class
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks) across mzML/mzXML files using the package
 #' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
@@ -242,10 +242,8 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_GroupFeatures_xcms3_peakdensity Validate the MassSpecMethod_GroupFeatures_xcms3_peakdensity object, returning NULL if valid.
-#' @param x A `MassSpecMethod_GroupFeatures_xcms3_peakdensity` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_GroupFeatures_xcms3_peakdensity <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "GroupFeatures")
@@ -286,7 +284,7 @@ run.MassSpecMethod_GroupFeatures_xcms3_peakdensity <- function(
   .run_group_features_patRoon(settings, engine)
 }
 
-#' MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups S7 class
+#' MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups Class
 #'
 #' @description Settings for aligning and grouping features (i.e., chromatographic peaks) across mzML/mzXML files using
 #' the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
@@ -418,10 +416,8 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups Validate the MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups object, returning NULL if valid.
-#' @param x A `MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- function(
   x
 ) {
@@ -498,7 +494,7 @@ run.MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- function(
   .run_group_features_patRoon(settings, engine)
 }
 
-#' MassSpecMethod_GroupFeatures_openms S7 class
+#' MassSpecMethod_GroupFeatures_openms Class
 #'
 #' @description Settings for grouping features (i.e., chromatographic peaks) in mzML/mzXML files using the
 #' \href{https://www.openms.org/}{OpenMS}(\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software
@@ -573,10 +569,8 @@ MassSpecMethod_GroupFeatures_openms <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_GroupFeatures_openms Validate the MassSpecMethod_GroupFeatures_openms object, returning NULL if valid.
-#' @param x A `MassSpecMethod_GroupFeatures_openms` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_GroupFeatures_openms <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "GroupFeatures")

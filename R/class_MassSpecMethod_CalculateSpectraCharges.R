@@ -52,9 +52,8 @@ MassSpecMethod_CalculateSpectraCharges_native <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_CalculateSpectraCharges_native Validate the MassSpecMethod_CalculateSpectraCharges_native object returns `NULL` if the object is valid.
-#' @param x A MassSpecMethod_CalculateSpectraCharges_native object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_CalculateSpectraCharges_native <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

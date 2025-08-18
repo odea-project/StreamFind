@@ -3,7 +3,7 @@
 \name{Analyses}
 \alias{Analyses}
 \alias{validate_object.Analyses}
-\title{Generic Analyses}
+\title{Generic (top level ) Analyses class and methods}
 \usage{
 Analyses(analyses = list(), results = list())
 

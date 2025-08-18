@@ -2,8 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FilterFeaturesMS2.R
 \name{MassSpecMethod_FilterFeaturesMS2_native}
 \alias{MassSpecMethod_FilterFeaturesMS2_native}
-\alias{validate_object.MassSpecMethod_FilterFeaturesMS2_native}
-\title{MassSpecMethod_FilterFeaturesMS2_native S7 class}
+\title{MassSpecMethod_FilterFeaturesMS2_native Class}
 \usage{
 MassSpecMethod_FilterFeaturesMS2_native(
   top = NULL,
@@ -14,8 +13,6 @@ MassSpecMethod_FilterFeaturesMS2_native(
   blankPresenceThreshold = 0.8,
   globalPresenceThreshold = 0.1
 )
-
-\method{validate_object}{MassSpecMethod_FilterFeaturesMS2_native}(x)
 }
 \arguments{
 \item{top}{An integer specifying the number of top features to be kept.}
@@ -33,8 +30,6 @@ MS2 traces present in the blank samples above the defined \code{blankPresenceThr
 \item{blankPresenceThreshold}{A numeric value specifying the blank presence threshold.}
 
 \item{globalPresenceThreshold}{A numeric value specifying the global presence threshold.}
-
-\item{x}{A \code{MassSpecMethod_FilterFeaturesMS2_native} object.}
 }
 \value{
 A \code{MassSpecMethod_FilterFeaturesMS2_native} object.
@@ -43,8 +38,3 @@ A \code{MassSpecMethod_FilterFeaturesMS2_native} object.
 Settings for filtering (i.e., cleaning) non-relevant traces in features MS2
 spectrum.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_FilterFeaturesMS2_native)}: Validate the MassSpecMethod_FilterFeaturesMS2_native object, returning NULL if valid.
-
-}}

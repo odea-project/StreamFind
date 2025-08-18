@@ -32,10 +32,8 @@ RamanMethod_ScaleTime_native <- function(value = 0) {
   }
 }
 
-#' @describeIn RamanMethod_ScaleTime_native Validate the RamanMethod_ScaleTime_native object, returning NULL if valid.
-#' @param x A RamanMethod_ScaleTime_native object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_ScaleTime_native <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "ScaleTime")

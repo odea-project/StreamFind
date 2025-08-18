@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_CalculateFeaturesQuality.R
 \name{MassSpecMethod_CalculateFeaturesQuality_StreamFind}
 \alias{MassSpecMethod_CalculateFeaturesQuality_StreamFind}
-\alias{validate_object.MassSpecMethod_CalculateFeaturesQuality_StreamFind}
 \title{Mass Spectrometry Method to Calculate Features Quality (StreamFind algorithm)}
 \usage{
 MassSpecMethod_CalculateFeaturesQuality_StreamFind(
@@ -15,8 +14,6 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind(
   minNumberTraces = 6,
   baseCut = 0
 )
-
-\method{validate_object}{MassSpecMethod_CalculateFeaturesQuality_StreamFind}(x)
 }
 \arguments{
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
@@ -40,8 +37,6 @@ calculating feature quality.}
 quality.}
 
 \item{baseCut}{Numeric of length 1 with the base cut for calculating feature Gaussian fit.}
-
-\item{x}{A MassSpecMethod_CalculateFeaturesQuality_StreamFind object.}
 }
 \value{
 A \code{MassSpecMethod_CalculateFeaturesQuality_StreamFind} object.
@@ -49,8 +44,3 @@ A \code{MassSpecMethod_CalculateFeaturesQuality_StreamFind} object.
 \description{
 Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_CalculateFeaturesQuality_StreamFind)}: Validator for the MassSpecMethod_CalculateFeaturesQuality_StreamFind object, returning NULL if valid.
-
-}}

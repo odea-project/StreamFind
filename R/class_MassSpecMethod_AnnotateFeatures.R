@@ -1,5 +1,4 @@
-#' Mass Spectrometry Method for Annotating Features in MassSpecResults_NonTargetAnalysis (StreamFind algorithm)
-#'
+#' @title Mass Spectrometry Method for Annotating Features in MassSpecResults_NonTargetAnalysis (StreamFind algorithm)
 #' @description Method for annotation of isotopic and adduct features. The method uses the
 #' `maxIsotopes` to define the maximum length of the isotopic chain. The list of candidate features
 #' is build with the `rtWindowAlignment` and the maximum mass increment to match the maximum chain
@@ -57,9 +56,8 @@ MassSpecMethod_AnnotateFeatures_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_AnnotateFeatures_StreamFind Validate the MassSpecMethod_AnnotateFeatures_StreamFind object, returning NULL if valid.
-#' @param x A `MassSpecMethod_AnnotateFeatures_StreamFind` object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_AnnotateFeatures_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

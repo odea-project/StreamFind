@@ -42,10 +42,8 @@ RamanMethod_CalculateSpectraSimilary_hqi <- function(
   }
 }
 
-#' @describeIn RamanMethod_CalculateSpectraSimilary_hqi Validate the RamanMethod_CalculateSpectraSimilary_hqi object, returning NULL if valid.
-#' @param x A RamanMethod_CalculateSpectraSimilary_hqi object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_CalculateSpectraSimilary_hqi <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "CalculateSpectraSimilary")

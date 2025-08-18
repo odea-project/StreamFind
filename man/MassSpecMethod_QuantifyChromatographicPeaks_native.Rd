@@ -3,7 +3,6 @@
 %   R/class_MassSpecMethod_QuantifyChromatographicPeaks.R
 \name{MassSpecMethod_QuantifyChromatographicPeaks_native}
 \alias{MassSpecMethod_QuantifyChromatographicPeaks_native}
-\alias{validate_object.MassSpecMethod_QuantifyChromatographicPeaks_native}
 \title{MassSpecMethod_QuantifyChromatographicPeaks_native Class}
 \usage{
 MassSpecMethod_QuantifyChromatographicPeaks_native(
@@ -11,8 +10,6 @@ MassSpecMethod_QuantifyChromatographicPeaks_native(
   value = "area",
   model = "linear"
 )
-
-\method{validate_object}{MassSpecMethod_QuantifyChromatographicPeaks_native}(x)
 }
 \arguments{
 \item{calibration}{Numeric with the calibration/concentration values for each analysis. When
@@ -22,8 +19,6 @@ concentration is not know use NA_real_.}
 
 \item{model}{Character with the model to use for calibration. Possible values are \emph{linear},
 \emph{quadratic}, or \emph{cubic}.}
-
-\item{x}{A MassSpecMethod_QuantifyChromatographicPeaks_native object.}
 }
 \value{
 A MassSpecMethod_QuantifyChromatographicPeaks_native object.
@@ -31,8 +26,3 @@ A MassSpecMethod_QuantifyChromatographicPeaks_native object.
 \description{
 Quantifies chromatographic peaks based on a calibration model.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_QuantifyChromatographicPeaks_native)}: Validate the MassSpecMethod_QuantifyChromatographicPeaks_native object, returning NULL if valid.
-
-}}

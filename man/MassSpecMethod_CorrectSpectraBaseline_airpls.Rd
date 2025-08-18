@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_CorrectSpectraBaseline.R
 \name{MassSpecMethod_CorrectSpectraBaseline_airpls}
 \alias{MassSpecMethod_CorrectSpectraBaseline_airpls}
-\alias{validate_object.MassSpecMethod_CorrectSpectraBaseline_airpls}
 \title{MassSpecMethod_CorrectSpectraBaseline_airpls Class}
 \usage{
 MassSpecMethod_CorrectSpectraBaseline_airpls(
@@ -10,8 +9,6 @@ MassSpecMethod_CorrectSpectraBaseline_airpls(
   differences = 1,
   itermax = 20
 )
-
-\method{validate_object}{MassSpecMethod_CorrectSpectraBaseline_airpls}(x)
 }
 \arguments{
 \item{lambda}{Numeric (length 1) with the smoothing intensity. the higher the \code{lambda} the higher
@@ -20,8 +17,6 @@ the smoothing.}
 \item{differences}{Integer (length 1) indicating the order of the difference of penalties}
 
 \item{itermax}{Integer (length 1) with the maximum number of iterations.}
-
-\item{x}{A MassSpecMethod_CorrectSpectraBaseline_airpls object.}
 }
 \value{
 A MassSpecMethod_CorrectSpectraBaseline_airpls object.
@@ -30,11 +25,6 @@ A MassSpecMethod_CorrectSpectraBaseline_airpls object.
 Performs baseline correction using adaptive iteratively reweighted Penalized Least
 Squares (airPLS) based on the algorithm from Zhi-Min Zhang.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_CorrectSpectraBaseline_airpls)}: Validates the MassSpecMethod_CorrectSpectraBaseline_airpls object, returning NULL if valid.
-
-}}
 \references{
 \insertRef{airpls01}{StreamFind}
 }

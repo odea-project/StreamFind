@@ -1,4 +1,4 @@
-#' @title RamanResults_SpectraSimilarity Class
+#' @title Constructor and methods to handle Raman spectra similarity results
 #' @description The `RamanResults_SpectraSimilarity` class is used to store results of similarity analysis between Raman spectra.
 #' @param data A list of data tables, where each table contains the results of a similarity analysis for a Raman spectrum.
 #' @export

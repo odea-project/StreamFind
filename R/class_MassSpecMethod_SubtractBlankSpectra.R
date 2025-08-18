@@ -32,10 +32,8 @@ MassSpecMethod_SubtractBlankSpectra_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_SubtractBlankSpectra_StreamFind Validate the MassSpecMethod_SubtractBlankSpectra_StreamFind object, returning NULL if valid.
-#' @param x A MassSpecMethod_SubtractBlankSpectra_StreamFind object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_SubtractBlankSpectra_StreamFind = function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SubtractBlankSpectra")

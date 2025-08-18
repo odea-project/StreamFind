@@ -33,10 +33,8 @@ RamanMethod_SubtractScansSection_native <- function(
   }
 }
 
-#' @describeIn RamanMethod_SubtractScansSection_native Validate the RamanMethod_SubtractScansSection_native object, returning NULL if valid.
-#' @param x A RamanMethod_SubtractScansSection_native object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_SubtractScansSection_native <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "SubtractScansSection")

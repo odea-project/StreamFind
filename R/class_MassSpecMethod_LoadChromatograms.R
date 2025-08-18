@@ -44,10 +44,8 @@ MassSpecMethod_LoadChromatograms_native <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_LoadChromatograms_native Validate the MassSpecMethod_LoadChromatograms_native object, returning NULL if valid.
-#' @param x A MassSpecMethod_LoadChromatograms_native object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_LoadChromatograms_native <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "LoadChromatograms")

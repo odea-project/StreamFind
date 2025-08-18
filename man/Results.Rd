@@ -3,7 +3,7 @@
 \name{Results}
 \alias{Results}
 \alias{validate_object.Results}
-\title{Generic Results Class}
+\title{Generic (top level) Results class constructor and methods}
 \usage{
 Results(
   type = NA_character_,

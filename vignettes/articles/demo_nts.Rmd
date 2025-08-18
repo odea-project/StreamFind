@@ -333,19 +333,6 @@ The *Workflow* can be applied by `run_workflow()`, as demonstrated below. Note t
 ms$run_workflow()
 ```
 
-```{r}
-
-get_patRoon_MSPeakLists(ms$Results$MassSpecResults_NonTargetAnalysis)
-
-
-get_suspects(ms$Results$MassSpecResults_NonTargetAnalysis)
-
-nts <- ms$Results$MassSpecResults_NonTargetAnalysis
-fts <- get_features(nts, mass = db, ppm = 10, sec = 15)
-fts
-fts$quality[[17]]
-```
-
 # Results
 
 The created features and feature groups can be inspected as `data.table` objects or plotted by dedicated methods of the [MassSpecResults_NonTargetAnalysis](https://odea-project.github.io/StreamFind/reference/MassSpecResults_NonTargetAnalysis.html) class. Internally, the *MassSpecEngine* stores the results in the results list of the [MassSpecAnalyses](https://odea-project.github.io/StreamFind/reference/MassSpecAnalyses.html) object, which can be accessed with `MassSpecEngine$Results$MassSpecResults_NonTargetAnalysis` as shown below. The *MassSpecResults_NonTargetAnalysis* object can be used for advanced operations, such as exporting the results to a database or other formats or use the native objects from other packages (e.g., [patRoon](https://github.com/rickhelmus/patRoon)) as we demonstrate further in this article.
@@ -378,7 +365,7 @@ Already by inspection of the `data.table`, it is possible to see compounds detec
 
 For a better overview of the results, the method `plot_groups()` or even more detailed the method `plot_groups_overview()` can be used.
 
-```{r plot-groups}
+```{r plot-groups, fig.height=8}
 # set legendNames to TRUE for using the names in db as legend
 plot_groups(nts, mass = db, ppm = 10, sec = 15, legendNames = TRUE)
 ```

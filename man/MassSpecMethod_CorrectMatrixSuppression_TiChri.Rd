@@ -2,8 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_CorrectMatrixSuppression.R
 \name{MassSpecMethod_CorrectMatrixSuppression_TiChri}
 \alias{MassSpecMethod_CorrectMatrixSuppression_TiChri}
-\alias{validate_object.MassSpecMethod_CorrectMatrixSuppression_TiChri}
-\title{MassSpecMethod_CorrectMatrixSuppression_TiChri S7 class}
+\title{MassSpecMethod_CorrectMatrixSuppression_TiChri Class}
 \usage{
 MassSpecMethod_CorrectMatrixSuppression_TiChri(
   mpRtWindow = 10,
@@ -11,8 +10,6 @@ MassSpecMethod_CorrectMatrixSuppression_TiChri(
   istdRtWindow = 5,
   istdN = 2
 )
-
-\method{validate_object}{MassSpecMethod_CorrectMatrixSuppression_TiChri}(x)
 }
 \arguments{
 \item{mpRtWindow}{Numeric of length one with the retention time window (in seconds) for
@@ -31,8 +28,6 @@ assigning internal standards. Default is \code{5}.}
 
 \item{istdN}{Integer of length one with the number of internal standards to assign.
 Default is \code{2}.}
-
-\item{x}{A \code{MassSpecMethod_CorrectMatrixSuppression_TiChri} object.}
 }
 \value{
 A \code{MassSpecMethod_CorrectMatrixSuppression_TiChri} object.
@@ -47,11 +42,6 @@ intensity. The argument/parameter \code{correctIntensity} is available in plotti
 methods and when \code{TRUE}, the suppression factor is used to correct the feature intensity for
 better comparison across analyses with different matrix suppression.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_CorrectMatrixSuppression_TiChri)}: Validate the MassSpecMethod_CorrectMatrixSuppression_TiChri object, returning NULL if valid.
-
-}}
 \references{
 \insertRef{tisler01}{StreamFind}
 }

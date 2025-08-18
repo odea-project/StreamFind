@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Engine.R
 \name{Engine}
 \alias{Engine}
-\title{Engine}
+\title{Generic (top level) Engine class for project management}
 \description{
 The \link{Engine} R6 class is used to harmonize the interface across different data types for data management and processing.
 }

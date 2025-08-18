@@ -41,9 +41,8 @@ MassSpecMethod_CorrectSpectraBaseline_baseline_als <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_CorrectSpectraBaseline_baseline_als Validates the MassSpecMethod_CorrectSpectraBaseline_baseline_als object, returning NULL if valid.
-#' @param x A MassSpecMethod_CorrectSpectraBaseline_baseline_als object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_CorrectSpectraBaseline_baseline_als <- function(
   x
@@ -179,9 +178,8 @@ MassSpecMethod_CorrectSpectraBaseline_airpls <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_CorrectSpectraBaseline_airpls Validates the MassSpecMethod_CorrectSpectraBaseline_airpls object, returning NULL if valid.
-#' @param x A MassSpecMethod_CorrectSpectraBaseline_airpls object.
 #' @export
+#' @noRd
 #' 
 validate_object.MassSpecMethod_CorrectSpectraBaseline_airpls <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

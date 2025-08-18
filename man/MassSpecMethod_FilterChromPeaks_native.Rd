@@ -2,15 +2,12 @@
 % Please edit documentation in R/class_MassSpecMethod_FilterChromPeaks.R
 \name{MassSpecMethod_FilterChromPeaks_native}
 \alias{MassSpecMethod_FilterChromPeaks_native}
-\alias{validate_object.MassSpecMethod_FilterChromPeaks_native}
 \title{MassSpecMethod_FilterChromPeaks_native Class}
 \usage{
 MassSpecMethod_FilterChromPeaks_native(
   minIntensity = 0,
   retentionTimeRange = c(NA_real_, NA_real_)
 )
-
-\method{validate_object}{MassSpecMethod_FilterChromPeaks_native}(x)
 }
 \arguments{
 \item{minIntensity}{Numeric (length 1) with the minimum intensity to keep a chromatographic peak.}
@@ -18,8 +15,6 @@ MassSpecMethod_FilterChromPeaks_native(
 \item{retentionTimeRange}{Numeric (length 2) with the retention time range to keep
 chromatographic peaks. The first element is the minimum retention time and the second element
 is the maximum retention time, in seconds.}
-
-\item{x}{A MassSpecMethod_FilterChromPeaks_native object.}
 }
 \value{
 A MassSpecMethod_FilterChromPeaks_native object.
@@ -27,8 +22,3 @@ A MassSpecMethod_FilterChromPeaks_native object.
 \description{
 Settings for filtering chromatographic peaks.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_FilterChromPeaks_native)}: Validate the MassSpecMethod_FilterChromPeaks_native object, returning NULL if valid.
-
-}}

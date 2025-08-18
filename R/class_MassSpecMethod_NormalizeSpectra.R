@@ -29,10 +29,8 @@ MassSpecMethod_NormalizeSpectra_minmax <- function() {
   }
 }
 
-#' @describeIn MassSpecMethod_NormalizeSpectra_minmax Validate the MassSpecMethod_NormalizeSpectra_minmax object, returning NULL if valid.
-#' @param x A MassSpecMethod_NormalizeSpectra_minmax object.
 #' @export
-#' 
+#' @noRd
 validate_object.MassSpecMethod_NormalizeSpectra_minmax <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "NormalizeSpectra")
@@ -120,10 +118,8 @@ MassSpecMethod_NormalizeSpectra_snv <- function(liftTozero = FALSE) {
   }
 }
 
-#' @describeIn MassSpecMethod_NormalizeSpectra_snv Validate the MassSpecMethod_NormalizeSpectra_snv object, returning NULL if valid.
-#' @param x A MassSpecMethod_NormalizeSpectra_snv object.
 #' @export
-#' 
+#' @noRd
 validate_object.MassSpecMethod_NormalizeSpectra_snv = function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "NormalizeSpectra")
@@ -214,10 +210,8 @@ MassSpecMethod_NormalizeSpectra_scale <- function() {
   }
 }
 
-#' @describeIn MassSpecMethod_NormalizeSpectra_scale Validate the MassSpecMethod_NormalizeSpectra_scale object, returning NULL if valid.
-#' @param x A MassSpecMethod_NormalizeSpectra_scale object.
 #' @export
-#' 
+#' @noRd
 validate_object.MassSpecMethod_NormalizeSpectra_scale <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "NormalizeSpectra")
@@ -300,10 +294,8 @@ MassSpecMethod_NormalizeSpectra_blockweight <- function() {
   }
 }
 
-#' @describeIn MassSpecMethod_NormalizeSpectra_blockweight Validate the MassSpecMethod_NormalizeSpectra_blockweight object, returning NULL if valid.
-#' @param x A MassSpecMethod_NormalizeSpectra_blockweight object.
 #' @export
-#' 
+#' @noRd
 validate_object.MassSpecMethod_NormalizeSpectra_blockweight = function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "NormalizeSpectra")
@@ -384,10 +376,8 @@ MassSpecMethod_NormalizeSpectra_meancenter <- function() {
   }
 }
 
-#' @describeIn MassSpecMethod_NormalizeSpectra_meancenter Validate the MassSpecMethod_NormalizeSpectra_meancenter object, returning NULL if valid.
-#' @param x A MassSpecMethod_NormalizeSpectra_meancenter object.
 #' @export
-#' 
+#' @noRd
 validate_object.MassSpecMethod_NormalizeSpectra_meancenter <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "NormalizeSpectra")

@@ -30,10 +30,8 @@ RamanMethod_SmoothSpectra_movingaverage <- function(windowSize = 5) {
   }
 }
 
-#' @describeIn RamanMethod_SmoothSpectra_movingaverage Validate the RamanMethod_SmoothSpectra_movingaverage object, returning NULL if valid.
-#' @param x A RamanMethod_SmoothSpectra_movingaverage object.
 #' @export
-#' 
+#' @noRd
 validate_object.RamanMethod_SmoothSpectra_movingaverage <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "SmoothSpectra")
@@ -128,10 +126,8 @@ RamanMethod_SmoothSpectra_savgol <- function(fl = 11, forder = 4, dorder = 0) {
   }
 }
 
-#' @describeIn RamanMethod_SmoothSpectra_savgol Validate the RamanMethod_SmoothSpectra_savgol object, returning NULL if valid.
-#' @param x A RamanMethod_SmoothSpectra_savgol object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_SmoothSpectra_savgol <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "SmoothSpectra")

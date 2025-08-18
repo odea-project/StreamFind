@@ -27,10 +27,8 @@ RamanMethod_RemoveCosmicRays_native <- function() {
   }
 }
 
-#' @describeIn RamanMethod_RemoveCosmicRays_native Validate the RamanMethod_RemoveCosmicRays_native object, returning NULL if valid.
-#' @param x A RamanMethod_RemoveCosmicRays_native object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_RemoveCosmicRays_native <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "RemoveCosmicRays")

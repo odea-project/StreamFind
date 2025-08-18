@@ -2,8 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FilterFeatures.R
 \name{MassSpecMethod_FilterFeatures_patRoon}
 \alias{MassSpecMethod_FilterFeatures_patRoon}
-\alias{validate_object.MassSpecMethod_FilterFeatures_patRoon}
-\title{MassSpecMethod_FilterFeatures_patRoon S7 class}
+\title{MassSpecMethod_FilterFeatures_patRoon Class}
 \usage{
 MassSpecMethod_FilterFeatures_patRoon(
   absMinIntensity = NA_real_,
@@ -38,8 +37,6 @@ MassSpecMethod_FilterFeatures_patRoon(
   removeNA = FALSE,
   negate = FALSE
 )
-
-\method{validate_object}{MassSpecMethod_FilterFeatures_patRoon}(x)
 }
 \arguments{
 \item{absMinIntensity}{Numeric length one. Minimum absolute intensity for a feature.}
@@ -115,8 +112,6 @@ feature.}
 \item{removeNA}{Logical length one. Remove NA values.}
 
 \item{negate}{Logical length one. Negate the filter.}
-
-\item{x}{A MassSpecMethod_FilterFeatures_patRoon object.}
 }
 \value{
 A MassSpecMethod_FilterFeatures_patRoon object.
@@ -133,8 +128,3 @@ filters require. Thus, not all filters can be applied to features.
 See \code{\link[patRoon]{features-class}} and \code{\link[patRoon]{replicateGroupSubtract}}
 for further information.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_FilterFeatures_patRoon)}: Validate the MassSpecMethod_FilterFeatures_patRoon object, returns NULL if valid.
-
-}}

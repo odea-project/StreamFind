@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadFeaturesMS1_MS2_EIC.R
 \name{MassSpecMethod_LoadFeaturesMS2_StreamFind}
 \alias{MassSpecMethod_LoadFeaturesMS2_StreamFind}
-\alias{validate_object.MassSpecMethod_LoadFeaturesMS2_StreamFind}
 \title{MassSpecMethod_LoadFeaturesMS2_StreamFind S3 Class}
 \usage{
 MassSpecMethod_LoadFeaturesMS2_StreamFind(
@@ -12,8 +11,6 @@ MassSpecMethod_LoadFeaturesMS2_StreamFind(
   minIntensity = 10,
   filtered = FALSE
 )
-
-\method{validate_object}{MassSpecMethod_LoadFeaturesMS2_StreamFind}(x)
 }
 \arguments{
 \item{isolationWindow}{Numeric value with the isolation window (in Da)
@@ -29,8 +26,6 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 \item{minIntensity}{Numeric (length 1) with the minimum intensity.}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-
-\item{x}{A \code{MassSpecMethod_LoadFeaturesMS2_StreamFind} object.}
 }
 \value{
 A \code{MassSpecMethod_LoadFeaturesMS2_StreamFind} object.
@@ -38,8 +33,3 @@ A \code{MassSpecMethod_LoadFeaturesMS2_StreamFind} object.
 \description{
 Settings for loading MS2 spectra for features.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_LoadFeaturesMS2_StreamFind)}: Validator for the MassSpecMethod_LoadFeaturesMS2_StreamFind object, returning NULL if valid.
-
-}}

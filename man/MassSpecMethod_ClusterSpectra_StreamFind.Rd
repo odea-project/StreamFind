@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_ClusterSpectra.R
 \name{MassSpecMethod_ClusterSpectra_StreamFind}
 \alias{MassSpecMethod_ClusterSpectra_StreamFind}
-\alias{validate_object.MassSpecMethod_ClusterSpectra_StreamFind}
 \title{MassSpecMethod_ClusterSpectra_StreamFind Class}
 \usage{
 MassSpecMethod_ClusterSpectra_StreamFind(
@@ -10,8 +9,6 @@ MassSpecMethod_ClusterSpectra_StreamFind(
   clustVal = 0.001,
   presence = 0.1
 )
-
-\method{validate_object}{MassSpecMethod_ClusterSpectra_StreamFind}(x)
 }
 \arguments{
 \item{val}{Character (length 1) with the variable to be used for clustering.}
@@ -20,8 +17,6 @@ MassSpecMethod_ClusterSpectra_StreamFind(
 
 \item{presence}{Numeric (length 1) with the minimum presence of traces in a cluster to be
 considered.}
-
-\item{x}{A MassSpecMethod_ClusterSpectra_StreamFind object.}
 }
 \value{
 A MassSpecMethod_ClusterSpectra_StreamFind object.
@@ -29,8 +24,3 @@ A MassSpecMethod_ClusterSpectra_StreamFind object.
 \description{
 Clusters spectra based on a variable (i.e. column name).
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_ClusterSpectra_StreamFind)}: Validate the MassSpecMethod_ClusterSpectra_StreamFind object, returning NULL if valid.+
-
-}}

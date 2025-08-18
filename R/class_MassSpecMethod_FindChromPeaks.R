@@ -40,10 +40,8 @@ MassSpecMethod_FindChromPeaks_LocalMaxima <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FindChromPeaks_LocalMaxima Validate the MassSpecMethod_FindChromPeaks_LocalMaxima object, returning NULL if valid.
-#' @param x A MassSpecMethod_FindChromPeaks_LocalMaxima object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_FindChromPeaks_LocalMaxima <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindChromPeaks")
@@ -270,10 +268,8 @@ MassSpecMethod_FindChromPeaks_pracma <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FindChromPeaks_pracma Validate the MassSpecMethod_FindChromPeaks_pracma object, returning NULL if valid.
-#' @param x A MassSpecMethod_FindChromPeaks_pracma object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_FindChromPeaks_pracma <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindChromPeaks")

@@ -54,10 +54,8 @@ MassSpecMethod_LoadSpectra_native <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_LoadSpectra_native Validator for the MassSpecMethod_LoadSpectra_native object, returning NULL if valid.
-#' @param x A `MassSpecMethod_LoadSpectra_native` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_LoadSpectra_native <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "LoadSpectra")
@@ -160,10 +158,8 @@ MassSpecMethod_LoadSpectra_chrompeaks <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_LoadSpectra_chrompeaks Validator for the MassSpecMethod_LoadSpectra_chrompeaks object, returning NULL if valid.
-#' @param x A `MassSpecMethod_LoadSpectra_chrompeaks` object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_LoadSpectra_chrompeaks <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "LoadSpectra")

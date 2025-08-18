@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_FindChromPeaks.R
 \name{MassSpecMethod_FindChromPeaks_pracma}
 \alias{MassSpecMethod_FindChromPeaks_pracma}
-\alias{validate_object.MassSpecMethod_FindChromPeaks_pracma}
 \title{MassSpecMethod_FindChromPeaks_pracma Class}
 \usage{
 MassSpecMethod_FindChromPeaks_pracma(
@@ -14,8 +13,6 @@ MassSpecMethod_FindChromPeaks_pracma(
   maxPeakWidth = 120,
   minSN = 10
 )
-
-\method{validate_object}{MassSpecMethod_FindChromPeaks_pracma}(x)
 }
 \arguments{
 \item{merge}{Logical (length 1) indicating if the nearby peaks should be merged.}
@@ -31,8 +28,6 @@ MassSpecMethod_FindChromPeaks_pracma(
 \item{maxPeakWidth}{Numeric (length 1) with the maximum peak width.}
 
 \item{minSN}{Numeric (length 1) with the minimum signal-to-noise ratio.}
-
-\item{x}{A MassSpecMethod_FindChromPeaks_pracma object.}
 }
 \value{
 A MassSpecMethod_FindChromPeaks_pracma object.
@@ -41,8 +36,3 @@ A MassSpecMethod_FindChromPeaks_pracma object.
 Integrates chromatograms using the function \code{findpeaks} from the package
 \pkg{pracma} with natively added peak exclusion and evaluation steps.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_FindChromPeaks_pracma)}: Validate the MassSpecMethod_FindChromPeaks_pracma object, returning NULL if valid.
-
-}}

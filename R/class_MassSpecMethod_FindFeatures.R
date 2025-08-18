@@ -378,10 +378,9 @@ MassSpecMethod_FindFeatures_xcms3_centwave <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FindFeatures_xcms3_centwave Validate the object, returning `NULL` if valid.
-#' @param x A `MassSpecMethod_FindFeatures_xcms3_centwave` object.
 #' @export
-#'
+#' @noRd
+#' 
 validate_object.MassSpecMethod_FindFeatures_xcms3_centwave <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -515,10 +514,9 @@ MassSpecMethod_FindFeatures_xcms3_matchedfilter <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FindFeatures_xcms3_matchedfilter Validate the object, returning `NULL` if valid.
-#' @param x A `MassSpecMethod_FindFeatures_xcms3_matchedfilter` object.
 #' @export
-#'
+#' @noRd
+#' 
 validate_object.MassSpecMethod_FindFeatures_xcms3_matchedfilter = function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -693,10 +691,9 @@ MassSpecMethod_FindFeatures_openms <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FindFeatures_openms Validate the `MassSpecMethod_FindFeatures_openms` object, returning `NULL` if valid.
-#' @param x A `MassSpecMethod_FindFeatures_openms` object.
 #' @export
-#'
+#' @noRd
+#' 
 validate_object.MassSpecMethod_FindFeatures_openms <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -808,10 +805,9 @@ MassSpecMethod_FindFeatures_kpic2 <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FindFeatures_kpic2 Validate the object, returning `NULL` if valid.
-#' @param x A `MassSpecMethod_FindFeatures_kpic2` object.
 #' @export
-#'
+#' @noRd
+#' 
 validate_object.MassSpecMethod_FindFeatures_kpic2 <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -830,7 +826,6 @@ validate_object.MassSpecMethod_FindFeatures_kpic2 <- function(x) {
 
 #' @export
 #' @noRd
-#' 
 run.MassSpecMethod_FindFeatures_kpic2 <- function(x, engine = NULL) {
   .run_find_features_patRoon(x, engine)
 }
@@ -874,9 +869,8 @@ MassSpecMethod_FindFeatures_qalgorithms <- function(ppm = 5) {
   }
 }
 
-#' @describeIn MassSpecMethod_FindFeatures_qalgorithms Validate the object, returning `NULL` if valid.
-#' @param x A `MassSpecMethod_FindFeatures_qalgorithms` object.
 #' @export
+#' @noRd
 #' 
 validate_object.MassSpecMethod_FindFeatures_qalgorithms <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

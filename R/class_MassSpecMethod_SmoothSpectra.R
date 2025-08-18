@@ -30,10 +30,8 @@ MassSpecMethod_SmoothSpectra_movingaverage <- function(windowSize = 5) {
   }
 }
 
-#' @describeIn MassSpecMethod_SmoothSpectra_movingaverage Validate the MassSpecMethod_SmoothSpectra_movingaverage object, returning NULL if valid.
-#' @param x A MassSpecMethod_SmoothSpectra_movingaverage object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_SmoothSpectra_movingaverage <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SmoothSpectra")
@@ -133,10 +131,8 @@ MassSpecMethod_SmoothSpectra_savgol <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_SmoothSpectra_savgol Validate the MassSpecMethod_SmoothSpectra_savgol object, returning NULL if valid.
-#' @param x A MassSpecMethod_SmoothSpectra_savgol object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_SmoothSpectra_savgo <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SmoothSpectra")

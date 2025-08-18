@@ -82,7 +82,7 @@
   mpList
 }
 
-#' MassSpecMethod_CorrectMatrixSuppression_TiChri S7 class
+#' MassSpecMethod_CorrectMatrixSuppression_TiChri Class
 #'
 #' @description Settings for correcting matrix suppression based on the TiChri algorithm from
 #' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm
@@ -152,9 +152,8 @@ MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_CorrectMatrixSuppression_TiChri Validate the MassSpecMethod_CorrectMatrixSuppression_TiChri object, returning NULL if valid.
-#' @param x A `MassSpecMethod_CorrectMatrixSuppression_TiChri` object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

@@ -2,12 +2,9 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothChromatograms.R
 \name{MassSpecMethod_SmoothChromatograms_savgol}
 \alias{MassSpecMethod_SmoothChromatograms_savgol}
-\alias{validate_object.MassSpecMethod_SmoothChromatograms_savgol}
 \title{MassSpecMethod_SmoothChromatograms_savgol Class}
 \usage{
 MassSpecMethod_SmoothChromatograms_savgol(fl = 11, forder = 4, dorder = 0)
-
-\method{validate_object}{MassSpecMethod_SmoothChromatograms_savgol}(self)
 }
 \arguments{
 \item{fl}{Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.}
@@ -17,8 +14,6 @@ MassSpecMethod_SmoothChromatograms_savgol(fl = 11, forder = 4, dorder = 0)
 
 \item{dorder}{Numeric (length 1) with the order of the derivative
 (0 = smoothing, 1 = first derivative, etc.).}
-
-\item{x}{A MassSpecMethod_SmoothChromatograms_savgol object.}
 }
 \value{
 A MassSpecMethod_SmoothChromatograms_savgol object.
@@ -27,8 +22,3 @@ A MassSpecMethod_SmoothChromatograms_savgol object.
 Smooths chromatograms using the Savitzky-Golay algorithm from the \pkg{pracma}
 package.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_SmoothChromatograms_savgol)}: Validate the MassSpecMethod_SmoothChromatograms_savgol object, returning NULL if valid.
-
-}}

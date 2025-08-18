@@ -40,10 +40,8 @@ RamanMethod_FindChromPeaks_LocalMaxima <- function(
   }
 }
 
-#' @describeIn RamanMethod_FindChromPeaks_LocalMaxima Validate the RamanMethod_FindChromPeaks_LocalMaxima object, returning NULL if valid.
-#' @param x A RamanMethod_FindChromPeaks_LocalMaxima object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_FindChromPeaks_LocalMaxima <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "FindChromPeaks")
@@ -254,10 +252,8 @@ RamanMethod_FindChromPeaks_pracma <- function(
   }
 }
 
-#' @describeIn RamanMethod_FindChromPeaks_pracma Validate the RamanMethod_FindChromPeaks_pracma object, returning NULL if valid.
-#' @param x A RamanMethod_FindChromPeaks_pracma object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_FindChromPeaks_pracma = function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "FindChromPeaks")

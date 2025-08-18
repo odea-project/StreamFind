@@ -2,15 +2,12 @@
 % Please edit documentation in R/class_MassSpecMethod_AverageSpectra.R
 \name{MassSpecMethod_AverageSpectra_StreamFind}
 \alias{MassSpecMethod_AverageSpectra_StreamFind}
-\alias{validate_object.MassSpecMethod_AverageSpectra_StreamFind}
 \title{MassSpecMethod_AverageSpectra_StreamFind Class}
 \usage{
 MassSpecMethod_AverageSpectra_StreamFind(
   by = "replicates",
   weightedAveraged = TRUE
 )
-
-\method{validate_object}{MassSpecMethod_AverageSpectra_StreamFind}(x)
 }
 \arguments{
 \item{by}{Character (length 1) with the grouping variable for averaging. Possible variables are
@@ -18,8 +15,6 @@ MassSpecMethod_AverageSpectra_StreamFind(
 \code{replicates+chrom_peaks+rt}.}
 
 \item{weightedAveraged}{Logical (length 1) for weighted averaging.}
-
-\item{x}{A MassSpecMethod_AverageSpectra_StreamFind object.}
 }
 \value{
 A MassSpecMethod_AverageSpectra_StreamFind object.
@@ -27,8 +22,3 @@ A MassSpecMethod_AverageSpectra_StreamFind object.
 \description{
 Averages spectra based on variables.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_AverageSpectra_StreamFind)}: Validate the MassSpecMethod_AverageSpectra_StreamFind object, returning NULL if valid.
-
-}}

@@ -41,10 +41,8 @@ RamanMethod_CorrectSpectraBaseline_baseline_als <- function(
   }
 }
 
-#' @describeIn RamanMethod_CorrectSpectraBaseline_baseline_als Validate the RamanMethod_CorrectSpectraBaseline_baseline_als object, returning NULL if valid.
-#' @param x RamanMethod_CorrectSpectraBaseline_baseline_als object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_CorrectSpectraBaseline_baseline_als <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "CorrectSpectraBaseline")
@@ -174,10 +172,8 @@ RamanMethod_CorrectSpectraBaseline_airpls <- function(
   }
 }
 
-#' @describeIn RamanMethod_CorrectSpectraBaseline_airpls Validate the RamanMethod_CorrectSpectraBaseline_airpls object, returning NULL if valid.
-#' @param x A RamanMethod_CorrectSpectraBaseline_airpls object.
 #' @export
-#' 
+#' @noRd
 validate_object.RamanMethod_CorrectSpectraBaseline_airpls <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "CorrectSpectraBaseline")

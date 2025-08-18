@@ -34,10 +34,8 @@ RamanMethod_DeleteSpectraSection_native <- function(min = NULL, max = NULL) {
   }
 }
 
-#' @describeIn RamanMethod_DeleteSpectraSection_native Validate the RamanMethod_DeleteSpectraSection_native object, returning NULL if valid.
-#' @param x A RamanMethod_DeleteSpectraSection_native object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_DeleteSpectraSection_native <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "DeleteSpectraSection")

@@ -66,10 +66,9 @@ StatisticMethod_MakeModel_pca_mdatools <- function(
   }
 }
 
-#' @describeIn StatisticMethod_MakeModel_pca_mdatools Validate the object, returns NULL if valid.
-#' @param x A StatisticMethod_MakeModel_pca_mdatools object.
 #' @export
-#'
+#' @noRd
+#' 
 validate_object.StatisticMethod_MakeModel_pca_mdatools <- function(x) {
   checkmate::assert_choice(x$type, "Statistic")
   checkmate::assert_choice(x$method, "MakeModel")
@@ -194,9 +193,8 @@ StatisticMethod_MakeModel_mcrpure_mdatools <- function(
   )
 }
 
-#' @describeIn StatisticMethod_MakeModel_mcrpure_mdatools Validate the object, returns NULL if valid.
-#' @param x A StatisticMethod_MakeModel_mcrpure_mdatools object.
 #' @export
+#' @noRd
 #' 
 validate_object.StatisticMethod_MakeModel_mcrpure_mdatools <- function(x) {
   checkmate::assert_choice(x$type, "Statistic")
@@ -267,106 +265,100 @@ run.StatisticMethod_MakeModel_mcrpure_mdatools <- function(
   TRUE
 }
 
-#' StatisticMethod_MakeModel_mcrals_mdatools S7 class
-#'
-#' @description Makes a Multivariate Curve Resolution (MCR) model using Alternating Least Squares
-#' (ALS) based on the R package \pkg{mdatools}.
-#'
+#' @title StatisticMethod_MakeModel_mcrals_mdatools Class
+#' @description Makes a Multivariate Curve Resolution (MCR) model using Alternating Least Squares (ALS) based on the R package \pkg{mdatools}.
 #' @param ncomp Integer (length 1) with the number of components to be calculated.
-#' @param cont.solver Character (length 1) with the name of the to solve the pure components
-#' contributions (see details in \link[mdatools]{mcrals}).
-#' @param spec.solver Character (length 1) with the name of the function to solve the pure
-#' components spectra (see details in \link[mdatools]{mcrals}).
+#' @param cont.solver Character (length 1) with the name of the to solve the pure components contributions (see details in \link[mdatools]{mcrals}).
+#' @param spec.solver Character (length 1) with the name of the function to solve the pure components spectra (see details in \link[mdatools]{mcrals}).
 #' @param exclrows Integer vector with the row indices to be excluded.
 #' @param exclcols Integer vector with the column indices to be excluded.
 #' @param verbose Logical (length 1) indicating if the function should be verbose.
 #' @param max.niter Integer (length 1) with the maximum number of iterations.
 #' @param tol Numeric (length 1) with the tolerance for convergence.
 #' @param info Character (length 1) with additional information.
-#'
 #' @note The functionality to define the initial pure components spectra as well as forcing
 #' concentration and spectra values are not included in this integration of \link[mdatools]{mcrals}.
-#'
 #' @references
 #' \insertRef{mdatools01}{StreamFind}
 #'
 #' \insertRef{mdatools02}{StreamFind}
 #'
 #' @return A StatisticMethod_MakeModel_mcrals_mdatools object.
-#'
 #' @export
 #'
-StatisticMethod_MakeModel_mcrals_mdatools <- S7::new_class(
-  name = "StatisticMethod_MakeModel_mcrals_mdatools",
-  parent = S7::new_S3_class("ProcessingStep"),
-  package = "StreamFind",
-  constructor = function(
-    ncomp = NULL,
-    cont.solver = "mcrals.nnls",
-    spec.solver = "mcrals.nnls",
-    exclrows = NULL,
-    exclcols = NULL,
-    verbose = FALSE,
-    max.niter = 100,
-    tol = 10^-6,
-    info = ""
-  ) {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "Statistic",
-        method = "MakeModel",
-        required = NA_character_,
-        algorithm = "mcrals_mdatools",
-        parameters = list(
-          ncomp = ncomp,
-          cont.constraints = NULL,
-          spec.constraints = NULL,
-          cont.solver = cont.solver,
-          spec.solver = spec.solver,
-          exclrows = exclrows,
-          exclcols = exclcols,
-          verbose = verbose,
-          max.niter = max.niter,
-          tol = tol,
-          info = info
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "mdatools",
-        developer = "Sergey Kucheryavskiy",
-        contact = "svk@bio.aau.dk",
-        link = "https://github.com/svkucheryavski/mdatools",
-        doi = "10.1016/j.chemolab.2020.103937"
-      )
-    )
-  },
-
-  validator = function(self) {
-    checkmate::assert_choice(x$data_type, "Statistic")
-    checkmate::assert_choice(x$method, "MakeModel")
-    checkmate::assert_choice(x$algorithm, "mcrals_mdatools")
-    checkmate::assert_number(x$parameters$ncomp, null.ok = TRUE)
-    checkmate::assert_choice(
-      x$parameters$cont.solver,
-      c("mcrals.nnls", "mcrals.ols")
-    )
-    checkmate::assert_choice(
-      x$parameters$spec.solver,
-      c("mcrals.nnls", "mcrals.ols")
-    )
-    checkmate::assert_number(x$parameters$exclrows, null.ok = TRUE)
-    checkmate::assert_number(x$parameters$exclcols, null.ok = TRUE)
-    checkmate::assert_logical(x$parameters$verbose, max.len = 1)
-    checkmate::assert_number(x$parameters$max.niter)
-    checkmate::assert_number(x$parameters$tol)
-    checkmate::assert_character(x$parameters$info)
-    NULL
+StatisticMethod_MakeModel_mcrals_mdatools <- function(
+  ncomp = NULL,
+  cont.solver = "mcrals.nnls",
+  spec.solver = "mcrals.nnls",
+  exclrows = NULL,
+  exclcols = NULL,
+  verbose = FALSE,
+  max.niter = 100,
+  tol = 10^-6,
+  info = ""
+) {
+  x <- ProcessingStep(
+    type = "Statistic",
+    method = "MakeModel",
+    required = NA_character_,
+    algorithm = "mcrals_mdatools",
+    parameters = list(
+      ncomp = ncomp,
+      cont.constraints = NULL,
+      spec.constraints = NULL,
+      cont.solver = cont.solver,
+      spec.solver = spec.solver,
+      exclrows = exclrows,
+      exclcols = exclcols,
+      verbose = verbose,
+      max.niter = max.niter,
+      tol = tol,
+      info = info
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "mdatools",
+    developer = "Sergey Kucheryavskiy",
+    contact = "svk@bio.aau.dk",
+    link = "https://github.com/svkucheryavski/mdatools",
+    doi = "10.1016/j.chemolab.2020.103937"
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid StatisticMethod_MakeModel_mcrals_mdatools object!")
   }
-)
+}
 
 #' @export
 #' @noRd
-S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(
+#'
+validate_object.StatisticMethod_MakeModel_mcrals_mdatools <- function(x) {
+  checkmate::assert_choice(x$type, "Statistic")
+  checkmate::assert_choice(x$method, "MakeModel")
+  checkmate::assert_choice(x$algorithm, "mcrals_mdatools")
+  checkmate::assert_number(x$parameters$ncomp, null.ok = TRUE)
+  checkmate::assert_choice(
+    x$parameters$cont.solver,
+    c("mcrals.nnls", "mcrals.ols")
+  )
+  checkmate::assert_choice(
+    x$parameters$spec.solver,
+    c("mcrals.nnls", "mcrals.ols")
+  )
+  checkmate::assert_number(x$parameters$exclrows, null.ok = TRUE)
+  checkmate::assert_number(x$parameters$exclcols, null.ok = TRUE)
+  checkmate::assert_logical(x$parameters$verbose, max.len = 1)
+  checkmate::assert_number(x$parameters$max.niter)
+  checkmate::assert_number(x$parameters$tol)
+  checkmate::assert_character(x$parameters$info)
+  NextMethod()
+  NULL
+}
+
+#' @export
+#' @noRd
+run.StatisticMethod_MakeModel_mcrals_mdatools <- function(
   x,
   engine = NULL
 ) {
@@ -436,82 +428,75 @@ S7::method(run, StatisticMethod_MakeModel_mcrals_mdatools) <- function(
 
   attr(m$resspec, "features") <- colnames(mat)
   attr(m$rescont, "analyses") <- rownames(mat)
-  engine$model <- StreamFind::MCRALS(model = m)
-  message(paste0("\U2713 ", "MCR-ALS model added!"))
+  engine$Results <- StatisticResults_MCRALS_mdatools(model = m)
+  message(paste0("\U2713 ", "MCRALS model added!"))
   TRUE
 }
 
-#' StatisticMethod_MakeModel_knn S7 class
-#'
-#' @description Makes a classification model using the k-nearest neighbors (knn) algorithm from
-#' package \pkg{class}.
-#'
+#' @title StatisticMethod_MakeModel_knn_class Class
+#' @description Makes a classification model using the k-nearest neighbors (knn) algorithm from package \pkg{class}.
 #' @param k Integer (length 1) with the number of neighbors to be used.
 #' @param l Integer (length 1) with the minimum vote for definite decision, otherwise doubt.
 #' (More precisely, less than k-l dissenting votes are allowed, even if k is increased by ties.)
-#'
 #' @references
 #' \insertRef{class01}{StreamFind}
 #'
 #' @return A StatisticMethod_MakeModel_knn object.
-#'
 #' @export
 #'
-StatisticMethod_MakeModel_knn <- S7::new_class(
-  name = "StatisticMethod_MakeModel_knn",
-  parent = S7::new_S3_class("ProcessingStep"),
-  package = "StreamFind",
-  constructor = function(k = 3, l = 0) {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "Statistic",
-        method = "MakeModel",
-        required = NA_character_,
-        algorithm = "knn",
-        parameters = list(
-          k = k,
-          l = l,
-          prob = TRUE
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "class",
-        developer = "Brian D. Ripley",
-        contact = "ripley@stats.ox.ac.uk",
-        link = "https://cran.r-project.org/web/packages/class/index.html",
-        doi = "ISBN 0-387-95457-0"
-      )
-    )
-  },
-
-  validator = function(self) {
-    checkmate::assert_choice(x$data_type, "Statistic")
-    checkmate::assert_choice(x$method, "MakeModel")
-    checkmate::assert_choice(x$algorithm, "knn")
-    checkmate::assert_number(x$parameters$k)
-    checkmate::assert_number(x$parameters$l)
-    NULL
+StatisticMethod_MakeModel_knn_class <- function(k = 3, l = 0) {
+  x <- ProcessingStep(
+    type = "Statistic",
+    method = "MakeModel",
+    required = NA_character_,
+    algorithm = "knn",
+    parameters = list(
+      k = k,
+      l = l,
+      prob = TRUE
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "class",
+    developer = "Brian D. Ripley",
+    contact = "ripley@stats.ox.ac.uk",
+    link = "https://cran.r-project.org/web/packages/class/index.html",
+    doi = "ISBN 0-387-95457-0"
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid StatisticMethod_MakeModel_knn_class object!")
   }
-)
+}
 
 #' @export
 #' @noRd
-S7::method(run, StatisticMethod_MakeModel_knn) <- function(x, engine = NULL) {
+#'
+validate_object.StatisticMethod_MakeModel_knn_class <- function(self) {
+  checkmate::assert_choice(x$type, "Statistic")
+  checkmate::assert_choice(x$method, "MakeModel")
+  checkmate::assert_choice(x$algorithm, "knn")
+  checkmate::assert_number(x$parameters$k)
+  checkmate::assert_number(x$parameters$l)
+  NULL
+}
+
+#' @export
+#' @noRd
+run.StatisticMethod_MakeModel_knn <- function(x, engine = NULL) {
   if (!requireNamespace("class", quietly = TRUE)) {
     warning("The package 'class' is not available! Not done.")
     return(FALSE)
   }
-
   if (!is(engine, "StatisticEngine")) {
     warning("Engine is not a StatisticEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
   train = engine$Analyses$analyses
   cl = engine$Analyses$classes
 

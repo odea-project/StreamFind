@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_StatisticMethod_MakeModel.R
 \name{StatisticMethod_MakeModel_mcrals_mdatools}
 \alias{StatisticMethod_MakeModel_mcrals_mdatools}
-\title{StatisticMethod_MakeModel_mcrals_mdatools S7 class}
+\title{StatisticMethod_MakeModel_mcrals_mdatools Class}
 \usage{
 StatisticMethod_MakeModel_mcrals_mdatools(
   ncomp = NULL,
@@ -19,11 +19,9 @@ StatisticMethod_MakeModel_mcrals_mdatools(
 \arguments{
 \item{ncomp}{Integer (length 1) with the number of components to be calculated.}
 
-\item{cont.solver}{Character (length 1) with the name of the to solve the pure components
-contributions (see details in \link[mdatools]{mcrals}).}
+\item{cont.solver}{Character (length 1) with the name of the to solve the pure components contributions (see details in \link[mdatools]{mcrals}).}
 
-\item{spec.solver}{Character (length 1) with the name of the function to solve the pure
-components spectra (see details in \link[mdatools]{mcrals}).}
+\item{spec.solver}{Character (length 1) with the name of the function to solve the pure components spectra (see details in \link[mdatools]{mcrals}).}
 
 \item{exclrows}{Integer vector with the row indices to be excluded.}
 
@@ -41,8 +39,7 @@ components spectra (see details in \link[mdatools]{mcrals}).}
 A StatisticMethod_MakeModel_mcrals_mdatools object.
 }
 \description{
-Makes a Multivariate Curve Resolution (MCR) model using Alternating Least Squares
-(ALS) based on the R package \pkg{mdatools}.
+Makes a Multivariate Curve Resolution (MCR) model using Alternating Least Squares (ALS) based on the R package \pkg{mdatools}.
 }
 \note{
 The functionality to define the initial pure components spectra as well as forcing

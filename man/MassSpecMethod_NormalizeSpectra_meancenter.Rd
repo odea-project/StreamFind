@@ -2,15 +2,9 @@
 % Please edit documentation in R/class_MassSpecMethod_NormalizeSpectra.R
 \name{MassSpecMethod_NormalizeSpectra_meancenter}
 \alias{MassSpecMethod_NormalizeSpectra_meancenter}
-\alias{validate_object.MassSpecMethod_NormalizeSpectra_meancenter}
 \title{MassSpecMethod_NormalizeSpectra_meancenter Class}
 \usage{
 MassSpecMethod_NormalizeSpectra_meancenter()
-
-\method{validate_object}{MassSpecMethod_NormalizeSpectra_meancenter}(x)
-}
-\arguments{
-\item{x}{A MassSpecMethod_NormalizeSpectra_meancenter object.}
 }
 \value{
 A MassSpecMethod_NormalizeSpectra_meancenter object.
@@ -18,8 +12,3 @@ A MassSpecMethod_NormalizeSpectra_meancenter object.
 \description{
 Normalizes spectra using mean centering.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_NormalizeSpectra_meancenter)}: Validate the MassSpecMethod_NormalizeSpectra_meancenter object, returning NULL if valid.
-
-}}

@@ -2,15 +2,9 @@
 % Please edit documentation in R/class_RamanMethod_InvertAxis.R
 \name{RamanMethod_InvertAxis_intensity}
 \alias{RamanMethod_InvertAxis_intensity}
-\alias{validate_object.RamanMethod_InvertAxis_intensity}
 \title{RamanMethod_InvertAxis_intensity Class}
 \usage{
 RamanMethod_InvertAxis_intensity()
-
-\method{validate_object}{RamanMethod_InvertAxis_intensity}(x)
-}
-\arguments{
-\item{x}{A RamanMethod_InvertAxis_intensity object.}
 }
 \value{
 A RamanMethod_InvertAxis_intensity object.
@@ -18,8 +12,3 @@ A RamanMethod_InvertAxis_intensity object.
 \description{
 Inverts the intensity axis of the spectra.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(RamanMethod_InvertAxis_intensity)}: Validate the RamanMethod_InvertAxis_intensity object, returning NULL if valid.
-
-}}

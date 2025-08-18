@@ -1,10 +1,7 @@
-#' @title Generic Analyses
-#'
+#' @title Generic (top level ) Analyses class and methods
 #' @description The `Analyses` class is used to harmonize the interface to data or links to raw data files and results across different types of data. `Analyses` child classes are used for specific data types, providing dedicated methods.
-#'
 #' @param analyses A list of analyses, where each element is a data entry or a connection to a raw data file.
 #' @param results A list of results, where each element is a specific \code{\link{Results}} child class.
-#'
 #' @return
 #' An object of class `Analyses`, which is a list containing:
 #' \itemize{
@@ -13,7 +10,6 @@
 #'  \item `type`: A character string indicating the type of data contained in the analyses.
 #'  \item `formats`: A character vector indicating the possible formats of the analyses.
 #' }
-#'
 #' @export
 #'
 Analyses <- function(analyses = list(), results = list()) {

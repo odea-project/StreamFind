@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_patRoon}
 \alias{MassSpecMethod_SuspectScreening_patRoon}
-\alias{validate_object.MassSpecMethod_SuspectScreening_patRoon}
 \title{MassSpecMethod_SuspectScreening_patRoon Class}
 \usage{
 MassSpecMethod_SuspectScreening_patRoon(
@@ -11,8 +10,6 @@ MassSpecMethod_SuspectScreening_patRoon(
   mzWindow = 0.005,
   filtered = FALSE
 )
-
-\method{validate_object}{MassSpecMethod_SuspectScreening_patRoon}(x)
 }
 \arguments{
 \item{suspects}{A data.frame with suspect information. See section Suspect list format in \link[patRoon]{screenSuspects} for more information.}
@@ -22,8 +19,6 @@ MassSpecMethod_SuspectScreening_patRoon(
 \item{mzWindow}{The m/z window that will be used for matching a suspect (+/- feature data).}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-
-\item{x}{A \code{MassSpecMethod_SuspectScreening_patRoon} object.}
 }
 \value{
 A \code{MassSpecMethod_SuspectScreening_patRoon} object.
@@ -31,11 +26,6 @@ A \code{MassSpecMethod_SuspectScreening_patRoon} object.
 \description{
 Settings for performing suspect screening using the function \link[patRoon]{screenSuspects} from the patRoon R package.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_SuspectScreening_patRoon)}: Validate the MassSpecMethod_SuspectScreening_patRoon object, returning \code{NULL} if valid.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

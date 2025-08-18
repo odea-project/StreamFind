@@ -1,5 +1,5 @@
 # MARK: MassSpecResults_Chromatograms
-#' @title MassSpecResults_Chromatograms Class
+#' @title Constructor and methods to handle Mass Spectrometry chromatograms results
 #' @description The `MassSpecResults_Chromatograms` class represents the results of chromatograms from mass spectrometry analyses.
 #' @param chromatograms A list of chromatograms, each represented as a data frame.
 #' @param replicates A character vector of replicate identifiers.

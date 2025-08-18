@@ -41,9 +41,8 @@ MassSpecMethod_ClusterSpectra_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_ClusterSpectra_StreamFind Validate the MassSpecMethod_ClusterSpectra_StreamFind object, returning NULL if valid.+
-#' @param x A MassSpecMethod_ClusterSpectra_StreamFind object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_ClusterSpectra_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

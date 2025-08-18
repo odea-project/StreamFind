@@ -1,4 +1,4 @@
-#' @title Generic Results Class
+#' @title Generic (top level) Results class constructor and methods
 #' @description The `Results` class is used to store results of data processing in [StreamFind::Analyses] child classes. Child classes of `Results` are implemented for diverse types of results for a given type of data.
 #' @param type A character string indicating the type of data.
 #' @param name A character string representing the name of the results.

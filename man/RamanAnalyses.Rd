@@ -22,7 +22,7 @@
 \alias{plot_chromatograms.RamanAnalyses}
 \alias{get_chromatograms_peaks.RamanAnalyses}
 \alias{plot_chromatograms_peaks.RamanAnalyses}
-\title{RamanAnalyses Class}
+\title{Analyses class and methods for handling Raman spectroscopy data}
 \usage{
 RamanAnalyses(files = NULL)
 

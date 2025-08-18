@@ -2,8 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_GroupFeatures.R
 \name{MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups}
 \alias{MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups}
-\alias{validate_object.MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups}
-\title{MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups S7 class}
+\title{MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups Class}
 \usage{
 MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups(
   bw = 5,
@@ -23,8 +22,6 @@ MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups(
   subset = integer(),
   subsetAdjust = "average"
 )
-
-\method{validate_object}{MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups}(x)
 }
 \arguments{
 \item{bw}{numeric(1) defining the bandwidth (standard deviation of the
@@ -89,8 +86,6 @@ for more details.}
 \item{subsetAdjust}{character specifying the method with which non-subset
 samples should be adjusted. Supported options are "previous" and "average"
 (default). See description above for more information.}
-
-\item{x}{A \code{MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups} object.}
 }
 \value{
 A \code{MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups} object.
@@ -106,11 +101,6 @@ package \pkg{patRoon} in the background.
 See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for
 more information and requirements.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups)}: Validate the MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups object, returning NULL if valid.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

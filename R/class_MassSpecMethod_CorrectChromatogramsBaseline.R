@@ -45,9 +45,8 @@ MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_CorrectChromatogramsBaseline_baseline_als Validates the MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object, returning NULL if valid.
-#' @param x A MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- function(
   x
@@ -201,9 +200,8 @@ MassSpecMethod_CorrectChromatogramsBaseline_airpls <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_CorrectChromatogramsBaseline_airpls Validates the MassSpecMethod_CorrectChromatogramsBaseline_airpls object, returning NULL if valid.
-#' @param x A MassSpecMethod_CorrectChromatogramsBaseline_airpls object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_CorrectChromatogramsBaseline_airpls <- function(
   x

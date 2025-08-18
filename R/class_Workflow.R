@@ -1,9 +1,7 @@
 # MARK: Workflow
 # Workflow -----
-#' @title Workflow Manager
-#' 
-#' @description The `Workflow` class is an ordered list of [StreamFind::ProcessingStep] objects
-#' dedicated to a specific type of data.
+#' @title Generic (top level) Workflow class and methods
+#' @description The `Workflow` class is an ordered list of [StreamFind::ProcessingStep] objects dedicated to a specific type of data.
 #' 
 #' @param processing_steps A list of [StreamFind::ProcessingStep] objects.
 #' 

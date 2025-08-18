@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_Engine_RamanEngine.R
 \name{RamanEngine}
 \alias{RamanEngine}
-\title{Raman Spectroscopy Engine}
+\title{Engine dedicated to Raman spectroscopic data processing}
 \description{
 The \emph{RamanEngine} R6 class is a framework for parsing, processing, inspecting and storing Raman spectroscopic data. The engine has \emph{Raman} as data type. The \emph{Analyses} active field has class \link{RamanAnalyses}, where Raman data can be loaded from "asc", "sif", "json", "wdf", "sdf", "csv" and "txt" files. The \emph{results} active field is a list that can hold the class \link{RamanResults_Spectra}. Note that the \emph{RamanEngine} is a subclass of \link{Engine} and inherits all methods from the parent class.
 }

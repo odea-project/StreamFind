@@ -6,7 +6,7 @@
 \alias{show.RamanResults_Spectra}
 \alias{[.RamanResults_Spectra}
 \alias{[[.RamanResults_Spectra}
-\title{RamanResults_Spectra Class}
+\title{Constructor and methods to handle Raman spectra results}
 \usage{
 RamanResults_Spectra(
   spectra = list(),

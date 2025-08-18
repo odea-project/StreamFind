@@ -1,4 +1,4 @@
-#' MassSpecMethod_FilterFeatures_StreamFind S7 class
+#' MassSpecMethod_FilterFeatures_StreamFind Class
 #'
 #' @description Settings for filtering of features and feature groups.
 #'
@@ -75,9 +75,8 @@ MassSpecMethod_FilterFeatures_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FilterFeatures_StreamFind Validate the MassSpecMethod_FilterFeatures_StreamFind object, returning NULL if valid.
-#' @param x A `MassSpecMethod_FilterFeatures_StreamFind` object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_FilterFeatures_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
@@ -1012,7 +1011,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   TRUE
 }
 
-#' MassSpecMethod_FilterFeatures_patRoon S7 class
+#' MassSpecMethod_FilterFeatures_patRoon Class
 #'
 #' @description Settings for filtering of features and feature groups. A full description of the
 #' filtering parameters is in \code{\link[patRoon]{replicateGroupSubtract}} from patRoon package.
@@ -1155,9 +1154,8 @@ MassSpecMethod_FilterFeatures_patRoon <- function(
   )
 }
 
-#' @describeIn MassSpecMethod_FilterFeatures_patRoon Validate the MassSpecMethod_FilterFeatures_patRoon object, returns NULL if valid.
-#' @param x A MassSpecMethod_FilterFeatures_patRoon object.
 #' @export
+#' @noRd
 #' 
 validate_object.MassSpecMethod_FilterFeatures_patRoon <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

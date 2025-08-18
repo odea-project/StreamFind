@@ -54,10 +54,8 @@ MassSpecMethod_IntegrateChromatograms_pracma <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_IntegrateChromatograms_pracma Validate the MassSpecMethod_IntegrateChromatograms_pracma object, returning NULL if valid.
-#' @param x A MassSpecMethod_IntegrateChromatograms_pracma object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_IntegrateChromatograms_pracma <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "IntegrateChromatograms")

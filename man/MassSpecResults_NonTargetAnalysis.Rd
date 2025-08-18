@@ -38,7 +38,7 @@
 \alias{get_patRoon_features.MassSpecResults_NonTargetAnalysis}
 \alias{get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis}
 \alias{get_patRoon_compounds.MassSpecResults_NonTargetAnalysis}
-\title{MassSpecResults_NonTargetAnalysis S3 Class}
+\title{Constructor and methods to handle non-target analysis results for mass spectrometry data}
 \usage{
 MassSpecResults_NonTargetAnalysis(
   info = data.table::data.table(),

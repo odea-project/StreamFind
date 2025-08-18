@@ -10,7 +10,7 @@
 \alias{plot_chromatograms_baseline.MassSpecResults_Chromatograms}
 \alias{get_chromatograms_peaks.MassSpecResults_Chromatograms}
 \alias{plot_chromatograms_peaks.MassSpecResults_Chromatograms}
-\title{MassSpecResults_Chromatograms Class}
+\title{Constructor and methods to handle Mass Spectrometry chromatograms results}
 \usage{
 MassSpecResults_Chromatograms(
   chromatograms = list(),

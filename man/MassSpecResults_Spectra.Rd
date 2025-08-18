@@ -12,7 +12,7 @@
 \alias{get_spectra_matrix.MassSpecResults_Spectra}
 \alias{get_spectra_peaks.MassSpecResults_Spectra}
 \alias{plot_spectra_peaks.MassSpecResults_Spectra}
-\title{MassSpecResults_Spectra S3 Class}
+\title{Constructor and methods to handle mass spectrometry spectra results}
 \usage{
 MassSpecResults_Spectra(
   spectra = list(),

@@ -1,5 +1,5 @@
 ---
-title: 'StreamFind General Introduction'
+title: 'StreamFind Get Started Guide'
 author:
   name: Ricardo Cunha
   email: cunha@iuta.de
@@ -12,7 +12,7 @@ output:
     toc_float: true
 vignette: >
   %\VignetteEncoding{UTF-8}
-  %\VignetteIndexEntry{StreamFind General Introduction}
+  %\VignetteIndexEntry{StreamFind Get Started Guide}
   %\VignetteEngine{knitr::rmarkdown}
 editor_options: 
   chunk_output_type: console
@@ -54,13 +54,15 @@ db <- db[, cols, with = FALSE]
 
 # Introduction
 
-The StreamFind R package is a data agnostic data processing workflow designer. Besides data processing, the package can also be used for data management, visualization and reporting. This guide focuses on describing the general framework of StreamFind. StreamFind is centered around [R6](https://r6.r-lib.org/index.html) classes, serving as data processing engines (used as metaphor) for different types of data (e.g. mass spectrometry (MS) and Raman spectroscopy (RS) data).  
+The StreamFind R package is a data agnostic data processing workflow designer. Besides data processing, the package can also be used for data management, visualization and reporting. This guide focuses on describing the general framework of StreamFind. StreamFind uses [R6](https://r6.r-lib.org/index.html) classes as main interface and for project management and [S3](https://adv-r.hadley.nz/s3.html) classes for internal data handling and organization.
 
 ```{r concept-image, fig.cap="StreamFind Concept", out.width="100%", echo=FALSE, fig.align='center', fig.alt="Concept"}
 knitr::include_graphics("Concept.png")
 ```
 
-Internally, the engines (R6 classes) use seven central S3 classes:
+The R6 classes have a common parent named [`Engine`](https://odea-project.github.io/StreamFind/reference/Engine.html). The `Engine` is the parent class of all other data specific engines (e.g., [`MassSpecEngine`](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) and [`RamanEngine`](https://odea-project.github.io/StreamFind/reference/RamanEngine.html)). The `Engine` holds uniform interface class objects and functions across child data dedicated engines, such as managing the `Metadata`, recording the `AuditTrail` and applying the `Workflow`.
+
+Internally, the Engine R6 classes use seven central S3 classes:
  
  - [`Metadata`](https://odea-project.github.io/StreamFind/reference/Metadata.html)
  - [`Workflow`](https://odea-project.github.io/StreamFind/reference/Workflow.html)
@@ -70,41 +72,41 @@ Internally, the engines (R6 classes) use seven central S3 classes:
  - [`AuditTrail`](https://odea-project.github.io/StreamFind/reference/AuditTrail.html)
  - [`Config`](https://odea-project.github.io/StreamFind/reference/Config.html)
 
-The `Metadata` class flexibly holds project information, such as name, author, date and file.  The `Workflow` class is an ordered list of `ProcessingStep` objects, which are used to harmonize the diversity of processing methods and algorithms available for a given data type. The `ProcessingStep` class is a representation of a processing method/step that transforms the data according to a specific algorithm. The `Analyses` class holds the data to be processed and the `Results` class holds the results of the data processing. The `AuditTrail` class records any modification to the project. The `Config` class holds configuration parameters for the engines, app, etc.
+The `Metadata` is fundamentally a named list with elements of length one, holding project information (e.g., name, author and date). The `Workflow` class is an ordered list of `ProcessingStep` objects, which are used to harmonize the diversity of processing methods and algorithms available for a given data type. The `ProcessingStep` class is a representation of a processing step (i.e., algorithm to be applied to the data). The `Analyses` class holds data or paths to raw data files. The `Results`, which is an element of the `Analyses` class, holds the results from data processing. The `AuditTrail` class records any modification to the project. The `Config` class holds configuration parameters for the engines, app, etc.
 
 # `Engine`
 
-Data processing engines are fundamentally reference classes with methods for project management. The [`Engine`](https://odea-project.github.io/StreamFind/reference/Engine.html) is the parent class of all other data specific engines (e.g. [`MassSpecEngine`](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) and [`RamanEngine`](https://odea-project.github.io/StreamFind/reference/RamanEngine.html)). As parent, the `Engine` holds uniform functions across child data dedicated engines (e.g. managing the `Metadata`, recording the `AuditTrail` and applying a data processing `Workflow`).
+Data processing engines are fundamentally used for project management. The [`Engine`](https://odea-project.github.io/StreamFind/reference/Engine.html) is the parent class of all other data specific engines (e.g. [`MassSpecEngine`](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) and [`RamanEngine`](https://odea-project.github.io/StreamFind/reference/RamanEngine.html)). As parent, the `Engine` holds uniform functions across child data dedicated engines (e.g. managing the `Metadata`, recording the `AuditTrail` and applying the `Workflow`).
 
 ```{r engine}
-# Creates an empty Engine
+# Creates an empty Engine.
 engine <- Engine$new()
 
-# Prints the engine
+# Prints the engine.
 engine
 ```
 
-Note that when an empty `Engine` or any data specific engine is created, required entries of `Metadata` are created with default name, author, date and file. Yet, `Metadata` entries can be specified directly during creation of the `Engine` via the argument `metadata` or added to the engine as shown in \@ref(metadata). The `Engine` does not directly handle data processing. Processing methods are data specific and therefore, are used via the data dedicated engines. Yet, the framework to manage the data processing workflow is implemented in the `Engine` and is therefore, harmonized across engines. Users will not directly use the `Engine` but it is important to understand that it is in the background.
+Note that when an empty `Engine` or any data specific engine is created, required entries of `Metadata` are created with default name, author, date and file. Yet, `Metadata` entries can be specified directly during creation of the `Engine` via the argument `metadata` or added to the engine as shown in \@ref(metadata). The `Engine` does not directly handle data processing. Processing methods are data specific and therefore, are used via the data dedicated engines (i.e., `MassSpecEngine` or `RamanEngine`). Yet, the framework to manage the data processing workflow is implemented in the `Engine` and is therefore, harmonized across engines. Users will not directly use the `Engine` but it is important to understand the background.
 
 # `Metadata`
 
 The [`Metadata`](https://odea-project.github.io/StreamFind/reference/Metadata.html) S3 class is meant to hold project information, such as description, location, etc. The users can add any kind of entry to a named `list`. Below, a `list` of metadata is created and added to the `Engine` for demonstration. Internally, the `list` is converted to a `Metadata` object. Modifying the entries in the `Metadata` is as modifying a `list` in R and the `Metadata` can be accessed by the active field `Metadata` in the `Engine` or any other data specific engine.
 
 ```{r add-metadata}
-# Creates a named list with project metadata
+# Creates a named list with project metadata.
 mtd <- list(
   name = "Project Example",
   author = "Person Name",
   description = "Example of project description"
 )
 
-# Adds/updates the Metadata in the CoreEngine
+# Adds/updates the Metadata in the CoreEngine.
 engine$Metadata <- mtd
 
-# Show mwthod for the Metadata class
+# Show mwthod for the Metadata class.
 show(engine$Metadata)
 
-# Adding a new entry to the Metadata
+# Adding a new entry to the Metadata.
 engine$Metadata[["second_author"]] <- "Second Person Name"
 
 show(engine$Metadata)
@@ -112,60 +114,54 @@ show(engine$Metadata)
 
 # `Workflow`
 
-A data processing workflow is represented in StreamFind by the class [`Workflow`](https://odea-project.github.io/StreamFind/reference/Workflow.html). A `Workflow` is composed of an ordered list of `ProcessingStep` objects. Each `ProcessingStep` object is a representation of a processing method/step that transforms the data according to a specific algorithm. The `ProcessingStep` class is used to harmonize the diversity of processing methods and algorithms available for a given data type.
+A data processing workflow is represented in StreamFind by the class [`Workflow`](https://odea-project.github.io/StreamFind/reference/Workflow.html). A `Workflow` is an ordered list of `ProcessingStep` objects. Each `ProcessingStep` object is a representation of a processing step that transforms the data according to a specific algorithm. The `ProcessingStep` class is used to harmonize the diversity of processing methods and algorithms available for a given data type.
 
 ```{r settings}
-# Constructor for a processing step
+# Constructor for a processing step.
 ProcessingStep()
 ```
 
-A [`ProcessingStep`](https://odea-project.github.io/StreamFind/reference/ProcessingStep.html) object must always have the data type, the processing method name, the name of the algorithm to be used, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available. Lastly but not least, the parameters which is a flexible list of conditions to apply the algorithm during data processing.
+A [`ProcessingStep`](https://odea-project.github.io/StreamFind/reference/ProcessingStep.html) object must always have the data type, the processing method name, required preceding processing methods, the name of the algorithm to be used, the class of input and output `Results` objects, the origin software, the main developer name and contact as well as a link to further information and the DOI, when available. Lastly but not least, the parameters, which is a flexible list of conditions to apply the algorithm.
 
 The [`ProcessingStep`](https://odea-project.github.io/StreamFind/reference/ProcessingStep.html) is a generic parent class which delegates to child classes for specific data processing methods and algorithms. As example, the `ProcessingStep` child class for annotating features within a non-target screening workflow using a native algorithm from StreamFind is shown below. Each `ProcessingStep` child class has a dedicated constructor method with documentation to support the usage. Help pages for processing methods can be obtained with the native R function `?` or `help()`  (e.g., `help(MassSpecMethod_AnnotateFeatures_StreamFind)`).
 
 ```{r method-annotate-features}
-# constructor of ProcessingStep child class
-# for annotating features in a non-target screening workflow
-# the constructor name gives away the engine, method and algorithm
-# i.e.
-# - the data type is MassSpec
-# - the method name is AnnotateFeatures
-# - the algorithm name is StreamFind
+# Constructor of ProcessingStep child class for annotating features in a non-target screening workflow the constructor name gives away the engine, method and algorithm.
 MassSpecMethod_AnnotateFeatures_StreamFind()
 ```
 
 # `Analyses`
 
-As above mentioned, the `Engine` does not handle data processing directly. The data processing is delegated to child engines. A simple example is given below by creating a child `RamanEngine` from a vector of paths to *asc* files with Raman spectra. The Raman spectra are used internally to initiate a [`RamanAnalyses`](https://odea-project.github.io/StreamFind/reference/RamanAnalyses.html) (child class of [`Analyses`](https://odea-project.github.io/StreamFind/reference/Analyses.html)), holding the raw data and any data processing `Results` objects. Note that the `Workflow` and `Results` are still empty, as no data processing methods were applied.
+As above mentioned, the `Engine` does not handle data processing directly. The data processing is delegated to child engines. A simple example is given below by creating a child `RamanEngine` from a vector of paths to *asc* files with Raman spectra. The Raman spectra are used internally to initiate a [`RamanAnalyses`](https://odea-project.github.io/StreamFind/reference/RamanAnalyses.html) (child class of [`Analyses`](https://odea-project.github.io/StreamFind/reference/Analyses.html)), holding the raw data and any data processing `Results` objects.
 
 ```{r raman-engine}
-# Example raman .asc files
+# Example raman .asc files.
 raman_ex_files <- StreamFindData::get_raman_file_paths()
 
-# Creates a RamanEngine with the example files
+# Creates a RamanEngine with the example files.
 raman <- RamanEngine$new(analyses = raman_ex_files)
 
-# Show the engine class hierarchy
+# Show the engine class hierarchy.
 class(raman)
 ```
 
-Data specific engines have dedicated active fields to access the major S3 classes (i.e., `Metadata`, `Analyses`, `Workflow`, `Results`, `AuditTrail` and `Config`). For instance, the `Analyses` active field in the `RamanEngine` is used to access the ``RamanAnalyses` child class dedicated to RS.
+Engine classes have dedicated active fields to access the major S3 classes (i.e., `Metadata`, `Analyses`, `Workflow`, `Results`, `AuditTrail` and `Config`). For instance, the `Analyses` active field in the `RamanEngine` is used to access the `RamanAnalyses` child class dedicated to RS. Other data dedicated fields are also implement for data specicic engines. Consult the documentation of the engines for more information (e.g., [`?RamanEngine`](https://odea-project.github.io/StreamFind/reference/RamanEngine.html)).
 
 ```{r raman-analyses}
-# Gets the classes of the Analyses in the RamanEngine
+# Gets the classes of the Analyses in the RamanEngine.
 class(raman$Analyses)
 
-# S3 methods are available for each Analyses child class
-get_analysis_names(raman$Analyses)
+# S3 methods are available for each Analyses child class.
+get_analysis_names(raman$Analyses)[1:3]
 
-# Access the spectrum of the first analysis in the Analyses object
+# Access the spectrum of the first analysis in the Analyses object.
 head(raman$Analyses$analyses[[1]]$spectra)
 ```
 
-The methods for data access and visualization are also implemented as public S3 methods to the S3 classes. Below, the `plot_spectra()` method from the `RamanEngine` is used to plot the raw spectra from analyses 1 and 12. The available methods for each class is described in the documentation of each class (e.g., [`RamanAnalyses`](https://odea-project.github.io/StreamFind/reference/RamanAnalyses.html)).
+The methods for data access and visualization are also implemented as public S3 methods. Below, the `plot_spectra()` method from the `RamanAnalyses` class is used to plot the raw spectra from analyses 1 and 12. The available methods for each class is described in the documentation (e.g., [`?RamanAnalyses`](https://odea-project.github.io/StreamFind/reference/RamanAnalyses.html)).
 
 ```{r plot-spectra, fig.alt="Spectra Raw"}
-# Plots the spectrum from analyses 1 and 12 in the RamanEngine
+# Plots the spectrum from analyses 1 and 12 in the RamanEngine.
 plot_spectra(raman$Analyses, analyses = c(1, 12))
 ```
 
@@ -186,7 +182,7 @@ length(raman$Analyses$analyses)
 For data processing, the analysis replicate names and the correspondent blank analysis replicates can be assigned with dedicated methods, as shown below. For instance, the replicate names are used for averaging the spectra in correspondent analyses and the assigned blanks are used for background subtraction.
 
 ```{r replicate-blank-raman-analyses}
-# Sets replicate names and blank names
+# Sets replicate names and blank names.
 raman$Analyses <- set_replicate_names(
   raman$Analyses,
   c(rep("Sample", 11), rep("Blank", 11))
@@ -199,96 +195,96 @@ raman$Analyses <- set_blank_names(
 ```
 
 ```{r show-raman-egnine}
-# the replicate names are modified
+# The replicate names are modified.
 info(raman$Analyses)[, c(1:3)]
 ```
 
 ```{r plot-spectra-replicates, fig.alt="Spectra Raw Replicates"}
-# the spectra between shift values 700 and 800 are plotted
-# the colorBy is set to replicates to legend by replicate names
+# The spectra between shift values 700 and 800 are plotted.
+# The colorBy is set to replicates to legend by replicate names.
 plot_spectra(raman$Analyses, shift = c(700, 800), colorBy = "replicates")
 ```
 
 # Processing `Workflow`
 
-As above mentioned, a `Workflow` is designed by an ordered list of `ProcessingStep` child class objects. Below a `list` of `ProcessingStep` child class objects for processing the Raman spectra is created and added to the active field `Workflow` of the `RamanEngine`.
+The `Workflow` class is an ordered list of `ProcessingStep` child class objects. Below a `list` of `ProcessingStep` child class objects for processing the Raman spectra is created and added to the active field `Workflow` of the `RamanEngine`.
 
 ```{r raman-workflow}
 ps <- list(
-  # averages the spectra for each analysis replicate
+  # Averages the spectra for each analysis replicate.
   RamanMethod_AverageSpectra_native(),
 
-  # simple normalization based on maximum intensity
+  # Simple normalization based on maximum intensity.
   RamanMethod_NormalizeSpectra_minmax(),
 
-  # background subtraction
+  # Background subtraction.
   RamanMethod_SubtractBlankSpectra_StreamFind(),
 
-  # applies smoothing based on moving average
+  # Applies smoothing based on moving average.
   RamanMethod_SmoothSpectra_movingaverage(windowSize = 4),
 
-  # removes a section from the spectra from -40 to 300
+  # Removes a section from the spectra from -40 to 300.
   RamanMethod_DeleteSpectraSection_native(min = -40, max = 300),
 
-  # removes a section from the spectra from 2000 to 3000
+  # Removes a section from the spectra from 2000 to 3000.
   RamanMethod_DeleteSpectraSection_native(min = 2000, max = 3000),
 
-  # performs baseline correction
+  # Performs baseline correction.
   RamanMethod_CorrectSpectraBaseline_baseline_als(lambda = 3, p = 0.06, maxit = 10)
 )
 ```
 
 ```{r add-show-raman-workflow}
-# The workflow is added to the engine but not yet applied
-# The results are still empty
+# The workflow is added to the engine but not yet applied.
 raman$Workflow <- ps
 
-# Gets the names of the results in the Analyses object
-# As data processing was yet applied, the results field in Analyses is empty
+# Gets the names of the results in the Analyses object.
+# As data processing was yet applied, the results field in Analyses is empty.
 names(raman$Results)
 
-# Shows the workflow
+# Shows the workflow.
 show(raman$Workflow)
 ```
 
 ```{r run-raman-workflow}
-# The data processing workflow is applied
+# The data processing workflow is applied.
 raman$run_workflow()
 
-# Gets the names of the results in the Analyses object
-# A RamanResults_Spectra (Results child class) is now added with the processed spectra
+# Gets the names of the results in the Analyses object.
+# A RamanResults_Spectra (Results child class) is now added with the processed spectra.
 names(raman$Results)
 ```
 
 The method `run()` can be used to applied a single `ProcessingStep` object to the data. Note that the `ProcessingStep` step is always added to the bottom of the `Workflow` in the engine. Below, the normalization based on minimum and maximum is applied to the Raman spectra and then the `Workflow` is shown, including another normalization step in the last position.
 
 ```{r add-extra-settings}
-# performs again normalization using minimum and maximum
+# Performs again normalization using minimum and maximum.
 raman$run(RamanMethod_NormalizeSpectra_minmax())
 ```
 
 ```{r print-workflow-2}
-# the workflow is shown with another normalization step at the end
+# The workflow is shown with another normalization step at the end.
 show(raman$Workflow)
 ```
 
 # `Results`
 
-Once the data processing methods are applied, the results can be accessed with the dedicated and engine specific active fields and methods, as shown below. The results are always added as S7 `Results` child classes in the results field of the `Analyses`. 
+Once the data processing methods are applied, the results can be accessed via the active field `Results` of the engine, which is the same as the results list of the `Analyses` class. Child classes of `Results` are used to hold the results from data processing. For istance, the `RamanResults_Spectra` is a child class of `Results` that holds the processed Raman spectra. Dedicated S3 methods are applied for each child class of `Results` to access and plot the processd data. The documentation of the `RamanResults_Spectra` class can be accessed with [`?RamanResults_Spectra`](https://odea-project.github.io/StreamFind/reference/RamanResults_Spectra.html) and describe the available methods and their usage. The `Results` child classes are workflow dependent and therefore, the results will change according to the `Workflow` applied. For instance, for mass spectrometry data, the [`MassSpecResults_Spectra`](https://odea-project.github.io/StreamFind/reference/MassSpecResults_Spectra.html) child class is used to hold processed spectra while the class [`MassSpecResults_NonTargetAnalysis`](https://odea-project.github.io/StreamFind/reference/MassSpecResults_NonTargetAnalysis.html) is used to hold the results from non-target screening analysis. The `Results` child classes are initiated with specific data processing methods and algorithms. For instance, the `ProcessingStep` child class [`MassSpecMethod_FindFeatures_openms`](https://odea-project.github.io/StreamFind/reference/MassSpecMethod_FindFeatures_openms.html) is used to initiate the [`MassSpecResults_NonTargetAnalysis`](https://odea-project.github.io/StreamFind/reference/MassSpecResults_NonTargetAnalysis.html) object and add it to the results list in the `MassSpecAnalyses`. See the [articles](https://odea-project.github.io/StreamFind/articles/index.html) for examples of workflows.
 
 ```{r raman-results}
-# The spectra results were added
+# The spectra results were added.
 names(raman$Results)
+
+# The results can also be accessed via the Analyses class.
+names(raman$Analyses$results)
 ```
 
 ```{r raman-septra}
-# Results can be obtained with the dedicated active fields
-# The Results active fields are engine specific
 show(raman$Results$RamanResults_Spectra)
 ```
 
 ```{r raman-plot-spectra-results, fig.alt="Spectra Processed"}
-# Processed spectrum, note that the blank was subtracted
+# Processed spectrum, note that the blank was subtracted.
 plot_spectra(raman$Analyses)
 ```
 
@@ -311,13 +307,12 @@ new_raman$load(project_file_path)
 ```
 
 ```{r show-metadata-new-raman}
-# the Metadata are has the raman object although
-# a new_raman object was created with default Metadata
+# The Metadata are has the raman object although a new_raman object was created with default Metadata.
 show(new_raman$Metadata)
 ```
 
 ```{r show-results-new-raman}
-# the results are also available in the new_raman object
+# The results are also available in the new_raman object.
 show(new_raman$Results$RamanResults_Spectra)
 ```
 

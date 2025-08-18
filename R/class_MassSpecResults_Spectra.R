@@ -1,5 +1,5 @@
 # MARK: MassSpecResults_Spectra S3 Class
-#' @title MassSpecResults_Spectra S3 Class
+#' @title Constructor and methods to handle mass spectrometry spectra results
 #' @description The `MassSpecResults_Spectra` class is a child of [StreamFind::Results] and is used to store mass spectrometry spectra results.
 #' @param spectra A list of spectra data.table objects.
 #' @param replicates A character vector of replicate names.

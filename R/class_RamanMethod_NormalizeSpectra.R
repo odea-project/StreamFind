@@ -28,10 +28,8 @@ RamanMethod_NormalizeSpectra_minmax <- function() {
   }
 }
 
-#' @describeIn RamanMethod_NormalizeSpectra_minmax Validate the RamanMethod_NormalizeSpectra_minmax object, returning NULL if valid.
-#' @param A RamanMethod_NormalizeSpectra_minmax object.
 #' @export
-#' 
+#' @noRd
 validate_object.RamanMethod_NormalizeSpectra_minmax <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "NormalizeSpectra")
@@ -120,10 +118,8 @@ RamanMethod_NormalizeSpectra_snv <- function(liftTozero = FALSE) {
   }
 }
 
-#' @describeIn RamanMethod_NormalizeSpectra_snv Validate the RamanMethod_NormalizeSpectra_snv object, returning NULL if valid.
-#' @param A RamanMethod_NormalizeSpectra_snv object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_NormalizeSpectra_snv = function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "NormalizeSpectra")
@@ -215,10 +211,8 @@ RamanMethod_NormalizeSpectra_scale <- function() {
   }
 }
 
-#' @describeIn RamanMethod_NormalizeSpectra_scale Validate the RamanMethod_NormalizeSpectra_scale object, returning NULL if valid.
-#' @param A RamanMethod_NormalizeSpectra_scale object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_NormalizeSpectra_scale <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "NormalizeSpectra")
@@ -301,10 +295,8 @@ RamanMethod_NormalizeSpectra_blockweight <- function() {
   }
 }
 
-#' @describeIn RamanMethod_NormalizeSpectra_blockweight Validate the RamanMethod_NormalizeSpectra_blockweight object, returning NULL if valid.
-#' @param A RamanMethod_NormalizeSpectra_blockweight object.
 #' @export
-#' 
+#' @noRd
 validate_object.RamanMethod_NormalizeSpectra_blockweight <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "NormalizeSpectra")
@@ -385,10 +377,8 @@ RamanMethod_NormalizeSpectra_meancenter <- function() {
   }
 }
 
-#' @describeIn RamanMethod_NormalizeSpectra_meancenter Validate the RamanMethod_NormalizeSpectra_meancenter object, returning NULL if valid.
-#' @param A RamanMethod_NormalizeSpectra_meancenter object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_NormalizeSpectra_meancenter <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "NormalizeSpectra")

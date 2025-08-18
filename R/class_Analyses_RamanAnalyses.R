@@ -1,6 +1,6 @@
 # MARK: RamanAnalyses
 # RamanAnalyses -----
-#' @title RamanAnalyses Class
+#' @title Analyses class and methods for handling Raman spectroscopy data
 #' @description The RamanAnalyses class is used to store a list of Raman spectra.
 #' @param files A `character` vector with full file paths to "asc", "sif", "json", "wdf", "sdf", "csv" and/or "txt" raman files or a `data.frame` with colnames `file`, `replicate` and `blank`. The "replicate" column is used to group the analyses and the "blank" column is used to identify the blank samples. The "file" column is the full to the raman files.
 #' @return A `RamanAnalyses` object which is fundamentally a list with each element representing a Raman analysis. Each analysis is a list with the following elements:

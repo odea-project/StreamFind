@@ -12,7 +12,7 @@
 \alias{save.Metadata}
 \alias{read.Metadata}
 \alias{show.Metadata}
-\title{Metadata S3 Class}
+\title{Generic (top level) Metadata constructor and methods}
 \usage{
 Metadata(entries = list())
 

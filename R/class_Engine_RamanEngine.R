@@ -1,6 +1,5 @@
 # MARK: RamanEngine
-#' Raman Spectroscopy Engine
-#'
+#' @title Engine dedicated to Raman spectroscopic data processing
 #' @description The *RamanEngine* R6 class is a framework for parsing, processing, inspecting and storing Raman spectroscopic data. The engine has *Raman* as data type. The *Analyses* active field has class [StreamFind::RamanAnalyses], where Raman data can be loaded from "asc", "sif", "json", "wdf", "sdf", "csv" and "txt" files. The *results* active field is a list that can hold the class [StreamFind::RamanResults_Spectra]. Note that the *RamanEngine* is a subclass of [StreamFind::Engine] and inherits all methods from the parent class.
 #' @template arg-core-metadata
 #' @template arg-core-workflow

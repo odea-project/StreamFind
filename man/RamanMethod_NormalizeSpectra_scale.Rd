@@ -2,15 +2,9 @@
 % Please edit documentation in R/class_RamanMethod_NormalizeSpectra.R
 \name{RamanMethod_NormalizeSpectra_scale}
 \alias{RamanMethod_NormalizeSpectra_scale}
-\alias{validate_object.RamanMethod_NormalizeSpectra_scale}
 \title{RamanMethod_NormalizeSpectra_scale Class}
 \usage{
 RamanMethod_NormalizeSpectra_scale()
-
-\method{validate_object}{RamanMethod_NormalizeSpectra_scale}(x)
-}
-\arguments{
-\item{A}{RamanMethod_NormalizeSpectra_scale object.}
 }
 \value{
 A RamanMethod_NormalizeSpectra_scale object.
@@ -18,8 +12,3 @@ A RamanMethod_NormalizeSpectra_scale object.
 \description{
 Normalizes spectra using scaling based on the standard deviation.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(RamanMethod_NormalizeSpectra_scale)}: Validate the RamanMethod_NormalizeSpectra_scale object, returning NULL if valid.
-
-}}

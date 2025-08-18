@@ -53,10 +53,8 @@ MassSpecMethod_IntegrateSpectra_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_IntegrateSpectra_StreamFind Validate the MassSpecMethod_IntegrateSpectra_StreamFind object, returning NULL if valid.
-#' @param x A MassSpecMethod_IntegrateSpectra_StreamFind object.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_IntegrateSpectra_StreamFind = function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "IntegrateSpectra")

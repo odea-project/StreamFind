@@ -2,15 +2,9 @@
 % Please edit documentation in R/class_RamanMethod_RemoveCosmicRays.R
 \name{RamanMethod_RemoveCosmicRays_native}
 \alias{RamanMethod_RemoveCosmicRays_native}
-\alias{validate_object.RamanMethod_RemoveCosmicRays_native}
 \title{RamanMethod_RemoveCosmicRays_native}
 \usage{
 RamanMethod_RemoveCosmicRays_native()
-
-\method{validate_object}{RamanMethod_RemoveCosmicRays_native}(x)
-}
-\arguments{
-\item{x}{A RamanMethod_RemoveCosmicRays_native object.}
 }
 \value{
 A RamanMethod_RemoveCosmicRays_native object.
@@ -18,8 +12,3 @@ A RamanMethod_RemoveCosmicRays_native object.
 \description{
 Removes cosmic rays from Raman spectra.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(RamanMethod_RemoveCosmicRays_native)}: Validate the RamanMethod_RemoveCosmicRays_native object, returning NULL if valid.
-
-}}

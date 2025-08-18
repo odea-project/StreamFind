@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_CalculateSpectraCharges.R
 \name{MassSpecMethod_CalculateSpectraCharges_native}
 \alias{MassSpecMethod_CalculateSpectraCharges_native}
-\alias{validate_object.MassSpecMethod_CalculateSpectraCharges_native}
 \title{MassSpecMethod_CalculateSpectraCharges_native Class}
 \usage{
 MassSpecMethod_CalculateSpectraCharges_native(
@@ -13,8 +12,6 @@ MassSpecMethod_CalculateSpectraCharges_native(
   absLowCut = 300,
   top = 5
 )
-
-\method{validate_object}{MassSpecMethod_CalculateSpectraCharges_native}(x)
 }
 \arguments{
 \item{onlyTopScans}{Logical (length 1) to consider only the \emph{n} \code{TopScans} with the highest
@@ -30,8 +27,6 @@ charge clustering.}
 \item{absLowCut}{Numeric (length 1) with the absolute low cut for the charge clustering.}
 
 \item{top}{Numeric (length 1) with the number of top charges to be considered.}
-
-\item{x}{A MassSpecMethod_CalculateSpectraCharges_native object.}
 }
 \value{
 A MassSpecMethod_CalculateSpectraCharges_native object.
@@ -40,8 +35,3 @@ A MassSpecMethod_CalculateSpectraCharges_native object.
 Calculates spectral charges from multi-charged compounds (e.g. proteins and
 monoclonal antibodies) for mass deconvolution.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_CalculateSpectraCharges_native)}: Validate the MassSpecMethod_CalculateSpectraCharges_native object returns \code{NULL} if the object is valid.
-
-}}

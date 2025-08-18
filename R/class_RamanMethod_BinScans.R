@@ -46,10 +46,8 @@ RamanMethod_BinScans_native <- function(
   }
 }
 
-#' @describeIn RamanMethod_BinScans_native Validate the RamanMethod_BinScans_native object, returning NULL if valid.
-#' @param x A RamanMethod_BinScans_native object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_BinScans_native <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "BinScans")

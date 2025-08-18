@@ -2,17 +2,12 @@
 % Please edit documentation in R/class_MassSpecMethod_NormalizeSpectra.R
 \name{MassSpecMethod_NormalizeSpectra_snv}
 \alias{MassSpecMethod_NormalizeSpectra_snv}
-\alias{validate_object.MassSpecMethod_NormalizeSpectra_snv}
 \title{MassSpecMethod_NormalizeSpectra_snv Class}
 \usage{
 MassSpecMethod_NormalizeSpectra_snv(liftTozero = FALSE)
-
-\method{validate_object}{MassSpecMethod_NormalizeSpectra_snv}(x)
 }
 \arguments{
 \item{liftTozero}{Logical (length 1) indicating if the spectra should be lifted to zero.}
-
-\item{x}{A MassSpecMethod_NormalizeSpectra_snv object.}
 }
 \value{
 A MassSpecMethod_NormalizeSpectra_snv object.
@@ -20,8 +15,3 @@ A MassSpecMethod_NormalizeSpectra_snv object.
 \description{
 Normalizes spectra using the Standard Normal Variate (SNV) algorithm.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_NormalizeSpectra_snv)}: Validate the MassSpecMethod_NormalizeSpectra_snv object, returning NULL if valid.
-
-}}

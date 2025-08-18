@@ -1,15 +1,10 @@
 # MARK: Metadata
 # Metadata -----
-#' @title Metadata S3 Class
-#'
+#' @title Generic (top level) Metadata constructor and methods
 #' @description The `Metadata` S3 class holds information, such as name, date, author and file, as a named list with elements of length one. The `Metadata` is essentially a list therefore list methods are also applicable.
-#'
 #' @param entries A named list of metadata entries as elements. Default is an empty list. Elements must be of type character, numeric or POSIXt and must have length 1.
-#' 
 #' @details If not given, elements name, author, date and file are set to `NA_character_`, `NA_character_`, current system time and `NA_character_`, respectively.
-#' 
 #' @return A `Metadata` S3 class object which is fundamentally a named list with metadata entries.
-#'
 #' @export
 #' 
 Metadata <- function(entries = list()) {

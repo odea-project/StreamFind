@@ -31,10 +31,8 @@ RamanMethod_GroupPeaks_native <- function(fillMissingPeaks = TRUE) {
   }
 }
 
-#' @describeIn RamanMethod_GroupPeaks_native Validate the RamanMethod_GroupPeaks_native object, returning NULL if valid.
-#' @param x A RamanMethod_GroupPeaks_native object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_GroupPeaks_native <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "GroupPeaks")

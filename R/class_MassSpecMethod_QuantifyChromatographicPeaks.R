@@ -34,10 +34,8 @@ MassSpecMethod_QuantifyChromatographicPeaks_native <-function(calibration = 0, v
       )
 }
 
-#' @describeIn MassSpecMethod_QuantifyChromatographicPeaks_native Validate the MassSpecMethod_QuantifyChromatographicPeaks_native object, returning NULL if valid.
-#' @param x A MassSpecMethod_QuantifyChromatographicPeaks_native object.
 #' @export
-#' 
+#' @noRd
 validate_object.MassSpecMethod_QuantifyChromatographicPeaks_native <- function(x) {
     checkmate::assert_choice(x$type, "MassSpec")
     checkmate::assert_choice(x$method, "QuantifyChromatographicPeaks")

@@ -1,6 +1,6 @@
 # MARK: Engine
 # Engine -----
-#' @title Engine
+#' @title Generic (top level) Engine class for project management
 #' @description The [StreamFind::Engine] R6 class is used to harmonize the interface across different data types for data management and processing.
 #' @template arg-core-metadata
 #' @template arg-core-workflow

@@ -61,9 +61,8 @@ MassSpecMethod_CalculateFeaturesQuality_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_CalculateFeaturesQuality_StreamFind Validator for the MassSpecMethod_CalculateFeaturesQuality_StreamFind object, returning NULL if valid.
-#' @param x A MassSpecMethod_CalculateFeaturesQuality_StreamFind object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_CalculateFeaturesQuality_StreamFind <- function(
   x

@@ -2,8 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FilterFeatures.R
 \name{MassSpecMethod_FilterFeatures_StreamFind}
 \alias{MassSpecMethod_FilterFeatures_StreamFind}
-\alias{validate_object.MassSpecMethod_FilterFeatures_StreamFind}
-\title{MassSpecMethod_FilterFeatures_StreamFind S7 class}
+\title{MassSpecMethod_FilterFeatures_StreamFind Class}
 \usage{
 MassSpecMethod_FilterFeatures_StreamFind(
   correctIntensity = TRUE,
@@ -18,8 +17,6 @@ MassSpecMethod_FilterFeatures_StreamFind(
   conservative = TRUE,
   onlyWithMS2 = FALSE
 )
-
-\method{validate_object}{MassSpecMethod_FilterFeatures_StreamFind}(x)
 }
 \arguments{
 \item{correctIntensity}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
@@ -55,8 +52,6 @@ means that when \code{TRUE} a feature is only filtered if all features within a 
 with the filter.}
 
 \item{onlyWithMS2}{Logical (length 1) with \code{TRUE} for filtering features without MS2 spectra.}
-
-\item{x}{A \code{MassSpecMethod_FilterFeatures_StreamFind} object.}
 }
 \value{
 A \code{MassSpecMethod_FilterFeatures_StreamFind} object.
@@ -64,8 +59,3 @@ A \code{MassSpecMethod_FilterFeatures_StreamFind} object.
 \description{
 Settings for filtering of features and feature groups.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_FilterFeatures_StreamFind)}: Validate the MassSpecMethod_FilterFeatures_StreamFind object, returning NULL if valid.
-
-}}

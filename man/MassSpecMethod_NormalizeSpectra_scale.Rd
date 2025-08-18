@@ -2,15 +2,9 @@
 % Please edit documentation in R/class_MassSpecMethod_NormalizeSpectra.R
 \name{MassSpecMethod_NormalizeSpectra_scale}
 \alias{MassSpecMethod_NormalizeSpectra_scale}
-\alias{validate_object.MassSpecMethod_NormalizeSpectra_scale}
 \title{MassSpecMethod_NormalizeSpectra_scale Class}
 \usage{
 MassSpecMethod_NormalizeSpectra_scale()
-
-\method{validate_object}{MassSpecMethod_NormalizeSpectra_scale}(x)
-}
-\arguments{
-\item{x}{A MassSpecMethod_NormalizeSpectra_scale object.}
 }
 \value{
 A MassSpecMethod_NormalizeSpectra_scale object.
@@ -18,8 +12,3 @@ A MassSpecMethod_NormalizeSpectra_scale object.
 \description{
 Normalizes spectra using scaling based on the standard deviation.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_NormalizeSpectra_scale)}: Validate the MassSpecMethod_NormalizeSpectra_scale object, returning NULL if valid.
-
-}}

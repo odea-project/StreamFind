@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_MassSpecMethod_GenerateFormulas.R
 \name{MassSpecMethod_GenerateFormulas_genform}
 \alias{MassSpecMethod_GenerateFormulas_genform}
-\alias{validate_object.MassSpecMethod_GenerateFormulas_genform}
 \title{MassSpecMethod_GenerateFormulas_genform Class}
 \usage{
 MassSpecMethod_GenerateFormulas_genform(
@@ -31,8 +30,6 @@ MassSpecMethod_GenerateFormulas_genform(
   topMost = 50,
   batchSize = 8
 )
-
-\method{validate_object}{MassSpecMethod_GenerateFormulas_genform}(x)
 }
 \arguments{
 \item{MSPeakListsClusterMzWindow}{m/z window (in Da) used for clustering m/z values when spectra are averaged.
@@ -103,8 +100,6 @@ with the filter method). The \code{z} parameter (charge) is automatically deduce
 \item{topMost}{Numeric (length 1) with the maximum number of top candidates to be returned.}
 
 \item{batchSize}{Maximum number of \code{GenForm} commands that should be run sequentially in each parallel process.}
-
-\item{x}{A \code{MassSpecMethod_GenerateFormulas_genform} object.}
 }
 \value{
 A \code{MassSpecMethod_GenerateFormulas_genform} object.
@@ -114,11 +109,6 @@ Settings for generating formulas using the algorithm \href{https://sourceforge.n
 The algorithm is used via the function \link[patRoon]{generateFormulas} from the package \pkg{patRoon}. Therefore,
 it is highly recommended to check the original documentation of the function in \pkg{patRoon} for more details.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_GenerateFormulas_genform)}: Validate the \code{MassSpecMethod_GenerateFormulas_genform} object, returning NULL if valid.
-
-}}
 \references{
 \insertRef{patroon01}{StreamFind}
 

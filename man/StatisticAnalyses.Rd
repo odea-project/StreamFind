@@ -14,7 +14,7 @@
 \alias{[<-.StatisticAnalyses}
 \alias{[[<-.StatisticAnalyses}
 \alias{plot_data.StatisticAnalyses}
-\title{StatisticAnalyses Class}
+\title{Analyses class and methods for handling statistical analysis data}
 \usage{
 StatisticAnalyses(
   analyses = NULL,

@@ -2,17 +2,12 @@
 % Please edit documentation in R/class_RamanMethod_ScaleTime.R
 \name{RamanMethod_ScaleTime_native}
 \alias{RamanMethod_ScaleTime_native}
-\alias{validate_object.RamanMethod_ScaleTime_native}
 \title{RamanMethod_ScaleTime_native Class}
 \usage{
 RamanMethod_ScaleTime_native(value = 0)
-
-\method{validate_object}{RamanMethod_ScaleTime_native}(x)
 }
 \arguments{
 \item{value}{Numeric (length 1) with the multiplier to scale the time variable.}
-
-\item{x}{A RamanMethod_ScaleTime_native object.}
 }
 \value{
 A RamanMethod_ScaleTime_native object.
@@ -20,8 +15,3 @@ A RamanMethod_ScaleTime_native object.
 \description{
 Scales the time variable of the spectra using the multiplier \code{value}.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(RamanMethod_ScaleTime_native)}: Validate the RamanMethod_ScaleTime_native object, returning NULL if valid.
-
-}}

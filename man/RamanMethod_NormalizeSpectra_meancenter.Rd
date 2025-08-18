@@ -2,15 +2,9 @@
 % Please edit documentation in R/class_RamanMethod_NormalizeSpectra.R
 \name{RamanMethod_NormalizeSpectra_meancenter}
 \alias{RamanMethod_NormalizeSpectra_meancenter}
-\alias{validate_object.RamanMethod_NormalizeSpectra_meancenter}
 \title{RamanMethod_NormalizeSpectra_meancenter Class}
 \usage{
 RamanMethod_NormalizeSpectra_meancenter()
-
-\method{validate_object}{RamanMethod_NormalizeSpectra_meancenter}(x)
-}
-\arguments{
-\item{A}{RamanMethod_NormalizeSpectra_meancenter object.}
 }
 \value{
 A RamanMethod_NormalizeSpectra_meancenter object.
@@ -18,8 +12,3 @@ A RamanMethod_NormalizeSpectra_meancenter object.
 \description{
 Normalizes spectra using mean centering.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(RamanMethod_NormalizeSpectra_meancenter)}: Validate the RamanMethod_NormalizeSpectra_meancenter object, returning NULL if valid.
-
-}}

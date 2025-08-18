@@ -37,7 +37,7 @@
 \alias{load_chromatograms.MassSpecAnalyses}
 \alias{get_matrix_suppression.MassSpecAnalyses}
 \alias{plot_matrix_suppression.MassSpecAnalyses}
-\title{Mass Spectrometry Analyses}
+\title{Analyses class and methods for handling Mass Spectrometry data}
 \usage{
 MassSpecAnalyses(files = NULL, centroid = FALSE, levels = c(1, 2))
 

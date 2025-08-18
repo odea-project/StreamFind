@@ -2,7 +2,6 @@
 % Please edit documentation in R/class_StatisticMethod_MakeModel.R
 \name{StatisticMethod_MakeModel_pca_mdatools}
 \alias{StatisticMethod_MakeModel_pca_mdatools}
-\alias{validate_object.StatisticMethod_MakeModel_pca_mdatools}
 \title{StatisticMethod_MakeModel_pca_mdatools Class}
 \usage{
 StatisticMethod_MakeModel_pca_mdatools(
@@ -19,8 +18,6 @@ StatisticMethod_MakeModel_pca_mdatools(
   gamma = 0.01,
   info = ""
 )
-
-\method{validate_object}{StatisticMethod_MakeModel_pca_mdatools}(x)
 }
 \arguments{
 \item{center}{Logical (length 1) indicating if the data should be centered.}
@@ -46,8 +43,6 @@ StatisticMethod_MakeModel_pca_mdatools(
 \item{gamma}{Numeric (length 1) with the gamma value for the PCA.}
 
 \item{info}{Character (length 1) with additional information.}
-
-\item{x}{A StatisticMethod_MakeModel_pca_mdatools object.}
 }
 \value{
 A StatisticMethod_MakeModel_pca_mdatools object.
@@ -55,11 +50,6 @@ A StatisticMethod_MakeModel_pca_mdatools object.
 \description{
 Makes a Principle Component Analysis (PCA) model based on the R package \pkg{mdatools}.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(StatisticMethod_MakeModel_pca_mdatools)}: Validate the object, returns NULL if valid.
-
-}}
 \references{
 \insertRef{mdatools01}{StreamFind}
 }

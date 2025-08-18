@@ -38,10 +38,8 @@ RamanMethod_FilterSpectra_native <- function(
   }
 }
 
-#' @describeIn RamanMethod_FilterSpectra_native Validate the RamanMethod_FilterSpectra_native object, returning NULL if valid.
-#' @param x A RamanMethod_FilterSpectra_native object.
 #' @export
-#'
+#' @noRd
 validate_object.RamanMethod_FilterSpectra_native <- function(x) {
   checkmate::assert_choice(x$type, "Raman")
   checkmate::assert_choice(x$method, "FilterSpectra")

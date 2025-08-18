@@ -1,4 +1,4 @@
-#' MassSpecMethod_FillFeatures_StreamFind S7 class
+#' MassSpecMethod_FillFeatures_StreamFind Class
 #'
 #' @description Settings for filling missing values in features.
 #'
@@ -75,9 +75,8 @@ MassSpecMethod_FillFeatures_StreamFind <- function(
   )
 }
 
-#' @describeIn MassSpecMethod_FillFeatures_StreamFind Validate the MassSpecMethod_FillFeatures_StreamFind object, returning NULL if valid.
-#' @param x A `MassSpecMethod_FillFeatures_StreamFind` object.
 #' @export
+#' @noRd
 #'
 validate_object.MassSpecMethod_FillFeatures_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")

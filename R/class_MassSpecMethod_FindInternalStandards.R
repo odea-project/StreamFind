@@ -1,4 +1,4 @@
-#' MassSpecMethod_FindInternalStandards_StreamFind S7 class
+#' MassSpecMethod_FindInternalStandards_StreamFind Class
 #'
 #' @description Settings for finding internal standards using a data.frame.
 #'
@@ -47,10 +47,8 @@ MassSpecMethod_FindInternalStandards_StreamFind <- function(
   }
 }
 
-#' @describeIn MassSpecMethod_FindInternalStandards_StreamFind Validate the object, returns NULL if valid.
-#' @param x An object of class `MassSpecMethod_FindInternalStandards_StreamFind`.
 #' @export
-#'
+#' @noRd
 validate_object.MassSpecMethod_FindInternalStandards_StreamFind <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindInternalStandards")

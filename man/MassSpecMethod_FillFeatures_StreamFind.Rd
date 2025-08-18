@@ -2,8 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FillFeatures.R
 \name{MassSpecMethod_FillFeatures_StreamFind}
 \alias{MassSpecMethod_FillFeatures_StreamFind}
-\alias{validate_object.MassSpecMethod_FillFeatures_StreamFind}
-\title{MassSpecMethod_FillFeatures_StreamFind S7 class}
+\title{MassSpecMethod_FillFeatures_StreamFind Class}
 \usage{
 MassSpecMethod_FillFeatures_StreamFind(
   withinReplicate = TRUE,
@@ -20,8 +19,6 @@ MassSpecMethod_FillFeatures_StreamFind(
   minSignalToNoiseRatio = 3,
   minGaussianFit = 0.2
 )
-
-\method{validate_object}{MassSpecMethod_FillFeatures_StreamFind}(x)
 }
 \arguments{
 \item{withinReplicate}{Logical of length one to fill within replicates not global.}
@@ -59,8 +56,6 @@ averaged group retention time. Default to 5 seconds.}
 consider a feature.}
 
 \item{minGaussianFit}{Numeric of length one with the minimum Gaussian fit to consider a feature.}
-
-\item{x}{A \code{MassSpecMethod_FillFeatures_StreamFind} object.}
 }
 \value{
 A MassSpecMethod_FillFeatures_StreamFind class object.
@@ -68,8 +63,3 @@ A MassSpecMethod_FillFeatures_StreamFind class object.
 \description{
 Settings for filling missing values in features.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(MassSpecMethod_FillFeatures_StreamFind)}: Validate the MassSpecMethod_FillFeatures_StreamFind object, returning NULL if valid.
-
-}}
