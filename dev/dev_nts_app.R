@@ -1,6 +1,4 @@
 devtools::load_all()
-library(StreamFind)
-
 all_files <- StreamFindData::get_ms_file_paths()
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 db_all <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -70,8 +68,9 @@ blks <- c(
   rep("blank_pos", 3)
 )
 
-ms$add_replicate_names(rpls)
-ms$add_blank_names(blks)
+ms$Analyses <- set_replicate_names(ms$Analyses, rpls)
+
+ms$Analyses <- set_blank_names(ms$Analyses, blks)
 
 ms$run(MassSpecMethod_FindFeatures_xcms3_centwave())
 
@@ -90,6 +89,14 @@ ms$run(
     excludeAdducts = TRUE
   )
 )
+
+get_features(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
+
+get_features_eic(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
+
+plot_features(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
+
+ms$run_app()
 
 ms$run(MassSpecMethod_GroupFeatures_xcms3_peakdensity())
 
@@ -247,7 +254,7 @@ ms$run(
 #fts <- ms$NTS$feature_list
 
 ms$save("ms.rds")
-options(shiny.launch.browser = FALSE)
+#options(shiny.launch.browser = FALSE)
 
 # ms$get_cache_size()
 
@@ -256,7 +263,7 @@ devtools::load_all()
 run_app(file = "ms.rds")
 
 
-
+ms$run_app()
 
 
 

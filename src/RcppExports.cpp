@@ -99,6 +99,24 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_ms_load_features_eic
+Rcpp::List rcpp_ms_load_features_eic(std::vector<std::string> analyses_names, std::vector<std::string> analyses_files, Rcpp::List headers, Rcpp::List features, bool filtered, float rtExpand, float mzExpand, float minTracesIntensity);
+RcppExport SEXP _StreamFind_rcpp_ms_load_features_eic(SEXP analyses_namesSEXP, SEXP analyses_filesSEXP, SEXP headersSEXP, SEXP featuresSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_names(analyses_namesSEXP);
+    Rcpp::traits::input_parameter< std::vector<std::string> >::type analyses_files(analyses_filesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type headers(headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type features(featuresSEXP);
+    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
+    Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
+    Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
+    Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_ms_load_features_eic(analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minTracesIntensity));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_nts_load_features_eic
 Rcpp::List rcpp_nts_load_features_eic(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, bool filtered, float rtExpand, float mzExpand, float minTracesIntensity);
 RcppExport SEXP _StreamFind_rcpp_nts_load_features_eic(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP minTracesIntensitySEXP) {
@@ -343,6 +361,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_parse_ms_chromatograms_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms_headers, 1},
     {"_StreamFind_rcpp_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra, 5},
     {"_StreamFind_rcpp_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_parse_ms_chromatograms, 2},
+    {"_StreamFind_rcpp_ms_load_features_eic", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_eic, 8},
     {"_StreamFind_rcpp_nts_load_features_eic", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_eic, 7},
     {"_StreamFind_rcpp_ms_load_features_ms1", (DL_FUNC) &_StreamFind_rcpp_ms_load_features_ms1, 10},
     {"_StreamFind_rcpp_nts_load_features_ms1", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms1, 9},

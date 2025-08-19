@@ -29,6 +29,10 @@ rcpp_parse_ms_chromatograms <- function(analysis, idx) {
     .Call(`_StreamFind_rcpp_parse_ms_chromatograms`, analysis, idx)
 }
 
+rcpp_ms_load_features_eic <- function(analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minTracesIntensity) {
+    .Call(`_StreamFind_rcpp_ms_load_features_eic`, analyses_names, analyses_files, headers, features, filtered, rtExpand, mzExpand, minTracesIntensity)
+}
+
 rcpp_nts_load_features_eic <- function(info, spectra_headers, feature_list, filtered = FALSE, rtExpand = 0, mzExpand = 0, minTracesIntensity = 0) {
     .Call(`_StreamFind_rcpp_nts_load_features_eic`, info, spectra_headers, feature_list, filtered, rtExpand, mzExpand, minTracesIntensity)
 }

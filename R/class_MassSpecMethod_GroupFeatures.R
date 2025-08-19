@@ -101,11 +101,11 @@
       parameters <- list("groupParam" = parameters)
     }
 
-    parameters$groupParam@sampleGroups <- engine$Analyses@replicates
+    parameters$groupParam@sampleGroups <- get_replicate_names(engine$Analyses)
 
     if ("rtalign" %in% names(parameters)) {
       if (parameters$rtalign) {
-        parameters$preGroupParam@sampleGroups <- engine$Analyses@replicates
+        parameters$preGroupParam@sampleGroups <- get_replicate_names(engine$Analyses)
       }
     }
 

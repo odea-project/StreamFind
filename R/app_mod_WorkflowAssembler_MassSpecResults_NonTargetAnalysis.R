@@ -8,8 +8,9 @@
   ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))
 
   # Custom CSS for consistent styling
-  custom_css <- shiny::tags$style(shiny::HTML(
-    "
+  custom_css <- shiny::tags$style(
+    shiny::HTML(
+      "
     .metric-card {
       border-radius: 8px;
       padding: 20px;
@@ -255,8 +256,108 @@
       min-height: 500px;
     }
 
+    /* Fix for Groups table filter scrolling */
+    .dataTables_wrapper .dataTables_scrollHead {
+      overflow: visible !important;
+      position: relative;
+      z-index: 100;
+    }
+
+    .dataTables_wrapper .dataTables_scrollHeadInner {
+      overflow: visible !important;
+      position: relative;
+      z-index: 100;
+    }
+
+    .dataTables_wrapper thead tr:last-child th {
+      position: relative;
+      background: white;
+      z-index: 50;
+    }
+
+    .dataTables_wrapper thead tr:last-child th input,
+    .dataTables_wrapper thead tr:last-child th select {
+      position: relative !important;
+      z-index: 60 !important;
+      background: white !important;
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      border: 1px solid #ced4da !important;
+    }
+
+    .dataTables_wrapper .dataTables_scrollBody {
+      position: relative;
+      z-index: 10;
+    }
+
+    .dataTables_wrapper .dataTables_scrollHead table {
+      position: relative;
+      z-index: 55;
+    }
+
+    .dataTables_wrapper .dataTables_scrollHead .dataTables_filter {
+      position: relative !important;
+      z-index: 70 !important;
+    }
+
+    /* Synchronized header scrolling */
+    .dataTables_wrapper .dataTables_scrollHead {
+      overflow-x: hidden !important;
+    }
+
+    .dataTables_wrapper .dataTables_scrollBody {
+      overflow-x: auto !important;
+    }
+
+    /* Compact form controls */
+    .form-check-label {
+      font-size: 13px;
+      color: #5a5c69;
+      margin-left: 5px;
+      white-space: nowrap;
+    }
+
+    .form-check {
+      margin-bottom: 0;
+    }
+
+    /* Ensure proper header alignment */
+    .dataTables_wrapper .dataTables_scrollHeadInner table {
+      width: 100% !important;
+    }
+
+    /* Single page layout styling */
+  .features-single-page {
+    height: calc(100vh - 200px);
+    overflow: hidden;
+  }
+
+  .features-table-side {
+    height: 100%;
+    overflow-y: auto;
+    border-right: 2px solid #e3e6f0;
+    padding-right: 15px;
+  }
+
+  .features-plots-side {
+    height: 100%;
+    overflow-y: auto;
+    padding-left: 15px;
+  }
+
+  /* Ensure tables fit properly in constrained space */
+  .dataTables_wrapper .dataTables_scrollBody {
+    max-height: calc(100vh - 400px) !important;
+  }
+
+  /* Plot container adjustments for single page */
+  .plot-container {
+    margin-bottom: 0;
+  }
+
   "
-  ))
+    )
+  )
 
   # Color palette for metrics
   metric_colors <- list(
@@ -587,7 +688,7 @@
           )
         ),
 
-        # Features Tab
+        # Features Tab - Single Page Layout with Adjustable Proportions
         shiny::tabPanel(
           title = shiny::tagList(
             shiny::icon("table", class = "mr-2"),
@@ -596,106 +697,94 @@
 
           shiny::div(
             class = "tab-content",
-            # Features Table
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  class = "mb-4",
-                  # Custom wrapper for table
-                  shiny::div(
-                    class = "table-wrapper",
-                    # DataTable output with custom class for styling
-                    shiny::div(
-                      class = "features-table-container",
-                      DT::dataTableOutput(ns_full("features_table"))
-                    )
-                  )
+            style = "padding: 0; height: 100vh;",
+            # Top Controls Section - Fixed Height
+            shiny::div(
+              class = "features-controls-bar",
+              style = "background-color: #f8f9fa; border-bottom: 1px solid #e3e6f0; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: center;",
+              shiny::div(
+                class = "btn-group",
+                shiny::actionButton(
+                  ns_full("deselect_all_features"),
+                  "Deselect All",
+                  icon = shiny::icon("times-circle"),
+                  class = "btn btn-outline-secondary btn-sm"
+                ),
+                shiny::downloadButton(
+                  ns_full("export_features_csv"),
+                  "Export to CSV",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm ml-2"
+                ),
+                shiny::downloadButton(
+                  ns_full("export_selected_features_csv"),
+                  "Export Selected to CSV",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm ml-2"
+                ),
+                shiny::actionButton(
+                  ns_full("remove_selected_features"),
+                  "Remove Selected Features",
+                  icon = shiny::icon("trash-alt"),
+                  class = "btn btn-outline-danger btn-sm ml-2"
                 )
               )
             ),
 
-            #  Buttons
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  class = "card-body d-flex justify-content-center align-items-center",
-                  shiny::div(
-                    class = "btn-group",
-                    shiny::actionButton(
-                      ns_full("deselect_all_features"),
-                      "Deselect All",
-                      icon = shiny::icon("times-circle"),
-                      class = "btn btn-outline-secondary btn-sm"
-                    ),
-                    shiny::downloadButton(
-                      ns_full("export_features_csv"),
-                      "Export to CSV",
-                      icon = shiny::icon("file-csv"),
-                      class = "btn btn-outline-primary btn-sm ml-2"
-                    ),
-                    shiny::downloadButton(
-                      ns_full("export_selected_features_csv"),
-                      "Export Selected to CSV",
-                      icon = shiny::icon("file-csv"),
-                      class = "btn btn-outline-primary btn-sm ml-2"
-                    ),
-                    shiny::actionButton(
-                      ns_full("remove_selected_features"),
-                      "Remove Selected Features",
-                      icon = shiny::icon("trash-alt"),
-                      class = "btn btn-outline-danger btn-sm ml-2"
-                    )
-                  )
-                )
-              )
-            ),
+            # Main Content Row - Fill remaining height
+            shiny::div(
+              id = ns_full("main_content_container"),
+              style = "display: flex; height: calc(100vh - 200px);", # Leave space for proportion controls
 
-            # Feature Details Row
-            shiny::fluidRow(
-              # Feature Peaks Plot
-              shiny::column(
-                width = 6,
+              # Left Side - Features Table (Dynamic width)
+              shiny::div(
+                id = ns_full("table_panel"),
+                style = "border-right: 2px solid #e3e6f0; padding: 15px; overflow: hidden;",
                 shiny::div(
-                  class = "plot-container",
-                  shiny::div(
-                    class = "card-header",
-                    shiny::icon("wave-square", class = "mr-2"),
-                    "Feature Peaks"
-                  ),
-                  shiny::div(
-                    class = "card-body p-0 position-relative",
-                    .app_util_create_maximize_button(
-                      "feature_peaks_plot",
-                      ns_full
-                    ),
-                    plotly::plotlyOutput(
-                      ns_full("feature_peaks_plot"),
-                      height = "auto"
-                    )
-                  )
+                  class = "features-table-container",
+                  style = "height: 100%; overflow: hidden;",
+                  DT::dataTableOutput(ns_full("features_table"))
                 )
               ),
 
-              # Feature Details Tabs
-              shiny::column(
-                width = 6,
+              # Right Side - Feature Details Tabs (Dynamic width)
+              shiny::div(
+                id = ns_full("plots_panel"),
+                style = "padding: 15px; overflow: hidden;",
                 shiny::div(
                   class = "plot-container p-0",
+                  style = "height: 100%;",
                   shiny::tabsetPanel(
                     id = ns_full("feature_details_tabs"),
                     type = "tabs",
+
+                    # Feature Peaks Tab
+                    shiny::tabPanel(
+                      title = "Feature Peaks",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button(
+                          "feature_peaks_plot",
+                          ns_full
+                        ),
+                        plotly::plotlyOutput(
+                          ns_full("feature_peaks_plot"),
+                          height = "100%"
+                        )
+                      )
+                    ),
 
                     # MS1 Tab
                     shiny::tabPanel(
                       title = "MS1",
                       shiny::div(
                         class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
                         .app_util_create_maximize_button("ms1_plot", ns_full),
                         plotly::plotlyOutput(
                           ns_full("ms1_plot"),
-                          height = "auto"
+                          height = "100%"
                         )
                       )
                     ),
@@ -705,10 +794,11 @@
                       title = "MS2",
                       shiny::div(
                         class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
                         .app_util_create_maximize_button("ms2_plot", ns_full),
                         plotly::plotlyOutput(
                           ns_full("ms2_plot"),
-                          height = "auto"
+                          height = "100%"
                         )
                       )
                     ),
@@ -718,9 +808,61 @@
                       title = "Quality",
                       shiny::div(
                         class = "p-3",
+                        style = "height: calc(100% - 50px); overflow: auto;",
                         DT::dataTableOutput(ns_full("quality_table"))
                       )
                     )
+                  )
+                )
+              )
+            ),
+
+            # Bottom Proportion Controls
+            shiny::div(
+              class = "proportion-controls",
+              style = "background-color: #f8f9fa; border-top: 1px solid #e3e6f0; padding: 10px 15px; height: 50px; display: flex; align-items: center; justify-content: center;",
+              shiny::div(
+                style = "display: flex; align-items: center; gap: 10px;",
+                shiny::span(
+                  "Layout:",
+                  style = "font-weight: 500; margin-right: 10px;"
+                ),
+                shiny::div(
+                  class = "btn-group btn-group-sm",
+                  shiny::actionButton(
+                    ns_full("prop_20_80"),
+                    "20:80",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_30_70"),
+                    "30:70",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_40_60"),
+                    "40:60",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_50_50"),
+                    "50:50",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_60_40"),
+                    "60:40",
+                    class = "btn btn-outline-primary btn-sm active"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_70_30"),
+                    "70:30",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("prop_80_20"),
+                    "80:20",
+                    class = "btn btn-outline-primary btn-sm"
                   )
                 )
               )
@@ -737,78 +879,342 @@
 
           shiny::div(
             class = "tab-content",
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
+            style = "padding: 0; height: 100vh;",
+            # Top Controls Section
+            shiny::div(
+              class = "features-controls-bar",
+              style = "background-color: #f8f9fa; border-bottom: 1px solid #e3e6f0; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: space-between;",
+
+              # Left side - Checkboxes only
+              shiny::div(
+                style = "display: flex; align-items: center; gap: 15px;",
                 shiny::div(
-                  class = "mb-4",
-                  shiny::div(
-                    class = "table-wrapper",
-                    DT::dataTableOutput(ns_full("groups_table"))
-                  )
-                )
-              )
-            )
-          )
-        ),
-
-        # Subjects Tab
-        shiny::tabPanel(
-          title = shiny::tagList(
-            shiny::icon("users", class = "mr-2"),
-            "Subjects"
-          ),
-
-          shiny::div(
-            class = "tab-content",
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  class = "plot-container empty-state",
-                  shiny::div(class = "empty-state-icon", shiny::icon("users")),
-                  shiny::h4(
-                    "Subject data will be displayed here",
-                    class = "text-muted"
-                  )
-                )
-              )
-            )
-          )
-        ),
-
-        # Fold Change Tab
-        shiny::tabPanel(
-          title = shiny::tagList(
-            shiny::icon("chart-line", class = "mr-2"),
-            "Fold Change"
-          ),
-
-          shiny::div(
-            class = "tab-content",
-            shiny::fluidRow(
-              shiny::column(
-                width = 12,
-                shiny::div(
-                  class = "plot-container empty-state",
-                  shiny::div(
-                    class = "empty-state-icon",
-                    shiny::icon("chart-line")
+                  class = "form-check",
+                  style = "display: flex; align-items: center;",
+                  shiny::tags$input(
+                    type = "checkbox",
+                    class = "form-check-input",
+                    id = ns_full("show_metadata_groups"),
+                    checked = FALSE,
+                    style = "margin-right: 5px;"
                   ),
-                  shiny::h4(
-                    "Fold change data will be displayed here",
-                    class = "text-muted"
+                  shiny::tags$label(
+                    class = "form-check-label",
+                    `for` = ns_full("show_metadata_groups"),
+                    "Show Metadata",
+                    style = "font-size: 13px; color: #5a5c69; margin: 0;"
+                  )
+                ),
+                shiny::div(
+                  class = "form-check",
+                  style = "display: flex; align-items: center;",
+                  shiny::tags$input(
+                    type = "checkbox",
+                    class = "form-check-input",
+                    id = ns_full("show_filters_groups"),
+                    checked = TRUE,
+                    style = "margin-right: 5px;"
+                  ),
+                  shiny::tags$label(
+                    class = "form-check-label",
+                    `for` = ns_full("show_filters_groups"),
+                    "Show Filters",
+                    style = "font-size: 13px; color: #5a5c69; margin: 0;"
+                  )
+                )
+              ),
+
+              # Right side - Action buttons only
+              shiny::div(
+                class = "btn-group",
+                shiny::actionButton(
+                  ns_full("deselect_all_groups"),
+                  "Deselect All",
+                  icon = shiny::icon("times-circle"),
+                  class = "btn btn-outline-secondary btn-sm"
+                ),
+                shiny::downloadButton(
+                  ns_full("export_groups_csv"),
+                  "Export to CSV",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm ml-2"
+                ),
+                shiny::downloadButton(
+                  ns_full("export_selected_groups_csv"),
+                  "Export Selected to CSV",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm ml-2"
+                )
+              )
+            ),
+
+            # Main Content Row
+            shiny::div(
+              id = ns_full("groups_main_content_container"),
+              style = "display: flex; height: calc(100vh - 200px);",
+
+              # Left Side - Groups Table
+              shiny::div(
+                id = ns_full("groups_table_panel"),
+                style = "border-right: 2px solid #e3e6f0; padding: 15px; overflow: hidden;",
+                shiny::div(
+                  class = "features-table-container",
+                  style = "height: 100%; overflow: hidden;",
+                  DT::dataTableOutput(ns_full("groups_table"))
+                )
+              ),
+
+              # Right Side - Plot Panel
+              shiny::div(
+                id = ns_full("groups_plots_panel"),
+                style = "padding: 15px; overflow: hidden;",
+                shiny::div(
+                  class = "plot-container p-0",
+                  style = "height: 100%;",
+                  shiny::tabsetPanel(
+                    id = ns_full("group_details_tabs"),
+                    type = "tabs",
+
+                    # Group Chromatogram
+                    shiny::tabPanel(
+                      title = "Group Chromatogram",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button("group_plot", ns_full),
+                        plotly::plotlyOutput(
+                          ns_full("group_plot"),
+                          height = "100%"
+                        )
+                      )
+                    ),
+                    # Group Overview Tab
+                    shiny::tabPanel(
+                      title = "Overview",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button(
+                          "group_overview_plot",
+                          ns_full
+                        ),
+                        plotly::plotlyOutput(
+                          ns_full("group_overview_plot"),
+                          height = "100%"
+                        )
+                      )
+                    ),
+                    # MS1 Tab
+                    shiny::tabPanel(
+                      title = "MS1",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button(
+                          "group_ms1_plot",
+                          ns_full
+                        ),
+                        plotly::plotlyOutput(
+                          ns_full("group_ms1_plot"),
+                          height = "100%"
+                        )
+                      )
+                    ),
+
+                    # MS2 Tab
+                    shiny::tabPanel(
+                      title = "MS2",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button(
+                          "group_ms2_plot",
+                          ns_full
+                        ),
+                        plotly::plotlyOutput(
+                          ns_full("group_ms2_plot"),
+                          height = "100%"
+                        )
+                      )
+                    ),
+                    # Profile Tab
+                    shiny::tabPanel(
+                      title = "Profile",
+                      shiny::div(
+                        class = "p-3 position-relative",
+                        style = "height: calc(100% - 50px); overflow: auto;",
+                        .app_util_create_maximize_button(
+                          "group_profile_plot",
+                          ns_full
+                        ),
+                        plotly::plotlyOutput(
+                          ns_full("group_profile_plot"),
+                          height = "100%"
+                        )
+                      )
+                    )
+                  )
+                )
+              )
+            ),
+
+            # Bottom Proportion Controls - EXACTLY like Features
+            shiny::div(
+              class = "proportion-controls",
+              style = "background-color: #f8f9fa; border-top: 1px solid #e3e6f0; padding: 10px 15px; height: 50px; display: flex; align-items: center; justify-content: center;",
+              shiny::div(
+                style = "display: flex; align-items: center; gap: 10px;",
+                shiny::span(
+                  "Layout:",
+                  style = "font-weight: 500; margin-right: 10px;"
+                ),
+                shiny::div(
+                  class = "btn-group btn-group-sm",
+                  shiny::actionButton(
+                    ns_full("groups_prop_20_80"),
+                    "20:80",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("groups_prop_30_70"),
+                    "30:70",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("groups_prop_40_60"),
+                    "40:60",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("groups_prop_50_50"),
+                    "50:50",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("groups_prop_60_40"),
+                    "60:40",
+                    class = "btn btn-outline-primary btn-sm active"
+                  ),
+                  shiny::actionButton(
+                    ns_full("groups_prop_70_30"),
+                    "70:30",
+                    class = "btn btn-outline-primary btn-sm"
+                  ),
+                  shiny::actionButton(
+                    ns_full("groups_prop_80_20"),
+                    "80:20",
+                    class = "btn btn-outline-primary btn-sm"
                   )
                 )
               )
             )
           )
-        )
+        ),
+
+        # Internal Standards Tab
+        shiny::tabPanel(
+          title = shiny::tagList(
+            shiny::icon("flask", class = "mr-2"),
+            "Internal Standards"
+          ),
+
+          shiny::div(
+            class = "tab-content",
+            style = "padding: 0; height: 100vh;",
+            # Top Controls Section
+            shiny::div(
+              class = "istd-controls-bar",
+              style = "background-color: #f8f9fa; border-bottom: 1px solid #e3e6f0; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: space-between;",
+
+              # Left side - View toggle
+              shiny::div(
+                style = "display: flex; align-items: center; gap: 15px;",
+                shiny::div(
+                  class = "form-check",
+                  style = "display: flex; align-items: center;",
+                  shiny::tags$input(
+                    type = "checkbox",
+                    class = "form-check-input",
+                    id = ns_full("show_istd_plot"),
+                    checked = TRUE,
+                    style = "margin-right: 5px;"
+                  ),
+                  shiny::tags$label(
+                    class = "form-check-label",
+                    `for` = ns_full("show_istd_plot"),
+                    "Show Plot View",
+                    style = "font-size: 13px; color: #5a5c69; margin: 0;"
+                  )
+                )
+              ),
+
+              # Right side - Export button
+              shiny::div(
+                class = "btn-group",
+                shiny::downloadButton(
+                  ns_full("export_istd_csv"),
+                  "Export Internal Standards",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm"
+                )
+              )
+            ),
+
+            # Main Content
+            shiny::div(
+              style = "height: calc(100vh - 110px); padding: 20px;",
+
+              # Conditional content based on toggle
+              shiny::conditionalPanel(
+                condition = paste0("input['", ns_full("show_istd_plot"), "']"),
+                shiny::div(
+                  class = "plot-container",
+                  style = "height: 100%;",
+                  shiny::div(
+                    class = "card-header d-flex justify-content-between align-items-center",
+                    shiny::span(
+                      shiny::icon("flask", class = "mr-2"),
+                      "Internal Standards Quality Control"
+                    ),
+                    .app_util_create_maximize_button("istd_plot", ns_full)
+                  ),
+                  shiny::div(
+                    class = "card-body p-3 position-relative",
+                    style = "height: calc(100% - 60px);",
+                    plotly::plotlyOutput(ns_full("istd_plot"), height = "100%")
+                  )
+                )
+              ),
+
+              # Table view when plot is disabled
+              shiny::conditionalPanel(
+                condition = paste0("!input['", ns_full("show_istd_plot"), "']"),
+                shiny::div(
+                  class = "plot-container",
+                  style = "height: 100%;",
+                  shiny::div(
+                    class = "card-header",
+                    shiny::span(
+                      shiny::icon("table", class = "mr-2"),
+                      "Internal Standards Data"
+                    )
+                  ),
+                  shiny::div(
+                    class = "card-body p-3",
+                    style = "height: calc(100% - 60px); overflow: auto;",
+                    DT::dataTableOutput(ns_full("istd_table"))
+                  )
+                )
+              )
+            )
+          )
+        ),
       )
     )
   )
 }
 
+# MARK: .mod_WorkflowAssembler_Result_Server
 #' @export
 #' @noRd
 .mod_WorkflowAssembler_Result_Server.MassSpecResults_NonTargetAnalysis <- function(
@@ -839,23 +1245,23 @@
 
     # Calculate summary metrics for the Overview tab
     output$total_analyses <- shiny::renderText({
-      as.character(nts_data()@number_analyses)
+      as.character(nrow(nts_data()$info))
     })
 
     output$total_features <- shiny::renderText({
-      features <- nts_data()@number_features
+      features <- vapply(nts_data()$features, nrow, 0)
       total <- sum(features[features > 0])
       as.character(total)
     })
 
     output$filtered_features_count <- shiny::renderText({
-      filtered_features <- nts_data()@number_filtered_features
+      filtered_features <- get_features_count(nts_data())$filtered
       total <- sum(filtered_features)
       as.character(total)
     })
 
     output$total_groups <- shiny::renderText({
-      groups <- nts_data()@number_groups
+      groups <- get_features_count(nts_data())$groups
       total <- sum(groups[groups > 0])
       as.character(total)
     })
@@ -863,7 +1269,7 @@
     # Status indicators with UI formatting
     # Dynamic status indicators with UI formatting
     output$has_features_ui <- shiny::renderUI({
-      value <- nts_data()@has_features
+      value <- any(vapply(nts_data()$features, nrow, 0) > 0)
       shiny::tags$span(
         class = ifelse(value, "status-yes", "status-no"),
         ifelse(value, "YES", "NO")
@@ -871,7 +1277,7 @@
     })
 
     output$has_filtered_features_ui <- shiny::renderUI({
-      value <- nts_data()@has_filtered_features
+      value <- any(get_features_count(nts_data())$filtered > 0)
       shiny::tags$span(
         class = ifelse(value, "status-yes", "status-no"),
         ifelse(value, "YES", "NO")
@@ -879,7 +1285,7 @@
     })
 
     output$has_groups_ui <- shiny::renderUI({
-      value <- nts_data()@has_groups
+      value <- any(get_features_count(nts_data())$groups > 0)
       shiny::tags$span(
         class = ifelse(value, "status-yes", "status-no"),
         ifelse(value, "YES", "NO")
@@ -887,7 +1293,9 @@
     })
 
     output$has_features_eic_ui <- shiny::renderUI({
-      value <- nts_data()@has_features_eic
+      value <- any(vapply(nts_data()$features, function(a) {
+        sum(vapply(a$eic, nrow, 0))
+      }, 0) > 0)
       shiny::tags$span(
         class = ifelse(value, "status-yes", "status-no"),
         ifelse(value, "YES", "NO")
@@ -896,7 +1304,9 @@
 
     # Dynamic MS1 check
     output$has_features_ms1_ui <- shiny::renderUI({
-      value <- nts_data()@has_features_ms1
+      value <- any(vapply(nts_data()$features, function(a) {
+        sum(vapply(a$ms1, nrow, 0))
+      }, 0) > 0)
       shiny::tags$span(
         class = ifelse(value, "status-yes", "status-no"),
         ifelse(value, "YES", "NO")
@@ -905,7 +1315,9 @@
 
     # Dynamic MS2 check
     output$has_features_ms2_ui <- shiny::renderUI({
-      value <- nts_data()@has_features_ms2
+      value <- any(vapply(nts_data()$features, function(a) {
+        sum(vapply(a$ms2, nrow, 0))
+      }, 0) > 0)
       shiny::tags$span(
         class = ifelse(value, "status-yes", "status-no"),
         ifelse(value, "YES", "NO")
@@ -914,7 +1326,9 @@
 
     # Dynamic Suspects check
     output$has_features_suspects_ui <- shiny::renderUI({
-      value <- nts_data()@has_features_suspects
+      value <- any(vapply(nts_data()$features, function(a) {
+        sum(vapply(a$suspects, nrow, 0))
+      }, 0) > 0)
       shiny::tags$span(
         class = ifelse(value, "status-yes", "status-no"),
         ifelse(value, "YES", "NO")
@@ -939,15 +1353,6 @@
         margin = list(l = 60, r = 40, t = 40, b = 60),
         paper_bgcolor = "rgba(0,0,0,0)",
         plot_bgcolor = "rgba(0,0,0,0)",
-
-        # Better title and axis labels
-        title = list(
-          text = paste0(
-            "Feature Distribution by ",
-            ifelse(color_by == "replicates", "Replicates", "Analysis")
-          ),
-          font = list(size = 18, color = "#333")
-        ),
 
         xaxis = list(
           title = NULL,
@@ -1126,7 +1531,7 @@
       filtered_col_index <- which(names(features) == "filtered") - 1
       sel_col_index <- which(names(features) == "sel") - 1
 
-      # Render the DataTable with enhanced styling and checkbox rendering
+      # Render the DataTable
       DT::datatable(
         features,
         escape = FALSE,
@@ -1134,7 +1539,7 @@
           pageLength = 15,
           scrollX = TRUE,
           processing = TRUE,
-          scrollY = "400px",
+          scrollY = FALSE,
           columnDefs = list(
             list(width = "50px", targets = c(1)),
             list(width = "200px", targets = c(0)),
@@ -1337,7 +1742,7 @@
       nts <- nts_data()
 
       # Create a copy to modify
-      feature_list <- nts$feature_list
+      feature_list <- nts$features
 
       # Remove selected features
       tryCatch(
@@ -1351,7 +1756,7 @@
           }
 
           # Update NTS feature list
-          nts$feature_list <- feature_list
+          nts$features <- feature_list
 
           # Update reactive nts_data
           nts_data(nts)
@@ -1753,10 +2158,110 @@
         )
     })
 
+    # Reactive value to store current layout proportions
+    layout_proportions <- shiny::reactiveVal(c(60, 40)) # Default 60:40
+
+    # Handle proportion button clicks
+    shiny::observeEvent(input$prop_20_80, {
+      layout_proportions(c(20, 80))
+    })
+    shiny::observeEvent(input$prop_30_70, {
+      layout_proportions(c(30, 70))
+    })
+    shiny::observeEvent(input$prop_40_60, {
+      layout_proportions(c(40, 60))
+    })
+    shiny::observeEvent(input$prop_50_50, {
+      layout_proportions(c(50, 50))
+    })
+    shiny::observeEvent(input$prop_60_40, {
+      layout_proportions(c(60, 40))
+    })
+    shiny::observeEvent(input$prop_70_30, {
+      layout_proportions(c(70, 30))
+    })
+    shiny::observeEvent(input$prop_80_20, {
+      layout_proportions(c(80, 20))
+    })
+
+    # Update layout when proportions change
+    shiny::observe({
+      props <- layout_proportions()
+      table_width <- props[1]
+      plots_width <- props[2]
+
+      # Create namespace prefix for server context
+      ns_prefix <- paste0("WorkflowAssembler-", id)
+
+      # Update the CSS of the panels
+      shiny::insertUI(
+        selector = "head",
+        where = "beforeEnd",
+        ui = shiny::tags$style(shiny::HTML(paste0(
+          "
+        #",
+          ns_prefix,
+          "-table_panel { width: ",
+          table_width,
+          "% !important; }
+        #",
+          ns_prefix,
+          "-plots_panel { width: ",
+          plots_width,
+          "% !important; }
+      "
+        )))
+      )
+
+      # Update button active states with JavaScript
+      current_prop <- paste0(table_width, "_", plots_width)
+      button_id <- paste0("prop_", current_prop)
+
+      shiny::insertUI(
+        selector = "head",
+        where = "beforeEnd",
+        ui = shiny::tags$script(shiny::HTML(paste0(
+          "
+        $('.proportion-controls .btn').removeClass('active');
+        $('#",
+          ns_prefix,
+          "-",
+          button_id,
+          "').addClass('active');
+      "
+        )))
+      )
+    })
+
+    # Store filter visibility state
+    show_filters_groups <- shiny::reactive({
+      if (is.null(input$show_filters_groups)) {
+        TRUE
+      } else {
+        input$show_filters_groups
+      }
+    })
+
     # Groups table for the Groups tab
     output$groups_table <- DT::renderDT({
-      # Fetch groups data
-      groups <- get_groups(nts_data())
+      # Get checkbox values
+      show_metadata <- if (is.null(input$show_metadata_groups)) {
+        FALSE
+      } else {
+        input$show_metadata_groups
+      }
+      show_filters <- if (is.null(input$show_filters_groups)) {
+        TRUE
+      } else {
+        input$show_filters_groups
+      }
+
+      # Fetch groups data with enhanced parameters
+      groups <- get_groups(
+        nts_data(),
+        metadata = show_metadata,
+        intensities = TRUE # Always show intensities
+      )
 
       # Check if groups data is available
       if (is.null(groups) || nrow(groups) == 0) {
@@ -1766,13 +2271,11 @@
             dom = "t",
             ordering = FALSE,
             processing = TRUE,
-            paging = FALSE,
-            selection = "none"
+            paging = FALSE
           ),
           style = "bootstrap",
           class = "table table-bordered",
-          rownames = FALSE,
-          selection = "none"
+          rownames = FALSE
         ))
       }
 
@@ -1782,123 +2285,150 @@
         groups[[col]] <- round(groups[[col]], 4)
       }
 
-      # Add chromatogram column with clickable icons
-      groups$chromatogram <- sapply(1:nrow(groups), function(i) {
-        paste0(
-          '<div class="chromatogram-icon" onclick="showChromatogram(\'',
-          groups$group[i],
-          '\')" title="View chromatogram for ',
-          groups$group[i],
-          '">',
-          '<i class="fas fa-chart-line"></i></div>'
-        )
-      })
-
-      # Reorder columns to put chromatogram as second column
-      col_order <- c(
-        "group",
-        "chromatogram",
-        setdiff(names(groups), c("group", "chromatogram"))
-      )
-      groups <- groups[, col_order, with = FALSE]
-
-      # Find chromatogram column index (0-based for JavaScript)
-      chromatogram_col_index <- which(names(groups) == "chromatogram") - 1
-
-      # Render the DataTable with basic styling
+      # DataTable
       DT::datatable(
         groups,
         escape = FALSE,
-        selection = "none",
         options = list(
           pageLength = 15,
           scrollX = TRUE,
           processing = TRUE,
-          scrollY = "400px",
-          dom = 'rtp',
+          scrollY = FALSE,
+          columnDefs = list(
+            list(width = "150px", targets = 0),
+            list(className = "dt-center", targets = "_all")
+          ),
+          selection = list(mode = "multiple", selected = NULL, target = "row"),
+          dom = 'rt<"bottom"lip>',
+          lengthMenu = c(5, 10, 25, 50, 100),
           ordering = TRUE,
           searching = FALSE,
-          select = FALSE,
-          columnDefs = list(
-            list(
-              targets = chromatogram_col_index,
-              orderable = FALSE, # Disable sorting for chromatogram column
-              width = "80px",
-              className = "dt-center"
-            ),
-            list(width = "150px", targets = 0), # group column
-            list(className = "dt-center", targets = chromatogram_col_index)
-          )
+          searchHighlight = TRUE
         ),
         style = "bootstrap",
         class = "table table-striped table-hover",
         rownames = FALSE,
-        filter = "none"
+        filter = if (show_filters) "top" else "none",
+        selection = "multiple"
       ) %>%
         DT::formatStyle(
           columns = names(groups),
           fontSize = "14px",
           padding = "8px 12px"
-        ) %>%
-        DT::formatStyle(
-          columns = "chromatogram",
-          textAlign = "center"
         )
     })
 
-    # Reactive value to store selected group for chromatogram
-    selected_group <- shiny::reactiveVal(NULL)
+    # Reactive value to store selected groups
+    selected_groups <- shiny::reactive({
+      selected_rows <- input$groups_table_rows_selected
 
-    # Handle chromatogram click
-    shiny::observeEvent(input$show_chromatogram, {
-      shiny::req(input$show_chromatogram$group)
-      selected_group(input$show_chromatogram$group)
+      # Fetch groups data
+      groups <- get_groups(nts_data(), intensities = TRUE)
+      if (is.null(selected_rows) || length(selected_rows) == 0) {
+        return(NULL)
+      }
+
+      # Extract group IDs for the selected rows
+      selected_data <- groups[selected_rows, .(group)]
+
+      # Convert to data frame
+      as.data.frame(selected_data)
     })
 
-    # Chromatogram plot
-    output$chromatogram_plot <- plotly::renderPlotly({
+    # Group action handlers
+    shiny::observeEvent(input$deselect_all_groups, {
+      DT::selectRows(DT::dataTableProxy("groups_table"), NULL)
+    })
+
+    # Export handlers for groups
+    output$export_groups_csv <- shiny::downloadHandler(
+      filename = function() {
+        paste0("groups_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+      },
+      content = function(file) {
+        groups <- get_groups(nts_data(), metadata = TRUE, intensities = TRUE)
+        write.csv(groups, file, row.names = FALSE)
+      }
+    )
+
+    output$export_selected_groups_csv <- shiny::downloadHandler(
+      filename = function() {
+        paste0("selected_groups_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+      },
+      content = function(file) {
+        selected_rows <- input$groups_table_rows_selected
+        groups <- get_groups(nts_data(), metadata = TRUE, intensities = TRUE)
+
+        if (!is.null(selected_rows) && length(selected_rows) > 0) {
+          selected_groups_data <- groups[selected_rows, ]
+          write.csv(selected_groups_data, file, row.names = FALSE)
+        } else {
+          write.csv(
+            data.frame(Message = "No groups selected"),
+            file,
+            row.names = FALSE
+          )
+        }
+      }
+    )
+
+    # plot_groups() function
+    output$group_plot <- plotly::renderPlotly({
       shiny::validate(
         need(
-          !is.null(selected_group()),
-          "Please select a group to display the chromatogram."
+          !is.null(selected_groups()),
+          "Please select one or more groups from the table to display the plot."
         )
       )
 
-      # Generate the chromatogram plot using plot_groups
+      # Generate the plot
       nts <- nts_data()
-      group_id <- selected_group()
+      selected_group_data <- selected_groups()
 
       tryCatch(
         {
-          # Call plot_groups function with the selected group
-          p <- plot_groups(nts, groups = data.frame(group = group_id))
+          p <- plot_groups(nts, groups = selected_group_data)
 
           # Enhance the plotly object
           p <- plotly::layout(
             p,
-            title = list(
-              text = paste("Chromatogram for Group:", group_id),
-              font = list(size = 18, color = "#333")
-            ),
+            width = NULL,
+            autosize = TRUE,
+            margin = list(l = 50, r = 30, t = 30, b = 50),
+            paper_bgcolor = "rgba(0,0,0,0)",
+            plot_bgcolor = "rgba(0,0,0,0)",
+
             xaxis = list(
               title = list(
                 text = "Retention Time (RT)",
-                font = list(size = 14)
+                font = list(size = 14, color = "#555")
               ),
               tickfont = list(size = 12),
               gridcolor = "#eee"
             ),
+
             yaxis = list(
-              title = list(text = "Intensity", font = list(size = 14)),
+              title = list(
+                text = "Intensity",
+                font = list(size = 14, color = "#555")
+              ),
               tickfont = list(size = 12),
               gridcolor = "#eee"
             ),
-            margin = list(l = 60, r = 40, t = 60, b = 60),
-            paper_bgcolor = "rgba(0,0,0,0)",
-            plot_bgcolor = "rgba(0,0,0,0)"
+
+            legend = list(
+              orientation = "v",
+              xanchor = "right",
+              yanchor = "top",
+              x = 0.98,
+              y = 0.98,
+              bgcolor = "rgba(255,255,255,0.8)",
+              bordercolor = "rgba(0,0,0,0.1)",
+              borderwidth = 1,
+              font = list(size = 12)
+            )
           )
 
-          # Configure plotly
           p <- plotly::config(
             p,
             displayModeBar = TRUE,
@@ -1917,22 +2447,583 @@
           return(p)
         },
         error = function(e) {
-          # Handle errors gracefully
           plotly::plot_ly() %>%
             plotly::add_text(
               x = 0.5,
               y = 0.5,
-              text = paste("Error loading chromatogram:", e$message),
+              text = paste("Error loading plot:", e$message),
               textfont = list(size = 16, color = "red")
             ) %>%
             plotly::layout(
-              title = paste("Error: Group", group_id),
+              title = "Error loading plot",
               xaxis = list(showgrid = FALSE, showticklabels = FALSE),
               yaxis = list(showgrid = FALSE, showticklabels = FALSE)
             )
         }
       )
     })
+
+    # Group Overview Plot
+    output$group_overview_plot <- plotly::renderPlotly({
+      shiny::validate(
+        need(
+          !is.null(selected_groups()),
+          "Please select one or more groups from the table to display the overview."
+        )
+      )
+
+      nts <- nts_data()
+      selected_group_data <- selected_groups()
+
+      tryCatch(
+        {
+          p <- plot_groups_overview(nts, groups = selected_group_data)
+
+          p <- plotly::layout(
+            p,
+            width = NULL,
+            autosize = TRUE,
+            margin = list(l = 50, r = 30, t = 30, b = 50),
+            paper_bgcolor = "rgba(0,0,0,0)",
+            plot_bgcolor = "rgba(0,0,0,0)"
+          )
+
+          p <- plotly::config(
+            p,
+            displayModeBar = TRUE,
+            modeBarButtonsToRemove = c(
+              "sendDataToCloud",
+              "autoScale2d",
+              "hoverClosestCartesian",
+              "hoverCompareCartesian",
+              "lasso2d",
+              "select2d"
+            ),
+            displaylogo = FALSE,
+            responsive = TRUE
+          )
+
+          return(p)
+        },
+        error = function(e) {
+          plotly::plot_ly() %>%
+            plotly::add_text(
+              x = 0.5,
+              y = 0.5,
+              text = paste("Error loading overview:", e$message),
+              textfont = list(size = 16, color = "red")
+            ) %>%
+            plotly::layout(
+              title = "Error loading overview",
+              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+              yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+            )
+        }
+      )
+    })
+
+    # Group MS1 Plot
+    output$group_ms1_plot <- plotly::renderPlotly({
+      shiny::validate(
+        need(
+          !is.null(selected_groups()),
+          "Please select one or more groups from the table to display the MS1 plot."
+        )
+      )
+
+      nts <- nts_data()
+      selected_group_data <- selected_groups()
+
+      tryCatch(
+        {
+          # Try with more permissive parameters
+          p <- plot_groups_ms1(
+            nts,
+            groups = selected_group_data,
+            useLoadedData = TRUE, # Try loaded data first
+            mzClustFeatures = 0.01, # More permissive clustering
+            presenceFeatures = 0.5, # Lower presence requirement
+            minIntensityFeatures = 100, # Lower intensity threshold
+            mzClust = 0.01,
+            presence = 0.5,
+            minIntensity = 100,
+            top = 50, # More peaks
+            normalized = TRUE,
+            groupBy = "groups"
+          )
+
+          # Check if plot is NULL
+          if (is.null(p)) {
+            stop("No MS1 data available for selected groups")
+          }
+
+          p <- plotly::layout(
+            p,
+            width = NULL,
+            autosize = TRUE,
+            margin = list(l = 50, r = 30, t = 30, b = 50),
+            paper_bgcolor = "rgba(0,0,0,0)",
+            plot_bgcolor = "rgba(0,0,0,0)",
+
+            xaxis = list(
+              title = list(
+                text = "m/z",
+                font = list(size = 14, color = "#555")
+              ),
+              tickfont = list(size = 12),
+              gridcolor = "#eee"
+            ),
+
+            yaxis = list(
+              title = list(
+                text = "Intensity",
+                font = list(size = 14, color = "#555")
+              ),
+              tickfont = list(size = 12),
+              gridcolor = "#eee"
+            )
+          )
+
+          p <- plotly::config(
+            p,
+            displayModeBar = TRUE,
+            modeBarButtonsToRemove = c(
+              "sendDataToCloud",
+              "autoScale2d",
+              "hoverClosestCartesian",
+              "hoverCompareCartesian",
+              "lasso2d",
+              "select2d"
+            ),
+            displaylogo = FALSE,
+            responsive = TRUE
+          )
+
+          return(p)
+        },
+        error = function(e) {
+          plotly::plot_ly() %>%
+            plotly::add_text(
+              x = 0.5,
+              y = 0.5,
+              text = paste(
+                "No MS1 data available for selected groups\n",
+                "Try selecting different groups or check data processing"
+              ),
+              textfont = list(size = 14, color = "#666")
+            ) %>%
+            plotly::layout(
+              title = "MS1 Data Not Available",
+              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+              yaxis = list(showgrid = FALSE, showticklabels = FALSE),
+              margin = list(l = 50, r = 50, t = 50, b = 50)
+            )
+        }
+      )
+    })
+
+    # Group MS2 Plot
+    output$group_ms2_plot <- plotly::renderPlotly({
+      shiny::validate(
+        need(
+          !is.null(selected_groups()),
+          "Please select one or more groups from the table to display the MS2 plot."
+        )
+      )
+
+      nts <- nts_data()
+      selected_group_data <- selected_groups()
+
+      tryCatch(
+        {
+          # Try with more permissive parameters
+          p <- plot_groups_ms2(
+            nts,
+            groups = selected_group_data,
+            useLoadedData = TRUE, # Try loaded data first
+            isolationWindow = 2.0, # Wider isolation window
+            mzClustFeatures = 0.01, # More permissive clustering
+            presenceFeatures = 0.5, # Lower presence requirement
+            minIntensityFeatures = 50, # Lower intensity threshold
+            mzClust = 0.01,
+            presence = 0.5,
+            minIntensity = 50,
+            top = 50, # More peaks
+            normalized = TRUE,
+            groupBy = "groups"
+          )
+
+          # Check if plot is NULL
+          if (is.null(p)) {
+            stop("No MS2 data available for selected groups")
+          }
+
+          p <- plotly::layout(
+            p,
+            width = NULL,
+            autosize = TRUE,
+            margin = list(l = 50, r = 30, t = 30, b = 50),
+            paper_bgcolor = "rgba(0,0,0,0)",
+            plot_bgcolor = "rgba(0,0,0,0)",
+
+            xaxis = list(
+              title = list(
+                text = "m/z",
+                font = list(size = 14, color = "#555")
+              ),
+              tickfont = list(size = 12),
+              gridcolor = "#eee"
+            ),
+
+            yaxis = list(
+              title = list(
+                text = "Intensity",
+                font = list(size = 14, color = "#555")
+              ),
+              tickfont = list(size = 12),
+              gridcolor = "#eee"
+            )
+          )
+
+          p <- plotly::config(
+            p,
+            displayModeBar = TRUE,
+            modeBarButtonsToRemove = c(
+              "sendDataToCloud",
+              "autoScale2d",
+              "hoverClosestCartesian",
+              "hoverCompareCartesian",
+              "lasso2d",
+              "select2d"
+            ),
+            displaylogo = FALSE,
+            responsive = TRUE
+          )
+
+          return(p)
+        },
+        error = function(e) {
+          plotly::plot_ly() %>%
+            plotly::add_text(
+              x = 0.5,
+              y = 0.5,
+              text = paste(
+                "No MS2 data available for selected groups\n",
+                "Try selecting different groups or check data processing"
+              ),
+              textfont = list(size = 14, color = "#666")
+            ) %>%
+            plotly::layout(
+              title = "MS2 Data Not Available",
+              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+              yaxis = list(showgrid = FALSE, showticklabels = FALSE),
+              margin = list(l = 50, r = 50, t = 50, b = 50)
+            )
+        }
+      )
+    })
+
+    # Group Profile Plot
+    output$group_profile_plot <- plotly::renderPlotly({
+      shiny::validate(
+        need(
+          !is.null(selected_groups()),
+          "Please select one or more groups from the table to display the profile."
+        )
+      )
+
+      nts <- nts_data()
+      selected_group_data <- selected_groups()
+
+      tryCatch(
+        {
+          p <- plot_groups_profile(nts, groups = selected_group_data)
+
+          p <- plotly::layout(
+            p,
+            width = NULL,
+            autosize = TRUE,
+            margin = list(l = 50, r = 30, t = 30, b = 50),
+            paper_bgcolor = "rgba(0,0,0,0)",
+            plot_bgcolor = "rgba(0,0,0,0)",
+
+            xaxis = list(
+              title = list(
+                text = "Analysis",
+                font = list(size = 14, color = "#555")
+              ),
+              tickfont = list(size = 12),
+              gridcolor = "#eee"
+            ),
+
+            yaxis = list(
+              title = list(
+                text = "Normalized Intensity",
+                font = list(size = 14, color = "#555")
+              ),
+              tickfont = list(size = 12),
+              gridcolor = "#eee"
+            ),
+
+            legend = list(
+              orientation = "v",
+              xanchor = "right",
+              yanchor = "top",
+              x = 0.98,
+              y = 0.98,
+              bgcolor = "rgba(255,255,255,0.8)",
+              bordercolor = "rgba(0,0,0,0.1)",
+              borderwidth = 1,
+              font = list(size = 12)
+            )
+          )
+
+          p <- plotly::config(
+            p,
+            displayModeBar = TRUE,
+            modeBarButtonsToRemove = c(
+              "sendDataToCloud",
+              "autoScale2d",
+              "hoverClosestCartesian",
+              "hoverCompareCartesian",
+              "lasso2d",
+              "select2d"
+            ),
+            displaylogo = FALSE,
+            responsive = TRUE
+          )
+
+          return(p)
+        },
+        error = function(e) {
+          plotly::plot_ly() %>%
+            plotly::add_text(
+              x = 0.5,
+              y = 0.5,
+              text = paste("Error loading profile:", e$message),
+              textfont = list(size = 16, color = "red")
+            ) %>%
+            plotly::layout(
+              title = "Error loading profile",
+              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+              yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+            )
+        }
+      )
+    })
+
+    # Groups layout proportion controls
+    groups_layout_proportions <- shiny::reactiveVal(c(60, 40))
+
+    # Handle groups proportion button clicks
+    shiny::observeEvent(input$groups_prop_20_80, {
+      groups_layout_proportions(c(20, 80))
+    })
+    shiny::observeEvent(input$groups_prop_30_70, {
+      groups_layout_proportions(c(30, 70))
+    })
+    shiny::observeEvent(input$groups_prop_40_60, {
+      groups_layout_proportions(c(40, 60))
+    })
+    shiny::observeEvent(input$groups_prop_50_50, {
+      groups_layout_proportions(c(50, 50))
+    })
+    shiny::observeEvent(input$groups_prop_60_40, {
+      groups_layout_proportions(c(60, 40))
+    })
+    shiny::observeEvent(input$groups_prop_70_30, {
+      groups_layout_proportions(c(70, 30))
+    })
+    shiny::observeEvent(input$groups_prop_80_20, {
+      groups_layout_proportions(c(80, 20))
+    })
+
+    # Update groups layout when proportions change
+    shiny::observe({
+      props <- groups_layout_proportions()
+      table_width <- props[1]
+      plots_width <- props[2]
+
+      ns_prefix <- paste0("WorkflowAssembler-", id)
+
+      # Update the CSS of the groups panels
+      shiny::insertUI(
+        selector = "head",
+        where = "beforeEnd",
+        ui = shiny::tags$style(shiny::HTML(paste0(
+          "
+        #",
+          ns_prefix,
+          "-groups_table_panel { width: ",
+          table_width,
+          "% !important; }
+        #",
+          ns_prefix,
+          "-groups_plots_panel { width: ",
+          plots_width,
+          "% !important; }
+      "
+        )))
+      )
+
+      # Update button active states
+      current_prop <- paste0(table_width, "_", plots_width)
+      button_id <- paste0("groups_prop_", current_prop)
+
+      shiny::insertUI(
+        selector = "head",
+        where = "beforeEnd",
+        ui = shiny::tags$script(shiny::HTML(paste0(
+          "
+        $('.proportion-controls .btn').removeClass('active');
+        $('#",
+          ns_prefix,
+          "-",
+          button_id,
+          "').addClass('active');
+      "
+        )))
+      )
+    })
+
+    # Internal Standards Plot
+    output$istd_plot <- plotly::renderPlotly({
+      nts <- nts_data()
+
+      tryCatch(
+        {
+          # Check if internal standards data exists
+          istd_data <- get_internal_standards(nts, average = TRUE)
+
+          if (nrow(istd_data) == 0) {
+            # Create empty plot with message
+            plotly::plot_ly() %>%
+              plotly::add_text(
+                x = 0.5,
+                y = 0.5,
+                text = "No internal standards found\nRun FindInternalStandards method first",
+                textfont = list(size = 16, color = "#666")
+              ) %>%
+              plotly::layout(
+                title = "Internal Standards Not Available",
+                xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+                yaxis = list(showgrid = FALSE, showticklabels = FALSE),
+                margin = list(l = 50, r = 50, t = 50, b = 50)
+              )
+          } else {
+            # Generate the plot
+            p <- plot_internal_standards(nts)
+
+            if (!is.null(p)) {
+              p <- plotly::config(
+                p,
+                displayModeBar = TRUE,
+                modeBarButtonsToRemove = c(
+                  "sendDataToCloud",
+                  "autoScale2d",
+                  "hoverClosestCartesian",
+                  "hoverCompareCartesian",
+                  "lasso2d",
+                  "select2d"
+                ),
+                displaylogo = FALSE,
+                responsive = TRUE
+              )
+            }
+
+            return(p)
+          }
+        },
+        error = function(e) {
+          plotly::plot_ly() %>%
+            plotly::add_text(
+              x = 0.5,
+              y = 0.5,
+              text = paste("Error loading internal standards:", e$message),
+              textfont = list(size = 14, color = "red")
+            ) %>%
+            plotly::layout(
+              title = "Error Loading Internal Standards",
+              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+              yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+            )
+        }
+      )
+    })
+
+    # Internal Standards Table
+    output$istd_table <- DT::renderDT({
+      nts <- nts_data()
+
+      tryCatch(
+        {
+          istd_data <- get_internal_standards(nts, average = TRUE)
+
+          if (nrow(istd_data) == 0) {
+            return(DT::datatable(
+              data.frame(
+                Message = "No internal standards found. Run FindInternalStandards method first."
+              ),
+              options = list(dom = "t", ordering = FALSE, paging = FALSE),
+              style = "bootstrap",
+              class = "table table-bordered",
+              rownames = FALSE
+            ))
+          }
+
+          # Round numeric columns
+          numeric_cols <- names(istd_data)[sapply(istd_data, is.numeric)]
+          for (col in numeric_cols) {
+            istd_data[[col]] <- round(istd_data[[col]], 4)
+          }
+
+          DT::datatable(
+            istd_data,
+            options = list(
+              pageLength = 15,
+              scrollX = TRUE,
+              processing = TRUE,
+              dom = 'rt<"bottom"lip>',
+              lengthMenu = c(5, 10, 25, 50),
+              ordering = TRUE,
+              searching = TRUE
+            ),
+            style = "bootstrap",
+            class = "table table-striped table-hover",
+            rownames = FALSE,
+            filter = "top"
+          ) %>%
+            DT::formatStyle(
+              columns = names(istd_data),
+              fontSize = "14px",
+              padding = "8px 12px"
+            )
+        },
+        error = function(e) {
+          DT::datatable(
+            data.frame(Error = paste("Error loading data:", e$message)),
+            options = list(dom = "t", ordering = FALSE, paging = FALSE),
+            style = "bootstrap",
+            rownames = FALSE
+          )
+        }
+      )
+    })
+
+    # Export handler
+    output$export_istd_csv <- shiny::downloadHandler(
+      filename = function() {
+        paste0(
+          "internal_standards_",
+          format(Sys.time(), "%Y%m%d_%H%M%S"),
+          ".csv"
+        )
+      },
+      content = function(file) {
+        istd_data <- get_internal_standards(nts_data(), average = TRUE)
+        write.csv(istd_data, file, row.names = FALSE)
+      }
+    )
 
     # JavaScript for UI interactions
     shiny::observeEvent(
