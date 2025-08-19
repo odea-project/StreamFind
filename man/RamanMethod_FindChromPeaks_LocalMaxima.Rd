@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_FindChromPeaks.R
 \name{RamanMethod_FindChromPeaks_LocalMaxima}
 \alias{RamanMethod_FindChromPeaks_LocalMaxima}
-\title{\strong{RamanMethod_FindChromPeaks_LocalMaxima}}
+\title{RamanMethod_FindChromPeaks_LocalMaxima Class}
 \usage{
 RamanMethod_FindChromPeaks_LocalMaxima(
   minWidth = 0,

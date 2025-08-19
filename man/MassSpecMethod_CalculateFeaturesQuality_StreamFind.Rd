@@ -42,6 +42,5 @@ quality.}
 A \code{MassSpecMethod_CalculateFeaturesQuality_StreamFind} object.
 }
 \description{
-Settings for calculating quality parameters of features (e.g., signal-to-noise (sn)
-ratio).
+Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
 }

@@ -3,7 +3,7 @@
 %   R/class_MassSpecMethod_CorrectChromatogramsBaseline.R
 \name{MassSpecMethod_CorrectChromatogramsBaseline_airpls}
 \alias{MassSpecMethod_CorrectChromatogramsBaseline_airpls}
-\title{MassSpecMethod_CorrectChromatogramsBaseline_airpls S7 class}
+\title{MassSpecMethod_CorrectChromatogramsBaseline_airpls Class}
 \usage{
 MassSpecMethod_CorrectChromatogramsBaseline_airpls(
   lambda = 10,

@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_GroupFeatures.R
 \name{MassSpecMethod_GroupFeatures_openms}
 \alias{MassSpecMethod_GroupFeatures_openms}
-\title{MassSpecMethod_GroupFeatures_openms S7 class}
+\title{MassSpecMethod_GroupFeatures_openms Class}
 \usage{
 MassSpecMethod_GroupFeatures_openms(
   rtalign = FALSE,

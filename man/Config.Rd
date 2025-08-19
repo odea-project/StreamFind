@@ -2,22 +2,37 @@
 % Please edit documentation in R/class_Config.R
 \name{Config}
 \alias{Config}
+\alias{validate_object.Config}
+\alias{show.Config}
+\alias{as.data.table.Config}
 \title{Generic Configuration}
 \usage{
 Config(parameters = list())
+
+\method{validate_object}{Config}(x)
+
+\method{show}{Config}(x)
+
+\method{as.data.table}{Config}(x)
 }
 \arguments{
 \item{parameters}{A list of \link{ConfigParameter} objects.}
+
+\item{x}{A \code{Config} object.}
+}
+\value{
+A \code{Config} object as a list of \link{ConfigParameter} objects.
 }
 \description{
-Class representing a configuration object composed of multiple
-\link{ConfigParameter} objects.
+The \code{Config} S3 class represents a configuration object and is essentially a list of
+\link{ConfigParameter} class objects.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(Config)}: Validates a \code{Config} object, returning NULL if valid.
 
-\describe{
-\item{\code{parameters}}{(getter/setter) A named list of \link{ConfigParameter} objects.}
+\item \code{show(Config)}: Prints the configuration parameters in a human-readable format.
 
-\item{\code{config_frame}}{(getter) A data frame representation of the configuration parameters.}
+\item \code{as.data.table(Config)}: Converts the configuration parameters to a \code{data.table} for easy viewing.
+
 }}
-

@@ -2,22 +2,81 @@
 % Please edit documentation in R/class_Metadata.R
 \name{Metadata}
 \alias{Metadata}
-\title{Generic Metadata}
+\alias{validate_object.Metadata}
+\alias{length.Metadata}
+\alias{names.Metadata}
+\alias{[.Metadata}
+\alias{[<-.Metadata}
+\alias{[[.Metadata}
+\alias{[[<-.Metadata}
+\alias{save.Metadata}
+\alias{read.Metadata}
+\alias{show.Metadata}
+\title{Generic (top level) Metadata constructor and methods}
 \usage{
 Metadata(entries = list())
+
+\method{validate_object}{Metadata}(x)
+
+\method{length}{Metadata}(x)
+
+\method{names}{Metadata}(x)
+
+\method{[}{Metadata}(x, i)
+
+\method{[}{Metadata}(x, i) <- value
+
+\method{[[}{Metadata}(x, i)
+
+\method{[[}{Metadata}(x, i) <- value
+
+\method{save}{Metadata}(x, file = "metadata.json")
+
+\method{read}{Metadata}(x, file)
+
+\method{show}{Metadata}(x)
 }
 \arguments{
-\item{entries}{Named list with metadata entries. Note that all given elements must be named and of length one. If an element "name" is given, it must be type character. If an element "date" is given, it must be class \code{POSIXct} or \code{POSIXt}. If given "date" is character, conversion to class \code{POSIXct} or \code{POSIXt} is attempted.}
+\item{entries}{A named list of metadata entries as elements. Default is an empty list. Elements must be of type character, numeric or POSIXt and must have length 1.}
+
+\item{x}{A \code{Metadata} object.}
+
+\item{i}{A numeric or character vector with the index or name of the entry to replace.}
+
+\item{value}{The new value to replace the entry.}
+
+\item{file}{A character string with the file name to read the metadata from.
+The file format should be either "json" or "rds".}
 }
 \value{
-A \code{Metadata} S7 class object.
+A \code{Metadata} S3 class object which is fundamentally a named list with metadata entries.
 }
 \description{
-The \code{Metadata} S7 class holds information, such as name, date, author and file, as a named list with elements of length one.
+The \code{Metadata} S3 class holds information, such as name, date, author and file, as a named list with elements of length one. The \code{Metadata} is essentially a list therefore list methods are also applicable.
 }
-\section{Slots}{
+\details{
+If not given, elements name, author, date and file are set to \code{NA_character_}, \code{NA_character_}, current system time and \code{NA_character_}, respectively.
+}
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(Metadata)}: Validates the \code{Metadata} object, returning \code{NULL} if valid.
 
-\describe{
-\item{\code{entries}}{\code{List} object with metadata entries as elements of length one.}
+\item \code{length(Metadata)}: Returns the length of the metadata entries.
+
+\item \code{names(Metadata)}: Returns the names of the metadata entries.
+
+\item \code{[}: Subsets the metadata entries.
+
+\item \code{`[`(Metadata) <- value}: Replaces metadata entries.
+
+\item \code{[[}: Extracts a single metadata entry.
+
+\item \code{`[[`(Metadata) <- value}: Replaces a single metadata entry.
+
+\item \code{save(Metadata)}: Saves the metadata to a file.
+
+\item \code{read(Metadata)}: Reads metadata from a file, returning a \code{Metadata} object.
+
+\item \code{show(Metadata)}: Prints the metadata entries.
+
 }}
-

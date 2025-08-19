@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindFeatures.R
 \name{MassSpecMethod_FindFeatures_xcms3_matchedfilter}
 \alias{MassSpecMethod_FindFeatures_xcms3_matchedfilter}
-\title{MassSpecMethod_FindFeatures_xcms3_matchedfilter S7 class}
+\title{MassSpecMethod_FindFeatures_xcms3_matchedfilter class}
 \usage{
 MassSpecMethod_FindFeatures_xcms3_matchedfilter(
   binSize = 0.5,

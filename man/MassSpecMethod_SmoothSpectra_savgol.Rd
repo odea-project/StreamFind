@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothSpectra.R
 \name{MassSpecMethod_SmoothSpectra_savgol}
 \alias{MassSpecMethod_SmoothSpectra_savgol}
-\title{MassSpecMethod_SmoothSpectra_savgol S7 class}
+\title{MassSpecMethod_SmoothSpectra_savgol Class}
 \usage{
 MassSpecMethod_SmoothSpectra_savgol(fl = 11, forder = 4, dorder = 0)
 }

@@ -2,29 +2,34 @@
 % Please edit documentation in R/class_Analyses.R
 \name{Analyses}
 \alias{Analyses}
-\title{Generic Analyses}
+\alias{validate_object.Analyses}
+\title{Generic (top level ) Analyses class and methods}
 \usage{
 Analyses(analyses = list(), results = list())
+
+\method{validate_object}{Analyses}(x)
 }
 \arguments{
 \item{analyses}{A list of analyses, where each element is a data entry or a connection to a raw data file.}
 
-\item{results}{A list of results, where each element is specific \code{\link{Results}} child class.}
+\item{results}{A list of results, where each element is a specific \code{\link{Results}} child class.}
+
+\item{x}{An \code{Analyses} object.}
+}
+\value{
+An object of class \code{Analyses}, which is a list containing:
+\itemize{
+\item \code{analyses}: A list of analyses, where each element is a data entry or a connection to a raw data file.
+\item \code{results}: A list of results, where each element is a specific \code{\link{Results}} child class.
+\item \code{type}: A character string indicating the type of data contained in the analyses.
+\item \code{formats}: A character vector indicating the possible formats of the analyses.
+}
 }
 \description{
-The Analyses class is used harmonize the interface to data entries or links to raw data files. Analyses child classes are used to enable a specific structure and methods for each type of data.
+The \code{Analyses} class is used to harmonize the interface to data or links to raw data files and results across different types of data. \code{Analyses} child classes are used for specific data types, providing dedicated methods.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(Analyses)}: Validate the Analyses object, returning \code{NULL} if valid or an error if not.
 
-\describe{
-\item{\code{data_type}}{(getter/setter) A character string indicating the type of data.}
-
-\item{\code{possible_formats}}{(getter/setter) A character vector of possible formats for the raw data.}
-
-\item{\code{analyses}}{(getter/setter) A list of analyses, where each element is a data entry or a connection to a raw data file.}
-
-\item{\code{results}}{(getter/setter) A list of results, where each element is specific \code{\link{Results}} child class.}
-
-\item{\code{info}}{(getter) A data frame containing information about the analyses.}
 }}
-

@@ -64,12 +64,12 @@ app_server <- function(input, output, session) {
   if (!is.null(init_engine_type)) {
     if (init_engine_type %in% .get_available_engines()) {
       reactive_engine_type(init_engine_type)
-      if (!init_engine_type %in% "CoreEngine") reactive_app_mode("WorkflowAssembler")
+      if (!init_engine_type %in% "Engine") reactive_app_mode("WorkflowAssembler")
     } else {
-      init_engine_type <- "CoreEngine"
+      init_engine_type <- "Engine"
     }
   } else {
-    init_engine_type <- "CoreEngine"
+    init_engine_type <- "Engine"
   }
   
   ## Engine save file is defined during call to run app
@@ -123,10 +123,10 @@ app_server <- function(input, output, session) {
           shiny::div(
             style = "color: #b8c7ce; font-size: 11px; margin-bottom: 8px;",
             "Cache Size: ",
-            shiny::textOutput("cache_size", inline = TRUE)
+            shiny::textOutput("WorkflowAssembler-cache_size", inline = TRUE)
           ),
           shiny::actionButton(
-            "clear_cache_button",
+            "WorkflowAssembler-clear_cache_button",
             "Clear Cache",
             icon = shiny::icon("trash"),
             style = "width: 90%; background-color: #3c8dbc; border-color: #367fa9; color: white;"
@@ -137,7 +137,7 @@ app_server <- function(input, output, session) {
       shinydashboard::sidebarMenu(shiny::actionButton("restart_app", "Restart", width = "90%"))
     }
   })
-  
+
   ## out Warnings -----
   output$warningMenu <- shinydashboard::renderMenu({
     warnings <- reactive_warnings()

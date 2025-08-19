@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_RemoveCosmicRays.R
 \name{RamanMethod_RemoveCosmicRays_native}
 \alias{RamanMethod_RemoveCosmicRays_native}
-\title{\strong{RamanMethod_RemoveCosmicRays_native}}
+\title{RamanMethod_RemoveCosmicRays_native}
 \usage{
 RamanMethod_RemoveCosmicRays_native()
 }

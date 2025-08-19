@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadSpectra.R
 \name{MassSpecMethod_LoadSpectra_native}
 \alias{MassSpecMethod_LoadSpectra_native}
-\title{MassSpecMethod_LoadSpectra_native S7 class}
+\title{MassSpecMethod_LoadSpectra_native S3 Class}
 \usage{
 MassSpecMethod_LoadSpectra_native(
   levels = 1,
@@ -36,5 +36,5 @@ MassSpecMethod_LoadSpectra_native(
 A \code{MassSpecMethod_LoadSpectra_native} object.
 }
 \description{
-.
+Loads spectra from mass spectrometry data using time and m/z dimensions. Ion mobility dimensions are also supported.
 }

@@ -324,6 +324,16 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// test_simdutf
+Rcpp::List test_simdutf();
+RcppExport SEXP _StreamFind_test_simdutf() {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    rcpp_result_gen = Rcpp::wrap(test_simdutf());
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
@@ -347,6 +357,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_write_asc_file", (DL_FUNC) &_StreamFind_rcpp_write_asc_file, 3},
     {"_StreamFind_test_read_hdf5", (DL_FUNC) &_StreamFind_test_read_hdf5, 1},
     {"_StreamFind_test_create_hdf5", (DL_FUNC) &_StreamFind_test_create_hdf5, 0},
+    {"_StreamFind_test_simdutf", (DL_FUNC) &_StreamFind_test_simdutf, 0},
     {NULL, NULL, 0}
 };
 

@@ -1,12 +1,12 @@
-#' MassSpecMethod_GenerateFormulas_genform S7 class
+#' @title MassSpecMethod_GenerateFormulas_genform Class
 #'
 #' @description Settings for generating formulas using the algorithm \href{https://sourceforge.net/projects/genform/}{GenForm}.
 #' The algorithm is used via the function \link[patRoon]{generateFormulas} from the package \pkg{patRoon}. Therefore,
 #' it is highly recommended to check the original documentation of the function in \pkg{patRoon} for more details.
-#' 
+#'
 #' @param MSPeakListsClusterMzWindow m/z window (in Da) used for clustering m/z values when spectra are averaged.
 #' For method="hclust" this corresponds to the cluster height, while for method="distance" this value is used to find
-#' nearby masses (+/- window). Too small windows will prevent clustering m/z values (thus erroneously treating equal 
+#' nearby masses (+/- window). Too small windows will prevent clustering m/z values (thus erroneously treating equal
 #' masses along spectra as different), whereas too big windows may cluster unrelated m/z values from different or even
 #' the same spectrum together.
 #' @param MSPeakListsTopMost Only retain this maximum number of MS peaks when generating averaged spectra. Lowering
@@ -61,152 +61,168 @@
 #'
 #' @export
 #'
-MassSpecMethod_GenerateFormulas_genform <- S7::new_class(
-  name = "MassSpecMethod_GenerateFormulas_genform",
-  parent = ProcessingStep,
-  package = "StreamFind",
-  constructor = function(MSPeakListsClusterMzWindow = 0.005,
-                         MSPeakListsTopMost = 100,
-                         MSPeakListsMinIntensityPre = 50,
-                         MSPeakListsMinIntensityPost = 50,
-                         MSPeakListsAvgFun = "mean",
-                         MSPeakListsMethod = "distance",
-                         relMzDev = 5,
-                         elements = "CHNOP",
-                         hetero = TRUE,
-                         oc = FALSE,
-                         thrMS = numeric(),
-                         thrMSMS = numeric(),
-                         thrComb = numeric(),
-                         maxCandidates = Inf,
-                         extraOpts = character(),
-                         calculateFeatures = TRUE,
-                         featThreshold = 0,
-                         featThresholdAnn = 0.75,
-                         absAlignMzDev = 0.002,
-                         MSMode = "both",
-                         isolatePrec = TRUE,
-                         timeout = 120,
-                         topMost = 50,
-                         batchSize = 8) {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "MassSpec",
-        method = "GenerateFormulas",
-        required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
-        algorithm = "genform",
-        parameters = list(
-          MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
-          MSPeakListsTopMost = MSPeakListsTopMost,
-          MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
-          MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
-          MSPeakListsAvgFun = MSPeakListsAvgFun,
-          MSPeakListsMethod = MSPeakListsMethod,
-          relMzDev = as.numeric(relMzDev),
-          elements = as.character(elements),
-          hetero = as.logical(hetero),
-          oc = as.logical(oc),
-          thrMS = as.numeric(thrMS),
-          thrMSMS = as.numeric(thrMSMS),
-          thrComb = as.numeric(thrComb),
-          maxCandidates = as.numeric(maxCandidates),
-          extraOpts = as.character(extraOpts),
-          calculateFeatures = as.logical(calculateFeatures),
-          featThreshold = as.numeric(featThreshold),
-          featThresholdAnn = as.numeric(featThresholdAnn),
-          absAlignMzDev = as.numeric(absAlignMzDev),
-          MSMode = as.character(MSMode),
-          isolatePrec = as.logical(isolatePrec),
-          timeout = as.numeric(timeout),
-          topMost = as.integer(topMost),
-          batchSize = as.integer(batchSize)
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "GenForm",
-        developer = "Markus Meringer",
-        contact = "Markus.Meringer@Uni-Bayreuth.De",
-        link = "https://sourceforge.net/projects/genform/",
-        doi = "MATCH Commun. Math. Comput. Chem 65.2 (2011): 259-290."
-      )
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
-    checkmate::assert_choice(self@method, "GenerateFormulas")
-    checkmate::assert_choice(self@algorithm, "genform")
-    checkmate::assert_numeric(self@parameters$MSPeakListsClusterMzWindow, len = 1)
-    checkmate::assert_numeric(self@parameters$MSPeakListsTopMost, len = 1)
-    checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPre, len = 1)
-    checkmate::assert_numeric(self@parameters$MSPeakListsMinIntensityPost, len = 1)
-    checkmate::assert_character(self@parameters$MSPeakListsAvgFun)
-    checkmate::assert_choice(self@parameters$MSPeakListsMethod, c("hclust", "distance"))
-    checkmate::assert_number(self@parameters$relMzDev)
-    checkmate::assert_character(self@parameters$elements, min.len = 1)
-    checkmate::assert_logical(self@parameters$hetero, len = 1)
-    checkmate::assert_logical(self@parameters$oc, len = 1)
-    checkmate::assert_numeric(self@parameters$thrMS)
-    checkmate::assert_numeric(self@parameters$thrMSMS)
-    checkmate::assert_numeric(self@parameters$thrComb)
-    checkmate::assert_numeric(self@parameters$maxCandidates, len = 1)
-    checkmate::assert_character(self@parameters$extraOpts)
-    checkmate::assert_logical(self@parameters$calculateFeatures, len = 1)
-    checkmate::assert_numeric(self@parameters$featThreshold)
-    checkmate::assert_numeric(self@parameters$featThresholdAnn)
-    checkmate::assert_numeric(self@parameters$absAlignMzDev)
-    checkmate::assert_choice(self@parameters$MSMode, c("MS", "MSMS", "both"))
-    checkmate::assert_logical(self@parameters$isolatePrec, len = 1)
-    checkmate::assert_numeric(self@parameters$timeout, len = 1)
-    checkmate::assert_integer(self@parameters$topMost, len = 1)
-    checkmate::assert_integer(self@parameters$batchSize, len = 1)
-    NULL
+MassSpecMethod_GenerateFormulas_genform <- function(
+  MSPeakListsClusterMzWindow = 0.005,
+  MSPeakListsTopMost = 100,
+  MSPeakListsMinIntensityPre = 50,
+  MSPeakListsMinIntensityPost = 50,
+  MSPeakListsAvgFun = "mean",
+  MSPeakListsMethod = "distance",
+  relMzDev = 5,
+  elements = "CHNOP",
+  hetero = TRUE,
+  oc = FALSE,
+  thrMS = numeric(),
+  thrMSMS = numeric(),
+  thrComb = numeric(),
+  maxCandidates = Inf,
+  extraOpts = character(),
+  calculateFeatures = TRUE,
+  featThreshold = 0,
+  featThresholdAnn = 0.75,
+  absAlignMzDev = 0.002,
+  MSMode = "both",
+  isolatePrec = TRUE,
+  timeout = 120,
+  topMost = 50,
+  batchSize = 8
+) {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "GenerateFormulas",
+    required = c(
+      "FindFeatures",
+      "GroupFeatures",
+      "LoadFeaturesMS1",
+      "LoadFeaturesMS2"
+    ),
+    algorithm = "genform",
+    parameters = list(
+      MSPeakListsClusterMzWindow = MSPeakListsClusterMzWindow,
+      MSPeakListsTopMost = MSPeakListsTopMost,
+      MSPeakListsMinIntensityPre = MSPeakListsMinIntensityPre,
+      MSPeakListsMinIntensityPost = MSPeakListsMinIntensityPost,
+      MSPeakListsAvgFun = MSPeakListsAvgFun,
+      MSPeakListsMethod = MSPeakListsMethod,
+      relMzDev = as.numeric(relMzDev),
+      elements = as.character(elements),
+      hetero = as.logical(hetero),
+      oc = as.logical(oc),
+      thrMS = as.numeric(thrMS),
+      thrMSMS = as.numeric(thrMSMS),
+      thrComb = as.numeric(thrComb),
+      maxCandidates = as.numeric(maxCandidates),
+      extraOpts = as.character(extraOpts),
+      calculateFeatures = as.logical(calculateFeatures),
+      featThreshold = as.numeric(featThreshold),
+      featThresholdAnn = as.numeric(featThresholdAnn),
+      absAlignMzDev = as.numeric(absAlignMzDev),
+      MSMode = as.character(MSMode),
+      isolatePrec = as.logical(isolatePrec),
+      timeout = as.numeric(timeout),
+      topMost = as.integer(topMost),
+      batchSize = as.integer(batchSize)
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "GenForm",
+    developer = "Markus Meringer",
+    contact = "Markus.Meringer@Uni-Bayreuth.De",
+    link = "https://sourceforge.net/projects/genform/",
+    doi = "MATCH Commun. Math. Comput. Chem 65.2 (2011): 259-290."
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid MassSpecMethod_GenerateFormulas_genform object!")
   }
-)
+}
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine = NULL) {
+validate_object.MassSpecMethod_GenerateFormulas_genform <- function(x) {
+  checkmate::assert_choice(x$type, "MassSpec")
+  checkmate::assert_choice(x$method, "GenerateFormulas")
+  checkmate::assert_choice(x$algorithm, "genform")
+  checkmate::assert_numeric(x$parameters$MSPeakListsClusterMzWindow, len = 1)
+  checkmate::assert_numeric(x$parameters$MSPeakListsTopMost, len = 1)
+  checkmate::assert_numeric(x$parameters$MSPeakListsMinIntensityPre, len = 1)
+  checkmate::assert_numeric(x$parameters$MSPeakListsMinIntensityPost, len = 1)
+  checkmate::assert_character(x$parameters$MSPeakListsAvgFun)
+  checkmate::assert_choice(
+    x$parameters$MSPeakListsMethod,
+    c("hclust", "distance")
+  )
+  checkmate::assert_number(x$parameters$relMzDev)
+  checkmate::assert_character(x$parameters$elements, min.len = 1)
+  checkmate::assert_logical(x$parameters$hetero, len = 1)
+  checkmate::assert_logical(x$parameters$oc, len = 1)
+  checkmate::assert_numeric(x$parameters$thrMS)
+  checkmate::assert_numeric(x$parameters$thrMSMS)
+  checkmate::assert_numeric(x$parameters$thrComb)
+  checkmate::assert_numeric(x$parameters$maxCandidates, len = 1)
+  checkmate::assert_character(x$parameters$extraOpts)
+  checkmate::assert_logical(x$parameters$calculateFeatures, len = 1)
+  checkmate::assert_numeric(x$parameters$featThreshold)
+  checkmate::assert_numeric(x$parameters$featThresholdAnn)
+  checkmate::assert_numeric(x$parameters$absAlignMzDev)
+  checkmate::assert_choice(x$parameters$MSMode, c("MS", "MSMS", "both"))
+  checkmate::assert_logical(x$parameters$isolatePrec, len = 1)
+  checkmate::assert_numeric(x$parameters$timeout, len = 1)
+  checkmate::assert_integer(x$parameters$topMost, len = 1)
+  checkmate::assert_integer(x$parameters$batchSize, len = 1)
+  NextMethod()
+  NULL
+}
+
+#' @export
+#' @noRd
+run.MassSpecMethod_GenerateFormulas_genform <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
   }
-
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-
-  if (!engine$has_results_nts()) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
-
-  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
-
-  if (!NonTargetAnalysisResults@has_groups) {
-    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+  if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
+    warning(
+      "MassSpecResults_NonTargetAnalysis object does not have features! Not done."
+    )
     return(FALSE)
   }
-
+  has_groups <- any(vapply(
+    nts$features,
+    function(z) any(!(is.na(z$group) | z$group %in% "")),
+    FALSE
+  ))
+  if (!has_groups) {
+    warning(
+      "MassSpecResults_NonTargetAnalysis object does not have feature groups! Not done."
+    )
+    return(FALSE)
+  }
   parameters <- x$parameters
-
   parameters <- lapply(parameters, function(z) {
     if (length(z) == 0) {
       return(NULL)
     }
     z
   })
-  
   algorithm <- x$algorithm
-  
   fg <- get_patRoon_features(
-    NonTargetAnalysisResults,
+    nts,
     filtered = FALSE,
     featureGroups = TRUE
   )
-  
   mspl <- get_patRoon_MSPeakLists(
-    NonTargetAnalysisResults,
+    nts,
     MSPeakListsClusterMzWindow,
     MSPeakListsTopMost,
     MSPeakListsMinIntensityPre,
@@ -214,60 +230,71 @@ S7::method(run, MassSpecMethod_GenerateFormulas_genform) <- function(x, engine =
     MSPeakListsAvgFun,
     MSPeakListsMethod,
   )
-
   if (length(mspl) == 0) {
-    warning("MSPeakLists empty! Use the load_MSPeakLists to load MS1 and MS2 data. Not done.")
+    warning(
+      "MSPeakLists empty! Use the load_MSPeakLists to load MS1 and MS2 data. Not done."
+    )
     return(FALSE)
   }
-
   if ("featureGroupsSet" %in% is(fg)) {
     parameters$adduct <- NULL
   } else {
-    pol <- unique(unname(engine$get_spectra_polarity()))
-
-    if ("positive" %in% pol) parameters$adduct <- "[M+H]+"
-
-    if ("negative" %in% pol) parameters$adduct <- "[M-H]-"
+    pol <- unique(vapply(
+      nts$headers,
+      function(a) {
+        paste0(unique(a$polarity), collapse = ", ")
+      },
+      NA_character_
+    ))
+    if ("1" %in% pol) {
+      parameters$adduct <- "[M+H]+"
+    }
+    if ("-1" %in% pol) parameters$adduct <- "[M-H]-"
   }
-
   ag <- list(fGroups = fg, MSPeakLists = mspl, algorithm = algorithm)
-
   pp_fun <- patRoon::generateFormulas
-
   formulas <- do.call(pp_fun, c(ag, parameters))
-
   if (length(formulas) == 0) {
     warning("No formulas generated!")
     return(FALSE)
   }
+  feature_list <- nts$feature_list
+  formulas_col <- lapply(
+    names(feature_list),
+    function(x, feature_list, formulas) {
+      formula <- formulas@featureFormulas[[x]]
+      if (!is.null(formula)) {
+        fts <- feature_list[[x]]
 
-  feature_list <- NonTargetAnalysisResults$feature_list
-
-  formulas_col <- lapply(names(feature_list), function(x, feature_list, formulas) {
-    formula <- formulas@featureFormulas[[x]]
-    if (!is.null(formula)) {
-      fts <- feature_list[[x]]
-
-      if (nrow(fts) > 0) {
-        res <- lapply(fts$group, function(z, formula) {
-          if (!is.na(z)) {
-            return(formula[[z]])
-          }
-          list(NULL)
-        }, formula = formula)
-        return(res)
+        if (nrow(fts) > 0) {
+          res <- lapply(
+            fts$group,
+            function(z, formula) {
+              if (!is.na(z)) {
+                return(formula[[z]])
+              }
+              list(NULL)
+            },
+            formula = formula
+          )
+          return(res)
+        }
       }
-    }
-    rep(list(NULL), nrow(feature_list[[x]]))
-  }, feature_list = feature_list, formulas = formulas)
-
-  NonTargetAnalysisResults <- .add_features_column(NonTargetAnalysisResults, "formulas", formulas_col)
-
-  NonTargetAnalysisResults$formulas <- formulas
-
-  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
-
+      rep(list(NULL), nrow(feature_list[[x]]))
+    },
+    feature_list = feature_list,
+    formulas = formulas
+  )
+  feature_list <- Map(
+    function(fts, i) {
+      fts$formulas <- i
+      fts
+    },
+    features,
+    formulas_col
+  )
+  nts$features <- feature_list
+  engine$Results <- nts
   message(paste0("\U2713 ", length(formulas), " formulas generated and added!"))
-
   TRUE
 }

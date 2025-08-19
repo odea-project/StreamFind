@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_NormalizeSpectra.R
 \name{RamanMethod_NormalizeSpectra_blockweight}
 \alias{RamanMethod_NormalizeSpectra_blockweight}
-\title{\strong{RamanMethod_NormalizeSpectra_blockweight}}
+\title{RamanMethod_NormalizeSpectra_blockweight Class}
 \usage{
 RamanMethod_NormalizeSpectra_blockweight()
 }

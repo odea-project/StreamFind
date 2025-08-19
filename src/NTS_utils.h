@@ -15,7 +15,7 @@
 #include <limits>
 #include "StreamCraft_lib.h"
 
-namespace NonTargetAnalysisResults
+namespace MassSpecResults_NonTargetAnalysis
 {
   // MARK: INLINE FUNCTIONS
   
@@ -274,7 +274,7 @@ namespace NonTargetAnalysisResults
         rt = spectra.rt;
         mz = spectra.mz;
         intensity = spectra.intensity;
-        NonTargetAnalysisResults::merge_traces_within_rt(rt, mz, intensity);
+        MassSpecResults_NonTargetAnalysis::merge_traces_within_rt(rt, mz, intensity);
       }
     };
   };
@@ -1971,7 +1971,7 @@ namespace NonTargetAnalysisResults
       }
     };
     
-    void annotate_isotopes(const NonTargetAnalysisResults::ANNOTATION_ISOTOPE_COMBINATIONS &combinations,
+    void annotate_isotopes(const MassSpecResults_NonTargetAnalysis::ANNOTATION_ISOTOPE_COMBINATIONS &combinations,
                            const int &maxIsotopes,
                            const int &maxCharge,
                            const int &maxGaps);
@@ -2020,6 +2020,6 @@ namespace NonTargetAnalysisResults
     void annotate_adducts();
   };
 
-}; // namespace NonTargetAnalysisResults
+}; // namespace MassSpecResults_NonTargetAnalysis
 
 #endif

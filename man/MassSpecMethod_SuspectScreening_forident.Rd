@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_forident}
 \alias{MassSpecMethod_SuspectScreening_forident}
-\title{MassSpecMethod_SuspectScreening_forident S7 class}
+\title{MassSpecMethod_SuspectScreening_forident Class}
 \usage{
 MassSpecMethod_SuspectScreening_forident(
   addMS2 = FALSE,
@@ -12,30 +12,20 @@ MassSpecMethod_SuspectScreening_forident(
 )
 }
 \arguments{
-\item{addMS2}{Logical length 1. When \code{TRUE} and MS2 data is available, the
-fragments pattern (i.e., MS2 averaged spectra) is added to the .txt file to
-import in FOR-IDENT platform. Note that when \code{addMS2} is \code{TRUE} the \emph{m/z}
-values are used instead of neutral mass even is \code{useNeutralMass} is set to \code{TRUE}.}
+\item{addMS2}{Logical length 1. When \code{TRUE} and MS2 data is available, the fragments pattern (i.e., MS2 averaged spectra) is added to the .txt file to import in FOR-IDENT platform. Note that when \code{addMS2} is \code{TRUE} the \emph{m/z} values are used instead of neutral mass even is \code{useNeutralMass} is set to \code{TRUE}.}
 
-\item{useNeutralMass}{Logical length 1. When \code{TRUE} and neutral mass is
-available, the neutral mass of features/feature groups is used instead of the
-\emph{m/z}.}
+\item{useNeutralMass}{Logical length 1. When \code{TRUE} and neutral mass is available, the neutral mass of features/feature groups is used instead of the \emph{m/z}.}
 
-\item{path}{Character length 1 with the path to save the .txt file with the
-list of features for identification.}
+\item{path}{Character length 1 with the path to save the .txt file with the list of features for identification.}
 
-\item{name}{Character length 1 with the name of the file (without extension)
-to be saved in the \code{path}.}
+\item{name}{Character length 1 with the name of the file (without extension) to be saved in the \code{path}.}
 }
 \value{
 A \code{MassSpecMethod_SuspectScreening_forident} object.
 }
 \description{
-Settings for performing suspect screening using the
-\href{https://water.for-ident.org/}{FOR-IDENT} platform.
+Settings for performing suspect screening using the \href{https://water.for-ident.org/}{FOR-IDENT} platform.
 }
 \note{
-After processing, a .txt file as defined by name and path is created with the
-list of features or feature groups to be imported in the FOR-IDENT platform
-(\url{https://water.for-ident.org/}). Note that log in credentials are needed.
+After processing, a .txt file as defined by name and path is created with the list of features or feature groups to be imported in the FOR-IDENT platform (\url{https://water.for-ident.org/}). Note that log in credentials are needed.
 }

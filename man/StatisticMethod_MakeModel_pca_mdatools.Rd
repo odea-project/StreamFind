@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_StatisticMethod_MakeModel.R
 \name{StatisticMethod_MakeModel_pca_mdatools}
 \alias{StatisticMethod_MakeModel_pca_mdatools}
-\title{StatisticMethod_MakeModel_pca_mdatools S7 class}
+\title{StatisticMethod_MakeModel_pca_mdatools Class}
 \usage{
 StatisticMethod_MakeModel_pca_mdatools(
   center = FALSE,
@@ -32,15 +32,11 @@ StatisticMethod_MakeModel_pca_mdatools(
 
 \item{x.test}{A \code{data.frame} with the test data.}
 
-\item{method}{Character (length 1) with the method to be used for PCA. Possible values are
-"svd" and "nipals".}
+\item{method}{Character (length 1) with the method to be used for PCA. Possible values are "svd" and "nipals".}
 
 \item{rand}{Integer (length 1) with the random seed.}
 
-\item{lim.type}{Character (length 1) with the type of limit for the PCA. Possible values are
-"jm" Jackson-Mudholkar approach approach, "chisq" based on chi-square distribution, "ddmoments"
-and "ddrobust" related to data driven method. It is highly recommended to concult the original
-documentation in \link[mdatools]{pca} for more information.}
+\item{lim.type}{Character (length 1) with the type of limit for the PCA. Possible values are "jm" Jackson-Mudholkar approach approach, "chisq" based on chi-square distribution, "ddmoments" and "ddrobust" related to data driven method. It is highly recommended to concult the original documentation in \link[mdatools]{pca} for more information.}
 
 \item{alpha}{Numeric (length 1) with the alpha value for the PCA.}
 
@@ -52,8 +48,7 @@ documentation in \link[mdatools]{pca} for more information.}
 A StatisticMethod_MakeModel_pca_mdatools object.
 }
 \description{
-Makes a Principle Component Analysis (PCA) model based on the R package
-\pkg{mdatools}.
+Makes a Principle Component Analysis (PCA) model based on the R package \pkg{mdatools}.
 }
 \references{
 \insertRef{mdatools01}{StreamFind}

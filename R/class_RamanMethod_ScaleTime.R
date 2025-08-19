@@ -1,69 +1,67 @@
-#' **RamanMethod_ScaleTime_native**
+#' @title RamanMethod_ScaleTime_native Class
 #'
 #' @description Scales the time variable of the spectra using the multiplier `value`.
-#' 
+#'
 #' @param value Numeric (length 1) with the multiplier to scale the time variable.
 #'
 #' @return A RamanMethod_ScaleTime_native object.
 #'
 #' @export
 #'
-RamanMethod_ScaleTime_native <- S7::new_class(
-  "RamanMethod_ScaleTime_native",
-  parent = ProcessingStep,
-  package = "StreamFind",
-  
-  constructor = function(value = 0) {
-    S7::new_object(ProcessingStep(
-      data_type = "Raman",
-      method = "ScaleTime",
-      required = NA_character_,
-      algorithm = "native",
-      parameters = list(
-        value = as.numeric(value)
-      ),
-      number_permitted = Inf,
-      version = as.character(packageVersion("StreamFind")),
-      software = "StreamFind",
-      developer = "Ricardo Cunha",
-      contact = "cunha@iuta.de",
-      link = "https://odea-project.github.io/StreamFind",
-      doi = NA_character_
-    ))
-  },
-  
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "Raman")
-    checkmate::assert_choice(self@method, "ScaleTime")
-    checkmate::assert_choice(self@algorithm, "native")
-    checkmate::assert_numeric(self@parameters$value)
-    NULL
+RamanMethod_ScaleTime_native <- function(value = 0) {
+  x <- ProcessingStep(
+    type = "Raman",
+    method = "ScaleTime",
+    required = NA_character_,
+    algorithm = "native",
+    parameters = list(
+      value = as.numeric(value)
+    ),
+    number_permitted = Inf,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid RamanMethod_ScaleTime_native object!")
   }
-)
+}
 
 #' @export
 #' @noRd
-S7::method(run, RamanMethod_ScaleTime_native) <- function(x, engine = NULL) {
-  
+validate_object.RamanMethod_ScaleTime_native <- function(x) {
+  checkmate::assert_choice(x$type, "Raman")
+  checkmate::assert_choice(x$method, "ScaleTime")
+  checkmate::assert_choice(x$algorithm, "native")
+  checkmate::assert_numeric(x$parameters$value)
+  NextMethod()
+  NULL
+}
+
+#' @export
+#' @noRd
+run.RamanMethod_ScaleTime_native <- function(x, engine = NULL) {
   if (!is(engine, "RamanEngine")) {
     warning("Engine is not a RamanEngine object!")
     return(FALSE)
   }
-  
   if (!engine$has_analyses()) {
     warning("There are no analyses! Not done.")
     return(FALSE)
   }
-  
-  if (!engine$Analyses$has_spectra) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
+  if (is.null(engine$Results[["RamanResults_Spectra"]])) {
+    engine$Results <- RamanResults_Spectra(
+      lapply(engine$Analyses$analyses, function(a) a$spectra)
+    )
   }
-  
+  spec_obj <- engine$Results[["RamanResults_Spectra"]]
   value <- x$parameters$value
-  
-  spec_list <- engine$Spectra$spectra
-  
+  spec_list <- spec_obj$spectra
   if (value > 0) {
     spec_list <- lapply(spec_list, function(z) {
       if (nrow(z) > 0 && "rt" %in% colnames(z)) {
@@ -74,8 +72,8 @@ S7::method(run, RamanMethod_ScaleTime_native) <- function(x, engine = NULL) {
       z
     })
   }
-  
-  engine$Spectra$spectra <- spec_list
+  spec_obj$spectra <- spec_list
+  engine$Results <- spec_obj
   message(paste0("\U2713 ", "Time variable scaled!"))
   invisible(TRUE)
 }

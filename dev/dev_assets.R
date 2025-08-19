@@ -1,6 +1,12 @@
 
 # Development ------------------------------------------------------------------
 
+# Dev packages
+install.packages(c("devtools", "BiocManager", "remotes"))
+
+# Bioconductor packages
+BiocManager::install(c('zlibbioc', 'Rhdf5lib'))
+
 # Updates documentation with roxygen
 devtools::document()
 devtools::document()
@@ -10,7 +16,7 @@ devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = FALS
 
 # Builds/Updates the GitHub page
 pkgdown::clean_cache()
-pkgdown::clean_site()
+pkgdown::clean_site(force = TRUE)
 pkgdown::build_site()
 
 pkgdown::build_reference()

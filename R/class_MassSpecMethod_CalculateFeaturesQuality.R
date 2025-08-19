@@ -1,7 +1,6 @@
 #' Mass Spectrometry Method to Calculate Features Quality (StreamFind algorithm)
 #'
-#' @description Settings for calculating quality parameters of features (e.g., signal-to-noise (sn)
-#' ratio).
+#' @description Settings for calculating quality parameters of features (e.g., signal-to-noise (sn) ratio).
 #'
 #' @template arg-ms-filtered
 #' @template arg-ms-rtExpand
@@ -20,65 +19,75 @@
 #'
 #' @export
 #'
-MassSpecMethod_CalculateFeaturesQuality_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_CalculateFeaturesQuality_StreamFind",
-  parent = ProcessingStep,
-  package = "StreamFind",
-  
-  constructor = function(filtered = FALSE,
-                         rtExpand = 0,
-                         mzExpand = 0,
-                         minPeakWidth = 6,
-                         maxPeakWidth = 30,
-                         minTracesIntensity = 0,
-                         minNumberTraces = 6,
-                         baseCut = 0) {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "MassSpec",
-        method = "CalculateFeaturesQuality",
-        required = "FindFeatures",
-        algorithm = "StreamFind",
-        parameters = list(
-          "filtered" = as.logical(filtered),
-          "rtExpand" = as.numeric(rtExpand),
-          "mzExpand" = as.numeric(mzExpand),
-          "minPeakWidth" = as.numeric(minPeakWidth),
-          "maxPeakWidth" = as.numeric(maxPeakWidth),
-          "minTracesIntensity" = as.numeric(minTracesIntensity),
-          "minNumberTraces" = as.numeric(minNumberTraces),
-          "baseCut" = as.numeric(baseCut)
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "StreamFind",
-        developer = "Ricardo Cunha",
-        contact = "cunha@iuta.de",
-        link = "https://odea-project.github.io/StreamFind",
-        doi = NA_character_
-      )
-    )
-  },
-  
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
-    checkmate::assert_choice(self@method, "CalculateFeaturesQuality")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
-    checkmate::assert_logical(self@parameters$filtered, max.len = 1)
-    checkmate::assert_number(self@parameters$rtExpand)
-    checkmate::assert_number(self@parameters$mzExpand)
-    checkmate::assert_number(self@parameters$minPeakWidth)
-    checkmate::assert_number(self@parameters$maxPeakWidth)
-    checkmate::assert_integer(as.integer(self@parameters$minNUmberTraces))
-    checkmate::assert_number(self@parameters$minTracesIntensity)
-    checkmate::assert_number(self@parameters$baseCut)
-    NULL
+MassSpecMethod_CalculateFeaturesQuality_StreamFind <- function(
+  filtered = FALSE,
+  rtExpand = 0,
+  mzExpand = 0,
+  minPeakWidth = 6,
+  maxPeakWidth = 30,
+  minTracesIntensity = 0,
+  minNumberTraces = 6,
+  baseCut = 0
+) {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "CalculateFeaturesQuality",
+    required = "FindFeatures",
+    algorithm = "StreamFind",
+    input_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis",
+    parameters = list(
+      "filtered" = as.logical(filtered),
+      "rtExpand" = as.numeric(rtExpand),
+      "mzExpand" = as.numeric(mzExpand),
+      "minPeakWidth" = as.numeric(minPeakWidth),
+      "maxPeakWidth" = as.numeric(maxPeakWidth),
+      "minTracesIntensity" = as.numeric(minTracesIntensity),
+      "minNumberTraces" = as.numeric(minNumberTraces),
+      "baseCut" = as.numeric(baseCut)
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid MassSpecMethod_CalculateFeaturesQuality_StreamFind object!")
   }
-)
+}
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(x, engine = NULL) {
+#'
+validate_object.MassSpecMethod_CalculateFeaturesQuality_StreamFind <- function(
+  x
+) {
+  checkmate::assert_choice(x$type, "MassSpec")
+  checkmate::assert_choice(x$method, "CalculateFeaturesQuality")
+  checkmate::assert_choice(x$algorithm, "StreamFind")
+  checkmate::assert_logical(x$parameters$filtered, max.len = 1)
+  checkmate::assert_number(x$parameters$rtExpand)
+  checkmate::assert_number(x$parameters$mzExpand)
+  checkmate::assert_number(x$parameters$minPeakWidth)
+  checkmate::assert_number(x$parameters$maxPeakWidth)
+  checkmate::assert_integer(as.integer(x$parameters$minNUmberTraces))
+  checkmate::assert_number(x$parameters$minTracesIntensity)
+  checkmate::assert_number(x$parameters$baseCut)
+  NULL
+}
+
+#' @export
+#' @noRd
+#'
+run.MassSpecMethod_CalculateFeaturesQuality_StreamFind <- function(
+  x,
+  engine = NULL
+) {
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
@@ -89,31 +98,36 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
     return(FALSE)
   }
 
-  if (!engine$has_results_nts()) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
-  if (!NonTargetAnalysisResults@has_features) {
-    warning("NonTargetAnalysisResults object does not have features! Not done.")
+  if (
+    sum(vapply(nts$features, function(z) nrow(z), 0)) == 0
+  ) {
+    warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
     return(FALSE)
   }
 
-  feature_list <- NonTargetAnalysisResults$feature_list
+  feature_list <- nts$features
 
   feature_list <- lapply(feature_list, function(z) {
-    if (!"quality" %in% colnames(z)) z$quality <- rep(data.table::data.table(), nrow(z))
-    if (!"eic" %in% colnames(z)) z$eic <- rep(data.table::data.table(), nrow(z))
+    if (!"quality" %in% colnames(z)) {
+      z$quality <- rep(data.table::data.table(), nrow(z))
+    }
+    if (!"eic" %in% colnames(z)) {
+      z$eic <- rep(data.table::data.table(), nrow(z))
+    }
     z
   })
 
   parameters <- x$parameters
-  
-  ana_info <- engine$NonTargetAnalysisResults$analyses_info
-  headers <- engine$NonTargetAnalysisResults$spectra_headers
-  
+  ana_info <- nts$info
+  headers <- nts$headers
+
   feature_list <- rcpp_nts_calculate_features_quality(
     ana_info,
     headers,
@@ -127,10 +141,12 @@ S7::method(run, MassSpecMethod_CalculateFeaturesQuality_StreamFind) <- function(
     parameters$minNumberTraces,
     parameters$baseCut
   )
-  
+
+  nts$features <- feature_list
+
   tryCatch(
     {
-      engine$NonTargetAnalysisResults$feature_list <- feature_list
+      engine$Results <- nts
       return(TRUE)
     },
     error = function(e) {

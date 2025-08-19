@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_SubtractSpectraSection.R
 \name{RamanMethod_SubtractSpectraSection_StreamFind}
 \alias{RamanMethod_SubtractSpectraSection_StreamFind}
-\title{\strong{RamanMethod_SubtractSpectraSection_StreamFind}}
+\title{RamanMethod_SubtractSpectraSection_StreamFind Class}
 \usage{
 RamanMethod_SubtractSpectraSection_StreamFind(
   sectionVal = "rt",

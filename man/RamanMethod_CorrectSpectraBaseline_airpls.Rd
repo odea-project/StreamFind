@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_CorrectSpectraBaseline.R
 \name{RamanMethod_CorrectSpectraBaseline_airpls}
 \alias{RamanMethod_CorrectSpectraBaseline_airpls}
-\title{\strong{RamanMethod_CorrectSpectraBaseline_airpls}}
+\title{RamanMethod_CorrectSpectraBaseline_airpls Class}
 \usage{
 RamanMethod_CorrectSpectraBaseline_airpls(
   lambda = 10,

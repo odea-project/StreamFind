@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_FilterSpectra.R
 \name{RamanMethod_FilterSpectra_native}
 \alias{RamanMethod_FilterSpectra_native}
-\title{\strong{RamanMethod_FilterSpectra_native}}
+\title{RamanMethod_FilterSpectra_native Class}
 \usage{
 RamanMethod_FilterSpectra_native(
   onlyChromPeaksSpectra = FALSE,

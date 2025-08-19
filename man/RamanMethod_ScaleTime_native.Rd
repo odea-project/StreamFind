@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_ScaleTime.R
 \name{RamanMethod_ScaleTime_native}
 \alias{RamanMethod_ScaleTime_native}
-\title{\strong{RamanMethod_ScaleTime_native}}
+\title{RamanMethod_ScaleTime_native Class}
 \usage{
 RamanMethod_ScaleTime_native(value = 0)
 }

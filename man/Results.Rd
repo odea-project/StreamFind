@@ -2,29 +2,37 @@
 % Please edit documentation in R/class_Results.R
 \name{Results}
 \alias{Results}
-\title{Generic Results}
+\alias{validate_object.Results}
+\title{Generic (top level) Results class constructor and methods}
 \usage{
 Results(
-  data_type = class_missing,
-  name = class_missing,
-  software = class_missing,
-  version = class_missing
+  type = NA_character_,
+  name = "Results",
+  software = "StreamFind",
+  version = NA_character_
 )
+
+\method{validate_object}{Results}(x)
+}
+\arguments{
+\item{type}{A character string indicating the type of data.}
+
+\item{name}{A character string representing the name of the results.}
+
+\item{software}{A character string representing the name of the software used to generate the results.}
+
+\item{version}{A character string representing the version of the software used to generate the results.}
+
+\item{x}{An object of class \code{Results}.}
+}
+\value{
+A \code{Results} S3 class object which is a list with the elements \code{type}, \code{name}, \code{software}, and \code{version}. Other elements are added by child class constructors (e.g. \code{MassSpecSpectra}).
 }
 \description{
-The Results class is used to store results of data processing in
-\link{Analyses} child classes. Child classes of Results are implemented for diverse types
-of results for a given type of data.
+The \code{Results} class is used to store results of data processing in \link{Analyses} child classes. Child classes of \code{Results} are implemented for diverse types of results for a given type of data.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(Results)}: Validate the Results object, returning \code{NULL} if valid.
 
-\describe{
-\item{\code{data_type}}{A character string indicating the type of data.}
-
-\item{\code{name}}{A character string representing the name of the results.}
-
-\item{\code{software}}{A character string representing the name of the software used to generate the results.}
-
-\item{\code{version}}{A character string representing the version of the software used to generate the results.}
 }}
-

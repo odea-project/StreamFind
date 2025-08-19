@@ -4,14 +4,8 @@
 \alias{EngineConfig}
 \title{Engine Configuration}
 \usage{
-EngineConfig()
+EngineConfig(parameters = list(ConfigCache = ConfigCache()))
 }
 \description{
 Class representing the engine configuration, inheriting from \link{Config}.
 }
-\section{Slots}{
-
-\describe{
-\item{\code{parameters}}{A list of \link{ConfigParameter} objects.}
-}}
-

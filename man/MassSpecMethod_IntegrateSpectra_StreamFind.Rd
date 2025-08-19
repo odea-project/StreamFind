@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_IntegrateSpectra.R
 \name{MassSpecMethod_IntegrateSpectra_StreamFind}
 \alias{MassSpecMethod_IntegrateSpectra_StreamFind}
-\title{MassSpecMethod_IntegrateSpectra_StreamFind S7 class}
+\title{MassSpecMethod_IntegrateSpectra_StreamFind Class}
 \usage{
 MassSpecMethod_IntegrateSpectra_StreamFind(
   merge = TRUE,

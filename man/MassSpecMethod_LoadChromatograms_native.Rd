@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadChromatograms.R
 \name{MassSpecMethod_LoadChromatograms_native}
 \alias{MassSpecMethod_LoadChromatograms_native}
-\title{MassSpecMethod_LoadChromatograms_native}
+\title{MassSpecMethod_LoadChromatograms_native Class}
 \usage{
 MassSpecMethod_LoadChromatograms_native(
   chromatograms = 1,

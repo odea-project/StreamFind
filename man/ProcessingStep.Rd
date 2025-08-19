@@ -2,31 +2,52 @@
 % Please edit documentation in R/class_ProcessingStep.R
 \name{ProcessingStep}
 \alias{ProcessingStep}
-\title{Generic Processing Step}
+\alias{validate_object.ProcessingStep}
+\alias{as.ProcessingStep}
+\alias{save.ProcessingStep}
+\alias{read.ProcessingStep}
+\alias{show.ProcessingStep}
+\title{Generic (top level) ProcessingStep class and methods}
 \usage{
 ProcessingStep(
-  data_type = class_missing,
-  method = class_missing,
-  required = class_missing,
-  algorithm = class_missing,
-  parameters = class_missing,
-  number_permitted = class_missing,
-  version = class_missing,
-  software = class_missing,
-  developer = class_missing,
-  contact = class_missing,
-  link = class_missing,
-  doi = class_missing
+  type = NA_character_,
+  method = NA_character_,
+  required = NA_character_,
+  algorithm = NA_character_,
+  input_class = NA_character_,
+  output_class = NA_character_,
+  parameters = list(),
+  number_permitted = NA_real_,
+  version = NA_character_,
+  software = NA_character_,
+  developer = NA_character_,
+  contact = NA_character_,
+  link = NA_character_,
+  doi = NA_character_
 )
+
+\method{validate_object}{ProcessingStep}(x)
+
+as.ProcessingStep(value)
+
+\method{save}{ProcessingStep}(x, file = "settings.json")
+
+\method{read}{ProcessingStep}(x, file)
+
+\method{show}{ProcessingStep}(x, ...)
 }
 \arguments{
-\item{data_type}{A character string representing the data type (e.g., "MassSpec", "Raman").}
+\item{type}{A character string representing the data type (e.g., "MassSpec", "Raman").}
 
 \item{method}{A character string representing the method used (e.g., "BaselineCorrection").}
 
 \item{required}{A character vector of required preceding methods.}
 
 \item{algorithm}{A character string representing the algorithm used (e.g., "baseline_als").}
+
+\item{input_class}{A character string representing the class of the input data.}
+
+\item{output_class}{A character string representing the class of the output data.}
 
 \item{parameters}{A list of parameters for the processing step.}
 
@@ -44,16 +65,52 @@ ProcessingStep(
 additional information.}
 
 \item{doi}{A character string representing the DOI of the algorithm or additional information.}
+
+\item{x}{A \code{ProcessingStep} object.}
+
+\item{value}{A list or JSON object containing the parameters for the processing step.}
+
+\item{file}{A character string specifying the file path to read the object from.
+The file extension should be \code{.json} or \code{.rds}.}
+
+\item{...}{Additional arguments (not used).}
+}
+\value{
+A \code{ProcessingStep} object. Fundamentally, it is a list with class \code{ProcessingStep} and a data specific method class (e.g., \code{RamanMethod_AverageSpectra_native}) with the following elements:
+\itemize{
+\item \code{type}: The data type (e.g., "MassSpec", "Raman").
+\item \code{method}: The method used (e.g., "BaselineCorrection").
+\item \code{required}: A character vector of required preceding methods.
+\item \code{algorithm}: The algorithm used (e.g., "baseline_als").
+\item \code{input_class}: The class of the input data.
+\item \code{output_class}: The class of the output data.
+\item \code{parameters}: A list of parameters for the processing step.
+\item \code{number_permitted}: The number of permitted instances.
+\item \code{version}: The version of the processing step.
+\item \code{software}: The original software used.
+\item \code{developer}: The developer of the processing step.
+\item \code{contact}: The contact information for the developer.
+\item \code{link}: A link to the origin of the algorithm or additional information.
+\item \code{doi}: The DOI of the algorithm or additional information.
+}
 }
 \description{
-The \code{ProcessingStep} class is used to define a processing step within a
-\link{Workflow}. It contains information about the data type, method, algorithm,
-parameters, and other relevant metadata for the processing step. The \code{ProcessingStep} is the
-parent class of all processing methods in StreamFind.
+The \code{ProcessingStep} class is used to define a processing step within a \link{Workflow}. It contains information about the data type, method, algorithm, parameters, and other relevant metadata for the processing step. The \code{ProcessingStep} is the parent class of all processing methods in StreamFind.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(ProcessingStep)}: Validate the \code{ProcessingStep} object, returns \code{NULL} if valid.
 
-\describe{
-\item{\code{call}}{(getter) A character string representing the call to the processing step.}
+\item \code{save(ProcessingStep)}: Save a \code{ProcessingStep} object to a file in JSON or RDS format.
+
+\item \code{read(ProcessingStep)}: Read a \code{ProcessingStep} object from a file in JSON or RDS format,
+returning the updated object.
+
+\item \code{show(ProcessingStep)}: Show the details of a \code{ProcessingStep} object.
+
 }}
+\section{Functions}{
+\itemize{
+\item \code{as.ProcessingStep()}: Convert a list or JSON object to a \code{ProcessingStep} object.
 
+}}

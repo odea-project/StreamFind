@@ -1,6 +1,6 @@
 .onLoad <- function(libname, pkgname) {
   
-  S7::methods_register()
+  #S7::methods_register()
   
   if (is.null(getOption("StreamFind_cache_mode"))) {
     # message("Setting cache mode to 'rds'.")

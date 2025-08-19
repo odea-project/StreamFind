@@ -1,4 +1,4 @@
-#' MassSpecMethod_FillFeatures_StreamFind S7 class
+#' MassSpecMethod_FillFeatures_StreamFind Class
 #'
 #' @description Settings for filling missing values in features.
 #'
@@ -28,78 +28,82 @@
 #'
 #' @export
 #'
-MassSpecMethod_FillFeatures_StreamFind <- S7::new_class(
-  name = "MassSpecMethod_FillFeatures_StreamFind",
-  parent = ProcessingStep,
-  package = "StreamFind",
-  constructor = function(withinReplicate = TRUE,
-                         filtered = TRUE,
-                         rtExpand = 0,
-                         mzExpand = 0,
-                         minPeakWidth = 6,
-                         maxPeakWidth = 30,
-                         minTracesIntensity = 1000,
-                         minNumberTraces = 5,
-                         minIntensity = 5000,
-                         baseCut = 0.3,
-                         maxSearchWindow = 5,
-                         minSignalToNoiseRatio = 3,
-                         minGaussianFit = 0.2) {
-    S7::new_object(
-      ProcessingStep(
-        data_type = "MassSpec",
-        method = "FillFeatures",
-        required = c("FindFeatures", "GroupFeatures"),
-        algorithm = "StreamFind",
-        parameters = list(
-          withinReplicate = as.logical(withinReplicate),
-          filtered = as.logical(filtered),
-          rtExpand = as.numeric(rtExpand),
-          mzExpand = as.numeric(mzExpand),
-          minPeakWidth = as.numeric(minPeakWidth),
-          maxPeakWidth = as.numeric(maxPeakWidth),
-          minTracesIntensity = as.numeric(minTracesIntensity),
-          minNumberTraces = as.numeric(minNumberTraces),
-          minIntensity = as.numeric(minIntensity),
-          baseCut = as.numeric(baseCut),
-          maxSearchWindow = as.numeric(maxSearchWindow),
-          minSignalToNoiseRatio = as.numeric(minSignalToNoiseRatio),
-          minGaussianFit = as.numeric(minGaussianFit)
-        ),
-        number_permitted = 1,
-        version = as.character(packageVersion("StreamFind")),
-        software = "StreamFind",
-        developer = "Ricardo Cunha",
-        contact = "cunha@iuta.de",
-        link = "https://odea-project.github.io/StreamFind",
-        doi = NA_character_
-      )
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
-    checkmate::assert_choice(self@method, "FillFeatures")
-    checkmate::assert_choice(self@algorithm, "StreamFind")
-    checkmate::assert_logical(self@parameters$withinReplicate, len = 1)
-    checkmate::assert_logical(self@parameters$filtered, len = 1)
-    checkmate::assert_numeric(self@parameters$rtExpand, len = 1)
-    checkmate::assert_numeric(self@parameters$mzExpand, len = 1)
-    checkmate::assert_numeric(self@parameters$minPeakWidth, len = 1)
-    checkmate::assert_numeric(self@parameters$maxPeakWidth, len = 1)
-    checkmate::assert_integer(as.integer(self@parameters$minNumberTraces), len = 1)
-    checkmate::assert_numeric(self@parameters$minTracesIntensity, len = 1)
-    checkmate::assert_numeric(self@parameters$minIntensity, len = 1)
-    checkmate::assert_numeric(self@parameters$baseCut, len = 1)
-    checkmate::assert_numeric(self@parameters$maxSearchWindow, len = 1)
-    checkmate::assert_numeric(self@parameters$minSignalToNoiseRatio, len = 1)
-    checkmate::assert_numeric(self@parameters$minGaussianFit, len = 1)
-    NULL
-  }
-)
+MassSpecMethod_FillFeatures_StreamFind <- function(
+  withinReplicate = TRUE,
+  filtered = TRUE,
+  rtExpand = 0,
+  mzExpand = 0,
+  minPeakWidth = 6,
+  maxPeakWidth = 30,
+  minTracesIntensity = 1000,
+  minNumberTraces = 5,
+  minIntensity = 5000,
+  baseCut = 0.3,
+  maxSearchWindow = 5,
+  minSignalToNoiseRatio = 3,
+  minGaussianFit = 0.2
+) {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "FillFeatures",
+    required = c("FindFeatures", "GroupFeatures"),
+    algorithm = "StreamFind",
+    input_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis",
+    parameters = list(
+      withinReplicate = as.logical(withinReplicate),
+      filtered = as.logical(filtered),
+      rtExpand = as.numeric(rtExpand),
+      mzExpand = as.numeric(mzExpand),
+      minPeakWidth = as.numeric(minPeakWidth),
+      maxPeakWidth = as.numeric(maxPeakWidth),
+      minTracesIntensity = as.numeric(minTracesIntensity),
+      minNumberTraces = as.numeric(minNumberTraces),
+      minIntensity = as.numeric(minIntensity),
+      baseCut = as.numeric(baseCut),
+      maxSearchWindow = as.numeric(maxSearchWindow),
+      minSignalToNoiseRatio = as.numeric(minSignalToNoiseRatio),
+      minGaussianFit = as.numeric(minGaussianFit)
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+}
 
 #' @export
 #' @noRd
-S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = NULL) {
+#'
+validate_object.MassSpecMethod_FillFeatures_StreamFind <- function(x) {
+  checkmate::assert_choice(x$type, "MassSpec")
+  checkmate::assert_choice(x$method, "FillFeatures")
+  checkmate::assert_choice(x$algorithm, "StreamFind")
+  checkmate::assert_logical(x$parameters$withinReplicate, len = 1)
+  checkmate::assert_logical(x$parameters$filtered, len = 1)
+  checkmate::assert_numeric(x$parameters$rtExpand, len = 1)
+  checkmate::assert_numeric(x$parameters$mzExpand, len = 1)
+  checkmate::assert_numeric(x$parameters$minPeakWidth, len = 1)
+  checkmate::assert_numeric(x$parameters$maxPeakWidth, len = 1)
+  checkmate::assert_integer(as.integer(x$parameters$minNumberTraces), len = 1)
+  checkmate::assert_numeric(x$parameters$minTracesIntensity, len = 1)
+  checkmate::assert_numeric(x$parameters$minIntensity, len = 1)
+  checkmate::assert_numeric(x$parameters$baseCut, len = 1)
+  checkmate::assert_numeric(x$parameters$maxSearchWindow, len = 1)
+  checkmate::assert_numeric(x$parameters$minSignalToNoiseRatio, len = 1)
+  checkmate::assert_numeric(x$parameters$minGaussianFit, len = 1)
+  NextMethod()
+  NULL
+}
+
+
+#' @export
+#' @noRd
+#' 
+run.MassSpecMethod_FillFeatures_StreamFind <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")
     return(FALSE)
@@ -110,24 +114,32 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
     return(FALSE)
   }
 
-  if (!engine$has_results_nts()) {
-    warning("No NonTargetAnalysisResults object available! Not done.")
+  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
+    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  NonTargetAnalysisResults <- engine$NonTargetAnalysisResults
+  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
 
-  if (!NonTargetAnalysisResults@has_groups) {
-    warning("NonTargetAnalysisResults object does not have feature groups! Not done.")
+  if (
+    !any(vapply(
+      nts$features,
+      function(z) any(!(is.na(z$group) | z$group %in% "")),
+      FALSE
+    ))
+  ) {
+    warning(
+      "MassSpecResults_NonTargetAnalysis object does not have feature groups! Not done."
+    )
     return(FALSE)
   }
 
   parameters <- x$parameters
-  
+
   feature_list <- rcpp_nts_fill_features(
-    engine$NonTargetAnalysisResults$analyses_info,
-    engine$NonTargetAnalysisResults$spectra_headers,
-    engine$NonTargetAnalysisResults$feature_list,
+    nts$info,
+    nts$headers,
+    nts$features,
     parameters$withinReplicate,
     parameters$filtered,
     parameters$rtExpand,
@@ -142,8 +154,16 @@ S7::method(run, MassSpecMethod_FillFeatures_StreamFind) <- function(x, engine = 
     parameters$minSignalToNoiseRatio,
     parameters$minGaussianFit
   )
-  
-  NonTargetAnalysisResults$feature_list <- feature_list
-  engine$NonTargetAnalysisResults <- NonTargetAnalysisResults
-  TRUE
+
+  nts$features <- feature_list
+  tryCatch(
+    {
+      engine$Results <- nts
+      return(TRUE)
+    },
+    error = function(e) {
+      warning(e)
+      return(FALSE)
+    }
+  )
 }

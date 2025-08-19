@@ -1,193 +1,131 @@
 # MARK: ConfigParameter
 # ConfigParameter -----
-#' @title Generic Configuration Parameter
-#' 
-#' @description Class representing a configuration parameter.
-#' 
+#' @title ConfigParameter S3 Class
+#' @description The `ConfigParameter` S3 class represents a configuration parameter in StreamFind. The `ConfigParameter` is a list of at least two elements - `name` and `description`.
 #' @param name Name of the parameter.
 #' @param description Description of the parameter.
-#' 
 #' @export
-#' 
-ConfigParameter <- S7::new_class(
-  name = "ConfigParameter",
-  package = "StreamFind",
-  properties = list(
-    name = S7::new_property(S7::class_character),
-    description = S7::new_property(S7::class_character)
-  ),
-  constructor = function(name = NA_character_, description = NA_character_) {
-    S7::new_object(S7::S7_object(), name = name, description = description)
-  },
-  validator = function(self) {
-    checkmate::assert_character(self@name)
-    checkmate::assert_character(self@description)
-    NULL
+#'
+ConfigParameter <- function(name = NA_character_, description = NA_character_) {
+  x <- structure(list(name = name, description = description), class = "ConfigParameter")
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid ConfigParameter object")
   }
-)
-
-#' @export
-#' @noRd
-`$.ConfigParameter` <- function(x, i) {
-  S7::prop(x, i)
 }
 
+#' @describeIn ConfigParameter Validates a `ConfigParameter` object, returning NULL if valid.
+#' @param x An object to validate.
 #' @export
-#' @noRd
-`$<-.ConfigParameter` <- function(x, i, value) {
-  S7::prop(x, i) <- value
-  x
+#'
+validate_object.ConfigParameter <- function(x) {
+  checkmate::assert_class(x, "ConfigParameter")
+  checkmate::assert_list(x, min.len = 2, names = "named")
+  checkmate::assert_names(names(x), must.include = c("name", "description"))
+  checkmate::assert_character(x$name, len = 1)
+  checkmate::assert_character(x$description, len = 1)
+  NULL
 }
 
 # MARK: Config
 # Config -----
 #' @title Generic Configuration
-#' 
-#' @description Class representing a configuration object composed of multiple
-#' [StreamFind::ConfigParameter] objects.
-#' 
+#' @description The `Config` S3 class represents a configuration object and is essentially a list of
+#' [StreamFind::ConfigParameter] class objects.
 #' @param parameters A list of [StreamFind::ConfigParameter] objects.
-#' 
-#' @slot parameters (getter/setter) A named list of [StreamFind::ConfigParameter] objects.
-#' @slot config_frame (getter) A data frame representation of the configuration parameters.
-#' 
+#' @return A `Config` object as a list of [StreamFind::ConfigParameter] objects.
 #' @export
-#' 
-Config <- S7::new_class(
-  name = "Config",
-  package = "StreamFind",
-  properties = list(
-    parameters = S7::new_property(S7::class_list),
-    config_frame = S7::new_property(
-      S7::class_data.frame,
-      getter = function(self) {
-        if (length(self@parameters) == 0) return(data.frame())
-        data.frame(
-          name = sapply(self@parameters, function(x) x@name),
-          value = sapply(self@parameters, function(x) as.character(x@value)),
-          description = sapply(self@parameters, function(x) x@description)
-        )
-      }
-    )
-  ),
-  constructor = function(parameters = list()) {
-    S7::new_object(
-      S7::S7_object(),
-      parameters = parameters
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_list(self@parameters)
-    
-    if (length(self@parameters) > 0) {
-      checkmate::assert_true(
-        all(vapply(self@parameters, function(x) is(x, "StreamFind::ConfigParameter"), FALSE))
-      )
+#'
+Config <- function(parameters = list()) {
+  if (is.list(parameters)) {
+    if (length(parameters) > 0) {
+      parameters <- lapply(parameters, function(x) {
+        if ("ConfigParameter" %in% class(x)) {
+          if (is.null(validate_object(x))) {
+            x
+          } else {
+            NULL
+          }
+        } else if (is.list(x)) {
+          call_name <- x$name
+          if (is.null(call_name) || call_name == "") {
+            stop("Each list entry must have a 'name' element.")
+          }
+          x$name <- NULL
+          x$description <- NULL
+          x <- do.call(call_name, x)
+        } else {
+          stop("Each entry must be an ConfigParameter object or a list that can be converted to one.")
+        }
+        x
+      })
+      parameter_names <- vapply(parameters, function(x) x$name, NA_character_)
+      parameters <- parameters[!is.na(parameter_names)]
+      parameter_names <- parameter_names[!is.na(parameter_names)]
+      names(parameters) <- parameter_names
     }
-    NULL
-  }
-)
-
-#' @export
-#' @noRd
-S7::method(names, Config) <- function(x) {
-  names(x@parameters)
-}
-
-#' @export
-#' @noRd
-`$.StreamFind::Config` <- function(x, i) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.character(i)) {
-    return(parameters_list[[i]])
   } else {
-    stop("Invalid parameters getter type")
+    stop("Parameters must be a list of ConfigParameter objects.")
+  }
+  parameters <- structure(parameters, class = "Config")
+  if (is.null(validate_object(parameters))) {
+    return(parameters)
+  } else {
+    stop("Invalid Config object")
   }
 }
 
+#' @describeIn Config Validates a `Config` object, returning NULL if valid.
+#' @param x A `Config` object.
 #' @export
-#' @noRd
-`$<-.StreamFind::Config` <- function(x, i, value) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.character(i)) {
-    parameters_list[[i]] <- value
-    x@parameters <- parameters_list
-    return(x)
+#'
+validate_object.Config <- function(x) {
+  checkmate::assert_list(x)
+  if (length(x) > 0) {
+    for (i in seq_along(x)) {
+      if (!is.null(validate_object(x[[i]]))) {
+        stop(sprintf("Element %d is not a ConfigParameter object.", i))
+      }
+    }
+  }
+  NULL
+}
+
+#' @describeIn Config Prints the configuration parameters in a human-readable format.
+#' @param x A `Config` object.
+#' @export
+#' 
+show.Config <- function(x) {
+  if (length(x) > 0) {
+    cat("Configuration Parameters:\n")
+    for (i in seq_along(x)) {
+      cat(sprintf("- name: %s\n", x[[i]]$name))
+      cat(sprintf("  description: %s\n", x[[i]]$description))
+      if (length(x[[i]]) > 2) {
+        for (j in seq_along(x[[i]])) {
+          if (!names(x[[i]])[j] %in% c("name", "description")) {
+            cat(sprintf("  %s: %s\n", names(x[[i]])[j], x[[i]][[j]]))
+          }
+        }
+      }
+    }
   } else {
-    stop("Invalid parameters setter type")
+    cat("No configuration parameters available.\n")
   }
 }
 
+#' @describeIn Config Converts the configuration parameters to a `data.table` for easy viewing.
+#' @param x A `Config` object.
 #' @export
-#' @noRd
-`[.StreamFind::Config` <- function(x, i) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.numeric(i)) {
-    return(parameters_list[i])
-  } else if (is.character(i)) {
-    return(parameters_list[i])
-  } else if (is.logical(i)) {
-    return(parameters_list[i])
-  } else {
-    stop("Invalid parameters subset type")
-  }
-}
-
-#' @export
-#' @noRd
-`[<-.StreamFind::Config` <- function(x, i, value) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.numeric(i)) {
-    parameters_list[i] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else if (is.character(i)) {
-    parameters_list[i] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else if (is.logical(i)) {
-    parameters_list[i] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else {
-    stop("Invalid parameters setter type")
-  }
-}
-
-#' @export
-#' @noRd
-`[[.StreamFind::Config` <- function(x, i) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.numeric(i)) {
-    return(parameters_list[[i]])
-  } else if (is.character(i)) {
-    return(parameters_list[[i]])
-  } else {
-    stop("Invalid parameters subset type")
-  }
-}
-
-#' @export
-#' @noRd
-`[[<-.StreamFind::Config` <- function(x, i, value) {
-  parameters_list <- x@parameters
-  if (missing(i)) return(parameters_list)
-  if (is.numeric(i)) {
-    parameters_list[i] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else if (is.character(i)) {
-    parameters_list[[i]] <- value
-    x@parameters <- parameters_list
-    return(x)
-  } else {
-    stop("Invalid parameters setter type")
-  }
+#' 
+as.data.table.Config <- function(x) {
+  if (length(x) == 0) return(data.table::data.table())
+  data.table(
+    name = sapply(x, function(x) x$name),
+    value = sapply(x, function(x) as.character(x$value)),
+    description = sapply(x, function(x) x$description)
+  )
 }
 
 # MARK: ENGINE CONFIGURATION
@@ -196,123 +134,139 @@ S7::method(names, Config) <- function(x) {
 # MARK: ConfigCache
 ## ConfigCache -----
 #' @title Configuration Parameter for Caching
+#'
+#' @description The `ConfigCache` class is a `ConfigParameter` for the caching behavior.
+#'
+#' @param value Logical indicating whether to enable or disable caching.
+#' @param mode Character indicating the caching mode (e.g., "rds" or "sqlite").
+#' @param folder Character indicating the folder for caching (for "rds" mode).
+#' @param file Character indicating the file for caching (for "sqlite" mode).
 #' 
-#' @description Class representing a configuration for the caching behavior.
-#' 
-#' @slot value Logical indicating whether to enable or disable caching.
-#' @slot mode Character indicating the caching mode (e.g., "rds" or "sqlite").
-#' @slot folder Character indicating the folder for caching (for "rds" mode).
-#' @slot file Character indicating the file for caching (for "sqlite" mode).
-#' @slot size (getter) Size of the cache.
-#' @slot info (getter) Information about the cache.
+#' @return A `ConfigCache` object, which is a list with the following elements:
+#' - `name`: Name of the cache configuration.
+#' - `description`: Description of the cache configuration.
+#' - `value`: Logical value indicating whether caching is enabled.
+#' - `mode`: Character string indicating the caching mode (e.g., "rds" or "sqlite").
+#' - `folder`: Character string indicating the folder for caching (for "rds" mode).
+#' - `file`: Character string indicating the file for caching (for "sqlite" mode).
 #' 
 #' @export
-#' 
-ConfigCache <- S7::new_class(
-  name = "ConfigCache",
-  parent = ConfigParameter,
-  package = "StreamFind",
-  properties = list(
-    value = S7::new_property(S7::class_logical),
-    mode = S7::new_property(S7::class_character, default = "rds"),
-    folder = S7::new_property(S7::class_character, default = "cache"),
-    file = S7::new_property(S7::class_character, default = "cache.sqlite"),
-    size = S7::new_property(
-      S7::class_numeric,
-      getter = function(self) {
-        if ("sqlite" %in% self@mode) {
-          if (file.exists(self@file)) {
-            size <- file.size(self@file)
-          } else {
-            message("Cache file does not exist!")
-            return(NA_real_)
-          }
-        } else if ("rds" %in% self@mode) {
-          if (dir.exists(self@folder)) {
-            size <- sum(file.size(list.files(self@folder, full.names = TRUE)))
-          } else {
-            message("Cache folder does not exist!")
-            return(NA_real_)
-          }
-        } else {
-          message("Invalid cache mode!")
-          return(NA_real_)
-        }
-        if (size > 1024^3) {
-          size <- size / 1024^3
-          unit <- "GB"
-        } else if (size > 1024^2) {
-          size <- size / 1024^2
-          unit <- "MB"
-        } else if (size > 1024) {
-          size <- size / 1024
-          unit <- "KB"
-        } else {
-          unit <- "bytes"
-        }
-        names(size) <- unit
-        size
-      }
+#'
+ConfigCache <- function(value = TRUE,
+                        mode = "rds",
+                        folder = "cache",
+                        file = "cache.sqlite") {
+  x <- structure(
+    list(
+      name = "ConfigCache",
+      description = "Enable/disable caching.",
+      value = value,
+      mode = mode,
+      folder = folder,
+      file = file
     ),
-    info = S7::new_property(
-      S7::class_data.frame,
-      getter = function(self) {
-        if ("sqlite" %in% self@mode) {
-          if (file.exists(self@file)) {
-            db <- .openCacheDBScope(file = self@file)
-            tables <- DBI::dbListTables(db)
-            if (length(tables) == 0) {
-              message("\U2139 Cache file is empty.")
-            } else {
-              tableRows <- sapply(tables, function(tab) {
-                DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))
-              })
-              tableRows <- unlist(tableRows)
-              return(data.table::data.table(name = tables, rows = tableRows))
-            }
-          } else {
-            message("Cache file does not exist!")
-          }
-          data.table::data.table()
-          
-        } else if ("rds" %in% self@mode) {
-          .info_cache_rds(self@folder)
-          
-        } else {
-          message("Invalid cache mode!")
-          data.table::data.table()
-        }
-      }
-    )
-  ),
-  constructor = function() {
-    S7::new_object(
-      S7::S7_object(),
-      name = "Cache results",
-      description = "Enable/disable caching of results between processing steps.",
-      value = TRUE,
-      mode = "rds",
-      folder = "cache",
-      file = "cache.sqlite"
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_logical(self@value, max.len = 1)
-    checkmate::assert_choice(self@mode, c("rds", "sqlite"))
-    checkmate::assert_character(self@file)
-    checkmate::assert_true(tools::file_ext(self@file) %in% "sqlite")
-    NULL
+    class = c("ConfigCache", "ConfigParameter")
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid ConfigCache object")
   }
-)
+}
+
+#' @describeIn ConfigCache Validates a `ConfigCache` object, returning NULL if valid.
+#' @param x A `ConfigCache` object.
+#' @export
+#'
+validate_object.ConfigCache <- function(x) {
+  checkmate::assert_logical(x$value, max.len = 1)
+  checkmate::assert_choice(x$mode, c("rds", "sqlite"))
+  checkmate::assert_character(x$file)
+  checkmate::assert_true(tools::file_ext(x$file) %in% "sqlite")
+  NULL
+}
+
+# MARK: size.ConfigCache
+#' @describeIn ConfigCache Get the size of the cache as a named numeric vector with the size of the
+#' cache in bytes, KB, MB, or GB.
+#' @param x A `ConfigCache` object.
+#' @export
+#'
+size.ConfigCache <- function(x) {
+  if ("sqlite" %in% x$mode) {
+    if (file.exists(x$file)) {
+      size <- file.size(x$file)
+    } else {
+      message("Cache file does not exist!")
+      return(NA_real_)
+    }
+  } else if ("rds" %in% x$mode) {
+    if (dir.exists(x$folder)) {
+      size <- sum(file.size(list.files(x$folder, full.names = TRUE)))
+    } else {
+      message("Cache folder does not exist!")
+      return(NA_real_)
+    }
+  } else {
+    message("Invalid cache mode!")
+    return(NA_real_)
+  }
+  if (size > 1024^3) {
+    size <- size / 1024^3
+    unit <- "GB"
+  } else if (size > 1024^2) {
+    size <- size / 1024^2
+    unit <- "MB"
+  } else if (size > 1024) {
+    size <- size / 1024
+    unit <- "KB"
+  } else {
+    unit <- "bytes"
+  }
+  names(size) <- unit
+  size
+}
+
+# MARK: info.ConfigCache
+#' @describeIn ConfigCache Get information about the cache as a `data.table` with the names and
+#' number of rows in each table for SQLite cache, or a list of files for RDS cache.
+#' @param x A `ConfigCache` object.
+#' @export
+#'
+info.ConfigCache <- function(x) {
+  if ("sqlite" %in% x$mode) {
+    if (file.exists(x$file)) {
+      db <- .openCacheDBScope(file = x$file)
+      tables <- DBI::dbListTables(db)
+      if (length(tables) == 0) {
+        message("\U2139 Cache file is empty.")
+      } else {
+        tableRows <- sapply(tables, function(tab) {
+          DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab))
+        })
+        tableRows <- unlist(tableRows)
+        return(data.table::data.table(name = tables, rows = tableRows))
+      }
+    } else {
+      message("Cache file does not exist!")
+    }
+    data.table::data.table()
+  } else if ("rds" %in% x$mode) {
+    .info_cache_rds(x$folder)
+  } else {
+    message("Invalid cache mode!")
+    data.table::data.table()
+  }
+}
 
 #' @export
 #' @noRd
-S7::method(load_cache, ConfigCache) <- function(x, category = NULL, ...) {
-  if (x@value) {
-    if ("sqlite" %in% x@mode) {
-      .load_cache_sqlite(category = category, ..., file = x@file)
-    } else if ("rds" %in% x@mode) {
-      .load_chache_rds(category = category, ..., folder = x@folder)
+load_cache.ConfigCache <- function(x, category = NULL, ...) {
+  if (x$value) {
+    if ("sqlite" %in% x$mode) {
+      .load_cache_sqlite(category = category, ..., file = x$file)
+    } else if ("rds" %in% x$mode) {
+      .load_chache_rds(category = category, ..., folder = x$folder)
     } else {
       message("Invalid cache mode!")
       return(NULL)
@@ -325,12 +279,15 @@ S7::method(load_cache, ConfigCache) <- function(x, category = NULL, ...) {
 
 #' @export
 #' @noRd
-S7::method(save_cache, ConfigCache) <- function(x, category = NULL, data = NULL, hash = NULL) {
-  if (x@value) {
-    if ("sqlite" %in% x@mode) {
-      .save_cache_sqlite(category, data, hash, file = x@file)
-    } else if ("rds" %in% x@mode) {
-      .save_cache_rds(category, data, hash, folder = x@folder)
+save_cache.ConfigCache <- function(x,
+                                   category = NULL,
+                                   data = NULL,
+                                   hash = NULL) {
+  if (x$value) {
+    if ("sqlite" %in% x$mode) {
+      .save_cache_sqlite(category, data, hash, file = x$file)
+    } else if ("rds" %in% x$mode) {
+      .save_cache_rds(category, data, hash, folder = x$folder)
     } else {
       message("Invalid cache mode!")
       return(invisible(NULL))
@@ -343,12 +300,12 @@ S7::method(save_cache, ConfigCache) <- function(x, category = NULL, data = NULL,
 
 #' @export
 #' @noRd
-S7::method(clear_cache, ConfigCache) <- function(x, what = NULL, ...) {
-  if (x@value) {
-    if ("sqlite" %in% x@mode) {
-      clear_cache(what, file = x@file)
-    } else if ("rds" %in% x@mode) {
-      .clear_cache_rds(what, folder = x@folder)
+clear_cache.ConfigCache <- function(x, what = NULL, ...) {
+  if (x$value) {
+    if ("sqlite" %in% x$mode) {
+      clear_cache(what, file = x$file)
+    } else if ("rds" %in% x$mode) {
+      .clear_cache_rds(what, folder = x$folder)
     } else {
       message("Invalid cache mode!")
       return(invisible(NULL))
@@ -362,30 +319,18 @@ S7::method(clear_cache, ConfigCache) <- function(x, what = NULL, ...) {
 # MARK: EngineConfig
 ## EngineConfig -----
 #' @title Engine Configuration
-#' 
 #' @description Class representing the engine configuration, inheriting from [StreamFind::Config].
-#' 
-#' @slot parameters A list of [StreamFind::ConfigParameter] objects.
-#' 
 #' @export
-#' 
-EngineConfig <- S7::new_class(
-  name = "EngineConfig",
-  package = "StreamFind",
-  parent = Config,
-  constructor = function() {
-    S7::new_object(
-      Config(
-        parameters = list(
-          "ConfigCache" = ConfigCache()
-        )
-      )
-    )
-  },
-  validator = function(self) {
-    NULL
+#'
+EngineConfig <- function(parameters = list("ConfigCache" = ConfigCache())) {
+  x <- Config(parameters)
+  class(x) <- c("EngineConfig", "Config")
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid EngineConfig object")
   }
-)
+}
 
 # MARK: APP CONFIGURATION
 # APP CONFIGURATION -----
@@ -393,95 +338,96 @@ EngineConfig <- S7::new_class(
 # MARK: ConfigDurationNotifications
 ## ConfigDurationNotifications -----
 #' @title Configuration Parameter for Duration of Notifications
-#' 
+#'
 #' @description Class representing a configuration for the duration of pop-up notifications in the
 #' app, inhiberiting from [StreamFind::ConfigParameter].
-#' 
+#'
 #' @param value Duration in seconds for pop-up notifications.
-#' 
+#'
 #' @export
-#' 
-ConfigDurationNotifications <- S7::new_class(
-  name = "ConfigDurationNotifications",
-  parent = ConfigParameter,
-  package = "StreamFind",
-  properties = list(value = S7::new_property(S7::class_numeric)),
-  constructor = function(value = 10) {
-    S7::new_object(
-      S7::S7_object(),
-      name = "Duration of pop-up notifications",
+#'
+ConfigDurationNotifications <- function(value = 10) {
+  x <- structure(
+    list(
+      name = "ConfigDurationNotifications",
       description = "Duration in seconds for pop-up notifications",
       value = as.numeric(value)
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_character(self@name)
-    checkmate::assert_character(self@description)
-    checkmate::assert_numeric(self@value, max.len = 1)
-    NULL
+    ),
+    class = c("ConfigDurationNotifications", "ConfigParameter")
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid ConfigDurationNotifications object")
   }
-)
+}
+
+#' @describeIn ConfigDurationNotifications Validates a `ConfigDurationNotifications` object,
+#' returning NULL if valid.
+#' @param x A `ConfigDurationNotifications` object.
+#' @export
+#' 
+validate_object.ConfigDurationNotifications <- function(x) {
+  checkmate::assert_character(x$name)
+  checkmate::assert_character(x$description)
+  checkmate::assert_numeric(x$value, max.len = 1)
+  NULL
+}
 
 # MARK: ConfigExtraRoots
 ## ConfigExtraRoots -----
 #' @title Configuration Parameter for Extra Root Directories
-#' 
+#'
 #' @description Class representing a configuration for extra root directories for file selection
 #' in the app, inheriting from [StreamFind::ConfigParameter].
-#' 
+#'
 #' @param value Character string representing extra root directories for file selection.
-#' 
+#'
 #' @export
-#' 
-ConfigExtraRoots <- S7::new_class(
-  name = "ConfigExtraRoots",
-  parent = ConfigParameter,
-  package = "StreamFind",
-  properties = list(value = S7::new_property(S7::class_character)),
-  constructor = function(value = "") {
-    S7::new_object(
-      S7::S7_object(),
-      name = "Extra Root Directories",
+#'
+ConfigExtraRoots <- function(value = "") {
+  x <- structure(
+    list(
+      name = "ConfigExtraRoots",
       description = "Extra root directories for file selection. Add spaces between directories.",
-      value = value
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_character(self@name)
-    checkmate::assert_character(self@description)
-    checkmate::assert_character(self@value)
-    if (self@value != "") {
-      checkmate::assert_true(all(dir.exists(self@value)))
-    }
-    NULL
+      value = as.character(value)
+    ),
+    class = c("ConfigExtraRoots", "ConfigParameter")
+  )
+  
+}
+
+#' @describeIn ConfigExtraRoots Validates a `ConfigExtraRoots` object, returning NULL if valid.
+#' @param x A `ConfigExtraRoots` object.
+#' @export
+#'
+validate_object.ConfigExtraRoots <- function(x) {
+  checkmate::assert_character(x$name)
+  checkmate::assert_character(x$description)
+  checkmate::assert_character(x$value)
+  if (x$value != "") {
+    checkmate::assert_true(all(dir.exists(x$value)))
   }
-)
+  NULL
+}
 
 # MARK: AppConfig
 ## AppConfig -----
 #' @title App Configuration
-#' 
 #' @description Class representing the app configuration, inheriting from [StreamFind::Config].
-#' 
-#' @slot parameters A list of [StreamFind::ConfigParameter] objects.
-#' 
 #' @export
-#' 
-AppConfig <- S7::new_class(
-  name = "AppConfig",
-  package = "StreamFind",
-  parent = Config,
-  constructor = function() {
-    S7::new_object(
-      Config(
-        parameters = list(
-          "ConfigDurationNotifications" = ConfigDurationNotifications(),
-          "ConfigExtraRoots" = ConfigExtraRoots()
-        )
-      )
-    )
-  },
-  validator = function(self) {
-    NULL
+#'
+AppConfig <- function() {
+  x <- structure(
+    list(
+      "ConfigDurationNotifications" = ConfigDurationNotifications(),
+      "ConfigExtraRoots" = ConfigExtraRoots()
+    ),
+    class = c("AppConfig", "Config")
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid AppConfig object")
   }
-)
+}

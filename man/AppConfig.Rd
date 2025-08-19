@@ -9,9 +9,3 @@ AppConfig()
 \description{
 Class representing the app configuration, inheriting from \link{Config}.
 }
-\section{Slots}{
-
-\describe{
-\item{\code{parameters}}{A list of \link{ConfigParameter} objects.}
-}}
-

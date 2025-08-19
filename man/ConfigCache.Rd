@@ -2,26 +2,57 @@
 % Please edit documentation in R/class_Config.R
 \name{ConfigCache}
 \alias{ConfigCache}
+\alias{validate_object.ConfigCache}
+\alias{size.ConfigCache}
+\alias{info.ConfigCache}
 \title{Configuration Parameter for Caching}
 \usage{
-ConfigCache()
+ConfigCache(
+  value = TRUE,
+  mode = "rds",
+  folder = "cache",
+  file = "cache.sqlite"
+)
+
+\method{validate_object}{ConfigCache}(x)
+
+\method{size}{ConfigCache}(x)
+
+\method{info}{ConfigCache}(x)
+}
+\arguments{
+\item{value}{Logical indicating whether to enable or disable caching.}
+
+\item{mode}{Character indicating the caching mode (e.g., "rds" or "sqlite").}
+
+\item{folder}{Character indicating the folder for caching (for "rds" mode).}
+
+\item{file}{Character indicating the file for caching (for "sqlite" mode).}
+
+\item{x}{A \code{ConfigCache} object.}
+}
+\value{
+A \code{ConfigCache} object, which is a list with the following elements:
+\itemize{
+\item \code{name}: Name of the cache configuration.
+\item \code{description}: Description of the cache configuration.
+\item \code{value}: Logical value indicating whether caching is enabled.
+\item \code{mode}: Character string indicating the caching mode (e.g., "rds" or "sqlite").
+\item \code{folder}: Character string indicating the folder for caching (for "rds" mode).
+\item \code{file}: Character string indicating the file for caching (for "sqlite" mode).
+}
 }
 \description{
-Class representing a configuration for the caching behavior.
+The \code{ConfigCache} class is a \code{ConfigParameter} for the caching behavior.
 }
-\section{Slots}{
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(ConfigCache)}: Validates a \code{ConfigCache} object, returning NULL if valid.
 
-\describe{
-\item{\code{value}}{Logical indicating whether to enable or disable caching.}
+\item \code{size(ConfigCache)}: Get the size of the cache as a named numeric vector with the size of the
+cache in bytes, KB, MB, or GB.
 
-\item{\code{mode}}{Character indicating the caching mode (e.g., "rds" or "sqlite").}
+\item \code{info(ConfigCache)}: Get information about the cache as a \code{data.table} with the names and
+number of rows in each table for SQLite cache, or a list of files for RDS cache.
 
-\item{\code{folder}}{Character indicating the folder for caching (for "rds" mode).}
-
-\item{\code{file}}{Character indicating the file for caching (for "sqlite" mode).}
-
-\item{\code{size}}{(getter) Size of the cache.}
-
-\item{\code{info}}{(getter) Information about the cache.}
 }}
-

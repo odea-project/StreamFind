@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_DeleteScansSection.R
 \name{RamanMethod_DeleteScansSection_native}
 \alias{RamanMethod_DeleteScansSection_native}
-\title{\strong{RamanMethod_DeleteScansSection_native}}
+\title{RamanMethod_DeleteScansSection_native Class}
 \usage{
 RamanMethod_DeleteScansSection_native(min = 0, max = 0)
 }

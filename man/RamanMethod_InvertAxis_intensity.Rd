@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_InvertAxis.R
 \name{RamanMethod_InvertAxis_intensity}
 \alias{RamanMethod_InvertAxis_intensity}
-\title{\strong{RamanMethod_InvertAxis_intensity}}
+\title{RamanMethod_InvertAxis_intensity Class}
 \usage{
 RamanMethod_InvertAxis_intensity()
 }

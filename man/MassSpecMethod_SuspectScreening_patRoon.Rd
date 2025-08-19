@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SuspectScreening.R
 \name{MassSpecMethod_SuspectScreening_patRoon}
 \alias{MassSpecMethod_SuspectScreening_patRoon}
-\title{MassSpecMethod_SuspectScreening_patRoon S7 class}
+\title{MassSpecMethod_SuspectScreening_patRoon Class}
 \usage{
 MassSpecMethod_SuspectScreening_patRoon(
   suspects = data.table::data.table(),
@@ -12,11 +12,9 @@ MassSpecMethod_SuspectScreening_patRoon(
 )
 }
 \arguments{
-\item{suspects}{A data.frame with suspect information. See section Suspect list format in
-\link[patRoon]{screenSuspects} for more information.}
+\item{suspects}{A data.frame with suspect information. See section Suspect list format in \link[patRoon]{screenSuspects} for more information.}
 
-\item{rtWindow}{The retention time window (in seconds) that will be used for matching a
-suspect (+/- feature data).}
+\item{rtWindow}{The retention time window (in seconds) that will be used for matching a suspect (+/- feature data).}
 
 \item{mzWindow}{The m/z window that will be used for matching a suspect (+/- feature data).}
 
@@ -26,8 +24,7 @@ suspect (+/- feature data).}
 A \code{MassSpecMethod_SuspectScreening_patRoon} object.
 }
 \description{
-Settings for performing suspect screening using the function
-\link[patRoon]{screenSuspects} from the patRoon R package.
+Settings for performing suspect screening using the function \link[patRoon]{screenSuspects} from the patRoon R package.
 }
 \references{
 \insertRef{patroon01}{StreamFind}

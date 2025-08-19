@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_SmoothSpectra.R
 \name{RamanMethod_SmoothSpectra_movingaverage}
 \alias{RamanMethod_SmoothSpectra_movingaverage}
-\title{\strong{RamanMethod_SmoothSpectra_movingaverage}}
+\title{RamanMethod_SmoothSpectra_movingaverage}
 \usage{
 RamanMethod_SmoothSpectra_movingaverage(windowSize = 5)
 }

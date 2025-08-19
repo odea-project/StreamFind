@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_CorrectSpectraBaseline.R
 \name{RamanMethod_CorrectSpectraBaseline_baseline_als}
 \alias{RamanMethod_CorrectSpectraBaseline_baseline_als}
-\title{\strong{RamanMethod_CorrectSpectraBaseline_baseline_als}}
+\title{RamanMethod_CorrectSpectraBaseline_baseline_als Class}
 \usage{
 RamanMethod_CorrectSpectraBaseline_baseline_als(
   lambda = 5,

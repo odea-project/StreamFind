@@ -42,6 +42,7 @@ options(
     dom = "lfrtip",
     autoWidth = TRUE,
     pageLength = 10,
+    scrollX = TRUE,
     lengthMenu = c(10, 20, 50, 75, 100),
     initComplete = htmlwidgets::JS(
       "function(settings, json) {",
@@ -52,22 +53,15 @@ options(
   )
 )
 
+#path <- "E:/example_files/isoft/240819_BVCZ"
 path <- "C:/Users/apoli/Documents/example_files/isoft/240819_BVCZ"
-files <- list.files(path = path, pattern = "\\.d$", full.names = TRUE)[c(6:8, 16:18)]
+files <- list.files(path = path, pattern = "\\.d$", full.names = TRUE)[c(
+  6:8,
+  16:18
+)]
 ```
 
-<style>
-pre {
-  overflow-x: auto;
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-</style>
-
 <br>
-
 <br>
 
 ***
@@ -94,12 +88,14 @@ ms <- StreamFind::MassSpecEngine$new(
 )
 
 # Assign analysis replicate groups
-ms$Analyses$replicates <- c(
-  rep("Sample", 3),
-  rep("QC_2.5", 3)
+ms$Analyses <- set_replicate_names(
+  ms$Analyses,
+  c(rep("Sample", 3), rep("QC_2.5", 3))
 )
 
-ms$Analyses$info[, c(1:2, 4, 5)]
+DT::datatable(
+  info(ms$Analyses)
+)
 ```
 
 # Workflow
@@ -113,7 +109,10 @@ ms$run(MassSpecMethod_SmoothChromatograms_movingaverage(windowSize = 5))
 ```
 
 ```{r plot-tic}
-ms$plot_chromatograms(colorBy = "replicates")
+plot_chromatograms(
+  ms$Results$MassSpecResults_Chromatograms,
+  colorBy = "replicates"
+)
 ```
 
 ```{r find-tic-peaks}
@@ -128,7 +127,10 @@ ms$run(
 ```
 
 ```{r plot-tic-peaks}
-ms$plot_chromatograms_peaks(colorBy = "replicates+targets")
+plot_chromatograms_peaks(
+  ms$Results$MassSpecResults_Chromatograms,
+  colorBy = "replicates+targets"
+)
 ```
 
 ```{r load-spectra}
@@ -145,7 +147,11 @@ ms$run(
 
 ```{r plot-spectra, fig.alt="plot-spectra-static"}
 # plots only the spectra of the first analysis
-plot_spectra(ms$Spectra, analyses = 1, interactive = FALSE)
+plot_spectra(
+  ms$Results$MassSpecResults_Spectra,
+  analyses = 1,
+  interactive = FALSE
+)
 ```
 
 ```{r spectra-charges}
@@ -163,7 +169,7 @@ ms$run(
 ```
 
 ```{r plot-spectra-charges}
-plot_spectra_charges(ms$Spectra)
+plot_spectra_charges(ms$Results$MassSpecResults_Spectra)
 ```
 
 ```{r deconvolute-mass}
@@ -186,7 +192,11 @@ ms$run(
 ```
 
 ```{r plot-spectra-deconvoluted, fig.alt="plot-spectra-static-deconvoluted"}
-plot_spectra(ms$Spectra, analyses = 1, interactive = FALSE)
+plot_spectra(
+  ms$Results$MassSpecResults_Spectra,
+  analyses = 1,
+  interactive = FALSE
+)
 ```
 
 ```{r spectra-maxima}
@@ -203,9 +213,19 @@ ms$run(
 ```{r plot-spectra-maxima, fig.alt="plot-spectra-static-maxima"}
 # Plot spectra peaks for the first analysis
 plot_spectra_peaks(
-  ms$Spectra,
+  ms$Results$MassSpecResults_Spectra,
   analyses = 1,
   colorBy = "analyses+targets",
   interactive = FALSE
+)
+```
+
+```{r}
+# Identify the mass values of the peaks
+DT::datatable(
+  data.table::rbindlist(
+    ms$Results$MassSpecResults_Spectra$peaks,
+    idcol = "analysis"
+  )
 )
 ```

@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_MergeSpectraTimeSeries.R
 \name{RamanMethod_MergeSpectraTimeSeries_StreamFind}
 \alias{RamanMethod_MergeSpectraTimeSeries_StreamFind}
-\title{\strong{RamanMethod_MergeSpectraTimeSeries_StreamFind}}
+\title{RamanMethod_MergeSpectraTimeSeries_StreamFind}
 \usage{
 RamanMethod_MergeSpectraTimeSeries_StreamFind(preCut = 2)
 }

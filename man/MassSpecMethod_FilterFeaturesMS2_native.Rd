@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FilterFeaturesMS2.R
 \name{MassSpecMethod_FilterFeaturesMS2_native}
 \alias{MassSpecMethod_FilterFeaturesMS2_native}
-\title{MassSpecMethod_FilterFeaturesMS2_native S7 class}
+\title{MassSpecMethod_FilterFeaturesMS2_native Class}
 \usage{
 MassSpecMethod_FilterFeaturesMS2_native(
   top = NULL,

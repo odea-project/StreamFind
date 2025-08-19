@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_CalculateSpectraSimilary.R
 \name{RamanMethod_CalculateSpectraSimilary_hqi}
 \alias{RamanMethod_CalculateSpectraSimilary_hqi}
-\title{\strong{RamanMethod_CalculateSpectraSimilary_hqi}}
+\title{RamanMethod_CalculateSpectraSimilary_hqi Class}
 \usage{
 RamanMethod_CalculateSpectraSimilary_hqi(
   reference = data.frame(),

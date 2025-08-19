@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_SubtractScansSection.R
 \name{RamanMethod_SubtractScansSection_native}
 \alias{RamanMethod_SubtractScansSection_native}
-\title{\strong{RamanMethod_SubtractScansSection_native}}
+\title{RamanMethod_SubtractScansSection_native Class}
 \usage{
 RamanMethod_SubtractScansSection_native(sectionWindow = c(10, 200))
 }

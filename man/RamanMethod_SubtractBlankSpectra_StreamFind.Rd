@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_SubtractBlankSpectra.R
 \name{RamanMethod_SubtractBlankSpectra_StreamFind}
 \alias{RamanMethod_SubtractBlankSpectra_StreamFind}
-\title{\strong{RamanMethod_SubtractBlankSpectra_StreamFind}}
+\title{RamanMethod_SubtractBlankSpectra_StreamFind Class}
 \usage{
 RamanMethod_SubtractBlankSpectra_StreamFind(negativeToZero = FALSE)
 }

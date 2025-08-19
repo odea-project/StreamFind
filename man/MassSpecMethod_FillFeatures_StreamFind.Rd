@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FillFeatures.R
 \name{MassSpecMethod_FillFeatures_StreamFind}
 \alias{MassSpecMethod_FillFeatures_StreamFind}
-\title{MassSpecMethod_FillFeatures_StreamFind S7 class}
+\title{MassSpecMethod_FillFeatures_StreamFind Class}
 \usage{
 MassSpecMethod_FillFeatures_StreamFind(
   withinReplicate = TRUE,

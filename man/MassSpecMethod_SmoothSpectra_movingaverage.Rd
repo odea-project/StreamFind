@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothSpectra.R
 \name{MassSpecMethod_SmoothSpectra_movingaverage}
 \alias{MassSpecMethod_SmoothSpectra_movingaverage}
-\title{MassSpecMethod_SmoothSpectra_movingaverage S7 class}
+\title{MassSpecMethod_SmoothSpectra_movingaverage Class}
 \usage{
 MassSpecMethod_SmoothSpectra_movingaverage(windowSize = 5)
 }

@@ -2,9 +2,12 @@
 % Please edit documentation in R/class_AuditTrail.R
 \name{AuditTrailEntry}
 \alias{AuditTrailEntry}
+\alias{validate_object.AuditTrailEntry}
 \title{Generic Entry for Audit Trail}
 \usage{
 AuditTrailEntry(time_stamp, value_class, value_parent, value)
+
+\method{validate_object}{AuditTrailEntry}(x)
 }
 \arguments{
 \item{time_stamp}{A POSIXct timestamp of the entry.}
@@ -14,8 +17,14 @@ AuditTrailEntry(time_stamp, value_class, value_parent, value)
 \item{value_parent}{A character string representing the parent class of the entry.}
 
 \item{value}{A character string representing the value of the entry.}
+
+\item{x}{A \code{AuditTrailEntry} object.}
 }
 \description{
-The \link{AuditTrailEntry} class is used as an element in the
-\link{AuditTrail} entries.
+The \link{AuditTrailEntry} class is used as an element in the \link{AuditTrail} list.
 }
+\section{Methods (by generic)}{
+\itemize{
+\item \code{validate_object(AuditTrailEntry)}: Validate the AuditTrailEntry object, returning NULL if valid.
+
+}}

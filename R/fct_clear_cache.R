@@ -16,7 +16,7 @@
 #' 
 #' @export
 #' @noRd
-S7::method(clear_cache, S7::class_character) <- function(x, file = getOption("StreamFind_cache_path"), ...) {
+clear_cache.character <- function(x, file = getOption("StreamFind_cache_path"), ...) {
   
   caching_mode <- getOption("StreamFind_cache_mode")
   
@@ -47,8 +47,7 @@ S7::method(clear_cache, S7::class_character) <- function(x, file = getOption("St
 
 #' @export
 #' @noRd
-S7::method(clear_cache, S7::class_numeric) <- function(x, file = getOption("StreamFind_cache_path"), ...) {
-  
+clear_cache.numeric <- function(x, file = getOption("StreamFind_cache_path"), ...) {
   caching_mode <- getOption("StreamFind_cache_mode")
   
   if (is.null(caching_mode)) {
@@ -78,8 +77,7 @@ S7::method(clear_cache, S7::class_numeric) <- function(x, file = getOption("Stre
 
 #' @export
 #' @noRd
-S7::method(clear_cache, S7::class_missing) <- function(x, file = getOption("StreamFind_cache_path"), ...) {
-  
+clear_cache.missing <- function(x, file = getOption("StreamFind_cache_path"), ...) {
   caching_mode <- getOption("StreamFind_cache_mode")
   
   if (is.null(caching_mode)) {

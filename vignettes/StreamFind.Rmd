@@ -16,11 +16,11 @@ knitr::opts_chunk$set(
 
 # Introduction
 
-The goal of StreamFind is to boost competences of researchers and graduate students for data analysis while promoting the use of open source software and deployment of algorithms and processing concepts from the scientific literature. The focus is the development and assembly of data processing workflows for different analytical data (e.g., mass spectrometry and Raman spectroscopy) and the application of the workflows in diverse fields (e.g., environmental and quality studies of the water cycle). The StreamFind can be used via R scripting or via the embedded shiny graphical user interface. See the [articles](https://odea-project.github.io/StreamFind/articles/index.html) for tutorials and usage examples.
+The goal of StreamFind is to enhance the data analysis skills of researchers and graduate students, encourage the use of open-source software, and promote the deployment of algorithms and processing concepts from scientific literature, all while upholding the principles of FAIR (findable, accessible, interoperable, and reusable) data. StreamFind focuses on developing and assembling data processing workflows for various analytical data, such as mass spectrometry and Raman spectroscopy, and applying these workflows in diverse fields, such as environmental and quality studies of the water cycle. StreamFind can be used via R scripting or the embedded Shiny graphical user interface. See the [articles](https://odea-project.github.io/StreamFind/articles/index.html) for tutorials and usage examples.
 
 # Guides
 
--   [General Introduction](https://odea-project.github.io/StreamFind/articles/general_guide.html)
+-   [Get Started Guide](https://odea-project.github.io/StreamFind/articles/general_guide.html)
 
 -   [App Guide](https://odea-project.github.io/StreamFind/articles/app_guide.html)
 

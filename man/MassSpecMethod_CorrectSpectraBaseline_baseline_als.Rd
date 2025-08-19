@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_CorrectSpectraBaseline.R
 \name{MassSpecMethod_CorrectSpectraBaseline_baseline_als}
 \alias{MassSpecMethod_CorrectSpectraBaseline_baseline_als}
-\title{MassSpecMethod_CorrectSpectraBaseline_baseline_als S7 class}
+\title{MassSpecMethod_CorrectSpectraBaseline_baseline_als Class}
 \usage{
 MassSpecMethod_CorrectSpectraBaseline_baseline_als(
   lambda = 5,

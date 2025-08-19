@@ -1,190 +1,184 @@
 # MARK: AuditTrailEntry
 # AuditTrailEntry -----
 #' @title Generic Entry for Audit Trail
-#' 
-#' @description The [StreamFind::AuditTrailEntry] class is used as an element in the
-#' [StreamFind::AuditTrail] entries.
-#' 
+#' @description The [StreamFind::AuditTrailEntry] class is used as an element in the [StreamFind::AuditTrail] list.
 #' @param time_stamp A POSIXct timestamp of the entry.
 #' @param value_class A character string representing the class of the entry.
 #' @param value_parent A character string representing the parent class of the entry.
 #' @param value A character string representing the value of the entry.
-#' 
 #' @export
 #'
-AuditTrailEntry <- S7::new_class(
-  name = "AuditTrailEntry",
-  package = "StreamFind",
-  properties = list(
-    time_stamp = S7::new_property(S7::class_POSIXct, default = as.POSIXct(Sys.time())),
-    value_class = S7::new_property(S7::class_character, default = NA_character_),
-    value_parent = S7::new_property(S7::class_character, default = NA_character_),
-    value = S7::new_property(S7::class_character, default = NA_character_)
-  ),
-  constructor = function(time_stamp, value_class, value_parent, value) {
-    S7::new_object(
-      S7::S7_object(),
-      time_stamp = as.POSIXct(time_stamp),
-      value_class = value_class,
-      value_parent = value_parent,
+AuditTrailEntry <- function(time_stamp, value_class, value_parent, value) {
+  x <- structure(
+    list(
+      time_stamp = as.POSIXct(time_stamp), 
+      value_class = value_class, 
+      value_parent = value_parent, 
       value = value
-    )
-  },
-  validator = function(self) {
-    checkmate::assert_posixct(self@time_stamp)
-    checkmate::assert_character(self@value_class)
-    checkmate::assert_character(self@value_parent)
-    checkmate::assert_character(self@value)
-    NULL
+    ),
+    class = "AuditTrailEntry"
+  )
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid AuditTrailEntry object!")
   }
-)
-
-#' @export
-#' @noRd
-`$.AuditTrailEntry` <- function(x, i) {
-  S7::prop(x, i)
 }
 
+#' @describeIn AuditTrailEntry Validate the AuditTrailEntry object, returning NULL if valid.
+#' @param x A `AuditTrailEntry` object.
 #' @export
-#' @noRd
-`$<-.AuditTrailEntry` <- function(x, i, value) {
-  S7::prop(x, i) <- value
-  x
+#' 
+validate_object.AuditTrailEntry <- function(x) {
+  checkmate::assert_class(x, "AuditTrailEntry")
+  checkmate::assertNames(
+    names(x), must.include = c("time_stamp", "value_class", "value_parent", "value")
+  )
+  checkmate::assert_posixct(x$time_stamp)
+  checkmate::assert_character(x$value_class)
+  checkmate::assert_character(x$value_parent)
+  checkmate::assert_character(x$value)
+  NULL
 }
 
 # MARK: AuditTrail
 # AuditTrail -----
 #' @title Audit Trail Register
 #' 
-#' @description The [StreamFind::AuditTrail] class is used to store a list of entries, where each
-#' entry is an instance of the [StreamFind::AuditTrailEntry] class.
-#' 
-#' @slot entries A list of entries, where each entry is an instance of the
-#' [StreamFind::AuditTrailEntry] class.
+#' @description The [StreamFind::AuditTrail] class is a list of [StreamFind::AuditTrailEntry] class
+#' objects.
 #' 
 #' @export
 #' 
-AuditTrail <- S7::new_class(
-  name = "AuditTrail",
-  package = "StreamFind",
-  properties = list(
-    entries = S7::new_property(class = S7::class_list, default = list())
-  ),
-  constructor = function() {
-    S7::new_object(S7::S7_object(), entries = list())
-  },
-  validator = function(self) {
-    checkmate::assert_list(self@entries)
-    if (length(self@entries) > 0) {
-      checkmate::assert_list(self@entries, types = c("StreamFind::AuditTrailEntry", "S7_object"))
+AuditTrail <- function(entries = list()) {
+  if (is.list(entries)) {
+    if (length(entries) > 0) {
+      entries <- lapply(entries, function(x) {
+        if ("AuditTrailEntry" %in% class(x)) {
+          if (is.null(validate_object(x))) {
+            x
+          } else {
+            NULL
+          }
+        } else if (is.list(x)) {
+          x <- do.call("AuditTrailEntry", x)
+        } else {
+          stop("Each entry must be an AuditTrailEntry object or a list that can be converted to one.")
+        }
+      })
+      entry_names <- vapply(entries, function(x) as.character(x$time_stamp), NA_character_)
+      entries <- entries[!is.na(entry_names)]
+      entry_names <- entry_names[!is.na(entry_names)]
+      names(entries) <- entry_names
     }
-    NULL
+  } else {
+    stop("Entries must be a list of AuditTrailEntry objects.")
   }
-)
-
-#' @export
-#' @noRd
-length.AuditTrail <- function(x) {
-  length(x@entries)
+  x <- structure(entries, class = "AuditTrail")
+  if (is.null(validate_object(x))) {
+    return(x)
+  } else {
+    stop("Invalid AuditTrail object!")
+  }
 }
 
+#' @describeIn AuditTrail Validate the AuditTrail object, returning NULL if valid.
+#' @param x A `AuditTrail` object.
 #' @export
-#' @noRd
-`$.AuditTrail` <- function(x, i) {
-  S7::prop(x, i)
+#' 
+validate_object.AuditTrail <- function(x) {
+  checkmate::assert_list(x)
+  if (length(x) > 0) {
+    for (i in seq_along(x)) {
+      if (!is.null(validate_object(x[[i]]))) {
+        stop(sprintf("Element %d is not a valid AuditTrailEntry object.", i))
+      }
+    }
+  }
+  NULL
 }
 
+#' @describeIn AuditTrail Add an entry to the `AuditTrail` list,
+#' returning the updated `AuditTrail`.
+#' @param x An `AuditTrail` object.
+#' @param value An object to be added to the `AuditTrail` as an entry.
 #' @export
-#' @noRd
-`$<-.AuditTrail` <- function(x, i, value) {
-  S7::prop(x, i) <- value
-  x
-}
-
-#' @export
-#' @noRd
-`[.AuditTrail` <- function(x, i) {
-  x@entries[i]
-}
-
-#' @export
-#' @noRd
-`[<-.AuditTrail` <- function(x, i, value) {
-  x@entries[i] <- value
-  x
-}
-
-#' @export
-#' @noRd
-`[[.AuditTrail` <- function(x, i) {
-  x@entries[[i]]
-}
-
-#' @export
-#' @noRd
-`[[<-.AuditTrail` <- function(x, i, value) {
-  x@entries[[i]] <- value
-  x
-}
-
-#' @export
-#' @noRd
-S7::method(add, AuditTrail) <- function(x, value) {
+#' 
+add.AuditTrail <- function(x, value) {
   time_stamp <- as.POSIXct(Sys.time())
   value_classes <- class(value)
-  
+  value_class <- class(value)[1]
   if (length(value_classes) > 1) {
     value_parent <- class(value)[2]
-    value_class <- class(value)[1]
   } else {
-    parent_class <- NA_character_
+    value_parent <- NA_character_
   }
-  
   value_str <- capture.output(show(value))
   value_str <- value_str[!value_str %in% ""]
   value_str <- value_str[!grepl("<char>|<num>", value_str)]
   value_str <- paste(value_str, collapse = "\n")
-  
   entry <- AuditTrailEntry(
     time_stamp = time_stamp,
     value_class = value_class,
     value_parent = value_parent,
     value = value_str
   )
-
-  entries_list <- x@entries
-  entries_list[[as.character(time_stamp)]] <- entry
-  x@entries <- entries_list
+  x[[as.character(time_stamp)]] <- entry
   x
 }
 
+#' @describeIn AuditTrail Convert the `AuditTrail` object to a data frame.
+#' @method as.data.table AuditTrail
+#' @param x An `AuditTrail` object.
 #' @export
-#' @noRd
-S7::method(as.list, AuditTrail) <- function(x, ...) {
-  x@entries
-}
-
-#' @export
-#' @noRd
-S7::method(as.data.frame, AuditTrail) <- function(x, ...) {
+#' 
+as.data.table.AuditTrail <- function(x, ...) {
   if (length(x) == 0) return(data.table::data.table())
-  dt_list <- lapply(x@entries, function(z) {
+  dt_list <- lapply(x, function(z) {
     data.table::data.table(
-      time_stamp = z@time_stamp,
-      class = z@value_class,
-      parent = z@value_parent,
-      value = z@value
+      time_stamp = z$time_stamp,
+      class = z$value_class,
+      parent = z$value_parent,
+      value = z$value
     )
   })
   data.table::rbindlist(dt_list, fill = TRUE)
 }
 
+#' @describeIn AuditTrail Show the `AuditTrail` entries in a human-readable format.
+#' @param x An `AuditTrail` object.
 #' @export
-#' @noRd
-S7::method(save, AuditTrail) <- function(x, file = "entries.json") {
+#' 
+show.AuditTrail <- function(x, ...) {
+  names <- names(x)
+  for (n in names) {
+    cat(n, "\n")
+    cat("Class:  ", x[[n]]$value_class, "\n")
+    cat("Parent: ", x[[n]]$value_parent, "\n")
+    cat("Value:   ")
+    if (is.na(x[[n]]$value) || "NA" %in% x[[n]]$value) {
+      cat("empty")
+    } else if ("empty" %in% x[[n]]$value) {
+      cat("empty")
+    } else {
+      cat("\n")
+      cat(x[[n]]$value)
+    }
+    cat("\n")
+    cat("\n")
+  }
+}
+
+#' @describeIn AuditTrail Save the `AuditTrail` object to a file.
+#' @param x An `AuditTrail` object.
+#' @param file A character string representing the file path where the `AuditTrail` should be saved.
+#' The file format can be either JSON or RDS.
+#' @export
+#' 
+save.AuditTrail <- function(x, file = "entries.json") {
   format <- tools::file_ext(file)
   if (format %in% "json") {
-    x <- .convert_to_json(as.list(x))
+    x <- .convert_to_json(x)
     write(x, file)
   } else if (format %in% "rds") {
     saveRDS(x, file)
@@ -194,24 +188,23 @@ S7::method(save, AuditTrail) <- function(x, file = "entries.json") {
   invisible(NULL)
 }
 
+#' @describeIn AuditTrail Read an `AuditTrail` object from a file.
+#' @param x An `AuditTrail` object.
+#' @param file A character string representing the file path from which the `AuditTrail` should be read. The possible formats are JSON or RDS.
 #' @export
-#' @noRd
-S7::method(show, AuditTrail) <- function(x, ...) {
-  names <- names(x@entries)
-  for (n in names) {
-    cat(n, "\n")
-    cat("Class:  ", x@entries[[n]]$value_class, "\n")
-    cat("Parent: ", x@entries[[n]]$value_parent, "\n")
-    cat("Value:   ")
-    if (is.na(x@entries[[n]]$value) || "NA" %in% x@entries[[n]]$value) {
-      cat("empty")
-    } else if ("empty" %in% x@entries[[n]]$value) {
-      cat("empty")
-    } else {
-      cat("\n")
-      cat(x@entries[[n]]$value)
+#' 
+read.AuditTrail <- function(x, file) {
+  format <- tools::file_ext(file)
+  if (format %in% "json") {
+    x <- jsonlite::fromJSON(file)
+    x <- AuditTrail(entries = x)
+  } else if (format %in% "rds") {
+    x <- readRDS(file)
+    if (!is(x, "AuditTrail")) {
+      stop("File does not contain a valid AuditTrail object.")
     }
-    cat("\n")
-    cat("\n")
+  } else {
+    stop("Invalid format!")
   }
+  x
 }

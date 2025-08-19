@@ -1,12 +1,13 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
+
 <!-- badges: start -->
 
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html#experimental)
 <!-- badges: end -->
 
-<img src="man/figures/logos.png" alt="Logo" width="100%" style="display: block; margin: auto;" />
+<img src="man/figures/readme_logos.png" alt="Logo" width="100%" style="display: block; margin: auto;" />
 
 StreamFind R package is developed within the project [“Flexible data
 analysis and workflow designer to identify chemicals in the water
@@ -83,10 +84,9 @@ Docker container is a pre-configured environment with all the necessary
 dependencies installed. The Docker container can be built and started
 with the following commands.
 
-Build the Docker container:  
-`docker build -t my-r-app .`
+Build the Docker container: `docker build -t my-r-app .`
 
-Start the Docker container:  
+Start the Docker container:
 `docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app`
 
 Once the container is up, you’ll be prompted to select the service you
@@ -117,7 +117,7 @@ contribution from scientific literature as well as existing open source
 software. Below, we reference the research and software that is used
 within StreamFind. Please note that each open source software or
 research that StreamFind uses relies on other contributions. Therefore,
-we recommend to search within each citation for other contributions.  
+we recommend to search within each citation for other contributions.
 <br>
 
 <div id="refs" class="references csl-bib-body hanging-indent"

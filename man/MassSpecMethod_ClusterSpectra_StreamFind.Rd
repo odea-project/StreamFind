@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_ClusterSpectra.R
 \name{MassSpecMethod_ClusterSpectra_StreamFind}
 \alias{MassSpecMethod_ClusterSpectra_StreamFind}
-\title{MassSpecMethod_ClusterSpectra_StreamFind S7 class}
+\title{MassSpecMethod_ClusterSpectra_StreamFind Class}
 \usage{
 MassSpecMethod_ClusterSpectra_StreamFind(
   val = "mz",

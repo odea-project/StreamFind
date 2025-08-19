@@ -32,7 +32,29 @@ library(StreamFind)
 
 # Global options
 knitr::opts_chunk$set(
-  echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", results = "markup", message = FALSE, warning = FALSE
+  echo = TRUE,
+  fig.align = "center",
+  fig.width = 9,
+  results = "asis",
+  results = "markup",
+  message = FALSE,
+  warning = FALSE
+)
+
+options(
+  DT.options = list(
+    dom = "lfrtip",
+    autoWidth = TRUE,
+    pageLength = 10,
+    scrollX = TRUE,
+    lengthMenu = c(10, 20, 50, 75, 100),
+    initComplete = htmlwidgets::JS(
+      "function(settings, json) {",
+      "$(this.api().table().body()).css({'font-size': '12px'});",
+      "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+      "}"
+    )
+  )
 )
 
 # Working directory
@@ -99,14 +121,13 @@ revision.
 
 The streamFind R package is centered around the [R6](https://r6.r-lib.org/index.html) class system, which brings object 
 oriented programming to R. For MS, the [MassSpecEngine](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) 
-R6 class is used to encapsulate both the data and methods. The data is stored in private fields within the 
-*MassSpecEngine* and can be accessed and processed via the public methods/fields. Below the creation of a *MassSpecEngine* 
-object and the way to access and change data is briefly shown.
+R6 class is used for management of the `Metadata`, `MassSpecAnalyses`, `MassSpecResults`, `AuditTrail` and `Config` class objects.
 
 ```{r create-empty-ms, results='markup'}
+# Create an Engine child class for MS data.
 ms <- MassSpecEngine$new()
 
-# print method. Note that MS data files were not yet added!
+# Print method. Note that MS data files were not yet added!
 ms
 ```
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_BinSpectra.R
 \name{RamanMethod_BinSpectra_StreamFind}
 \alias{RamanMethod_BinSpectra_StreamFind}
-\title{\strong{RamanMethod_BinSpectra_StreamFind}}
+\title{RamanMethod_BinSpectra_StreamFind Class}
 \usage{
 RamanMethod_BinSpectra_StreamFind(
   binNames = c("rt"),

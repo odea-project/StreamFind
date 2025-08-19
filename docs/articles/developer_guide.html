@@ -17,11 +17,11 @@
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
 
     <a class="navbar-brand me-2" href="../index.html">StreamFind</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,7 +41,7 @@
     <li><a class="dropdown-item" href="../articles/demo_ms_raman_fusion_bsa.html">Purity Evaluation of Bovine Serum Albumin Products</a></li>
     <li><a class="dropdown-item" href="../articles/demo_nts.html">Non-target Analysis for Wastewater Treatment Evaluation</a></li>
     <li><a class="dropdown-item" href="../articles/developer_guide.html">StreamFind Developer Guide</a></li>
-    <li><a class="dropdown-item" href="../articles/general_guide.html">StreamFind General Introduction</a></li>
+    <li><a class="dropdown-item" href="../articles/general_guide.html">StreamFind Get Started Guide</a></li>
   </ul>
 </li>
       </ul>
@@ -72,7 +72,7 @@ Cunha</h4>
                   <a class="author_email" href="mailto:#"></a><a href="mailto:cunha@iuta.de" class="email">cunha@iuta.de</a>
       
                   
-            <h4 data-toc-skip class="date">13 June, 2025</h4>
+            <h4 data-toc-skip class="date">19 August, 2025</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/odea-project/StreamFind/blob/HEAD/vignettes/articles/developer_guide.Rmd" class="external-link"><code>vignettes/articles/developer_guide.Rmd</code></a></small>
       <div class="d-none name"><code>developer_guide.Rmd</code></div>
@@ -136,23 +136,23 @@ the opportunity for code revision.</p>
 </h3>
 <p>The streamFind R package is centered around the <a href="https://r6.r-lib.org/index.html" class="external-link">R6</a> class system, which brings
 object oriented programming to R. For MS, the <a href="https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html">MassSpecEngine</a>
-R6 class is used to encapsulate both the data and methods. The data is
-stored in private fields within the <em>MassSpecEngine</em> and can be
-accessed and processed via the public methods/fields. Below the creation
-of a <em>MassSpecEngine</em> object and the way to access and change
-data is briefly shown.</p>
+R6 class is used for management of the <code>Metadata</code>,
+<code>MassSpecAnalyses</code>, <code>MassSpecResults</code>,
+<code>AuditTrail</code> and <code>Config</code> class objects.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ms</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/MassSpecEngine.html">MassSpecEngine</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># Create an Engine child class for MS data.</span></span>
+<span><span class="va">ms</span> <span class="op">&lt;-</span> <span class="va"><a href="../reference/MassSpecEngine.html">MassSpecEngine</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># print method. Note that MS data files were not yet added!</span></span>
+<span><span class="co"># Print method. Note that MS data files were not yet added!</span></span>
 <span><span class="va">ms</span></span></code></pre></div>
 <pre><code><span><span class="co">## </span></span>
-<span><span class="co">## MassSpecEngine</span></span>
+<span><span class="co">## MassSpec Engine</span></span>
+<span><span class="co">## </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Metadata</span></span>
 <span><span class="co">## name: NA</span></span>
 <span><span class="co">## author: NA</span></span>
-<span><span class="co">## date: 2025-06-13 12:15:56.969433</span></span>
+<span><span class="co">## date: 2025-08-19 15:20:41.487051</span></span>
 <span><span class="co">## file: NA</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Workflow</span></span>

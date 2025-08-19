@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FilterFeatures.R
 \name{MassSpecMethod_FilterFeatures_patRoon}
 \alias{MassSpecMethod_FilterFeatures_patRoon}
-\title{MassSpecMethod_FilterFeatures_patRoon S7 class}
+\title{MassSpecMethod_FilterFeatures_patRoon Class}
 \usage{
 MassSpecMethod_FilterFeatures_patRoon(
   absMinIntensity = NA_real_,

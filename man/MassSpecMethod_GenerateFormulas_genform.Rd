@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_GenerateFormulas.R
 \name{MassSpecMethod_GenerateFormulas_genform}
 \alias{MassSpecMethod_GenerateFormulas_genform}
-\title{MassSpecMethod_GenerateFormulas_genform S7 class}
+\title{MassSpecMethod_GenerateFormulas_genform Class}
 \usage{
 MassSpecMethod_GenerateFormulas_genform(
   MSPeakListsClusterMzWindow = 0.005,

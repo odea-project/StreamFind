@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_FilterChromPeaks.R
 \name{RamanMethod_FilterChromPeaks_native}
 \alias{RamanMethod_FilterChromPeaks_native}
-\title{\strong{RamanMethod_FilterChromPeaks_native}}
+\title{RamanMethod_FilterChromPeaks_native Class}
 \usage{
 RamanMethod_FilterChromPeaks_native(
   minIntensity = 0,

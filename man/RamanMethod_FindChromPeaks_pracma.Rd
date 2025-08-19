@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_FindChromPeaks.R
 \name{RamanMethod_FindChromPeaks_pracma}
 \alias{RamanMethod_FindChromPeaks_pracma}
-\title{\strong{RamanMethod_FindChromPeaks_pracma}}
+\title{RamanMethod_FindChromPeaks_pracma Class}
 \usage{
 RamanMethod_FindChromPeaks_pracma(
   merge = TRUE,

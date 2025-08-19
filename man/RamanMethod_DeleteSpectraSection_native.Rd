@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_DeleteSpectraSection.R
 \name{RamanMethod_DeleteSpectraSection_native}
 \alias{RamanMethod_DeleteSpectraSection_native}
-\title{\strong{RamanMethod_DeleteSpectraSection_native}}
+\title{RamanMethod_DeleteSpectraSection_native Class}
 \usage{
 RamanMethod_DeleteSpectraSection_native(min = NULL, max = NULL)
 }

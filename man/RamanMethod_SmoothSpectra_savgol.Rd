@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_SmoothSpectra.R
 \name{RamanMethod_SmoothSpectra_savgol}
 \alias{RamanMethod_SmoothSpectra_savgol}
-\title{\strong{RamanMethod_SmoothSpectra_savgol}}
+\title{RamanMethod_SmoothSpectra_savgol Class}
 \usage{
 RamanMethod_SmoothSpectra_savgol(fl = 11, forder = 4, dorder = 0)
 }

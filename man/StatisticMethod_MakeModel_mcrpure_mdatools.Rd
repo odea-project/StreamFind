@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_StatisticMethod_MakeModel.R
 \name{StatisticMethod_MakeModel_mcrpure_mdatools}
 \alias{StatisticMethod_MakeModel_mcrpure_mdatools}
-\title{StatisticMethod_MakeModel_mcrpure_mdatools S7 class}
+\title{StatisticMethod_MakeModel_mcrpure_mdatools Class}
 \usage{
 StatisticMethod_MakeModel_mcrpure_mdatools(
   ncomp = NULL,
@@ -18,8 +18,7 @@ StatisticMethod_MakeModel_mcrpure_mdatools(
 
 \item{purevars}{Integer vector with the indices of the pure variables (optional).}
 
-\item{offset}{Numeric (length 1) offset for correcting noise in computing maximum angles
-(should be value within 0 and 1).}
+\item{offset}{Numeric (length 1) offset for correcting noise in computing maximum angles (should be value within 0 and 1).}
 
 \item{exclrows}{Integer vector with the row indices to be excluded.}
 
@@ -31,8 +30,7 @@ StatisticMethod_MakeModel_mcrpure_mdatools(
 A StatisticMethod_MakeModel_mcrpure_mdatools object.
 }
 \description{
-Makes a Multivariate Curve Resolution (MCR) purity model based on the R package
-\pkg{mdatools}.
+Makes a Multivariate Curve Resolution (MCR) purity model based on the R package \pkg{mdatools}.
 }
 \references{
 \insertRef{mdatools01}{StreamFind}

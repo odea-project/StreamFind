@@ -1,6 +1,6 @@
 Package: StreamFind
-Title: Flexible Workflow Assembler for Advanced Data Analysis 
-Version: 0.2.0
+Title: Flexible Workflow Assembler for Advanced Data Analysis
+Version: 0.3.0
 Author: Ricardo Cunha [cre, aut, fnd] (<https://orcid.org/0000-0002-6791-0119>)
 Maintainer: Ricardo Cunha <cunha@iuta.de>
 Authors@R: c(
@@ -12,7 +12,7 @@ License: GPL (>= 3)
 URL: https://github.com/odea-project/StreamFind, https://odea-project.github.io/StreamFind/
 BugReports: https://github.com/odea-project/StreamFind/issues
 Depends: R (>= 4.3.0)
-Imports: 
+Imports:
     R6,
     S7,
     data.table,
@@ -40,7 +40,7 @@ Imports:
     ggplot2,
     dplyr,
     gridExtra
-Suggests: 
+Suggests:
     StreamFindData,
     mzR,
     patRoon,
@@ -59,6 +59,7 @@ Suggests:
     htmltools,
     sortable,
     knitr,
+    bslib,
     kableExtra,
     rmarkdown,
     testthat,
@@ -70,21 +71,24 @@ Encoding: UTF-8
 Language: en-US
 RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE, r6 = TRUE)
-RdMacros: 
+RdMacros:
     Rdpack
-VignetteBuilder: knitr
+VignetteBuilder:
+    knitr
 SystemRequirements: GNU make, C++17
 LinkingTo: Rhdf5lib, Rcpp
 Collate:
     'global_import_namespace.R'
     'RcppExports.R'
     'globals.R'
-    'generics.R'
+    'generics_S3.R'
     'utils_pipe.R'
     'utils_general.R'
     'utils_fct_assets.R'
     'fct_get_cache_info.R'
     'fct_clear_cache.R'
+    'fct_load_cache.R'
+    'fct_save_cache.R'
     'fct_ms_convert_trim_files.R'
     'class_internal_DataTypes.R'
     'class_internal_MassSpecTargets.R'
@@ -94,15 +98,16 @@ Collate:
     'class_ProcessingStep.R'
     'class_Workflow.R'
     'class_Results.R'
-    'class_Results_Spectra.R'
-    'class_Results_Spectra_RamanSpectra.R'
-    'class_Results_Spectra_MassSpecSpectra.R'
-    'class_Results_SpectraSimilarity.R'
-    'class_Results_Chromatograms.R'
-    'class_Results_NonTargetAnalysisResults.R'
-    'class_Results_StatisticModel.R'
-    'class_Results_DataFrame.R'
-    'class_Results_Quantification.R'
+    'class_RamanResults_Spectra.R'
+    'class_RamanResults_SpectraSimilarity.R'
+    'class_MassSpecResults_Spectra.R'
+    'class_MassSpecResults_Chromatograms.R'
+    'class_MassSpecResults_NonTargetAnalysis.R'
+    'class_StatisticResults_Model.R'
+    'class_StatisticResults_PCA_mdatools.R'
+    'class_StatisticResults_MCRALS_mdatools.R'
+    'class_StatisticResults_MCRPURE_mdatools.R'
+    'class_StatisticResults_KNN_class.R'
     'class_Analyses.R'
     'class_Analyses_MassSpecAnalyses.R'
     'class_Analyses_RamanAnalyses.R'
@@ -133,7 +138,6 @@ Collate:
     'class_MassSpecMethod_QuantifyChromatographicPeaks.R'
     'class_MassSpecMethod_LoadFeaturesMS1_MS2_EIC.R'
     'class_MassSpecMethod_FilterFeaturesMS2.R'
-    'class_MassSpecMethod_LoadMSPeakLists.R'
     'class_MassSpecMethod_LoadSpectra.R'
     'class_MassSpecMethod_NormalizeSpectra.R'
     'class_MassSpecMethod_SmoothChromatograms.R'
@@ -162,18 +166,17 @@ Collate:
     'class_RamanMethod_SubtractScansSection.R'
     'class_RamanMethod_SubtractSpectraSection.R'
     'class_StatisticMethod_MakeModel.R'
-    'class_StatisticMethod_PrepareData.R'
-    'class_StatisticMethod_Quantify.R'
-    'engine_CoreEngine.R'
-    'engine_MassSpecEngine.R'
-    'engine_RamanEngine.R'
-    'engine_StatisticEngine.R'
+    'class_Engine.R'
+    'class_Engine_MassSpecEngine.R'
+    'class_Engine_RamanEngine.R'
+    'class_Engine_StatisticEngine.R'
     'app_config.R'
     'app_utils.R'
-    'app_mod_WorkflowAssembler_Results_NonTargetAnalysisResults.R'
-    'app_mod_WorkflowAssembler_Result_Spectra.R'
-    'app_mod_WorkflowAssembler_WorkflowTab.R'
-    'app_mod_WorkflowAssembler_Analyses.R'
+    'app_mod_WorkflowAssembler_MassSpecResults_NonTargetAnalysis.R'
+    'app_mod_WorkflowAssembler_MassSpecResults_Spectra.R'
+    'app_mod_WorkflowAssembler_Workflow.R'
+    'app_mod_WorkflowAssembler_MassSpecAnalyses.R'
+    'app_mod_WorkflowAssembler_RamanAnalyses.R'
     'app_mod_WorkflowAssembler_Explorer_MassSpec.R'
     'app_mod_WorkflowAssembler_Explorer_Raman.R'
     'app_mod_WorkflowAssembler_Metadata.R'

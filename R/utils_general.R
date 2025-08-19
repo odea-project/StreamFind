@@ -10,7 +10,7 @@
       "R6ClassGenerator" %in% is(get(x, envir = .GlobalEnv))
     })
   ]
-  available_engines <- available_engines[!available_engines %in% "CoreEngine"]
+  available_engines <- available_engines[!available_engines %in% c("Engine", "CoreEngine")]
   available_engines
 }
 
@@ -131,7 +131,6 @@
   if (is.null(value)) {
     names(obj)
   } else {
-    
     if (is.numeric(value)) {
       value <- as.integer(value)
       if (any(value < 1) || any(value > length(names(obj)))) {
@@ -140,7 +139,6 @@
       }
       value <- names(obj)[value]
     }
-    
     if (!all(value %in% names(obj))) {
       warning("Defined analyses not found!")
       NULL

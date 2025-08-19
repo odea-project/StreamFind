@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadFeaturesMS1_MS2_EIC.R
 \name{MassSpecMethod_LoadFeaturesEIC_StreamFind}
 \alias{MassSpecMethod_LoadFeaturesEIC_StreamFind}
-\title{MassSpecMethod_LoadFeaturesEIC_StreamFind S7 class}
+\title{MassSpecMethod_LoadFeaturesEIC_StreamFind S3 Class}
 \usage{
 MassSpecMethod_LoadFeaturesEIC_StreamFind(
   filtered = FALSE,

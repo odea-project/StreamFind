@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_DeconvoluteSpectra.R
 \name{MassSpecMethod_DeconvoluteSpectra_native}
 \alias{MassSpecMethod_DeconvoluteSpectra_native}
-\title{MassSpecMethod_DeconvoluteSpectra_native S7 class}
+\title{MassSpecMethod_DeconvoluteSpectra_native Class}
 \usage{
 MassSpecMethod_DeconvoluteSpectra_native(clustVal = 0.1, window = 20)
 }

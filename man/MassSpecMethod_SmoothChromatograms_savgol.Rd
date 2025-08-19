@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothChromatograms.R
 \name{MassSpecMethod_SmoothChromatograms_savgol}
 \alias{MassSpecMethod_SmoothChromatograms_savgol}
-\title{MassSpecMethod_SmoothChromatograms_savgol S7 class}
+\title{MassSpecMethod_SmoothChromatograms_savgol Class}
 \usage{
 MassSpecMethod_SmoothChromatograms_savgol(fl = 11, forder = 4, dorder = 0)
 }

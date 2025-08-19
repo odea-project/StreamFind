@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_NormalizeSpectra.R
 \name{RamanMethod_NormalizeSpectra_meancenter}
 \alias{RamanMethod_NormalizeSpectra_meancenter}
-\title{\strong{RamanMethod_NormalizeSpectra_meancenter}}
+\title{RamanMethod_NormalizeSpectra_meancenter Class}
 \usage{
 RamanMethod_NormalizeSpectra_meancenter()
 }

@@ -3,7 +3,7 @@
 %   R/class_MassSpecMethod_QuantifyChromatographicPeaks.R
 \name{MassSpecMethod_QuantifyChromatographicPeaks_native}
 \alias{MassSpecMethod_QuantifyChromatographicPeaks_native}
-\title{MassSpecMethod_QuantifyChromatographicPeaks_native S7 class}
+\title{MassSpecMethod_QuantifyChromatographicPeaks_native Class}
 \usage{
 MassSpecMethod_QuantifyChromatographicPeaks_native(
   calibration = 0,

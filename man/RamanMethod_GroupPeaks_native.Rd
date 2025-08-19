@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_RamanMethod_GroupPeaks.R
 \name{RamanMethod_GroupPeaks_native}
 \alias{RamanMethod_GroupPeaks_native}
-\title{\strong{RamanMethod_GroupPeaks_native}}
+\title{RamanMethod_GroupPeaks_native Class}
 \usage{
 RamanMethod_GroupPeaks_native(fillMissingPeaks = TRUE)
 }
