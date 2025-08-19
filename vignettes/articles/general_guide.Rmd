@@ -25,6 +25,7 @@ library(magrittr)
 library(ggplot2)
 library(plotly)
 library(StreamFind)
+
 knitr::opts_chunk$set(
   echo = TRUE,
   fig.align = "center",
@@ -34,6 +35,23 @@ knitr::opts_chunk$set(
   message = FALSE,
   warning = FALSE
 )
+
+options(
+  DT.options = list(
+    dom = "lfrtip",
+    autoWidth = TRUE,
+    pageLength = 10,
+    scrollX = TRUE,
+    lengthMenu = c(10, 20, 50, 75, 100),
+    initComplete = htmlwidgets::JS(
+      "function(settings, json) {",
+      "$(this.api().table().body()).css({'font-size': '12px'});",
+      "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+      "}"
+    )
+  )
+)
+
 path_wd <- getwd()
 ```
 
@@ -230,7 +248,11 @@ ps <- list(
   RamanMethod_DeleteSpectraSection_native(min = 2000, max = 3000),
 
   # Performs baseline correction.
-  RamanMethod_CorrectSpectraBaseline_baseline_als(lambda = 3, p = 0.06, maxit = 10)
+  RamanMethod_CorrectSpectraBaseline_baseline_als(
+    lambda = 3,
+    p = 0.06,
+    maxit = 10
+  )
 )
 ```
 

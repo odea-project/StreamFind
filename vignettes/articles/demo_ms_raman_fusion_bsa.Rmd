@@ -40,6 +40,22 @@ knitr::opts_chunk$set(
   comment = ""
 )
 
+options(
+  DT.options = list(
+    dom = "lfrtip",
+    autoWidth = TRUE,
+    pageLength = 10,
+    scrollX = TRUE,
+    lengthMenu = c(10, 20, 50, 75, 100),
+    initComplete = htmlwidgets::JS(
+      "function(settings, json) {",
+      "$(this.api().table().body()).css({'font-size': '12px'});",
+      "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+      "}"
+    )
+  )
+)
+
 #main_dir <- "E:/example_files/isoft/BSA_products"
 main_dir <- "C:/Users/apoli/Documents/example_files/isoft/BSA_products"
 all_files <- list.files(main_dir, full.names = TRUE)
@@ -47,18 +63,7 @@ ms_files <- all_files[grepl(".d$", all_files)]
 raman_files <- list.files(main_dir, pattern = ".asc$", full.names = TRUE)
 ```
 
-<style>
-pre {
-  overflow-x: auto;
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-</style>
-
 <br>
-
 <br>
 
 ***
@@ -97,7 +102,9 @@ ms$Analyses <- set_replicate_names(
 )
 
 # Overview
-info(ms$Analyses)[, c(1:2, 4, 5)]
+DT::datatable(
+  info(ms$Analyses)
+)
 ```
 
 ```{r plot-spectra, fig.cap="Total ion chromatograms (TIC) for each analysis replicate."}
@@ -127,7 +134,8 @@ ms$run(MassSpecMethod_SmoothChromatograms_movingaverage(windowSize = 5))
 ```{r plot-chroms, fig.cap="Smoothed TICs for each analysis replicate."}
 plot_chromatograms(
   ms$Results$MassSpecResults_Chromatograms,
-  colorBy = "replicates+targets", normalized = FALSE
+  colorBy = "replicates+targets",
+  normalized = FALSE
 )
 ```
 
@@ -214,7 +222,7 @@ ms$run(
 # The binning is applied to ensure that all spectra have the same dimensions
 # (i.e., mass-time and intensity pair)
 ms$run(
-   MassSpecMethod_BinSpectra_StreamFind(
+  MassSpecMethod_BinSpectra_StreamFind(
     binNames = c("rt", "mass"),
     binValues = c(5, 20),
     byUnit = TRUE,
@@ -230,7 +238,7 @@ ms$run(
 )
 
 ms$run(MassSpecMethod_NormalizeSpectra_minmax())
-  
+
 ms$run(MassSpecMethod_NormalizeSpectra_blockweight())
 ```
 
@@ -272,7 +280,9 @@ raman$Analyses <- set_replicate_names(
   unique(get_replicate_names(ms$Analyses))[1:4]
 )
 
-info(raman$Analyses)[, c(1:2, 5)]
+DT::datatable(
+  info(raman$Analyses)
+)
 ```
 
 ```{r correct-raman-rt, include=FALSE}
@@ -282,10 +292,14 @@ corr_spectra_4$rt <- corr_spectra_4$rt - 68.545
 corr_spectra_4 <- corr_spectra_4[corr_spectra_4$rt > 0, ]
 corr_spectra[[4]] <- corr_spectra_4
 corr_spectra <- lapply(corr_spectra, function(x) x[x$rt < 800, ])
-raman$Analyses$analyses <- Map(function(x, y) {
-  x$spectra <- y
-  x
-}, raman$Analyses$analyses, corr_spectra)
+raman$Analyses$analyses <- Map(
+  function(x, y) {
+    x$spectra <- y
+    x
+  },
+  raman$Analyses$analyses,
+  corr_spectra
+)
 ```
 
 ```{r raman-plot-chroms, fig.cap="Time series chromatogram for each BSA product. Each data point is a Raman spectrum at a specific retention time."}

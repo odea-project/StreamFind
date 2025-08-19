@@ -59,6 +59,7 @@ Suggests:
     htmltools,
     sortable,
     knitr,
+    bslib,
     kableExtra,
     rmarkdown,
     testthat,
@@ -72,7 +73,8 @@ RoxygenNote: 7.3.2
 Roxygen: list(markdown = TRUE, r6 = TRUE)
 RdMacros:
     Rdpack
-VignetteBuilder: knitr
+VignetteBuilder:
+    knitr
 SystemRequirements: GNU make, C++17
 LinkingTo: Rhdf5lib, Rcpp
 Collate:
@@ -106,8 +108,6 @@ Collate:
     'class_StatisticResults_MCRALS_mdatools.R'
     'class_StatisticResults_MCRPURE_mdatools.R'
     'class_StatisticResults_KNN_class.R'
-    'class_Results_DataFrame.R'
-    'class_Results_Quantification.R'
     'class_Analyses.R'
     'class_Analyses_MassSpecAnalyses.R'
     'class_Analyses_RamanAnalyses.R'
@@ -166,8 +166,6 @@ Collate:
     'class_RamanMethod_SubtractScansSection.R'
     'class_RamanMethod_SubtractSpectraSection.R'
     'class_StatisticMethod_MakeModel.R'
-    'class_StatisticMethod_PrepareData.R'
-    'class_StatisticMethod_Quantify.R'
     'class_Engine.R'
     'class_Engine_MassSpecEngine.R'
     'class_Engine_RamanEngine.R'

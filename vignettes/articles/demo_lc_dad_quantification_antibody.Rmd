@@ -42,6 +42,7 @@ options(
     dom = "lfrtip",
     autoWidth = TRUE,
     pageLength = 10,
+    scrollX = TRUE,
     lengthMenu = c(10, 20, 50, 75, 100),
     initComplete = htmlwidgets::JS(
       "function(settings, json) {",
@@ -57,18 +58,7 @@ path <- "C:/Users/apoli/Documents/example_files/isoft/240819_BVCZ"
 files <- list.files(path = path, pattern = "\\.d$", full.names = TRUE)[-15]
 ```
 
-<style>
-pre {
-  overflow-x: auto;
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-</style>
-
 <br>
-
 <br>
 
 ***
@@ -117,14 +107,19 @@ ms$Analyses <- set_replicate_names(
 # Concentration was obtained by attempting to convert the file names to numeric
 # Alternatively, you can use the setter method ms$Analyses$concentrations to manually add the
 # concentration values with NA_Real_ when the concentration is to be calculated
-info(ms$Analyses)[, c(1:2, 4, 8)]
+DT::datatable(
+  info(ms$Analyses)
+)
 ```
 
 # Available Chromatograms
 
 ```{r available-chroms}
-chroms = data.frame("name" = unique(ms$Analyses$analyses[[1]]$chromatograms_headers$id))
-chroms
+chroms = data.frame(
+  "name" = unique(ms$Analyses$analyses[[1]]$chromatograms_headers$id)
+)
+
+DT::datatable(chroms)
 ```
 
 The chromatogram of interest is the `r data.frame("name" = unique(ms$Analyses$analyses[[1]]$chromatograms_headers$id))$name[2]`, which is the second, and we know that our analyte elutes between 250 and 400 seconds.
@@ -144,7 +139,8 @@ ms$run(
 ```{r plot-chroms}
 plot_chromatograms(
   ms$Results$MassSpecResults_Chromatograms,
-  colorBy = "replicates", normalized = FALSE
+  colorBy = "replicates",
+  normalized = FALSE
 )
 ```
 
@@ -167,7 +163,8 @@ ms$run(
 ```{r plot-chroms-corrected}
 plot_chromatograms(
   ms$Results$MassSpecResults_Chromatograms,
-  colorBy = "replicates", normalized = FALSE
+  colorBy = "replicates",
+  normalized = FALSE
 )
 ```
 
@@ -224,7 +221,7 @@ fig <- plotly::plot_ly(
   mode = 'markers',
   name = "Data"
 ) %>%
-  add_lines(x =  ~fitted_values, y = ~values, name = "Fitted Line") %>%
+  add_lines(x = ~fitted_values, y = ~values, name = "Fitted Line") %>%
   layout(
     title = paste("Linear Regression (R² =", round(r_squared, 4), ")"),
     xaxis = list(title = "mg/L"),
@@ -237,5 +234,5 @@ fig
 
 ```{r quantification-results}
 peaks <- get_chromatograms_peaks(ms$Results$MassSpecResults_Chromatograms)
-peaks[, c(1, 5, 17, 18, 19)]
+DT::datatable(peaks)
 ```

@@ -16,7 +16,7 @@ devtools::install(upgrade = "never", dependencies = TRUE, build_vignettes = FALS
 
 # Builds/Updates the GitHub page
 pkgdown::clean_cache()
-pkgdown::clean_site()
+pkgdown::clean_site(force = TRUE)
 pkgdown::build_site()
 
 pkgdown::build_reference()

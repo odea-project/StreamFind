@@ -42,6 +42,7 @@ options(
     dom = "lfrtip",
     autoWidth = TRUE,
     pageLength = 10,
+    scrollX = TRUE,
     lengthMenu = c(10, 20, 50, 75, 100),
     initComplete = htmlwidgets::JS(
       "function(settings, json) {",
@@ -54,21 +55,13 @@ options(
 
 #path <- "E:/example_files/isoft/240819_BVCZ"
 path <- "C:/Users/apoli/Documents/example_files/isoft/240819_BVCZ"
-files <- list.files(path = path, pattern = "\\.d$", full.names = TRUE)[c(6:8, 16:18)]
+files <- list.files(path = path, pattern = "\\.d$", full.names = TRUE)[c(
+  6:8,
+  16:18
+)]
 ```
 
-<style>
-pre {
-  overflow-x: auto;
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-</style>
-
 <br>
-
 <br>
 
 ***
@@ -100,7 +93,9 @@ ms$Analyses <- set_replicate_names(
   c(rep("Sample", 3), rep("QC_2.5", 3))
 )
 
-info(ms$Analyses)[, c(1:2, 4, 5)]
+DT::datatable(
+  info(ms$Analyses)
+)
 ```
 
 # Workflow
@@ -227,7 +222,10 @@ plot_spectra_peaks(
 
 ```{r}
 # Identify the mass values of the peaks
-data.table::rbindlist(
-  ms$Results$MassSpecResults_Spectra$peaks, idcol = "analysis"
-)[, c(1, 3, 4, 7, 12)]
+DT::datatable(
+  data.table::rbindlist(
+    ms$Results$MassSpecResults_Spectra$peaks,
+    idcol = "analysis"
+  )
+)
 ```

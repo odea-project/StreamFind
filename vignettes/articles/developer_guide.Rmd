@@ -32,7 +32,29 @@ library(StreamFind)
 
 # Global options
 knitr::opts_chunk$set(
-  echo = TRUE, fig.align = "center", fig.width = 9, results = "asis", results = "markup", message = FALSE, warning = FALSE
+  echo = TRUE,
+  fig.align = "center",
+  fig.width = 9,
+  results = "asis",
+  results = "markup",
+  message = FALSE,
+  warning = FALSE
+)
+
+options(
+  DT.options = list(
+    dom = "lfrtip",
+    autoWidth = TRUE,
+    pageLength = 10,
+    scrollX = TRUE,
+    lengthMenu = c(10, 20, 50, 75, 100),
+    initComplete = htmlwidgets::JS(
+      "function(settings, json) {",
+      "$(this.api().table().body()).css({'font-size': '12px'});",
+      "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+      "}"
+    )
+  )
 )
 
 # Working directory

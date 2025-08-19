@@ -527,8 +527,6 @@ Rcpp::List rcpp_nts_load_features_eic(Rcpp::List info,
     if (fts_i.size() == 0)
       continue;
     
-    Rcpp::Rcout << "Loading EIC for " << fts_i.size() << " features in analyses " << data.analyses[i] << "...";
-    
     sc::MS_TARGETS targets;
     int counter = 0;
     
@@ -563,6 +561,8 @@ Rcpp::List rcpp_nts_load_features_eic(Rcpp::List info,
       Rcpp::Rcout << "Done!" << std::endl;
       continue;
     }
+
+    Rcpp::Rcout << "Loading EIC for " << targets.id.size() << " features in analyses " << data.analyses[i] << "...";
     
     const sc::MS_SPECTRA_HEADERS &header_i = data.headers[i];
     const std::string &file_i = data.files[i];
@@ -795,8 +795,6 @@ Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
     if (fts_i.size() == 0)
       continue;
     
-    Rcpp::Rcout << "Loading MS1 for " << fts_i.size() << " features in analyses " << data.analyses[i] << "...";
-    
     sc::MS_TARGETS targets;
     int counter = 0;
     
@@ -836,6 +834,8 @@ Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
       Rcpp::Rcout << "Done!" << std::endl;
       continue;
     }
+
+    Rcpp::Rcout << "Loading MS1 for " << targets.id.size() << " features in analyses " << data.analyses[i] << "...";
     
     const sc::MS_SPECTRA_HEADERS &header_i = data.headers[i];
     const std::string &file_i = data.files[i];
@@ -1064,8 +1064,6 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
     if (fts_i.size() == 0)
       continue;
     
-    Rcpp::Rcout << "Loading MS2 for " << fts_i.size() << " features in analyses " << data.analyses[i] << "...";
-    
     sc::MS_TARGETS targets;
     int counter = 0;
     
@@ -1098,6 +1096,8 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
       Rcpp::Rcout << "Done!" << std::endl;
       continue;
     }
+
+    Rcpp::Rcout << "Loading MS2 for " << targets.id.size() << " features in analyses " << data.analyses[i] << "...";
     
     const sc::MS_SPECTRA_HEADERS &header_i = data.headers[i];
     const std::string &file_i = data.files[i];
@@ -1168,8 +1168,6 @@ Rcpp::List rcpp_nts_calculate_features_quality(Rcpp::List info,
     if (fts_i.size() == 0)
       continue;
     
-    Rcpp::Rcout << "Processing " << fts_i.size() << " features in analyses " << data.analyses[i] << "...";
-    
     sc::MS_TARGETS targets;
     int counter = 0;
     
@@ -1212,6 +1210,8 @@ Rcpp::List rcpp_nts_calculate_features_quality(Rcpp::List info,
       Rcpp::Rcout << "Done!" << std::endl;
       continue;
     }
+
+    Rcpp::Rcout << "Processing " << targets.id.size() << " features in analyses " << data.analyses[i] << "...";
     
     const sc::MS_SPECTRA_HEADERS &header_i = data.headers[i];
     const std::string &file_i = data.files[i];

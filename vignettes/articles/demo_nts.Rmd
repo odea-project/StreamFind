@@ -25,6 +25,7 @@ library(kableExtra)
 library(magrittr)
 library(ggplot2)
 library(plotly)
+library(DT)
 library(StreamFind)
 
 knitr::opts_chunk$set(
@@ -35,6 +36,22 @@ knitr::opts_chunk$set(
   comment = "",
   message = FALSE,
   warning = FALSE
+)
+
+options(
+  DT.options = list(
+    dom = "lfrtip",
+    autoWidth = TRUE,
+    pageLength = 10,
+    scrollX = TRUE,
+    lengthMenu = c(10, 20, 50, 75, 100),
+    initComplete = htmlwidgets::JS(
+      "function(settings, json) {",
+      "$(this.api().table().body()).css({'font-size': '12px'});",
+      "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+      "}"
+    )
+  )
 )
 ```
 
@@ -51,24 +68,16 @@ db <- db_all[db_all$tag %in% "S", ]
 db <- db[, cols, with = FALSE]
 db_with_ms2 <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 db_with_ms2 <- db_with_ms2[db_with_ms2$tag %in% "S", ]
-db_with_ms2 <- db_with_ms2[, c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments"), with = FALSE]
+db_with_ms2 <- db_with_ms2[,
+  c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments"),
+  with = FALSE
+]
 db_with_ms2$polarity[db_with_ms2$polarity == 1] <- "positive"
 db_with_ms2$polarity[is.na(db_with_ms2$polarity)] <- "positive"
 db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 ```
 
-<style>
-pre {
-  overflow-x: auto;
-}
-pre code {
-  word-wrap: normal;
-  white-space: pre;
-}
-</style>
-
 <br>
-
 <br>
 
 ***
@@ -87,7 +96,7 @@ The showcase will use the StreamFind *MassSpecEngine*, which encapsulates all to
 
 The [*R6*](https://r6.r-lib.org/) [*MassSpecEngine*](https://odea-project.github.io/StreamFind/reference/MassSpecEngine.html) class object is created using `MassSpecEngine$new()`, as shown below. The `analyses` argument can be used to add the set of ms files directly. In this demonstration, we use *mzML* files. However, the original ms vendor files can also be used, but they will be converted to *mzML* format using *msConvert* from [ProteoWizard](https://proteowizard.sourceforge.io/download.html) in the background.
 
-```{r create-ms}
+```{r create-ms, results='hide'}
 # Creates a MassSpecEngine from mzML files
 ms <- MassSpecEngine$new(
   metadata = list(name = "Wastewater NTA"),
@@ -153,7 +162,9 @@ ms$Analyses <- set_replicate_names(ms$Analyses, rpls)
 ms$Analyses <- set_blank_names(ms$Analyses, blks)
 
 # Replicates and blanks were amended
-info(ms$Analyses)[, c(1:3, 5)]
+DT::datatable(
+  info(ms$Analyses)
+)
 ```
 
 # *ProcessingStep*
@@ -194,7 +205,6 @@ show(ffs)
 ```{r other-methods}
 # Creates an ordered list with all processing steps for the MS data
 workflow <- list(
-
   # Find features using the openms algorithm, created above
   ffs,
 
@@ -273,7 +283,7 @@ workflow <- list(
     ppm = 8,
     sec = 10
   ),
-  
+
   # Corrects matrix suppression using the TiChri method from
   # 10.1021/acs.analchem.1c00357 to better compare influent and effluent
   MassSpecMethod_CorrectMatrixSuppression_TiChri(
@@ -349,14 +359,22 @@ class(nts)
 The features and feature groups can be obtained as `data.table` with the `get_features()` and `get_groups()` methods. The methods also allow to look for specific features/feature groups using mass, mass-to-charge ratio, retention time and drift time targets, as show below for a small set of compound targets where mass and retention time expected values are known. Note that drift time is only applicable for MS data with ion mobility separation.
 
 ```{r database-show}
-db
+DT::datatable(db)
 ```
 
 ```{r show-target-groups}
 # Compounds are searched by monoisotopic mass and retention time
 # ppm and sec set the mass (im ppm) and time (in seconds) allowed deviation, respectively
 # average applies a mean to the intensities in each analysis replicate group
-get_groups(nts, mass = db, ppm = 10, sec = 15, average = TRUE)
+DT::datatable(
+  get_groups(
+    nts,
+    mass = db,
+    ppm = 10,
+    sec = 15,
+    average = TRUE
+  )
+)
 ```
 
 Already by inspection of the `data.table`, it is possible to see compounds detected in the influent but not in the effluent (e.g., Carbamazepine) or compounds that are appear to be reduced during ozonation (e.g., Metoprolol). Since positive and negative ionization mode were combined, there are compounds that appear in both polarities and are grouped by neutral monoisotopic mass (e.g., Candesartan and Diclofenac).
@@ -367,11 +385,23 @@ For a better overview of the results, the method `plot_groups()` or even more de
 
 ```{r plot-groups, fig.height=8}
 # set legendNames to TRUE for using the names in db as legend
-plot_groups(nts, mass = db, ppm = 10, sec = 15, legendNames = TRUE)
+plot_groups(
+  nts,
+  mass = db,
+  ppm = 10,
+  sec = 15,
+  legendNames = TRUE
+)
 ```
 
-```{r plot-groups-overview, fig.height=10}
-plot_groups_overview(nts, mass = db, ppm = 5, sec = 10, legendNames = TRUE)
+```{r plot-groups-overview, fig.height=8}
+plot_groups_overview(
+  nts,
+  mass = db,
+  ppm = 5,
+  sec = 10,
+  legendNames = TRUE
+)
 ```
 
 ## Filtered not removed
@@ -380,7 +410,16 @@ The *FilterFeatures* method was applied to filter features according to defined 
 
 ```{r show-filtered-is}
 # Set filtered to TRUE for showing filtered features/feature groups
-get_groups(nts, mass = db, ppm = 5, sec = 10, average = TRUE, filtered = TRUE)
+DT::datatable(
+  get_groups(
+    nts,
+    mass = db,
+    ppm = 5,
+    sec = 10,
+    average = TRUE,
+    filtered = TRUE
+  )
+)
 ```
 
 ## Internal Standards
@@ -389,12 +428,14 @@ The method *FindInternalStandards* was applied for tagging spiked internal stand
 
 ```{r database-is-show}
 # List of spiked internal standards
-db_is
+DT::datatable(db_is)
 ```
 
 ```{r get_is}
 # Gets the internal standards evaluation data.table
-get_internal_standards(nts)[, 1:7]
+DT::datatable(
+  get_internal_standards(nts)
+)
 ```
 
 ```{r plot_is_qc, fig.height=10, fig.cap="Quality control of spiked internal standards"}
@@ -402,7 +443,14 @@ plot_internal_standards(nts)
 ```
 
 ```{r plot_is_profile, fig.cap="Internal standards profile across analyses"}
-plot_groups_profile(nts, mass = db_is, ppm = 8, sec = 10, filtered = TRUE, legendNames = TRUE)
+plot_groups_profile(
+  nts,
+  mass = db_is,
+  ppm = 8,
+  sec = 10,
+  filtered = TRUE,
+  legendNames = TRUE
+)
 ```
 
 ## Components
@@ -415,12 +463,13 @@ components_example <- get_components(
   nts,
   analyses = 11,
   mass = db[db$name %in% c("Diclofenac", "Candesartan"), ],
-  ppm = 5, sec = 10,
+  ppm = 5,
+  sec = 10,
   filtered = TRUE
 )
 
 # Subset of the components data.table
-components_example[, c(2:6, 8, 30:34)]
+DT::datatable(components_example)
 ```
 
 The components (i.e., isotopes and adducts) can also be visualized with the method `MassSpecEngine$map_components()`, as shown below for the internal standards added to analysis 11. Note that again the `filtered` argument was set to `TRUE` to return also filtered features, as the internal standards were likely excluded by blank subtraction.
@@ -430,7 +479,8 @@ map_components(
   nts,
   analyses = 11,
   mass = db_is,
-  ppm = 8, sec = 10,
+  ppm = 8,
+  sec = 10,
   filtered = TRUE,
   legendNames = TRUE
 )
@@ -441,7 +491,9 @@ map_components(
 The methods `MassSpecEngine$get_suspects()` and `MassSpecEngine$plot_suspects()` can be used to inspect the suspect screening results. In the plot function, a second plot is added to compare the experimental fragmentation pattern (top) with the fragmentation pattern of the respective reference standard (down) added within the database. The `colorBy` argument can be set to *targets+replicates* to legend the plot with combined keys of suspect target names and analysis replicate names.
 
 ```{r get_suspects}
-get_suspects(nts)[, c(1, 5, 14)]
+DT::datatable(
+  get_suspects(nts)
+)
 ```
 
 ```{r plot-suspects, fig.height=10}
@@ -526,7 +578,11 @@ ms_pos$run(
 
 ```{r}
 # extract annotated compounds from the MassSpecResults_NonTargetAnalysis
-get_compounds(ms_pos$Results$MassSpecResults_NonTargetAnalysis)[, c(1, 2, 3, 6, 7, 16, 20)]
+DT::datatable(
+  get_compounds(
+    ms_pos$Results$MassSpecResults_NonTargetAnalysis
+  )
+)
 ```
 
 # More to come
