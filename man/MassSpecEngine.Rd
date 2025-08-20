@@ -33,9 +33,9 @@ The \code{MassSpecEngine} is using several \href{https://github.com/rickhelmus/p
 \describe{
 \item{\code{MassSpecResults_NonTargetAnalysis}}{Get/Set for the \code{MassSpecResults_NonTargetAnalysis} results class.}
 
-\item{\code{Spectra}}{Get/set for the \code{MassSpecSpectra} results class.}
+\item{\code{MassSpecResults_Spectra}}{Get/set for the \code{MassSpecResults_Spectra} results class.}
 
-\item{\code{Chromatograms}}{Get/set for the chromatograms results class.}
+\item{\code{MassSpecResults_Chromatograms}}{Get/set for the MassSpecResults_Chromatograms results class.}
 }
 \if{html}{\out{</div>}}
 }
@@ -43,6 +43,14 @@ The \code{MassSpecEngine} is using several \href{https://github.com/rickhelmus/p
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-MassSpecEngine-new}{\code{MassSpecEngine$new()}}
+\item \href{#method-MassSpecEngine-add_analyses}{\code{MassSpecEngine$add_analyses()}}
+\item \href{#method-MassSpecEngine-remove_analyses}{\code{MassSpecEngine$remove_analyses()}}
+\item \href{#method-MassSpecEngine-set_replicate_names}{\code{MassSpecEngine$set_replicate_names()}}
+\item \href{#method-MassSpecEngine-set_blank_names}{\code{MassSpecEngine$set_blank_names()}}
+\item \href{#method-MassSpecEngine-get_analysis_names}{\code{MassSpecEngine$get_analysis_names()}}
+\item \href{#method-MassSpecEngine-get_replicate_names}{\code{MassSpecEngine$get_replicate_names()}}
+\item \href{#method-MassSpecEngine-get_blank_names}{\code{MassSpecEngine$get_blank_names()}}
+\item \href{#method-MassSpecEngine-get_files}{\code{MassSpecEngine$get_files()}}
 \item \href{#method-MassSpecEngine-clone}{\code{MassSpecEngine$clone()}}
 }
 }
@@ -100,6 +108,147 @@ with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow
 }
 \subsection{Returns}{
 A new \code{MassSpecEngine} class object.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-add_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-add_analyses}{}}}
+\subsection{Method \code{add_analyses()}}{
+Adds analyses. Note that when adding new analyses, any existing results are removed.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$add_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{A character vector with full file paths to mzML/mzXML files. f \code{msconvert} from \href{https://proteowizard.sourceforge.io/}{ProteoWizard} is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-remove_analyses"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-remove_analyses}{}}}
+\subsection{Method \code{remove_analyses()}}{
+Removes analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$remove_analyses(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-set_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-set_replicate_names}{}}}
+\subsection{Method \code{set_replicate_names()}}{
+Set replicate names to the analysis, using a character vector with the same length as the number of analyses.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$set_replicate_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{An object that highly depends on the method. Check the specific method documentation for details.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-set_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-set_blank_names}{}}}
+\subsection{Method \code{set_blank_names()}}{
+Set blank names to the analysis, using a character vector with the same length as the number of analyses. Note that the names must be one of the replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$set_blank_names(value)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{An object that highly depends on the method. Check the specific method documentation for details.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_analysis_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_analysis_names}{}}}
+\subsection{Method \code{get_analysis_names()}}{
+Gets a character vector with the analysis replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_analysis_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_replicate_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_replicate_names}{}}}
+\subsection{Method \code{get_replicate_names()}}{
+Gets a character vector with the analysis replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_replicate_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_blank_names"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_blank_names}{}}}
+\subsection{Method \code{get_blank_names()}}{
+Gets a character vector with the analysis blank replicate names.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_blank_names(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-MassSpecEngine-get_files"></a>}}
+\if{latex}{\out{\hypertarget{method-MassSpecEngine-get_files}{}}}
+\subsection{Method \code{get_files()}}{
+Gets a character vector with the full file paths of each analysis.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngine$get_files(analyses = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}

@@ -6,44 +6,35 @@
 #'
 #' @export
 run_app <- function(onStart = NULL, options = list(), enableBookmarking = NULL, uiPattern = "/", ...) {
-  
   if (!requireNamespace("shiny", quietly = TRUE)) {
     warning("shiny package not installed!")
     return(invisible(self))
   }
-  
   if (!requireNamespace("golem", quietly = TRUE)) {
     warning("golem package not installed!")
     return(invisible(self))
   }
-  
   if (!requireNamespace("htmltools", quietly = TRUE)) {
     warning("htmltools package not installed!")
     return(invisible(self))
   }
-  
   if (!requireNamespace("shinydashboard", quietly = TRUE)) {
     warning("shinydashboard package not installed!")
     return(invisible(self))
   }
-  
   if (!requireNamespace("shinycssloaders", quietly = TRUE)) {
     warning("shinycssloaders package not installed!")
     return(invisible(self))
   }
-  
   if (!requireNamespace("shinyFiles", quietly = TRUE)) {
     warning("shinyFiles package not installed!")
     return(invisible(self))
   }
-  
   if (!requireNamespace("sortable", quietly = TRUE)) {
     warning("sortable package not installed!")
     return(invisible(self))
   }
-  
   dots <- list(...)
-  
   if ("file" %in% names(dots)) {
     file <- dots$file
     if (!is.na(file)) {
@@ -58,7 +49,6 @@ run_app <- function(onStart = NULL, options = list(), enableBookmarking = NULL, 
       }
     }
   }
-  
   golem::with_golem_options(
     app = shiny::shinyApp(
       ui = app_ui,

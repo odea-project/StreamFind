@@ -52,13 +52,16 @@
 ) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    # _Global Constants/Mutable -----
+    
+    # MARK: Global Constants/Mutable 
+    # Global Constants/Mutable -----
     pkg_resources <- system.file(package = "StreamFind", dir = "extdata")
     volumes <- .app_util_get_volumes()
     engine <- NULL
     analyses_class_dummy <- NULL
 
-    # _Global Reactive Variables -----
+    # MARK: Global Reactive Variables
+    # Global Reactive Variables -----
     reactive_wdir <- shiny::reactiveVal(getwd())
     reactive_volumes <- shiny::reactiveVal(volumes)
     reactive_metadata <- shiny::reactiveVal(NULL)
@@ -75,7 +78,8 @@
     reactive_engine_config_saved <- shiny::reactiveVal(NULL)
     reactive_config <- shiny::reactiveVal(AppConfig())
 
-    ## obs Engine Save File -----
+    # MARK: obs Engine Save File
+    # obs Engine Save File -----
     shiny::observeEvent(reactive_engine_save_file(), {
       engine_save_file <- reactive_engine_save_file()
       if (!is.na(engine_save_file)) {
@@ -91,7 +95,8 @@
       }
     })
 
-    ## obs Clean Start -----
+    # MARK: obs Clean Start
+    # obs Clean Start -----
     shiny::observeEvent(reactive_clean_start(), {
       if (reactive_clean_start()) {
         envSF <- asNamespace("StreamFind")
@@ -106,7 +111,6 @@
           analyses_call,
           list()
         ))
-
         if (!is.na(reactive_engine_save_file())) {
           tryCatch(
             {
@@ -140,7 +144,6 @@
             }
           )
         }
-
         reactive_metadata(engine$Metadata)
         reactive_analyses(engine$Analyses)
         reactive_workflow(engine$Workflow)
@@ -157,9 +160,8 @@
       }
     })
 
-    # _Warnings -----
-
-    ## obs Unsaved engine -----
+    # MARK: obs Warning Unsaved engine
+    # obs Warning Unsaved engine -----
     shiny::observe({
       has_unsaved_changes <- "unsaved_changes" %in% names(reactive_warnings())
       equal_history <- all(
@@ -187,7 +189,8 @@
       }
     })
 
-    ## out Save engine -----
+    # MARK: out Save Engine
+    # out Save engine -----
     output$save_engine <- shiny::renderUI({
       if ("unsaved_changes" %in% names(reactive_warnings())) {
         shinyFiles::shinyFileSave(
@@ -201,13 +204,11 @@
         if (is.na(filename)) {
           filename <- reactive_engine_type()
         }
-
         if (grepl(".sqlite", filename)) {
           extensions <- list(sqlite = "sqlite", rds = "rds")
         } else {
           extensions <- list(rds = "rds", sqlite = "sqlite")
         }
-
         htmltools::div(
           style = "margin-bottom: 20px;",
           shinyFiles::shinySaveButton(
@@ -223,7 +224,8 @@
       }
     })
 
-    ## event Save -----
+    # MARK: obs Save Engine
+    # obs Save Engine -----
     shiny::observeEvent(input$save_engine_button, {
       engine$save(reactive_engine_save_file())
       reactive_warnings(.app_util_remove_notifications(
@@ -244,7 +246,8 @@
       reactive_engine_config_saved(engine$Config)
     })
 
-    ## event Save Engine File -----
+    # MARK: obs Save Engine File
+    # obs Save Engine File -----
     shiny::observeEvent(input$save_engine_button_file, {
       shiny::req(input$save_engine_button_file)
       file_info <- shinyFiles::parseSavePath(
@@ -278,7 +281,8 @@
       }
     })
 
-    ## out Reset engine -----
+    # MARK: out Reset Engine
+    # out Reset engine -----
     output$reset_engine <- shiny::renderUI({
       if ("unsaved_changes" %in% names(reactive_warnings())) {
         htmltools::div(
@@ -293,7 +297,8 @@
       }
     })
 
-    ## event Reset -----
+    # MARK: obs Reset Engine
+    # obs Reset Engine -----
     shiny::observeEvent(input$reset_engine_button, {
       if (is.na(reactive_engine_save_file())) {
         reactive_warnings(.app_util_remove_notifications(
@@ -333,8 +338,10 @@
       }
     })
 
-    # _Project -----
+    # MARK: Project
+    # Project -----
 
+    # MARK: out Working Directory
     ## out Working Directory -----
     output$wdir <- shiny::renderUI({
       shinyFiles::shinyDirChoose(
@@ -359,7 +366,8 @@
       )
     })
 
-    ## event Change Working Directory -----
+    # MARK: obs Change Working Directory
+    ## obs Change Working Directory -----
     shiny::observeEvent(input$set_wdir_button, {
       shiny::req(input$set_wdir_button)
       file_info <- shinyFiles::parseDirPath(
@@ -374,6 +382,7 @@
       }
     })
 
+    # MARK: out Engine Save File
     ## out Engine Save File -----
     output$engine_save_file_ui <- shiny::renderUI({
       if (!is.na(reactive_engine_save_file())) {
@@ -389,7 +398,8 @@
       }
     })
 
-    ## module Headers -----
+    # MARK: Metadata
+    # Metadata -----
     output$metadata_ui <- shiny::renderUI({
       .mod_WorkflowAssembler_Metadata_Server(
         "metadata",
@@ -400,7 +410,8 @@
       .mod_WorkflowAssembler_Metadata_UI("metadata", ns)
     })
 
-    # _Analyses -----
+    # MARK: Analyses
+    # Analyses -----
     output$analyses_ui <- shiny::renderUI({
       engine_type <- reactive_engine_type()
       if (engine_type %in% "Engine") {
@@ -432,7 +443,8 @@
       .mod_WorkflowAssembler_Analyses_UI(analyses_class_dummy, "analyses", ns)
     })
 
-    # _Explorer -----
+    # MARK: Explorer
+    # Explorer -----
     output$explorer_ui <- shiny::renderUI({
       if (is.null(analyses_class_dummy)) {
         shiny::showNotification(
@@ -442,7 +454,6 @@
         )
         return(htmltools::div(" "))
       }
-
       tryCatch(
         {
           .mod_WorkflowAssembler_Explorer_Server(
@@ -473,7 +484,8 @@
       )
     })
 
-    # _Workflow -----
+    # MARK: Workflow
+    # Workflow -----
     output$workflow_ui <- shiny::renderUI({
       engine_type <- reactive_engine_type()
       if (engine_type %in% "Engine") {
@@ -504,7 +516,8 @@
       .mod_WorkflowAssembler_workflow_UI("workflow", ns)
     })
 
-    # _Results -----
+    # MARK: Results
+    # Results -----
     output$results_ui <- shiny::renderUI({
       if (reactive_engine_type() %in% "Engine") {
         shiny::showNotification(
@@ -567,7 +580,8 @@
       }
     })
 
-    # _Audit -----
+    # MARK: AuditTrail
+    # AuditTrail -----
     output$audit_ui <- DT::renderDT({
       audit_trail <- reactive_audit()
       if (length(audit_trail) > 0) {
@@ -601,7 +615,8 @@
     # TODO update configuration based on the golem-config.yml?
     reactive_config_change_trigger <- shiny::reactiveVal(0)
 
-    # _Config -----
+    # MARK: Config
+    # Config -----
     output$config_ui <- DT::renderDT({
       config <- reactive_config()
       modified_variable_trigger <- reactive_config_change_trigger()
@@ -615,7 +630,8 @@
       )
     })
 
-    # event Config Table Editing -----
+    # MARK: obs Config Table Editing
+    ## obs Config Table Editing -----
     shiny::observeEvent(input$config_ui_cell_edit, {
       info <- input$config_ui_cell_edit
       info_index <- info$row
@@ -651,7 +667,8 @@
       )
     })
 
-    ## out Cache Size -----
+    # MARK: out Cache Size
+    # out Cache Size -----
     output$cache_size <- shiny::renderText({
       tryCatch(
         {
@@ -682,7 +699,8 @@
       )
     })
 
-    ## event Clear Cache -----
+    # MARK: obs Cache Size
+    # obs Clear Cache -----
     shiny::observeEvent(input$clear_cache_button, {
       tryCatch(
         {

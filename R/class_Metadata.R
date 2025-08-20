@@ -24,7 +24,7 @@ Metadata <- function(entries = list()) {
     entries <- lapply(entries, function(h) {
       if (any(is.null(h))) h <- NA_character_
       if (any(is.na(h))) h <- NA_character_
-      if (is.character(h) || is.numeric(h) || inherits(h, "POSIXt")) {
+      if (is.character(h) || is.numeric(h) || inherits(h, "POSIXt") || is.logical(h)) {
         if (length(h) != 1) {
           warning("All elements must have length 1!")
           h <- NA_character_
@@ -209,5 +209,42 @@ show.Metadata <- function(x) {
       str <- c(str, paste(names(x)[n], ": ", as.character(x[[n]]), sep = ""))
     }
     cat(str, sep = "\n")
+  }
+}
+
+#' @describeIn Metadata Converts the `Metadata` object to a `data.table` object.
+#' @param x A `Metadata` object.
+#' @export
+#' 
+as.data.table.Metadata <- function(x) {
+  if (!is(x, "Metadata")) stop("x must be a Metadata object!")
+  if ("date" %in% names(x)) {
+    x[["date"]] <- as.character(x[["date"]])
+  }
+  data.table::data.table(
+    name = names(x),
+    value = unlist(x, use.names = FALSE)
+  )
+}
+
+#' @describeIn Metadata Converts a named list, data.table or data.frame to a `Metadata` object. When `value` is a data.table or data.frame, it must have columns "name" and "value", where "name" contains the metadata entry names and "value" contains the corresponding values.
+#' @template arg-value
+#' @export
+#' 
+as.Metadata <- function(value) {
+  if (is.data.table(value) || is.data.frame(value)) {
+    entries <- as.list(value$value)
+    names(entries) <- value$name
+    if ("date" %in% names(value)) {
+      value[["date"]] <- as.POSIXct(value[["date"]])
+    }
+    return(Metadata(entries = entries))
+  } else if (is.list(value)) {
+    if ("date" %in% names(value)) {
+      value[["date"]] <- as.POSIXct(value[["date"]])
+    }
+    return(Metadata(entries = value))
+  } else {
+    stop("x must be a Metadata object, list, data.table or data.frame!")
   }
 }

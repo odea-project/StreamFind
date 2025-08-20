@@ -106,35 +106,33 @@
   lapply(available_engines, function(obj) {
     
     shiny::observeEvent(input[[paste0(time_var, "_select_", obj)]], {
-      
       if (paste0(time_var, "_select_LoadEngine") %in% paste0(time_var, "_select_", obj) ) {
         input_name <- paste0(time_var, "_select_LoadEngine")
         shiny::req(input[[input_name]])
         fileinfo <- shinyFiles::parseFilePaths(volumes, input[[input_name]])
         if (nrow(fileinfo) > 0) {
           engine_save_file <- fileinfo$datapath
-          
           if (tools::file_ext(engine_save_file) %in% c("sqlite", "rds")) {
-            
             if (file.exists(engine_save_file)) {
               file_format <- tools::file_ext(engine_save_file)
-              
               if (file_format %in% "sqlite") {
                 db <- .openCacheDBScope(file = engine_save_file)
                 engine_name <- DBI::dbListTables(db)
                 if (length(engine_name) == 0) engine_name <- NA_character_
-                
               } else if (file_format %in% "rds") {
                 data <- readRDS(engine_save_file)
-                if (is.list(data)) if ("engine" %in% names(data)) {
-                  engine_name <- data$engine
+                if (is.list(data)) {
+                  if ("type" %in% names(data)) {
+                  engine_name <- paste0(data$type, "Engine")
+                  } else {
+                    engine_name <- NA_character_
+                  }
                 } else {
                   engine_name <- NA_character_
                 }
               } else {
                 engine_name <- NA_character_
               }
-              
             } else {
               msg <- paste("The file", engine_save_file, "does not exist!")
               shiny::showNotification(msg, duration = 10, type = "error")
@@ -146,7 +144,6 @@
           } else {
             engine_name = NA_character_
           }
-          
           if (is.na(engine_name)) {
             msg <- paste("The file", engine_save_file, "is not a valid engine file!")
             shiny::showNotification(msg, duration = 10, type = "error")
@@ -155,7 +152,6 @@
             reactive_show_init_modal(TRUE)
             return()
           }
-          
           if (!engine_name %in% available_engines) {
             msg <- paste("The engine", engine_name, "is not valid!")
             shiny::showNotification(msg, duration = 10, type = "error")
@@ -164,7 +160,6 @@
             reactive_show_init_modal(TRUE)
             return()
           }
-          
           if (engine_name %in% available_engines) {
             reactive_app_mode("WorkflowAssembler")
             reactive_engine_type(engine_name)
@@ -175,7 +170,6 @@
             return()
           }
         }
-        
       } else {
         reactive_engine_save_file(NA_character_)
         reactive_engine_type(obj)
@@ -206,6 +200,18 @@
     id = ns_full(button_id),
     class = "btn btn-sm btn-light plot-maximize-btn",
     title = "Maximize plot",
+    style = "
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 25px;
+      height: 25px;
+      padding: 2.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    ",
     onclick = paste0("maximizePlot('", ns_full(plot_id), "', '", ns_full(button_id), "');"),
     shiny::icon("expand")
   )
