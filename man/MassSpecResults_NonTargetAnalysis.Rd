@@ -138,8 +138,8 @@ as.MassSpecResults_NonTargetAnalysis(value)
   ppm = 20,
   sec = 60,
   millisec = 5,
-  rtExpand = 0,
-  mzExpand = 0,
+  rtExpand = 120,
+  mzExpand = 0.001,
   filtered = FALSE,
   useLoadedData = TRUE
 )

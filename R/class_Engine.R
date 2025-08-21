@@ -575,9 +575,9 @@ Engine <- R6::R6Class(
           AuditTrail = self$AuditTrail,
           Config = self$Config
         )
-        hash <- .make_hash(paste0("Engine_", private$.type))
+        hash <- .make_hash(paste0(private$.type, "Engine"))
         .save_cache_sqlite(
-          category = paste0("Engine_", private$.type),
+          category = paste0(private$.type, "Engine"),
           data = data,
           hash = hash,
           file = file

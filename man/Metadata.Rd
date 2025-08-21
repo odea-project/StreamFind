@@ -12,6 +12,8 @@
 \alias{save.Metadata}
 \alias{read.Metadata}
 \alias{show.Metadata}
+\alias{as.data.table.Metadata}
+\alias{as.Metadata}
 \title{Generic (top level) Metadata constructor and methods}
 \usage{
 Metadata(entries = list())
@@ -35,6 +37,10 @@ Metadata(entries = list())
 \method{read}{Metadata}(x, file)
 
 \method{show}{Metadata}(x)
+
+\method{as.data.table}{Metadata}(x)
+
+as.Metadata(value)
 }
 \arguments{
 \item{entries}{A named list of metadata entries as elements. Default is an empty list. Elements must be of type character, numeric or POSIXt and must have length 1.}
@@ -43,7 +49,7 @@ Metadata(entries = list())
 
 \item{i}{A numeric or character vector with the index or name of the entry to replace.}
 
-\item{value}{The new value to replace the entry.}
+\item{value}{An object that highly depends on the method. Check the specific method documentation for details.}
 
 \item{file}{A character string with the file name to read the metadata from.
 The file format should be either "json" or "rds".}
@@ -78,5 +84,12 @@ If not given, elements name, author, date and file are set to \code{NA_character
 \item \code{read(Metadata)}: Reads metadata from a file, returning a \code{Metadata} object.
 
 \item \code{show(Metadata)}: Prints the metadata entries.
+
+\item \code{as.data.table(Metadata)}: Converts the \code{Metadata} object to a \code{data.table} object.
+
+}}
+\section{Functions}{
+\itemize{
+\item \code{as.Metadata()}: Converts a named list, data.table or data.frame to a \code{Metadata} object. When \code{value} is a data.table or data.frame, it must have columns "name" and "value", where "name" contains the metadata entry names and "value" contains the corresponding values.
 
 }}

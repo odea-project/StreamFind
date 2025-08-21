@@ -1,6 +1,4 @@
 devtools::load_all()
-library(StreamFind)
-
 all_files <- StreamFindData::get_ms_file_paths()
 files <- all_files[grepl("blank|influent|o3sw", all_files)]
 db_all <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -19,6 +17,9 @@ db_with_ms2$polarity[is.na(db_with_ms2$polarity)] <- "positive"
 db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 
 ms <- MassSpecEngine$new(analyses = files)
+
+dt <- as.data.table(ms$Metadata)
+as.Metadata(dt)
 
 # ms$Analyses$has_results_nts
 # ms$has_results_nts()
@@ -70,8 +71,8 @@ blks <- c(
   rep("blank_pos", 3)
 )
 
-ms$add_replicate_names(rpls)
-ms$add_blank_names(blks)
+ms$Analyses <- set_replicate_names(ms$Analyses, rpls)
+ms$Analyses <- set_blank_names(ms$Analyses, blks)
 
 ms$run(MassSpecMethod_FindFeatures_xcms3_centwave())
 
@@ -132,6 +133,9 @@ ms$run(
   )
 )
 
+ms$save("ms.rds")
+ms$run_app()
+
 ms$run(
   MassSpecMethod_CorrectMatrixSuppression_TiChri(
     mpRtWindow = 15,
@@ -169,12 +173,14 @@ ms$run(
   )
 )
 
-# show(ms$NonTargetAnalysisResults)
+get_features(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
+get_features_eic(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
+plot_features(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
 
+# show(ms$NonTargetAnalysisResults)
 # Access NonTargetAnalysisResults object and print to console
 # nts <- ms$NonTargetAnalysisResults
 # show(nts)
-
 # nts@number_analyses
 # nts@number_features
 # nts@has_features
@@ -187,7 +193,6 @@ ms$run(
 # nts@has_features_suspects
 # nts@number_groups
 # nts@group_names
-
 # plot_matrix_suppression(ms$Analyses)
 # plot_features_count(nts, colorBy = "replicates") #imp
 # View(get_features(nts, mass = db[2:3, ]))
@@ -214,13 +219,11 @@ ms$run(
 # plot_internal_standards(nts)
 # View(get_suspects(nts))
 # plot_suspects(nts)
-
 # get_fold_change(
 #   nts,
 #   replicatesIn = "influent_pos",
 #   replicatesOut = "effluent_pos"
 # )
-
 # plot_fold_change(
 #   nts,
 #   replicatesIn = "influent_pos",
@@ -233,21 +236,16 @@ ms$run(
 #   normalized = TRUE,
 #   showLegend = TRUE
 # )
-
 # get_compounds(nts)
-
 #StreamFind::clear_cache("all")
-
 # Access feature_list
 #names(ms$NTS$feature_list)
-
 # modify feature_list
 # ms$NTS$feature_list<-new_feature_list
-
 #fts <- ms$NTS$feature_list
 
 ms$save("ms.rds")
-options(shiny.launch.browser = FALSE)
+#options(shiny.launch.browser = FALSE)
 
 # ms$get_cache_size()
 
@@ -256,7 +254,7 @@ devtools::load_all()
 run_app(file = "ms.rds")
 
 
-
+ms$run_app()
 
 
 

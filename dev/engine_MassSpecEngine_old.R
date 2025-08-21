@@ -222,7 +222,7 @@ MassSpecEngine <- R6::R6Class("MassSpecEngine",
     ## get_analysis_names -----
     #' @description Gets a character vector with the analysis replicate names.
     get_analysis_names = function(analyses = NULL) {
-      analyses <- .check_analyses_argument(self$Analyses, analyses)
+      analyses <- .check_analyses_argument(self$Analyses$, analyses)
       names(self$Analyses)[analyses]
     },
 

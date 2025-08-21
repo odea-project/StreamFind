@@ -501,6 +501,172 @@ Rcpp::List rcpp_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx
   return out;
 };
 
+// MARK: rcpp_ms_load_features_eic
+// [[Rcpp::export]]
+Rcpp::List rcpp_ms_load_features_eic(std::vector<std::string> analyses_names,
+                                     std::vector<std::string> analyses_files,
+                                     Rcpp::List headers,
+                                     Rcpp::List features,
+                                     bool filtered,
+                                     float rtExpand,
+                                     float mzExpand,
+                                     float minTracesIntensity)
+{
+
+  const int number_analyses = analyses_names.size();
+
+  if (number_analyses == 0)
+    return features;
+
+  const int number_features_analyses = features.size();
+
+  if (number_features_analyses != number_analyses)
+    return features;
+
+  std::vector<std::string> features_analyses_names = features.names();
+
+  for (int i = 0; i < number_analyses; i++)
+  {
+
+    if (features_analyses_names[i] != analyses_names[i])
+      return features;
+
+    Rcpp::List features_i = features[i];
+
+    const std::vector<std::string> &features_i_names = features_i.names();
+
+    const int n_features_i_names = features_i_names.size();
+
+    if (n_features_i_names == 0)
+      return features;
+
+    std::vector<std::string> must_have_names = {
+        "feature", "rt", "rtmax", "rtmin", "mz", "mzmax", "mzmin", "polarity", "filtered", "eic"};
+
+    const int n_must_have_names = must_have_names.size();
+
+    std::vector<bool> has_must_have_names(n_must_have_names, false);
+
+    for (int j = 0; j < n_must_have_names; ++j)
+    {
+      for (int k = 0; k < n_features_i_names; ++k)
+      {
+        if (must_have_names[j] == features_i_names[k])
+          has_must_have_names[j] = true;
+      }
+    }
+
+    for (bool value : has_must_have_names)
+    {
+      if (!value)
+      {
+        return features;
+      }
+    }
+
+    const std::vector<std::string> &fts_id = features_i["feature"];
+    const std::vector<bool> &fts_filtered = features_i["filtered"];
+    const std::vector<int> &fts_polarity = features_i["polarity"];
+    const std::vector<float> &fts_rt = features_i["rt"];
+    const std::vector<float> &fts_rtmin = features_i["rtmin"];
+    const std::vector<float> &fts_rtmax = features_i["rtmax"];
+    const std::vector<float> &fts_mz = features_i["mz"];
+    const std::vector<float> &fts_mzmin = features_i["mzmin"];
+    const std::vector<float> &fts_mzmax = features_i["mzmax"];
+    const std::vector<float> &fts_intensity = features_i["intensity"];
+    std::vector<Rcpp::List> fts_eic = features_i["eic"];
+
+    const int n_features = fts_id.size();
+
+    if (n_features == 0)
+      return features;
+
+    sc::MS_TARGETS targets;
+
+    int counter = 0;
+    for (int j = 0; j < n_features; j++)
+    {
+      if (!filtered)
+        if (fts_filtered[j])
+          continue;
+
+      const int eic_size = fts_eic[j].size();
+      if (eic_size > 0)
+        continue;
+
+      targets.index.push_back(counter);
+      counter++;
+      targets.id.push_back(fts_id[j]);
+      targets.level.push_back(1);
+      targets.polarity.push_back(fts_polarity[j]);
+      targets.precursor.push_back(false);
+      targets.mzmin.push_back(fts_mzmin[j] - mzExpand);
+      targets.mzmax.push_back(fts_mzmax[j] + mzExpand);
+      targets.rtmin.push_back(fts_rtmin[j] - rtExpand);
+      targets.rtmax.push_back(fts_rtmax[j] + rtExpand);
+      targets.mobilitymin.push_back(0);
+      targets.mobilitymax.push_back(0);
+    }
+
+    if (targets.id.size() == 0)
+      continue;
+
+    const std::string file = analyses_files[i];
+
+    if (!std::filesystem::exists(file))
+      continue;
+
+    sc::MS_FILE ana(file);
+    
+    const Rcpp::List &hd = headers[i];
+    
+    const sc::MS_SPECTRA_HEADERS header = MassSpecResults_NonTargetAnalysis::as_MS_SPECTRA_HEADERS(hd);
+
+    sc::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header, minTracesIntensity, 0);
+
+    for (int j = 0; j < n_features; j++)
+    {
+
+      if (!filtered)
+        if (fts_filtered[j])
+          continue;
+
+      const std::string &id_j = fts_id[j];
+      const int &pol_j = fts_polarity[j];
+
+      sc::MS_TARGETS_SPECTRA res_j = res[id_j];
+
+      int n_res_j = res_j.rt.size();
+
+      if (n_res_j == 0)
+        continue;
+
+      // MassSpecResults_NonTargetAnalysis::merge_traces_within_rt(res_j.rt, res_j.mz, res_j.intensity);
+
+      n_res_j = res_j.rt.size();
+      const std::vector<std::string> id_vec = std::vector<std::string>(n_res_j, id_j);
+      const std::vector<int> pol_vec = std::vector<int>(n_res_j, pol_j);
+      const std::vector<int> level_vec = std::vector<int>(n_res_j, pol_j);
+
+      Rcpp::List eic = Rcpp::List::create(
+          Rcpp::Named("feature") = id_vec,
+          Rcpp::Named("polarity") = pol_vec,
+          Rcpp::Named("level") = level_vec,
+          Rcpp::Named("rt") = res_j.rt,
+          Rcpp::Named("mz") = res_j.mz,
+          Rcpp::Named("intensity") = res_j.intensity);
+
+      eic.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+
+      fts_eic[j] = eic;
+    }
+    features_i["eic"] = fts_eic;
+    features[i] = features_i;
+  }
+
+  return features;
+}
+
 // MARK: rcpp_nts_load_features_eic
 // [[Rcpp::export]]
 Rcpp::List rcpp_nts_load_features_eic(Rcpp::List info,
