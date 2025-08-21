@@ -6,7 +6,7 @@
 #' @details If not given, elements name, author, date and file are set to `NA_character_`, `NA_character_`, current system time and `NA_character_`, respectively.
 #' @return A `Metadata` S3 class object which is fundamentally a named list with metadata entries.
 #' @export
-#' 
+#'
 Metadata <- function(entries = list()) {
   if (!is.list(entries)) {
     stop("Argument must be a named list!")
@@ -37,12 +37,12 @@ Metadata <- function(entries = list()) {
     })
   }
   if ("date" %in% names(entries)) {
-    entries[["date"]] <- as.POSIXct(entries[["date"]])
-    attr(entries[["date"]], "tzone") <- NULL
+    temp_date <- as.POSIXct(entries[["date"]])
+    entries[["date"]] <- format(temp_date, "%Y-%m-%d %H:%M:%S")
   }
   if (!"name" %in% names(entries)) entries[["name"]] <- NA_character_
   if (!"author" %in% names(entries)) entries[["author"]] <- NA_character_
-  if (!"date" %in% names(entries)) entries[["date"]] <- Sys.time()
+  if (!"date" %in% names(entries)) entries[["date"]] <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
   if (!"file" %in% names(entries)) entries[["file"]] <- NA_character_
   entries <- structure(entries, class = c("Metadata"))
   if (is.null(validate_object(entries))) {
@@ -55,7 +55,7 @@ Metadata <- function(entries = list()) {
 #' @describeIn Metadata Validates the `Metadata` object, returning `NULL` if valid.
 #' @param x A `Metadata` object.
 #' @export
-#' 
+#'
 validate_object.Metadata <- function(x) {
   valid <- FALSE
   if (is.list(x)) {
@@ -88,9 +88,21 @@ validate_object.Metadata <- function(x) {
       }
     }
     if ("date" %in% names(x)) {
-      if (!all(grepl("POSIXct|POSIXt", class(x[["date"]])))) {
-        warning("Metadata entry date class must be POSIXct or POSIXt length 1!")
+      if (!is.character(x[["date"]])) {
+        warning("Metadata entry date must be character length 1!")
         valid <- FALSE
+      } else {
+        if (!is.na(x[["date"]])) {
+          tryCatch(
+            {
+              as.POSIXct(x[["date"]])
+            },
+            error = function(e) {
+              warning("Metadata entry date must be in valid datetime format!")
+              valid <<- FALSE
+            }
+          )
+        }
       }
     }
     if ("file" %in% names(x)) {
@@ -103,14 +115,16 @@ validate_object.Metadata <- function(x) {
       }
     }
   }
-  if (!valid) return(FALSE)
+  if (!valid) {
+    return(FALSE)
+  }
   NULL
 }
 
 #' @describeIn Metadata Returns the length of the metadata entries.
 #' @param x A `Metadata` object.
 #' @export
-#' 
+#'
 length.Metadata <- function(x) {
   NextMethod()
 }
@@ -118,7 +132,7 @@ length.Metadata <- function(x) {
 #' @describeIn Metadata Returns the names of the metadata entries.
 #' @param x A `Metadata` object.
 #' @export
-#' 
+#'
 names.Metadata <- function(x) {
   NextMethod()
 }
@@ -127,7 +141,7 @@ names.Metadata <- function(x) {
 #' @param x A `Metadata` object.
 #' @param i A numeric or character vector with the indices or names of the entries to subset.
 #' @export
-#' 
+#'
 `[.Metadata` <- function(x, i) {
   NextMethod()
 }
@@ -137,7 +151,7 @@ names.Metadata <- function(x) {
 #' @param i A numeric or character vector with the indices or names of the entries to replace.
 #' @param value A list with the new entries to replace.
 #' @export
-#' 
+#'
 `[<-.Metadata` <- function(x, i, value) {
   NextMethod()
 }
@@ -146,7 +160,7 @@ names.Metadata <- function(x) {
 #' @param x A `Metadata` object.
 #' @param i A numeric or character vector with the index or name of the entry to extract.
 #' @export
-#' 
+#'
 `[[.Metadata` <- function(x, i) {
   NextMethod()
 }
@@ -156,7 +170,7 @@ names.Metadata <- function(x) {
 #' @param i A numeric or character vector with the index or name of the entry to replace.
 #' @param value The new value to replace the entry.
 #' @export
-#' 
+#'
 `[[<-.Metadata` <- function(x, i, value) {
   NextMethod()
 }
@@ -166,7 +180,7 @@ names.Metadata <- function(x) {
 #' @param file A character string with the file name to save the metadata.
 #' Default is "metadata.json". Supported formats are "json" and "rds".
 #' @export
-#' 
+#'
 save.Metadata <- function(x, file = "metadata.json") {
   format <- tools::file_ext(file)
   if (format %in% "json") {
@@ -185,7 +199,7 @@ save.Metadata <- function(x, file = "metadata.json") {
 #' @param file A character string with the file name to read the metadata from.
 #' The file format should be either "json" or "rds".
 #' @export
-#' 
+#'
 read.Metadata <- function(x, file) {
   if (grepl(".json", file)) {
     if (file.exists(file)) {
@@ -193,7 +207,9 @@ read.Metadata <- function(x, file) {
     }
   } else if (grepl(".rds", file)) {
     res <- readRDS(file)
-    if (is(res, "Metadata")) return(res)
+    if (is(res, "Metadata")) {
+      return(res)
+    }
   }
   NULL
 }
@@ -201,7 +217,7 @@ read.Metadata <- function(x, file) {
 #' @describeIn Metadata Prints the metadata entries.
 #' @param x A `Metadata` object.
 #' @export
-#' 
+#'
 show.Metadata <- function(x) {
   if (length(x) > 0) {
     str <- NULL
@@ -215,7 +231,7 @@ show.Metadata <- function(x) {
 #' @describeIn Metadata Converts the `Metadata` object to a `data.table` object.
 #' @param x A `Metadata` object.
 #' @export
-#' 
+#'
 as.data.table.Metadata <- function(x) {
   if (!is(x, "Metadata")) stop("x must be a Metadata object!")
   if ("date" %in% names(x)) {
@@ -230,21 +246,15 @@ as.data.table.Metadata <- function(x) {
 #' @describeIn Metadata Converts a named list, data.table or data.frame to a `Metadata` object. When `value` is a data.table or data.frame, it must have columns "name" and "value", where "name" contains the metadata entry names and "value" contains the corresponding values.
 #' @template arg-value
 #' @export
-#' 
+#'
 as.Metadata <- function(value) {
   if (is.data.table(value) || is.data.frame(value)) {
     entries <- as.list(value$value)
     names(entries) <- value$name
-    if ("date" %in% names(value)) {
-      value[["date"]] <- as.POSIXct(value[["date"]])
-    }
     return(Metadata(entries = entries))
   } else if (is.list(value)) {
-    if ("date" %in% names(value)) {
-      value[["date"]] <- as.POSIXct(value[["date"]])
-    }
     return(Metadata(entries = value))
   } else {
-    stop("x must be a Metadata object, list, data.table or data.frame!")
+    stop("The value must be a Metadata object, list, data.table or data.frame!")
   }
 }

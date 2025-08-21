@@ -79,7 +79,12 @@
 <span><span class="fu">read</span><span class="op">(</span><span class="va">x</span>, <span class="va">file</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S3 method for class 'Metadata'</span></span>
-<span><span class="fu">show</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">show</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S3 method for class 'Metadata'</span></span>
+<span><span class="fu">as.data.table</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">as.Metadata</span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -99,7 +104,7 @@
 
 
 <dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
-<dd><p>The new value to replace the entry.</p></dd>
+<dd><p>An object that highly depends on the method. Check the specific method documentation for details.</p></dd>
 
 
 <dt id="arg-file">file<a class="anchor" aria-label="anchor" href="#arg-file"></a></dt>
@@ -128,6 +133,12 @@ The file format should be either "json" or "rds".</p></dd>
 <li><p><code>save(Metadata)</code>: Saves the metadata to a file.</p></li>
 <li><p><code>read(Metadata)</code>: Reads metadata from a file, returning a <code>Metadata</code> object.</p></li>
 <li><p><code>show(Metadata)</code>: Prints the metadata entries.</p></li>
+<li><p><code>as.data.table(Metadata)</code>: Converts the <code>Metadata</code> object to a <code>data.table</code> object.</p></li>
+</ul></div>
+    <div class="section level2">
+    <h2 id="functions">Functions<a class="anchor" aria-label="anchor" href="#functions"></a></h2>
+
+<ul><li><p><code>as.Metadata()</code>: Converts a named list, data.table or data.frame to a <code>Metadata</code> object. When <code>value</code> is a data.table or data.frame, it must have columns "name" and "value", where "name" contains the metadata entry names and "value" contains the corresponding values.</p></li>
 </ul></div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

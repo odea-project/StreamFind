@@ -5,7 +5,7 @@
 install.packages(c("devtools", "BiocManager", "remotes"))
 
 # Bioconductor packages
-BiocManager::install(c('zlibbioc', 'Rhdf5lib'))
+BiocManager::install(c("zlibbioc", "Rhdf5lib"))
 
 # Updates documentation with roxygen
 devtools::document()

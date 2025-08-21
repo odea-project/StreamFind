@@ -93,12 +93,12 @@
 <dd><p>Get/Set for the <code>MassSpecResults_NonTargetAnalysis</code> results class.</p></dd>
 
 
-<dt><code>Spectra</code></dt>
-<dd><p>Get/set for the <code>MassSpecSpectra</code> results class.</p></dd>
+<dt><code>MassSpecResults_Spectra</code></dt>
+<dd><p>Get/set for the <code>MassSpecResults_Spectra</code> results class.</p></dd>
 
 
-<dt><code>Chromatograms</code></dt>
-<dd><p>Get/set for the chromatograms results class.</p></dd>
+<dt><code>MassSpecResults_Chromatograms</code></dt>
+<dd><p>Get/set for the MassSpecResults_Chromatograms results class.</p></dd>
 
 
 </dl><p></p></div>
@@ -110,6 +110,14 @@
 <h3 id="public-methods">Public methods<a class="anchor" aria-label="anchor" href="#public-methods"></a></h3>
 
 <ul><li><p><a href="#method-MassSpecEngine-new"><code>MassSpecEngine$new()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-add_analyses"><code>MassSpecEngine$add_analyses()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-remove_analyses"><code>MassSpecEngine$remove_analyses()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-set_replicate_names"><code>MassSpecEngine$set_replicate_names()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-set_blank_names"><code>MassSpecEngine$set_blank_names()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-get_analysis_names"><code>MassSpecEngine$get_analysis_names()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-get_replicate_names"><code>MassSpecEngine$get_replicate_names()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-get_blank_names"><code>MassSpecEngine$get_blank_names()</code></a></p></li>
+<li><p><a href="#method-MassSpecEngine-get_files"><code>MassSpecEngine$get_files()</code></a></p></li>
 <li><p><a href="#method-MassSpecEngine-clone"><code>MassSpecEngine$clone()</code></a></p></li>
 </ul></div><p><details><summary>Inherited methods</summary><ul><li><span class="pkg-link" data-pkg="StreamFind" data-topic="Engine" data-id="clear_cache"><a href="Engine.html#method-clear_cache"><code>StreamFind::Engine$clear_cache()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="Engine" data-id="clear_results"><a href="Engine.html#method-clear_results"><code>StreamFind::Engine$clear_results()</code></a></span></li>
@@ -169,15 +177,148 @@ with a full path to a <em>rds</em> or <em>json</em> file containing a <code>Work
 <p>A new <code>MassSpecEngine</code> class object.</p>
 </div>
 
-</div><p></p><hr><a id="method-MassSpecEngine-clone"></a><div class="section">
-<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
-<p>The objects of this class are cloneable with this method.</p><div class="section">
+</div><p></p><hr><a id="method-MassSpecEngine-add_analyses"></a><div class="section">
+<h3 id="method-add-analyses-">Method <code>add_analyses()</code><a class="anchor" aria-label="anchor" href="#method-add-analyses-"></a></h3>
+<p>Adds analyses. Note that when adding new analyses, any existing results are removed.</p><div class="section">
 <h4 id="usage-1">Usage<a class="anchor" aria-label="anchor" href="#usage-1"></a></h4>
-<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">add_analyses</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
 <div class="section">
 <h4 id="arguments-1">Arguments<a class="anchor" aria-label="anchor" href="#arguments-1"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>A character vector with full file paths to mzML/mzXML files. f <code>msconvert</code> from <a href="https://proteowizard.sourceforge.io/" class="external-link">ProteoWizard</a> is installed and found via CLI (i.e., must be added to the environmental variables), the engine can also load vendor formats (i.e., Agilent MassHunter .d, Thermo Scientific RAW, Shimadzu LCD (except ITOF), Sciex WIFF/WIFF2) by direct conversion to mzML. Note that conversion of vendor formats is only possible under Windows OS.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-remove_analyses"></a><div class="section">
+<h3 id="method-remove-analyses-">Method <code>remove_analyses()</code><a class="anchor" aria-label="anchor" href="#method-remove-analyses-"></a></h3>
+<p>Removes analyses.</p><div class="section">
+<h4 id="usage-2">Usage<a class="anchor" aria-label="anchor" href="#usage-2"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">remove_analyses</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-2">Arguments<a class="anchor" aria-label="anchor" href="#arguments-2"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>Character or numeric vector with names or indexes of analyses in the <code>Analyses</code>
+object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-set_replicate_names"></a><div class="section">
+<h3 id="method-set-replicate-names-">Method <code>set_replicate_names()</code><a class="anchor" aria-label="anchor" href="#method-set-replicate-names-"></a></h3>
+<p>Set replicate names to the analysis, using a character vector with the same length as the number of analyses.</p><div class="section">
+<h4 id="usage-3">Usage<a class="anchor" aria-label="anchor" href="#usage-3"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">set_replicate_names</span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-3">Arguments<a class="anchor" aria-label="anchor" href="#arguments-3"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>value</code></dt>
+<dd><p>An object that highly depends on the method. Check the specific method documentation for details.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-set_blank_names"></a><div class="section">
+<h3 id="method-set-blank-names-">Method <code>set_blank_names()</code><a class="anchor" aria-label="anchor" href="#method-set-blank-names-"></a></h3>
+<p>Set blank names to the analysis, using a character vector with the same length as the number of analyses. Note that the names must be one of the replicate names.</p><div class="section">
+<h4 id="usage-4">Usage<a class="anchor" aria-label="anchor" href="#usage-4"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">set_blank_names</span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-4">Arguments<a class="anchor" aria-label="anchor" href="#arguments-4"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>value</code></dt>
+<dd><p>An object that highly depends on the method. Check the specific method documentation for details.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-get_analysis_names"></a><div class="section">
+<h3 id="method-get-analysis-names-">Method <code>get_analysis_names()</code><a class="anchor" aria-label="anchor" href="#method-get-analysis-names-"></a></h3>
+<p>Gets a character vector with the analysis replicate names.</p><div class="section">
+<h4 id="usage-5">Usage<a class="anchor" aria-label="anchor" href="#usage-5"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_analysis_names</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-5">Arguments<a class="anchor" aria-label="anchor" href="#arguments-5"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>Character or numeric vector with names or indexes of analyses in the <code>Analyses</code>
+object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-get_replicate_names"></a><div class="section">
+<h3 id="method-get-replicate-names-">Method <code>get_replicate_names()</code><a class="anchor" aria-label="anchor" href="#method-get-replicate-names-"></a></h3>
+<p>Gets a character vector with the analysis replicate names.</p><div class="section">
+<h4 id="usage-6">Usage<a class="anchor" aria-label="anchor" href="#usage-6"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_replicate_names</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-6">Arguments<a class="anchor" aria-label="anchor" href="#arguments-6"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>Character or numeric vector with names or indexes of analyses in the <code>Analyses</code>
+object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-get_blank_names"></a><div class="section">
+<h3 id="method-get-blank-names-">Method <code>get_blank_names()</code><a class="anchor" aria-label="anchor" href="#method-get-blank-names-"></a></h3>
+<p>Gets a character vector with the analysis blank replicate names.</p><div class="section">
+<h4 id="usage-7">Usage<a class="anchor" aria-label="anchor" href="#usage-7"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_blank_names</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-7">Arguments<a class="anchor" aria-label="anchor" href="#arguments-7"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>Character or numeric vector with names or indexes of analyses in the <code>Analyses</code>
+object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-get_files"></a><div class="section">
+<h3 id="method-get-files-">Method <code>get_files()</code><a class="anchor" aria-label="anchor" href="#method-get-files-"></a></h3>
+<p>Gets a character vector with the full file paths of each analysis.</p><div class="section">
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">get_files</span><span class="op">(</span>analyses <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>analyses</code></dt>
+<dd><p>Character or numeric vector with names or indexes of analyses in the <code>Analyses</code>
+object.</p></dd>
+
+
+</dl><p></p></div>
+</div>
+
+</div><p></p><hr><a id="method-MassSpecEngine-clone"></a><div class="section">
+<h3 id="method-clone-">Method <code>clone()</code><a class="anchor" aria-label="anchor" href="#method-clone-"></a></h3>
+<p>The objects of this class are cloneable with this method.</p><div class="section">
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">MassSpecEngine</span><span class="op">$</span><span class="fu">clone</span><span class="op">(</span>deep <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>deep</code></dt>
 <dd><p>Whether to make a deep clone.</p></dd>
 
