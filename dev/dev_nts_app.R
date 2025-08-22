@@ -18,9 +18,6 @@ db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 
 ms <- MassSpecEngine$new(analyses = files)
 
-dt <- as.data.table(ms$Metadata)
-as.Metadata(dt)
-
 # ms$Analyses$has_results_nts
 # ms$has_results_nts()
 # ms$Analyses$NonTargetAnalysisResults
