@@ -32,13 +32,12 @@
 
 #' @noRd
 .mod_WorkflowAssembler_Explorer_Server.MassSpecAnalyses <- function(
-  x,
-  id,
-  ns,
-  reactive_analyses,
-  reactive_volumes,
-  reactive_config
-) {
+    x,
+    id,
+    ns,
+    reactive_analyses,
+    reactive_volumes,
+    reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     has_results_spectra <- shiny::reactiveVal(FALSE)
@@ -48,30 +47,48 @@
     rt_start <- shiny::reactiveVal(0)
 
     init_analyses <- reactive_analyses()
+
+    update_reactive_vars <- function(
+      ana,
+      has_results_spectra,
+      has_results_chromatograms,
+      levels,
+      rt_end,
+      rt_start
+    ) {
+      has_results_spectra(sum(vapply(ana$analyses, function(z) z$spectra_number, 0)) > 0)
+      has_results_chromatograms(sum(vapply(ana$analyses, function(z) z$chromatograms_number, 0)) > 0)
+      levels(
+        as.numeric(
+          unique(unlist(lapply(ana$analyses, function(z) z$spectra_headers$level)))
+        )
+      )
+      rt_end(round(max(vapply(ana$analyses, function(z) max(z$spectra_headers$rt), 0)), digits = 0))
+      rt_start(round(min(vapply(ana$analyses, function(z) min(z$spectra_headers$rt), 0)), digits = 0))
+    }
+
     if (length(init_analyses) > 0) {
-      has_results_spectra(max(init_analyses@spectra_number) > 0)
-      has_results_chromatograms(max(init_analyses@chromatograms_number) > 0)
-      levels(as.numeric(unlist(strsplit(
-        unique(init_analyses@spectra_level),
-        ", "
-      ))))
-      rt_end(round(max(init_analyses@spectra_highest_rt), digits = 0))
-      rt_start(round(min(init_analyses@spectra_lowest_rt), digits = 0))
+      update_reactive_vars(
+        init_analyses,
+        has_results_spectra,
+        has_results_chromatograms,
+        levels,
+        rt_end,
+        rt_start
+      )
     }
 
     shiny::observe({
       analyses <- reactive_analyses()
       if (length(analyses) > 0) {
-        has_results_spectra(max(reactive_analyses()@spectra_number) > 0)
-        has_results_chromatograms(
-          max(reactive_analyses()@chromatograms_number) > 0
+        update_reactive_vars(
+          analyses,
+          has_results_spectra,
+          has_results_chromatograms,
+          levels,
+          rt_end,
+          rt_start
         )
-        levels(as.numeric(unlist(strsplit(
-          unique(reactive_analyses()@spectra_level),
-          ", "
-        ))))
-        rt_end(round(max(reactive_analyses()@spectra_highest_rt), digits = 0))
-        rt_start(round(min(reactive_analyses()@spectra_lowest_rt), digits = 0))
       } else {
         has_results_spectra(FALSE)
         has_results_chromatograms(FALSE)
@@ -123,7 +140,7 @@
       if (length(analyses) == 0) {
         return()
       }
-      analyses_info <- analyses@info
+      analyses_info <- info(analyses)
       DT::datatable(
         analyses_info[,
           c("analysis", "replicate", "blank", "polarity"),
@@ -365,7 +382,7 @@
       if (length(analyses) == 0) {
         return()
       }
-      analyses_info <- analyses@info
+      analyses_info <- info(analyses)
       DT::datatable(
         analyses_info[,
           c("analysis", "replicate", "blank", "polarity"),
@@ -532,7 +549,7 @@
                 ns(ns2("eics_analyses")),
                 label = "Analyses",
                 multiple = TRUE,
-                choices = names(reactive_analyses()),
+                choices = names(reactive_analyses()$analyses),
                 width = 200
               )
             ),
@@ -620,7 +637,9 @@
         shiny::showNotification(msg, duration = 5, type = "warning")
         return()
       }
-      pols <- reactive_analyses()@spectra_polarity[anas]
+      pols <- vapply(reactive_analyses()$analyses[anas], function(a) {
+        paste0(unique(a$spectra_headers$polarity), collapse = ", ")
+      }, NA_character_)
       tar <- MassSpecTargets(
         mz = data.frame(mass = mass, rt = rt),
         mobility = 0,
@@ -630,7 +649,6 @@
         analyses = anas,
         polarities = pols
       )
-      tar <- tar@targets
       if (is.null(targets())) {
         targets(tar)
       } else {
@@ -649,7 +667,7 @@
       if (nrow(targets()) == 0) {
         return()
       }
-      lapply(1:nrow(targets()), function(i) {
+      lapply(seq_len(nrow(targets())), function(i) {
         shiny::observeEvent(
           input[[paste0("eics_del_", i)]],
           {

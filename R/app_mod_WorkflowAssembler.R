@@ -291,8 +291,6 @@
       engine_type <- reactive_engine_type()
       engine_save_file <- reactive_engine_save_file()
       has_unsaved_changes <- "unsaved_changes" %in% names(reactive_warnings())
-      
-      # Set up shinyDirChoose for working directory
       shinyFiles::shinyDirChoose(
         input,
         "set_wdir_button",
@@ -300,8 +298,6 @@
         defaultRoot = "wd",
         session = session
       )
-      
-      # Set up shinyFileSave for engine save if needed
       if (has_unsaved_changes) {
         shinyFiles::shinyFileSave(
           input,
@@ -311,8 +307,6 @@
           session = session
         )
       }
-      
-      # Left side content (information)
       left_content <- list(
         htmltools::div(
           style = "margin-bottom: 5px;",
@@ -325,7 +319,6 @@
           htmltools::span(engine_type, style = "color: #337ab7;")
         )
       )
-      
       if (!is.na(engine_save_file)) {
         left_content <- append(left_content, list(
           htmltools::div(
@@ -335,8 +328,6 @@
           )
         ))
       }
-      
-      # Right side content (buttons)
       right_buttons <- list(
         shinyFiles::shinyDirButton(
           ns("set_wdir_button"),
@@ -344,10 +335,9 @@
           "Select Working Directory",
           "wd",
           style = "width: 150px; margin-bottom: 5px;",
-          class = "btn-primary"
+          class = "btn-light"
         )
       )
-      
       if (has_unsaved_changes) {
         filename <- if (is.na(engine_save_file)) engine_type else engine_save_file
         extensions <- if (grepl(".sqlite", filename)) {
@@ -355,17 +345,15 @@
         } else {
           list(rds = "rds", sqlite = "sqlite")
         }
-        
         save_button <- shinyFiles::shinySaveButton(
           ns("save_engine_button_file"),
           label = "Save Engine",
           title = "Save the engine as .sqlite or .rds",
-          class = "btn-success",
+          class = "btn-warning",
           filename = gsub(".sqlite|.rds", "", basename(filename)),
           filetype = extensions,
           style = "width: 150px; margin-bottom: 5px;"
         )
-        
         reset_button <- shiny::actionButton(
           ns("reset_engine_button"),
           label = "Discard Changes",
@@ -373,13 +361,11 @@
           class = "btn-danger",
           style = "margin-bottom: 5px;"
         )
-        
         right_buttons <- append(right_buttons, list(
           save_button,
           reset_button
         ))
       }
-      
       shinydashboard::box(
         width = 12,
         height = "200px",
@@ -397,20 +383,6 @@
           )
         )
       )
-    })
-
-    # MARK: out Working Directory
-    ## out Working Directory -----
-    output$wdir <- shiny::renderUI({
-      # This is now handled in project_control_ui
-      return(NULL)
-    })
-
-    # MARK: out Engine Control
-    # out Engine Control -----
-    output$engine_control_ui <- shiny::renderUI({
-      # This is now handled in project_control_ui
-      return(NULL)
     })
 
     # MARK: obs Change Working Directory
@@ -438,11 +410,6 @@
         reactive_metadata,
         reactive_config
       )
-      
-      # Wrap the metadata UI with custom height styling and consistent padding
-      # Account for: 50px header + 200px project control box + shinydashboard margins/paddings
-      # shinydashboard adds: ~15px top margin, ~15px between fluidRows, ~15px bottom padding
-      # Plus box headers and internal paddings (~20px total)
       htmltools::div(
         style = "height: calc(100vh - 50px - 200px - 65px); overflow-y: auto; padding: 0px; box-sizing: border-box;",
         .mod_WorkflowAssembler_Metadata_UI("metadata", ns)

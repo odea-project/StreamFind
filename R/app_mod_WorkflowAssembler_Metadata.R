@@ -8,7 +8,7 @@
     style = "display: flex; flex-direction: column; padding: 5px; box-sizing: border-box;",
     shiny::div(
       style = "flex-shrink: 0; margin-bottom: 10px; display: flex; gap: 10px; height: 40px; align-items: center;padding: 10px;",
-      shiny::actionButton(ns(ns2("add_row")), "Add New Row", class = "btn-primary"),
+      shiny::actionButton(ns(ns2("add_row")), "Add New Row", class = "btn-light"),
       shiny::uiOutput(ns(ns2("update_metadata_ui")))
     ),
     shiny::div(
@@ -55,11 +55,9 @@
       if (metadata_changed()) {
         shiny::div(
           style = "display: flex; gap: 10px;",
-          shiny::actionButton(ns(ns2("update_metadata")), "Update Metadata", class = "btn-danger"),
-          shiny::actionButton(ns(ns2("discard_changes")), "Discard Changes", class = "btn-warning")
+          shiny::actionButton(ns(ns2("update_metadata")), "Update Metadata", class = "btn-warning"),
+          shiny::actionButton(ns(ns2("discard_changes")), "Discard Changes", class = "btn-danger")
         )
-      } else {
-        shiny::actionButton(ns(ns2("update_metadata")), "Update Metadata", class = "btn-success")
       }
     })
 

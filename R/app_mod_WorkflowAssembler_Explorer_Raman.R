@@ -3,7 +3,7 @@
   ns2 <- shiny::NS(id)
   shinydashboard::tabBox(
     width = 12,
-    height = "1080px",
+    height = "calc(100vh - 60px)",
     shiny::tabPanel(
       "Spectra",
       shiny::fluidRow(
@@ -37,7 +37,7 @@
 
     # out summary plot UI -----
     output$summary_plot_ui <- shiny::renderUI({
-      if (length(reactive_analyses()) == 0) {
+      if (length(reactive_analyses()$analyses) == 0) {
         htmltools::div(
           style = "margin-top: 20px;",
           htmltools::h4("No analyses found!")
@@ -59,7 +59,7 @@
 
     # out summary controls -----
     output$summary_plot_controls <- shiny::renderUI({
-      if (length(reactive_analyses()) == 0) {
+      if (length(reactive_analyses()$analyses) == 0) {
         return()
       }
       htmltools::div(
@@ -109,11 +109,11 @@
     # out spectra analyses table -----
     output$spectraAnalysesTable <- DT::renderDT({
       analyses <- reactive_analyses()
-      if (length(analyses) == 0) {
+      if (length(analyses$analyses) == 0) {
         return()
       }
       DT::datatable(
-        analyses$info[, c("analysis", "replicate", "blank"), with = FALSE],
+        info(analyses)[, c("analysis", "replicate", "blank"), with = FALSE],
         selection = list(mode = "multiple", selected = 1, target = "row"),
         options = list(pageLength = 10)
       )
@@ -121,7 +121,7 @@
 
     # out Summary plotly -----
     output$summary_plotly <- plotly::renderPlotly({
-      if (length(reactive_analyses()) == 0) {
+      if (length(reactive_analyses()$analyses) == 0) {
         return()
       }
       selected <- input$spectraAnalysesTable_rows_selected
@@ -139,7 +139,7 @@
 
     # out Summary plot -----
     output$summary_plot <- shiny::renderPlot({
-      if (length(reactive_analyses()) == 0) {
+      if (length(reactive_analyses()$analyses) == 0) {
         return()
       }
       selected <- input$spectraAnalysesTable_rows_selected
@@ -157,7 +157,7 @@
 
     # event Summary plot export -----
     shiny::observeEvent(input$summary_plot_save, {
-      if (length(reactive_analyses()) == 0) {
+      if (length(reactive_analyses()$analyses) == 0) {
         msg <- "No analyses found!"
         shiny::showNotification(msg, duration = 5, type = "warning")
         return()

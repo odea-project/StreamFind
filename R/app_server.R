@@ -124,7 +124,8 @@ app_server <- function(input, output, session) {
   # out App Mode UI -----
   output$app_mode_ui <- shiny::renderUI({
     if (reactive_app_mode() %in% "WorkflowAssembler") {
-      shiny::tags$span(reactive_engine_type())
+      shiny::tags$span("StreamFind")
+      # shiny::tags$span(reactive_engine_type())
     } else if (is.na(reactive_app_mode())) {
       shiny::tags$span("StreamFind")
     } else {
