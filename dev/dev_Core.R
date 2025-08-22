@@ -220,6 +220,12 @@ b <- RamanEngine$new(metadata = list(name = "test engine for Raman analysis"), a
 b$save("raman.rds")
 show(b$Metadata)
 b$run_app()
+run_app(file = "raman.rds")
+
+get_spectra(
+  b$Analyses,
+  analyses = 1
+)
 
 
 # StatisticAnalyses ------
