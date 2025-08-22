@@ -4,15 +4,16 @@
   shinydashboard::box(
     title = "Metadata",
     width = 12,
+    height = "calc(100vh - 50px - 30px - 200px - 20px - 20px)",
     solidHeader = TRUE,
     style = "display: flex; flex-direction: column; padding: 5px; box-sizing: border-box;",
     shiny::div(
-      style = "flex-shrink: 0; margin-bottom: 10px; display: flex; gap: 10px; height: 40px; align-items: center;padding: 10px;",
+      style = "flex-shrink: 0; margin-bottom: 10px; display: flex; gap: 10px; height: 50px; align-items: center;padding: 10px;",
       shiny::actionButton(ns(ns2("add_row")), "Add New Row", class = "btn-light"),
       shiny::uiOutput(ns(ns2("update_metadata_ui")))
     ),
     shiny::div(
-      style = "flex-shrink: 0; margin-bottom: 5px; color: #666; font-size: 12px; height: 20px; padding: 10px;",
+      style = "flex-shrink: 0; margin-bottom: 5px; color: #666; font-size: 12px; height: 30px; padding: 10px;",
       shiny::HTML("<i class='fa fa-info-circle'></i> Double-click on any cell to edit its value")
     ),
     shiny::div(
@@ -93,7 +94,7 @@
           options = list(
             searching = TRUE,
             processing = TRUE,
-            scrollY = "400px",
+            scrollY = "calc(100vh - 320px - 40px - 60px - 35px - 110px)",
             scrollCollapse = TRUE,
             paging = FALSE,
             dom = "ft",
@@ -119,7 +120,9 @@
     # Add new row ----
     observeEvent(input$add_row, {
       dt <- metadata_dt()
-      dt <- rbind(dt, data.table(Name = "place holder", Value = "place holder"))
+      place_holder_idx <- nrow(dt) + 1
+      place_holder_name <- paste0("place_holder_", place_holder_idx)
+      dt <- rbind(dt, data.table(Name = place_holder_name, Value = place_holder_name))
       dt <- dt[!duplicated(dt), ]
       metadata_dt(dt)
       # proxy <- DT::dataTableProxy("metadata_dt", session = session)
@@ -129,10 +132,10 @@
     # Delete row ----
     observeEvent(input$delete_row, {
       delete_info <- input$delete_row
-      
+
       # Parse row number from the string (format: "row_timestamp")
       row_to_delete <- as.numeric(strsplit(delete_info, "_")[[1]][1])
-      
+
       dt <- metadata_dt()
 
       if (!is.na(row_to_delete) && row_to_delete > 0 && row_to_delete <= nrow(dt)) {

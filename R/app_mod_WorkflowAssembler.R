@@ -5,7 +5,7 @@
     shinydashboard::tabItem(
       tabName = ns("project"),
       shiny::fluidRow(
-        shiny::uiOutput(ns("project_control_ui"))
+        shiny::uiOutput(ns("project_control_ui")),
       ),
       shiny::fluidRow(
         shiny::uiOutput(ns("metadata_ui"))
@@ -371,6 +371,7 @@
         height = "200px",
         title = "Project Control",
         solidHeader = TRUE,
+        style = "margin-bottom: 10px;",
         htmltools::div(
           style = "display: flex; justify-content: space-between; align-items: flex-start; height: 100%; padding: 5px;",
           htmltools::div(
@@ -410,10 +411,11 @@
         reactive_metadata,
         reactive_config
       )
-      htmltools::div(
-        style = "height: calc(100vh - 50px - 200px - 65px); overflow-y: auto; padding: 0px; box-sizing: border-box;",
-        .mod_WorkflowAssembler_Metadata_UI("metadata", ns)
-      )
+      .mod_WorkflowAssembler_Metadata_UI("metadata", ns)
+      # htmltools::div(
+      #   style = "height: calc(100vh - 50px - 200px - 65px); overflow-y: auto; padding: 0px; box-sizing: border-box;",
+      #   .mod_WorkflowAssembler_Metadata_UI("metadata", ns)
+      # )
     })
 
     # MARK: Analyses
