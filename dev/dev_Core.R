@@ -144,6 +144,15 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
+engine <- MassSpecEngine$new(
+  metadata = Metadata(list(name = "Ricardo")),
+  analyses = ms_files,
+)
+
+engine$save("engine.rds")
+
+run_app(file = "engine.rds")
+
 engine$run(MassSpecMethod_FindFeatures_openms())
 
 engine$run(
@@ -205,7 +214,7 @@ engine <- MassSpecEngine$new(
 engine$save("engine.rds")
 show(engine$Metadata)
 engine$run_app()
-
+run_app(file = "engine.rds")
 
 
 # RamanAnalyses -----

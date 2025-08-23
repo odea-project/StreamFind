@@ -6,13 +6,15 @@
 
   shinydashboard::tabBox(
     width = 12,
-    height = "1080px",
+    height = "calc(100vh - 50px - 30px - 20px)",
     shiny::tabPanel(
       "Spectra",
       shiny::fluidRow(
-        shiny::column(12, shiny::uiOutput(ns(ns2("summary_plot_controls")))),
-        shiny::column(12, shiny::uiOutput(ns(ns2("summary_plot_ui")))),
-        shiny::column(12, DT::dataTableOutput(ns(ns2("spectraAnalysesTable"))))
+        shiny::column(3, DT::dataTableOutput(ns(ns2("spectraAnalysesTable")), height = "calc(100vh - 50px - 30px - 20px - 44px - 10px)")),
+        shiny::column(9,
+          shiny::column(12, shiny::uiOutput(ns(ns2("summary_plot_controls")))),
+          shiny::column(12, shiny::uiOutput(ns(ns2("summary_plot_ui"))))
+        )
       )
     ),
     shiny::tabPanel(
@@ -143,11 +145,15 @@
       analyses_info <- info(analyses)
       DT::datatable(
         analyses_info[,
-          c("analysis", "replicate", "blank", "polarity"),
+          c("analysis", "replicate"),
           with = FALSE
         ],
         selection = list(mode = "multiple", selected = 1, target = "row"),
-        options = list(pageLength = 10)
+        options = list(
+          paging = FALSE,
+          scrollY = "calc(100vh - 50px - 30px - 20px - 44px - 10px - 100px)",
+          scrollCollapse = TRUE
+        )
       )
     })
 
@@ -162,12 +168,12 @@
         if (!is.null(input$summary_plot_interactive)) {
           if (input$summary_plot_interactive) {
             shinycssloaders::withSpinner(
-              plotly::plotlyOutput(ns(ns2("summary_plotly")), height = "600px"),
+              plotly::plotlyOutput(ns(ns2("summary_plotly")), height = "calc(100vh - 50px - 30px - 20px - 44px - 10px - 100px)"),
               color = "black"
             )
           } else {
             shinycssloaders::withSpinner(
-              shiny::plotOutput(ns(ns2("summary_plot")), height = "600px"),
+              shiny::plotOutput(ns(ns2("summary_plot")), height = "calc(100vh - 50px - 30px - 20px - 44px - 10px - 100px)"),
               color = "black"
             )
           }

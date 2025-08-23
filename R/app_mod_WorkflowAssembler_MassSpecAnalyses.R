@@ -7,7 +7,7 @@
     solidHeader = TRUE,
     shiny::column(12, shiny::uiOutput(ns(ns2("analyses_overview_buttons")))),
     shiny::column(12, shiny::uiOutput(ns(ns2("notes_analyses")))),
-    shiny::column(12, DT::dataTableOutput(ns(ns2("AnalysesTable"))))
+    shiny::column(12, DT::dataTableOutput(ns(ns2("AnalysesTable"))), height = "calc(100vh - 50px - 30px - 20px - 54px - 96px)")
   )
 }
 
@@ -74,7 +74,7 @@
           options = list(
             searching = TRUE,
             processing = TRUE,
-            scrollY = 700, # "calc(100vh - 320px - 40px - 60px - 35px - 110px)",
+            scrollY = "calc(100vh - 50px - 30px - 20px - 54px - 96px - 100px)",
             scrollCollapse = TRUE,
             paging = FALSE,
             dom = "Bfrt",
