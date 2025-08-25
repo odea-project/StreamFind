@@ -246,6 +246,22 @@
       margin-bottom: 0;
     }
 
+    /* Remove padding from tabBox container */
+    .tabbox-container .col-sm-12 {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    
+    .nav-tabs-custom {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+    
+    .nav-tabs-custom .tab-content {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
   "
     )
   )
@@ -307,11 +323,12 @@
     # MARK: Main Content
     ## Main Content ----
     shiny::div(
+      class = "tabbox-container",
       style = "margin-top: -20px;",
       shinydashboard::tabBox(
         id = ns_full("main_tabs"),
         width = 12,
-        height = "auto",
+        height = "calc(100vh - 50px - 30px - 10px - 60px)",
 
         # MARK: Overview Tab
         ### Overview Tab ----
@@ -324,6 +341,7 @@
 
           shiny::div(
             class = "tab-content",
+            style = "max-height: calc(100vh - 50px - 30px - 10px - 60px - 45px); overflow-y: auto; padding: 0;",
             # Metrics Row
             shiny::fluidRow(
               # Total Analysis

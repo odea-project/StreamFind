@@ -130,9 +130,6 @@ ms$run(
   )
 )
 
-ms$save("ms.rds")
-ms$run_app()
-
 ms$run(
   MassSpecMethod_CorrectMatrixSuppression_TiChri(
     mpRtWindow = 15,
@@ -170,9 +167,9 @@ ms$run(
   )
 )
 
-get_features(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
-get_features_eic(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
-plot_features(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
+#get_features(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
+#get_features_eic(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
+#plot_features(ms$MassSpecResults_NonTargetAnalysis, analyses = 11, mass = db[2, ])
 
 # show(ms$NonTargetAnalysisResults)
 # Access NonTargetAnalysisResults object and print to console

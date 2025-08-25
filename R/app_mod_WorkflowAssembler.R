@@ -588,11 +588,14 @@
             )
           }
         }
-        shiny::div(
-          class = "results-wrapper",
-          do.call(
-            shiny::tabsetPanel,
-            c(list(type = "tabs", id = "results_tabs"), tab_list)
+        do.call(
+          shinydashboard::tabBox,
+          c(
+            list(
+              width = 12,
+              height = "calc(100vh - 50px - 30px - 10px)"
+            ),
+            tab_list
           )
         )
       } else {
