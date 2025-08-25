@@ -149,10 +149,6 @@ engine <- MassSpecEngine$new(
   analyses = ms_files,
 )
 
-engine$save("engine.rds")
-
-run_app(file = "engine.rds")
-
 engine$run(MassSpecMethod_FindFeatures_openms())
 
 engine$run(
@@ -170,7 +166,9 @@ engine$run(MassSpecMethod_GroupFeatures_openms())
 
 engine$run(MassSpecMethod_AnnotateFeatures_StreamFind())
 
+engine$save("engine.rds")
 
+run_app(file = "engine.rds")
 
 
 
@@ -199,7 +197,9 @@ class(engine)
 
 # App -----
 library(StreamFind)
-ms_files <- StreamFindData::get_ms_file_paths()[1:3]
+complete_files_path <- "C:/Users/apoli/Documents/example_files"
+ms_files <- list.files(complete_files_path, pattern = "mzML$", full.names = TRUE, recursive = FALSE)[1:3]
+#ms_files <- StreamFindData::get_ms_file_paths()[1:3]
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
 db <- db[, cols, with = FALSE]

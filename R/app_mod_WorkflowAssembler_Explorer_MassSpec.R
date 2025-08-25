@@ -10,19 +10,45 @@
     shiny::tabPanel(
       "Spectra",
       shiny::fluidRow(
-        shiny::column(3, DT::dataTableOutput(ns(ns2("spectraAnalysesTable")), height = "calc(100vh - 50px - 30px - 20px - 44px - 10px)")),
+        shiny::column(
+          3,
+          DT::dataTableOutput(
+            ns(ns2("spectraAnalysesTable")),
+            height = "calc(100vh - 50px - 30px - 20px - 44px - 10px)"
+          )
+        ),
         shiny::column(9,
-          shiny::column(12, shiny::uiOutput(ns(ns2("summary_plot_controls")))),
-          shiny::column(12, shiny::uiOutput(ns(ns2("summary_plot_ui"))))
+          bslib::layout_sidebar(
+            sidebar = bslib::sidebar(
+              bg = NULL,
+              shiny::uiOutput(ns(ns2("summary_plot_controls")))
+            ),
+            shiny::uiOutput(ns(ns2("summary_plot_ui")))
+          ),
+          height = "calc(100vh - 50px - 30px - 20px - 44px - 10px)"
         )
       )
     ),
     shiny::tabPanel(
       "Chromatograms",
       shiny::fluidRow(
-        shiny::column(12, shiny::uiOutput(ns(ns2("chrom_plot_controls")))),
-        shiny::column(12, shiny::uiOutput(ns(ns2("chrom_plot_ui")))),
-        shiny::column(12, DT::dataTableOutput(ns(ns2("chromAnalysesTable"))))
+        shiny::column(
+          3,
+          DT::dataTableOutput(
+            ns(ns2("chromAnalysesTable")),
+            height = "calc(100vh - 50px - 30px - 20px - 44px - 10px)"
+          )
+        ),
+        shiny::column(9,
+          bslib::layout_sidebar(
+            sidebar = bslib::sidebar(
+              bg = NULL,
+              shiny::uiOutput(ns(ns2("chrom_plot_controls")))
+            ),
+            shiny::uiOutput(ns(ns2("chrom_plot_ui")))
+          ),
+          height = "calc(100vh - 50px - 30px - 20px - 44px - 10px)"
+        )
       )
     ),
     shiny::tabPanel(
@@ -150,6 +176,7 @@
         ],
         selection = list(mode = "multiple", selected = 1, target = "row"),
         options = list(
+          dom = "ft",
           paging = FALSE,
           scrollY = "calc(100vh - 50px - 30px - 20px - 44px - 10px - 100px)",
           scrollCollapse = TRUE
@@ -166,14 +193,20 @@
         )
       } else if (has_results_spectra()) {
         if (!is.null(input$summary_plot_interactive)) {
-          if (input$summary_plot_interactive) {
+          if (as.logical(input$summary_plot_interactive)) {
             shinycssloaders::withSpinner(
-              plotly::plotlyOutput(ns(ns2("summary_plotly")), height = "calc(100vh - 50px - 30px - 20px - 44px - 10px - 100px)"),
+              plotly::plotlyOutput(
+                ns(ns2("summary_plotly")),
+                height = "calc(100vh - 50px - 30px - 20px - 44px - 50px)"
+              ),
               color = "black"
             )
           } else {
             shinycssloaders::withSpinner(
-              shiny::plotOutput(ns(ns2("summary_plot")), height = "calc(100vh - 50px - 30px - 20px - 44px - 10px - 100px)"),
+              shiny::plotOutput(
+                ns(ns2("summary_plot")),
+                height = "calc(100vh - 50px - 30px - 20px - 44px - 50px)"
+              ),
               color = "black"
             )
           }
@@ -193,83 +226,74 @@
       }
       if (has_results_spectra()) {
         htmltools::div(
-          style = "display: flex; align-items: center;",
+          style = "display: flex; flex-direction: column; gap: 10px; padding: 10px;",
           htmltools::div(
-            style = "margin-left: 20px;",
-            shiny::checkboxInput(
-              ns(ns2("summary_plot_interactive")),
-              label = "Interactive",
-              value = TRUE,
-              width = 100
+            shinyFiles::shinySaveButton(
+              ns(ns2("summary_plot_save")),
+              "Export (.csv)",
+              "Export (.csv)",
+              filename = "spectra_summary_data",
+              filetype = list(csv = "csv")
             )
           ),
           htmltools::div(
-            style = "margin-left: 20px;",
+            shiny::selectInput(
+              ns(ns2("summary_plot_interactive")),
+              label = "Interactive",
+              choices = c("TRUE" = TRUE, "FALSE" = FALSE),
+              selected = TRUE,
+              width = "100%"
+            )
+          ),
+          htmltools::div(
             shiny::selectInput(
               ns(ns2("summary_plot_type")),
               label = "Type",
               choices = c("TIC", "BPC"),
               selected = "TIC",
-              width = 100
+              width = "100%"
             )
           ),
           htmltools::div(
-            style = "margin-left: 20px;",
             shiny::selectInput(
               ns(ns2("summary_plot_colorby")),
               label = "Color by",
               choices = colorby_spectra,
               selected = "analyses",
-              width = 200
+              width = "100%"
             )
           ),
           htmltools::div(
-            style = "margin-left: 20px;",
-            shiny::sliderInput(
+            shiny::selectInput(
               ns(ns2("summary_plot_level")),
               label = "MS levels",
-              min = min(levels()),
-              max = max(levels()),
-              value = levels()[1],
-              step = 1,
-              width = 200
+              choices = levels(),
+              selected = levels()[1],
+              width = "100%"
             )
           ),
           htmltools::div(
-            style = "margin-left: 20px;",
-            shiny::sliderInput(
-              ns(ns2("summary_plot_rt")),
-              label = "Retention Time (Seconds)",
-              min = rt_start(),
-              max = rt_end(),
-              value = c(rt_start(), rt_end()),
-              step = 1,
-              width = 200
-            )
-          ),
-          htmltools::div(
-            style = "margin-left: 20px;",
             shiny::numericInput(
               ns(ns2("summary_plot_downsize")),
-              label = "Downsize Integer",
+              label = "Downsize",
               min = 1,
               max = 100,
               value = 1,
               step = 1,
-              width = 140
+              width = "100%"
             )
           ),
           htmltools::div(
-            style = "margin-left: 20px;",
-            shinyFiles::shinySaveButton(
-              ns(ns2("summary_plot_save")),
-              "Save Plot Data (.csv)",
-              "Save Plot Data (.csv)",
-              filename = "spectra_summary_data",
-              filetype = list(csv = "csv")
+            shiny::sliderInput(
+              ns(ns2("summary_plot_rt")),
+              label = "Retention Time",
+              min = rt_start(),
+              max = rt_end(),
+              value = c(rt_start(), rt_end()),
+              step = 1,
+              width = "100%"
             )
-          ),
-          htmltools::div(style = "margin-bottom: 20px;")
+          )
         )
       }
     })
@@ -279,7 +303,7 @@
       if (length(reactive_analyses()) == 0) {
         return()
       }
-      if (!is.null(input$summary_plot_type) && input$summary_plot_interactive) {
+      if (!is.null(input$summary_plot_type) && as.logical(input$summary_plot_interactive)) {
         selected <- input$spectraAnalysesTable_rows_selected
         if (length(selected) == 0) {
           return()
@@ -292,7 +316,7 @@
             level = input$summary_plot_level,
             rt = input$summary_plot_rt,
             downsize = input$summary_plot_downsize,
-            interactive = input$summary_plot_interactive
+            interactive = as.logical(input$summary_plot_interactive)
           )
         } else if (input$summary_plot_type %in% "BPC") {
           plot_spectra_bpc(
@@ -301,7 +325,7 @@
             colorBy = input$summary_plot_colorby,
             level = input$summary_plot_level,
             rt = input$summary_plot_rt,
-            interactive = input$summary_plot_interactive
+            interactive = as.logical(input$summary_plot_interactive)
           )
         }
       }
@@ -313,7 +337,7 @@
         return()
       }
       if (
-        !is.null(input$summary_plot_type) && !input$summary_plot_interactive
+        !is.null(input$summary_plot_type) && !as.logical(input$summary_plot_interactive)
       ) {
         selected <- input$spectraAnalysesTable_rows_selected
         if (length(selected) == 0) {
@@ -327,7 +351,7 @@
             level = input$summary_plot_level,
             rt = input$summary_plot_rt,
             downsize = input$summary_plot_downsize,
-            interactive = input$summary_plot_interactive
+            interactive = as.logical(input$summary_plot_interactive)
           )
         } else if (input$summary_plot_type %in% "BPC") {
           plot_spectra_bpc(
@@ -336,7 +360,7 @@
             colorBy = input$summary_plot_colorby,
             level = input$summary_plot_level,
             rt = input$summary_plot_rt,
-            interactive = input$summary_plot_interactive
+            interactive = as.logical(input$summary_plot_interactive)
           )
         }
       }
@@ -391,11 +415,16 @@
       analyses_info <- info(analyses)
       DT::datatable(
         analyses_info[,
-          c("analysis", "replicate", "blank", "polarity"),
+          c("analysis", "replicate"),
           with = FALSE
         ],
         selection = list(mode = "multiple", selected = 1, target = "row"),
-        options = list(pageLength = 10)
+        options = list(
+          dom = "ft",
+          paging = FALSE,
+          scrollY = "calc(100vh - 50px - 30px - 20px - 44px - 10px - 100px)",
+          scrollCollapse = TRUE
+        )
       )
     })
 
@@ -408,10 +437,22 @@
         )
       } else if (has_results_chromatograms()) {
         if (!is.null(input$summary_chrom_interactive)) {
-          if (input$summary_chrom_interactive) {
-            plotly::plotlyOutput(ns(ns2("chrom_plotly")), height = "600px")
+          if (as.logical(input$summary_chrom_interactive)) {
+            shinycssloaders::withSpinner(
+              plotly::plotlyOutput(
+                ns(ns2("chrom_plotly")),
+                height = "calc(100vh - 50px - 30px - 20px - 44px - 50px)"
+              ),
+              color = "black"
+            )
           } else {
-            shiny::plotOutput(ns(ns2("chrom_plot")), height = "600px")
+            shinycssloaders::withSpinner(
+              shiny::plotOutput(
+                ns(ns2("chrom_plot")),
+                height = "calc(100vh - 50px - 30px - 20px - 44px - 50px)"
+              ),
+              color = "black"
+            )
           }
         }
       } else {
@@ -429,37 +470,34 @@
       }
       if (has_results_chromatograms()) {
         htmltools::div(
-          style = "display: flex; align-items: center;",
+          style = "display: flex; flex-direction: column; gap: 10px; padding: 10px;",
           htmltools::div(
-            style = "margin-left: 20px;",
-            shiny::checkboxInput(
-              ns(ns2("summary_chrom_interactive")),
-              label = "Interactive",
-              value = TRUE,
-              width = 100
+            shinyFiles::shinySaveButton(
+              ns(ns2("chrom_plot_save")),
+              "Export (.csv)",
+              "Export (.csv)",
+              filename = "chrom_data",
+              filetype = list(csv = "csv")
             )
           ),
           htmltools::div(
-            style = "margin-left: 20px;",
+            shiny::selectInput(
+              ns(ns2("summary_chrom_interactive")),
+              label = "Interactive",
+              choices = c("TRUE" = TRUE, "FALSE" = FALSE),
+              selected = TRUE,
+              width = "100%"
+            )
+          ),
+          htmltools::div(
             shiny::selectInput(
               ns(ns2("summary_chrom_colorby")),
               label = "Color by",
               choices = colorby_chromatograms,
               selected = "targets",
-              width = 200
+              width = "100%"
             )
-          ),
-          htmltools::div(
-            style = "margin-left: 20px;",
-            shinyFiles::shinySaveButton(
-              ns(ns2("chrom_plot_save")),
-              "Save Plot Data (.csv)",
-              "Save Plot Data (.csv)",
-              filename = "chrom_data",
-              filetype = list(csv = "csv")
-            )
-          ),
-          htmltools::div(style = "margin-bottom: 20px;")
+          )
         )
       }
     })
@@ -473,11 +511,15 @@
       if (length(selected) == 0) {
         return()
       }
+      if (!has_results_chromatograms()) {
+        return()
+      }
+      analyses <- load_chromatograms(reactive_analyses(), analyses = selected)
       plot_chromatograms(
-        reactive_analyses(),
+        analyses$results[["MassSpecResults_Chromatograms"]],
         analyses = selected,
         colorBy = input$summary_chrom_colorby,
-        interactive = input$summary_chrom_interactive
+        interactive = as.logical(input$summary_chrom_interactive)
       )
     })
 
@@ -490,11 +532,15 @@
       if (length(selected) == 0) {
         return()
       }
+      if (!has_results_chromatograms()) {
+        return()
+      }
+      analyses <- load_chromatograms(reactive_analyses(), analyses = selected)
       plot_chromatograms(
-        reactive_analyses(),
+        analyses$results[["MassSpecResults_Chromatograms"]],
         analyses = selected,
         colorBy = input$summary_chrom_colorby,
-        interactive = input$summary_chrom_interactive
+        interactive = as.logical(input$summary_chrom_interactive)
       )
     })
 

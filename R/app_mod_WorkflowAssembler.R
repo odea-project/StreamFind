@@ -29,11 +29,23 @@
     ),
     shinydashboard::tabItem(
       tabName = ns("audit"),
-      shiny::fluidRow(DT::dataTableOutput(ns("audit_ui")))
+      shiny::fluidRow(
+        shinydashboard::box(
+          width = 12,
+          solidHeader = TRUE,
+          DT::dataTableOutput(ns("audit_ui"), height = "calc(100vh - 50px - 30px - 50px)")
+        )
+      )
     ),
     shinydashboard::tabItem(
       tabName = ns("config"),
-      shiny::fluidRow(DT::dataTableOutput(ns("config_ui")))
+      shiny::fluidRow(
+        shinydashboard::box(
+          width = 12,
+          solidHeader = TRUE,
+          DT::dataTableOutput(ns("config_ui"), height = "calc(100vh - 50px - 30px - 50px)")
+        )
+      )
     )
   )
 }
@@ -600,7 +612,11 @@
           filter = "top",
           selection = list(mode = "single", selected = 1, target = "row"),
           options = list(
-            pageLength = 15,
+            dom = "ft",
+            paging = FALSE,
+            scrollX = TRUE,
+            scrollY = "calc(100vh - 50px - 30px - 20px - 170px)",
+            scrollCollapse = TRUE,
             columnDefs = list(
               list(
                 targets = which(names(audit_trail) == "value"),
@@ -632,7 +648,13 @@
         as.data.table(config),
         filter = "top",
         selection = list(mode = "single", selected = 1, target = "row"),
-        options = list(pageLength = 15),
+        options = list(
+          dom = "ft",
+          paging = FALSE,
+          scrollX = TRUE,
+          scrollY = "calc(100vh - 50px - 30px - 20px - 170px)",
+          scrollCollapse = TRUE
+        ),
         escape = FALSE,
         editable = list(target = "cell", columns = c("value"))
       )
