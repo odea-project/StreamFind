@@ -593,7 +593,7 @@
           c(
             list(
               width = 12,
-              height = "calc(100vh - 50px - 30px - 10px)"
+              height = "calc(100vh - 50px - 30px)"
             ),
             tab_list
           )

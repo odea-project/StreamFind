@@ -103,7 +103,7 @@ validate_object.MassSpecMethod_FilterFeatures_StreamFind <- function(x) {
 
 #' @export
 #' @noRd
-#' 
+#'
 run.MassSpecMethod_FilterFeatures_StreamFind <- function(
   x,
   engine = NULL
@@ -775,7 +775,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
           FALSE
         ))
       ) {
-        info <- engine$Analyses$info[, c("replicate", "blank"), with = FALSE]
+        info <- info(engine$Analyses)[, c("replicate", "blank"), with = FALSE]
         info <- unique(info)
 
         if (all(is.na(info$blank) | info$blank %in% "")) {
@@ -844,7 +844,7 @@ run.MassSpecMethod_FilterFeatures_StreamFind <- function(
             groups = groups
           )
         } else {
-          info2 <- engine$Analyses$info
+           info2 <- info(engine$Analyses)
           analyses <- names(feature_list)
           feature_groups_list <- lapply(
             analyses,
@@ -1156,7 +1156,7 @@ MassSpecMethod_FilterFeatures_patRoon <- function(
 
 #' @export
 #' @noRd
-#' 
+#'
 validate_object.MassSpecMethod_FilterFeatures_patRoon <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FilterFeatures")

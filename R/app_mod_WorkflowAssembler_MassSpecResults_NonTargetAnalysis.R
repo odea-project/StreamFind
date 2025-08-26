@@ -12,42 +12,8 @@
   custom_css <- shiny::tags$style(
     shiny::HTML(
       "
-    .metric-card {
-      border-radius: 8px;
-      padding: 20px;
-      height: 140px;
-      transition: transform 0.2s, box-shadow 0.2s;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .metric-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-    }
-    .metric-icon {
-      position: absolute;
-      top: 15px;
-      left: 15px;
-      opacity: 0.8;
-    }
-    .metric-value {
-      font-size: 42px;
-      font-weight: 700;
-      text-align: center;
-      margin-top: 10px;
-      line-height: 1;
-    }
-    .metric-label {
-      text-align: center;
-      font-size: 16px;
-      margin-top: 10px;
-      opacity: 0.8;
-    }
     .status-panel {
-      background-color: #f8f9fa;
+      background-color: white;
       border-radius: 8px;
       padding: 20px;
       height: 100%;
@@ -72,13 +38,6 @@
     }
     .status-no {
       color: #dc3545;
-    }
-    .section-title {
-      font-size: 18px;
-      font-weight: 600;
-      margin: 15px 0;
-      padding-left: 15px;
-      border-left: 4px solid #4e73df;
     }
     .tab-content {
       padding: 0;
@@ -105,79 +64,6 @@
       background-color: white;
       padding: 15px;
       box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-    }
-    .card-header {
-      background-color: #f8f9fa;
-      padding: 15px 20px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-      font-weight: 600;
-    }
-    .card-body {
-      padding: 20px;
-    }
-    .empty-state {
-      text-align: center;
-      padding: 40px 20px;
-      color: #6c757d;
-    }
-    .empty-state-icon {
-      font-size: 48px;
-      margin-bottom: 20px;
-      opacity: 0.5;
-    }
-
-    .results-wrapper .nav-tabs {
-      background-color: #f8f9fa;
-      border-radius: 8px 8px 0 0;
-      padding: 0 15px;
-      margin-bottom: 0;
-      border-bottom: 2px solid #e3e6f0;
-    }
-
-    .results-wrapper .nav-tabs .nav-link {
-      border: none;
-      color: #5a5c69;
-      padding: 12px 20px;
-      font-weight: 500;
-      margin-right: 5px;
-      border-radius: 0;
-    }
-
-    .results-wrapper .nav-tabs .nav-link:hover {
-      border-color: transparent;
-      background-color: rgba(78, 115, 223, 0.1);
-      color: #4e73df;
-    }
-
-    .results-wrapper .nav-tabs .nav-link.active {
-      color: #4e73df;
-      background-color: white;
-      border-color: transparent transparent #4e73df transparent;
-      border-bottom: 3px solid #4e73df;
-      font-weight: 600;
-    }
-
-    .results-wrapper .tab-content {
-      background: white;
-      border-radius: 0 0 8px 8px;
-      box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-      padding: 0;
-      margin-top: -1px;
-    }
-
-    .results-wrapper .tab-pane {
-      padding: 0;
-    }
-
-    .results-wrapper .tab-content .nav-tabs {
-      margin-bottom: 0;
-      background: transparent;
-      border-bottom: 2px solid #e3e6f0;
-      padding: 15px 20px 0 20px;
-    }
-
-    .results-wrapper .tab-content .tab-content {
-      padding: 20px;
     }
 
     /* Chromatogram icon styling */
@@ -223,24 +109,6 @@
       margin-bottom: 0;
     }
 
-    .features-table-side {
-      height: 100%;
-      overflow-y: auto;
-      border-right: 2px solid #e3e6f0;
-      padding-right: 15px;
-    }
-
-    .features-plots-side {
-      height: 100%;
-      overflow-y: auto;
-      padding-left: 15px;
-    }
-
-    /* Ensure tables fit properly in constrained space */
-    .dataTables_wrapper .dataTables_scrollBody {
-      max-height: calc(100vh - 400px) !important;
-    }
-
     /* Plot container adjustments for single page */
     .plot-container {
       margin-bottom: 0;
@@ -251,28 +119,13 @@
       padding-left: 0 !important;
       padding-right: 0 !important;
     }
-    
+
     .nav-tabs-custom {
-      padding: 0 !important;
-      margin: 0 !important;
-    }
-    
-    .nav-tabs-custom .tab-content {
-      padding: 0 !important;
-      margin: 0 !important;
+      margin-bottom: 0px;
     }
 
   "
     )
-  )
-
-  # MARK: Color Palette Metrics
-  # Color Palette Metrics ----
-  metric_colors <- list(
-    analysis = "#4e73df",
-    features = "#1cc88a",
-    filtered = "#36b9cc",
-    groups = "#f6c23e"
   )
 
   # MARK: Plot Maximize Functions
@@ -324,166 +177,76 @@
     ## Main Content ----
     shiny::div(
       class = "tabbox-container",
-      style = "margin-top: -20px;",
       shinydashboard::tabBox(
         id = ns_full("main_tabs"),
         width = 12,
-        height = "calc(100vh - 50px - 30px - 10px - 60px)",
+        height = "calc(100vh - 50px - 30px - 45px - 10px)",
 
         # MARK: Overview Tab
         ### Overview Tab ----
         shiny::tabPanel(
-          title = shiny::tagList(
-            shiny::icon("chart-pie", class = "mr-2"),
-            "Overview"
-          ),
-          height = "100%",
+          title = shiny::tagList(shiny::icon("chart-pie", class = "mr-2"), "Overview"),
 
           shiny::div(
             class = "tab-content",
-            style = "max-height: calc(100vh - 50px - 30px - 10px - 60px - 45px); overflow-y: auto; padding: 0;",
-            # Metrics Row
-            shiny::fluidRow(
-              # Total Analysis
-              shiny::column(
-                width = 3,
-                shiny::div(
-                  class = "metric-card",
-                  style = paste0(
-                    "background-color: ",
-                    metric_colors$analysis,
-                    "; color: white;"
-                  ),
-                  shiny::div(
-                    class = "metric-icon",
-                    shiny::icon("chart-line", class = "fa-2x")
-                  ),
-                  shiny::div(
-                    class = "metric-value",
-                    shiny::textOutput(ns_full("total_analyses"))
-                  ),
-                  shiny::div(class = "metric-label", "Total Analysis")
-                )
-              ),
-              # Total Features
-              shiny::column(
-                width = 3,
-                shiny::div(
-                  class = "metric-card",
-                  style = paste0(
-                    "background-color: ",
-                    metric_colors$features,
-                    "; color: white;"
-                  ),
-                  shiny::div(
-                    class = "metric-icon",
-                    shiny::icon("gears", class = "fa-2x")
-                  ),
-                  shiny::div(
-                    class = "metric-value",
-                    shiny::textOutput(ns_full("total_features"))
-                  ),
-                  shiny::div(class = "metric-label", "Total Features")
-                )
-              ),
-              # Filtered Features
-              shiny::column(
-                width = 3,
-                shiny::div(
-                  class = "metric-card",
-                  style = paste0(
-                    "background-color: ",
-                    metric_colors$filtered,
-                    "; color: white;"
-                  ),
-                  shiny::div(
-                    class = "metric-icon",
-                    shiny::icon("filter", class = "fa-2x")
-                  ),
-                  shiny::div(
-                    class = "metric-value",
-                    shiny::textOutput(ns_full("filtered_features_count"))
-                  ),
-                  shiny::div(class = "metric-label", "Filtered Features")
-                )
-              ),
-              # Total Groups
-              shiny::column(
-                width = 3,
-                shiny::div(
-                  class = "metric-card",
-                  style = paste0(
-                    "background-color: ",
-                    metric_colors$groups,
-                    "; color: white;"
-                  ),
-                  shiny::div(
-                    class = "metric-icon",
-                    shiny::icon("network-wired", class = "fa-2x")
-                  ),
-                  shiny::div(
-                    class = "metric-value",
-                    shiny::textOutput(ns_full("total_groups"))
-                  ),
-                  shiny::div(class = "metric-label", "Total Groups")
-                )
-              )
-            ),
-
-            # Status Panel and Chart Row
-            shiny::fluidRow(
-              # Status Panel
-              shiny::column(
-                width = 4,
+            style = "max-height: calc(100vh - 50px - 30px - 60px - 45px - 10px); overflow-y: auto; padding: 0;",
+            bslib::layout_sidebar(
+              # MARK: Sidebar - Status Panel
+              sidebar = bslib::sidebar(
                 shiny::div(
                   class = "status-panel",
-                  shiny::h4("Analysis Status", class = "mb-4"),
-
-                  # Features Status
+                  # Total Analysis
                   shiny::div(
                     class = "status-item",
                     shiny::span(
                       class = "status-label",
-                      shiny::icon("check-circle", class = "mr-2"),
-                      "Has Features?"
+                      shiny::icon("chart-line", class = "mr-2"),
+                      "Total Analysis"
                     ),
                     shiny::span(
                       class = "status-value",
-                      shiny::uiOutput(ns_full("has_features_ui"), inline = TRUE)
+                      shiny::textOutput(ns_full("total_analyses"), inline = TRUE)
                     )
                   ),
-
-                  # Filtered Features Status
+                  # Total Features
+                  shiny::div(
+                    class = "status-item",
+                    shiny::span(
+                      class = "status-label",
+                      shiny::icon("gears", class = "mr-2"),
+                      "Total Features"
+                    ),
+                    shiny::span(
+                      class = "status-value",
+                      shiny::textOutput(ns_full("total_features"), inline = TRUE)
+                    )
+                  ),
+                  # Filtered Features
                   shiny::div(
                     class = "status-item",
                     shiny::span(
                       class = "status-label",
                       shiny::icon("filter", class = "mr-2"),
-                      "Has Filtered Features?"
+                      "Filtered Features"
                     ),
                     shiny::span(
                       class = "status-value",
-                      shiny::uiOutput(
-                        ns_full("has_filtered_features_ui"),
-                        inline = TRUE
-                      )
+                      shiny::textOutput(ns_full("filtered_features_count"), inline = TRUE)
                     )
                   ),
-
-                  # Groups Status
+                  # Total Groups
                   shiny::div(
                     class = "status-item",
                     shiny::span(
                       class = "status-label",
-                      shiny::icon("object-group", class = "mr-2"),
-                      "Has Groups?"
+                      shiny::icon("network-wired", class = "mr-2"),
+                      "Total Groups"
                     ),
                     shiny::span(
                       class = "status-value",
-                      shiny::uiOutput(ns_full("has_groups_ui"), inline = TRUE)
+                      shiny::textOutput(ns_full("total_groups"), inline = TRUE)
                     )
                   ),
-
                   # EIC Features Status
                   shiny::div(
                     class = "status-item",
@@ -500,7 +263,6 @@
                       )
                     )
                   ),
-
                   # MS1 Features Status
                   shiny::div(
                     class = "status-item",
@@ -517,7 +279,6 @@
                       )
                     )
                   ),
-
                   # MS2 Features Status
                   shiny::div(
                     class = "status-item",
@@ -534,7 +295,6 @@
                       )
                     )
                   ),
-
                   # Suspect Features Status
                   shiny::div(
                     class = "status-item",
@@ -554,51 +314,50 @@
                 )
               ),
 
-              # Features Chart
-              shiny::column(
-                width = 8,
+              # Features Count Chart - Main Content
+              shiny::div(
+                style = "height: calc(100vh - 50px - 30px - 60px - 45px - 45px); display: flex; flex-direction: column;",
+                # Top Controls Bar
                 shiny::div(
-                  class = "plot-container",
+                  class = "d-flex justify-content-center align-items-center",
+                  style = "height: 60px; background-color: white; padding: 10px;",
                   shiny::div(
-                    class = "card-header d-flex justify-content-between align-items-center",
-                    shiny::span(
-                      shiny::icon("chart-column", class = "mr-2"),
-                      "Features Distribution"
-                    ),
-                    shiny::div(
-                      class = "btn-group btn-group-sm",
-                      shiny::tags$button(
-                        class = "btn btn-outline-primary active",
-                        `data-value` = "replicates",
-                        `data-toggle` = "button",
-                        onclick = paste0(
-                          "Shiny.setInputValue('",
-                          ns_full("chart_color_by"),
-                          "', 'replicates')"
-                        ),
-                        "By Replicates"
+                    class = "btn-group btn-group-sm",
+                    shiny::tags$button(
+                      class = "btn btn-outline-primary active",
+                      style = "margin-right: 10px;",
+                      `data-value` = "replicates",
+                      `data-toggle` = "button",
+                      onclick = paste0(
+                        "Shiny.setInputValue('",
+                        ns_full("chart_color_by"),
+                        "', 'replicates')"
                       ),
-                      shiny::tags$button(
-                        class = "btn btn-outline-primary",
-                        `data-value` = "analysis",
-                        `data-toggle` = "button",
-                        onclick = paste0(
-                          "Shiny.setInputValue('",
-                          ns_full("chart_color_by"),
-                          "', 'analysis')"
-                        ),
-                        "By Analysis"
-                      )
+                      "By Replicates"
+                    ),
+                    shiny::tags$button(
+                      class = "btn btn-outline-primary",
+                      style = "margin-right: 10px;",
+                      `data-value` = "analysis",
+                      `data-toggle` = "button",
+                      onclick = paste0(
+                        "Shiny.setInputValue('",
+                        ns_full("chart_color_by"),
+                        "', 'analysis')"
+                      ),
+                      "By Analysis"
                     )
-                  ),
-                  shiny::div(
-                    class = "card-body p-0 position-relative",
-                    # maximize button
-                    .app_util_create_maximize_button("features_chart", ns_full),
-                    plotly::plotlyOutput(
-                      ns_full("features_chart"),
-                      height = "auto"
-                    )
+                  )
+                ),
+                # Plot Container
+                shiny::column(
+                  width = 12,
+                  class = "position-relative",
+                  style = "flex: 1; background-color: white; padding: 5px;",
+                  .app_util_create_maximize_button("features_chart", ns_full),
+                  plotly::plotlyOutput(
+                    ns_full("features_chart"),
+                    height = "100%"
                   )
                 )
               )
@@ -610,26 +369,21 @@
         ### Features Tab ----
         # Single Page Layout with Adjustable Proportions
         shiny::tabPanel(
-          title = shiny::tagList(
-            shiny::icon("table", class = "mr-2"),
-            "Features"
-          ),
+          title = shiny::tagList(shiny::icon("table", class = "mr-2"), "Features"),
 
           shiny::div(
             class = "tab-content",
-            style = "padding: 0; height: 90vh;",
+            style = "max-height: calc(100vh - 50px - 30px - 60px - 45px); overflow-y: auto; padding: 0;",
 
             # MARK: Top Controls Section
-            # Fixed Height
             shiny::div(
               class = "features-controls-bar",
               style = "
-                background-color: #f8f9fa; 
-                border-bottom: 1px solid #e3e6f0; 
-                padding: 10px 15px; 
-                height: 60px; 
+                background-color: white;
+                padding: 10px 15px;
+                height: 60px;
                 display: flex;
-                align-items: center; 
+                align-items: center;
                 justify-content: space-between;
               ",
               # Left: Button group
@@ -639,25 +393,29 @@
                   ns_full("deselect_all_features"),
                   "Deselect All",
                   icon = shiny::icon("times-circle"),
-                  class = "btn btn-outline-secondary btn-sm"
+                  class = "btn btn-outline-secondary btn-sm",
+                  style = "padding-right: 10px;"
                 ),
                 shiny::downloadButton(
                   ns_full("export_features_csv"),
                   "Export to CSV",
                   icon = shiny::icon("file-csv"),
-                  class = "btn btn-outline-primary btn-sm ml-2"
+                  class = "btn btn-outline-primary btn-sm ml-2",
+                  style = "padding-right: 10px;"
                 ),
                 shiny::downloadButton(
                   ns_full("export_selected_features_csv"),
                   "Export Selected to CSV",
                   icon = shiny::icon("file-csv"),
-                  class = "btn btn-outline-primary btn-sm ml-2"
+                  class = "btn btn-outline-primary btn-sm ml-2",
+                  style = "padding-right: 10px;"
                 ),
                 shiny::actionButton(
                   ns_full("remove_selected_features"),
                   "Remove Selected Features",
                   icon = shiny::icon("trash-alt"),
-                  class = "btn btn-outline-danger btn-sm ml-2"
+                  class = "btn btn-outline-danger btn-sm ml-2",
+                  style = "padding-right: 10px;"
                 )
               ),
               # Right: Proportion controls
@@ -709,28 +467,23 @@
               )
             ),
 
-            # MARK: Main Content Row
-            ### Main Content Row -----
-            # Fill remaining height
+            # MARK: Main Content
+            ### Main Content -----
             shiny::div(
               id = ns_full("main_content_container"),
-              style = "display: flex; height: calc(90vh - 60px);",
+              style = "display: flex; height: calc(100vh - 50px - 30px - 60px - 45px - 80px);",
 
               # Left Side - Features Table (Dynamic width)
               shiny::div(
-                id = ns_full("table_panel"),
-                style = "border-right: 2px solid #e3e6f0; padding: 15px; overflow: hidden;",
-                shiny::div(
-                  class = "features-table-container",
-                  style = "height: 100%; overflow: hidden;",
-                  DT::dataTableOutput(ns_full("features_table"), height = "100%")
-                )
+                id = ns_full("features_table_panel"),
+                style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px); padding: 10px; overflow: hiden;",
+                DT::dataTableOutput(ns_full("features_table"), height = "100%", width = "98%")
               ),
 
               # Right Side - Feature Details Tabs (Dynamic width)
               shiny::div(
-                id = ns_full("plots_panel"),
-                style = "border-right: 2px solid #e3e6f0; padding: 2px; overflow: hidden;",
+                id = ns_full("features_plots_panel"),
+                style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px); padding: 10px; overflow: hidden;",
                 shiny::tabsetPanel(
                   id = ns_full("feature_details_tabs"),
                   type = "tabs",
@@ -745,7 +498,7 @@
                     ),
                     plotly::plotlyOutput(
                       ns_full("feature_peaks_plot"),
-                      height = "calc(100% - 30px)"
+                      height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
                     )
                   ),
 
@@ -759,7 +512,7 @@
                     ),
                     plotly::plotlyOutput(
                       ns_full("ms1_plot"),
-                      height = "calc(100% - 30px)"
+                      height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
                     )
                   ),
 
@@ -773,7 +526,7 @@
                     ),
                     plotly::plotlyOutput(
                       ns_full("ms2_plot"),
-                      height = "calc(100% - 30px)"
+                      height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
                     )
                   ),
 
@@ -801,13 +554,12 @@
 
           shiny::div(
             class = "tab-content",
-            style = "padding: 0; height: 100vh;",
+            style = "max-height: calc(100vh - 50px - 30px - 60px - 45px); overflow-y: auto; padding: 0;",
             # Top Controls Section
             shiny::div(
               class = "features-controls-bar",
-              style = "background-color: #f8f9fa; border-bottom: 1px solid #e3e6f0; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: space-between;",
-
-              # Left side - Checkboxes only
+              style = "background-color: white; padding: 10px 15px; height: 60px; display: flex; align-items: center; justify-content: space-between;",
+              # Left side - Checkbox and Action buttons
               shiny::div(
                 style = "display: flex; align-items: center; gap: 15px;",
                 shiny::div(
@@ -828,163 +580,31 @@
                   )
                 ),
                 shiny::div(
-                  class = "form-check",
-                  style = "display: flex; align-items: center;",
-                  shiny::tags$input(
-                    type = "checkbox",
-                    class = "form-check-input",
-                    id = ns_full("show_filters_groups"),
-                    checked = TRUE,
-                    style = "margin-right: 5px;"
+                  class = "btn-group",
+                  shiny::actionButton(
+                    ns_full("deselect_all_groups"),
+                    "Deselect All",
+                    icon = shiny::icon("times-circle"),
+                    class = "btn btn-outline-secondary btn-sm"
                   ),
-                  shiny::tags$label(
-                    class = "form-check-label",
-                    `for` = ns_full("show_filters_groups"),
-                    "Show Filters",
-                    style = "font-size: 13px; color: #5a5c69; margin: 0;"
+                  shiny::downloadButton(
+                    ns_full("export_groups_csv"),
+                    "Export to CSV",
+                    icon = shiny::icon("file-csv"),
+                    class = "btn btn-outline-primary btn-sm ml-2"
+                  ),
+                  shiny::downloadButton(
+                    ns_full("export_selected_groups_csv"),
+                    "Export Selected to CSV",
+                    icon = shiny::icon("file-csv"),
+                    class = "btn btn-outline-primary btn-sm ml-2"
                   )
                 )
               ),
 
-              # Right side - Action buttons only
+              # Right: Proportion controls
               shiny::div(
-                class = "btn-group",
-                shiny::actionButton(
-                  ns_full("deselect_all_groups"),
-                  "Deselect All",
-                  icon = shiny::icon("times-circle"),
-                  class = "btn btn-outline-secondary btn-sm"
-                ),
-                shiny::downloadButton(
-                  ns_full("export_groups_csv"),
-                  "Export to CSV",
-                  icon = shiny::icon("file-csv"),
-                  class = "btn btn-outline-primary btn-sm ml-2"
-                ),
-                shiny::downloadButton(
-                  ns_full("export_selected_groups_csv"),
-                  "Export Selected to CSV",
-                  icon = shiny::icon("file-csv"),
-                  class = "btn btn-outline-primary btn-sm ml-2"
-                )
-              )
-            ),
-
-            # Main Content Row
-            shiny::div(
-              id = ns_full("groups_main_content_container"),
-              style = "display: flex; height: calc(100vh - 200px);",
-
-              # Left Side - Groups Table
-              shiny::div(
-                id = ns_full("groups_table_panel"),
-                style = "border-right: 2px solid #e3e6f0; padding: 15px; overflow: hidden;",
-                shiny::div(
-                  class = "features-table-container",
-                  style = "height: 100%; overflow: hidden;",
-                  DT::dataTableOutput(ns_full("groups_table"))
-                )
-              ),
-
-              # Right Side - Plot Panel
-              shiny::div(
-                id = ns_full("groups_plots_panel"),
-                style = "padding: 15px; overflow: hidden;",
-                shiny::div(
-                  class = "plot-container p-0",
-                  style = "height: 100%;",
-                  shiny::tabsetPanel(
-                    id = ns_full("group_details_tabs"),
-                    type = "tabs",
-
-                    # Group Chromatogram
-                    shiny::tabPanel(
-                      title = "Group Chromatogram",
-                      shiny::div(
-                        class = "p-3 position-relative",
-                        style = "height: calc(100% - 50px); overflow: auto;",
-                        .app_util_create_maximize_button("group_plot", ns_full),
-                        plotly::plotlyOutput(
-                          ns_full("group_plot"),
-                          height = "100%"
-                        )
-                      )
-                    ),
-                    # Group Overview Tab
-                    shiny::tabPanel(
-                      title = "Overview",
-                      shiny::div(
-                        class = "p-3 position-relative",
-                        style = "height: calc(100% - 50px); overflow: auto;",
-                        .app_util_create_maximize_button(
-                          "group_overview_plot",
-                          ns_full
-                        ),
-                        plotly::plotlyOutput(
-                          ns_full("group_overview_plot"),
-                          height = "100%"
-                        )
-                      )
-                    ),
-                    # MS1 Tab
-                    shiny::tabPanel(
-                      title = "MS1",
-                      shiny::div(
-                        class = "p-3 position-relative",
-                        style = "height: calc(100% - 50px); overflow: auto;",
-                        .app_util_create_maximize_button(
-                          "group_ms1_plot",
-                          ns_full
-                        ),
-                        plotly::plotlyOutput(
-                          ns_full("group_ms1_plot"),
-                          height = "100%"
-                        )
-                      )
-                    ),
-
-                    # MS2 Tab
-                    shiny::tabPanel(
-                      title = "MS2",
-                      shiny::div(
-                        class = "p-3 position-relative",
-                        style = "height: calc(100% - 50px); overflow: auto;",
-                        .app_util_create_maximize_button(
-                          "group_ms2_plot",
-                          ns_full
-                        ),
-                        plotly::plotlyOutput(
-                          ns_full("group_ms2_plot"),
-                          height = "100%"
-                        )
-                      )
-                    ),
-                    # Profile Tab
-                    shiny::tabPanel(
-                      title = "Profile",
-                      shiny::div(
-                        class = "p-3 position-relative",
-                        style = "height: calc(100% - 50px); overflow: auto;",
-                        .app_util_create_maximize_button(
-                          "group_profile_plot",
-                          ns_full
-                        ),
-                        plotly::plotlyOutput(
-                          ns_full("group_profile_plot"),
-                          height = "100%"
-                        )
-                      )
-                    )
-                  )
-                )
-              )
-            ),
-
-            # Bottom Proportion Controls - EXACTLY like Features
-            shiny::div(
-              class = "proportion-controls",
-              style = "background-color: #f8f9fa; border-top: 1px solid #e3e6f0; padding: 10px 15px; height: 50px; display: flex; align-items: center; justify-content: center;",
-              shiny::div(
+                class = "proportion-controls",
                 style = "display: flex; align-items: center; gap: 10px;",
                 shiny::span(
                   "Layout:",
@@ -1026,6 +646,96 @@
                     ns_full("groups_prop_80_20"),
                     "80:20",
                     class = "btn btn-outline-primary btn-sm"
+                  )
+                )
+              )
+            ),
+
+            # MARK: Main Content Row
+            shiny::div(
+              id = ns_full("groups_main_content_container"),
+              style = "display: flex; height: calc(100vh - 50px - 30px - 60px - 45px - 80px);",
+
+              # Left Side - Groups Table
+              shiny::div(
+                id = ns_full("groups_table_panel"),
+                style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px); padding: 10px; overflow: auto;",
+                DT::dataTableOutput(ns_full("groups_table"), height = "auto", width = "98%")
+              ),
+
+              # Right Side - Plot Panel
+              shiny::div(
+                id = ns_full("groups_plots_panel"),
+                style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px); padding: 10px; overflow: hidden;",
+                shiny::tabsetPanel(
+                  id = ns_full("group_details_tabs"),
+                  type = "tabs",
+
+                  # Group Chromatogram
+                  shiny::tabPanel(
+                    title = "Group Chromatogram",
+                    height = "100%",
+                    shiny::div(
+                      style = "height: 30px; position: relative;",
+                      .app_util_create_maximize_button("group_plot", ns_full),
+                    ),
+                    plotly::plotlyOutput(
+                      ns_full("group_plot"),
+                      height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
+                    )
+                  ),
+                  # Group Overview Tab
+                  shiny::tabPanel(
+                    title = "Overview",
+                    height = "100%",
+                    shiny::div(
+                      style = "height: 30px; position: relative;",
+                      .app_util_create_maximize_button("group_overview_plot", ns_full),
+                    ),
+                    plotly::plotlyOutput(
+                      ns_full("group_overview_plot"),
+                      height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
+                    )
+                  ),
+                  # MS1 Tab
+                  shiny::tabPanel(
+                    title = "MS1",
+                    height = "100%",
+                    shiny::div(
+                      style = "height: 30px; position: relative;",
+                      .app_util_create_maximize_button("group_ms1_plot", ns_full),
+                    ),
+                    plotly::plotlyOutput(
+                      ns_full("group_ms1_plot"),
+                      height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
+                    )
+                  ),
+
+                  # MS2 Tab
+                  shiny::tabPanel(
+                    title = "MS2",
+                    height = "100%",
+                    shiny::div(
+                      style = "height: 30px; position: relative;",
+                      .app_util_create_maximize_button("group_ms2_plot", ns_full),
+                    ),
+                    plotly::plotlyOutput(
+                      ns_full("group_ms2_plot"),
+                      height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
+                    )
+                  ),
+                  # Profile Tab
+                  shiny::tabPanel(
+                    title = "Profile",
+                    height = "100%",
+                    shiny::div(
+                      style = "height: 30px; position: relative;",
+                      .app_util_create_maximize_button("group_profile_plot", ns_full),
+                    ),
+                    plotly::plotlyOutput(
+                      ns_full("group_profile_plot"),
+                      height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
+                    )
                   )
                 )
               )
@@ -1405,11 +1115,11 @@
         features,
         escape = FALSE,
         options = list(
-          pageLength = 15,
+          pageLength = 25,
           autoWidth = TRUE,
           scrollX = TRUE,
           processing = TRUE,
-          scrollY = "100%",
+          scrollY = TRUE, #"calc(100vh - 50px - 30px - 60px - 45px - 60px - 35px - 300px)",
           scrollCollapse = TRUE,
           paging = TRUE,
           columnDefs = list(
@@ -1429,7 +1139,7 @@
             )
           ),
           selection = list(mode = "multiple", selected = NULL, target = "row"),
-          lengthMenu = c(5, 10, 15, 25, 50, 100),
+          lengthMenu = c(10, 25, 50, 100),
           ordering = TRUE,
           searching = TRUE,
           searchHighlight = TRUE
@@ -1440,85 +1150,6 @@
         filter = "top",
         selection = "multiple"
       )
-
-      # DT::datatable(
-      #   features,
-      #   escape = FALSE,
-      #   options = list(
-      #     pageLength = 15,
-      #     scrollX = TRUE,
-      #     processing = TRUE,
-      #     scrollY = FALSE,
-      #     columnDefs = list(
-      #       list(width = "50px", targets = c(1)),
-      #       list(width = "200px", targets = c(0)),
-      #       list(width = "200px", targets = c(2)),
-      #       list(width = "100px", targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11)),
-      #       list(width = "80px", targets = c(12)),
-      #       list(width = "100px", targets = c(13)),
-      #       list(width = "80px", targets = c(14, 15, 16)),
-      #       list(width = "150px", targets = c(17)),
-      #       list(width = "80px", targets = c(18)),
-      #       list(width = "120px", targets = c(19)),
-      #       list(
-      #         className = "dt-right",
-      #         targets = c(3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 17)
-      #       ),
-      #       list(
-      #         className = "dt-left",
-      #         targets = c(0, 2, 13, 14, 15, 16, 18, 19)
-      #       ),
-      #       list(className = "dt-center", targets = c(1)),
-      #       list(
-      #         targets = sel_col_index,
-      #         render = DT::JS(
-      #           "function(data, type, row, meta) {",
-      #           "  if (type === 'display') {",
-      #           "    var checked = data === true ? 'checked' : '';",
-      #           "    return '<input type=\"checkbox\" ' + checked + ' class=\"sel-checkbox\" data-row=\"' + meta.row + '\" />';",
-      #           "  }",
-      #           "  return data;",
-      #           "}"
-      #         ),
-      #         className = "dt-center"
-      #       ),
-      #       list(
-      #         targets = filtered_col_index,
-      #         render = DT::JS(
-      #           "function(data, type, row, meta) {",
-      #           "  if (type === 'display') {",
-      #           "    var checked = data === true ? 'checked' : '';",
-      #           "    return '<input type=\"checkbox\" ' + checked + ' disabled style=\"pointer-events: none;\" />';",
-      #           "  }",
-      #           "  return data;",
-      #           "}"
-      #         ),
-      #         className = "dt-center"
-      #       )
-      #     ),
-      #     selection = list(mode = "multiple", selected = NULL, target = "row"),
-      #     dom = 'rt<"bottom"lip>',
-      #     lengthMenu = c(5, 10, 15, 25, 50, 100),
-      #     ordering = TRUE,
-      #     searching = FALSE,
-      #     searchHighlight = TRUE
-      #   ),
-      #   style = "bootstrap",
-      #   class = "table table-striped table-hover",
-      #   rownames = FALSE,
-      #   filter = "top",
-      #   selection = "multiple"
-      # ) %>%
-      #   DT::formatStyle(
-      #     columns = names(features),
-      #     fontSize = "14px",
-      #     padding = "8px 12px"
-      #   ) %>%
-      #   DT::formatStyle(
-      #     columns = intersect(numeric_cols, names(features)),
-      #     backgroundColor = NULL,
-      #     color = NULL
-      #   )
     })
 
     shiny::observeEvent(input$deselect_all_features, {
@@ -2140,12 +1771,12 @@
           "
         #",
           ns_prefix,
-          "-table_panel { width: ",
+          "-features_table_panel { width: ",
           table_width,
           "% !important; }
         #",
           ns_prefix,
-          "-plots_panel { width: ",
+          "-features_plots_panel { width: ",
           plots_width,
           "% !important; }
       "
@@ -2232,32 +1863,28 @@
         groups,
         escape = FALSE,
         options = list(
-          pageLength = 15,
+          pageLength = 25,
+          autoWidth = TRUE,
           scrollX = TRUE,
           processing = TRUE,
-          scrollY = FALSE,
+          scrollY = TRUE,
+          scrollCollapse = TRUE,
+          paging = TRUE,
           columnDefs = list(
-            list(width = "150px", targets = 0),
-            list(className = "dt-center", targets = "_all")
+            list(className = "dt-center", targets = c(1))
           ),
           selection = list(mode = "multiple", selected = NULL, target = "row"),
-          dom = 'rt<"bottom"lip>',
-          lengthMenu = c(5, 10, 25, 50, 100),
+          lengthMenu = c(10, 25, 50, 100),
           ordering = TRUE,
-          searching = FALSE,
+          searching = TRUE,
           searchHighlight = TRUE
         ),
         style = "bootstrap",
         class = "table table-striped table-hover",
         rownames = FALSE,
-        filter = if (show_filters) "top" else "none",
+        filter = "top",
         selection = "multiple"
-      ) %>%
-        DT::formatStyle(
-          columns = names(groups),
-          fontSize = "14px",
-          padding = "8px 12px"
-        )
+      )
     })
 
     # Reactive value to store selected groups
@@ -2992,17 +2619,17 @@
             ns_prefix,
             "-chromatogram_modal').modal('show');
         }
-        
+
         $(document).ready(function(){
           // Initialize tooltips
           $('[data-toggle=\"tooltip\"]').tooltip();
-          
+
           // Make status panel items clickable
           $('.status-item').css('cursor', 'pointer').click(function(){
             $('.status-item').removeClass('active');
             $(this).addClass('active');
           });
-          
+
           // Enhance button group behavior
           $('.btn-group .btn').click(function(){
             $(this).siblings().removeClass('active');
