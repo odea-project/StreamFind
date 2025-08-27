@@ -105,12 +105,14 @@ run.MassSpecMethod_FilterFeaturesMS2_native <- function(x, engine = NULL) {
     !any(vapply(
       nts$features,
       function(z) {
-        vapply(
-          z$ms2,
-          function(y) {
-            nrow(y) > 0
-          },
-          FALSE
+        any(
+          vapply(
+            z$ms2,
+            function(y) {
+              nrow(y) > 0
+            },
+            FALSE
+          )
         )
       },
       FALSE
