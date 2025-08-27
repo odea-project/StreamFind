@@ -287,4 +287,11 @@ app_server <- function(input, output, session) {
   shiny::observe({
     if (is.na(reactive_app_mode())) reactive_show_init_modal(TRUE)
   })
+
+  if (!interactive()) {
+    session$onSessionEnded(function() {
+      shiny::stopApp()
+      q("no")
+    })
+  }
 }
