@@ -476,8 +476,8 @@
               # Left Side - Features Table (Dynamic width)
               shiny::div(
                 id = ns_full("features_table_panel"),
-                style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px); padding: 10px; overflow: hiden;",
-                DT::dataTableOutput(ns_full("features_table"), height = "100%", width = "98%")
+                style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px); padding: 10px; overflow: auto;",
+                DT::dataTableOutput(ns_full("features_table"), height = "auto", width = "98%")
               ),
 
               # Right Side - Feature Details Tabs (Dynamic width)
