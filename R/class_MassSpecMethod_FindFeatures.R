@@ -746,12 +746,12 @@ run.MassSpecMethod_FindFeatures_openms <- function(x, engine = NULL) {
 #' @param gap The number of gap points of a mass trace.
 #' @param width The minimum length of a mass trace.
 #' @param min_snr Minimum signal to noise ratio.
-#' @param kmeans If `TRUE`, \link[KPIC]{getPIC.kmeans} is used to obtain
-#' PICs (i.e., features). If `FALSE`, \link[KPIC]{getPIC} is used.
+#' @param kmeans If `TRUE`, `getPIC.kmeans` is used to obtain
+#' PICs (i.e., features). If `FALSE`, `getPIC` is used.
 #' @param alpha If `kmeans` is `TRUE`, alpha is the parameter of forecasting.
 #' If `kmeans` is `FALSE`, alpha is not used.
 #'
-#' @details See the \link[patRoon]{findFeaturesKPIC2} function from the \pkg{patRoon} package for
+#' @details See the `findFeaturesKPIC2` function from the \pkg{patRoon} package for
 #' more information and requirements.
 #'
 #' @return A `MassSpecMethod_FindFeatures_kpic2` object.

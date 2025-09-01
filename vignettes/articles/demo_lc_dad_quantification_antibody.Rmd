@@ -115,21 +115,17 @@ DT::datatable(
 # Available Chromatograms
 
 ```{r available-chroms}
-chroms = data.frame(
-  "name" = unique(ms$Analyses$analyses[[1]]$chromatograms_headers$id)
-)
-
-DT::datatable(chroms)
+chroms <- unique(ms$Analyses$analyses[[1]]$chromatograms_headers$id)
 ```
 
-The chromatogram of interest is the `r data.frame("name" = unique(ms$Analyses$analyses[[1]]$chromatograms_headers$id))$name[2]`, which is the second, and we know that our analyte elutes between 250 and 400 seconds.
+The chromatogram of interest is the `r chroms[2]`, which is the second, and we know that our analyte elutes between 250 and 400 seconds.
 
 # Workflow
 
 ```{r load-chroms}
 ms$run(
   MassSpecMethod_LoadChromatograms_native(
-    chromatograms = chroms$name[2],
+    chromatograms = chroms[2],
     rtmin = 250,
     rtmax = 400
   )

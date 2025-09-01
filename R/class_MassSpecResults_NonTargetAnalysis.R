@@ -2846,7 +2846,7 @@ plot_groups_profile.MassSpecResults_NonTargetAnalysis <- function(
     filtered
   )
 
-  analyses <- .check_analyses_argument(x, analyses)
+  analyses <- .check_analyses_argument(x$features, analyses)
 
   if (nrow(fts) == 0) {
     message("\U2717 Features not found for the targets!")
@@ -2887,21 +2887,23 @@ plot_groups_profile.MassSpecResults_NonTargetAnalysis <- function(
       .(intensity = mean(intensity), intensity_sd = sd(intensity)),
       by = group_cols
     ]
-    names(polarities) <- x$info$replicate[names(polarities)]
+    rpls <- x$info$replicate
+    names(rpls) <- x$info$analysis
+    names(polarities) <- rpls[names(polarities)]
     polarities <- polarities[!duplicated(names(polarities))]
     data.table::setnames(fts, "replicate", "analysis")
-    analyses <- unique(x$info$replicate[analyses])
+    analyses <- unique(rpls[rpls %in% fts$analysis])
   }
 
   if (
-    is.character(legendNames) &
+    is.character(legendNames) &&
       length(legendNames) == length(unique(fts$group))
   ) {
     leg <- legendNames
     names(leg) <- unique(fts$group)
     leg <- leg[fts$group]
     fts$var <- leg[fts$group]
-  } else if (isTRUE(legendNames) & "name" %in% colnames(fts)) {
+  } else if (isTRUE(legendNames) && "name" %in% colnames(fts)) {
     leg <- fts$name
     fts$var <- fts$name
   } else {
