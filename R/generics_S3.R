@@ -7,7 +7,7 @@
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 add <- function(x, ...) {
   UseMethod("add")
 }
@@ -22,7 +22,7 @@ add <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 clear_cache <- function(x, ...) {
   UseMethod("clear_cache")
 }
@@ -41,7 +41,7 @@ clear_cache <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_analysis_classes <- function(x, ...) {
   UseMethod("get_analysis_classes")
 }
@@ -52,7 +52,7 @@ get_analysis_classes <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_analysis_names <- function(x, ...) {
   UseMethod("get_analysis_names")
 }
@@ -63,7 +63,7 @@ get_analysis_names <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_blank_names <- function(x, ...) {
   UseMethod("get_blank_names")
 }
@@ -74,7 +74,7 @@ get_blank_names <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_cache_info <- function(x, ...) {
   UseMethod("get_cache_info")
 }
@@ -85,7 +85,7 @@ get_cache_info <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_chromatograms <- function(x, ...) {
   UseMethod("get_chromatograms")
 }
@@ -96,7 +96,7 @@ get_chromatograms <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_chromatograms_peaks <- function(x, ...) {
   UseMethod("get_chromatograms_peaks")
 }
@@ -107,7 +107,7 @@ get_chromatograms_peaks <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_components <- function(x, ...) {
   UseMethod("get_components")
 }
@@ -118,7 +118,7 @@ get_components <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_compounds <- function(x, ...) {
   UseMethod("get_compounds")
 }
@@ -129,7 +129,7 @@ get_compounds <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_concentrations <- function(x, ...) {
   UseMethod("get_concentrations")
 }
@@ -140,7 +140,7 @@ get_concentrations <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_features <- function(x, ...) {
   UseMethod("get_features")
 }
@@ -151,7 +151,7 @@ get_features <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_features_count <- function(x, ...) {
   UseMethod("get_features_count")
 }
@@ -162,7 +162,7 @@ get_features_count <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_features_eic <- function(x, ...) {
   UseMethod("get_features_eic")
 }
@@ -173,7 +173,7 @@ get_features_eic <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_features_ms1 <- function(x, ...) {
   UseMethod("get_features_ms1")
 }
@@ -184,7 +184,7 @@ get_features_ms1 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_features_ms2 <- function(x, ...) {
   UseMethod("get_features_ms2")
 }
@@ -195,7 +195,7 @@ get_features_ms2 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_fold_change <- function(x, ...) {
   UseMethod("get_fold_change")
 }
@@ -206,7 +206,7 @@ get_fold_change <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_formulas <- function(x, ...) {
   UseMethod("get_formulas")
 }
@@ -217,7 +217,7 @@ get_formulas <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_groups <- function(x, ...) {
   UseMethod("get_groups")
 }
@@ -228,7 +228,7 @@ get_groups <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_groups_ms1 <- function(x, ...) {
   UseMethod("get_groups_ms1")
 }
@@ -239,7 +239,7 @@ get_groups_ms1 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_groups_ms2 <- function(x, ...) {
   UseMethod("get_groups_ms2")
 }
@@ -250,7 +250,7 @@ get_groups_ms2 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_internal_standards <- function(x, ...) {
   UseMethod("get_internal_standards")
 }
@@ -261,7 +261,7 @@ get_internal_standards <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_matrix_suppression <- function(x, ...) {
   UseMethod("get_matrix_suppression")
 }
@@ -272,7 +272,7 @@ get_matrix_suppression <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_methods <- function(x, ...) {
   UseMethod("get_methods")
 }
@@ -283,7 +283,7 @@ get_methods <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_model_data <- function(x, ...) {
   UseMethod("get_model_data")
 }
@@ -294,7 +294,7 @@ get_model_data <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_model_prediction <- function(x, ...) {
   UseMethod("get_model_prediction")
 }
@@ -305,7 +305,7 @@ get_model_prediction <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_patRoon_compounds <- function(x, ...) {
   UseMethod("get_patRoon_compounds")
 }
@@ -317,7 +317,7 @@ get_patRoon_compounds <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_patRoon_features <- function(x, ...) {
   UseMethod("get_patRoon_features")
 }
@@ -329,7 +329,7 @@ get_patRoon_features <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_patRoon_MSPeakLists <- function(x, ...) {
   UseMethod("get_patRoon_MSPeakLists")
 }
@@ -340,7 +340,7 @@ get_patRoon_MSPeakLists <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_raw_chromatograms <- function(x, ...) {
   UseMethod("get_raw_chromatograms")
 }
@@ -351,7 +351,7 @@ get_raw_chromatograms <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_raw_spectra <- function(x, ...) {
   UseMethod("get_raw_spectra")
 }
@@ -362,7 +362,7 @@ get_raw_spectra <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_replicate_names <- function(x, ...) {
   UseMethod("get_replicate_names")
 }
@@ -373,7 +373,7 @@ get_replicate_names <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_spectra <- function(x, ...) {
   UseMethod("get_spectra")
 }
@@ -395,7 +395,7 @@ get_spectra_bpc <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_spectra_eic <- function(x, ...) {
   UseMethod("get_spectra_eic")
 }
@@ -406,7 +406,7 @@ get_spectra_eic <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_spectra_headers <- function(x, ...) {
   UseMethod("get_spectra_headers")
 }
@@ -417,7 +417,7 @@ get_spectra_headers <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_spectra_matrix <- function(x, ...) {
   UseMethod("get_spectra_matrix")
 }
@@ -428,7 +428,7 @@ get_spectra_matrix <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_spectra_ms1 <- function(x, ...) {
   UseMethod("get_spectra_ms1")
 }
@@ -439,7 +439,7 @@ get_spectra_ms1 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_spectra_ms2 <- function(x, ...) {
   UseMethod("get_spectra_ms2")
 }
@@ -450,7 +450,7 @@ get_spectra_ms2 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_spectra_peaks <- function(x, ...) {
   UseMethod("get_spectra_peaks")
 }
@@ -472,7 +472,7 @@ get_spectra_tic <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 get_suspects <- function(x, ...) {
   UseMethod("get_suspects")
 }
@@ -487,7 +487,7 @@ get_suspects <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 info <- function(x, ...) {
   UseMethod("info")
 }
@@ -515,7 +515,7 @@ load <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 load_cache <- function(x, ...) {
   UseMethod("load_cache")
 }
@@ -526,7 +526,7 @@ load_cache <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 load_chromatograms <- function(x, ...) {
   UseMethod("load_chromatograms")
 }
@@ -537,7 +537,7 @@ load_chromatograms <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 load_spectra <- function(x, ...) {
   UseMethod("load_spectra")
 }
@@ -550,7 +550,7 @@ load_spectra <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 map_components <- function(x, ...) {
   UseMethod("map_components")
 }
@@ -561,7 +561,7 @@ map_components <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 map_features <- function(x, ...) {
   UseMethod("map_features")
 }
@@ -572,7 +572,7 @@ map_features <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 map_features_intensity <- function(x, ...) {
   UseMethod("map_features_intensity")
 }
@@ -589,7 +589,7 @@ map_features_intensity <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_chromatograms <- function(x, ...) {
   UseMethod("plot_chromatograms")
 }
@@ -600,7 +600,7 @@ plot_chromatograms <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_chromatograms_baseline <- function(x, ...) {
   UseMethod("plot_chromatograms_baseline")
 }
@@ -611,7 +611,7 @@ plot_chromatograms_baseline <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_chromatograms_peaks <- function(x, ...) {
   UseMethod("plot_chromatograms_peaks")
 }
@@ -622,7 +622,7 @@ plot_chromatograms_peaks <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_components <- function(x, ...) {
   UseMethod("plot_components")
 }
@@ -633,7 +633,7 @@ plot_components <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_contributions <- function(x, ...) {
   UseMethod("plot_contributions")
 }
@@ -644,7 +644,7 @@ plot_contributions <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_cumulative_explained_variance <- function(x, ...) {
   UseMethod("plot_cumulative_explained_variance")
 }
@@ -655,7 +655,7 @@ plot_cumulative_explained_variance <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_data <- function(x, ...) {
   UseMethod("plot_data")
 }
@@ -666,7 +666,7 @@ plot_data <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_explained_variance <- function(x, ...) {
   UseMethod("plot_explained_variance")
 }
@@ -677,7 +677,7 @@ plot_explained_variance <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_features <- function(x, ...) {
   UseMethod("plot_features")
 }
@@ -688,7 +688,7 @@ plot_features <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_features_count <- function(x, ...) {
   UseMethod("plot_features_count")
 }
@@ -699,7 +699,7 @@ plot_features_count <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_features_eic <- function(x, ...) {
   UseMethod("plot_features_eic")
 }
@@ -710,7 +710,7 @@ plot_features_eic <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_features_ms1 <- function(x, ...) {
   UseMethod("plot_features_ms1")
 }
@@ -721,7 +721,7 @@ plot_features_ms1 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_features_ms2 <- function(x, ...) {
   UseMethod("plot_features_ms2")
 }
@@ -732,7 +732,7 @@ plot_features_ms2 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_fold_change <- function(x, ...) {
   UseMethod("plot_fold_change")
 }
@@ -743,7 +743,7 @@ plot_fold_change <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_groups <- function(x, ...) {
   UseMethod("plot_groups")
 }
@@ -754,7 +754,7 @@ plot_groups <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_groups_ms1 <- function(x, ...) {
   UseMethod("plot_groups_ms1")
 }
@@ -765,7 +765,7 @@ plot_groups_ms1 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_groups_ms2 <- function(x, ...) {
   UseMethod("plot_groups_ms2")
 }
@@ -776,7 +776,7 @@ plot_groups_ms2 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_groups_overview <- function(x, ...) {
   UseMethod("plot_groups_overview")
 }
@@ -787,7 +787,7 @@ plot_groups_overview <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_groups_profile <- function(x, ...) {
   UseMethod("plot_groups_profile")
 }
@@ -798,7 +798,7 @@ plot_groups_profile <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_internal_standards <- function(x, ...) {
   UseMethod("plot_internal_standards")
 }
@@ -809,7 +809,7 @@ plot_internal_standards <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_loadings <- function(x, ...) {
   UseMethod("plot_loadings")
 }
@@ -820,7 +820,7 @@ plot_loadings <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_matrix_suppression <- function(x, ...) {
   UseMethod("plot_matrix_suppression")
 }
@@ -831,7 +831,7 @@ plot_matrix_suppression <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_overview <- function(x, ...) {
   UseMethod("plot_overview")
 }
@@ -842,7 +842,7 @@ plot_overview <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_residuals <- function(x, ...) {
   UseMethod("plot_residuals")
 }
@@ -853,7 +853,7 @@ plot_residuals <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_residual_distance <- function(x, ...) {
   UseMethod("plot_residual_distance")
 }
@@ -864,7 +864,7 @@ plot_residual_distance <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_resolved_spectra <- function(x, ...) {
   UseMethod("plot_resolved_spectra")
 }
@@ -875,7 +875,7 @@ plot_resolved_spectra <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_scores <- function(x, ...) {
   UseMethod("plot_scores")
 }
@@ -886,7 +886,7 @@ plot_scores <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra <- function(x, ...) {
   UseMethod("plot_spectra")
 }
@@ -897,7 +897,7 @@ plot_spectra <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra_3d <- function(x, ...) {
   UseMethod("plot_spectra_3d")
 }
@@ -908,7 +908,7 @@ plot_spectra_3d <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra_baseline <- function(x, ...) {
   UseMethod("plot_spectra_baseline")
 }
@@ -930,7 +930,7 @@ plot_spectra_bpc <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra_charges <- function(x, ...) {
   UseMethod("plot_spectra_charges")
 }
@@ -941,7 +941,7 @@ plot_spectra_charges <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra_eic <- function(x, ...) {
   UseMethod("plot_spectra_eic")
 }
@@ -952,7 +952,7 @@ plot_spectra_eic <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra_ms1 <- function(x, ...) {
   UseMethod("plot_spectra_ms1")
 }
@@ -963,7 +963,7 @@ plot_spectra_ms1 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra_ms2 <- function(x, ...) {
   UseMethod("plot_spectra_ms2")
 }
@@ -974,7 +974,7 @@ plot_spectra_ms2 <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra_peaks <- function(x, ...) {
   UseMethod("plot_spectra_peaks")
 }
@@ -996,7 +996,7 @@ plot_spectra_tic <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_spectra_xic <- function(x, ...) {
   UseMethod("plot_spectra_xic")
 }
@@ -1007,7 +1007,7 @@ plot_spectra_xic <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 plot_suspects <- function(x, ...) {
   UseMethod("plot_suspects")
 }
@@ -1018,7 +1018,7 @@ plot_suspects <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 predict <- function(x, ...) {
   UseMethod("predict")
 }
@@ -1033,7 +1033,7 @@ predict <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 read <- function(x, ...) {
   UseMethod("read")
 }
@@ -1066,7 +1066,7 @@ report <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 run <- function(x, ...) {
   UseMethod("run")
 }
@@ -1079,7 +1079,7 @@ run <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 save <- function(x, ...) {
   UseMethod("save")
 }
@@ -1090,7 +1090,7 @@ save <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 save_cache <- function(x, ...) {
   UseMethod("save_cache")
 }
@@ -1101,7 +1101,7 @@ save_cache <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 set_analysis_classes <- function(x, ...) {
   UseMethod("set_analysis_classes")
 }
@@ -1112,7 +1112,7 @@ set_analysis_classes <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 set_blank_names <- function(x, ...) {
   UseMethod("set_blank_names")
 }
@@ -1123,7 +1123,7 @@ set_blank_names <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 set_concentrations <- function(x, ...) {
   UseMethod("set_concentrations")
 }
@@ -1134,7 +1134,7 @@ set_concentrations <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 set_replicate_names <- function(x, ...) {
   UseMethod("set_replicate_names")
 }
@@ -1145,7 +1145,7 @@ set_replicate_names <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 show <- function(x, ...) {
   UseMethod("show")
 }
@@ -1156,7 +1156,7 @@ show <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 size <- function(x, ...) {
   UseMethod("size")
 }
@@ -1169,7 +1169,7 @@ size <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 test <- function(x, ...) {
   UseMethod("test")
 }
@@ -1184,7 +1184,7 @@ test <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 validate_object <- function(x, ...) {
   UseMethod("validate_object")
 }
