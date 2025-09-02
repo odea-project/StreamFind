@@ -44,37 +44,37 @@
                                         reactive_show_init_modal,
                                         volumes,
                                         input, output, session) {
-  
+
   available_engines <- .get_available_engines()
-  
+
   time_var <- format(Sys.time(), "%Y%m%d%H%M%S")
-  
+
   model_elements <- list()
-  
+
   model_elements[[1]] <- shiny::img(
     src = "www/logo_StreamFind.png",
     width = 250,
     style = "display: block; margin-left: auto; margin-right: auto;"
   )
-  
+
   model_elements[[2]] <- shiny::fluidRow(
     shiny::p(
       "Select an engine to start a new project: ",
       style = "text-align: center;margin-top: 40px;"
     )
   )
-  
+
   model_elements[[3]] <- htmltools::div(
     lapply(available_engines, function(obj) {
       shiny::actionButton(inputId = paste0(time_var, "_select_", obj), label = obj)
     }),
     style = "text-align: center;"
   )
-  
+
   model_elements[[4]] <- shiny::fluidRow(
     shiny::p("Load an existing engine: ", style = "text-align: center;margin-top: 40px;")
   )
-  
+
   shinyFiles::shinyFileChoose(
     input,
     paste0(time_var, "_select_LoadEngine"),
@@ -83,7 +83,7 @@
     session = session,
     filetypes = list(sqlite = "sqlite", rds = "rds")
   )
-  
+
   model_elements[[5]] <- htmltools::div(
     shinyFiles::shinyFilesButton(
       paste0(time_var, "_select_LoadEngine"),
@@ -93,18 +93,18 @@
     ),
     style = "text-align: center;"
   )
-  
+
   shiny::showModal(shiny::modalDialog(
     title = " ",
     easyClose = TRUE,
     footer = shiny::tagList(shiny::modalButton("Cancel")),
     do.call(shiny::tagList, model_elements)
   ))
-  
+
   available_engines <- c(available_engines, "LoadEngine")
-  
+
   lapply(available_engines, function(obj) {
-    
+
     shiny::observeEvent(input[[paste0(time_var, "_select_", obj)]], {
       if (paste0(time_var, "_select_LoadEngine") %in% paste0(time_var, "_select_", obj) ) {
         input_name <- paste0(time_var, "_select_LoadEngine")
@@ -195,7 +195,7 @@
 #' @noRd
 .app_util_create_maximize_button <- function(plot_id, ns_full) {
   button_id <- paste0(plot_id, "_maximize")
-  
+
   shiny::tags$button(
     id = ns_full(button_id),
     class = "btn btn-sm btn-light plot-maximize-btn",
@@ -229,14 +229,14 @@
     tabindex = "-1",
     role = "dialog",
     'aria-hidden' = "true",
-    
+
     shiny::tags$div(
       class = "modal-dialog modal-lg modal-dialog-centered",
       style = "max-width: 90%; width: 90%;",
-      
+
       shiny::tags$div(
         class = "modal-content",
-        
+
         # Modal header
         shiny::tags$div(
           class = "modal-header",
@@ -249,7 +249,7 @@
             shiny::tags$span('aria-hidden' = "true", HTML("×"))
           )
         ),
-        
+
         # Modal body
         shiny::tags$div(
           class = "modal-body p-0",
@@ -270,21 +270,21 @@
     function maximizePlot(plotId, buttonId) {
       // Get the original plot div
       var originalPlot = document.getElementById(plotId);
-      
+
       // If not found, try with the plotly class
       if (!originalPlot) {
         originalPlot = document.querySelector('.js-plotly-plot[id^=\"' + plotId + '\"]');
       }
-      
+
       if (!originalPlot) {
         console.error('Plot not found:', plotId);
         return;
       }
-      
+
       // Get the button element to extract plot title
       var button = document.getElementById(buttonId);
       var plotTitle = '';
-      
+
       // Find the closest card header or section title
       var header = button.closest('.card-header');
       if (header) {
@@ -298,16 +298,16 @@
           plotTitle = 'Plot View';
         }
       }
-      
+
       // Set the modal title
       document.getElementById(plotId.replace(/[^-]*$/, 'plot_modal_title')).textContent = plotTitle;
-      
+
       // Get the modal body
       var modalBody = document.getElementById(plotId.replace(/[^-]*$/, 'plot_modal_body'));
-      
+
       // Clear previous content
       modalBody.innerHTML = '';
-      
+
       // If it's a plotly plot
       if (originalPlot.classList.contains('js-plotly-plot')) {
         // Create a new container for the plot
@@ -316,13 +316,13 @@
         newPlotContainer.style.width = '100%';
         newPlotContainer.style.height = '100%';
         modalBody.appendChild(newPlotContainer);
-        
+
         // Clone the plot to the modal with updated layout
         var newLayout = JSON.parse(JSON.stringify(originalPlot.layout));
         newLayout.width = null;
         newLayout.height = 800;
         newLayout.autosize = true;
-        
+
         // Ensure margins allow full width usage
         newLayout.margin = {
           l: 50,
@@ -330,14 +330,18 @@
           t: 30,
           b: 50
         };
-        
+
+        // Calculate 90% of viewport height
+        var plotHeight = Math.floor(window.innerHeight * 0.9);
+        newLayout.height = plotHeight;
+
         Plotly.newPlot(
           newPlotContainer.id,
           JSON.parse(JSON.stringify(originalPlot.data)),
           newLayout,
           {responsive: true}
         );
-        
+
         // Trigger resize after modal is shown with a slight delay
         $('#' + plotId.replace(/[^-]*$/, 'plot_modal_container')).on('shown.bs.modal', function() {
           setTimeout(function() {
@@ -348,14 +352,14 @@
         // For other types of plots or content
         var clone = originalPlot.cloneNode(true);
         clone.style.width = '100%';
-        clone.style.height = '800px';
+        clone.style.height = Math.floor(window.innerHeight * 0.9) + 'px';
         modalBody.appendChild(clone);
       }
-      
+
       // Show the modal
       $('#' + plotId.replace(/[^-]*$/, 'plot_modal_container')).modal('show');
     }
-    
+
     // Custom CSS for the maximize button and modal body
     document.head.insertAdjacentHTML('beforeend', `
       <style>
@@ -375,7 +379,7 @@
           position: relative;
         }
         .modal-body {
-          height: 800px;
+          height: 90vh;
           padding: 0 !important;
         }
         .modal-body > div {

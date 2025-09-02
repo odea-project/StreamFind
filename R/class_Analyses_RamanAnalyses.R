@@ -451,38 +451,38 @@ get_spectra.RamanAnalyses <- function(
     spec$spectra <- spec$spectra[analyses]
   } else if (!is.null(x$results[["RamanResults_Spectra"]])) {
     spec <- x$results$RamanResults_Spectra
-    if (spec$is_averaged) {
-      rpl <- get_replicate_names(x)
-      rpl <- rpl[analyses]
-      spec$spectra <- spec$spectra[names(spec$spectra) %in% unname(rpl)]
-      spec$spectra <- Map(
-        function(z, y) {
-          if (nrow(z) > 0) {
-            z$replicate <- y
-          }
-          z
-        },
-        spec$spectra,
-        names(spec$spectra)
-      )
-    } else {
-      rpl <- get_replicate_names(x)
-      spec$spectra <- spec$spectra[analyses]
-      spec$spectra <- Map(
-        function(z, y) {
-          if (nrow(z) > 0) {
-            z$analysis <- y
-            z$replicate <- rpl[y]
-          }
-          z
-        },
-        spec$spectra,
-        names(spec$spectra)
-      )
-    }
   } else {
     warning("No spectra results object available!")
     return(list())
+  }
+  if (spec$is_averaged) {
+    rpl <- get_replicate_names(x)
+    rpl <- rpl[analyses]
+    spec$spectra <- spec$spectra[names(spec$spectra) %in% unname(rpl)]
+    spec$spectra <- Map(
+      function(z, y) {
+        if (nrow(z) > 0) {
+          z$replicate <- y
+        }
+        z
+      },
+      spec$spectra,
+      names(spec$spectra)
+    )
+  } else {
+    rpl <- get_replicate_names(x)
+    spec$spectra <- spec$spectra[analyses]
+    spec$spectra <- Map(
+      function(z, y) {
+        if (nrow(z) > 0) {
+          z$analysis <- y
+          z$replicate <- rpl[y]
+        }
+        z
+      },
+      spec$spectra,
+      names(spec$spectra)
+    )
   }
   if (length(spec$chrom_peaks) > 0) {
     if (length(spec$spectra) == length(spec$chrom_peaks)) {

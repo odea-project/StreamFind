@@ -28,9 +28,10 @@ The StreamFind development is ongoing, please [contact us](mailto:cunha@iuta.de)
 
 ## Installation
 
-Pre-requisites for the StreamFind are the [R](https://cran.r-project.org/) software and the [RTools](https://cran.r-project.org/bin/windows/Rtools/) (only applicable for Windows users). RTools is needed for compiling C++ code used in the StreamFind R package. StreamFind also uses python scripts for some of its processing methods, so it is recommended to have the latest [python](https://www.python.org/downloads/) installed and added to the environmental variables for Windows users. Assuming that R, RTools and python are installed, the StreamFind R package can be installed from the GitHub repository via the [BiocManager](https://www.bioconductor.org/install/). Note that StreamFind is not yet available on the Bioconductor repository.
+Pre-requisites for the StreamFind are the [R](https://cran.r-project.org/) software and the [RTools](https://cran.r-project.org/bin/windows/Rtools/) (only applicable for Windows users). RTools is needed for compiling C++ code used in the StreamFind R package. StreamFind also uses Python scripts for some of its processing methods, so it is recommended to have the latest [Python](https://www.python.org/downloads/) installed and added to the environmental variables for Windows users. Assuming that R, RTools and Python (optional) are installed, the StreamFind R package can be installed from the GitHub repository via the [BiocManager](https://www.bioconductor.org/install/). Note that StreamFind is not yet available on the Bioconductor repository. Please note that the default timeout for the `BiocManager::install` function might be to short. Thus, if the download of StreamFind fails run `options(timeout = 600)` before the installation command.
 
 ```{r install-streamfind, eval=FALSE}
+options(timeout = 600) # Increase timeout
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 BiocManager::install("odea-project/StreamFind")

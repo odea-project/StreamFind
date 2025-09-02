@@ -32,6 +32,12 @@ golem_add_external_resources <- function() {
 
   htmltools::tags$head(
     golem::favicon(ext = "png"),
+    # Explicit favicon reference similar to RInno approach
+    htmltools::tags$link(
+      rel = "icon",
+      type = "image/png",
+      href = "favicon.png"
+    ),
     golem::bundle_resources(
       path = app_sys("app/www"),
       app_title = "StreamFind"

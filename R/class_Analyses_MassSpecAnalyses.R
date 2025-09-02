@@ -2539,7 +2539,7 @@ plot_matrix_suppression.MassSpecAnalyses <- function(
   showLegend = TRUE,
   renderEngine = "webgl"
 ) {
-  analyses <- .check_analyses_argument(x, analyses)
+  analyses <- .check_analyses_argument(x$analyses, analyses)
   mp <- get_matrix_suppression(x, rtWindowVal)
   if (nrow(mp) == 0) {
     message("\U2717 TIC matrix suppression not found for the analyses!")

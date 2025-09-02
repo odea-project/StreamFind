@@ -42,3 +42,18 @@ src/qAlgorithms/test
 .Rproj.user
 
 /.quarto/
+
+# RInno installer files -------------------------------------------------------
+installer/
+inst/app/*.iss
+inst/app/package_manager.R
+inst/app/launch_app.R
+inst/app/nativefier-app/
+*.exe
+inst/app/bin
+inst/app/utils
+default.ico
+infoafter.txt
+infobefore.txt
+setup.ico
+StreamFind.bat

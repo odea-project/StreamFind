@@ -555,7 +555,7 @@ ms_pos <- ms$clone()
 ms_pos$Analyses <- ms_pos$Analyses[info(ms_pos$Analyses)$polarity == "1"]
 
 # subsetting the Analyses, also subsets the Results
-show(ms_pos$Results$MassSpecResults_NonTargetAnalysis)
+ms_pos$Results$MassSpecResults_NonTargetAnalysis$info$analysis
 
 # feature groups of interest for compounds generation showncase
 grs <- get_groups(nts, mass = db, ppm = 10, sec = 15)[["group"]]
@@ -563,10 +563,10 @@ grs
 
 # subsetting on feature groups
 ms_pos$Results <- ms_pos$Results$MassSpecResults_NonTargetAnalysis[, grs]
-show(ms_pos$Results$MassSpecResults_NonTargetAnalysis)
+nrow(get_groups(ms_pos$Results$MassSpecResults_NonTargetAnalysis))
 ```
 
-```{r get-compounds, results='asis'}
+```{r get-compounds, results='hide'}
 # Applies the generates compounds using MetFrag via the patRoon package
 ms_pos$run(
   MassSpecMethod_GenerateCompounds_metfrag(

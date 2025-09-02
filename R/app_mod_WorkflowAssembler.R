@@ -5,14 +5,10 @@
     shinydashboard::tabItem(
       tabName = ns("project"),
       shiny::fluidRow(
-        shiny::uiOutput(ns("wdir")),
-        shiny::column(
-          width = 12,
-          shiny::uiOutput(ns("save_engine")),
-          shiny::uiOutput(ns("reset_engine"))
-        ),
-        shiny::uiOutput(ns("engine_save_file_ui")),
-        shiny::fluidRow(shiny::uiOutput(ns("metadata_ui")))
+        shiny::uiOutput(ns("project_control_ui")),
+      ),
+      shiny::fluidRow(
+        shiny::uiOutput(ns("metadata_ui"))
       )
     ),
     shinydashboard::tabItem(
@@ -33,11 +29,23 @@
     ),
     shinydashboard::tabItem(
       tabName = ns("audit"),
-      shiny::fluidRow(DT::dataTableOutput(ns("audit_ui")))
+      shiny::fluidRow(
+        shinydashboard::box(
+          width = 12,
+          solidHeader = TRUE,
+          DT::dataTableOutput(ns("audit_ui"), height = "calc(100vh - 50px - 30px - 50px)")
+        )
+      )
     ),
     shinydashboard::tabItem(
       tabName = ns("config"),
-      shiny::fluidRow(DT::dataTableOutput(ns("config_ui")))
+      shiny::fluidRow(
+        shinydashboard::box(
+          width = 12,
+          solidHeader = TRUE,
+          DT::dataTableOutput(ns("config_ui"), height = "calc(100vh - 50px - 30px - 50px)")
+        )
+      )
     )
   )
 }
@@ -52,8 +60,7 @@
 ) {
   shiny::moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
-    # MARK: Global Constants/Mutable 
+    # MARK: Global Constants/Mutable
     # Global Constants/Mutable -----
     pkg_resources <- system.file(package = "StreamFind", dir = "extdata")
     volumes <- .app_util_get_volumes()
@@ -189,41 +196,6 @@
       }
     })
 
-    # MARK: out Save Engine
-    # out Save engine -----
-    output$save_engine <- shiny::renderUI({
-      if ("unsaved_changes" %in% names(reactive_warnings())) {
-        shinyFiles::shinyFileSave(
-          input,
-          "save_engine_button_file",
-          roots = reactive_volumes(),
-          defaultRoot = "wd",
-          session = session
-        )
-        filename <- reactive_engine_save_file()
-        if (is.na(filename)) {
-          filename <- reactive_engine_type()
-        }
-        if (grepl(".sqlite", filename)) {
-          extensions <- list(sqlite = "sqlite", rds = "rds")
-        } else {
-          extensions <- list(rds = "rds", sqlite = "sqlite")
-        }
-        htmltools::div(
-          style = "margin-bottom: 20px;",
-          shinyFiles::shinySaveButton(
-            ns("save_engine_button_file"),
-            label = "Save Engine",
-            title = "Save the engine as .sqlite or .rds",
-            class = "btn-success",
-            filename = gsub(".sqlite|.rds", "", basename(filename)),
-            filetype = extensions,
-            style = "width: 200px;"
-          )
-        )
-      }
-    })
-
     # MARK: obs Save Engine
     # obs Save Engine -----
     shiny::observeEvent(input$save_engine_button, {
@@ -281,22 +253,6 @@
       }
     })
 
-    # MARK: out Reset Engine
-    # out Reset engine -----
-    output$reset_engine <- shiny::renderUI({
-      if ("unsaved_changes" %in% names(reactive_warnings())) {
-        htmltools::div(
-          style = "margin-bottom: 20px;",
-          shiny::actionButton(
-            ns("reset_engine_button"),
-            label = "Discard Changes",
-            width = 200,
-            class = "btn-danger"
-          )
-        )
-      }
-    })
-
     # MARK: obs Reset Engine
     # obs Reset Engine -----
     shiny::observeEvent(input$reset_engine_button, {
@@ -341,9 +297,12 @@
     # MARK: Project
     # Project -----
 
-    # MARK: out Working Directory
-    ## out Working Directory -----
-    output$wdir <- shiny::renderUI({
+    # MARK: out Project Control
+    ## out Project Control -----
+    output$project_control_ui <- shiny::renderUI({
+      engine_type <- reactive_engine_type()
+      engine_save_file <- reactive_engine_save_file()
+      has_unsaved_changes <- "unsaved_changes" %in% names(reactive_warnings())
       shinyFiles::shinyDirChoose(
         input,
         "set_wdir_button",
@@ -351,18 +310,91 @@
         defaultRoot = "wd",
         session = session
       )
-      shinydashboard::box(
-        width = 12,
-        title = "Working Directory",
-        solidHeader = TRUE,
+      if (has_unsaved_changes) {
+        shinyFiles::shinyFileSave(
+          input,
+          "save_engine_button_file",
+          roots = reactive_volumes(),
+          defaultRoot = "wd",
+          session = session
+        )
+      }
+      left_content <- list(
+        htmltools::div(
+          style = "margin-bottom: 5px;",
+          htmltools::strong("Working Directory: "),
+          htmltools::span(reactive_wdir(), style = "font-size: 12px; color: #666;")
+        ),
+        htmltools::div(
+          style = "margin-bottom: 5px;",
+          htmltools::strong("Engine Type: "),
+          htmltools::span(engine_type, style = "color: #337ab7;")
+        )
+      )
+      if (!is.na(engine_save_file)) {
+        left_content <- append(left_content, list(
+          htmltools::div(
+            style = "margin-bottom: 5px;",
+            htmltools::strong("Engine File: "),
+            htmltools::span(engine_save_file, style = "font-size: 12px; color: #666;")
+          )
+        ))
+      }
+      right_buttons <- list(
         shinyFiles::shinyDirButton(
           ns("set_wdir_button"),
-          "Change Working Directory",
+          "Change Directory",
           "Select Working Directory",
           "wd",
-          style = "width: 200px;"
-        ),
-        htmltools::HTML(paste("  ", reactive_wdir()))
+          style = "width: 150px; margin-bottom: 5px;",
+          class = "btn-light"
+        )
+      )
+      if (has_unsaved_changes) {
+        filename <- if (is.na(engine_save_file)) engine_type else engine_save_file
+        extensions <- if (grepl(".sqlite", filename)) {
+          list(sqlite = "sqlite", rds = "rds")
+        } else {
+          list(rds = "rds", sqlite = "sqlite")
+        }
+        save_button <- shinyFiles::shinySaveButton(
+          ns("save_engine_button_file"),
+          label = "Save Engine",
+          title = "Save the engine as .sqlite or .rds",
+          class = "btn-warning",
+          filename = gsub(".sqlite|.rds", "", basename(filename)),
+          filetype = extensions,
+          style = "width: 150px; margin-bottom: 5px;"
+        )
+        reset_button <- shiny::actionButton(
+          ns("reset_engine_button"),
+          label = "Discard Changes",
+          width = 150,
+          class = "btn-danger",
+          style = "margin-bottom: 5px;"
+        )
+        right_buttons <- append(right_buttons, list(
+          save_button,
+          reset_button
+        ))
+      }
+      shinydashboard::box(
+        width = 12,
+        height = "200px",
+        title = "Project Control",
+        solidHeader = TRUE,
+        style = "margin-bottom: 10px;",
+        htmltools::div(
+          style = "display: flex; justify-content: space-between; align-items: flex-start; height: 100%; padding: 5px;",
+          htmltools::div(
+            style = "flex: 1; padding-right: 15px;",
+            htmltools::tagList(left_content)
+          ),
+          htmltools::div(
+            style = "flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 5px;",
+            htmltools::tagList(right_buttons)
+          )
+        )
       )
     })
 
@@ -382,22 +414,6 @@
       }
     })
 
-    # MARK: out Engine Save File
-    ## out Engine Save File -----
-    output$engine_save_file_ui <- shiny::renderUI({
-      if (!is.na(reactive_engine_save_file())) {
-        shinydashboard::box(
-          width = 12,
-          title = "Engine Save File",
-          solidHeader = TRUE,
-          htmltools::div(
-            style = "margin-bottom: 20px;",
-            shiny::p(reactive_engine_save_file())
-          )
-        )
-      }
-    })
-
     # MARK: Metadata
     # Metadata -----
     output$metadata_ui <- shiny::renderUI({
@@ -408,6 +424,10 @@
         reactive_config
       )
       .mod_WorkflowAssembler_Metadata_UI("metadata", ns)
+      # htmltools::div(
+      #   style = "height: calc(100vh - 50px - 200px - 65px); overflow-y: auto; padding: 0px; box-sizing: border-box;",
+      #   .mod_WorkflowAssembler_Metadata_UI("metadata", ns)
+      # )
     })
 
     # MARK: Analyses
@@ -568,11 +588,14 @@
             )
           }
         }
-        shiny::div(
-          class = "results-wrapper",
-          do.call(
-            shiny::tabsetPanel,
-            c(list(type = "tabs", id = "results_tabs"), tab_list)
+        do.call(
+          shinydashboard::tabBox,
+          c(
+            list(
+              width = 12,
+              height = "calc(100vh - 50px - 30px)"
+            ),
+            tab_list
           )
         )
       } else {
@@ -592,7 +615,11 @@
           filter = "top",
           selection = list(mode = "single", selected = 1, target = "row"),
           options = list(
-            pageLength = 15,
+            dom = "ft",
+            paging = FALSE,
+            scrollX = TRUE,
+            scrollY = "calc(100vh - 50px - 30px - 20px - 170px)",
+            scrollCollapse = TRUE,
             columnDefs = list(
               list(
                 targets = which(names(audit_trail) == "value"),
@@ -624,7 +651,13 @@
         as.data.table(config),
         filter = "top",
         selection = list(mode = "single", selected = 1, target = "row"),
-        options = list(pageLength = 15),
+        options = list(
+          dom = "ft",
+          paging = FALSE,
+          scrollX = TRUE,
+          scrollY = "calc(100vh - 50px - 30px - 20px - 170px)",
+          scrollCollapse = TRUE
+        ),
         escape = FALSE,
         editable = list(target = "cell", columns = c("value"))
       )

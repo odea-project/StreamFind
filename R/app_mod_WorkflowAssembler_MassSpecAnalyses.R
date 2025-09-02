@@ -1,93 +1,131 @@
 #' @noRd
 .mod_WorkflowAssembler_Analyses_UI.MassSpecAnalyses <- function(x, id, ns) {
   ns2 <- shiny::NS(id)
-  shiny::column(
-    12,
-    shinydashboard::box(
-      title = NULL,
-      width = 12,
-      solidHeader = TRUE,
-      shiny::column(
-        width = 12,
-        shiny::uiOutput(ns(ns2("analyses_overview_buttons")))
-      ),
-      shiny::uiOutput(ns(ns2("notes_analyses"))),
-      shiny::column(12, DT::dataTableOutput(ns(ns2("AnalysesTable"))))
-    )
+  shinydashboard::box(
+    title = NULL,
+    width = 12,
+    solidHeader = TRUE,
+    shiny::column(12, shiny::uiOutput(ns(ns2("analyses_overview_buttons")))),
+    shiny::column(12, shiny::uiOutput(ns(ns2("notes_analyses")))),
+    shiny::column(12, DT::dataTableOutput(ns(ns2("AnalysesTable"))), height = "calc(100vh - 50px - 30px - 20px - 54px - 96px)")
   )
 }
 
 #' @noRd
 .mod_WorkflowAssembler_Analyses_Server.MassSpecAnalyses <- function(
-  x,
-  id,
-  ns,
-  reactive_analyses,
-  reactive_warnings,
-  reactive_volumes,
-  reactive_config
-) {
+    x,
+    id,
+    ns,
+    reactive_analyses,
+    reactive_warnings,
+    reactive_volumes,
+    reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
-
-    .wrap_analyses_ui_in_divs <- function(elements) {
-      lapply(elements, function(z) {
-        htmltools::div(
-          style = sprintf(
-            "min-width: %dpx; height: %dpx; display: flex; align-items: center;",
-            40,
-            40
-          ),
-          z
-        )
-      })
-    }
 
     # out Analyses Table -----
     output$AnalysesTable <- DT::renderDT(
       {
         analyses <- reactive_analyses()
         analyses_info <- info(analyses)
-        if (length(analyses) == 0) {
-          analyses_info <- data.frame()
-          edits <- FALSE
-        } else if ("replicate" %in% colnames(analyses_info)) {
-          edits <- list(
-            target = "column",
-            disable = list(
-              columns = which(
-                !colnames(analyses_info) %in% c("replicate", "blank")
-              )
-            )
-          )
+        if (nrow(analyses_info) > 0) {
+          analyses_info$Delete <- paste0('<button class="btn btn-danger btn-sm delete-btn" data-row="', seq_len(nrow(analyses_info)), '"><i class="fa fa-trash"></i></button>')
         } else {
-          analyses_info <- data.frame()
-          edits <- FALSE
+          analyses_info$Delete <- character(0)
         }
+        blocked_columns <- seq_len(ncol(analyses_info)) - 1
+        blocked_columns <- blocked_columns[!colnames(analyses_info) %in% c("replicate", "blank")]
+
+        # if (length(analyses) == 0) {
+        #   analyses_info <- data.frame()
+        #   edits <- FALSE
+        # } else if ("replicate" %in% colnames(analyses_info)) {
+        #   edits <- list(
+        #     target = "column",
+        #     disable = list(
+        #       columns = which(
+        #         !colnames(analyses_info) %in% c("replicate", "blank")
+        #       )
+        #     )
+        #   )
+        # } else {
+        #   analyses_info <- data.frame()
+        #   edits <- FALSE
+        # }
         DT::datatable(
           analyses_info,
-          selection = list(
-            mode = "multiple",
-            selected = NULL,
+          rownames = FALSE,
+          editable = list(
             target = "cell",
-            selectable = matrix(
-              c(seq_len(nrow(analyses_info)), rep(1, nrow(analyses_info))),
-              ncol = 2
+            disable = list(
+              columns = blocked_columns
             )
           ),
-          editable = edits,
-          extensions = c("Scroller", "Buttons"),
+          selection = "none",
+          escape = FALSE, # Allow HTML in the Delete column
+          callback = DT::JS(paste0("
+            table.on('click', '.delete-btn', function() {
+              var row = $(this).data('row');
+              var timestamp = Date.now();
+              Shiny.setInputValue('", session$ns("delete_row"), "', row + '_' + timestamp, {priority: 'event'});
+            });
+          ")),
+          extensions = c("Buttons"),
           options = list(
-            pageLength = 10,
-            deferRender = TRUE,
-            scrollY = 700,
-            scroller = TRUE,
-            dom = "Bfrtip",
-            buttons = c("copy", "csv", "pdf", "print")
-          )
+            searching = TRUE,
+            processing = TRUE,
+            scrollY = "calc(100vh - 50px - 30px - 20px - 54px - 96px - 100px)",
+            scrollCollapse = TRUE,
+            paging = FALSE,
+            dom = "Bfrt",
+            buttons = c("copy", "csv", "pdf", "print"),
+            orderable = FALSE,
+            columnDefs = list(
+              list(orderable = FALSE, targets = seq_len(ncol(analyses_info)) - 1), # Make Delete column non-sortable
+              list(width = "60px", targets = ncol(analyses_info) - 1) # Set width for Delete column
+            )
+          ),
+          class = "cell-border stripe"
         )
+        # DT::datatable(
+        #   analyses_info,
+        #   selection = list(
+        #     mode = "multiple",
+        #     selected = NULL,
+        #     target = "cell",
+        #     selectable = matrix(
+        #       c(seq_len(nrow(analyses_info)), rep(1, nrow(analyses_info))),
+        #       ncol = 2
+        #     )
+        #   ),
+        #   editable = edits,
+        #   extensions = c("Scroller", "Buttons"),
+        #   options = list(
+        #     pageLength = 10,
+        #     deferRender = TRUE,
+        #     scrollY = 700,
+        #     scroller = TRUE,
+        #     dom = "Bfrtip",
+        #     buttons = c("copy", "csv", "pdf", "print")
+        #   )
+        # )
       },
       server = TRUE
+    )
+
+    # Delete row ----
+    observeEvent(input$delete_row,
+      {
+        delete_info <- input$delete_row
+        row_to_delete <- as.numeric(strsplit(delete_info, "_")[[1]][1])
+        analyses <- reactive_analyses()
+        analyses_info <- info(analyses)
+        if (!is.na(row_to_delete) && row_to_delete > 0 && row_to_delete <= nrow(analyses_info)) {
+          analyses <- analyses[-row_to_delete]
+          reactive_analyses(analyses)
+        }
+      },
+      ignoreInit = TRUE
     )
 
     # event Analyses Table Editing -----
@@ -96,16 +134,26 @@
       analyses_info <- info(analyses)
       analyses_info <- DT::editData(
         info(analyses),
-        input$AnalysesTable_cell_edit
+        input$AnalysesTable_cell_edit,
+        rownames = FALSE
       )
+      analyses_info$blank[analyses_info$blank %in% ""] <- NA_character_
       analyses <- set_replicate_names(analyses, analyses_info$replicate)
-      if (any(!(analyses_info$blank %in% analyses_info$replicate))) {
-        shiny::showNotification(
-          "Blanks must be in the replicate column!",
-          duration = 10,
-          type = "warning"
+      if (any(!(analyses_info$blank %in% analyses_info$replicate) & !is.na(analyses_info$blank))) {
+        reactive_warnings(
+          .app_util_add_notifications(
+            reactive_warnings(),
+            "blank_names_not_in_replicate",
+            "Blank names must be in the replicate column!"
+          )
         )
       } else {
+        reactive_warnings(
+          .app_util_remove_notifications(
+            reactive_warnings(),
+            "blank_names_not_in_replicate"
+          )
+        )
         analyses <- set_blank_names(analyses, analyses_info$blank)
       }
       reactive_analyses(analyses)
@@ -145,11 +193,6 @@
             ),
             multiple = TRUE,
             style = "width: 200px;"
-          ),
-          shiny::actionButton(
-            ns(ns2("remove_selected_analyses")),
-            label = "Delete Selected Analyses",
-            width = 200
           ),
           shiny::actionButton(
             ns(ns2("remove_all_analyses")),
@@ -234,21 +277,6 @@
       }
     })
 
-    # event Remove analyses -----
-    shiny::observeEvent(input$remove_selected_analyses, {
-      analyses <- reactive_analyses()
-      if (length(input$AnalysesTable_cells_selected) == 0) {
-        shiny::showNotification(
-          "No analyses selected!",
-          duration = 10,
-          type = "warning"
-        )
-        return()
-      }
-      analyses <- remove(analyses, input$AnalysesTable_cells_selected[, 1])
-      reactive_analyses(analyses)
-    })
-
     # event Remove all analyses -----
     shiny::observeEvent(input$remove_all_analyses, {
       analyses <- reactive_analyses()
@@ -267,32 +295,46 @@
     # out Notes Analyses -----
     output$notes_analyses <- shiny::renderUI({
       shiny::div(
-        style = "margin-bottom: 25px;margin-top: 25px;",
+        style = "margin-bottom: 20px;margin-top: 0px;",
         shiny::tagList(
           shiny::tags$ul(
+            style = "list-style: none; padding-left: 0;", # Remove default bullets
             shiny::tags$li(
-              "Add analyses by selecting the 'Add Analyses' button."
-            ),
-            shiny::tags$li(
+              style = "margin-bottom: 8px;",
+              shiny::tags$i(class = "fa fa-info-circle", style = "margin-right: 10px; color: #666;"),
               sprintf(
                 "Analyses can be added in the following formats: %s.",
                 paste(reactive_analyses()$formats, collapse = ", ")
               )
             ),
             shiny::tags$li(
-              "Remove analyses by selecting the analysis cells in the table and clicking the 'Delete Selected Analyses' button."
+              style = "margin-bottom: 8px;",
+              shiny::tags$i(class = "fa fa-info-circle", style = "margin-right: 10px; color: #666;"),
+              "Replicate and blank names can be edited in the table by double clicking the cell."
             ),
             shiny::tags$li(
-              "Remove all analyses by clicking the 'Delete All Analyses' button."
-            ),
-            shiny::tags$li(
-              "Replicate and blank names can be edited in the table by double clicking the cell. Changes are saved by CTRL + ENTER."
-            ),
-            shiny::tags$li(
+              style = "margin-bottom: 8px;",
+              shiny::tags$i(class = "fa fa-info-circle", style = "margin-right: 10px; color: #666;"),
               "Note that blank names must be in the replicate column otherwise are not considered as blanks."
             )
           )
         )
+        # shiny::tagList(
+        #   shiny::tags$ul(
+        #     shiny::tags$li(
+        #       sprintf(
+        #         "Analyses can be added in the following formats: %s.",
+        #         paste(reactive_analyses()$formats, collapse = ", ")
+        #       )
+        #     ),
+        #     shiny::tags$li(
+        #       "Replicate and blank names can be edited in the table by double clicking the cell."
+        #     ),
+        #     shiny::tags$li(
+        #       "Note that blank names must be in the replicate column otherwise are not considered as blanks."
+        #     )
+        #   )
+        # )
       )
     })
   })

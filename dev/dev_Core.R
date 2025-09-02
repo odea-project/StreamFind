@@ -144,6 +144,11 @@ db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
+engine <- MassSpecEngine$new(
+  metadata = Metadata(list(name = "Ricardo")),
+  analyses = ms_files,
+)
+
 engine$run(MassSpecMethod_FindFeatures_openms())
 
 engine$run(
@@ -161,7 +166,9 @@ engine$run(MassSpecMethod_GroupFeatures_openms())
 
 engine$run(MassSpecMethod_AnnotateFeatures_StreamFind())
 
+engine$save("engine.rds")
 
+run_app(file = "engine.rds")
 
 
 
@@ -190,7 +197,9 @@ class(engine)
 
 # App -----
 library(StreamFind)
-ms_files <- StreamFindData::get_ms_file_paths()[1:3]
+complete_files_path <- "C:/Users/apoli/Documents/example_files"
+ms_files <- list.files(complete_files_path, pattern = "mzML$", full.names = TRUE, recursive = FALSE)[1:3]
+#ms_files <- StreamFindData::get_ms_file_paths()[1:3]
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
 db <- db[, cols, with = FALSE]
@@ -205,7 +214,7 @@ engine <- MassSpecEngine$new(
 engine$save("engine.rds")
 show(engine$Metadata)
 engine$run_app()
-
+run_app(file = "engine.rds")
 
 
 # RamanAnalyses -----
@@ -220,6 +229,12 @@ b <- RamanEngine$new(metadata = list(name = "test engine for Raman analysis"), a
 b$save("raman.rds")
 show(b$Metadata)
 b$run_app()
+run_app(file = "raman.rds")
+
+get_spectra(
+  b$Analyses,
+  analyses = 1
+)
 
 
 # StatisticAnalyses ------

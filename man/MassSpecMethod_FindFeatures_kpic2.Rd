@@ -25,8 +25,8 @@ MassSpecMethod_FindFeatures_kpic2(
 
 \item{min_snr}{Minimum signal to noise ratio.}
 
-\item{kmeans}{If \code{TRUE}, \link[KPIC]{getPIC.kmeans} is used to obtain
-PICs (i.e., features). If \code{FALSE}, \link[KPIC]{getPIC} is used.}
+\item{kmeans}{If \code{TRUE}, \code{getPIC.kmeans} is used to obtain
+PICs (i.e., features). If \code{FALSE}, \code{getPIC} is used.}
 
 \item{alpha}{If \code{kmeans} is \code{TRUE}, alpha is the parameter of forecasting.
 If \code{kmeans} is \code{FALSE}, alpha is not used.}
@@ -40,7 +40,7 @@ using the package \href{https://github.com/hcji/KPIC2}{KPIC}. The function uses 
 \pkg{patRoon} in thebackground.
 }
 \details{
-See the \link[patRoon]{findFeaturesKPIC2} function from the \pkg{patRoon} package for
+See the \code{findFeaturesKPIC2} function from the \pkg{patRoon} package for
 more information and requirements.
 }
 \references{

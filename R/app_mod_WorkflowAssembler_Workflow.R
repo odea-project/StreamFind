@@ -51,7 +51,7 @@
       .workflow-item {
         display: flex;
         align-items: center;
-        margin-bottom: 10px;
+        margin-bottom: 5px;
       }
       .workflow-item span {
         flex-grow: 1;
@@ -62,8 +62,8 @@
       .workflow-box {
         background-color: white;
         border-radius: 4px;
-        padding: 15px;
-        margin-bottom: 20px;
+        padding: 10px;
+        margin-bottom: 10px;
       }
       .method-details dt {
         font-weight: bold;
@@ -280,13 +280,14 @@
 
       shinydashboard::box(
         width = 12,
+        height = "calc(100vh - 50px - 30px - 20px)",
         title = NULL,
         solidHeader = TRUE,
         class = "workflow-box",
         shiny::column(
           width = 12,
           htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 20px;",
+            style = "display: flex; align-items: center; margin-bottom: 5px;",
             htmltools::div(
               style = "margin-right: 10px;",
               shiny::uiOutput(ns(ns2("load_workflow_ui")))
@@ -294,14 +295,13 @@
             htmltools::div(
               style = "margin-right: 10px;",
               shiny::uiOutput(ns(ns2("clear_workflow_ui")))
-            ),
-            htmltools::div(style = "margin-bottom: 20px;")
+            )
           )
         ),
         shiny::column(
           width = 12,
           htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 20px;",
+            style = "display: flex; align-items: center; margin-bottom: 5px;",
             htmltools::div(
               style = "margin-right: 10px;",
               shiny::uiOutput(ns(ns2("save_workflow_ui")))
@@ -309,23 +309,20 @@
             htmltools::div(
               style = "margin-right: 10px;",
               shiny::uiOutput(ns(ns2("discard_changes_ui")))
-            ),
-            htmltools::div(style = "margin-bottom: 20px;")
+            )
           )
         ),
         shiny::column(
           width = 12,
           htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 20px;",
+            style = "display: flex; align-items: center; margin-bottom: 5px;",
             htmltools::div(
               style = "margin-right: 10px;",
               shiny::uiOutput(ns(ns2("run_workflow_ui")))
-            ),
-            htmltools::div(style = "margin-bottom: 20px;")
+            )
           )
         ),
-        shiny::column(width = 12, htmltools::p(" ")),
-        shiny::column(width = 12, htmltools::p("Select Processing Method")),
+        shiny::column(width = 12, htmltools::p("Select Processing Method", style = "margin-bottom: 5px; margin-top: 5px;")),
         shiny::column(
           width = 12,
           shiny::selectInput(
@@ -338,20 +335,23 @@
         shiny::column(
           width = 12,
           htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 20px;",
+            style = "display: flex; align-items: center; margin-bottom: 5px;",
             shiny::actionButton(
               ns(ns2("add_workflow_step")),
               "Add Workflow Step"
             )
           )
         ),
-        shiny::column(width = 12, htmltools::h3("Workflow")),
+        shiny::column(width = 12, htmltools::h3("Workflow", style = "margin-bottom: 5px; margin-top: 5px;")),
         shiny::column(
           width = 12,
-          sortable::rank_list(
-            text = "Drag to order",
-            labels = labels,
-            input_id = ns(ns2("rank_workflow_names"))
+          htmltools::div(
+            style = "height: calc(100vh - 50px - 30px - 30px - 54px - 54px - 10px - 30px - 50px - 54px - 40px); overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0; margin: 0;",
+            sortable::rank_list(
+              text = "Drag to order",
+              labels = labels,
+              input_id = ns(ns2("rank_workflow_names"))
+            )
           )
         )
       )
@@ -748,67 +748,71 @@
 
       shinydashboard::box(
         width = 12,
+        height = "calc(100vh - 50px - 30px - 20px)",
         title = NULL,
         solidHeader = TRUE,
         class = "method-box",
-        shiny::tags$div(
-          class = "method-details",
-          shiny::h3(method_editor_title, style = "margin-bottom: 10px;"),
+        htmltools::div(
+          style = "height: calc(100vh - 50px - 30px - 10px - 40px); overflow-y: auto; padding: 10px;",
           shiny::tags$div(
-            shiny::tags$b("Software: "),
-            shiny::tags$span(settings$software),
-            shiny::tags$br(),
-            shiny::tags$b("Developer: "),
-            shiny::tags$span(settings$developer),
-            shiny::tags$br(),
-            shiny::tags$b("Contact: "),
-            shiny::tags$span(settings$contact),
-            shiny::tags$br(),
-            shiny::tags$b("Link: "),
-            shiny::tags$span(settings$link),
-            shiny::tags$br(),
-            shiny::tags$b("DOI: "),
-            shiny::tags$span(settings$doi)
-          ),
-          if (!is.null(help_url)) {
+            class = "method-details",
+            shiny::h3(method_editor_title, style = "margin-bottom: 10px;"),
             shiny::tags$div(
-              style = "margin-top: 5px;margin-bottom: 5px;",
-              shiny::tags$a(
-                href = help_url,
-                target = "_blank",
-                "View Online Reference Page",
-                style = "color: #3498DB; text-decoration: underline; cursor: pointer; font-size: 14px;"
+              shiny::tags$b("Software: "),
+              shiny::tags$span(settings$software),
+              shiny::tags$br(),
+              shiny::tags$b("Developer: "),
+              shiny::tags$span(settings$developer),
+              shiny::tags$br(),
+              shiny::tags$b("Contact: "),
+              shiny::tags$span(settings$contact),
+              shiny::tags$br(),
+              shiny::tags$b("Link: "),
+              shiny::tags$span(settings$link),
+              shiny::tags$br(),
+              shiny::tags$b("DOI: "),
+              shiny::tags$span(settings$doi)
+            ),
+            if (!is.null(help_url)) {
+              shiny::tags$div(
+                style = "margin-top: 5px;margin-bottom: 5px;",
+                shiny::tags$a(
+                  href = help_url,
+                  target = "_blank",
+                  "View Online Reference Page",
+                  style = "color: #3498DB; text-decoration: underline; cursor: pointer; font-size: 14px;"
+                )
               )
-            )
-          } else {
+            } else {
+              shiny::tags$div(
+                style = "margin-top: 5px;margin-bottom: 5px;",
+                "No help documentation available."
+              )
+            },
+            shiny::actionButton(
+              ns(ns2("open_help_modal")),
+              "Help",
+              style = "margin-top: 10px; margin-bottom: 10px"
+            ),
+            shiny::actionButton(
+              ns(ns2("update_method")),
+              "Update Parameters",
+              class = "btn-primary",
+              style = "color: white; margin-top: 10px; margin-bottom: 10px"
+            ),
+            shiny::actionButton(
+              ns(ns2("reset_method")),
+              "Reset Parameters",
+              class = "btn-primary",
+              style = "color: white; margin-top: 10px; margin-bottom: 10px"
+            ),
             shiny::tags$div(
-              style = "margin-top: 5px;margin-bottom: 5px;",
-              "No help documentation available."
-            )
-          },
-          shiny::actionButton(
-            ns(ns2("open_help_modal")),
-            "Help",
-            style = "margin-top: 10px; margin-bottom: 10px"
-          ),
-          shiny::actionButton(
-            ns(ns2("update_method")),
-            "Update Parameters",
-            class = "btn-primary",
-            style = "color: white; margin-top: 10px; margin-bottom: 10px"
-          ),
-          shiny::actionButton(
-            ns(ns2("reset_method")),
-            "Reset Parameters",
-            class = "btn-primary",
-            style = "color: white; margin-top: 10px; margin-bottom: 10px"
-          ),
-          shiny::tags$div(
-            class = "parameters-section",
-            shiny::tags$dl(
-              lapply(param_names, function(param) {
-                create_parameter_ui(ns2, param, settings$parameters[[param]])
-              })
+              class = "parameters-section",
+              shiny::tags$dl(
+                lapply(param_names, function(param) {
+                  create_parameter_ui(ns2, param, settings$parameters[[param]])
+                })
+              )
             )
           )
         )

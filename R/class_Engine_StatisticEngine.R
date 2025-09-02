@@ -102,8 +102,7 @@ StatisticEngine <- R6::R6Class("StatisticEngine",
     ## initialize -----
     #' @description Creates an R6 class *StatisticEngine*. Child of *CoreEngine* R6 class.
     #'
-    #' @param analyses A `StatisticAnalyses` S7 class object or a `character vector` with full file path to `.csv` file with variable names as first row and analyses
-    #' names as first column or a `data.frame` or `matrix` object, where the row names are used as analyses names and the column names are used as variable names.
+    #' @param analyses A `StatisticAnalyses` class object or a `character vector` with full file path to `.csv` file with variable names as first row and analyses names as first column or a `data.frame` or `matrix` object, where the row names are used as analyses names and the column names are used as variable names.
     initialize = function(metadata = NULL,
                           workflow = NULL,
                           analyses = NULL) {

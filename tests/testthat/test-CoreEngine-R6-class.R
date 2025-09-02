@@ -1,8 +1,8 @@
 library(StreamFind)
 library(testthat)
 
-# CoreEngine tests -----
+# Engine tests -----
 
-test_that("test empty CoreEngine", {
-  expect_equal(class(CoreEngine$new()), c("CoreEngine", "R6"))
+test_that("test empty Engine", {
+  expect_equal(class(Engine$new()), c("Engine", "R6"))
 })
