@@ -116,6 +116,8 @@ DT::datatable(
 
 ```{r available-chroms}
 chroms <- unique(ms$Analyses$analyses[[1]]$chromatograms_headers$id)
+
+chroms
 ```
 
 The chromatogram of interest is the `r chroms[2]`, which is the second, and we know that our analyte elutes between 250 and 400 seconds.

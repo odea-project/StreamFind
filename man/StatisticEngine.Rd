@@ -99,8 +99,7 @@ with a full path to a file.}
 \item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
 with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
-\item{\code{analyses}}{A \code{StatisticAnalyses} S7 class object or a \verb{character vector} with full file path to \code{.csv} file with variable names as first row and analyses
-names as first column or a \code{data.frame} or \code{matrix} object, where the row names are used as analyses names and the column names are used as variable names.}
+\item{\code{analyses}}{A \code{StatisticAnalyses} class object or a \verb{character vector} with full file path to \code{.csv} file with variable names as first row and analyses names as first column or a \code{data.frame} or \code{matrix} object, where the row names are used as analyses names and the column names are used as variable names.}
 }
 \if{html}{\out{</div>}}
 }
