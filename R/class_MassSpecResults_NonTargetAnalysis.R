@@ -18,10 +18,9 @@
 #' @export
 #'
 MassSpecResults_NonTargetAnalysis <- function(
-  info = data.table::data.table(),
-  headers = list(),
-  features = list()
-) {
+    info = data.table::data.table(),
+    headers = list(),
+    features = list()) {
   x <- structure(
     list(
       type = "MassSpec",
@@ -45,7 +44,7 @@ MassSpecResults_NonTargetAnalysis <- function(
 #' @template arg-nts-x
 #' @export
 #'
-validate_object.MassSpecResults_NonTargetAnalysis = function(x) {
+validate_object.MassSpecResults_NonTargetAnalysis <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_true(x$name == "MassSpecResults_NonTargetAnalysis")
   checkmate::assert_true(x$software == "StreamFind")
@@ -133,10 +132,10 @@ show.MassSpecResults_NonTargetAnalysis <- function(x) {
 #' @describeIn MassSpecResults_NonTargetAnalysis Converts a list object to a `MassSpecResults_NonTargetAnalysis` object if it is compatible.
 #' @template arg-value
 #' @export
-#' 
+#'
 as.MassSpecResults_NonTargetAnalysis <- function(value) {
   if (is(value, "MassSpecResults_NonTargetAnalysis")) {
-    if(is.null(validate_object(value))) {
+    if (is.null(validate_object(value))) {
       return(value)
     } else {
       stop("Invalid MassSpecResults_NonTargetAnalysis object.")
@@ -159,7 +158,9 @@ as.MassSpecResults_NonTargetAnalysis <- function(value) {
       checkmate::assert_list(value$features)
       value$features <- lapply(value$features, function(z) {
         z <- data.table::as.data.table(z)
-        if (nrow(z) == 0) return(z)
+        if (nrow(z) == 0) {
+          return(z)
+        }
         checkmate::assert_true(
           all(
             c(
@@ -194,7 +195,7 @@ as.MassSpecResults_NonTargetAnalysis <- function(value) {
         features = value$features
       )
       if (is.null(validate_object(nts))) {
-        return(nts)
+        nts
       } else {
         stop("Invalid MassSpecResults_NonTargetAnalysis object.")
       }
@@ -312,10 +313,9 @@ names.MassSpecResults_NonTargetAnalysis <- function(x) {
 #' @export
 #'
 get_features_count.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  filtered = FALSE
-) {
+    x,
+    analyses = NULL,
+    filtered = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
   info <- data.table::data.table()
   if (length(x$features) > 0) {
@@ -323,7 +323,9 @@ get_features_count.MassSpecResults_NonTargetAnalysis <- function(
       "analysis" = x$info$analysis,
       "replicate" = x$info$replicate,
       "features" = vapply(x$features, function(z, filtered) {
-        if (filtered) return(nrow(z))
+        if (filtered) {
+          return(nrow(z))
+        }
         return(nrow(z[!z$filtered, ]))
       }, integer(1), filtered = filtered),
       "filtered" = vapply(
@@ -347,7 +349,8 @@ get_features_count.MassSpecResults_NonTargetAnalysis <- function(
             return(length(zg))
           }
         },
-        integer(1), filtered = filtered
+        integer(1),
+        filtered = filtered
       )
     )
     info <- info[info$analysis %in% analyses, ]
@@ -368,15 +371,14 @@ get_features_count.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features_count.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  filtered = FALSE,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "analyses",
-  showLegend = TRUE,
-  showHoverText = TRUE
-) {
+    x,
+    analyses = NULL,
+    filtered = FALSE,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "analyses",
+    showLegend = TRUE,
+    showHoverText = TRUE) {
   info <- get_features_count(x, analyses, filtered)
 
   if ("replicates" %in% colorBy) {
@@ -468,18 +470,17 @@ plot_features_count.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_features.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE) {
   analyses <- .check_analyses_argument(x, analyses)
   if (is.null(analyses)) {
     return(data.table::data.table())
@@ -684,27 +685,26 @@ get_features.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 map_features.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  neutral_mass = TRUE,
-  filtered = FALSE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "replicates+targets",
-  showLegend = TRUE,
-  interactive = TRUE,
-  renderEngine = "webgl"
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    neutral_mass = TRUE,
+    filtered = FALSE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "replicates+targets",
+    showLegend = TRUE,
+    interactive = TRUE,
+    renderEngine = "webgl") {
   fts <- get_features(
     x,
     analyses,
@@ -896,25 +896,24 @@ map_features.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 map_features_intensity.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE,
-  correctIntensity = FALSE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "replicates+targets",
-  renderEngine = "webgl"
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE,
+    correctIntensity = FALSE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "replicates+targets",
+    renderEngine = "webgl") {
   fts <- get_features(
     x,
     analyses,
@@ -1002,21 +1001,20 @@ map_features_intensity.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_features_eic.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtExpand = 120,
-  mzExpand = 0.001,
-  filtered = FALSE,
-  useLoadedData = TRUE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtExpand = 120,
+    mzExpand = 0.001,
+    filtered = FALSE,
+    useLoadedData = TRUE) {
   fts <- get_features(
     x,
     analyses,
@@ -1172,28 +1170,27 @@ get_features_eic.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtExpand = 120,
-  mzExpand = 0.001,
-  useLoadedData = TRUE,
-  filtered = FALSE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  interactive = TRUE,
-  renderEngine = "webgl"
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtExpand = 120,
+    mzExpand = 0.001,
+    useLoadedData = TRUE,
+    filtered = FALSE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "targets",
+    interactive = TRUE,
+    renderEngine = "webgl") {
   fts <- get_features(
     x,
     analyses,
@@ -1419,25 +1416,24 @@ plot_features.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_features_ms1.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtWindow = c(-2, 2),
-  mzWindow = c(-5, 100),
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 1000,
-  normalized = TRUE,
-  filtered = FALSE,
-  useLoadedData = TRUE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtWindow = c(-2, 2),
+    mzWindow = c(-5, 100),
+    mzClust = 0.003,
+    presence = 0.8,
+    minIntensity = 1000,
+    normalized = TRUE,
+    filtered = FALSE,
+    useLoadedData = TRUE) {
   fts <- get_features(
     x,
     analyses,
@@ -1575,32 +1571,31 @@ get_features_ms1.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features_ms1.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtWindow = c(-2, 2),
-  mzWindow = c(-5, 100),
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 1000,
-  normalized = TRUE,
-  filtered = FALSE,
-  useLoadedData = TRUE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  showText = FALSE,
-  interactive = TRUE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtWindow = c(-2, 2),
+    mzWindow = c(-5, 100),
+    mzClust = 0.003,
+    presence = 0.8,
+    minIntensity = 1000,
+    normalized = TRUE,
+    filtered = FALSE,
+    useLoadedData = TRUE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "targets",
+    showText = FALSE,
+    interactive = TRUE) {
   ms1 <- get_features_ms1(
     x,
     analyses,
@@ -1758,24 +1753,23 @@ plot_features_ms1.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_features_ms2.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  isolationWindow = 1.3,
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 0,
-  normalized = TRUE,
-  filtered = FALSE,
-  useLoadedData = TRUE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    isolationWindow = 1.3,
+    mzClust = 0.003,
+    presence = 0.8,
+    minIntensity = 0,
+    normalized = TRUE,
+    filtered = FALSE,
+    useLoadedData = TRUE) {
   fts <- get_features(
     x,
     analyses,
@@ -1911,31 +1905,30 @@ get_features_ms2.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features_ms2.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  isolationWindow = 1.3,
-  mzClust = 0.005,
-  presence = 0.8,
-  minIntensity = 0,
-  normalized = TRUE,
-  filtered = FALSE,
-  useLoadedData = TRUE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  showText = TRUE,
-  interactive = TRUE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    isolationWindow = 1.3,
+    mzClust = 0.005,
+    presence = 0.8,
+    minIntensity = 0,
+    normalized = TRUE,
+    filtered = FALSE,
+    useLoadedData = TRUE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "targets",
+    showText = TRUE,
+    interactive = TRUE) {
   ms2 <- get_features_ms2(
     x,
     analyses,
@@ -2102,22 +2095,21 @@ plot_features_ms2.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_groups.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE,
-  intensities = TRUE,
-  average = FALSE,
-  sdValues = FALSE,
-  metadata = FALSE,
-  correctIntensity = FALSE
-) {
+    x,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE,
+    intensities = TRUE,
+    average = FALSE,
+    sdValues = FALSE,
+    metadata = FALSE,
+    correctIntensity = FALSE) {
   if (length(x$features) == 0) {
     return(data.table::data.table())
   }
@@ -2176,8 +2168,8 @@ get_groups.MassSpecResults_NonTargetAnalysis <- function(
           value.var = "sd"
         )
         fts_sd[is.na(fts_sd)] <- 0
-        #tbl_rpls <- table(rpls)
-        #fts_n$n <- tbl_rpls[fts_n$analysis]
+        # tbl_rpls <- table(rpls)
+        # fts_n$n <- tbl_rpls[fts_n$analysis]
         fts_n$intensity <- NULL
         fts_n$sd <- NULL
         fts_n$analysis <- paste(fts_n$analysis, "_n", sep = "")
@@ -2346,27 +2338,26 @@ get_groups.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_groups.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtExpand = 15,
-  mzExpand = 0.001,
-  filtered = FALSE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  interactive = TRUE,
-  renderEngine = "webgl"
-) {
+    x,
+    analyses = NULL,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtExpand = 15,
+    mzExpand = 0.001,
+    filtered = FALSE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "targets",
+    interactive = TRUE,
+    renderEngine = "webgl") {
   fts <- get_features(
     x,
     analyses,
@@ -2426,26 +2417,25 @@ plot_groups.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_groups_overview.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtExpand = 120,
-  mzExpand = 0.005,
-  useLoadedData = TRUE,
-  correctIntensity = TRUE,
-  filtered = FALSE,
-  legendNames = NULL,
-  title = NULL,
-  heights = c(0.35, 0.5, 0.15),
-  renderEngine = "webgl"
-) {
+    x,
+    analyses = NULL,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtExpand = 120,
+    mzExpand = 0.005,
+    useLoadedData = TRUE,
+    correctIntensity = TRUE,
+    filtered = FALSE,
+    legendNames = NULL,
+    title = NULL,
+    heights = c(0.35, 0.5, 0.15),
+    renderEngine = "webgl") {
   fts <- get_features(
     x,
     analyses,
@@ -2812,26 +2802,25 @@ plot_groups_overview.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_groups_profile.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE,
-  correctIntensity = TRUE,
-  averaged = FALSE,
-  normalized = TRUE,
-  legendNames = NULL,
-  yLab = NULL,
-  title = NULL,
-  showLegend = TRUE,
-  renderEngine = "webgl"
-) {
+    x,
+    analyses = NULL,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE,
+    correctIntensity = TRUE,
+    averaged = FALSE,
+    normalized = TRUE,
+    legendNames = NULL,
+    yLab = NULL,
+    title = NULL,
+    showLegend = TRUE,
+    renderEngine = "webgl") {
   fts <- get_features(
     x,
     analyses,
@@ -3104,29 +3093,28 @@ plot_groups_profile.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtWindow = c(-2, 2),
-  mzWindow = c(-5, 90),
-  mzClustFeatures = 0.003,
-  presenceFeatures = 0.8,
-  minIntensityFeatures = 1000,
-  useLoadedData = TRUE,
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 1000,
-  top = 25,
-  normalized = TRUE,
-  groupBy = "groups",
-  filtered = FALSE
-) {
+    x,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtWindow = c(-2, 2),
+    mzWindow = c(-5, 90),
+    mzClustFeatures = 0.003,
+    presenceFeatures = 0.8,
+    minIntensityFeatures = 1000,
+    useLoadedData = TRUE,
+    mzClust = 0.003,
+    presence = 0.8,
+    minIntensity = 1000,
+    top = 25,
+    normalized = TRUE,
+    groupBy = "groups",
+    filtered = FALSE) {
   fgs <- get_groups(
     x,
     groups,
@@ -3273,28 +3261,27 @@ get_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  isolationWindow = 1.3,
-  mzClustFeatures = 0.003,
-  presenceFeatures = 0.8,
-  minIntensityFeatures = 100,
-  useLoadedData = TRUE,
-  mzClust = 0.003,
-  presence = 0.8,
-  minIntensity = 100,
-  top = 25,
-  normalized = TRUE,
-  groupBy = "groups",
-  filtered = FALSE
-) {
+    x,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    isolationWindow = 1.3,
+    mzClustFeatures = 0.003,
+    presenceFeatures = 0.8,
+    minIntensityFeatures = 100,
+    useLoadedData = TRUE,
+    mzClust = 0.003,
+    presence = 0.8,
+    minIntensity = 100,
+    top = 25,
+    normalized = TRUE,
+    groupBy = "groups",
+    filtered = FALSE) {
   fgs <- get_groups(
     x,
     groups,
@@ -3446,36 +3433,35 @@ get_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtWindow = c(-2, 2),
-  mzWindow = c(-5, 90),
-  mzClustFeatures = 0.005,
-  presenceFeatures = 0.8,
-  minIntensityFeatures = 1000,
-  useLoadedData = TRUE,
-  mzClust = 0.005,
-  presence = 0.8,
-  minIntensity = 1000,
-  top = 25,
-  normalized = TRUE,
-  groupBy = "groups",
-  filtered = FALSE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  showText = FALSE,
-  interactive = TRUE
-) {
+    x,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtWindow = c(-2, 2),
+    mzWindow = c(-5, 90),
+    mzClustFeatures = 0.005,
+    presenceFeatures = 0.8,
+    minIntensityFeatures = 1000,
+    useLoadedData = TRUE,
+    mzClust = 0.005,
+    presence = 0.8,
+    minIntensity = 1000,
+    top = 25,
+    normalized = TRUE,
+    groupBy = "groups",
+    filtered = FALSE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "targets",
+    showText = FALSE,
+    interactive = TRUE) {
   if (grepl("groups", colorBy) || grepl("targets", colorBy)) {
     groupBy <- "groups"
   } else {
@@ -3662,35 +3648,34 @@ plot_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  isolationWindow = 1.3,
-  mzClustFeatures = 0.003,
-  presenceFeatures = 0.8,
-  minIntensityFeatures = 100,
-  useLoadedData = TRUE,
-  mzClust = 0.003,
-  presence = TRUE,
-  minIntensity = 100,
-  top = 25,
-  normalized = TRUE,
-  groupBy = "groups",
-  filtered = FALSE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  showText = TRUE,
-  interactive = TRUE
-) {
+    x,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    isolationWindow = 1.3,
+    mzClustFeatures = 0.003,
+    presenceFeatures = 0.8,
+    minIntensityFeatures = 100,
+    useLoadedData = TRUE,
+    mzClust = 0.003,
+    presence = TRUE,
+    minIntensity = 100,
+    top = 25,
+    normalized = TRUE,
+    groupBy = "groups",
+    filtered = FALSE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "targets",
+    showText = TRUE,
+    interactive = TRUE) {
   if (grepl("groups", colorBy) || grepl("targets", colorBy)) {
     groupBy <- "groups"
   } else {
@@ -3873,18 +3858,17 @@ plot_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_components.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE) {
   if (length(x$features) == 0) {
     warning("Features not found!")
     return(data.table::data.table())
@@ -4003,26 +3987,25 @@ get_components.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 map_components.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  interactive = TRUE,
-  showLegend = TRUE,
-  renderEngine = "webgl"
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "targets",
+    interactive = TRUE,
+    showLegend = TRUE,
+    renderEngine = "webgl") {
   components <- get_components(
     x,
     analyses,
@@ -4215,23 +4198,22 @@ map_components.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_suspects.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  database = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 5,
-  sec = 10,
-  millisec = 5,
-  ppmMS2 = 10,
-  mzrMS2 = 0.008,
-  minCusiness = 0.7,
-  minFragments = 3,
-  filtered = FALSE
-) {
+    x,
+    analyses = NULL,
+    database = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 5,
+    sec = 10,
+    millisec = 5,
+    ppmMS2 = 10,
+    mzrMS2 = 0.008,
+    minCusiness = 0.7,
+    minFragments = 3,
+    filtered = FALSE) {
   if (length(x$features) == 0) {
     warning("Features not found!")
     return(data.table::data.table())
@@ -4675,30 +4657,29 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  database = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 5,
-  sec = 10,
-  millisec = 5,
-  ppmMS2 = 10,
-  mzrMS2 = 0.008,
-  minCusiness = 0.7,
-  minFragments = 3,
-  filtered = FALSE,
-  rtExpand = 120,
-  mzExpand = 0.005,
-  useLoadedData = TRUE,
-  legendNames = NULL,
-  colorBy = "replicates+targets",
-  heights = c(0.5, 0.5),
-  interactive = TRUE
-) {
+    x,
+    analyses = NULL,
+    database = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 5,
+    sec = 10,
+    millisec = 5,
+    ppmMS2 = 10,
+    mzrMS2 = 0.008,
+    minCusiness = 0.7,
+    minFragments = 3,
+    filtered = FALSE,
+    rtExpand = 120,
+    mzExpand = 0.005,
+    useLoadedData = TRUE,
+    legendNames = NULL,
+    colorBy = "replicates+targets",
+    heights = c(0.5, 0.5),
+    interactive = TRUE) {
   suspects <- get_suspects(
     x,
     analyses,
@@ -5165,9 +5146,8 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  average = TRUE
-) {
+    x,
+    average = TRUE) {
   istd <- get_features(x, filtered = TRUE)
   if ("istd" %in% colnames(istd)) {
     sel <- vapply(
@@ -5355,14 +5335,13 @@ get_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  showPresence = TRUE,
-  showRecovery = TRUE,
-  showDeviations = TRUE,
-  showWidths = TRUE,
-  renderEngine = "webgl"
-) {
+    x,
+    analyses = NULL,
+    showPresence = TRUE,
+    showRecovery = TRUE,
+    showDeviations = TRUE,
+    showWidths = TRUE,
+    renderEngine = "webgl") {
   analyses <- .check_analyses_argument(x$features, analyses)
   if (any(vapply(x$features[analyses], function(x) any(!(is.na(x$group) | x$group %in% "")), FALSE))) {
     istd <- get_internal_standards(x, average = TRUE)
@@ -5864,19 +5843,18 @@ plot_internal_standards.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_compounds.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE,
-  averaged = TRUE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE,
+    averaged = TRUE) {
   if (length(x$features) == 0) {
     warning("Features not found!")
     return(data.table::data.table())
@@ -6028,24 +6006,23 @@ get_compounds.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  replicatesIn = NULL,
-  replicatesOut = NULL,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 4,
-  sec = 10,
-  millisec = 5,
-  filtered = FALSE,
-  constantThreshold = 0.5,
-  eliminationThreshold = 0.2,
-  correctIntensity = FALSE,
-  fillZerosWithLowerLimit = FALSE,
-  lowerLimit = NA_real_
-) {
+    x,
+    replicatesIn = NULL,
+    replicatesOut = NULL,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 4,
+    sec = 10,
+    millisec = 5,
+    filtered = FALSE,
+    constantThreshold = 0.5,
+    eliminationThreshold = 0.2,
+    correctIntensity = FALSE,
+    fillZerosWithLowerLimit = FALSE,
+    lowerLimit = NA_real_) {
   if (!any(vapply(x$features, function(x) any(!is.na(x$group) | x$group %in% ""), FALSE))) {
     warning("\U2717 Feature groups not found!")
     return(NULL)
@@ -6217,29 +6194,28 @@ get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_fold_change.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  replicatesIn = NULL,
-  replicatesOut = NULL,
-  groups = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 4,
-  sec = 10,
-  millisec = 5,
-  filtered = FALSE,
-  constantThreshold = 0.5,
-  eliminationThreshold = 0.2,
-  correctIntensity = FALSE,
-  fillZerosWithLowerLimit = FALSE,
-  lowerLimit = NA_real_,
-  normalized = TRUE,
-  yLab = NULL,
-  title = NULL,
-  interactive = TRUE,
-  showLegend = TRUE
-) {
+    x,
+    replicatesIn = NULL,
+    replicatesOut = NULL,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 4,
+    sec = 10,
+    millisec = 5,
+    filtered = FALSE,
+    constantThreshold = 0.5,
+    eliminationThreshold = 0.2,
+    correctIntensity = FALSE,
+    fillZerosWithLowerLimit = FALSE,
+    lowerLimit = NA_real_,
+    normalized = TRUE,
+    yLab = NULL,
+    title = NULL,
+    interactive = TRUE,
+    showLegend = TRUE) {
   fc <- get_fold_change(
     x,
     replicatesIn,
@@ -6430,10 +6406,9 @@ plot_fold_change.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_patRoon_features.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  filtered = FALSE,
-  featureGroups = TRUE
-) {
+    x,
+    filtered = FALSE,
+    featureGroups = TRUE) {
   if (length(x$features) == 0) {
     warning("No features found to get!")
     return(NULL)
@@ -6652,13 +6627,12 @@ get_patRoon_features.MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  mzClust = 0.005,
-  minIntensity = 0,
-  presence = 0.7,
-  top = 25,
-  normalized = FALSE
-) {
+    x,
+    mzClust = 0.005,
+    minIntensity = 0,
+    presence = 0.7,
+    top = 25,
+    normalized = FALSE) {
   if (length(x$features) == 0) {
     warning("No features found to get!")
     return(NULL)
@@ -6778,7 +6752,7 @@ get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis <- function(
       )
 
       names(glist) <- groups
-      glist = glist[order(names(glist))]
+      glist <- glist[order(names(glist))]
       glist
     },
     correct_spectrum = correct_spectrum
@@ -6803,7 +6777,7 @@ get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis <- function(
       groups <- unique(features$group)
       groups <- groups[!is.na(groups)]
       pol_col <- as.character(y$polarity)
-      pol_key = c(1, 0, -1)
+      pol_key <- c(1, 0, -1)
       names(pol_key) <- c("1", "-1", "0")
       y$polarity <- pol_key[pol_col]
       setnames(
@@ -6841,7 +6815,7 @@ get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis <- function(
       )
 
       names(glist) <- groups
-      glist = glist[order(names(glist))]
+      glist <- glist[order(names(glist))]
       glist
     },
     feature_list,
@@ -7077,35 +7051,34 @@ get_patRoon_compounds.MassSpecResults_NonTargetAnalysis <- function(x) {
 #' @export
 #'
 report.MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  filtered = FALSE,
-  mzClust = 0.005,
-  minIntensity = 10,
-  presence = 0.7,
-  top = 25,
-  normalized = TRUE,
-  path = paste0(getwd(), "/report"),
-  settingsFile = system.file("report", "settings.yml", package = "patRoon"),
-  eicRtWindow = 30,
-  eicTopMost = 1,
-  eicTopMostByRGroup = TRUE,
-  eicOnlyPresent = TRUE,
-  eicMzExpWindow = 0.001,
-  adductPos = "[M+H]+",
-  adductNeg = "[M-H]-",
-  specSimMethod = "cosine",
-  specSimRemovePrecursor = FALSE,
-  specSimMzWeight = 0,
-  specSimIntWeight = 1,
-  specSimAbsMzDev = 0.005,
-  specSimRelMinIntensity = 0.05,
-  specSimMinPeaks = 1,
-  specSimShift = "none",
-  specSimCombineMethod = "mean",
-  clearPath = FALSE,
-  openReport = TRUE,
-  parallel = TRUE
-) {
+    x,
+    filtered = FALSE,
+    mzClust = 0.005,
+    minIntensity = 10,
+    presence = 0.7,
+    top = 25,
+    normalized = TRUE,
+    path = paste0(getwd(), "/report"),
+    settingsFile = system.file("report", "settings.yml", package = "patRoon"),
+    eicRtWindow = 30,
+    eicTopMost = 1,
+    eicTopMostByRGroup = TRUE,
+    eicOnlyPresent = TRUE,
+    eicMzExpWindow = 0.001,
+    adductPos = "[M+H]+",
+    adductNeg = "[M-H]-",
+    specSimMethod = "cosine",
+    specSimRemovePrecursor = FALSE,
+    specSimMzWeight = 0,
+    specSimIntWeight = 1,
+    specSimAbsMzDev = 0.005,
+    specSimRelMinIntensity = 0.05,
+    specSimMinPeaks = 1,
+    specSimShift = "none",
+    specSimCombineMethod = "mean",
+    clearPath = FALSE,
+    openReport = TRUE,
+    parallel = TRUE) {
   if (!requireNamespace("patRoon", quietly = TRUE)) {
     warning("patRoon package not found!")
     return(NULL)
@@ -7186,10 +7159,9 @@ report.MassSpecResults_NonTargetAnalysis <- function(
 # MARK: .add_features_column
 #' @noRd
 .add_features_column <- function(
-  MassSpecResults_NonTargetAnalysis = NULL,
-  name = NULL,
-  data = NULL
-) {
+    MassSpecResults_NonTargetAnalysis = NULL,
+    name = NULL,
+    data = NULL) {
   if (!is(MassSpecResults_NonTargetAnalysis, "StreamFind::MassSpecResults_NonTargetAnalysis")) {
     warning(
       "MassSpecResults_NonTargetAnalysis object is not of class MassSpecResults_NonTargetAnalysis! Not done."

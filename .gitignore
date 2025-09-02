@@ -1,6 +1,3 @@
-.idea
-app/frontend/node_modules
-app/frontend/public
 
 # R project files -------------------------------------------------------------
 *.Rproj.user
@@ -11,49 +8,19 @@ app/frontend/public
 *.DS_Store
 *.Rproj
 *.vscode
+*.quarto
 
 # Excluded project folders ----------------------------------------------------
 **/doc
 /Meta/
+**/log
+/cache
 
 # Globally excluded file types and folders ------------------------------------
 *.sqlite
+*.rds
+*.json
 *.o
 *.so
 *.dll
-**/log
-
-# Excluded rds, cache and html files ------------------------------------------
-*.rds
-*.json
-dev/*.html
-dev/*_cache
-dev/*_files
-/report
-report.yml
-/cache
-
-# Exclude qAlgorithms project and meta files
-src/qAlgorithms/.vscode
-src/qAlgorithms/LICENSE
-src/qAlgorithms/README.md
-src/qAlgorithms/test
-
-.Rproj.user
-
-/.quarto/
-
-# RInno installer files -------------------------------------------------------
-installer/
-inst/app/*.iss
-inst/app/package_manager.R
-inst/app/launch_app.R
-inst/app/nativefier-app/
-*.exe
-inst/app/bin
-inst/app/utils
-default.ico
-infoafter.txt
-infobefore.txt
-setup.ico
-StreamFind.bat
+*.html
