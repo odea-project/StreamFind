@@ -1,7 +1,5 @@
 #' @import R6
 #'
-#' @import S7
-#'
 #' @import data.table
 #'
 #' @import checkmate
@@ -15,8 +13,6 @@
 #' @importFrom tools file_ext
 #'
 #' @import zlibbioc
-#'
-#' @import S7
 #'
 #' @import reticulate
 #' 

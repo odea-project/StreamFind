@@ -247,7 +247,7 @@ app_server <- function(input, output, session) {
   shiny::observe({
     if (reactive_show_init_modal()) {
       reactive_show_init_modal(FALSE)
-      .app_util_use_initial_model(
+      .app_util_use_initial_modal(
         reactive_app_mode,
         reactive_engine_type,
         reactive_engine_save_file,

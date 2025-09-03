@@ -37,7 +37,7 @@
 }
 
 #' @noRd
-.app_util_use_initial_model <- function(reactive_app_mode,
+.app_util_use_initial_modal <- function(reactive_app_mode,
                                         reactive_engine_type,
                                         reactive_engine_save_file,
                                         reactive_clean_start,
@@ -94,6 +94,20 @@
     style = "text-align: center;"
   )
 
+  model_elements[[6]] <- shiny::fluidRow(
+    shiny::p("Try a demo: ", style = "text-align: center;margin-top: 40px;")
+  )
+
+  model_elements[[7]] <- htmltools::div(
+    shiny::actionButton(
+      inputId = paste0(time_var, "_select_MassSpecDemo"),
+      label = "MassSpec Demo",
+      class = "btn-info",
+      style = "margin-bottom: 20px;"
+    ),
+    style = "text-align: center;"
+  )
+
   shiny::showModal(shiny::modalDialog(
     title = " ",
     easyClose = TRUE,
@@ -101,7 +115,7 @@
     do.call(shiny::tagList, model_elements)
   ))
 
-  available_engines <- c(available_engines, "LoadEngine")
+  available_engines <- c(available_engines, "LoadEngine", "MassSpecDemo")
 
   lapply(available_engines, function(obj) {
 
@@ -172,14 +186,79 @@
         }
       } else {
         reactive_engine_save_file(NA_character_)
-        reactive_engine_type(obj)
-        shiny::removeModal()
-        if (!obj %in% "Engine") {
-          reactive_show_init_modal(FALSE)
-          reactive_app_mode("WorkflowAssembler")
-          reactive_clean_start(TRUE)
+        
+        # Handle MassSpec Demo case
+        if (obj == "MassSpecDemo") {
+          # Show loading modal with spinner
+          shiny::showModal(shiny::modalDialog(
+            title = "Loading MassSpec Demo",
+            shiny::div(
+              style = "text-align: center; padding: 20px;",
+              shiny::div(
+                style = "display: inline-block; border: 4px solid #f3f3f3; border-top: 4px solid #3498db; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite;",
+                shiny::tags$style(HTML("
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                "))
+              ),
+              shiny::br(),
+              shiny::br(),
+              shiny::p("Please wait while the demo data is being prepared...")
+            ),
+            footer = NULL,
+            easyClose = FALSE
+          ))
+          
+          # Process demo loading with progress
+          tryCatch({
+            demo_engine <- .app_MassSpecDemo()
+            if (!is.null(demo_engine)) {
+              # Save the demo engine to a temporary file
+              temp_file <- file.path(tempdir(), "ms_demo_ww_ozone.rds")
+              demo_engine$save(temp_file)
+              
+              reactive_engine_type("MassSpecEngine")
+              reactive_engine_save_file(temp_file)
+              reactive_app_mode("WorkflowAssembler")
+              reactive_clean_start(TRUE)
+              reactive_show_init_modal(FALSE)
+              shiny::removeModal()
+              
+              shiny::showNotification(
+                "MassSpec Demo loaded successfully!", 
+                duration = 5, 
+                type = "message"
+              )
+            } else {
+              shiny::removeModal()
+              shiny::showNotification(
+                "Failed to load MassSpec Demo. Please ensure StreamFindData package is installed.", 
+                duration = 10, 
+                type = "error"
+              )
+              reactive_show_init_modal(TRUE)
+            }
+          }, error = function(e) {
+            shiny::removeModal()
+            shiny::showNotification(
+              paste("Error loading MassSpec Demo:", e$message), 
+              duration = 10, 
+              type = "error"
+            )
+            reactive_show_init_modal(TRUE)
+          })
         } else {
-          reactive_show_init_modal(TRUE)
+          reactive_engine_type(obj)
+          shiny::removeModal()
+          if (!obj %in% "Engine") {
+            reactive_show_init_modal(FALSE)
+            reactive_app_mode("WorkflowAssembler")
+            reactive_clean_start(TRUE)
+          } else {
+            reactive_show_init_modal(TRUE)
+          }
         }
         return()
       }
@@ -389,4 +468,162 @@
       </style>
     `);
   "))
+}
+
+#' Utility function to create a MassSpecEngine for the MassSpec demo project.
+#' @return A MassSpecEngine object or NULL if the required package is not installed.
+#' @noRd
+#' 
+.app_MassSpecDemo <- function() {
+
+  if (!require(StreamFindData)) {
+    warning("The package StreamFindData is required to run the demo.")
+    return(NULL)
+  }
+
+  all_files <- StreamFindData::get_ms_file_paths()
+  files <- all_files[grepl("blank|influent|o3sw", all_files)]
+  db_all <- StreamFindData::get_ms_tof_spiked_chemicals()
+  db_all <- db_all[grepl("S", db_all$tag), ]
+  cols <- c("name", "formula", "mass", "rt", "tag")
+  db_is <- db_all[db_all$tag %in% "IS", ]
+  db_is <- db_is[, cols, with = FALSE]
+  db_is <- db_is[!db_is$name %in% c("Ibuprofen-d3", "Naproxen-d3"), ]
+  db <- db_all[db_all$tag %in% "S", ]
+  db <- db[, cols, with = FALSE]
+  db_with_ms2 <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
+  db_with_ms2 <- db_with_ms2[db_with_ms2$tag %in% "S", ]
+  db_with_ms2 <- db_with_ms2[, c("name", "formula", "mass", "SMILES", "rt", "polarity", "fragments"), with = FALSE]
+  db_with_ms2$polarity[db_with_ms2$polarity == 1] <- "positive"
+  db_with_ms2$polarity[is.na(db_with_ms2$polarity)] <- "positive"
+  db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
+  ms <- MassSpecEngine$new(analyses = files)
+  ms$Metadata <- list(
+    name = "Wastewater Ozonation Demo",
+    author = "Ricardo Cunha",
+    description = "Demonstration for non-target screening with mass spectrometry data from wastewater samples before and after ozonation"
+  )
+  rpls <- c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("influent_neg", 3),
+    rep("influent_pos", 3),
+    rep("effluent_neg", 3),
+    rep("effluent_pos", 3)
+  )
+  blks <- c(
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3),
+    rep("blank_neg", 3),
+    rep("blank_pos", 3)
+  )
+  ms$Analyses <- set_replicate_names(ms$Analyses, rpls)
+  ms$Analyses <- set_blank_names(ms$Analyses, blks)
+  workflow <- list(
+    MassSpecMethod_FindFeatures_openms(
+      noiseThrInt = 1000,
+      chromSNR = 3,
+      chromFWHM = 7,
+      mzPPM = 15,
+      reEstimateMTSD = TRUE,
+      traceTermCriterion = "sample_rate",
+      traceTermOutliers = 5,
+      minSampleRate = 1,
+      minTraceLength = 4,
+      maxTraceLength = 70,
+      widthFiltering = "fixed",
+      minFWHM = 4,
+      maxFWHM = 35,
+      traceSNRFiltering = TRUE,
+      localRTRange = 0,
+      localMZRange = 0,
+      isotopeFilteringModel = "none",
+      MZScoring13C = FALSE,
+      useSmoothedInts = FALSE,
+      intSearchRTWindow = 3,
+      useFFMIntensities = FALSE,
+      verbose = FALSE
+    ),
+    MassSpecMethod_AnnotateFeatures_StreamFind(
+      rtWindowAlignment = 0.3,
+      maxIsotopes = 8,
+      maxCharge = 2,
+      maxGaps = 1
+    ),
+    MassSpecMethod_FilterFeatures_StreamFind(
+      excludeIsotopes = TRUE,
+      excludeAdducts = TRUE
+    ),
+    MassSpecMethod_GroupFeatures_openms(
+      rtalign = FALSE,
+      QT = FALSE,
+      maxAlignRT = 5,
+      maxAlignMZ = 0.008,
+      maxGroupRT = 5,
+      maxGroupMZ = 0.008,
+      verbose = FALSE
+    ),
+    MassSpecMethod_FilterFeatures_StreamFind(
+      minIntensity = 3000
+    ),
+    MassSpecMethod_FillFeatures_StreamFind(
+      withinReplicate = FALSE,
+      rtExpand = 2,
+      mzExpand = 0.0005,
+      minTracesIntensity = 1000,
+      minNumberTraces = 6,
+      baseCut = 0.3,
+      minSignalToNoiseRatio = 3,
+      minGaussianFit = 0.2
+    ),
+    MassSpecMethod_CalculateFeaturesQuality_StreamFind(
+      filtered = FALSE,
+      rtExpand = 2,
+      mzExpand = 0.0005,
+      minTracesIntensity = 1000,
+      minNumberTraces = 6,
+      baseCut = 0
+    ),
+    MassSpecMethod_FilterFeatures_StreamFind(
+      minSnRatio = 5
+    ),
+    MassSpecMethod_FilterFeatures_patRoon(
+      maxReplicateIntRSD = 40,
+      blankThreshold = 5,
+      absMinReplicateAbundance = 3
+    ),
+    MassSpecMethod_FindInternalStandards_StreamFind(
+      database = db_is,
+      ppm = 8,
+      sec = 10
+    ),
+    MassSpecMethod_CorrectMatrixSuppression_TiChri(
+      mpRtWindow = 10,
+      istdAssignment = "range",
+      istdRtWindow = 50,
+      istdN = 2
+    ),
+    MassSpecMethod_LoadFeaturesMS1_StreamFind(
+      filtered = FALSE
+    ),
+    MassSpecMethod_LoadFeaturesMS2_StreamFind(
+      filtered = FALSE
+    ),
+    MassSpecMethod_LoadFeaturesEIC_StreamFind(
+      filtered = FALSE
+    ),
+    MassSpecMethod_SuspectScreening_StreamFind(
+      database = db_with_ms2,
+      ppm = 10,
+      sec = 15,
+      ppmMS2 = 10,
+      minFragments = 3
+    )
+  )
+  workflow <- Workflow(workflow)
+  ms$Workflow <- workflow
+  ms$save("ms_demo_ww_ozone.rds")
+  ms
 }

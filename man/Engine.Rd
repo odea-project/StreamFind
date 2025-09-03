@@ -17,15 +17,15 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \describe{
 \item{\code{Metadata}}{A \link{Metadata} object. When setting it can also be a named list with elements of length one.}
 
-\item{\code{Workflow}}{A \link{Workflow} S7 class object. When settings can also be a list of \link{ProcessingStep} objects or a full path string to an \strong{rds} or \strong{json} file containing a \link{Workflow} object.}
+\item{\code{Workflow}}{A \link{Workflow} S3 class object. When settings can also be a list of \link{ProcessingStep} objects or a full path string to an \strong{rds} or \strong{json} file containing a \link{Workflow} object.}
 
-\item{\code{Analyses}}{An \link{Analyses} S7 class object or a child for a specific data type.}
+\item{\code{Analyses}}{An \link{Analyses} S3 class object or a child for a specific data type.}
 
-\item{\code{Results}}{A named list of \link{Results} S7 class objects or a child for specific results.}
+\item{\code{Results}}{A named list of \link{Results} S3 class objects or a child for specific results.}
 
-\item{\code{AuditTrail}}{An \link{AuditTrail} S7 class object. Only getter method.}
+\item{\code{AuditTrail}}{An \link{AuditTrail} S3 class object. Only getter method.}
 
-\item{\code{Config}}{An \link{EngineConfig} S7 class object.}
+\item{\code{Config}}{An \link{EngineConfig} S3 class object.}
 
 \item{\code{type}}{A character string with the data type of the engine.
 This is a read-only field.}
