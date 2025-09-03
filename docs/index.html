@@ -66,9 +66,10 @@
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>Pre-requisites for the StreamFind are the <a href="https://cran.r-project.org/" class="external-link">R</a> software and the <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">RTools</a> (only applicable for Windows users). RTools is needed for compiling C++ code used in the StreamFind R package. StreamFind also uses python scripts for some of its processing methods, so it is recommended to have the latest <a href="https://www.python.org/downloads/" class="external-link">python</a> installed and added to the environmental variables for Windows users. Assuming that R, RTools and python are installed, the StreamFind R package can be installed from the GitHub repository via the <a href="https://www.bioconductor.org/install/" class="external-link">BiocManager</a>. Note that StreamFind is not yet available on the Bioconductor repository.</p>
+<p>Pre-requisites for the StreamFind are the <a href="https://cran.r-project.org/" class="external-link">R</a> software and the <a href="https://cran.r-project.org/bin/windows/Rtools/" class="external-link">RTools</a> (only applicable for Windows users). RTools is needed for compiling C++ code used in the StreamFind R package. StreamFind also uses Python scripts for some of its processing methods, so it is recommended to have the latest <a href="https://www.python.org/downloads/" class="external-link">Python</a> installed and added to the environmental variables for Windows users. Assuming that R, RTools and Python (optional) are installed, the StreamFind R package can be installed from the GitHub repository via the <a href="https://www.bioconductor.org/install/" class="external-link">BiocManager</a>. Note that StreamFind is not yet available on the Bioconductor repository. Please note that the default timeout for the <code><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">BiocManager::install</a></code> function might be to short. Thus, if the download of StreamFind fails run <code>options(timeout = 600)</code> before the installation command.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">options</a></span><span class="op">(</span>timeout <span class="op">=</span> <span class="fl">600</span><span class="op">)</span> <span class="co"># Increase timeout</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">require</a></span><span class="op">(</span><span class="st"><a href="https://bioconductor.github.io/BiocManager/" class="external-link">"BiocManager"</a></span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span></span>
 <span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span><span class="st">"odea-project/StreamFind"</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -91,7 +92,11 @@
 </h2>
 <p>The StreamFind can also be used via the <a href="https://www.docker.com/products/docker-desktop/" class="external-link">Docker</a> container. The Docker container is a pre-configured environment with all the necessary dependencies installed. The Docker container can be built and started with the following commands.</p>
 <p>Build the Docker container: <code>docker build -t my-r-app .</code></p>
-<p>Start the Docker container: <code>docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app</code></p>
+<p>Start the Docker container:</p>
+<p><strong>For Linux/macOS/bash:</strong></p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-it</span> <span class="at">-p</span> 3838:3838 <span class="at">-p</span> 8787:8787 <span class="at">-v</span> <span class="va">$(</span><span class="bu">pwd</span><span class="va">)</span>:/app my-r-app</span></code></pre></div>
+<p><strong>For Windows PowerShell:</strong></p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode powershell"><code class="sourceCode powershell"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>docker run <span class="op">-</span>it <span class="op">-</span>p <span class="dv">3838</span><span class="op">:</span><span class="dv">3838</span> <span class="op">-</span>p <span class="dv">8787</span><span class="op">:</span><span class="dv">8787</span> <span class="op">-</span>v <span class="st">"</span><span class="pp">${</span><span class="va">PWD</span><span class="pp">}</span><span class="st">:/app"</span> my-r-app</span></code></pre></div>
 <p>Once the container is up, you’ll be prompted to select the service you want to run:</p>
 <ul>
 <li>
@@ -124,6 +129,9 @@ Chambers, M. C., B. Maclean, R. Burke, D Amodei, D. L. Ruderman, S. Neumann, L. 
 </div>
 <div id="ref-mzr04" class="csl-entry">
 Chambers, Matthew C., Maclean, Brendan, Burke, Robert, Amodei, et al. 2012b. “<span class="nocase">A cross-platform toolkit for mass spectrometry and proteomics</span>.” <em>Nat Biotech</em> 30 (10): 918–20. <a href="https://doi.org/10.1038/nbt.2377" class="external-link uri">https://doi.org/10.1038/nbt.2377</a>.
+</div>
+<div id="ref-biotransformer01" class="csl-entry">
+Djoumbou-Feunang, Yannick, Jarlei Fiamoncini, Alberto Gil-de-la-Fuente, Claudine Manach, Russell Greiner, and David S. Wishart. 2019. “BioTransformer: A Comprehensive Computational Tool for Small Molecule Metabolism Prediction and Metabolite Identification.” <em>Journal of Cheminformatics</em> 11 (2): 1–25. <a href="https://doi.org/10.1186/s13321-018-0324-5" class="external-link uri">https://doi.org/10.1186/s13321-018-0324-5</a>.
 </div>
 <div id="ref-msnbase02" class="csl-entry">
 Gatto, Laurent, Sebastian Gibb, and Johannes Rainer. 2020. “MSnbase, Efficient and Elegant r-Based Processing and Visualisation of Raw Mass Spectrometry Data.” <em>bioRxiv</em>.
@@ -196,6 +204,9 @@ Venables, W. N., and B. D. Ripley. 2002. <em>Modern Applied Statistics with s</e
 </div>
 <div id="ref-mdatools02" class="csl-entry">
 Windig, Willem, Neal B. Gallagher, Jeremy M. Shaver, and Barry M. Wise. 2005. “A New Approach for Interactive Self-Modeling Mixture Analysis.” <em>Chemometrics and Intelligent Laboratory Systems</em> 77 (1): 85–96. <a href="https://doi.org/" class="external-link uri">https://doi.org/</a><a href="https://doi.org/10.1016/j.chemolab.2004.06.009" class="external-link uri">https://doi.org/10.1016/j.chemolab.2004.06.009</a>.
+</div>
+<div id="ref-biotransformer02" class="csl-entry">
+Wishart, David S., Siyang Tian, Dana Allen, Eponine Oler, Harrison Peters, Vicki W. Lui, Vasuk Gautam, Yannick Djoumbou-Feunang, Russell Greiner, and Thomas O. Metz. 2022. “BioTransformer 3.0 – a Web Server for Accurately Predicting Metabolic Transformation Products.” <em>Nucleic Acids Research</em>.
 </div>
 <div id="ref-metfrag04" class="csl-entry">
 Wolf, Sebastian, Stephan Schmidt, Matthias Müller-Hannemann, and Steffen Neumann. 2010. “In Silico Fragmentation for Computer Assisted Identification of Metabolite Mass Spectra.” <em>BMC Bioinformatics</em> 11: 1–12.

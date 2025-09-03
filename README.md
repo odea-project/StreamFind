@@ -38,16 +38,20 @@ Pre-requisites for the StreamFind are the
 [R](https://cran.r-project.org/) software and the
 [RTools](https://cran.r-project.org/bin/windows/Rtools/) (only
 applicable for Windows users). RTools is needed for compiling C++ code
-used in the StreamFind R package. StreamFind also uses python scripts
+used in the StreamFind R package. StreamFind also uses Python scripts
 for some of its processing methods, so it is recommended to have the
-latest [python](https://www.python.org/downloads/) installed and added
+latest [Python](https://www.python.org/downloads/) installed and added
 to the environmental variables for Windows users. Assuming that R,
-RTools and python are installed, the StreamFind R package can be
-installed from the GitHub repository via the
+RTools and Python (optional) are installed, the StreamFind R package can
+be installed from the GitHub repository via the
 [BiocManager](https://www.bioconductor.org/install/). Note that
-StreamFind is not yet available on the Bioconductor repository.
+StreamFind is not yet available on the Bioconductor repository. Please
+note that the default timeout for the `BiocManager::install` function
+might be to short. Thus, if the download of StreamFind fails run
+`options(timeout = 600)` before the installation command.
 
 ``` r
+options(timeout = 600) # Increase timeout
 if (!require("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 BiocManager::install("odea-project/StreamFind")
@@ -87,7 +91,18 @@ with the following commands.
 Build the Docker container: `docker build -t my-r-app .`
 
 Start the Docker container:
-`docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app`
+
+**For Linux/macOS/bash:**
+
+``` bash
+docker run -it -p 3838:3838 -p 8787:8787 -v $(pwd):/app my-r-app
+```
+
+**For Windows PowerShell:**
+
+``` powershell
+docker run -it -p 3838:3838 -p 8787:8787 -v "${PWD}:/app" my-r-app
+```
 
 Once the container is up, you’ll be prompted to select the service you
 want to run:
@@ -146,6 +161,17 @@ Chambers, Matthew C., Maclean, Brendan, Burke, Robert, Amodei, et al.
 2012b. “<span class="nocase">A cross-platform toolkit for mass
 spectrometry and proteomics</span>.” *Nat Biotech* 30 (10): 918–20.
 <https://doi.org/10.1038/nbt.2377>.
+
+</div>
+
+<div id="ref-biotransformer01" class="csl-entry">
+
+Djoumbou-Feunang, Yannick, Jarlei Fiamoncini, Alberto Gil-de-la-Fuente,
+Claudine Manach, Russell Greiner, and David S. Wishart. 2019.
+“BioTransformer: A Comprehensive Computational Tool for Small Molecule
+Metabolism Prediction and Metabolite Identification.” *Journal of
+Cheminformatics* 11 (2): 1–25.
+<https://doi.org/10.1186/s13321-018-0324-5>.
 
 </div>
 
@@ -362,6 +388,16 @@ Windig, Willem, Neal B. Gallagher, Jeremy M. Shaver, and Barry M. Wise.
 2005. “A New Approach for Interactive Self-Modeling Mixture Analysis.”
 *Chemometrics and Intelligent Laboratory Systems* 77 (1): 85–96.
 https://doi.org/<https://doi.org/10.1016/j.chemolab.2004.06.009>.
+
+</div>
+
+<div id="ref-biotransformer02" class="csl-entry">
+
+Wishart, David S., Siyang Tian, Dana Allen, Eponine Oler, Harrison
+Peters, Vicki W. Lui, Vasuk Gautam, Yannick Djoumbou-Feunang, Russell
+Greiner, and Thomas O. Metz. 2022. “BioTransformer 3.0 – a Web Server
+for Accurately Predicting Metabolic Transformation Products.” *Nucleic
+Acids Research*.
 
 </div>
 
