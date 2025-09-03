@@ -62,7 +62,7 @@ Engine <- R6::R6Class(
     },
 
     # MARK: Workflow
-    #' @field Workflow A [StreamFind::Workflow] S7 class object. When settings can also be a list of [StreamFind::ProcessingStep] objects or a full path string to an **rds** or **json** file containing a [StreamFind::Workflow] object.
+    #' @field Workflow A [StreamFind::Workflow] S3 class object. When settings can also be a list of [StreamFind::ProcessingStep] objects or a full path string to an **rds** or **json** file containing a [StreamFind::Workflow] object.
     Workflow = function(value) {
       if (missing(value)) {
         return(private$.Workflow)
@@ -129,7 +129,7 @@ Engine <- R6::R6Class(
     },
 
     # MARK: Analyses
-    #' @field Analyses An [StreamFind::Analyses] S7 class object or a child for a specific data type.
+    #' @field Analyses An [StreamFind::Analyses] S3 class object or a child for a specific data type.
     Analyses = function(value) {
       if (missing(value)) {
         return(private$.Analyses)
@@ -172,7 +172,7 @@ Engine <- R6::R6Class(
     },
     
     #MARK: Results
-    #' @field Results A named list of [StreamFind::Results] S7 class objects or a child for specific results.
+    #' @field Results A named list of [StreamFind::Results] S3 class objects or a child for specific results.
     Results = function(value) {
       if (missing(value)) {
         return(private$.Analyses$results)
@@ -227,7 +227,7 @@ Engine <- R6::R6Class(
     },
     
     # MARK: AuditTrail
-    #' @field AuditTrail An [StreamFind::AuditTrail] S7 class object. Only getter method.
+    #' @field AuditTrail An [StreamFind::AuditTrail] S3 class object. Only getter method.
     AuditTrail = function(value) {
       if (!missing(value)) {
         warning("AuditTrail is read-only! Not set.")
@@ -237,7 +237,7 @@ Engine <- R6::R6Class(
     },
     
     # MARK: Config
-    #' @field Config An [StreamFind::EngineConfig] S7 class object.
+    #' @field Config An [StreamFind::EngineConfig] S3 class object.
     Config = function(value) {
       if (missing(value)) {
         return(private$.Config)

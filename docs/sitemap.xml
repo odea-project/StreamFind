@@ -11,7 +11,7 @@
 <url><loc>https://odea-project.github.io/StreamFind/articles/StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/authors.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/index.html</loc></url>
-<url><loc>https://odea-project.github.io/StreamFind/LICENSE.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/LICENSE-text.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/Analyses.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/AppConfig.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/AuditTrail.html</loc></url>
@@ -53,8 +53,10 @@
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_FindFeatures_xcms3_matchedfilter.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_FindInternalStandards_StreamFind.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_FindSpectraMaxima_native.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_FindTransformationProducts_native.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_GenerateCompounds_metfrag.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_GenerateFormulas_genform.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_GenerateTransformationProducts_biotransformer.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_GroupFeatures_openms.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_GroupFeatures_xcms3_peakdensity.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups.html</loc></url>
@@ -83,6 +85,7 @@
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecResults_Chromatograms.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecResults_NonTargetAnalysis.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecResults_Spectra.html</loc></url>
+<url><loc>https://odea-project.github.io/StreamFind/reference/MassSpecResults_TransformationProducts.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/Metadata.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/pipe.html</loc></url>
 <url><loc>https://odea-project.github.io/StreamFind/reference/ProcessingStep.html</loc></url>
