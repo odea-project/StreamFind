@@ -498,11 +498,11 @@
       ))
       tryCatch(
         {
-          engine$workflow <- reactive_workflow()
+          engine$Workflow <- reactive_workflow()
           engine$run_workflow()
           reactive_analyses(engine$Analyses)
-          reactive_workflow(engine$workflow)
-          reactive_results(engine$Analyses$results)
+          reactive_workflow(engine$Workflow)
+          reactive_results(engine$Results)
           reactive_audit(engine$AuditTrail)
           reactive_engine_config(engine$Config)
           shiny::removeModal()
