@@ -5,12 +5,10 @@
 \alias{MassSpecMethod_FindTransformationProducts_native}
 \title{MassSpecMethod_FindTransformationProducts_native Class}
 \usage{
-MassSpecMethod_FindTransformationProducts_native(ppm = 5, sec = 10)
+MassSpecMethod_FindTransformationProducts_native(ppm = 10)
 }
 \arguments{
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}
-
-\item{sec}{Numeric of length one with the time deviation, in seconds.}
 }
 \value{
 A \code{MassSpecMethod_FindTransformationProducts_native} object.

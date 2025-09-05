@@ -5,6 +5,8 @@
 \alias{validate_object.MassSpecResults_TransformationProducts}
 \alias{show.MassSpecResults_TransformationProducts}
 \alias{[.MassSpecResults_TransformationProducts}
+\alias{get_transformation_products.MassSpecResults_TransformationProducts}
+\alias{plot_transformation_products_network.MassSpecResults_TransformationProducts}
 \title{Constructor and methods to store transformation products results from non-target analysis}
 \usage{
 MassSpecResults_TransformationProducts(
@@ -17,13 +19,37 @@ MassSpecResults_TransformationProducts(
 \method{show}{MassSpecResults_TransformationProducts}(x)
 
 \method{[}{MassSpecResults_TransformationProducts}(x, i)
+
+\method{get_transformation_products}{MassSpecResults_TransformationProducts}(
+  x,
+  parents = NULL,
+  parentsReplicate = NULL,
+  productsReplicate = NULL,
+  onlyHits = TRUE
+)
+
+\method{plot_transformation_products_network}{MassSpecResults_TransformationProducts}(
+  x,
+  parents = NULL,
+  parentsReplicate = NULL,
+  productsReplicate = NULL
+)
 }
 \arguments{
-\item{parents}{A data.table containing parent compound information.}
+\item{parents}{A character vector of parent compound names to include in the network. If NULL, all parents are included.}
 
 \item{transformation_products}{A list containing transformation products for each parent compound.}
 
 \item{x}{A \code{MassSpecResults_TransformationProducts} object.}
+
+\item{parentsReplicate}{A character vector of replicate names to filter parent compounds. If NULL, all replicates are included.}
+
+\item{productsReplicate}{A character vector of replicate names to filter transformation products. If NULL, all replicates are included.}
+
+\item{onlyHits}{Logical, if TRUE (default), only transformation products detected in the analysis are returned. If FALSE, all transformation products are returned with a detection status.}
+}
+\value{
+A visNetwork object representing the transformation products network.
 }
 \description{
 The \code{MassSpecResults_TransformationProducts} class is a child of \link{Results} and is used to store transformation products results from non-target analysis.
@@ -35,6 +61,10 @@ The \code{MassSpecResults_TransformationProducts} class is a child of \link{Resu
 \item \code{show(MassSpecResults_TransformationProducts)}: Show the MassSpecResults_TransformationProducts object.
 
 \item \code{[}: Subset the MassSpecResults_TransformationProducts object.
+
+\item \code{get_transformation_products(MassSpecResults_TransformationProducts)}: Get transformation products for specified parents and replicates.
+
+\item \code{plot_transformation_products_network(MassSpecResults_TransformationProducts)}: Plot a network of transformation products using visNetwork.
 
 }}
 \seealso{
