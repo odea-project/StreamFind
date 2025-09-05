@@ -20,7 +20,11 @@ RUN apt-get update && apt-get install -y \
     libharfbuzz-dev \
     libfribidi-dev \
     libfreetype6-dev \
-    libglpk40
+    libglpk40 \
+    python3 \
+    python3-venv \
+    python3-pip \
+    python3-dev
 
 # Install R packages
 RUN R -e "install.packages('remotes')"
@@ -67,7 +71,7 @@ echo '3) Run Both Shiny App and RStudio Server'; \
 read -p 'Enter the number: ' option; \
 if [ \"$option\" == \"1\" ]; then \
     echo 'Starting Shiny App...'; \
-    R -e \"StreamFind::run_app(options = list(port=3838, host='0.0.0.0'))\"; \
+    R -e \"library(StreamFind); run_app(options = list(port=3838, host='0.0.0.0'))\"; \
 elif [ \"$option\" == \"2\" ]; then \
     echo 'Starting RStudio Server...'; \
     rstudio-server start; \
@@ -76,7 +80,7 @@ elif [ \"$option\" == \"2\" ]; then \
 elif [ \"$option\" == \"3\" ]; then \
     echo 'Starting both Shiny App and RStudio Server...'; \
     rstudio-server start & \
-    R -e \"StreamFind::run_app(options = list(port=3838, host='0.0.0.0'))\" & \
+    R -e \"library(StreamFind); run_app(options = list(port=3838, host='0.0.0.0'))\" & \
     wait; \
 else \
     echo 'Invalid option. Please select 1, 2, or 3.'; \
