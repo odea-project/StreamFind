@@ -1,13 +1,11 @@
 #' @title MassSpecMethod_FindTransformationProducts_native Class
 #' @description Processing method for finding transformation products using a MassSpecResults_TransformationProducts object to perform suspect screening on the MassSpecResults_NonTargetAnalysis object. Returns an updated MassSpecResults_NonTargetAnalysis with the TPs added as suspects. Note that existing suspects are not replaced if they are parents.
 #' @template arg-ms-ppm
-#' @template arg-ms-sec
 #' @return A `MassSpecMethod_FindTransformationProducts_native` object.
 #' @export
 #'
 MassSpecMethod_FindTransformationProducts_native <- function(
-  ppm = 5,
-  sec = 10
+  ppm = 10
 ) {
   x <- ProcessingStep(
     type = "MassSpec",
@@ -17,8 +15,7 @@ MassSpecMethod_FindTransformationProducts_native <- function(
     input_class = c("MassSpecResults_NonTargetAnalysis", "MassSpecResults_TransformationProducts"),
     output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
-      "ppm" = as.numeric(ppm),
-      "sec" = as.numeric(sec)
+      "ppm" = as.numeric(ppm)
     ),
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),
@@ -42,7 +39,6 @@ validate_object.MassSpecMethod_FindTransformationProducts_native <- function(x) 
   checkmate::assert_choice(x$method, "FindTransformationProducts")
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_number(x$parameters$ppm)
-  checkmate::assert_number(x$parameters$sec)
   NULL
 }
 
@@ -70,7 +66,6 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
   }
 
   nts <- engine$Results$MassSpecResults_NonTargetAnalysis
-  tp_results <- engine$Results$MassSpecResults_TransformationProducts
 
   if (
     sum(vapply(nts$features, function(z) nrow(z), 0)) == 0
@@ -79,122 +74,140 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
     return(FALSE)
   }
 
+  parent_results <- engine$Results$MassSpecResults_TransformationProducts$parents
+  tp_results <- engine$Results$MassSpecResults_TransformationProducts
+
   if (length(tp_results$transformation_products) == 0) {
     warning("MassSpecResults_TransformationProducts object does not have transformation products! Not done.")
     return(FALSE)
   }
 
-  tp_database <- data.table::rbindlist(tp_results$transformation_products, idcol = "parents", fill = TRUE)
+  tp_database <- data.table::rbindlist(tp_results$transformation_products, idcol = "parent", fill = TRUE)
+  if ("neutralMass" %in% colnames(tp_database)) {
+    data.table::setnames(tp_database, "neutralMass", "mass")
+  }
 
   if (nrow(tp_database) == 0) {
     warning("No transformation products found in MassSpecResults_TransformationProducts! Not done.")
     return(FALSE)
   }
 
-  # Ensure the TP database has the required columns for suspect screening
-  if (!("name" %in% colnames(tp_database))) {
-    if ("SMILES" %in% colnames(tp_database)) {
-      # Use SMILES as name if name is not available
-      tp_database$name <- tp_database$SMILES
-    } else {
-      # Generate sequential names if no name/SMILES available
-      tp_database$name <- paste0("TP_", seq_len(nrow(tp_database)))
-    }
-  }
+  fts <- nts$features
+  rpls <- nts$info$replicate
+  names(rpls) <- nts$info$analysis
 
-  if (!("mass" %in% colnames(tp_database))) {
-    if ("neutralMass" %in% colnames(tp_database)) {
-      tp_database$mass <- tp_database$neutralMass
-    } else if ("mz" %in% colnames(tp_database)) {
-      tp_database$mass <- tp_database$mz
-    } else {
-      warning("Transformation products database does not have mass, neutralMass, or mz columns! Not done.")
-      return(FALSE)
-    }
-  }
-
-  # Combine user-provided database with transformation products database
-  parameters <- x$parameters
-  combined_database <- data.table::rbindlist(
-    list(parameters$database, tp_database),
-    fill = TRUE,
-    use.names = TRUE
-  )
-
-  # Remove duplicates based on name and mass
-  combined_database <- unique(combined_database, by = c("name", "mass"))
-
-  if (nrow(combined_database) == 0) {
-    warning("Combined database is empty! Not done.")
-    return(FALSE)
-  }
-
-  # Perform suspect screening with transformation products
-  suspect_features <- get_suspects(
-    nts,
-    database = combined_database,
-    ppm = parameters$ppm,
-    sec = parameters$sec,
-    ppmMS2 = parameters$ppmMS2,
-    mzrMS2 = parameters$mzrMS2,
-    minCusiness = parameters$minCusiness,
-    minFragments = parameters$minFragments,
-    filtered = parameters$filtered
-  )
-
-  if (nrow(suspect_features) > 0) {
-    suspect_cols <- colnames(suspect_features)
-    suspect_features_l <- split(suspect_features, suspect_features$analysis)
-    features <- nts$features
-    sus_col <- lapply(
-      names(features),
-      function(a, features, suspect_features_l, suspect_cols) {
-        suspects <- suspect_features_l[[a]]
-        fts <- features[[a]]
-        if (!is.null(suspects)) {
-          suspects_l <- lapply(
-            fts$feature,
-            function(z, suspects, suspect_cols) {
-              sus_idx <- which(suspects$feature %in% z)
-              if (length(sus_idx) > 0) {
-                sus_temp <- suspects[sus_idx, ]
-                sus_temp[["analysis"]] <- NULL
-                if (nrow(sus_temp) > 0) {
-                  sus_temp
-                } else {
-                  data.table::data.table()
-                }
-              } else {
-                data.table::data.table()
-              }
-            },
-            suspects = suspects,
-            suspect_cols = suspect_cols
-          )
-          suspects_l
-        } else {
-          lapply(fts$feature, function(x) data.table::data.table())
+  message("Finding parents for transformation products in features...", appendLF = FALSE)
+  parents <- lapply(fts, function(a) {
+    parent_fts <- data.table::data.table()
+    for (i in seq_len(nrow(parent_results))) {
+      parent_name <- parent_results$name[i]
+      parent_smiles <- parent_results$SMILES[i]
+      suspects_fts <- vapply(a$suspects, function(z) any(z$name == parent_name | z$SMILES == parent_smiles), FALSE)
+      compound_fts <- vapply(a$compounds, function(z) any(z$name == parent_name | z$SMILES == parent_smiles), FALSE)
+      if (!any(suspects_fts) & !any(compound_fts)) {
+        next
+      }
+      if (any(suspects_fts)) {
+        suspect_idx <- which(suspects_fts)
+        for (s_idx in suspect_idx) {
+          parent_temp <- parent_results[i, ]
+          parent_temp$feature <- a$feature[s_idx]
+          parent_temp$group <- a$group[s_idx]
+          parent_temp$mz <- a$mz[s_idx]
+          parent_temp$rt <- a$rt[s_idx]
+          parent_temp$intensity <- a$intensity[s_idx]
+          parent_temp$area <- a$area[s_idx]
+          parent_temp$correction <- a$correction[s_idx]
+          parent_temp$ms2 <- a$ms2[s_idx]
+          parent_fts <- rbind(parent_fts, parent_temp, fill = TRUE)
         }
-      },
-      features = features,
-      suspect_features_l = suspect_features_l,
-      suspect_cols = suspect_cols
+      }
+      if (any(compound_fts)) {
+        compound_idx <- which(compound_fts)
+        for (c_idx in compound_idx) {
+          parent_temp <- parent_results[i, ]
+          parent_temp$feature <- a$feature[c_idx]
+          parent_temp$group <- a$group[c_idx]
+          parent_temp$mz <- a$mz[c_idx]
+          parent_temp$rt <- a$rt[c_idx]
+          parent_temp$intensity <- a$intensity[c_idx]
+          parent_temp$area <- a$area[c_idx]
+          parent_temp$correction <- a$correction[c_idx]
+          parent_temp$ms2 <- a$ms2[c_idx]
+          parent_fts <- rbind(parent_fts, parent_temp, fill = TRUE)
+        }
+      }
+    }
+    parent_fts
+  })
+  parents <- data.table::rbindlist(parents, idcol = "analysis", fill = TRUE)
+  parents$replicate <- rpls[as.character(parents$analysis)]
+  message(" Done! ")
+  message("Finding transformation products in features...", appendLF = FALSE)
+  tps <- lapply(names(nts$features), function(a) {
+    tp <- data.table::data.table()
+    for (i in seq_len(nrow(tp_database))) {
+      tp_mass <- tp_database$mass[i]
+      tp_mass_min <- tp_mass - (tp_mass * x$parameters$ppm / 1e6)
+      tp_mass_max <- tp_mass + (tp_mass * x$parameters$ppm / 1e6)
+      parent <- parents[parents$name %in% tp_database$parent[i], ]
+      parent_rt <- mean(parent$rt, na.rm = TRUE)
+      rt_direction <- tp_database$retDir[i]
+      fts_idx <- which(
+        nts$features[[a]]$mass >= tp_mass_min &
+        nts$features[[a]]$mass <= tp_mass_max &
+        !nts$features[[a]]$filtered
+      )
+      if (length(fts_idx) > 0) {
+        for (ft in fts_idx) {
+          if (rt_direction == -1) {
+            if (parent_rt < nts$features[[a]]$rt[ft]) {
+              next
+            }
+          } else if (rt_direction == 1) {
+            if (parent_rt > nts$features[[a]]$rt[ft]) {
+              next
+            }
+          }
+          tp_temp <- tp_database[i, ]
+          tp_temp$feature <- nts$features[[a]]$feature[ft]
+          tp_temp$group <- nts$features[[a]]$group[ft]
+          tp_temp$mz <- nts$features[[a]]$mz[ft]
+          tp_temp$rt <- nts$features[[a]]$rt[ft]
+          tp_temp$intensity <- nts$features[[a]]$intensity[ft]
+          tp_temp$area <- nts$features[[a]]$area[ft]
+          tp_temp$correction <- nts$features[[a]]$correction[ft]
+          tp_temp$ms2 <- nts$features[[a]]$ms2[ft]
+          tp <- rbind(tp, tp_temp, fill = TRUE)
+        }
+      }
+    }
+    tp
+  })
+  names(tps) <- names(nts$features)
+  tps <- data.table::rbindlist(tps, idcol = "analysis", fill = TRUE)
+  tps$replicate <- rpls[as.character(tps$analysis)]
+  n_tps <- nrow(tps)
+  if (n_tps > 0) {
+    parents_not_found <- parent_results[!parent_results$name %in% parents$name, ]
+    tps_not_found <- tp_database[!tp_database$name %in% tps$name, ]
+    if (nrow(parents_not_found) > 0) {
+      parents <- rbind(parents, parents_not_found, fill = TRUE)
+    }
+    if (nrow(tps_not_found) > 0) {
+      tps <- rbind(tps, tps_not_found, fill = TRUE)
+    }
+    tps <- split(tps, tps$parent)
+    new_tps <- MassSpecResults_TransformationProducts(
+      parents = parents,
+      transformation_products = tps
     )
-    names(sus_col) <- names(features)
-    features <- Map(
-      function(fts, i) {
-        fts$suspects <- i
-        fts
-      },
-      features,
-      sus_col
-    )
-    nts$features <- features
-    engine$Results <- nts
-    message("\U2713 Transformation products screening completed! Found ", nrow(suspect_features), " suspects.")
-    TRUE
+    engine$Results <- new_tps
+    message(" Done! Found ", n_tps, " transformation products. ")
   } else {
-    message("\U26a0 No transformation product suspects found!")
-    FALSE
+    message(" Done! No transformation products found. ")
   }
+  
+  message("\U2713 Transformation products screening completed!")
+  TRUE
 }

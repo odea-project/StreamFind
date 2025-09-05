@@ -1,4 +1,3 @@
-
 # A -----
 
 #' @title S3 generic `add`
@@ -475,6 +474,17 @@ get_spectra_tic <- function(x, ...) {
 #'
 get_suspects <- function(x, ...) {
   UseMethod("get_suspects")
+}
+
+#' @title Generic `get_transformation_products`
+#' @description S3 generic to get transformation products from `x`.
+#' @param x An object from which the transformation products will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+get_transformation_products <- function(x, ...) {
+  UseMethod("get_transformation_products")
 }
 
 # H -----
@@ -1010,6 +1020,17 @@ plot_spectra_xic <- function(x, ...) {
 #'
 plot_suspects <- function(x, ...) {
   UseMethod("plot_suspects")
+}
+
+#' @title Generic `plot_transformation_products_network`
+#' @description S3 generic to plot transformation products network from `x`.
+#' @param x An object from which the transformation products network will be plotted.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+plot_transformation_products_network <- function(x, ...) {
+  UseMethod("plot_transformation_products_network")
 }
 
 #' @title Generic `predict`

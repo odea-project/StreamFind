@@ -28,7 +28,7 @@ MassSpecMethod_GenerateTransformationProducts_biotransformer(
 
 \item{use_suspects}{Logical. If TRUE suspects in the MassSpecResults_NonTargetAnalysis will be used as parents.}
 
-\item{use_compounds}{Logical. If TRUE compounds in the MassSpecResults_NonTargetAnalysis will be used as parents.}
+\item{use_compounds}{Logical. If TRUE compounds in the MassSpecResults_NonTargetAnalysis will be used as parents. If more more than one structure is available for a compound, only the first one will be used as it is assumed that this is the most relevant one (i.e., the highest score).}
 
 \item{type}{Character. The type of prediction. Valid values are: "env", "ecbased", "cyp450", "phaseII", "hgut", "superbio", "allHuman". Sets the -b command line option. Default is "env".}
 

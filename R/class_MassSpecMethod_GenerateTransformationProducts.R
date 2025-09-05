@@ -4,7 +4,7 @@
 #' @description Generates transformation products using the \href{https://biotransformer.ca/}{BioTransformer} tool via \href{https://github.com/rickhelmus/patRoon}{patRoon} integration. This method is a wrapper of the `generateTPsBioTransformer` function from the patRoon package. See more details in href{https://rickhelmus.github.io/patRoon/reference/generateTPsBioTransformer.html}{here}.
 #' @param parents The parents provided as data.table with at least 'name' and 'SMILES' columns for which transformation products.
 #' @param use_suspects Logical. If TRUE suspects in the MassSpecResults_NonTargetAnalysis will be used as parents.
-#' @param use_compounds Logical. If TRUE compounds in the MassSpecResults_NonTargetAnalysis will be used as parents.
+#' @param use_compounds Logical. If TRUE compounds in the MassSpecResults_NonTargetAnalysis will be used as parents. If more more than one structure is available for a compound, only the first one will be used as it is assumed that this is the most relevant one (i.e., the highest score).
 #' @param type Character. The type of prediction. Valid values are: "env", "ecbased", "cyp450", "phaseII", "hgut", "superbio", "allHuman". Sets the -b command line option. Default is "env".
 #' @param generations Integer. The number of generations (steps) for the predictions. Sets the -s command line option. Default is 2.
 #' @param maxExpGenerations Integer. The maximum number of generations during hierarchy expansion. Default is generations + 2.
@@ -209,18 +209,36 @@ run.MassSpecMethod_GenerateTransformationProducts_biotransformer <- function(x, 
       return(FALSE)
     }
 
-    if (nrow(tp_data) == 0) {
-      warning("No transformation products data available! Not done.")
-      return(FALSE)
-    }
+    if (all(is.na(parents$mz))) tps@parents[["mz"]] <- NULL
+    tps@parents[["mass"]]  <- tps@parents[["neutralMass"]]
+    tps@parents[["neutralMass"]] <- NULL
+
+    tps@products <- lapply(tps@products, function(tp) {
+      if (all(is.na(parents$mz))) tp[["mz"]] <- NULL
+      tp[["mass"]]  <- tp[["neutralMass"]]
+      tp[["neutralMass"]] <- NULL
+      tp$parent_name <- tp$parent_ID
+      for (z in seq_len(nrow(tp))) {
+        if (!is.na(tp$parent_ID[z])) {
+          tp$parent_name[z] <- tp$name[tp$parent_ID[z]]
+        }
+      }
+      tp
+    })
+
+    tps@products <- Map(function(z, y) {
+      if (nrow(z) > 0) {
+        z$parent_name[is.na(z$parent_name)] <- y
+      }
+      z
+    }, tps@products, names(tps@products))
 
     tp_results <- MassSpecResults_TransformationProducts(
-      parents = parents_dt,
-      transformation_products = tp_products_list
+      parents = tps@parents,
+      transformation_products = tps@products
     )
 
     engine$Results <- tp_results
-
     message("\U2713 Transformation products generation completed with BioTransformer!")
     return(TRUE)
   }, error = function(e) {
