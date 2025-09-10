@@ -883,12 +883,9 @@ The \code{MassSpecResults_NonTargetAnalysis} class is a child of the \link{Resul
 
 \item \code{get_compounds(MassSpecResults_NonTargetAnalysis)}: Extracts compounds from the MassSpecResults_NonTargetAnalysis object. If the MassSpecResults_NonTargetAnalysis object has groups, it averages the compounds across replicates, when \code{averaged = TRUE}.
 
-\item \code{get_fold_change(MassSpecResults_NonTargetAnalysis)}: Gets a data.table with fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}.
+\item \code{get_fold_change(MassSpecResults_NonTargetAnalysis)}: Gets a data.table with fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}. This method is adapted from the work of \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
 
-\item \code{plot_fold_change(MassSpecResults_NonTargetAnalysis)}: Plots the fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}.
-
-#' @param replicatesIn Character vector with the names of the replicates to be considered as
-the denominator.
+\item \code{plot_fold_change(MassSpecResults_NonTargetAnalysis)}: Plots the fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}. This method is adapted from the work of \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
 
 \item \code{get_patRoon_features(MassSpecResults_NonTargetAnalysis)}: Creates an S4 class \code{features} or \code{featureGroups}from the \pkg{patRoon} package.
 
@@ -902,3 +899,6 @@ the denominator.
 \item \code{as.MassSpecResults_NonTargetAnalysis()}: Converts a list object to a \code{MassSpecResults_NonTargetAnalysis} object if it is compatible.
 
 }}
+\references{
+\insertRef{bader01}{StreamFind}
+}

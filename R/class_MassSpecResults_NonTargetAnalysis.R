@@ -5988,7 +5988,7 @@ get_compounds.MassSpecResults_NonTargetAnalysis <- function(
 }
 
 # MARK: get_fold_change
-#' @describeIn MassSpecResults_NonTargetAnalysis Gets a data.table with fold-change analysis between the `replicatesIn` and `replicatesOut`.
+#' @describeIn MassSpecResults_NonTargetAnalysis Gets a data.table with fold-change analysis between the `replicatesIn` and `replicatesOut`. This method is adapted from the work of \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
 #'
 #' @param replicatesIn Character vector with the names of the replicates to be considered as
 #' the denominator.
@@ -6004,6 +6004,9 @@ get_compounds.MassSpecResults_NonTargetAnalysis <- function(
 #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
 #'
 #' @export
+#' 
+#' @references
+#' \insertRef{bader01}{StreamFind}
 #'
 get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
     x,
@@ -6163,9 +6166,9 @@ get_fold_change.MassSpecResults_NonTargetAnalysis <- function(
 }
 
 # MARK: plot_fold_change
-#' @describeIn MassSpecResults_NonTargetAnalysis Plots the fold-change analysis between the `replicatesIn` and `replicatesOut`.
+#' @describeIn MassSpecResults_NonTargetAnalysis Plots the fold-change analysis between the `replicatesIn` and `replicatesOut`. This method is adapted from the work of \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
 #'
-#' #' @param replicatesIn Character vector with the names of the replicates to be considered as
+#' @param replicatesIn Character vector with the names of the replicates to be considered as
 #' the denominator.
 #' @param replicatesOut Character vector with the names of the replicates to be considered as
 #' the numerator.

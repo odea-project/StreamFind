@@ -1027,10 +1027,8 @@ with the lower limit.</p></dd>
 <li><p><code>get_internal_standards(MassSpecResults_NonTargetAnalysis)</code>: Extracts internal standards from the MassSpecResults_NonTargetAnalysis object. If the MassSpecResults_NonTargetAnalysis object has groups, it averages the internal standards across replicates, when <code>average = TRUE</code>.</p></li>
 <li><p><code>plot_internal_standards(MassSpecResults_NonTargetAnalysis)</code>: Plots internal standards from the MassSpecResults_NonTargetAnalysis object. If the MassSpecResults_NonTargetAnalysis object has groups, it averages the internal standards across replicates, when <code>average = TRUE</code>.</p></li>
 <li><p><code>get_compounds(MassSpecResults_NonTargetAnalysis)</code>: Extracts compounds from the MassSpecResults_NonTargetAnalysis object. If the MassSpecResults_NonTargetAnalysis object has groups, it averages the compounds across replicates, when <code>averaged = TRUE</code>.</p></li>
-<li><p><code>get_fold_change(MassSpecResults_NonTargetAnalysis)</code>: Gets a data.table with fold-change analysis between the <code>replicatesIn</code> and <code>replicatesOut</code>.</p></li>
-<li><p><code>plot_fold_change(MassSpecResults_NonTargetAnalysis)</code>: Plots the fold-change analysis between the <code>replicatesIn</code> and <code>replicatesOut</code>.</p>
-<p>#' @param replicatesIn Character vector with the names of the replicates to be considered as
-the denominator.</p></li>
+<li><p><code>get_fold_change(MassSpecResults_NonTargetAnalysis)</code>: Gets a data.table with fold-change analysis between the <code>replicatesIn</code> and <code>replicatesOut</code>. This method is adapted from the work of <a href="https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037" class="external-link">Bader et al. (2017)</a>.</p></li>
+<li><p><code>plot_fold_change(MassSpecResults_NonTargetAnalysis)</code>: Plots the fold-change analysis between the <code>replicatesIn</code> and <code>replicatesOut</code>. This method is adapted from the work of <a href="https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037" class="external-link">Bader et al. (2017)</a>.</p></li>
 <li><p><code>get_patRoon_features(MassSpecResults_NonTargetAnalysis)</code>: Creates an S4 class <code>features</code> or <code>featureGroups</code>from the <span class="pkg">patRoon</span> package.</p></li>
 <li><p><code>get_patRoon_MSPeakLists(MassSpecResults_NonTargetAnalysis)</code>: Creates S4 class <code>MSPeakLists</code>. Note that feature groups are required. The MS and MSMS spectra of each feature are then average by <span class="pkg">patRoon</span> to produce the feature group spectra.</p></li>
 <li><p><code>get_patRoon_compounds(MassSpecResults_NonTargetAnalysis)</code>: Creates an S4 class <code>Compounds</code> from the <span class="pkg">patRoon</span> package.</p></li>
@@ -1040,6 +1038,14 @@ the denominator.</p></li>
 
 <ul><li><p><code>as.MassSpecResults_NonTargetAnalysis()</code>: Converts a list object to a <code>MassSpecResults_NonTargetAnalysis</code> object if it is compatible.</p></li>
 </ul></div>
+    <div class="section level2">
+    <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
+    <p>Bader T, Schulz W, Kümmerer K, Winzenbacher R (2017).
+“LC-HRMS Data Processing Strategy for Reliable Sample Comparison Exemplified by the Assessment of Water Treatment Processes.”
+<em>Analytical Chemistry</em>, <b>89</b>(24), 13219-13226.
+<a href="https://doi.org/10.1021/acs.analchem.7b03037" class="external-link">doi:10.1021/acs.analchem.7b03037</a>
+, PMID: 29166562, <a href="https://doi.org/10.1021/acs.analchem.7b03037" class="external-link">https://doi.org/10.1021/acs.analchem.7b03037</a>.</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
