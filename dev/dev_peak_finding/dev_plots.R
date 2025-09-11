@@ -409,3 +409,142 @@ plot_3D_by_rt <- function(spec_data, rt_indices, interactive = TRUE) {
     ))
   }
 }
+
+# Function to plot peaks overlaid on background chromatogram
+plot_peaks_on_chromatogram <- function(background_data, peaks_data, interactive = TRUE) {
+  # Convert data.table to data.frame if needed
+  if (data.table::is.data.table(background_data)) {
+    background_data <- as.data.frame(background_data)
+  }
+  if (data.table::is.data.table(peaks_data)) {
+    peaks_data <- as.data.frame(peaks_data)
+  }
+  
+  # Standardize column names for background data
+  if ("rt" %in% colnames(background_data) && "intensity" %in% colnames(background_data)) {
+    # Already has correct names
+  } else {
+    stop("Background data must contain 'rt' and 'intensity' columns")
+  }
+  
+  # Standardize column names for peaks data
+  # Check for different possible column name combinations
+  if ("rt" %in% colnames(peaks_data) && "height" %in% colnames(peaks_data)) {
+    # Already has correct names
+  } else if ("x" %in% colnames(peaks_data) && "y" %in% colnames(peaks_data)) {
+    # Rename x -> rt, y -> height
+    peaks_data$rt <- peaks_data$x
+    peaks_data$height <- peaks_data$y
+  } else if ("rt" %in% colnames(peaks_data) && "intensity" %in% colnames(peaks_data)) {
+    # Rename intensity -> height
+    peaks_data$height <- peaks_data$intensity
+  } else {
+    stop("Peaks data must contain either ('rt', 'height'), ('x', 'y'), or ('rt', 'intensity') columns")
+  }
+  
+  # Ensure rt columns are numeric
+  background_data$rt <- as.numeric(background_data$rt)
+  background_data$intensity <- as.numeric(background_data$intensity)
+  peaks_data$rt <- as.numeric(peaks_data$rt)
+  peaks_data$height <- as.numeric(peaks_data$height)
+  
+  # Add mz column to peaks if missing (for hover info)
+  if (!"mz" %in% colnames(peaks_data)) {
+    peaks_data$mz <- NA_real_
+  }
+  
+  if (interactive) {
+    # Create plotly interactive plot
+    p <- plotly::plot_ly() %>%
+      # Add background chromatogram line
+      plotly::add_trace(
+        data = background_data,
+        x = ~rt,
+        y = ~intensity,
+        type = "scatter",
+        mode = "lines",
+        name = "Chromatogram",
+        line = list(color = "blue", width = 1),
+        hovertemplate = "RT: %{x:.2f}<br>Intensity: %{y:.0f}<extra></extra>"
+      ) %>%
+      # Add peaks as vertical lines with points
+      plotly::add_trace(
+        data = peaks_data,
+        x = ~rt,
+        y = ~height,
+        type = "scatter",
+        mode = "markers+lines",
+        name = "Peaks",
+        marker = list(
+          color = "red",
+          size = 8,
+          symbol = "triangle-up"
+        ),
+        line = list(color = "red", width = 2, dash = "dot"),
+        hovertemplate = if (all(is.na(peaks_data$mz))) {
+          "Peak RT: %{x:.2f}<br>Height: %{y:.0f}<extra></extra>"
+        } else {
+          "Peak RT: %{x:.2f}<br>Height: %{y:.0f}<br>m/z: %{customdata:.4f}<extra></extra>"
+        },
+        customdata = if (all(is.na(peaks_data$mz))) NULL else peaks_data$mz
+      ) %>%
+      # Add vertical lines from x-axis to peak points
+      plotly::add_segments(
+        data = peaks_data,
+        x = ~rt, xend = ~rt,
+        y = 0, yend = ~height,
+        line = list(color = "red", width = 1, dash = "dash"),
+        showlegend = FALSE,
+        hoverinfo = "skip"
+      ) %>%
+      plotly::layout(
+        title = "Detected Peaks on Chromatogram",
+        xaxis = list(title = "Retention Time (s)"),
+        yaxis = list(title = "Intensity"),
+        hovermode = "closest"
+      ) %>%
+      plotly::toWebGL()
+    
+    return(p)
+    
+  } else {
+    # Create ggplot2 static plot
+    p <- ggplot2::ggplot() +
+      # Add background chromatogram line
+      ggplot2::geom_line(
+        data = background_data,
+        ggplot2::aes(x = rt, y = intensity),
+        color = "blue",
+        linewidth = 0.5,
+        alpha = 0.8
+      ) +
+      # Add vertical lines for peaks
+      ggplot2::geom_segment(
+        data = peaks_data,
+        ggplot2::aes(x = rt, xend = rt, y = 0, yend = height),
+        color = "red",
+        linetype = "dashed",
+        alpha = 0.7
+      ) +
+      # Add peak points
+      ggplot2::geom_point(
+        data = peaks_data,
+        ggplot2::aes(x = rt, y = height),
+        color = "red",
+        size = 3,
+        shape = 17  # triangle
+      ) +
+      ggplot2::labs(
+        title = "Detected Peaks on Chromatogram",
+        x = "Retention Time (s)",
+        y = "Intensity"
+      ) +
+      ggplot2::theme_minimal() +
+      ggplot2::theme(
+        panel.grid.minor = ggplot2::element_blank(),
+        plot.title = ggplot2::element_text(hjust = 0.5)
+      )
+    
+    return(p)
+  }
+}

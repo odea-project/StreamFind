@@ -131,3 +131,39 @@ spec_ordered_merged <- spec_ordered[, .(
 ), by = .(rt, cluster)]
 
 #plot_3D_by_rt(spec_ordered_merged)
+
+
+
+
+# MARK: Finding peaks (per cluster)
+peaks_list <- list()
+spec_ordered_merged <- spec_ordered_merged[order(spec_ordered_merged$rt), ]
+for (clust in unique(spec_ordered_merged$cluster)) {
+  if (is.na(clust)) next
+  clust <- 38
+  spec_clust <- spec_ordered_merged[
+    spec_ordered_merged$cluster == clust,
+  ]
+  plot(spec_clust$intensity ~ spec_clust$rt, type = "l")
+
+  source("dev/dev_peak_finding/dev_chrom_peak_algorithms.R")
+  peaks <- peak_detect_derivative(spec_clust)
+  peaks <- peak_detect_smooth(spec_clust)
+  peaks <- peak_detect_threshold(spec_clust)
+
+  source("dev/dev_peak_finding/dev_plots.R")
+  plot_peaks_on_chromatogram(spec_clust, peaks, interactive = FALSE)
+
+
+
+  if (nrow(peaks) == 0) next
+  peaks$cluster <- clust
+  peaks$mz <- mean(spec_clust$mz)
+  peaks$weighted_mz <- sum(spec_clust$mz * spec_clust$intensity) / sum(spec_clust$intensity)
+  peaks$mzmin <- min(spec_clust$mz)
+  peaks$mzmax <- max(spec_clust$mz)
+  peaks$dppm <- (max(spec_clust$mz) - min(spec_clust$mz)) / mean(spec_clust$mz) * 1e6
+  peaks$intensity <- peaks$y
+  peaks_list[[as.character(clust)]] <- peaks[, c("mz", "weighted_mz", "mzmin", "mzmax", "dppm", "x", "intensity", "cluster")]
+}
+
