@@ -1,4 +1,5 @@
-all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
+#all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
+all_files_dir <- "D:\\peak_finding_files_ex"
 all_files <- list.files(all_files_dir, full.names = TRUE, recursive = TRUE, pattern = "\\.mzML$")
 
 files_tof_cent <- all_files[grepl("tof_centroid", all_files)]

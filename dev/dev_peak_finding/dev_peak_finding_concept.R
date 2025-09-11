@@ -38,8 +38,8 @@ orb_target <- data.frame(
 
 spec <- get_raw_spectra(
   ms$Analyses,
-  analyses = 3,
-  mz = orb_target,
+  analyses = 3, #3
+  mz = orb_target, #orb_target #tof_target
   levels = 1
 )
 
@@ -49,10 +49,10 @@ spec <- get_raw_spectra(
 # Peak Finding Concept ---------------------------------------------------------
 
 # args for TOF data
-args <- list(
-  noise = 500,
-  mzThreshold = 0.005
-)
+# args <- list(
+#   noise = 500,
+#   mzThreshold = 0.005
+# )
 
 # args for Orbitrap data
 args <- list(
@@ -138,32 +138,65 @@ spec_ordered_merged <- spec_ordered[, .(
 # MARK: Finding peaks (per cluster)
 peaks_list <- list()
 spec_ordered_merged <- spec_ordered_merged[order(spec_ordered_merged$rt), ]
+
 for (clust in unique(spec_ordered_merged$cluster)) {
   if (is.na(clust)) next
+
+  # orb
   clust <- 38
+  clust <- 105
+  clust <- 18
+  clust <- 135
+  clust <- 44
+
+  # tof
+  clust <- 33
+  clust <- 6
+  clust <- 23
+
+
   spec_clust <- spec_ordered_merged[
     spec_ordered_merged$cluster == clust,
   ]
-  plot(spec_clust$intensity ~ spec_clust$rt, type = "l")
+
+  #plot(spec_clust$intensity ~ spec_clust$rt, type = "l")
 
   source("dev/dev_peak_finding/dev_chrom_peak_algorithms.R")
   peaks <- peak_detect_derivative(spec_clust)
-  peaks <- peak_detect_smooth(spec_clust)
-  peaks <- peak_detect_threshold(spec_clust)
+  peaks[[1]]
+  peaks[[2]]
 
-  source("dev/dev_peak_finding/dev_plots.R")
-  plot_peaks_on_chromatogram(spec_clust, peaks, interactive = FALSE)
+  # Other techniques to explore
+  #peaks <- peak_detect_cwt(spec_clust)
+  #peaks <- peak_detect_wavelets(spec_clust)
+  #peaks <- peak_detect_smooth(spec_clust)
+  #peaks <- peak_detect_threshold(spec_clust)
 
+  peaks_dt <- peaks[[1]]
+  peaks_dt$cluster <- clust
 
+  # Adds m/z info to peaks
+  for (pk in seq_len(nrow(peaks_dt))) {
+    peak_sel <- spec_ordered$cluster == clust & spec_ordered$rt >= peaks_dt$rtmin[pk] & spec_ordered$rt <= peaks_dt$rtmax[pk]
+    peak_intensities <- spec_ordered$intensity[peak_sel]
+    peaks_dt$mz[pk] <- mean(spec_ordered$mz[peak_sel], na.rm = TRUE)
+    peaks_dt$mz_wt[pk] <- sum(spec_ordered$mz[peak_sel] * peak_intensities, na.rm = TRUE) / sum(peak_intensities, na.rm = TRUE)
+    peaks_dt$mzmin[pk] <- min(spec_ordered$mz[peak_sel], na.rm = TRUE)
+    peaks_dt$mzmax[pk] <- max(spec_ordered$mz[peak_sel], na.rm = TRUE)
+    peaks_dt$ppm [pk] <- (peaks_dt$mzmax[pk] - peaks_dt$mzmin[pk]) / peaks_dt$mz[pk] * 1e6
+  }
+  data.table::setcolorder(peaks_dt, c("rt", "mz", "mz_wt", "mzmin", "mzmax", "ppm", "intensity", "cluster"))
 
-  if (nrow(peaks) == 0) next
-  peaks$cluster <- clust
-  peaks$mz <- mean(spec_clust$mz)
-  peaks$weighted_mz <- sum(spec_clust$mz * spec_clust$intensity) / sum(spec_clust$intensity)
-  peaks$mzmin <- min(spec_clust$mz)
-  peaks$mzmax <- max(spec_clust$mz)
-  peaks$dppm <- (max(spec_clust$mz) - min(spec_clust$mz)) / mean(spec_clust$mz) * 1e6
-  peaks$intensity <- peaks$y
-  peaks_list[[as.character(clust)]] <- peaks[, c("mz", "weighted_mz", "mzmin", "mzmax", "dppm", "x", "intensity", "cluster")]
+  # dev code
+  # source("dev/dev_peak_finding/dev_plots.R")
+  # plot_peaks_on_chromatogram(spec_clust, peaks, interactive = FALSE)
+  # if (nrow(peaks) == 0) next
+  # peaks$cluster <- clust
+  # peaks$mz <- mean(spec_clust$mz)
+  # peaks$weighted_mz <- sum(spec_clust$mz * spec_clust$intensity) / sum(spec_clust$intensity)
+  # peaks$mzmin <- min(spec_clust$mz)
+  # peaks$mzmax <- max(spec_clust$mz)
+  # peaks$dppm <- (max(spec_clust$mz) - min(spec_clust$mz)) / mean(spec_clust$mz) * 1e6
+  # peaks$intensity <- peaks$y
+  # peaks_list[[as.character(clust)]] <- peaks[, c("mz", "weighted_mz", "mzmin", "mzmax", "dppm", "x", "intensity", "cluster")]
 }
-
