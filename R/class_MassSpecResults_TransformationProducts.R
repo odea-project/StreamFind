@@ -108,8 +108,6 @@ get_transformation_products.MassSpecResults_TransformationProducts <- function(
 
   for (parent_name in names(transformation_list)) {
     parents_info <- parents_dt[parents_dt$name %in% parent_name, ]
-
-    # Filter by parent replicate if specified
     if (!is.null(parentsReplicate)) {
       if ("replicate" %in% colnames(parents_info)) {
         parents_info <- parents_info[parents_info$replicate %in% parentsReplicate, ]
@@ -119,20 +117,14 @@ get_transformation_products.MassSpecResults_TransformationProducts <- function(
 
     tps <- transformation_list[[parent_name]]
     if (is.null(tps) || nrow(tps) == 0) next
-
-    # Create a copy to avoid modifying the original data
     tps <- data.table::copy(tps)
-
-    # Filter by product replicate if specified
     if (!is.null(productsReplicate)) {
       if ("replicate" %in% colnames(tps)) {
-        # Mark rows that don't match the specified replicate
         tps$analysis[!tps$replicate %in% productsReplicate] <- NA_character_
         tps$replicate[!tps$replicate %in% productsReplicate] <- NA_character_
       }
     }
 
-    # Add parent replicate and group information if available
     if ("replicate" %in% colnames(parents_info)) {
       parent_replicates <- unique(parents_info$replicate)
       parent_replicates <- parent_replicates[!is.na(parent_replicates)]
@@ -153,7 +145,6 @@ get_transformation_products.MassSpecResults_TransformationProducts <- function(
       }
     }
 
-    # Add detection status based on analysis column
     if ("analysis" %in% colnames(tps)) {
       tps$detected <- !is.na(tps$analysis)
     }
@@ -161,8 +152,6 @@ get_transformation_products.MassSpecResults_TransformationProducts <- function(
     if (onlyHits) {
       tps <- tps[tps$detected, ]
     }
-
-    # Combine all transformation products
     all_transformations <- rbind(all_transformations, tps, fill = TRUE)
   }
 
@@ -268,115 +257,135 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
   all_nodes <- data.table::data.table()
   all_edges <- data.table::data.table()
   for (parent_name in names(transformation_list)) {
-    
     parent_info <- parents_dt[parents_dt$name %in% parent_name, ]
-    if (!is.null(parentsReplicate)) {
-      if ("replicate" %in% colnames(parent_info)) {
-        parent_info <- parent_info[parent_info$replicate %in% parentsReplicate, ]
-      } else {
-        parent_info$replicate <- ""
-        parent_info$analysis <- ""
-      }
-    } else {
+    if (nrow(parent_info) == 0) next
+    if (!"replicate" %in% colnames(parent_info)) {
       parent_info$replicate <- ""
+    }
+    if (!"analysis" %in% colnames(parent_info)) {
       parent_info$analysis <- ""
     }
-    if (nrow(parent_info) == 0) next
-
-    has_replicate_filter <- FALSE
-    tps <- transformation_list[[parent_name]]
-    if (!is.null(productsReplicate)) {
-      has_replicate_filter <- TRUE
-      if ("replicate" %in% colnames(tps)) {
-        tps$analysis[!tps$replicate %in% productsReplicate] <- ""
-        tps$replicate[!tps$replicate %in% productsReplicate] <- ""
-      } else {
-        tps$analysis <- ""
-        tps$replicate <- ""
-      }
-    } else {
-      tps$analysis <- ""
-      tps$replicate <- ""
-    }
-    if (is.null(tps) || nrow(tps) == 0) next
-
     if (!"group" %in% colnames(parent_info)) {
       parent_info$group <- ""
     }
 
+    tps <- transformation_list[[parent_name]]
+    if (is.null(tps) || nrow(tps) == 0) next
+    if (!"replicate" %in% colnames(tps)) {
+      tps$replicate <- ""
+    }
+    if (!"analysis" %in% colnames(tps)) {
+      tps$analysis <- ""
+    }
     if (!"group" %in% colnames(tps)) {
       tps$group <- ""
     }
+    if (!"parent_similarity" %in% colnames(tps)) {
+      tps$parent_similarity <- 0
+    }
+    if (!"max_shared_fragments" %in% colnames(tps)) {
+      tps$max_shared_fragments <- 0
+    }
 
-    tps$group[is.na(tps$group)] <- ""
+    parent_info$replicate[is.na(parent_info$replicate)] <- ""
+    parent_info$analysis[is.na(parent_info$analysis)] <- ""
     parent_info$group[is.na(parent_info$group)] <- ""
+    tps$replicate[is.na(tps$replicate)] <- ""
+    tps$analysis[is.na(tps$analysis)] <- ""
+    tps$group[is.na(tps$group)] <- ""
+    
 
-    parent_info <- parent_info[, .(
+    parent_info_summary <- parent_info[, .(
+      name = name[1],
       formula = formula[1],
       mass = mass[1],
-      SMILES = SMILES[1],
-      analysis = paste(unique(analysis[!is.na(analysis) & analysis != ""]), collapse = "<br>"),
-      replicate = paste(unique(replicate[!is.na(replicate) & replicate != ""]), collapse = "<br>"),
-      group = paste(unique(group[!is.na(group) & group != ""]), collapse = "<br>")
+      SMILES = SMILES[1]
     ), by = name]
 
-    tps <- tps[, .(
+    parents_info_details <- unique(parent_info[, c("analysis", "replicate", "group")])
+
+    create_details_parent_table <- function(details_df) {
+      if (nrow(details_df) == 0) return("")
+      table_html <- "<table border='1' cellpadding='3' cellspacing='0' style='border-collapse: collapse; font-size: 10px;'>"
+      table_html <- paste0(table_html, "<tr style='background-color: #f0f0f0;'>")
+      table_html <- paste0(table_html, "<th>Analysis</th><th>Replicate</th><th>Group</th>")
+      table_html <- paste0(table_html, "</tr>")
+      for (i in seq_len(nrow(details_df))) {
+        table_html <- paste0(table_html, "<tr>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$analysis[i]), "-", details_df$analysis[i]), "</td>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$replicate[i]), "-", details_df$replicate[i]), "</td>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$group[i]), "-", details_df$group[i]), "</td>")
+        table_html <- paste0(table_html, "</tr>")
+      }
+      table_html <- paste0(table_html, "</table>")
+      return(table_html)
+    }
+
+    tps_summary <- tps[, .(
       formula = formula[1],
       mass = mass[1],
       generation = generation[1],
       transformation = paste(unique(transformation[!is.na(transformation) & transformation != ""]), collapse = "<br>"),
       SMILES = SMILES[1],
-      analysis = paste(unique(analysis[!is.na(analysis) & analysis != ""]), collapse = "<br>"),
-      replicate = paste(unique(replicate[!is.na(replicate) & replicate != ""]), collapse = "<br>"),
-      group = paste(unique(group[!is.na(group) & group != ""]), collapse = "<br>"),
       parent_name = parent_name[1]
     ), by = name]
 
-    parent_info$color <- "lightgreen"
-    if (any(!parent_info$replicate %in% "")) {
-      parent_info$color[parent_info$replicate %in% ""] <- "lightgray"
+    cols_tps_keep <- c("name", "analysis", "replicate", "group", "parent_similarity", "max_shared_fragments")
+    cols_tps_keep <- cols_tps_keep[cols_tps_keep %in% colnames(tps)]
+    tps_details <- unique(tps[, cols_tps_keep, with = FALSE])
+    tps_details <- tps_details[!(analysis %in% "" & replicate %in% "" & group %in% "")]
+
+    parent_info_summary$color <- "lightgreen"
+    if (!is.null(parentsReplicate)) {
+      if (all(!parents_info_details$replicate %in% parentsReplicate)) {
+        parent_info_summary$color <- "lightgray"
+      }
     }
 
-    tps$color <- "lightblue"
-    tps$color[tps$generation == 1] <- "orange"
-    tps$color[tps$generation == 2] <- "yellow"
-    if (any(!tps$replicate %in% "") || has_replicate_filter) {
-      tps$color[tps$replicate %in% ""] <- "lightgray"
+    tps_summary$color <- "lightblue"
+    tps_summary$color[tps_summary$generation == 1] <- "orange"
+    tps_summary$color[tps_summary$generation == 2] <- "yellow"
+    
+    if (!is.null(productsReplicate)) {
+      if (any(!tps$replicate %in% productsReplicate)) {
+        names_in_replicate <- unique(tps$name[tps$replicate %in% productsReplicate])
+        names_not_in_replicate <- unique(tps$name[!tps$name %in% names_in_replicate])
+        tps_summary$color[tps_summary$name %in% names_not_in_replicate] <- "lightgray"
+      }
     }
 
     parent_image <- NULL
     parent_smiles <- NULL
-    if ("SMILES" %in% colnames(parent_info) && !is.na(parent_info$SMILES[1])) {
-      parent_smiles <- parent_info$SMILES[1]
-      parent_image <- create_structure_image(parent_smiles, parent_name)
+    if ("SMILES" %in% colnames(parent_info_summary) && !is.na(parent_info_summary$SMILES[1])) {
+      parent_smiles <- parent_info_summary$SMILES[1]
+      parent_image <- create_structure_image(parent_smiles, parent_info_summary$name)
     }
 
     parent_node <- data.table::data.table(
-      id = parent_name,
-      label = parent_name,
+      id = parent_info_summary$name,
+      label = parent_info_summary$name,
       group = "Parent",
       value = 20,
       shape = "circle",
       title = paste0(
-        "<p><b>Parent: ", parent_name, "</b><br>",
-        "Replicate: <br>", parent_info$replicate, "<br>",
-        "Group: <br>", parent_info$group, "<br>",
-        "Formula: ", parent_info$formula, "<br>",
-        "Mass: ", round(parent_info$mass, 4), "<br>",
+        "<p><b>Parent: ", parent_info_summary$name, "</b><br>",
+        "Formula: ", parent_info_summary$formula, "<br>",
+        "Mass: ", round(parent_info_summary$mass, 4), "<br>",
+        if (nrow(parents_info_details) > 0) paste0("<br><b>Details:</b><br>", create_details_parent_table(parents_info_details), "<br>") else "",
         if (!is.null(parent_image)) paste0("<img src='", parent_image, "' width='500' height='400' style='display:block; margin:10px;'><br>") else "",
         "</p>"
       ),
-      color = parent_info$color,
+      color = parent_info_summary$color,
       shadow = TRUE,
       font.size = 14,
       stringsAsFactors = FALSE
     )
 
-    tp_images <- rep(NA_character_, nrow(tps))
-    if ("SMILES" %in% names(tps)) {
-      for (i in seq_len(nrow(tps))) {
-        if (!is.na(tps$SMILES[i])) {
-          tp_img <- create_structure_image(tps$SMILES[i], tps$name[i], parent_smiles)
+    tp_images <- rep(NA_character_, nrow(tps_summary))
+    if ("SMILES" %in% names(tps_summary)) {
+      for (i in seq_len(nrow(tps_summary))) {
+        if (!is.na(tps_summary$SMILES[i])) {
+          tp_img <- create_structure_image(tps_summary$SMILES[i], tps_summary$name[i], parent_smiles)
           if (!is.null(tp_img)) {
             tp_images[i] <- tp_img
           }
@@ -384,36 +393,58 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
       }
     }
 
+    create_details_table <- function(details_df) {
+      if (nrow(details_df) == 0) return("")
+      table_html <- "<table border='1' cellpadding='3' cellspacing='0' style='border-collapse: collapse; font-size: 10px;'>"
+      table_html <- paste0(table_html, "<tr style='background-color: #f0f0f0;'>")
+      table_html <- paste0(table_html, "<th>Analysis</th><th>Replicate</th><th>Group</th><th>Parent Similarity</th><th>Max Shared Fragments</th>")
+      table_html <- paste0(table_html, "</tr>")
+      for (i in seq_len(nrow(details_df))) {
+        table_html <- paste0(table_html, "<tr>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$analysis[i]), "-", details_df$analysis[i]), "</td>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$replicate[i]), "-", details_df$replicate[i]), "</td>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$group[i]), "-", details_df$group[i]), "</td>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$parent_similarity[i]), "-", details_df$parent_similarity[i]), "</td>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$max_shared_fragments[i]), "-", details_df$max_shared_fragments[i]), "</td>")
+        table_html <- paste0(table_html, "</tr>")
+      }
+      table_html <- paste0(table_html, "</table>")
+      return(table_html)
+    }
+
     tp_nodes <- data.table::data.table(
-      id = tps$name,
-      label = tps$name,
-      group = paste0("Generation_", tps$generation),
-      value = 15 - tps$generation * 2,
+      id = tps_summary$name,
+      label = tps_summary$name,
+      group = paste0("Generation_", tps_summary$generation),
+      value = 15 - tps_summary$generation * 2,
       shape = "box",
-      title = paste0(
-        "<p><b>", tps$name, "</b><br>",
-        "Replicate: <br>", tps$replicate, "<br>",
-        "Group: <br>", tps$group, "<br>",
-        "Formula: ", tps$formula, "<br>",
-        "Mass: ", round(tps$mass, 4), "<br>",
-        "Generation: ", tps$generation, "<br>",
-        "Transformation: ", tps$transformation, "<br>",
-        ifelse(!is.na(tp_images), paste0("<img src='", tp_images, "' width='500' height='400' style='display:block; margin:10px;'><br>"), ""),
-        "</p>"
-      ),
-      color = tps$color,
+      title = sapply(seq_len(nrow(tps_summary)), function(i) {
+        tp_name <- tps_summary$name[i]
+        tp_details <- tps_details[tps_details$name == tp_name, ]
+        details_table <- create_details_table(tp_details)
+        paste0(
+          "<p><b>", tp_name, "</b><br>",
+          "Formula: ", tps_summary$formula[i], "<br>",
+          "Mass: ", round(tps_summary$mass[i], 4), "<br>",
+          "Generation: ", tps_summary$generation[i], "<br>",
+          "Transformation: ", tps_summary$transformation[i], "<br>",
+          if (nrow(tp_details) > 0) paste0("<br><b>Details:</b><br>", details_table, "<br>") else "",
+          ifelse(!is.na(tp_images[i]), paste0("<img src='", tp_images[i], "' width='500' height='400' style='display:block; margin:10px;'><br>"), ""),
+          "</p>"
+        )
+      }),
+      color = tps_summary$color,
       shadow = FALSE,
       font.size = 10,
       stringsAsFactors = FALSE
     )
 
-    #tp_nodes <- unique(tp_nodes)
     current_nodes <- rbind(parent_node, tp_nodes)
     all_nodes <- rbind(all_nodes, current_nodes)
 
     edges <- data.frame(
-      from = tps$parent_name,
-      to = tps$name
+      from = tps_summary$parent_name,
+      to = tps_summary$name
     )
     edges$color <- "lightgray"
     edges$width <- 1
