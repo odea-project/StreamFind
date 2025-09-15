@@ -192,7 +192,9 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
   if (!require(base64enc)) {
     stop("base64enc package is required for image encoding")
   }
-  create_structure_image <- function(smiles, compound_name, width = 380, height = 380) {
+  
+  # Create side-by-side structure comparison plots
+  create_structure_image <- function(smiles, compound_name, parent_smiles = NULL, width = 380, height = 380) {
     if (!require(ChemmineR)) {
       stop("ChemmineR package is required for structure visualization")
     }
@@ -203,19 +205,46 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
       {
         sdf <- smiles2sdf(smiles)
         temp_file <- tempfile(fileext = ".png")
-        ggplot2::ggsave(
-          filename = temp_file,
-          plot = {
-            par(mar = c(0.1, 0.1, 0.1, 0.1))
-            plotStruc(sdf[[1]])
-          },
-          device = "png",
-          width = width / 72, # Convert pixels to inches
-          height = height / 72,
-          dpi = 150,
-          bg = "white",
-          units = "in"
-        )
+        
+        # If parent SMILES is provided, create side-by-side comparison
+        if (!is.null(parent_smiles)) {
+          parent_sdf <- smiles2sdf(parent_smiles)
+          
+          # Create side-by-side plot with parent and transformation product
+          # Use png() directly instead of ggsave for base R plots
+          png(filename = temp_file, 
+              width = width * 2.5, height = height, 
+              res = 150, bg = "white")
+          
+          # Set up a 1x2 grid for side-by-side plotting with different widths
+          layout(matrix(c(1, 2), 1, 2), widths = c(0.4, 0.6))
+          
+          # Plot parent structure on the left (smaller)
+          par(mar = c(2, 1, 2, 0.5))
+          plotStruc(parent_sdf[[1]], atomcex = 0.6, 
+                   atomnum = FALSE,
+                   main = "Parent")
+          
+          # Plot transformation product on the right (larger)
+          par(mar = c(2, 0.5, 2, 1))
+          plotStruc(sdf[[1]], atomcex = 0.8, 
+                   atomnum = FALSE,
+                   main = paste("TP:", compound_name))
+          
+          # Close the device
+          dev.off()
+        } else {
+          # Normal structure plotting without parent comparison
+          png(filename = temp_file, 
+              width = width * 1.2, height = height, 
+              res = 150, bg = "white")
+          
+          par(mar = c(1, 1, 1, 1))
+          plotStruc(sdf[[1]])
+          
+          dev.off()
+        }
+        
         img_base64 <- base64enc::base64encode(temp_file)
         unlink(temp_file)
         return(paste0("data:image/png;base64,", img_base64))
@@ -239,68 +268,89 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
   all_nodes <- data.table::data.table()
   all_edges <- data.table::data.table()
   for (parent_name in names(transformation_list)) {
-    parents_info <- parents_dt[parents_dt$name %in% parent_name, ]
+    
+    parent_info <- parents_dt[parents_dt$name %in% parent_name, ]
     if (!is.null(parentsReplicate)) {
-      if ("replicate" %in% colnames(parents_info)) {
-        parents_info <- parents_info[parents_info$replicate %in% parentsReplicate, ]
+      if ("replicate" %in% colnames(parent_info)) {
+        parent_info <- parent_info[parent_info$replicate %in% parentsReplicate, ]
+      } else {
+        parent_info$replicate <- ""
+        parent_info$analysis <- ""
       }
+    } else {
+      parent_info$replicate <- ""
+      parent_info$analysis <- ""
     }
-    if (nrow(parents_info) == 0) next
+    if (nrow(parent_info) == 0) next
+
+    has_replicate_filter <- FALSE
     tps <- transformation_list[[parent_name]]
     if (!is.null(productsReplicate)) {
+      has_replicate_filter <- TRUE
       if ("replicate" %in% colnames(tps)) {
-        tps$analysis[!tps$replicate %in% productsReplicate] <- NA_character_
-        tps$replicate[!tps$replicate %in% productsReplicate] <- NA_character_
+        tps$analysis[!tps$replicate %in% productsReplicate] <- ""
+        tps$replicate[!tps$replicate %in% productsReplicate] <- ""
+      } else {
+        tps$analysis <- ""
+        tps$replicate <- ""
       }
+    } else {
+      tps$analysis <- ""
+      tps$replicate <- ""
     }
     if (is.null(tps) || nrow(tps) == 0) next
+
+    if (!"group" %in% colnames(parent_info)) {
+      parent_info$group <- ""
+    }
+
+    if (!"group" %in% colnames(tps)) {
+      tps$group <- ""
+    }
+
+    tps$group[is.na(tps$group)] <- ""
+    parent_info$group[is.na(parent_info$group)] <- ""
+
+    parent_info <- parent_info[, .(
+      formula = formula[1],
+      mass = mass[1],
+      SMILES = SMILES[1],
+      analysis = paste(unique(analysis[!is.na(analysis) & analysis != ""]), collapse = "<br>"),
+      replicate = paste(unique(replicate[!is.na(replicate) & replicate != ""]), collapse = "<br>"),
+      group = paste(unique(group[!is.na(group) & group != ""]), collapse = "<br>")
+    ), by = name]
+
+    tps <- tps[, .(
+      formula = formula[1],
+      mass = mass[1],
+      generation = generation[1],
+      transformation = paste(unique(transformation[!is.na(transformation) & transformation != ""]), collapse = "<br>"),
+      SMILES = SMILES[1],
+      analysis = paste(unique(analysis[!is.na(analysis) & analysis != ""]), collapse = "<br>"),
+      replicate = paste(unique(replicate[!is.na(replicate) & replicate != ""]), collapse = "<br>"),
+      group = paste(unique(group[!is.na(group) & group != ""]), collapse = "<br>"),
+      parent_name = parent_name[1]
+    ), by = name]
+
+    parent_info$color <- "lightgreen"
+    if (any(!parent_info$replicate %in% "")) {
+      parent_info$color[parent_info$replicate %in% ""] <- "lightgray"
+    }
 
     tps$color <- "lightblue"
     tps$color[tps$generation == 1] <- "orange"
     tps$color[tps$generation == 2] <- "yellow"
-    if ("analysis" %in% colnames(parents_info)) {
-      tps$color[is.na(tps$analysis)] <- "lightgray"
+    if (any(!tps$replicate %in% "") || has_replicate_filter) {
+      tps$color[tps$replicate %in% ""] <- "lightgray"
     }
-    tps_group <- character()
-    if ("group" %in% colnames(tps)) {
-      tps_group <- tps[, c("name", "group")]
-      tps_group <- tps_group[, .(group = paste(unique(group[!is.na(group)]), collapse = "<br>")), by = "name"]
-      tps_group_char <- tps_group$group
-    } else {
-      tps_group_char <- rep("", nrow(tps))
-    }
-    names(tps_group_char) <- tps_group$name
-    tps_rpl <- character()
-    if ("replicate" %in% colnames(tps)) {
-      tps_rpl <- tps[, c("name", "replicate")]
-      tps_rpl <- tps_rpl[, .(replicate = paste(unique(replicate[!is.na(replicate)]), collapse = "<br>")), by = "name"]
-      tps_rpl_char <- tps_rpl$replicate
-    } else {
-      tps_rpl_char <- rep("", nrow(tps))
-    }
-    names(tps_rpl_char) <- tps_rpl$name
-    if ("group" %in% colnames(parents_info)) {
-      parents_group <- unique(parents_info$group)
-      parents_group <- parents_group[!is.na(parents_group)]
-      if (length(parents_group) > 0) {
-        parents_group <- paste(parents_group, collapse = "<br>")
-      }
-    } else {
-      parents_group <- ""
-    }
-    if ("replicate" %in% colnames(parents_info)) {
-      parents_rpl <- unique(parents_info$replicate)
-      parents_rpl <- parents_rpl[!is.na(parents_rpl)]
-      if (length(parents_rpl) > 0) {
-        parents_rpl <- paste(parents_rpl, collapse = "<br>")
-      }
-    } else {
-      parents_rpl <- ""
-    }
+
     parent_image <- NULL
-    if ("SMILES" %in% colnames(parents_info) && !is.na(parents_info$SMILES[1])) {
-      parent_image <- create_structure_image(parents_info$SMILES[1], parent_name)
+    parent_smiles <- NULL
+    if ("SMILES" %in% colnames(parent_info) && !is.na(parent_info$SMILES[1])) {
+      parent_smiles <- parent_info$SMILES[1]
+      parent_image <- create_structure_image(parent_smiles, parent_name)
     }
+
     parent_node <- data.table::data.table(
       id = parent_name,
       label = parent_name,
@@ -309,37 +359,31 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
       shape = "circle",
       title = paste0(
         "<p><b>Parent: ", parent_name, "</b><br>",
-        "Replicate: <br>", parents_rpl, "<br>",
-        "Group: <br>", parents_group, "<br>",
-        "Formula: ", parents_info$formula[1], "<br>",
-        "Mass: ", round(parents_info$mass[1], 4), "<br>",
-        if (!is.null(parent_image)) paste0("<img src='", parent_image, "' width='400' height='400' style='display:block; margin:10px;'><br>") else "",
+        "Replicate: <br>", parent_info$replicate, "<br>",
+        "Group: <br>", parent_info$group, "<br>",
+        "Formula: ", parent_info$formula, "<br>",
+        "Mass: ", round(parent_info$mass, 4), "<br>",
+        if (!is.null(parent_image)) paste0("<img src='", parent_image, "' width='500' height='400' style='display:block; margin:10px;'><br>") else "",
         "</p>"
       ),
-      color = "lightgreen",
+      color = parent_info$color,
       shadow = TRUE,
       font.size = 14,
       stringsAsFactors = FALSE
     )
 
-    if ("analysis" %in% colnames(parents_info)) {
-      if (all(is.na(parents_info$analysis))) {
-        parent_node$color <- "lightgray"
-      }
-    }
-
-    # Create structure images for transformation products if SMILES is available
     tp_images <- rep(NA_character_, nrow(tps))
     if ("SMILES" %in% names(tps)) {
       for (i in seq_len(nrow(tps))) {
         if (!is.na(tps$SMILES[i])) {
-          tp_img <- create_structure_image(tps$SMILES[i], tps$name[i])
+          tp_img <- create_structure_image(tps$SMILES[i], tps$name[i], parent_smiles)
           if (!is.null(tp_img)) {
             tp_images[i] <- tp_img
           }
         }
       }
     }
+
     tp_nodes <- data.table::data.table(
       id = tps$name,
       label = tps$name,
@@ -348,13 +392,13 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
       shape = "box",
       title = paste0(
         "<p><b>", tps$name, "</b><br>",
-        "Replicate: <br>", tps_rpl_char[tps$name], "<br>",
-        "Group: <br>", tps_group_char[tps$name], "<br>",
+        "Replicate: <br>", tps$replicate, "<br>",
+        "Group: <br>", tps$group, "<br>",
         "Formula: ", tps$formula, "<br>",
         "Mass: ", round(tps$mass, 4), "<br>",
         "Generation: ", tps$generation, "<br>",
         "Transformation: ", tps$transformation, "<br>",
-        ifelse(!is.na(tp_images), paste0("<img src='", tp_images, "' width='400' height='400' style='display:block; margin:10px;'><br>"), ""),
+        ifelse(!is.na(tp_images), paste0("<img src='", tp_images, "' width='500' height='400' style='display:block; margin:10px;'><br>"), ""),
         "</p>"
       ),
       color = tps$color,
@@ -363,8 +407,7 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
       stringsAsFactors = FALSE
     )
 
-    tp_nodes <- unique(tp_nodes)
-    tp_nodes <- tp_nodes[!duplicated(tp_nodes$id), ]
+    #tp_nodes <- unique(tp_nodes)
     current_nodes <- rbind(parent_node, tp_nodes)
     all_nodes <- rbind(all_nodes, current_nodes)
 
@@ -372,11 +415,9 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
       from = tps$parent_name,
       to = tps$name
     )
-
     edges$color <- "lightgray"
     edges$width <- 1
     edges$stringsAsFactors <- FALSE
-
     edges <- unique(edges)
 
     all_edges <- rbind(all_edges, edges)
