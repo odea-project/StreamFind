@@ -10,9 +10,10 @@ ms <- MassSpecEngine$new(analyses = files)
 
 # plot_spectra_eic(
 #   ms$Analyses,
+#   analyses = 6,
 #   mass = db[c(3, 6, 7, 10, 11), ],
 #   ppm = 20,
-#   sec = 1000,
+#   sec = 60,
 #   colorBy = "targets+analyses",
 #   legendNames = TRUE
 # )
@@ -32,39 +33,76 @@ tof_target <- data.frame(
 orb_target <- data.frame(
   mzmin = 200,
   mzmax = 250,
-  rtmin = 700,
-  rtmax = 900
+  rtmin = 0,
+  rtmax = 2000
 )
 
 spec <- get_raw_spectra(
   ms$Analyses,
-  analyses = 3, #3
-  mz = orb_target, #orb_target #tof_target
+  analyses = 6, #3
+  mz = tof_target, #orb_target #tof_target
   levels = 1
 )
-
-#plot_3D_by_rt(spec)
 
 # MARK: Peak Finding Concept
 # Peak Finding Concept ---------------------------------------------------------
 
 # args for TOF data
-# args <- list(
-#   noise = 500,
-#   mzThreshold = 0.005
-# )
+args <- list(
+  noise = 1000,
+  mzr = 0.005,
+  sn = 3,
+  gaufit = 0.5
+)
 
 # args for Orbitrap data
-args <- list(
-  noise = 100000,
-  mzThreshold = 0.002
-)
+# args <- list(
+#   noise = 100000,
+#   mzr = 0.002,
+#   sn = 3,
+#   gaufit = 0.5
+# )
+
+# MARK: Restricting m/z range for speed
+#spec <- spec[spec$mz > 200 & spec$mz < 250, ]
+#spec <- spec[spec$mz > tof_target$mzmin & spec$mz < tof_target$mzmax, ]
+plot_3D_by_rt(spec[spec$mz > 205 & spec$mz < 210, ])
+
+#plot_3D_by_rt(spec[spec$rt > 100 & spec$rt < 120 & spec$mz > 200 & spec$mz < 300, ])
+
+# MARK: Cleaning up noise by rt with moving average filter
+rt_vals <- unique(spec$rt)
+rt_vals <- rt_vals[rt_vals > 1140 & rt_vals < 1160]
+
+spec$noise <- 0
+pb <- txtProgressBar(min = 1, max = length(rt_vals), style = 3)
+for (i in seq_len(length(rt_vals))) {
+  rt_val <- rt_vals[i]
+  rt_sel <- spec$rt == rt_val
+
+  ints <- spec$intensity[rt_sel]
+  if (length(ints) == 0) next
+
+  noise <- vapply(seq_along(ints), function(j) {
+    idx_min <- max(1, j - 30)
+    idx_max <- min(length(ints), j + 30)
+    mean(ints[idx_min:idx_max])
+  }, numeric(1))
+
+  spec$noise[rt_sel] <- noise
+  setTxtProgressBar(pb, i)
+}
+close(pb)
+
+plot_3D_by_rt(spec, which(unique(spec$rt) %in% rt_vals))
+plot_3D_by_rt(spec, 80:150)
+
+spec[spec$rt == rt_vals[5], ]
 
 
 # MARK: Ordering m/z
 spec_ordered <- spec[order(spec$mz), ]
-#plot_mz_vector(spec_ordered, interactive = FALSE)
-
+#plot_mz_vector(spec_ordered[spec_ordered$mz > 200 & spec_ordered$mz < 205, ], interactive = FALSE)
 
 
 
@@ -81,11 +119,10 @@ diff_mz <- diff(spec_ordered$mz)
 
 
 
-
 # MARK: Clustering by m/z
 all_clusters <- integer(length(diff_mz))
 for (j in seq_along(diff_mz)) {
-  if (diff_mz[j] > args$mzThreshold) all_clusters[j] <- 1
+  if (diff_mz[j] > args$mzr) all_clusters[j] <- 1
 }
 all_clusters <- cumsum(all_clusters)
 all_clusters <- c(0, all_clusters)
@@ -95,19 +132,20 @@ counter <- table(spec_ordered$cluster)
 counter <- counter[counter > 5]
 spec_ordered$cluster[!spec_ordered$cluster %in% names(counter)] <- NA_integer_
 
-spec_ordered$mzmin <- NA_real_
-spec_ordered$mzmax <- NA_real_
-for (clust in names(counter)) {
-  idx <- which(spec_ordered$cluster == clust)
-  spec_ordered$mzmin[idx] <- min(spec_ordered$mz[idx])
-  spec_ordered$mzmax[idx] <- max(spec_ordered$mz[idx])
-}
+# not necessary here, done in summary step
+# spec_ordered$mzmin <- NA_real_
+# spec_ordered$mzmax <- NA_real_
+# for (clust in names(counter)) {
+#   idx <- which(spec_ordered$cluster == clust)
+#   spec_ordered$mzmin[idx] <- min(spec_ordered$mz[idx])
+#   spec_ordered$mzmax[idx] <- max(spec_ordered$mz[idx])
+# }
 
 clusters_summary <- spec_ordered[, .(
   mz = mean(mz),
   weighted_mz = sum(mz * intensity) / sum(intensity),
-  mzmin = min(mzmin),
-  mzmax = max(mzmax),
+  mzmin = min(mz, na.rm = TRUE),
+  mzmax = max(mz, na.rm = TRUE),
   dppm = (max(mz) - min(mz)) / mean(mz) * 1e6,
   rtmin = min(rt),
   rtmax = max(rt),
@@ -119,7 +157,11 @@ clusters_summary <- spec_ordered[, .(
 #plot_3D_by_rt(spec_ordered)
 
 
+hist(clusters_summary$dppm, breaks = 100)
 
+hist(clusters_summary$dppm, breaks = 100, plot = FALSE)
+
+plot_3D_by_rt(spec_ordered[spec_ordered$cluster == 10, ])
 
 # MARK: Merging by rt
 # merge mz in each cluster with the same rt
@@ -132,7 +174,7 @@ spec_ordered_merged <- spec_ordered[, .(
 
 #plot_3D_by_rt(spec_ordered_merged)
 
-
+plot_3D_by_rt(spec_ordered_merged[spec_ordered_merged$cluster == 10, ])
 
 
 # MARK: Finding peaks (per cluster)
@@ -154,6 +196,10 @@ for (clust in unique(spec_ordered_merged$cluster)) {
   clust <- 6
   clust <- 23
 
+  #merck
+  clust <- 2
+  clust <- 10
+
 
   spec_clust <- spec_ordered_merged[
     spec_ordered_merged$cluster == clust,
@@ -162,7 +208,8 @@ for (clust in unique(spec_ordered_merged$cluster)) {
   #plot(spec_clust$intensity ~ spec_clust$rt, type = "l")
 
   source("dev/dev_peak_finding/dev_chrom_peak_algorithms.R")
-  peaks <- peak_detect_derivative(spec_clust)
+  peaks <- peak_detect_derivative(spec_clust, args$sn, args$gaufit)
+
   peaks[[1]]
   peaks[[2]]
 

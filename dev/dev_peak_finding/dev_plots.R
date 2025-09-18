@@ -293,121 +293,85 @@ plot_x_y <- function(data, x_col, y_col, interactive = TRUE) {
   }
 }
 
-plot_3D_by_rt <- function(spec_data, rt_indices, interactive = TRUE) {
-  unique_rt_values <- sort(unique(spec_data$rt))
+plot_3D_by_rt <- function(spec_data, rt_indices) {
   if (!missing(rt_indices)) {
+    unique_rt_values <- unique(spec_data$rt)
     selected_rt_values <- unique_rt_values[rt_indices]
-    spec_data <- spec_data[spec_data$rt %in% selected_rt_values, ]
+    spec_data <- spec_data[spec_data$rt == selected_rt_values, ]
   }
   has_cluster <- "cluster" %in% colnames(spec_data)
+  has_noise <- "noise" %in% colnames(spec_data)
   
-  if (interactive) {
-    # Plotly 3D version
-    if (has_cluster) {
-      spec_data <- spec_data[!is.na(spec_data$cluster), ]
-      clusters <- sort(unique(spec_data$cluster))
-      
-      # Use safe color generation instead of RColorBrewer directly
-      cluster_colors <- generate_safe_colors(length(clusters))
-      names(cluster_colors) <- clusters
-      
-      spec_data$cluster <- factor(spec_data$cluster, levels = clusters)
-      p <- plotly::plot_ly(
-        data = spec_data,
-        x = ~rt,
-        y = ~mz,
-        z = ~intensity,
-        type = "scatter3d",
-        mode = "markers",
-        color = ~cluster,
-        colors = cluster_colors,
-        marker = list(
-          size = 2,
-          line = list(width = 1, color = "black")
-        )
-      )
-    } else {
-      p <- plotly::plot_ly(
-        data = spec_data,
-        x = ~rt,
-        y = ~mz,
-        z = ~intensity,
-        type = "scatter3d",
-        mode = "markers",
-        marker = list(
-          size = 2,
-          color = ~intensity,
-          colorscale = list(c(0, "blue"), c(1, "red")),
-          showscale = TRUE,
-          line = list(width = 1, color = "black")
-        )
-      )
-    }
-    p %>%
-      plotly::layout(
-        scene = list(
-          xaxis = list(title = "Retention Time (s)"),
-          yaxis = list(title = "m/z"),
-          zaxis = list(title = "Intensity")
-        ),
-        showlegend = TRUE
-      ) %>%
-      plotly::config(displayModeBar = TRUE, displaylogo = FALSE)
+  # Plotly 3D version (interactive only)
+  if (has_cluster) {
+    spec_data <- spec_data[!is.na(spec_data$cluster), ]
+    clusters <- sort(unique(spec_data$cluster))
+    cluster_colors <- generate_safe_colors(length(clusters))
+    names(cluster_colors) <- clusters
+    spec_data$cluster <- factor(spec_data$cluster, levels = clusters)
+    p <- plotly::plot_ly(
+      data = spec_data,
+      x = ~rt,
+      y = ~mz,
+      z = ~intensity,
+      type = "scatter3d",
+      mode = "markers",
+      color = ~cluster,
+      colors = cluster_colors,
+      marker = list(
+        size = 2
+      ),
+      name = "Data Points"
+    )
   } else {
-    # ggplot2 version - create multiple 2D projections since ggplot2 doesn't support 3D
-    warning("3D plotting not supported with ggplot2. Creating 2D projections instead.")
-    
-    if (has_cluster) {
-      spec_data <- spec_data[!is.na(spec_data$cluster), ]
-      clusters <- sort(unique(spec_data$cluster))
-      cluster_colors <- generate_safe_colors(length(clusters))
-      names(cluster_colors) <- clusters
-      spec_data$cluster <- factor(spec_data$cluster)
-      
-      # Create three 2D projections
-      p1 <- ggplot2::ggplot(spec_data, ggplot2::aes(x = rt, y = mz, color = cluster)) +
-        ggplot2::geom_point(alpha = 0.7) +
-        ggplot2::scale_color_manual(values = cluster_colors) +
-        ggplot2::labs(title = "RT vs m/z (colored by cluster)", x = "Retention Time (s)", y = "m/z") +
-        ggplot2::theme_minimal()
-      
-      p2 <- ggplot2::ggplot(spec_data, ggplot2::aes(x = rt, y = intensity, color = cluster)) +
-        ggplot2::geom_point(alpha = 0.7) +
-        ggplot2::scale_color_manual(values = cluster_colors) +
-        ggplot2::labs(title = "RT vs Intensity (colored by cluster)", x = "Retention Time (s)", y = "Intensity") +
-        ggplot2::theme_minimal()
-      
-      p3 <- ggplot2::ggplot(spec_data, ggplot2::aes(x = mz, y = intensity, color = cluster)) +
-        ggplot2::geom_point(alpha = 0.7) +
-        ggplot2::scale_color_manual(values = cluster_colors) +
-        ggplot2::labs(title = "m/z vs Intensity (colored by cluster)", x = "m/z", y = "Intensity") +
-        ggplot2::theme_minimal()
-    } else {
-      # Without clusters, color by intensity
-      p1 <- ggplot2::ggplot(spec_data, ggplot2::aes(x = rt, y = mz, color = intensity)) +
-        ggplot2::geom_point(alpha = 0.7) +
-        ggplot2::scale_color_gradient(low = "blue", high = "red") +
-        ggplot2::labs(title = "RT vs m/z (colored by intensity)", x = "Retention Time (s)", y = "m/z") +
-        ggplot2::theme_minimal()
-      
-      p2 <- ggplot2::ggplot(spec_data, ggplot2::aes(x = rt, y = intensity)) +
-        ggplot2::geom_point(alpha = 0.7, color = "darkblue") +
-        ggplot2::labs(title = "RT vs Intensity", x = "Retention Time (s)", y = "Intensity") +
-        ggplot2::theme_minimal()
-      
-      p3 <- ggplot2::ggplot(spec_data, ggplot2::aes(x = mz, y = intensity)) +
-        ggplot2::geom_point(alpha = 0.7, color = "darkblue") +
-        ggplot2::labs(title = "m/z vs Intensity", x = "m/z", y = "Intensity") +
-        ggplot2::theme_minimal()
-    }
-    
-    # Return a list of plots
-    return(list(
-      rt_vs_mz = p1,
-      rt_vs_intensity = p2,
-      mz_vs_intensity = p3
-    ))
+    p <- plotly::plot_ly(
+      data = spec_data,
+      x = ~rt,
+      y = ~mz,
+      z = ~intensity,
+      type = "scatter3d",
+      mode = "markers",
+      marker = list(
+        size = 2,
+        color = ~intensity,
+        colorscale = list(c(0, "blue"), c(1, "red")),
+        showscale = FALSE
+      ),
+      name = "Data Points"
+    )
   }
+
+  if (has_noise) {
+    # Remove rows with NA noise values
+    clean_data <- spec_data[!is.na(spec_data$noise), ]
+    
+    if (nrow(clean_data) > 0) {
+      # Add noise points as scatter3d with green color
+      p <- p %>% plotly::add_trace(
+        data = clean_data,
+        x = ~rt,
+        y = ~mz,
+        z = ~noise,
+        type = "scatter3d",
+        mode = "markers",
+        marker = list(
+          size = 2,
+          color = "green"
+        ),
+        name = "Noise Points"
+      )
+    }
+  }
+  
+  p %>%
+    plotly::layout(
+      scene = list(
+        xaxis = list(title = "Retention Time (s)"),
+        yaxis = list(title = "m/z"),
+        zaxis = list(title = "Intensity")
+      ),
+      showlegend = TRUE
+    )
 }
 
 # Function to plot peaks overlaid on background chromatogram

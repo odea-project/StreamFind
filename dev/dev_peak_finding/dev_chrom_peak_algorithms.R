@@ -78,7 +78,7 @@ get_peak_bounds <- function(x, apex_idx, intensity, baseline) {
 }
 
 # MARK:  First derivative method
-peak_detect_derivative <- function(dt) {
+peak_detect_derivative <- function(dt, min_sn, min_gaufit) {
   rt <- dt$rt
   mz <- dt$mz
   intensity <- dt$intensity
@@ -151,6 +151,8 @@ peak_detect_derivative <- function(dt) {
     bounds <- get_peak_bounds(rt, i, intensity, baseline)
     noise <- min(intensity[rt >= bounds[1] & rt <= bounds[2]])
     sn <- if (noise > 0) (intensity[i] - baseline[i]) / noise else NA
+    if (is.na(sn)) return(NULL)
+    if (sn < min_sn) return(NULL)
     peak_mask <- which(rt >= bounds[1] & rt <= bounds[2])
     if (length(peak_mask) > 0) {
       peak_mask_intensities <- intensity[peak_mask]
@@ -181,7 +183,14 @@ peak_detect_derivative <- function(dt) {
         ss_total <- sum((y_obs - mean_y)^2)
         ss_residual <- sum((y_obs - y_pred)^2)
         r_squared <- 1 - (ss_residual / ss_total)
+        if (r_squared < min_gaufit) {
+          return(NULL)
+        }
+      } else {
+        return(NULL)
       }
+    } else {
+      return(NULL)
     }
 
     list(
@@ -204,6 +213,7 @@ peak_detect_derivative <- function(dt) {
 
   # Add rectangles for each detected peak and a dot at the apex
   for (i in seq_along(idx)) {
+    if (is.null(peaks[[i]])) next
     bounds <- get_peak_bounds(rt, idx[i], intensity, baseline)
     text <- paste(
       "Peak ", i, "<br>",
@@ -258,7 +268,8 @@ peak_detect_derivative <- function(dt) {
   })
 
   out <- data.table::rbindlist(peaks, use.names = TRUE, fill = TRUE)
-  return(list(out, p))
+
+  list(out, p)
 }
 
 #-----------------------------------------

@@ -1,5 +1,5 @@
-#all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
-all_files_dir <- "D:\\peak_finding_files_ex"
+all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
+#all_files_dir <- "D:\\peak_finding_files_ex"
 all_files <- list.files(all_files_dir, full.names = TRUE, recursive = TRUE, pattern = "\\.mzML$")
 
 files_tof_cent <- all_files[grepl("tof_centroid", all_files)]
@@ -8,13 +8,15 @@ files_tof_prof <- all_files[grepl("tof_profile", all_files)]
 files_orb_cent <- all_files[grepl("orbitrap_centroid", all_files)]
 files_orb_prof <- all_files[grepl("orbitrap_profile", all_files)]
 files_tof_ww <- all_files[grepl("wastewater", all_files)]
+files_merck_ex_apci_pos <- all_files[grepl("Beispieldaten Batchvergleiche OKvsNG/ACC1_25210_6_APCIpos.mzML", all_files)]
 
 files <- c(
   files_tof_cent[1],
   files_tof_prof[1],
   files_orb_cent[7],
   files_orb_prof[7],
-  files_tof_ww[11]
+  files_tof_ww[11],
+  files_merck_ex_apci_pos[1]
 )
 
 db_all <- StreamFindData::get_ms_tof_spiked_chemicals()
