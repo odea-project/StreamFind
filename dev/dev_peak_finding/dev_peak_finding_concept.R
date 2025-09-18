@@ -25,8 +25,8 @@ ms <- MassSpecEngine$new(analyses = files)
 tof_target <- data.frame(
   mzmin = 200,
   mzmax = 250,
-  rtmin = 1100,
-  rtmax = 1200
+  rtmin = 0,
+  rtmax = 2000
 )
 
 # ORBITRAP targets
@@ -51,6 +51,7 @@ spec <- get_raw_spectra(
 args <- list(
   noise = 1000,
   mzr = 0.005,
+  minTraces = 8,
   sn = 3,
   gaufit = 0.5
 )
@@ -66,71 +67,77 @@ args <- list(
 # MARK: Restricting m/z range for speed
 #spec <- spec[spec$mz > 200 & spec$mz < 250, ]
 #spec <- spec[spec$mz > tof_target$mzmin & spec$mz < tof_target$mzmax, ]
-plot_3D_by_rt(spec[spec$mz > 205 & spec$mz < 210, ])
 
-#plot_3D_by_rt(spec[spec$rt > 100 & spec$rt < 120 & spec$mz > 200 & spec$mz < 300, ])
 
-# MARK: Cleaning up noise by rt with moving average filter
+
+
+# MARK: Cleaning up noise
+
+# may be expensive for large datasets!!!
+# find faster way with similar approach
 rt_vals <- unique(spec$rt)
-rt_vals <- rt_vals[rt_vals > 1140 & rt_vals < 1160]
-
+rt_vals <- rt_vals[rt_vals > 1100 & rt_vals < 1200]
 spec$noise <- 0
 pb <- txtProgressBar(min = 1, max = length(rt_vals), style = 3)
 for (i in seq_len(length(rt_vals))) {
   rt_val <- rt_vals[i]
   rt_sel <- spec$rt == rt_val
-
   ints <- spec$intensity[rt_sel]
+  ints <- ints[ints > 0]
   if (length(ints) == 0) next
-
-  noise <- vapply(seq_along(ints), function(j) {
-    idx_min <- max(1, j - 30)
-    idx_max <- min(length(ints), j + 30)
-    mean(ints[idx_min:idx_max])
-  }, numeric(1))
-
+  noise <- quantile(ints, probs = 0.95)
   spec$noise[rt_sel] <- noise
   setTxtProgressBar(pb, i)
 }
 close(pb)
 
-plot_3D_by_rt(spec, which(unique(spec$rt) %in% rt_vals))
-plot_3D_by_rt(spec, 80:150)
+noise_dt <- unique(spec[spec$rt > 1000 & spec$rt < 1400, c("rt", "noise")])
+# plot(noise_dt$noise ~ noise_dt$rt, type = "l")
+# plot_3D_by_rt(spec[spec$mz > 205 & spec$mz < 210 & spec$rt > 1000 & spec$rt < 1400, ])
 
-spec[spec$rt == rt_vals[5], ]
 
 
-# MARK: Ordering m/z
-spec_ordered <- spec[order(spec$mz), ]
-#plot_mz_vector(spec_ordered[spec_ordered$mz > 200 & spec_ordered$mz < 205, ], interactive = FALSE)
+
+# MARK: Raise noise to args$noise if below
+spec$noise[spec$noise < args$noise] <- args$noise
+#plot_3D_by_rt(spec[spec$mz > 205 & spec$mz < 210 & spec$rt > 1000 & spec$rt < 1400, ])
+
 
 
 
 # MARK: Removes noise
-spec_ordered <- spec_ordered[spec_ordered$intensity > args$noise, ]
-#plot_mz_vector(spec_ordered, interactive = FALSE)
+spec <- spec[spec$intensity > spec$noise, ]
 
+
+
+# MARK: Ordering m/z
+spec <- spec[order(spec$mz), ]
+#plot_mz_vector(spec[spec$rt > 1100 & spec$rt < 1200, ], interactive = FALSE)
 
 
 
 # MARK: First derivative of m/z
-diff_mz <- diff(spec_ordered$mz)
-#plot_vector_scatter(diff_mz)
+diff_mz <- diff(spec$mz)
+#plot(diff_mz[diff_mz < 0.1], type = "h")
+#abline(h = args$mzr, col = "red")
 
 
 
 # MARK: Clustering by m/z
 all_clusters <- integer(length(diff_mz))
+pb <- txtProgressBar(min = 1, max = length(diff_mz), style = 3)
 for (j in seq_along(diff_mz)) {
   if (diff_mz[j] > args$mzr) all_clusters[j] <- 1
+  setTxtProgressBar(pb, j)
 }
+close(pb)
 all_clusters <- cumsum(all_clusters)
 all_clusters <- c(0, all_clusters)
 all_clusters <- all_clusters + 1
-spec_ordered$cluster <- all_clusters
-counter <- table(spec_ordered$cluster)
-counter <- counter[counter > 5]
-spec_ordered$cluster[!spec_ordered$cluster %in% names(counter)] <- NA_integer_
+spec$cluster <- all_clusters
+counter <- table(spec$cluster)
+counter <- counter[counter > args$minTraces]
+spec$cluster[!spec$cluster %in% names(counter)] <- NA_integer_
 
 # not necessary here, done in summary step
 # spec_ordered$mzmin <- NA_real_
@@ -141,7 +148,7 @@ spec_ordered$cluster[!spec_ordered$cluster %in% names(counter)] <- NA_integer_
 #   spec_ordered$mzmax[idx] <- max(spec_ordered$mz[idx])
 # }
 
-clusters_summary <- spec_ordered[, .(
+clusters_summary <- spec[, .(
   mz = mean(mz),
   weighted_mz = sum(mz * intensity) / sum(intensity),
   mzmin = min(mz, na.rm = TRUE),
@@ -153,63 +160,50 @@ clusters_summary <- spec_ordered[, .(
   points = .N
 ), by = .(cluster)][!is.na(cluster)]
 
-#plot_mz_vector(spec_ordered, interactive = FALSE)
-#plot_3D_by_rt(spec_ordered)
+#plot_mz_vector(spec[spec$rt > 1100 & spec$rt < 1200, ], interactive = TRUE)
+#plot_3D_by_rt(spec[spec$rt > 1100 & spec$rt < 1200, ])
 
 
-hist(clusters_summary$dppm, breaks = 100)
-
-hist(clusters_summary$dppm, breaks = 100, plot = FALSE)
-
-plot_3D_by_rt(spec_ordered[spec_ordered$cluster == 10, ])
 
 # MARK: Merging by rt
 # merge mz in each cluster with the same rt
 # for profile data, it actually centroids the data
 # in principle no effect on centroid data
-spec_ordered_merged <- spec_ordered[, .(
+spec_merged <- spec[, .(
   mz = mean(mz),
   intensity = sum(intensity)
 ), by = .(rt, cluster)]
 
-#plot_3D_by_rt(spec_ordered_merged)
+#plot_3D_by_rt(spec_merged[spec_merged$rt > 1100 & spec_merged$rt < 1200, ])
 
-plot_3D_by_rt(spec_ordered_merged[spec_ordered_merged$cluster == 10, ])
+
+
 
 
 # MARK: Finding peaks (per cluster)
 peaks_list <- list()
-spec_ordered_merged <- spec_ordered_merged[order(spec_ordered_merged$rt), ]
+spec_merged <- spec_merged[order(spec_merged$rt), ]
+pb <- txtProgressBar(min = 1, max = length(unique(spec_merged$cluster)), style = 3)
+clusts <- unique(spec_merged$cluster)
+source("dev/dev_peak_finding/dev_chrom_peak_algorithms.R")
+pn <- 0
+for (i in seq_along(clusts)) {
+  clust <- clusts[i]
 
-for (clust in unique(spec_ordered_merged$cluster)) {
+  clust <- 50
+
   if (is.na(clust)) next
 
-  # orb
-  clust <- 38
-  clust <- 105
-  clust <- 18
-  clust <- 135
-  clust <- 44
-
-  # tof
-  clust <- 33
-  clust <- 6
-  clust <- 23
-
-  #merck
-  clust <- 2
-  clust <- 10
-
-
-  spec_clust <- spec_ordered_merged[
-    spec_ordered_merged$cluster == clust,
+  spec_clust <- spec_merged[
+    spec_merged$cluster == clust,
   ]
 
-  #plot(spec_clust$intensity ~ spec_clust$rt, type = "l")
+  if (nrow(spec_clust) < args$minTraces) {
+    setTxtProgressBar(pb, i)
+    next
+  }
 
-  source("dev/dev_peak_finding/dev_chrom_peak_algorithms.R")
-  peaks <- peak_detect_derivative(spec_clust, args$sn, args$gaufit)
-
+  peaks <- peak_detect_derivative(spec_clust, args$minTraces, args$sn, args$gaufit, plot_peaks = TRUE)
   peaks[[1]]
   peaks[[2]]
 
@@ -219,31 +213,47 @@ for (clust in unique(spec_ordered_merged$cluster)) {
   #peaks <- peak_detect_smooth(spec_clust)
   #peaks <- peak_detect_threshold(spec_clust)
 
-  peaks_dt <- peaks[[1]]
+  if (is.null(peaks)) {
+    setTxtProgressBar(pb, i)
+    next
+  }
+
+  if (!is.data.frame(peaks)) {
+    peaks_dt <- peaks[[1]]
+  } else {
+    peaks_dt <- peaks
+  }
+
+  if (nrow(peaks_dt) == 0) {
+    setTxtProgressBar(pb, i)
+    next
+  }
+
   peaks_dt$cluster <- clust
 
-  # Adds m/z info to peaks
   for (pk in seq_len(nrow(peaks_dt))) {
-    peak_sel <- spec_ordered$cluster == clust & spec_ordered$rt >= peaks_dt$rtmin[pk] & spec_ordered$rt <= peaks_dt$rtmax[pk]
-    peak_intensities <- spec_ordered$intensity[peak_sel]
-    peaks_dt$mz[pk] <- mean(spec_ordered$mz[peak_sel], na.rm = TRUE)
-    peaks_dt$mz_wt[pk] <- sum(spec_ordered$mz[peak_sel] * peak_intensities, na.rm = TRUE) / sum(peak_intensities, na.rm = TRUE)
-    peaks_dt$mzmin[pk] <- min(spec_ordered$mz[peak_sel], na.rm = TRUE)
-    peaks_dt$mzmax[pk] <- max(spec_ordered$mz[peak_sel], na.rm = TRUE)
+    peak_sel <- spec$cluster == clust & spec$rt >= peaks_dt$rtmin[pk] & peaks_dt$rtmax[pk]
+    peak_intensities <- spec$intensity[peak_sel]
+    peaks_dt$mz[pk] <- mean(spec$mz[peak_sel], na.rm = TRUE)
+    peaks_dt$mz_wt[pk] <- sum(spec$mz[peak_sel] * peak_intensities, na.rm = TRUE) / sum(peak_intensities, na.rm = TRUE)
+    peaks_dt$mzmin[pk] <- min(spec$mz[peak_sel], na.rm = TRUE)
+    peaks_dt$mzmax[pk] <- max(spec$mz[peak_sel], na.rm = TRUE)
     peaks_dt$ppm [pk] <- (peaks_dt$mzmax[pk] - peaks_dt$mzmin[pk]) / peaks_dt$mz[pk] * 1e6
+    peaks_dt$width[pk] <- peaks_dt$rtmax[pk] - peaks_dt$rtmin[pk]
   }
-  data.table::setcolorder(peaks_dt, c("rt", "mz", "mz_wt", "mzmin", "mzmax", "ppm", "intensity", "cluster"))
 
-  # dev code
-  # source("dev/dev_peak_finding/dev_plots.R")
-  # plot_peaks_on_chromatogram(spec_clust, peaks, interactive = FALSE)
-  # if (nrow(peaks) == 0) next
-  # peaks$cluster <- clust
-  # peaks$mz <- mean(spec_clust$mz)
-  # peaks$weighted_mz <- sum(spec_clust$mz * spec_clust$intensity) / sum(spec_clust$intensity)
-  # peaks$mzmin <- min(spec_clust$mz)
-  # peaks$mzmax <- max(spec_clust$mz)
-  # peaks$dppm <- (max(spec_clust$mz) - min(spec_clust$mz)) / mean(spec_clust$mz) * 1e6
-  # peaks$intensity <- peaks$y
-  # peaks_list[[as.character(clust)]] <- peaks[, c("mz", "weighted_mz", "mzmin", "mzmax", "dppm", "x", "intensity", "cluster")]
+  peaks_number <- paste0("N", seq_len(nrow(peaks_dt)) + pn)
+  pn <- pn + nrow(peaks_dt)
+  peaks_dt$id <- paste0(peaks_number, "_MZ", round(peaks_dt$mz, 0), "_RT", round(peaks_dt$rt, 0), "_CL", peaks_dt$cluster)
+  data.table::setcolorder(peaks_dt, c("id", "rt", "mz", "mz_wt", "ppm", "width", "intensity", "mzmin", "mzmax", "rtmin", "rtmax"))
+  peaks_list[[as.character(clust)]] <- peaks_dt
+  setTxtProgressBar(pb, i)
 }
+close(pb)
+
+peaks_dt <- data.table::rbindlist(peaks_list, use.names = TRUE, fill = TRUE)
+
+source("dev/dev_peak_finding/dev_plots.R")
+plot_3D_by_rt_with_peaks(spec[spec$rt > 1100 & spec$rt < 1200, ], peaks_dt)
+
+peaks_dt[peaks_dt$rt > 1100 & peaks_dt$rt < 1200, ]
