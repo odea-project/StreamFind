@@ -1,27 +1,32 @@
 # MARK: Utility: estimate baseline and find peak boundaries
-get_peak_bounds <- function(x, apex_idx, intensity, baseline) {
-  checkmate::assert_numeric(x, finite = TRUE, any.missing = FALSE, min.len = 3)
-  checkmate::assert_numeric(intensity, finite = TRUE, any.missing = FALSE, min.len = 3)
-  checkmate::assert_numeric(baseline, finite = TRUE, any.missing = FALSE, min.len = 3)
-  checkmate::assert_int(apex_idx, lower = 1, upper = length(intensity))
+get_peak_bounds <- function(
+  x,
+  apex_idx,
+  intensity,
+  baseline,
+  max_half_width = 50) {
+  valid <- c(
+    checkmate::test_numeric(x, finite = TRUE, any.missing = FALSE, min.len = 5),
+    checkmate::test_numeric(intensity, finite = TRUE, any.missing = FALSE, min.len = 5),
+    checkmate::test_numeric(baseline, finite = TRUE, any.missing = FALSE, min.len = 5),
+    checkmate::test_int(apex_idx, lower = 1, upper = length(intensity))
+  )
   n <- length(intensity)
   if (length(x) != n) {
-    stop("Vector 'x' must have same length as 'intensity' (", n, " vs ", length(x), ")")
+    warning("Vector 'x' must have same length as 'intensity' (", n, " vs ", length(x), ")")
+    valid <- c(valid, FALSE)
   }
   if (length(baseline) != n) {
-    stop("Vector 'baseline' must have same length as 'intensity' (", n, " vs ", length(baseline), ")")
+    warning("Vector 'baseline' must have same length as 'intensity' (", n, " vs ", length(baseline), ")")
+    valid <- c(valid, FALSE)
   }
-  if (n <= 5) {
+  if (!all(valid)) {
     warning("Data too short for robust peak boundary detection (n=", n, "). Using simple boundaries.")
     left_bound <- max(1, apex_idx - 1)
     right_bound <- min(n, apex_idx + 1)
     return(c(x[left_bound], x[right_bound]))
   }
-
   apex_intensity <- intensity[apex_idx]
-  if (apex_intensity <= 0) {
-    stop("Apex intensity must be positive, got: ", apex_intensity)
-  }
   min_intensity_threshold <- 0.01 * apex_intensity
 
   # Left boundary: start at least 3 points before apex
@@ -32,6 +37,11 @@ get_peak_bounds <- function(x, apex_idx, intensity, baseline) {
   while (left_idx > 1) {
     window_start <- max(1, left_idx - 4)
     window_end <- left_idx
+
+    if (x[apex_idx] - x[window_start] > max_half_width) {
+      left_idx <- left_min_idx
+      break
+    }
 
     # Validate window bounds
     if (window_start > window_end || window_end > n) {
@@ -80,6 +90,11 @@ get_peak_bounds <- function(x, apex_idx, intensity, baseline) {
     window_start <- right_idx
     window_end <- min(n, right_idx + 4)
 
+    if (x[window_end] - x[apex_idx] > max_half_width) {
+      right_idx <- right_min_idx
+      break
+    }
+
     # Validate window bounds
     if (window_start > window_end || window_start < 1) {
       break
@@ -116,14 +131,28 @@ get_peak_bounds <- function(x, apex_idx, intensity, baseline) {
     right_min_int <- min_int
     right_min_idx <- min_idx
     right_idx <- right_idx + 1
+
+    if ((x[right_idx] - x[apex_idx]) > max_half_width) {
+      right_idx <- min(n, right_idx - 1)
+      break
+    }
   }
+
+  # span_left <- apex_idx - left_idx
+  # span_right <- right_idx - apex_idx
+  # if (span_left > span_right) {
+  #   right_idx <- min(n, apex_idx + span_left)
+  # } else if (span_right > span_left) {
+  #   left_idx <- max(1, apex_idx - span_right)
+  # }
 
   c(x[left_idx], x[right_idx])
 }
 
 # MARK:  First derivative method
-peak_detect_derivative <- function(dt, min_traces, min_sn, min_gaufit, plot_peaks = FALSE) {
-  checkmate::assert_int(min_traces, lower = 7, upper = 100)
+peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit, plot_peaks = FALSE) {
+  checkmate::assert_int(min_traces, lower = 5, upper = 100)
+  checkmate::assert_int(max_width, lower = 10, upper = 200)
   checkmate::assert_data_frame(dt, min.rows = min_traces)
   checkmate::assert_names(names(dt), must.include = c("rt", "mz", "intensity"))
   checkmate::assert_number(min_sn, lower = 0, finite = TRUE)
@@ -244,11 +273,13 @@ peak_detect_derivative <- function(dt, min_traces, min_sn, min_gaufit, plot_peak
       plotly::add_lines(y = baseline, name = "Estimated Baseline", line = list(dash = "dashdot", color = "green"))
   }
 
-  smoothed_baseline <- baseline
-  for (i in 2:(n - 1)) {
-    smoothed_baseline[i] <- mean(baseline[(i - 1):(i + 1)])
+  if (n >= 3) {
+    smoothed_baseline <- baseline
+    for (i in 2:(n - 1)) {
+      smoothed_baseline[i] <- mean(baseline[(i - 1):(i + 1)])
+    }
+    baseline <- smoothed_baseline
   }
-  baseline <- smoothed_baseline
 
   if (plot_peaks) {
     p <- p %>%
@@ -257,11 +288,11 @@ peak_detect_derivative <- function(dt, min_traces, min_sn, min_gaufit, plot_peak
 
   peaks <- lapply(idx, function(i) {
     if (i < min_traces / 2 || i > n - min_traces / 2) {
-      next
+      return(NULL)
     }
 
     bounds <- tryCatch(
-      get_peak_bounds(rt, i, intensity, baseline),
+      get_peak_bounds(rt, i, intensity, baseline, max_width / 2),
       error = function(e) {
         warning("Error in get_peak_bounds for peak at index ", i, ": ", e$message)
         c(rt[max(1, i - 1)], rt[min(n, i + 1)])
@@ -419,7 +450,7 @@ peak_detect_derivative <- function(dt, min_traces, min_sn, min_gaufit, plot_peak
         plotly::add_lines(
           x = if (!is.null(peaks[[i]]$x_vals) && !all(is.na(peaks[[i]]$x_vals))) peaks[[i]]$x_vals else c(NA),
           y = if (!is.null(peaks[[i]]$y_pred) && !all(is.na(peaks[[i]]$y_pred))) peaks[[i]]$y_pred else c(NA),
-          line = list(color = 'purple', dash = 'dot'),
+          line = list(color = "purple", dash = "dot"),
           name = paste0("Peak ", i),
           showlegend = FALSE,
           legendgroup = paste0("Peak ", i)

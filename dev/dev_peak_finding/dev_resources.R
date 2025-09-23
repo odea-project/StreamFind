@@ -1,5 +1,5 @@
-#all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
-all_files_dir <- "D:\\peak_finding_files_ex"
+all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
+#all_files_dir <- "D:\\peak_finding_files_ex"
 all_files <- list.files(all_files_dir, full.names = TRUE, recursive = TRUE, pattern = "\\.mzML$")
 
 files_tof_cent <- all_files[grepl("tof_centroid", all_files)]
@@ -39,3 +39,51 @@ db_with_ms2 <- db_with_ms2[, c("name", "formula", "mass", "SMILES", "rt", "polar
 db_with_ms2$polarity[db_with_ms2$polarity == 1] <- "positive"
 db_with_ms2$polarity[is.na(db_with_ms2$polarity)] <- "positive"
 db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
+
+# MARK: Find Peak Targets
+find_peak_targets <- function(peaks_dt, db, ppm_tol = 20, rt_tol = 60) {
+  results <- list()
+  for (i in seq_len(nrow(db))) {
+    target_mz <- db$mz[i]
+    target_rt <- db$rt[i]
+    target_name <- db$name[i]
+    mz_diff_ppm <- abs(peaks_dt$mz - target_mz) / target_mz * 1e6
+    mz_diff_ppm_wt <- abs(peaks_dt$mz_wt - target_mz) / target_mz * 1e6
+    mz_diff_ppm_appex <- abs(peaks_dt$mz_appex - target_mz) / target_mz * 1e6
+    rt_diff <- abs(peaks_dt$rt - target_rt)
+    match_idx <- which(
+      (mz_diff_ppm <= ppm_tol | mz_diff_ppm_wt <= ppm_tol | mz_diff_ppm_appex <= ppm_tol) &
+      rt_diff <= rt_tol
+    )
+    if (length(match_idx) > 0) {
+      # best_idx <- match_idx[which.min(rt_diff[match_idx])]
+      # match_idx <- best_idx
+      for (j in match_idx) {
+        results[[length(results) + 1]] <- data.frame(
+          peak_id = peaks_dt$id[j],
+          target_name = target_name,
+          target_mz = target_mz,
+          target_rt = target_rt,
+          peak_mz = peaks_dt$mz[j],
+          peak_mz_sd = round(peaks_dt$mz_sd[j] / peaks_dt$mz[j] * 100, 3),
+          peak_mz_wt = peaks_dt$mz_wt[j],
+          peak_mz_wt_sd = round(peaks_dt$mz_wt_sd[j] / peaks_dt$mz_wt[j] * 100, 3),
+          peak_mz_appex = peaks_dt$mz_appex[j],
+          peak_mz_appex_sd = round(peaks_dt$mz_appex_sd[j] / peaks_dt$mz_appex[j] * 100, 3),
+          peak_rt = peaks_dt$rt[j],
+          ppm = round(mz_diff_ppm[j], 2),
+          ppm_wt = round(mz_diff_ppm_wt[j], 2),
+          ppm_appex = round(mz_diff_ppm_appex[j], 2),
+          rt_diff = round(rt_diff[j], 2),
+          n_traces = peaks_dt$n_traces[j],
+          intensity = peaks_dt$intensity[j]
+        )
+      }
+    }
+  }
+  if (length(results) > 0) {
+    do.call(rbind, results)
+  } else {
+    data.frame()
+  }
+}
