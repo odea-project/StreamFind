@@ -235,7 +235,7 @@ plot_3D_by_rt <- function(spec_data, rt_indices) {
   if (!missing(rt_indices)) {
     unique_rt_values <- unique(spec_data$rt)
     selected_rt_values <- unique_rt_values[rt_indices]
-    spec_data <- spec_data[spec_data$rt == selected_rt_values, ]
+    spec_data <- spec_data[spec_data$rt %in% selected_rt_values, ]
   }
   if (nrow(spec_data) == 0) {
     warning("No data to plot after filtering by rt_indices")
@@ -291,6 +291,115 @@ plot_3D_by_rt <- function(spec_data, rt_indices) {
       name = "Data Points"
     )
   }
+  if (has_noise && !has_cluster) {
+    if (nrow(clean_data) > 0) {
+      p <- p %>% plotly::add_trace(
+        data = clean_data,
+        x = ~rt,
+        y = ~mz,
+        z = ~noise,
+        type = "scatter3d",
+        mode = "markers",
+        marker = list(
+          size = 2,
+          color = "darkgreen",
+          line = list(width = 0.5, color = "white")
+        ),
+        name = "Noise Points"
+      )
+    }
+  }
+
+  p %>%
+    plotly::layout(
+      scene = list(
+        xaxis = list(title = "Retention Time (s)"),
+        yaxis = list(title = "m/z"),
+        zaxis = list(title = "Intensity")
+      ),
+      showlegend = TRUE
+    )
+}
+
+plot_3D_spec_list <- function(spec_list, rt_indices) {
+  # Handle rt_indices filtering
+  if (!missing(rt_indices)) {
+    if (length(rt_indices) > length(spec_list)) {
+      warning("rt_indices contains more indices than available RT values")
+      rt_indices <- rt_indices[rt_indices <= length(spec_list)]
+    }
+    spec_list <- spec_list[rt_indices]
+  }
+
+  # Check if we have any data after filtering
+  if (length(spec_list) == 0) {
+    warning("No data to plot after filtering by rt_indices")
+    return(NULL)
+  }
+
+  # Combine all data.tables into a single data.table
+  spec_data <- data.table::rbindlist(spec_list, fill = TRUE)
+
+  if (nrow(spec_data) == 0) {
+    warning("No data to plot after combining spec_list")
+    return(NULL)
+  }
+
+  # Apply the same logic as original function
+  if (nrow(spec_data) > 1000000) {
+    set.seed(123)
+    spec_data <- spec_data[sample(nrow(spec_data), 1000000), ]
+    warning("Data too large, sampling down to 1,000,000 points for plotting")
+  }
+
+  has_cluster <- "cluster" %in% colnames(spec_data)
+  has_noise <- "noise" %in% colnames(spec_data)
+
+  if (has_noise) {
+    clean_data <- data.table::copy(spec_data)
+    spec_data <- spec_data[spec_data$intensity > spec_data$noise, ]
+  }
+
+  if (has_cluster) {
+    spec_data <- spec_data[!is.na(spec_data$cluster), ]
+    clusters <- sort(unique(spec_data$cluster))
+    cluster_colors <- generate_safe_colors(length(clusters))
+    names(cluster_colors) <- clusters
+    spec_data$cluster <- factor(spec_data$cluster, levels = clusters)
+    p <- plotly::plot_ly(
+      data = spec_data,
+      x = ~rt,
+      y = ~mz,
+      z = ~intensity,
+      type = "scatter3d",
+      mode = "markers",
+      color = ~cluster,
+      colors = cluster_colors,
+      marker = list(
+        size = 2,
+        line = list(width = 0.5, color = "white")
+      ),
+      name = paste("Cluster", spec_data$cluster, sep = " ")
+    )
+  } else {
+    p <- plotly::plot_ly(
+      data = spec_data,
+      x = ~rt,
+      y = ~mz,
+      z = ~intensity,
+      type = "scatter3d",
+      mode = "markers",
+      marker = list(
+        size = 2,
+        color = ~intensity,
+        colorscale = list(c(0, "darkblue"), c(1, "red")),
+        showscale = FALSE,
+        line = list(width = 0.5, color = "white")
+      ),
+      name = "Data Points"
+    )
+  }
+
   if (has_noise && !has_cluster) {
     if (nrow(clean_data) > 0) {
       p <- p %>% plotly::add_trace(

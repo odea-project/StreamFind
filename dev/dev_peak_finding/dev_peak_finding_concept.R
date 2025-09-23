@@ -8,15 +8,8 @@ source("dev/dev_peak_finding/dev_plots.R")
 devtools::load_all()
 ms <- MassSpecEngine$new(analyses = files)
 
-# plot_spectra_eic(
-#   ms$Analyses,
-#   analyses = 6,
-#   mass = db[c(18, 19), ],
-#   ppm = 20,
-#   sec = 60,
-#   colorBy = "targets+analyses",
-#   legendNames = TRUE
-# )
+# plot_spectra_tic(ms$Analyses, analyses = c(2:3), levels = 1, downsize = 3)
+# plot_spectra_eic(ms$Analyses, analyses = c(2:3), mz = db_merck, ppm = 10, sec = 60, colorBy = "targets", legendNames = TRUE)
 
 # MARK: Get Spectra
 # Get Spectra ------------------------------------------------------------------
@@ -38,33 +31,34 @@ orb_target <- data.frame(
 )
 
 single_target <- data.frame(
-  mzmin = 200,
-  mzmax = 250,
-  rtmin = 1100,
-  rtmax = 1200
+  mzmin = 600,
+  mzmax = 650,
+  rtmin = 350,
+  rtmax = 450
 )
 
-spec <- get_raw_spectra(
+spl <- get_raw_spectra(
   ms$Analyses,
-  analyses = 6,
+  analyses = 3,
   levels = 1
 )
 
 # MARK: Peak Finding Concept
 # Peak Finding Concept ---------------------------------------------------------
 
-# args for TOF data
-args <- list(
-  noise = 500,
-  mzr = 0.008,
+# Parameters for TOF data
+parameters <- list(
+  noiseThreshold = 0,
+  noiseQuantile = 0.98,
+  minSNR = 3,
+  mzrThreshold = 0.005,
   minTraces = 5,
   maxWidth = 50,
-  sn = 3,
-  gaufit = 0.5
+  minGaussFit = 0.5
 )
 
-# args for Orbitrap data
-# args <- list(
+# Parameters for Orbitrap data
+# parameters <- list(
 #   noise = 100000,
 #   mzr = 0.002,
 #   sn = 3,
@@ -78,91 +72,50 @@ args <- list(
 
 
 # MARK: Splitting by rt
-spec <- spec[order(spec$rt), ]
-spec_rts <- split(spec, f = spec$rt)
+spl <- spl[order(spl$rt), ]
+spl <- split(spl, f = spl$rt)
+spl <- lapply(spl, function(x) {
+  x <- x[x$intensity > 0, ]
+  x
+})
+message("Total rt scans: ", length(spl))
+#plot_3D_spec_list(spl, c(1:2))
 
-message("Total points: ", nrow(spec), "; Total rt scans: ", length(spec_rts), " (avg points per rt: ", round(nrow(spec) / length(spec_rts), 2), ")")
 
-
-
-# MARK: Cleaning up
-# Noise removal and centroiding within each rt scan
-spec_clean_list <- pbapply::pblapply(spec_rts, function(temp_spec, args) {
-  temp_spec <- temp_spec[temp_spec$intensity > 0, c("rt", "mz", "intensity")]
-  if (nrow(temp_spec) == 0) return(NULL)
-  noise <- quantile(temp_spec$intensity, probs = 0.95)
-  if (noise < args$noise) noise <- args$noise
-  temp_spec <- temp_spec[temp_spec$intensity > noise, ]
-  temp_spec <- temp_spec[order(temp_spec$mz), ]
-  mzs_diff <- diff(temp_spec$mz)
-  if (length(mzs_diff) == 0) return(NULL)
-  clusters <- integer(length(mzs_diff))
-  for (j in seq_along(mzs_diff)) {
-    if (mzs_diff[j] > args$mzr) clusters[j] <- 1
-  }
-  clusters <- cumsum(clusters)
-  clusters <- c(0, clusters)
-  temp_spec$cluster <- clusters + 1
-  temp_spec <- temp_spec[, .(intensity = max(intensity), mz = mz[which.max(intensity)]), by = c("cluster", "rt")]
-  temp_spec$noise <- noise
-  temp_spec$cluster <- NULL
-  temp_spec
-}, args = args)
-
-spec_clean <- data.table::rbindlist(
-  spec_clean_list,
-  use.names = TRUE,
-  fill = TRUE
+source("dev/dev_peak_finding/dev_clean_spectra.R")
+spl_clean <- clean_spectra(
+  spl,
+  noiseThreshold = parameters$noiseThreshold,
+  noiseQuantile = parameters$noiseQuantile,
+  minSNR = parameters$minSNR,
+  mzrThreshold = parameters$mzrThreshold
 )
+n_orginal <- sum(vapply(spl, nrow, 0))
+n_clean <- sum(vapply(spl_clean, nrow, 0))
+message("Original points: ", n_orginal, "; After cleaning: ", n_clean, " (reduction of ", round((n_orginal - n_clean) / n_orginal * 100, 2), "% )")
 
-message("Original points: ", nrow(spec), "; After cleaning: ", nrow(spec_clean), " (", round(nrow(spec_clean) / nrow(spec) * 100, 2), "% )")
-
-#noise_dt <- unique(spec_clean[, c("rt", "noise")])
-#plot(noise_dt$noise ~ noise_dt$rt, type = "l")
-
-# plot_3D_by_rt(spec_clean[spec_clean$mz > single_target$mzmin & spec_clean$mz < single_target$mzmax & spec_clean$rt > single_target$rtmin & spec_clean$rt < single_target$rtmax, ])
+#plot_3D_spec_list(spl_clean, c(50:100))
 
 
 
+sp_clean <- data.table::rbindlist(spl_clean, use.names = TRUE, fill = TRUE)
+# plot_3D_by_rt(sp_clean[sp_clean$mz > single_target$mzmin & sp_clean$mz < single_target$mzmax & sp_clean$rt > single_target$rtmin & sp_clean$rt < single_target$rtmax, ])
 
 
-# MARK: Clustering
-spec_clean <- spec_clean[order(spec_clean$mz), ]
-diff_mz <- diff(spec_clean$mz)
-diff_mz_eval <- diff_mz > args$mzr
-all_clusters <- cumsum(c(1, diff_mz_eval))
-spec_clean$cluster <- all_clusters
-counter <- table(spec_clean$cluster)
-counter <- counter[counter > args$minTraces]
-spec_clean$cluster[!spec_clean$cluster %in% names(counter)] <- NA_integer_
-clusters_summary <- spec_clean[, .(
-  mz = mean(mz),
-  weighted_mz = sum(mz * intensity) / sum(intensity),
-  mzmin = min(mz, na.rm = TRUE),
-  mzmax = max(mz, na.rm = TRUE),
-  dppm = (max(mz) - min(mz)) / mean(mz) * 1e6,
-  rtmin = min(rt),
-  rtmax = max(rt),
-  intensity = sum(intensity),
-  points = .N
-), by = .(cluster)][!is.na(cluster)]
 
-# plot_mz_vector(spec_clean[spec_clean$rt > single_target$rtmin & spec_clean$rt < single_target$rtmax & spec_clean$mz > single_target$mzmin & spec_clean$mz < single_target$mzmax, ], interactive = TRUE)
+source("dev/dev_peak_finding/dev_cluster_spectra.R")
+sp_clustered <- cluster_spectra(
+  sp_clean,
+  mzrThreshold = parameters$mzrThreshold,
+  minTraces = parameters$minTraces
+)
+# plot_3D_by_rt(sp_clustered[sp_clustered$mz > single_target$mzmin & sp_clustered$mz < single_target$mzmax & sp_clustered$rt > single_target$rtmin & sp_clustered$rt < single_target$rtmax, ])
 
-# plot_3D_by_rt(spec_clean[spec_clean$rt > single_target$rtmin & spec_clean$rt < single_target$rtmax & spec_clean$mz > single_target$mzmin & spec_clean$mz < single_target$mzmax, ])
+#plot_3D_by_rt(sp_clustered, c(50:100))
 
-message("Total clusters: ", length(unique(spec_clean$cluster)), "; Clusters with > ", args$minTraces, " points: ", nrow(clusters_summary), " (", round(nrow(clusters_summary) / length(unique(spec_clean$cluster)) * 100, 2), "% )")
 
-# MARK: Merging by rt
-# merge mz in each cluster with the same rt
-# for profile data, it actually centroids the data
-# in principle no effect on centroid data
-spec_merged <- spec_clean[, .(
-  mz = mz[which.max(intensity)],
-  intensity = max(intensity)
-), by = .(rt, cluster)]
 
-# plot_3D_by_rt(spec_merged[spec_merged$rt > single_target$rtmin & spec_merged$rt < single_target$rtmax & spec_merged$mz > single_target$mzmin & spec_merged$mz < single_target$mzmax, ])
+
 
 
 
@@ -171,7 +124,7 @@ spec_merged <- spec_clean[, .(
 # MARK: Finding peaks (per cluster)
 spec_merged <- spec_merged[order(spec_merged$rt), ]
 spec_clusters_list <- split(spec_merged, f = spec_merged$cluster)
-source("dev/dev_peak_finding/dev_chrom_peak_algorithms.R")
+source("dev/dev_peak_finding/dev_chrom_peak_derivative.R")
 
 temp_spec <- spec_clusters_list[["1292"]]
 

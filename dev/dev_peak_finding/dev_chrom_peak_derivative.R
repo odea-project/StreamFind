@@ -1,10 +1,10 @@
 # MARK: Utility: estimate baseline and find peak boundaries
 get_peak_bounds <- function(
-  x,
-  apex_idx,
-  intensity,
-  baseline,
-  max_half_width = 50) {
+    x,
+    apex_idx,
+    intensity,
+    baseline,
+    max_half_width = 50) {
   valid <- c(
     checkmate::test_numeric(x, finite = TRUE, any.missing = FALSE, min.len = 5),
     checkmate::test_numeric(intensity, finite = TRUE, any.missing = FALSE, min.len = 5),
@@ -190,7 +190,9 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
   idx <- which(dI[-1] <= 0 & dI[-length(dI)] > 0) + 1
 
   # Only keep peaks that fulfill "likely peak" conditions based on n points before and after the peak
-  if (length(idx) == 0) return(data.frame())
+  if (length(idx) == 0) {
+    return(data.frame())
+  }
   keep <- logical(length(idx))
   for (k in seq_along(idx)) {
     i <- idx[k]
@@ -206,9 +208,9 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
 
     # 1st derivative before should be positive
     if (length(pre_range) > 0) {
-      valid_pre <- pre_range[pre_range >= 2 & pre_range <= i]  # Ensure pre_range - 1 >= 1
+      valid_pre <- pre_range[pre_range >= 2 & pre_range <= i] # Ensure pre_range - 1 >= 1
       if (length(valid_pre) > 0) {
-        pre_avg <-  mean(dI[valid_pre - 1], na.rm = TRUE)
+        pre_avg <- mean(dI[valid_pre - 1], na.rm = TRUE)
       } else {
         pre_avg <- NA
       }
@@ -245,7 +247,9 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
       !pre_apex && !post_apex
   }
   idx <- idx[keep]
-  if (length(idx) == 0) return(data.frame())
+  if (length(idx) == 0) {
+    return(data.frame())
+  }
 
   cycle_time <- median(diff(rt))
 
@@ -253,7 +257,7 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
     warning("Invalid cycle time calculated. Using default window size.")
     window_size <- min_traces
   } else {
-    window_size <- max(min_traces, floor(20 / cycle_time))  # Ensure minimum window size
+    window_size <- max(min_traces, floor(20 / cycle_time)) # Ensure minimum window size
   }
   baseline <- numeric(n)
   half_window <- floor(window_size / 2)
@@ -349,7 +353,7 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
 
     A_init <- max(peak_mask_intensities)
     mu_init <- rt[i]
-    sigma_init <- max(0.001, (bounds[2] - bounds[1]) / 6)  # Ensure positive sigma
+    sigma_init <- max(0.001, (bounds[2] - bounds[1]) / 6) # Ensure positive sigma
 
     gaussian_model <- function(x, A, mu, sigma) {
       A * exp(-0.5 * ((x - mu) / sigma)^2)
@@ -440,7 +444,7 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
         plotly::add_markers(
           x = rt[idx[i]],
           y = intensity[idx[i]],
-          marker = list(color = 'red', size = 10, symbol = "circle"),
+          marker = list(color = "red", size = 10, symbol = "circle"),
           name = paste0("Peak ", i),
           showlegend = TRUE,
           legendgroup = paste0("Peak ", i),
@@ -466,182 +470,9 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
 
   out <- data.table::rbindlist(peaks, use.names = TRUE, fill = TRUE)
 
-  if (plot_peaks) return(list(out, p))
-
-  return(out)
-}
-
-#-----------------------------------------
-# 2. Smoothing + local maxima
-peak_detect_smooth <- function(dt, k=5) {
-  # Input validation
-  checkmate::assert_data_frame(dt, min.rows = 3)
-  checkmate::assert_names(names(dt), must.include = c("rt", "mz", "intensity"))
-  checkmate::assert_int(k, lower = 3, upper = 50)
-
-  rt <- dt$rt
-  mz <- dt$mz
-  intensity <- dt$intensity
-
-  # Validate data columns
-  checkmate::assert_numeric(rt, finite = TRUE, any.missing = FALSE, min.len = 3)
-  checkmate::assert_numeric(mz, finite = TRUE, any.missing = FALSE, min.len = 3)
-  checkmate::assert_numeric(intensity, finite = TRUE, any.missing = FALSE, min.len = 3)
-
-  n <- length(intensity)
-
-  # Ensure all columns have same length
-  if (length(rt) != n || length(mz) != n) {
-    stop("All data columns must have same length: rt=", length(rt), ", mz=", length(mz), ", intensity=", n)
+  if (plot_peaks) {
+    return(list(out, p))
   }
 
-  if (n < k) {
-    warning("Data length (", n, ") is less than smoothing window (", k, "). Using simple maxima detection.")
-    idx <- which(diff(sign(diff(intensity))) == -2) + 1
-  } else {
-    # simple moving average smoothing
-    smoothed <- filter(intensity, rep(1/k, k), sides=2)
-    smoothed[is.na(smoothed)] <- intensity[is.na(smoothed)]
-
-    # local maxima
-    idx <- which(diff(sign(diff(smoothed))) == -2) + 1
-  }
-
-  if (length(idx) == 0) {
-    return(data.frame())
-  }
-
-  # Create baseline for get_peak_bounds
-  baseline <- rep(min(intensity), n)
-
-  peaks <- lapply(idx, function(i) {
-    # Validate index
-    if (i < 1 || i > n) {
-      return(NULL)
-    }
-
-    bounds_rt <- tryCatch(
-      get_peak_bounds(rt, i, intensity, baseline),
-      error = function(e) c(rt[max(1, i-1)], rt[min(n, i+1)])
-    )
-    bounds_mz <- tryCatch(
-      get_peak_bounds(mz, i, intensity, baseline),
-      error = function(e) c(mz[max(1, i-1)], mz[min(n, i+1)])
-    )
-
-    list(
-      rt = rt[i],
-      mz = mz[i],
-      intensity = intensity[i],
-      rtmin = bounds_rt[1],
-      rtmax = bounds_rt[2],
-      mzmin = bounds_mz[1],
-      mzmax = bounds_mz[2]
-    )
-  })
-
-  # Filter out NULL results
-  peaks <- peaks[!sapply(peaks, is.null)]
-
-  if (length(peaks) == 0) {
-    return(data.frame())
-  }
-
-  out <- as.data.frame(do.call(rbind, peaks))
-  return(out)
-}
-
-#-----------------------------------------
-# 3. Thresholding + local maxima
-peak_detect_threshold <- function(dt, threshold=NULL) {
-  # Input validation
-  checkmate::assert_data_frame(dt, min.rows = 3)
-  checkmate::assert_names(names(dt), must.include = c("rt", "mz", "intensity"))
-  if (!is.null(threshold)) {
-    checkmate::assert_number(threshold, lower = 0, finite = TRUE)
-  }
-
-  rt <- dt$rt
-  mz <- dt$mz
-  intensity <- dt$intensity
-
-  # Validate data columns
-  checkmate::assert_numeric(rt, finite = TRUE, any.missing = FALSE, min.len = 3)
-  checkmate::assert_numeric(mz, finite = TRUE, any.missing = FALSE, min.len = 3)
-  checkmate::assert_numeric(intensity, finite = TRUE, any.missing = FALSE, min.len = 3)
-
-  n <- length(intensity)
-
-  # Ensure all columns have same length
-  if (length(rt) != n || length(mz) != n) {
-    stop("All data columns must have same length: rt=", length(rt), ", mz=", length(mz), ", intensity=", n)
-  }
-
-  if (is.null(threshold)) {
-    if (sd(intensity) == 0) {
-      warning("Intensity has zero variance. Using mean as threshold.")
-      threshold <- mean(intensity)
-    } else {
-      threshold <- mean(intensity) + sd(intensity)
-    }
-  }
-
-  # Only consider above-threshold points
-  idx <- which(intensity > threshold)
-
-  if (length(idx) == 0) {
-    return(data.frame())
-  }
-
-  # Find local maxima within above-threshold region
-  if (length(idx) < 3) {
-    candidates <- idx  # Use all points if too few
-  } else {
-    intensity_subset <- intensity[idx]
-    local_max_idx <- which(diff(sign(diff(intensity_subset))) == -2) + 1
-    candidates <- idx[local_max_idx]
-  }
-
-  if (length(candidates) == 0) {
-    return(data.frame())
-  }
-
-  # Create baseline for get_peak_bounds
-  baseline <- rep(min(intensity), n)
-
-  peaks <- lapply(candidates, function(i) {
-    # Validate index
-    if (i < 1 || i > n) {
-      return(NULL)
-    }
-
-    bounds_rt <- tryCatch(
-      get_peak_bounds(rt, i, intensity, baseline),
-      error = function(e) c(rt[max(1, i-1)], rt[min(n, i+1)])
-    )
-    bounds_mz <- tryCatch(
-      get_peak_bounds(mz, i, intensity, baseline),
-      error = function(e) c(mz[max(1, i-1)], mz[min(n, i+1)])
-    )
-
-    list(
-      rt = rt[i],
-      mz = mz[i],
-      intensity = intensity[i],
-      rtmin = bounds_rt[1],
-      rtmax = bounds_rt[2],
-      mzmin = bounds_mz[1],
-      mzmax = bounds_mz[2]
-    )
-  })
-
-  # Filter out NULL results
-  peaks <- peaks[!sapply(peaks, is.null)]
-
-  if (length(peaks) == 0) {
-    return(data.frame())
-  }
-
-  out <- as.data.frame(do.call(rbind, peaks))
   return(out)
 }

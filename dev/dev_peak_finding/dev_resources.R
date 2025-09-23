@@ -1,5 +1,5 @@
-all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
-#all_files_dir <- "D:\\peak_finding_files_ex"
+#all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
+all_files_dir <- "D:\\peak_finding_files_ex"
 all_files <- list.files(all_files_dir, full.names = TRUE, recursive = TRUE, pattern = "\\.mzML$")
 
 files_tof_cent <- all_files[grepl("tof_centroid", all_files)]
@@ -8,7 +8,8 @@ files_tof_prof <- all_files[grepl("tof_profile", all_files)]
 files_orb_cent <- all_files[grepl("orbitrap_centroid", all_files)]
 files_orb_prof <- all_files[grepl("orbitrap_profile", all_files)]
 files_tof_ww <- all_files[grepl("wastewater", all_files)]
-files_merck_ex_apci_pos <- all_files[grepl("Beispieldaten Batchvergleiche OKvsNG/ACC1_25210_6_APCIpos.mzML", all_files)]
+files_merck_ex <- all_files[grepl("merck/Beispieldaten Routine/ACC1_26393", all_files)]
+files_merck_ex_centroid <- all_files[grepl("Beispieldaten Routine/centroid_ACC1_26393", all_files)]
 
 files <- c(
   files_tof_cent[1],
@@ -16,7 +17,8 @@ files <- c(
   files_orb_cent[7],
   files_orb_prof[7],
   files_tof_ww[11],
-  files_merck_ex_apci_pos[1]
+  files_merck_ex_apci_pos[1:2],
+  files_merck_ex_centroid[1:2]
 )
 
 db_all <- StreamFindData::get_ms_tof_spiked_chemicals()
@@ -40,6 +42,8 @@ db_with_ms2$polarity[db_with_ms2$polarity == 1] <- "positive"
 db_with_ms2$polarity[is.na(db_with_ms2$polarity)] <- "positive"
 db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 
+db_merck <- fread(list.files(all_files_dir, full.names = TRUE, recursive = TRUE, pattern = "\\ACC_26393_1.csv$"))
+
 # MARK: Find Peak Targets
 find_peak_targets <- function(peaks_dt, db, ppm_tol = 20, rt_tol = 60) {
   results <- list()
@@ -52,8 +56,7 @@ find_peak_targets <- function(peaks_dt, db, ppm_tol = 20, rt_tol = 60) {
     mz_diff_ppm_appex <- abs(peaks_dt$mz_appex - target_mz) / target_mz * 1e6
     rt_diff <- abs(peaks_dt$rt - target_rt)
     match_idx <- which(
-      (mz_diff_ppm <= ppm_tol | mz_diff_ppm_wt <= ppm_tol | mz_diff_ppm_appex <= ppm_tol) &
-      rt_diff <= rt_tol
+      (mz_diff_ppm <= ppm_tol | mz_diff_ppm_wt <= ppm_tol | mz_diff_ppm_appex <= ppm_tol) & rt_diff <= rt_tol
     )
     if (length(match_idx) > 0) {
       # best_idx <- match_idx[which.min(rt_diff[match_idx])]
