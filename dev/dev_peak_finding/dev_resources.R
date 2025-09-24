@@ -1,5 +1,5 @@
-#all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
-all_files_dir <- "D:\\peak_finding_files_ex"
+all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
+#all_files_dir <- "D:\\peak_finding_files_ex"
 all_files <- list.files(all_files_dir, full.names = TRUE, recursive = TRUE, pattern = "\\.mzML$")
 
 files_tof_cent <- all_files[grepl("tof_centroid", all_files)]
@@ -17,7 +17,7 @@ files <- c(
   files_orb_cent[7],
   files_orb_prof[7],
   files_tof_ww[11],
-  files_merck_ex_apci_pos[1:2],
+  #files_merck_ex[1:2],
   files_merck_ex_centroid[1:2]
 )
 
@@ -43,6 +43,7 @@ db_with_ms2$polarity[is.na(db_with_ms2$polarity)] <- "positive"
 db_with_ms2$polarity[db_with_ms2$polarity == -1] <- "negative"
 
 db_merck <- fread(list.files(all_files_dir, full.names = TRUE, recursive = TRUE, pattern = "\\ACC_26393_1.csv$"))
+db_merck$name <- paste0("Peak ", db_merck$MW)
 
 # MARK: Find Peak Targets
 find_peak_targets <- function(peaks_dt, db, ppm_tol = 20, rt_tol = 60) {

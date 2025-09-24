@@ -31,10 +31,10 @@ orb_target <- data.frame(
 )
 
 single_target <- data.frame(
-  mzmin = 600,
-  mzmax = 650,
-  rtmin = 350,
-  rtmax = 450
+  mzmin = 700,
+  mzmax = 750,
+  rtmin = 750,
+  rtmax = 820
 )
 
 spl <- get_raw_spectra(
@@ -48,13 +48,16 @@ spl <- get_raw_spectra(
 
 # Parameters for TOF data
 parameters <- list(
-  noiseThreshold = 0,
-  noiseQuantile = 0.98,
+  rtWindows = data.frame(rtmin = 300, rtmax = 3600),
+  noiseBins = 70,
+  noiseThreshold = 15,
+  noiseQuantile = 0.01,
   minSNR = 3,
   mzrThreshold = 0.005,
-  minTraces = 5,
-  maxWidth = 50,
-  minGaussFit = 0.5
+  minTraces = 3,
+  baselineWindow = 200,
+  maxWidth = 100,
+  minGaussFit = 0.7
 )
 
 # Parameters for Orbitrap data
@@ -79,12 +82,27 @@ spl <- lapply(spl, function(x) {
   x
 })
 message("Total rt scans: ", length(spl))
-#plot_3D_spec_list(spl, c(1:2))
 
+spl <- lapply(spl, function(x, rtWindows) {
+  if (nrow(rtWindows) == 0) return(x)
+  sel <- FALSE
+  for (i in seq_len(nrow(rtWindows))) {
+    sel <- sel | (x$rt[1] >= rtWindows$rtmin[i] & x$rt[1] <= rtWindows$rtmax[i])
+  }
+  if (any(sel)) {
+    x
+  } else {
+    NULL
+  }
+}, rtWindows = parameters$rtWindows)
+spl <- spl[!vapply(spl, is.null, FALSE)]
+
+#plot_3D_spec_list(spl, c(1:100))
 
 source("dev/dev_peak_finding/dev_clean_spectra.R")
 spl_clean <- clean_spectra(
   spl,
+  noiseBins = parameters$noiseBins,
   noiseThreshold = parameters$noiseThreshold,
   noiseQuantile = parameters$noiseQuantile,
   minSNR = parameters$minSNR,
@@ -94,7 +112,7 @@ n_orginal <- sum(vapply(spl, nrow, 0))
 n_clean <- sum(vapply(spl_clean, nrow, 0))
 message("Original points: ", n_orginal, "; After cleaning: ", n_clean, " (reduction of ", round((n_orginal - n_clean) / n_orginal * 100, 2), "% )")
 
-#plot_3D_spec_list(spl_clean, c(50:100))
+#plot_3D_spec_list(spl_clean, c(1:100))
 
 
 
@@ -107,7 +125,8 @@ source("dev/dev_peak_finding/dev_cluster_spectra.R")
 sp_clustered <- cluster_spectra(
   sp_clean,
   mzrThreshold = parameters$mzrThreshold,
-  minTraces = parameters$minTraces
+  minTraces = parameters$minTraces,
+  minSNR = parameters$minSNR
 )
 # plot_3D_by_rt(sp_clustered[sp_clustered$mz > single_target$mzmin & sp_clustered$mz < single_target$mzmax & sp_clustered$rt > single_target$rtmin & sp_clustered$rt < single_target$rtmax, ])
 
@@ -122,16 +141,19 @@ sp_clustered <- cluster_spectra(
 
 
 # MARK: Finding peaks (per cluster)
-spec_merged <- spec_merged[order(spec_merged$rt), ]
-spec_clusters_list <- split(spec_merged, f = spec_merged$cluster)
+spl_clusters <- split(sp_clustered, f = sp_clustered$cluster)
 source("dev/dev_peak_finding/dev_chrom_peak_derivative.R")
 
-temp_spec <- spec_clusters_list[["1292"]]
 
-peaks_list <- pbapply::pblapply(spec_clusters_list, function(temp_spec, args) {
+temp_spec <- spl_clusters[["7612"]]
+temp_spec <- spl_clusters[["11983"]]
+temp_spec <- spl_clusters[["7987"]]
+temp_spec <- spl_clusters[["7165"]]
+
+peaks_list <- pbapply::pblapply(spl_clusters, function(temp_spec, parameters) {
   if (is.null(temp_spec)) return(NULL)
-  if (nrow(temp_spec) < args$minTraces) return(NULL)
-  peaks <- peak_detect_derivative(temp_spec, args$minTraces, args$maxWidth, args$sn, args$gaufit, plot_peaks = FALSE)
+  if (nrow(temp_spec) < parameters$minTraces) return(NULL)
+  peaks <- peak_detect_derivative(temp_spec, parameters$minTraces, parameters$baselineWindow, parameters$maxWidth, parameters$minSNR, parameters$minGaussFit, plotPeaks = TRUE)
   if (is.null(peaks)) return(NULL)
   if (!is.data.frame(peaks)) {
     peaks <- peaks[[1]]
@@ -166,23 +188,22 @@ peaks_list <- pbapply::pblapply(spec_clusters_list, function(temp_spec, args) {
     c("id", "rt", "mz", "mz_wt", "mz_appex", "ppm", "width", "intensity", "mzmin", "mzmax", "rtmin", "rtmax")
   )
   peaks
-}, args = args)
+}, parameters = parameters)
 peaks_dt <- data.table::rbindlist(peaks_list, use.names = TRUE, fill = TRUE)
 
 # source("dev/dev_peak_finding/dev_plots.R")
 # plot_3D_by_rt_with_peaks(spec_merged[spec_merged$rt > 1100 & spec_merged$rt < 1200 & spec_merged$mz > 205 & spec_merged$mz < 250, ], peaks_dt)
 
 message("Total peaks found: ", nrow(peaks_dt))
+message("Total peaks found with gaussian fit: ", nrow(peaks_dt[!is.na(peaks_dt$r_squared), ]))
 
-
-db$mz <- db$mass + 1.007276
-matched_targets <- find_peak_targets(peaks_dt, db, ppm_tol = 10, rt_tol = 15)
+matched_targets <- find_peak_targets(peaks_dt, db_merck, ppm_tol = 10, rt_tol = 30)
 matched_targets
 
 peaks_dt[peaks_dt$id %in% matched_targets$peak_id, ]
 
 # which names from db are not in matched_targets
-setdiff(db$name, matched_targets$target_name)
+setdiff(db_merck$name, matched_targets$target_name)
 
 
 
@@ -194,7 +215,15 @@ setdiff(db$name, matched_targets$target_name)
 
 
 
+mfSet <- rcdk::generate.formula(
+  636.3652 - 1.007276, # M-H
+  window = 0.01,
+  elements = list(c("C", 20, 70), c("H", 20, 70), c("N", 0, 3)),
+  validation = FALSE
+)
 
+
+mfSet
 
 
 

@@ -150,21 +150,22 @@ get_peak_bounds <- function(
 }
 
 # MARK:  First derivative method
-peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit, plot_peaks = FALSE) {
-  checkmate::assert_int(min_traces, lower = 5, upper = 100)
-  checkmate::assert_int(max_width, lower = 10, upper = 200)
-  checkmate::assert_data_frame(dt, min.rows = min_traces)
+peak_detect_derivative <- function(dt, mintraces, baselineWindow, maxwidth, minSNR, minGaussFit, plotPeaks = FALSE) {
+  checkmate::assert_int(mintraces, lower = 0)
+  checkmate::assert_int(maxwidth, lower = 0)
+  checkmate::assert_int(baselineWindow, lower = 0)
+  checkmate::assert_data_frame(dt, min.rows = mintraces)
   checkmate::assert_names(names(dt), must.include = c("rt", "mz", "intensity"))
-  checkmate::assert_number(min_sn, lower = 0, finite = TRUE)
-  checkmate::assert_number(min_gaufit, lower = 0, upper = 1, finite = TRUE)
-  checkmate::assert_logical(plot_peaks, len = 1)
+  checkmate::assert_number(minSNR, lower = 0, finite = TRUE)
+  checkmate::assert_number(minGaussFit, lower = 0, upper = 1, finite = TRUE)
+  checkmate::assert_logical(plotPeaks, len = 1)
 
   rt <- dt$rt
   mz <- dt$mz
   intensity <- dt$intensity
-  checkmate::assert_numeric(rt, finite = TRUE, any.missing = FALSE, min.len = min_traces)
-  checkmate::assert_numeric(mz, finite = TRUE, any.missing = FALSE, min.len = min_traces)
-  checkmate::assert_numeric(intensity, finite = TRUE, any.missing = FALSE, min.len = min_traces)
+  checkmate::assert_numeric(rt, finite = TRUE, any.missing = FALSE, min.len = mintraces)
+  checkmate::assert_numeric(mz, finite = TRUE, any.missing = FALSE, min.len = mintraces)
+  checkmate::assert_numeric(intensity, finite = TRUE, any.missing = FALSE, min.len = mintraces)
   n <- length(intensity)
 
   if (length(rt) != n || length(mz) != n) {
@@ -176,14 +177,73 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
     intensity[intensity < 0] <- 0
   }
 
-  dI <- diff(intensity)
+  if (plotPeaks) {
+    p <- plotly::plot_ly(
+      x = rt, y = intensity, type = "scatter", mode = "lines",
+      name = "Raw Intensity", color = "black", colors = "black"
+    )
+  }
+
+  cycle_time <- median(diff(rt))
+  baseline_window_size <- floor(max(mintraces, floor(baselineWindow / cycle_time)) / 2)
+  derivative_window_size <- max(floor(mintraces), floor(4 / cycle_time))
+
+  baseline <- numeric(n)
+  for (i in seq_len(n)) {
+    start_idx <- max(1, i - baseline_window_size)
+    end_idx <- min(n, i + baseline_window_size)
+    if (start_idx > end_idx || start_idx < 1 || end_idx > n) {
+      baseline[i] <- intensity[i]
+    } else {
+      baseline[i] <- min(intensity[start_idx:end_idx])
+    }
+  }
+
+  if (n >= 3) {
+    smoothed_baseline <- baseline
+    for (i in 2:(n - 1)) {
+      smoothed_baseline[i] <- mean(baseline[(i - 1):(i + 1)])
+    }
+    baseline <- smoothed_baseline
+
+    # Smoothing window: 1% of traces, minimum 3
+    window_size_smooth <- 2 #max(3, 3) #floor(n * 0.01)
+    half_window_smooth <- floor(window_size_smooth / 2)
+    smoothed_intensity <- intensity
+    for (i in seq_len(n)) {
+      start_idx <- max(1, i - half_window_smooth)
+      end_idx <- min(n, i + half_window_smooth)
+      smoothed_intensity[i] <- mean(intensity[start_idx:end_idx])
+    }
+  }
+
+  if (plotPeaks) {
+    p <- p %>%
+      plotly::add_lines(
+        y = baseline, name = "Estimated Baseline", line = list(dash = "dashdot", color = "#a3d8a3")
+      )
+    p <- p %>%
+      plotly::add_lines(
+        y = baseline, name = "Smoothed Baseline", line = list(dash = "solid", color = "#56b44d")
+      )
+    p <- p %>%
+      plotly::add_lines(
+        y = smoothed_intensity, name = "Smoothed Intensity", line = list(dash = "solid", color = "#120eff")
+      )
+  }
+
+  dI <- diff(smoothed_intensity)
   d2I <- diff(dI)
 
-  if (plot_peaks) {
-    p <- plotly::plot_ly(x = rt, y = intensity, type = "scatter", mode = "lines+markers") %>%
-      plotly::add_lines(y = c(0, dI * max(intensity) / max(dI)), name = "1st Derivative", line = list(dash = "dash")) %>%
-      plotly::add_lines(y = c(0, 0, d2I * max(intensity) / max(d2I)), name = "2nd Derivative", line = list(dash = "dot")) %>%
-      plotly::layout(title = "1st and 2nd derivative algorithm", yaxis = list(title = "Intensity"), xaxis = list(title = "Retention Time (rt)"))
+  if (plotPeaks) {
+    p <- p %>%
+      plotly::add_lines(
+        y = c(0, dI * max(intensity) / max(dI)), name = "1st Derivative", line = list(dash = "dash", color = "#c0bdbd")
+      )
+    p <- p %>%
+      plotly::add_lines(
+        y = c(0, 0, d2I * max(intensity) / max(d2I)), name = "2nd Derivative", line = list(dash = "dot", color = "#3f3e3e")
+      )
   }
 
   # Candidates: where slope changes + to -
@@ -193,22 +253,28 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
   if (length(idx) == 0) {
     return(data.frame())
   }
+
+  if (plotPeaks) {
+    p <- p %>%
+      plotly::add_markers(x = rt[idx], y = intensity[idx], name = "Peak Candidates", marker = list(color = "#000000", size = 8, symbol = "circle"))
+  }
+
   keep <- logical(length(idx))
   for (k in seq_along(idx)) {
     i <- idx[k]
 
     # Skip if too close to edges
-    if (i < floor(min_traces / 2) || i > n - floor(min_traces / 2)) {
+    if (i < derivative_window_size || i > n - derivative_window_size) {
       next
     }
 
-    # Define ranges for checking
-    pre_range <- seq.int(from = max(i - floor(min_traces / 2), 1), to = i - 1)
-    post_range <- seq.int(from = i + 1, to = min(i + floor(min_traces / 2), length(intensity)))
+    # Define ranges for checking using derivative_window_size
+    pre_range <- seq.int(from = max(i - derivative_window_size, 1), to = i - 1)
+    post_range <- seq.int(from = i + 1, to = min(i + derivative_window_size, n))
 
     # 1st derivative before should be positive
     if (length(pre_range) > 0) {
-      valid_pre <- pre_range[pre_range >= 2 & pre_range <= i] # Ensure pre_range - 1 >= 1
+      valid_pre <- pre_range[pre_range >= 2 & pre_range <= i]
       if (length(valid_pre) > 0) {
         pre_avg <- mean(dI[valid_pre - 1], na.rm = TRUE)
       } else {
@@ -237,9 +303,17 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
       d2_at_peak <- NA
     }
 
-    # Check for higher apex in preceding or following traces
-    pre_apex <- if (length(pre_range) > 0) any(intensity[pre_range] >= intensity[i]) else FALSE
-    post_apex <- if (length(post_range) > 0) any(intensity[post_range] >= intensity[i]) else FALSE
+    # Check for higher apex in preceding or following traces using derivative_window_size
+    if (length(pre_range) > 0) {
+      pre_apex <- any(smoothed_intensity[pre_range] >= smoothed_intensity[i])
+    } else {
+      pre_apex <- FALSE
+    }
+    if (length(post_range) > 0) {
+      post_apex <- any(smoothed_intensity[post_range] >= smoothed_intensity[i])
+    } else {
+      post_apex <- FALSE
+    }
 
     # Keep if: 1st derivative changes sign, 2nd derivative is negative, and no higher apex nearby
     keep[k] <- (!is.na(pre_avg) && !is.na(post_avg) && pre_avg > 0 && post_avg < 0) &&
@@ -251,52 +325,13 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
     return(data.frame())
   }
 
-  cycle_time <- median(diff(rt))
-
-  if (is.na(cycle_time) || cycle_time <= 0) {
-    warning("Invalid cycle time calculated. Using default window size.")
-    window_size <- min_traces
-  } else {
-    window_size <- max(min_traces, floor(20 / cycle_time)) # Ensure minimum window size
-  }
-  baseline <- numeric(n)
-  half_window <- floor(window_size / 2)
-  for (i in seq_len(n)) {
-    start_idx <- max(1, i - half_window)
-    end_idx <- min(n, i + half_window)
-
-    if (start_idx > end_idx || start_idx < 1 || end_idx > n) {
-      baseline[i] <- intensity[i]
-    } else {
-      baseline[i] <- min(intensity[start_idx:end_idx])
-    }
-  }
-
-  if (plot_peaks) {
-    p <- p %>%
-      plotly::add_lines(y = baseline, name = "Estimated Baseline", line = list(dash = "dashdot", color = "green"))
-  }
-
-  if (n >= 3) {
-    smoothed_baseline <- baseline
-    for (i in 2:(n - 1)) {
-      smoothed_baseline[i] <- mean(baseline[(i - 1):(i + 1)])
-    }
-    baseline <- smoothed_baseline
-  }
-
-  if (plot_peaks) {
-    p <- p %>%
-      plotly::add_lines(y = baseline, name = "Smoothed Baseline", line = list(dash = "solid", color = "blue"))
-  }
-
   peaks <- lapply(idx, function(i) {
-    if (i < min_traces / 2 || i > n - min_traces / 2) {
+    if (i < mintraces / 2 || i > n - mintraces / 2) {
       return(NULL)
     }
 
     bounds <- tryCatch(
-      get_peak_bounds(rt, i, intensity, baseline, max_width / 2),
+      get_peak_bounds(rt, i, smoothed_intensity, baseline, maxwidth / 2),
       error = function(e) {
         warning("Error in get_peak_bounds for peak at index ", i, ": ", e$message)
         c(rt[max(1, i - 1)], rt[min(n, i + 1)])
@@ -312,126 +347,172 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
       return(NULL)
     }
 
-    # Calculate noise with validation
     peak_intensities <- intensity[peak_mask]
+    peak_rt <- rt[peak_mask]
+    peak_mz <- mz[peak_mask]
+    peak_max_intensity <- max(peak_intensities, na.rm = TRUE)
     peak_n <- length(peak_intensities)
     noise <- min(peak_intensities[c(1:2, (peak_n - 2):peak_n)], na.rm = TRUE)
+    signal <- peak_max_intensity - baseline[i]
+    if (noise > 0 && signal > 0) {
+      sn <- signal / noise
+    } else {
+      sn <- NA
+    }
 
-    # Calculate signal-to-noise ratio
-    signal <- intensity[i] - baseline[i]
-    sn <- if (noise > 0 && signal > 0) signal / noise else NA
-
-    if (is.na(sn) || sn < min_sn) {
+    if (is.na(sn) || sn < minSNR) {
       return(NULL)
     }
 
-    # Gaussian fitting with validation
-    peak_mask_intensities <- intensity[peak_mask]
-    peak_mask_intensities <- peak_mask_intensities - min(peak_mask_intensities) + 1
-    peak_mask_rt <- rt[peak_mask]
+    max_position <- which(peak_intensities == peak_max_intensity)[1]
 
-    # Validate fitting parameters
-    if (length(peak_mask_intensities) < 3) {
-      # Not enough points for fitting
-      return(list(
-        rt = rt[i],
-        mz = mz[i],
-        intensity = intensity[i],
-        noise = baseline[i],
-        sn = sn,
-        A = NA_real_,
-        mu = NA_real_,
-        sigma = NA_real_,
-        r_squared = NA_real_,
-        y_pred = NA,
-        x_vals = NA,
-        n_traces = length(peak_mask),
-        rtmin = bounds[1],
-        rtmax = bounds[2]
-      ))
-    }
-
-    A_init <- max(peak_mask_intensities)
-    mu_init <- rt[i]
-    sigma_init <- max(0.001, (bounds[2] - bounds[1]) / 6) # Ensure positive sigma
-
-    gaussian_model <- function(x, A, mu, sigma) {
-      A * exp(-0.5 * ((x - mu) / sigma)^2)
-    }
-
-    fit <- tryCatch(
-      nls(
-        peak_mask_intensities ~ gaussian_model(peak_mask_rt, A, mu, sigma),
-        start = list(A = A_init, mu = mu_init, sigma = sigma_init),
-        control = nls.control(maxiter = 100)
-      ),
-      error = function(e) NULL
-    )
-
-    if (!is.null(fit)) {
-      fitted_params <- coef(fit)
-      A_fit <- fitted_params["A"]
-      mu_fit <- fitted_params["mu"]
-      sigma_fit <- fitted_params["sigma"]
-      y_obs <- peak_mask_intensities
-      x_vals <- peak_mask_rt
-      y_pred <- A_fit * exp(-((x_vals - mu_fit)^2) / (2 * sigma_fit^2))
-      mean_y <- mean(y_obs)
-      ss_total <- sum((y_obs - mean_y)^2)
-      ss_residual <- sum((y_obs - y_pred)^2)
-      r_squared <- if (ss_total > 0) 1 - (ss_residual / ss_total) else 0
-
-      if (r_squared < min_gaufit) {
-        return(NULL)
-      }
-    } else {
-      A_fit <- NA_real_
-      mu_fit <- NA_real_
-      sigma_fit <- NA_real_
-      r_squared <- NA_real_
-      y_pred <- NA
-      x_vals <- NA
-    }
+    rt_at_max <- peak_rt[max_position]
+    mz_at_max <- peak_mz[max_position]
 
     list(
-      rt = rt[i],
-      mz = mz[i],
-      intensity = intensity[i],
+      rt = rt_at_max,
+      mz = mz_at_max,
+      intensity = peak_max_intensity,
       noise = baseline[i],
       sn = sn,
-      A = A_fit,
-      mu = mu_fit,
-      sigma = sigma_fit,
-      r_squared = r_squared,
-      y_pred = y_pred,
-      x_vals = x_vals,
+      A = NA_real_,
+      mu = NA_real_,
+      sigma = NA_real_,
+      r_squared = NA_real_,
+      y_pred = NA,
+      x_vals = NA,
       n_traces = length(peak_mask),
       rtmin = bounds[1],
       rtmax = bounds[2]
     )
   })
 
-  if (plot_peaks) {
-    for (i in seq_along(idx)) {
+  peaks <- peaks[!sapply(peaks, is.null)]
+
+  # Merge peaks with similar apex intensity (within 10%) and overlapping rt ranges
+  if (length(peaks) > 1) {
+    merged_peaks <- list()
+    used <- rep(FALSE, length(peaks))
+    for (i in seq_along(peaks)) {
+      if (used[i]) next
+      current <- peaks[[i]]
+      group <- list(current)
+      used[i] <- TRUE
+      if (i + 1 > length(peaks)) {
+        merged_peaks <- c(merged_peaks, group)
+        break
+      }
+      for (j in (i + 1):length(peaks)) {
+        if (used[j]) next
+        candidate <- peaks[[j]]
+        # Check apex intensity within 10%
+        int1 <- current$intensity
+        int2 <- candidate$intensity
+        int_diff <- abs(int1 - int2) / max(int1, int2)
+        # Check overlap
+        overlap <- (current$rtmax >= candidate$rtmin) && (candidate$rtmax >= current$rtmin)
+        if (int_diff <= 0.10 && overlap) {
+          group <- c(group, list(candidate))
+          used[j] <- TRUE
+        }
+      }
+      # Merge group if more than one peak
+      if (length(group) > 1) {
+        merged <- group[[which.max(sapply(group, function(x) x$intensity))]]
+        merged$rtmin <- min(sapply(group, function(x) x$rtmin))
+        merged$rtmax <- max(sapply(group, function(x) x$rtmax))
+        merged$n_traces <- sum(sapply(group, function(x) x$n_traces))
+        merged_peaks <- c(merged_peaks, list(merged))
+      } else {
+        merged_peaks <- c(merged_peaks, group)
+      }
+    }
+    peaks <- merged_peaks
+  }
+
+  if (TRUE) {
+    peaks <- lapply(peaks, function(i) {
+      # Gaussian fitting with validation
+      peak_mask <- which(rt >= i$rtmin & rt <= i$rtmax)
+      peak_mask_intensities <- intensity[peak_mask]
+      peak_mask_intensities <- peak_mask_intensities - min(peak_mask_intensities) + 1
+      peak_mask_rt <- rt[peak_mask]
+
+      # Validate fitting parameters
+      if (length(peak_mask_intensities) < 3) {
+        # Not enough points for fitting
+        return(i)
+      }
+
+      A_init <- max(peak_mask_intensities)
+      mu_init <- i$rt
+      sigma_init <- max(1.5, min(5, (i$rtmax - i$rtmin) / 6)) # Ensure positive sigma
+
+      gaussian_model <- function(x, A, mu, sigma) {
+        A * exp(-0.5 * ((x - mu) / sigma)^2)
+      }
+
+      fit <- tryCatch(
+        nls(
+          peak_mask_intensities ~ gaussian_model(peak_mask_rt, A, mu, sigma),
+          start = list(A = A_init, mu = mu_init, sigma = sigma_init),
+          control = nls.control(maxiter = 50)
+        ),
+        error = function(e) NULL
+      )
+
+      if (!is.null(fit)) {
+        fitted_params <- coef(fit)
+        A_fit <- fitted_params["A"]
+        mu_fit <- fitted_params["mu"]
+        sigma_fit <- fitted_params["sigma"]
+        if (A_fit < i$intensity / 2 || A_fit > i$intensity * 2 || sigma_fit <= 0) {
+          return(NULL)
+        }
+        y_obs <- peak_mask_intensities
+        x_vals <- peak_mask_rt
+        y_pred <- A_fit * exp(-((x_vals - mu_fit)^2) / (2 * sigma_fit^2))
+        mean_y <- mean(y_obs)
+        ss_total <- sum((y_obs - mean_y)^2)
+        ss_residual <- sum((y_obs - y_pred)^2)
+        r_squared <- if (ss_total > 0) 1 - (ss_residual / ss_total) else 0
+        if (r_squared < minGaussFit) {
+          return(NULL)
+        } else {
+          i$A <- A_fit
+          i$mu <- mu_fit
+          i$sigma <- sigma_fit
+          i$r_squared <- r_squared
+          i$y_pred <- y_pred
+          i$x_vals <- x_vals
+          return(i)
+        }
+      }
+      i
+    })
+  }
+
+  if (plotPeaks) {
+    for (i in seq_along(peaks)) {
       if (is.null(peaks[[i]])) next
-      bounds <- get_peak_bounds(rt, idx[i], intensity, baseline)
+      pk <- peaks[[i]]
       text <- paste(
         "Peak ", i, "<br>",
-        "RT: ", round(rt[idx[i]], 2), "<br>",
-        "m/z: ", round(mz[idx[i]], 4), "<br>",
-        "Intensity: ", round(intensity[idx[i]], 2), "<br>",
-        "Baseline: ", round(baseline[idx[i]], 2), "<br>",
-        "S/N: ", ifelse(is.na(peaks[[i]]$sn), "NA", round(peaks[[i]]$sn, 2)), "<br>",
-        "N traces: ", peaks[[i]]$n_traces,
-        if (!is.na(peaks[[i]]$A)) paste0("<br>A: ", round(peaks[[i]]$A, 2)) else "",
-        if (!is.na(peaks[[i]]$mu)) paste0("<br>mu: ", round(peaks[[i]]$mu, 2)) else "",
-        if (!is.na(peaks[[i]]$sigma)) paste0("<br>sigma: ", round(peaks[[i]]$sigma, 2)) else "",
-        if (!is.na(peaks[[i]]$r_squared)) paste0("<br>R²: ", round(peaks[[i]]$r_squared, 4)) else ""
+        "RT: ", round(pk$rt, 2), "<br>",
+        "m/z: ", round(pk$mz, 4), "<br>",
+        "Intensity: ", round(pk$intensity, 2), "<br>",
+        "Noise: ", round(pk$noise, 2), "<br>",
+        "S/N: ", ifelse(is.na(pk$sn), "NA", round(pk$sn, 2)), "<br>",
+        "N traces: ", pk$n_traces,
+        if (!is.na(pk$A)) paste0("<br>A: ", round(pk$A, 2)) else "",
+        if (!is.na(pk$mu)) paste0("<br>mu: ", round(pk$mu, 2)) else "",
+        if (!is.na(pk$sigma)) paste0("<br>sigma: ", round(pk$sigma, 2)) else "",
+        if (!is.na(pk$r_squared)) paste0("<br>R²: ", round(pk$r_squared, 4)) else ""
       )
       p <- p %>%
         plotly::add_trace(
-          x = c(bounds[1], bounds[2], bounds[2], bounds[1], bounds[1]),
-          y = c(0, 0, intensity[idx[i]], intensity[idx[i]], 0),
+          x = c(pk$rtmin, pk$rtmax, pk$rtmax, pk$rtmin, pk$rtmin),
+          y = c(0, 0, pk$intensity, pk$intensity, 0),
           type = "scatter",
           mode = "lines",
           fill = "toself",
@@ -442,8 +523,8 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
           showlegend = FALSE
         ) %>%
         plotly::add_markers(
-          x = rt[idx[i]],
-          y = intensity[idx[i]],
+          x = pk$rt,
+          y = pk$intensity,
           marker = list(color = "red", size = 10, symbol = "circle"),
           name = paste0("Peak ", i),
           showlegend = TRUE,
@@ -452,14 +533,19 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
           hoverinfo = "text"
         ) %>%
         plotly::add_lines(
-          x = if (!is.null(peaks[[i]]$x_vals) && !all(is.na(peaks[[i]]$x_vals))) peaks[[i]]$x_vals else c(NA),
-          y = if (!is.null(peaks[[i]]$y_pred) && !all(is.na(peaks[[i]]$y_pred))) peaks[[i]]$y_pred else c(NA),
+          x = if (!is.null(pk$x_vals) && !all(is.na(pk$x_vals))) pk$x_vals else c(NA),
+          y = if (!is.null(pk$y_pred) && !all(is.na(pk$y_pred))) pk$y_pred else c(NA),
           line = list(color = "purple", dash = "dot"),
           name = paste0("Peak ", i),
           showlegend = FALSE,
           legendgroup = paste0("Peak ", i)
         )
     }
+
+    p <- p %>% plotly::layout(
+      yaxis = list(title = "Intensity"),
+      xaxis = list(title = "Retention Time (rt)")
+    )
   }
 
   peaks <- lapply(peaks, function(peak) {
@@ -470,7 +556,7 @@ peak_detect_derivative <- function(dt, min_traces, max_width, min_sn, min_gaufit
 
   out <- data.table::rbindlist(peaks, use.names = TRUE, fill = TRUE)
 
-  if (plot_peaks) {
+  if (plotPeaks) {
     return(list(out, p))
   }
 
