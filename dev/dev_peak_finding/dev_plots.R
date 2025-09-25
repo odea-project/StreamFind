@@ -486,7 +486,7 @@ plot_3D_by_rt_with_peaks <- function(spec_data, peaks_dt, rt_indices) {
       mode = "markers",
       marker = list(
         size = 2,
-        color = "blue",
+        color = "lightgray",
         line = list(width = 0.5, color = "white")
       ),
       name = "Non-peak Data",
@@ -525,4 +525,111 @@ plot_3D_by_rt_with_peaks <- function(spec_data, peaks_dt, rt_indices) {
       ),
       showlegend = TRUE
     )
+}
+
+plot_peaks_eic <- function(peaks_dt, spec_data) {
+  checkmate::assert_data_frame(peaks_dt, min.rows = 1)
+  checkmate::assert_data_frame(spec_data, min.rows = 1)
+  checkmate::assert_names(names(peaks_dt), must.include = c("rtmin", "rtmax", "mzmin", "mzmax"))
+  checkmate::assert_names(names(spec_data), must.include = c("rt", "mz", "intensity"))
+  peak_name_col <- NULL
+  if ("id" %in% names(peaks_dt)) {
+    peak_name_col <- "id"
+  } else if ("peak" %in% names(peaks_dt)) {
+    peak_name_col <- "peak"
+  } else if ("name" %in% names(peaks_dt)) {
+    peak_name_col <- "name"
+  } else {
+    peaks_dt$peak_name <- paste0("Peak_", seq_len(nrow(peaks_dt)))
+    peak_name_col <- "peak_name"
+  }
+  n_peaks <- nrow(peaks_dt)
+  colors <- generate_safe_colors(n_peaks)
+  p <- plotly::plot_ly()
+
+  for (i in seq_len(n_peaks)) {
+    peak <- peaks_dt[i, ]
+    peak_name <- peak[[peak_name_col]]
+    eic_data <- spec_data[
+      spec_data$rt >= peak$rtmin & spec_data$rt <= peak$rtmax &
+      spec_data$mz >= peak$mzmin & spec_data$mz <= peak$mzmax,
+    ]
+    if (nrow(eic_data) == 0) {
+      message(paste("No data found for peak:", peak_name))
+      next
+    }
+    eic_summary <- eic_data[, .(intensity = sum(intensity)), by = rt]
+    eic_summary <- eic_summary[order(rt)]
+    if (nrow(eic_summary) == 0) {
+      message(paste("No EIC data after summarization for peak:", peak_name))
+      next
+    }
+
+    # Create noise baseline for filling - use the peak's noise value
+    noise_level <- if ("noise" %in% names(peak)) peak$noise else 0
+    noise_baseline <- rep(noise_level, nrow(eic_summary))
+
+    # Add EIC line
+    p <- plotly::add_trace(
+      p,
+      x = eic_summary$rt,
+      y = eic_summary$intensity,
+      type = "scatter",
+      mode = "lines",
+      name = as.character(peak_name),
+      legendgroup = as.character(peak_name),
+      line = list(color = colors[i], width = 2),
+      showlegend = TRUE,
+      hoverinfo = "text",
+      text = paste("Peak:", peak_name,
+                   "<br>  rt:", round(peak$rt, 0),
+                   "<br>  mz:", round(peak$mz, 4),
+                   "<br>  intensity:", round(peak$intensity, 0),
+                   "<br>  ppm:", round(peak$ppm, 1),
+                   "<br>  width:", round(peak$width, 0),
+                   "<br>  noise:", round(peak$noise, 0),
+                   "<br>  sn:", round(peak$sn, 1),
+                   "<br>  n_traces:", peak$n_traces,
+                   "<br>  A:", round(peak$A, 0),
+                   "<br>  mu:", round(peak$mu, 2),
+                   "<br>  sigma:", round(peak$sigma, 2),
+                   "<br>  r_squared:", round(peak$r_squared, 3),
+                   "<br>",
+                   "<br>x: ", round(eic_summary$rt, 2),
+                   "<br>y: ", round(eic_summary$intensity, 2))
+    )
+
+    # Create polygon for filled area using minimum EIC intensity as baseline
+    min_intensity <- min(eic_summary$intensity)
+    baseline_segment <- rep(min_intensity, nrow(eic_summary))
+
+    # Create polygon: start at minimum intensity, go up to EIC, then back down
+    fill_x <- c(eic_summary$rt, rev(eic_summary$rt))
+    fill_y <- c(baseline_segment, rev(eic_summary$intensity))
+
+    p <- plotly::add_trace(
+      p,
+      x = fill_x,
+      y = fill_y,
+      type = "scatter",
+      mode = "none",
+      fill = "toself",
+      fillcolor = paste0(colors[i], "40"),
+      name = as.character(peak_name),
+      legendgroup = as.character(peak_name),
+      showlegend = FALSE,
+      hoverinfo = "skip"
+    )
+  }
+  p <- plotly::layout(
+    p,
+    xaxis = list(title = "Retention Time (RT)"),
+    yaxis = list(title = "Intensity"),
+    hovermode = "x unified"
+  )
+
+  # Add WebGL for better performance with large datasets
+  p <- plotly::toWebGL(p)
+
+  p
 }

@@ -329,7 +329,6 @@ peak_detect_derivative <- function(dt, mintraces, baselineWindow, maxwidth, minS
     if (i < mintraces / 2 || i > n - mintraces / 2) {
       return(NULL)
     }
-
     bounds <- tryCatch(
       get_peak_bounds(rt, i, smoothed_intensity, baseline, maxwidth / 2),
       error = function(e) {
@@ -337,43 +336,36 @@ peak_detect_derivative <- function(dt, mintraces, baselineWindow, maxwidth, minS
         c(rt[max(1, i - 1)], rt[min(n, i + 1)])
       }
     )
-
     if (length(bounds) != 2 || is.na(bounds[1]) || is.na(bounds[2]) || bounds[1] >= bounds[2]) {
       return(NULL)
     }
-
     peak_mask <- which(rt >= bounds[1] & rt <= bounds[2])
     if (length(peak_mask) == 0) {
       return(NULL)
     }
-
     peak_intensities <- intensity[peak_mask]
     peak_rt <- rt[peak_mask]
     peak_mz <- mz[peak_mask]
     peak_max_intensity <- max(peak_intensities, na.rm = TRUE)
     peak_n <- length(peak_intensities)
     noise <- min(peak_intensities[c(1:2, (peak_n - 2):peak_n)], na.rm = TRUE)
-    signal <- peak_max_intensity - baseline[i]
+    signal <- peak_max_intensity
     if (noise > 0 && signal > 0) {
       sn <- signal / noise
     } else {
       sn <- NA
     }
-
     if (is.na(sn) || sn < minSNR) {
       return(NULL)
     }
-
     max_position <- which(peak_intensities == peak_max_intensity)[1]
-
     rt_at_max <- peak_rt[max_position]
     mz_at_max <- peak_mz[max_position]
-
     list(
       rt = rt_at_max,
       mz = mz_at_max,
       intensity = peak_max_intensity,
-      noise = baseline[i],
+      noise = noise,
       sn = sn,
       A = NA_real_,
       mu = NA_real_,
@@ -421,7 +413,22 @@ peak_detect_derivative <- function(dt, mintraces, baselineWindow, maxwidth, minS
         merged <- group[[which.max(sapply(group, function(x) x$intensity))]]
         merged$rtmin <- min(sapply(group, function(x) x$rtmin))
         merged$rtmax <- max(sapply(group, function(x) x$rtmax))
-        merged$n_traces <- sum(sapply(group, function(x) x$n_traces))
+        peak_mask <- which(rt >= merged$rtmin & rt <= merged$rtmax)
+        peak_intensities <- intensity[peak_mask]
+        peak_n <- length(peak_intensities)
+        merged$n_traces <- peak_n
+        noise <- min(peak_intensities[c(1:2, (peak_n - 2):peak_n)], na.rm = TRUE)
+        signal <- merged$intensity
+        if (noise > 0 && signal > 0) {
+          merged$sn <- signal / noise
+          merged$noise <- noise
+        } else {
+          merged$sn <- NA_real_
+          merged$noise <- NA_real_
+        }
+        if (is.na(merged$sn) || merged$sn < minSNR) {
+          next
+        }
         merged_peaks <- c(merged_peaks, list(merged))
       } else {
         merged_peaks <- c(merged_peaks, group)

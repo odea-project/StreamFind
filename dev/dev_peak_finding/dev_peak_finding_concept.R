@@ -142,6 +142,7 @@ sp_clustered <- cluster_spectra(
 
 # MARK: Finding peaks (per cluster)
 spl_clusters <- split(sp_clustered, f = sp_clustered$cluster)
+message("Total clusters: ", length(spl_clusters))
 source("dev/dev_peak_finding/dev_chrom_peak_derivative.R")
 
 
@@ -192,7 +193,7 @@ peaks_list <- pbapply::pblapply(spl_clusters, function(temp_spec, parameters) {
 peaks_dt <- data.table::rbindlist(peaks_list, use.names = TRUE, fill = TRUE)
 
 # source("dev/dev_peak_finding/dev_plots.R")
-# plot_3D_by_rt_with_peaks(spec_merged[spec_merged$rt > 1100 & spec_merged$rt < 1200 & spec_merged$mz > 205 & spec_merged$mz < 250, ], peaks_dt)
+# plot_3D_by_rt_with_peaks(sp_clustered[sp_clustered$mz > single_target$mzmin & sp_clustered$mz < single_target$mzmax & sp_clustered$rt > single_target$rtmin & sp_clustered$rt < single_target$rtmax, ], peaks_dt)
 
 message("Total peaks found: ", nrow(peaks_dt))
 message("Total peaks found with gaussian fit: ", nrow(peaks_dt[!is.na(peaks_dt$r_squared), ]))
@@ -200,107 +201,15 @@ message("Total peaks found with gaussian fit: ", nrow(peaks_dt[!is.na(peaks_dt$r
 matched_targets <- find_peak_targets(peaks_dt, db_merck, ppm_tol = 10, rt_tol = 30)
 matched_targets
 
-peaks_dt[peaks_dt$id %in% matched_targets$peak_id, ]
+plot_peaks_eic(peaks_dt[peaks_dt$id %in% matched_targets$peak_id, ], sp_clustered)
 
-# which names from db are not in matched_targets
 setdiff(db_merck$name, matched_targets$target_name)
 
-
-
-
-
-
-
-
-
-
-
-mfSet <- rcdk::generate.formula(
-  636.3652 - 1.007276, # M-H
-  window = 0.01,
+generate_peak_formulas(
+  peaks_dt[peaks_dt$id %in% matched_targets$peak_id, ],
+  mzabs = 0.005,
+  ppm = 5,
   elements = list(c("C", 20, 70), c("H", 20, 70), c("N", 0, 3)),
-  validation = FALSE
+  validation = FALSE,
+  charge = 0
 )
-
-
-mfSet
-
-
-
-
-
-
-pb <- txtProgressBar(min = 1, max = length(unique(spec_merged$cluster)), style = 3)
-clusts <- unique(spec_merged$cluster)
-
-pn <- 0
-for (i in seq_along(clusts)) {
-  clust <- clusts[i]
-
-  clust <- 50
-
-  if (is.na(clust)) next
-
-  spec_clust <- spec_merged[
-    spec_merged$cluster == clust,
-  ]
-
-  if (nrow(spec_clust) < args$minTraces) {
-    setTxtProgressBar(pb, i)
-    next
-  }
-
-  peaks <- peak_detect_derivative(spec_clust, args$minTraces, args$sn, args$gaufit, plot_peaks = TRUE)
-  peaks[[1]]
-  peaks[[2]]
-
-  # Other techniques to explore
-  #peaks <- peak_detect_cwt(spec_clust)
-  #peaks <- peak_detect_wavelets(spec_clust)
-  #peaks <- peak_detect_smooth(spec_clust)
-  #peaks <- peak_detect_threshold(spec_clust)
-
-  if (is.null(peaks)) {
-    setTxtProgressBar(pb, i)
-    next
-  }
-
-  if (!is.data.frame(peaks)) {
-    peaks_dt <- peaks[[1]]
-  } else {
-    peaks_dt <- peaks
-  }
-
-  if (nrow(peaks_dt) == 0) {
-    setTxtProgressBar(pb, i)
-    next
-  }
-
-  peaks_dt$cluster <- clust
-
-  for (pk in seq_len(nrow(peaks_dt))) {
-    peak_sel <- spec$cluster == clust & spec$rt >= peaks_dt$rtmin[pk] & peaks_dt$rtmax[pk]
-    peak_intensities <- spec$intensity[peak_sel]
-    peaks_dt$mz[pk] <- mean(spec$mz[peak_sel], na.rm = TRUE)
-    peaks_dt$mz_wt[pk] <- sum(spec$mz[peak_sel] * peak_intensities, na.rm = TRUE) / sum(peak_intensities, na.rm = TRUE)
-    peaks_dt$mzmin[pk] <- min(spec$mz[peak_sel], na.rm = TRUE)
-    peaks_dt$mzmax[pk] <- max(spec$mz[peak_sel], na.rm = TRUE)
-    peaks_dt$ppm [pk] <- (peaks_dt$mzmax[pk] - peaks_dt$mzmin[pk]) / peaks_dt$mz[pk] * 1e6
-    peaks_dt$width[pk] <- peaks_dt$rtmax[pk] - peaks_dt$rtmin[pk]
-  }
-
-  peaks_number <- paste0("N", seq_len(nrow(peaks_dt)) + pn)
-  pn <- pn + nrow(peaks_dt)
-  peaks_dt$id <- paste0(peaks_number, "_MZ", round(peaks_dt$mz, 0), "_RT", round(peaks_dt$rt, 0), "_CL", peaks_dt$cluster)
-  data.table::setcolorder(peaks_dt, c("id", "rt", "mz", "mz_wt", "ppm", "width", "intensity", "mzmin", "mzmax", "rtmin", "rtmax"))
-  peaks_list[[as.character(clust)]] <- peaks_dt
-  setTxtProgressBar(pb, i)
-}
-close(pb)
-
-peaks_dt <- data.table::rbindlist(peaks_list, use.names = TRUE, fill = TRUE)
-
-source("dev/dev_peak_finding/dev_plots.R")
-plot_3D_by_rt_with_peaks(spec[spec$rt > 1100 & spec$rt < 1200, ], peaks_dt)
-
-peaks_dt[peaks_dt$rt > 1100 & peaks_dt$rt < 1200, ]
