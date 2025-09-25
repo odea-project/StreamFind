@@ -404,8 +404,9 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
         table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$analysis[i]), "-", details_df$analysis[i]), "</td>")
         table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$replicate[i]), "-", details_df$replicate[i]), "</td>")
         table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$group[i]), "-", details_df$group[i]), "</td>")
-        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$parent_similarity[i]), "-", details_df$parent_similarity[i]), "</td>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$number_fragments[i]), "-", details_df$number_fragments[i]), "</td>")
         table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$max_shared_fragments[i]), "-", details_df$max_shared_fragments[i]), "</td>")
+        table_html <- paste0(table_html, "<td>", ifelse(is.na(details_df$parent_similarity[i]), "-", details_df$parent_similarity[i]), "</td>")
         table_html <- paste0(table_html, "</tr>")
       }
       table_html <- paste0(table_html, "</table>")

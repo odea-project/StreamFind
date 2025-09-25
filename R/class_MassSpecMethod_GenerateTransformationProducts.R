@@ -267,6 +267,7 @@ run.MassSpecMethod_GenerateTransformationProducts_biotransformer <- function(x, 
 #' @param fpSimMethod Character. The method for calculating similarities. Default is "tanimoto".
 #' @param parallel Logical. If TRUE then parallel processing is enabled. Default is TRUE.
 #' @return A `MassSpecMethod_GenerateTransformationProducts_cts` object.
+#' @export
 #'
 MassSpecMethod_GenerateTransformationProducts_cts <- function(
   parents = data.table::data.table(name = character(), SMILES = character()),

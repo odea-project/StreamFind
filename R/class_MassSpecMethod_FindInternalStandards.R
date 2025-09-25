@@ -107,7 +107,7 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
     database = database,
     ppm = x$parameters$ppm,
     sec = x$parameters$sec,
-    filtered = TRUE
+    filtered = FALSE
   )
 
   if (nrow(internal_standards) == 0) {

@@ -108,14 +108,17 @@ run.MassSpecMethod_CalculateTransformationProductsSimilarity_native <- function(
 
   res <- lapply(tps$transformation_products, function(z) {
     ms2_list <- z$ms2
-    z$parent_similarity <- 0
+    z$number_fragments <- 0
     z$max_shared_fragments <- 0L
+    z$parent_similarity <- 0
 
     for (i in seq_len(nrow(z))) {
       ms2 <- ms2_list[[i]]
-
+      
       if (is.null(ms2)) next
       if (nrow(ms2) == 0) next
+
+      z$number_fragments[i] <- nrow(ms2)
 
       parent <- parents[parents$name %in% z$parent_name[i], ]
       if (nrow(parent) == 0) next
