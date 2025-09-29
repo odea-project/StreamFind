@@ -1,6 +1,38 @@
 # MARK: General utility functions
 # General utility functions -----
 
+#' Ensure Python and StreamFind virtualenv are available
+#'
+#' This function checks if Python is available and sets up the 'r-StreamFind' virtualenv.
+#' Returns NULL and warns if Python is not installed or the virtualenv cannot be created.
+#' @param pkgname Package name for reticulate::configure_environment
+#' @return TRUE if environment is ready, FALSE otherwise
+#' @noRd
+.ensure_python_env <- function() {
+  if (!reticulate::py_available(initialize = FALSE)) {
+    warning("Python is not installed or not available.")
+    return(FALSE)
+  }
+  if (!reticulate::virtualenv_exists("r-StreamFind")) {
+    tryCatch({
+      reticulate::virtualenv_create("r-StreamFind")
+    }, error = function(e) {
+      warning(paste("Could not create virtualenv 'r-StreamFind':", e$message))
+    })
+  }
+  if (!reticulate::virtualenv_exists("r-StreamFind")) {
+    return(FALSE)
+  }
+  tryCatch({
+    reticulate::use_virtualenv("r-StreamFind")
+    reticulate::configure_environment("StreamFind")
+    TRUE
+  }, error = function(e) {
+    warning(paste("Could not activate or configure 'r-StreamFind':", e$message))
+    FALSE
+  })
+}
+
 #' @noRd
 .get_available_engines <- function() {
   StreamFind_env <- asNamespace("StreamFind")

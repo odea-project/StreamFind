@@ -39,16 +39,19 @@ Pre-requisites for the StreamFind are the
 [RTools](https://cran.r-project.org/bin/windows/Rtools/) (only
 applicable for Windows users). RTools is needed for compiling C++ code
 used in the StreamFind R package. StreamFind also uses Python scripts
-for some of its processing methods, so it is recommended to have the
-latest [Python](https://www.python.org/downloads/) installed and added
-to the environmental variables for Windows users. Assuming that R,
-RTools and Python (optional) are installed, the StreamFind R package can
-be installed from the GitHub repository via the
-[BiocManager](https://www.bioconductor.org/install/). Note that
-StreamFind is not yet available on the Bioconductor repository. Please
-note that the default timeout for the `BiocManager::install` function
-might be to short. Thus, if the download of StreamFind fails run
-`options(timeout = 600)` before the installation command.
+for some of its processing methods, so it is recommended (but not
+mandatory) to have the latest
+[Python](https://www.python.org/downloads/) installed and added to the
+environmental variables for Windows users. Assuming that R, R Tools and
+Python (optional) are installed, the StreamFind R package can be
+installed from the GitHub repository via the [Bioconductor
+Manager](https://www.bioconductor.org/install/), which makes it easier
+to install necessary Bioconductor dependencies (e.g. zlibbioc and
+Rhdf5lib). Note that StreamFind itself is not available on Bioconductor.
+Please note that the default timeout for the `BiocManager::install`
+function might be to short. Thus, if the download of StreamFind fails
+run `options(timeout = 600)` before the installation command, as shown
+below.
 
 ``` r
 options(timeout = 600) # Increase timeout
@@ -59,13 +62,14 @@ BiocManager::install("odea-project/StreamFind")
 
 ## Other dependencies
 
-The StreamFind depends on other open source software to process
-different analytic data. For instance, for non-target screening using
-mass spectrometry the StreamFind uses the
-[patRoon](https://github.com/rickhelmus/patRoon) R package and its own
-dependencies for some processing methods. When a dependency is not
-installed, a warning message will be displayed with instructions.
-Consult the documentation of each processing method for dependencies.
+Some processing methods used by StreamFind depend on other open-source
+software. For example, when conducting non-target screening using mass
+spectrometry, StreamFind utilises the [patRoon R
+package](https://github.com/rickhelmus/patRoon) and its associated
+dependencies for certain processing methods. If a dependency is not
+installed, a warning message with instructions will be displayed. Please
+consult the documentation for each processing method for details of its
+dependencies.
 
 ## Suplementary data
 
@@ -135,8 +139,17 @@ research that StreamFind uses relies on other contributions. Therefore,
 we recommend to search within each citation for other contributions.
 <br>
 
-<div id="refs" class="references csl-bib-body hanging-indent"
-entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
+
+<div id="ref-bader01" class="csl-entry">
+
+Bader, Tobias, Wolfgang Schulz, Klaus Kümmerer, and Rudi Winzenbacher.
+2017. “LC-HRMS Data Processing Strategy for Reliable Sample Comparison
+Exemplified by the Assessment of Water Treatment Processes.” *Analytical
+Chemistry* 89 (24): 13219–26.
+<https://doi.org/10.1021/acs.analchem.7b03037>.
+
+</div>
 
 <div id="ref-xcms03" class="csl-entry">
 
@@ -148,19 +161,17 @@ Spectrometry Metabolomics Data.” *BIOINFORMATICS* 26: 2488.
 
 <div id="ref-proteo02" class="csl-entry">
 
-Chambers, M. C., B. Maclean, R. Burke, D Amodei, D. L. Ruderman, S.
-Neumann, L. Gatto, et al. 2012a. “A Cross-Platform Toolkit for Mass
-Spectrometry and Proteomics.” *Nature Biotechnology* 30 (10): 918–20.
-<https://doi.org/10.1038/nbt.2377>.
+Chambers, M. C., B. Maclean, R. Burke, et al. 2012a. “A Cross-Platform
+Toolkit for Mass Spectrometry and Proteomics.” *Nature Biotechnology* 30
+(10): 918–20. <https://doi.org/10.1038/nbt.2377>.
 
 </div>
 
 <div id="ref-mzr04" class="csl-entry">
 
-Chambers, Matthew C., Maclean, Brendan, Burke, Robert, Amodei, et al.
-2012b. “<span class="nocase">A cross-platform toolkit for mass
-spectrometry and proteomics</span>.” *Nat Biotech* 30 (10): 918–20.
-<https://doi.org/10.1038/nbt.2377>.
+Chambers, Matthew C., Maclean, et al. 2012b. “<span class="nocase">A
+cross-platform toolkit for mass spectrometry and proteomics</span>.”
+*Nat Biotech* 30 (10): 918–20. <https://doi.org/10.1038/nbt.2377>.
 
 </div>
 
@@ -193,10 +204,10 @@ Processing and Quantitation.” *Bioinformatics* 28: 288–89.
 
 <div id="ref-patroon01" class="csl-entry">
 
-Helmus, Rick, Thomas L. ter Laak, Annemarie P. van Wezel, Pim de Voogt,
-and Emma L. Schymanski. 2021. “patRoon: Open Source Software Platform
-for Environmental Mass Spectrometry Based Non-Target Screening.”
-*Journal of Cheminformatics* 13 (1).
+<span class="nocase">Helmus, Rick, Thomas L. ter Laak, Annemarie P. van
+Wezel, Pim de Voogt, and Emma L. Schymanski</span>. 2021. “patRoon: Open
+Source Software Platform for Environmental Mass Spectrometry Based
+Non-Target Screening.” *Journal of Cheminformatics* 13 (1).
 <https://doi.org/10.1186/s13321-020-00477-w>.
 
 </div>
@@ -265,10 +276,9 @@ and Annotation of Liquid Chromatography/Mass Spectrometry Data Sets.”
 
 <div id="ref-mzr03" class="csl-entry">
 
-Martens, Lennart, Matthew Chambers, Marc Sturm, Darren Kessner, Fredrik
-Levander, Jim Shofstahl, Wilfred H Tang, et al. 2010. “MzML - a
-Community Standard for Mass Spectrometry Data.” *Mol Cell Proteomics*.
-<https://doi.org/10.1074/mcp.R110.000133>.
+Martens, Lennart, Matthew Chambers, Marc Sturm, et al. 2010. “MzML - a
+Community Standard for Mass Spectrometry Data.” *Mol Cell Proteomics*,
+ahead of print. <https://doi.org/10.1074/mcp.R110.000133>.
 
 </div>
 
@@ -282,10 +292,9 @@ Mass Spectrometry.” *MATCH Commun. Math. Comput. Chem* 65 (2): 259–90.
 
 <div id="ref-mzr01" class="csl-entry">
 
-Pedrioli, Patrick G A, Jimmy K Eng, Robert Hubley, Mathijs Vogelzang,
-Eric W Deutsch, Brian Raught, Brian Pratt, et al. 2004. “A Common Open
-Representation of Mass Spectrometry Data and Its Application to
-Proteomics Research.” *Nat Biotechnol* 22 (11): 1459–66.
+Pedrioli, Patrick G A, Jimmy K Eng, Robert Hubley, et al. 2004. “A
+Common Open Representation of Mass Spectrometry Data and Its Application
+to Proteomics Research.” *Nat Biotechnol* 22 (11): 1459–66.
 <https://doi.org/10.1038/nbt1031>.
 
 </div>
@@ -302,9 +311,8 @@ and Bioanalytical Chemistry* 414 (July): 6635–45.
 
 <div id="ref-openms01" class="csl-entry">
 
-Röst, Hannes L., Timo Sachsenberg, Stephan Aiche, Chris Bielow, Hendrik
-Weisser, Fabian Aicheler, Sandro Andreotti, et al. 2016. “OpenMS: A
-Flexible Open-Source Software Platform for Mass Spectrometry Data
+Röst, Hannes L., Timo Sachsenberg, Stephan Aiche, et al. 2016. “OpenMS:
+A Flexible Open-Source Software Platform for Mass Spectrometry Data
 Analysis.” *Nature Methods* 13 (9): 741–48.
 <https://doi.org/10.1038/nmeth.3959>.
 
@@ -320,11 +328,10 @@ Bioinformatics* 20 (1): 1–14.
 
 <div id="ref-metfrag03" class="csl-entry">
 
-Ruttkies, Christoph, Emma L Schymanski, Nadine Strehmel, Juliane
-Hollender, Steffen Neumann, Antony J Williams, and Martin Krauss. 2019.
+Ruttkies, Christoph, Emma L Schymanski, Nadine Strehmel, et al. 2019.
 “Supporting Non-Target Identification by Adding Hydrogen Deuterium
 Exchange MS/MS Capabilities to MetFrag.” *Analytical and Bioanalytical
-Chemistry* 411: 4683–4700.
+Chemistry* 411: 4683–700.
 
 </div>
 
@@ -339,11 +346,10 @@ Strategies Beyond in Silico Fragmentation.” *Journal of Cheminformatics*
 
 <div id="ref-orpl01" class="csl-entry">
 
-Sheehy, Guillaume, Fabien Picot, Frédérick Dallaire, Katherine Ember,
-Tien Nguyen, Kevin Petrecca, Dominique Trudel, and Frédéric Leblond.
-2023. “<span class="nocase">Open-sourced Raman spectroscopy data
-processing package implementing a baseline removal algorithm validated
-from multiple datasets acquired in human tissue and biofluids</span>.”
+Sheehy, Guillaume, Fabien Picot, Frédérick Dallaire, et al. 2023.
+“<span class="nocase">Open-sourced Raman spectroscopy data processing
+package implementing a baseline removal algorithm validated from
+multiple datasets acquired in human tissue and biofluids</span>.”
 *Journal of Biomedical Optics* 28 (2): 025002.
 <https://doi.org/10.1117/1.JBO.28.2.025002>.
 
@@ -351,10 +357,9 @@ from multiple datasets acquired in human tissue and biofluids</span>.”
 
 <div id="ref-xcms01" class="csl-entry">
 
-Smith, C.A., Want, E.J., O’Maille, G., Abagyan,R., Siuzdak, and G. 2006.
-“XCMS: Processing Mass Spectrometry Data for Metabolite Profiling Using
-Nonlinear Peak Alignment, Matching and Identification.” *Analytical
-Chemistry* 78: 779–87.
+Smith, C.A., Want, et al. 2006. “XCMS: Processing Mass Spectrometry Data
+for Metabolite Profiling Using Nonlinear Peak Alignment, Matching and
+Identification.” *Analytical Chemistry* 78: 779–87.
 
 </div>
 
@@ -378,7 +383,7 @@ LC–ESI–MS Analysis of Wastewater.” *Analytical Chemistry* 93 (24):
 <div id="ref-class01" class="csl-entry">
 
 Venables, W. N., and B. D. Ripley. 2002. *Modern Applied Statistics with
-s*. Fourth. New York: Springer. <https://www.stats.ox.ac.uk/pub/MASS4/>.
+s*. Fourth. Springer. <https://www.stats.ox.ac.uk/pub/MASS4/>.
 
 </div>
 
@@ -393,11 +398,9 @@ https://doi.org/<https://doi.org/10.1016/j.chemolab.2004.06.009>.
 
 <div id="ref-biotransformer02" class="csl-entry">
 
-Wishart, David S., Siyang Tian, Dana Allen, Eponine Oler, Harrison
-Peters, Vicki W. Lui, Vasuk Gautam, Yannick Djoumbou-Feunang, Russell
-Greiner, and Thomas O. Metz. 2022. “BioTransformer 3.0 – a Web Server
-for Accurately Predicting Metabolic Transformation Products.” *Nucleic
-Acids Research*.
+Wishart, David S., Siyang Tian, Dana Allen, et al. 2022. “BioTransformer
+3.0 – a Web Server for Accurately Predicting Metabolic Transformation
+Products.” *Nucleic Acids Research*.
 
 </div>
 
