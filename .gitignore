@@ -24,3 +24,7 @@
 *.so
 *.dll
 *.html
+
+/.quarto/
+
+**/*.quarto_ipynb
