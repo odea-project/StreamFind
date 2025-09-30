@@ -1,15 +1,10 @@
-#' MassSpecMethod_FindInternalStandards_StreamFind Class
-#'
-#' @description Settings for finding internal standards using a data.frame.
-#'
-#' @param database A data.table with at least the columns name, mass, and rt indicating the name,
-#' neutral monoisotopic
-#' mass and retention time of the internal standards, respectively.
+#' @title Mass Spectrometry Method for Finding Internal Standards in MassSpecResults_NonTargetAnalysis (StreamFind algorithm)
+#' @description Processing method for finding internal standards using a data.frame of internal standards.
+#' @param database A data.table with at least the columns name, mass, and rt indicating the name, neutral monoisotopic mass and retention time of the internal standards, respectively.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
-#'
+#' @param filtered Logical, indicating if features that were marked as filtered should be used (TRUE) or not (FALSE).
 #' @return A `MassSpecMethod_FindInternalStandards_StreamFind` object.
-#'
 #' @export
 #'
 MassSpecMethod_FindInternalStandards_StreamFind <- function(
@@ -20,7 +15,8 @@ MassSpecMethod_FindInternalStandards_StreamFind <- function(
     rt = numeric()
   ),
   ppm = 5,
-  sec = 10
+  sec = 10,
+  filtered = TRUE
 ) {
   x <- ProcessingStep(
     type = "MassSpec",
@@ -30,7 +26,8 @@ MassSpecMethod_FindInternalStandards_StreamFind <- function(
     parameters = list(
       database = data.table::as.data.table(database),
       ppm = as.numeric(ppm),
-      sec = as.numeric(sec)
+      sec = as.numeric(sec),
+      filtered = as.logical(filtered)
     ),
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),
@@ -55,6 +52,7 @@ validate_object.MassSpecMethod_FindInternalStandards_StreamFind <- function(x) {
   checkmate::assert_choice(x$algorithm, "StreamFind")
   checkmate::assert_number(x$parameters$ppm)
   checkmate::assert_number(x$parameters$sec)
+  checkmate::assert_logical(x$parameters$filtered)
   checkmate::assert_data_table(x$parameters$database)
   checkmate::assert_true(
     all(c("name", "neutralMass", "rt") %in% colnames(x$parameters$database)) ||
@@ -107,7 +105,7 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
     database = database,
     ppm = x$parameters$ppm,
     sec = x$parameters$sec,
-    filtered = FALSE
+    filtered = x$parameters$filtered,
   )
 
   if (nrow(internal_standards) == 0) {
