@@ -199,15 +199,35 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
           }
 
           if (nrow(temp2) > 1) {
-            temp2 <- temp2[
-              which(abs(temp2$error_rt) == min(abs(temp2$error_rt))),
-            ]
-          }
-
-          if (nrow(temp2) > 1) {
-            temp2 <- temp2[
-              which(abs(temp2$error_mass) == min(abs(temp2$error_mass))),
-            ]
+            # # Normalize errors to [0,1] scale and intensity to [0,1] scale
+            # norm_error_rt <- abs(temp2$error_rt) / max(abs(temp2$error_rt))
+            # norm_error_mass <- abs(temp2$error_mass) / max(abs(temp2$error_mass))
+            # norm_intensity <- temp2$intensity / max(temp2$intensity)  # Higher is better
+            # # Combined score with priority: RT (weight 1) > intensity (weight 2) > mass (weight 3)
+            # # Lower weights for more important factors since we minimize the score
+            # # Invert normalized intensity so lower values are better (consistent with errors)
+            # combined_score <- 1 * norm_error_rt + 1 * (1 - norm_intensity) + 1 * norm_error_mass
+            # temp2 <- temp2[which(combined_score == min(combined_score)), ]
+            # # If still multiple rows (tied combined scores), take the first one
+            
+            # Sequential selection: 1) highest intensity, 2) lowest RT error, 3) lowest mass error
+            # Step 1: Keep only rows with highest intensity
+            temp2 <- temp2[temp2$intensity == max(temp2$intensity), ]
+            
+            if (nrow(temp2) > 1) {
+              # Step 2: Among highest intensity, keep those with lowest RT error
+              temp2 <- temp2[abs(temp2$error_rt) == min(abs(temp2$error_rt)), ]
+              
+              if (nrow(temp2) > 1) {
+                # Step 3: Among those, keep the one with lowest mass error
+                temp2 <- temp2[abs(temp2$error_mass) == min(abs(temp2$error_mass)), ]
+                
+                # If still tied, take the first one
+                if (nrow(temp2) > 1) {
+                  temp2 <- temp2[1, ]
+                }
+              }
+            }
           }
 
           fts_rem <- temp[temp$name %in% d & !temp$feature %in% temp2$feature, ]

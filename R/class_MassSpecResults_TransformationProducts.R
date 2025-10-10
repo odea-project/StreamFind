@@ -442,16 +442,24 @@ plot_transformation_products_network.MassSpecResults_TransformationProducts <- f
 
     current_nodes <- rbind(parent_node, tp_nodes)
     all_nodes <- rbind(all_nodes, current_nodes)
-
+    
     edges <- data.frame(
-      from = tps_summary$parent_name,
-      to = tps_summary$name
+      from = tps$parent_ID,
+      to = tps$chem_ID
     )
+
+    edges$from[is.na(edges$from)] <- 0
+
+    key <- data.table(id = tps$chem_ID, name = tps$name)
+    key <- unique(key)
+    key <- rbind(key, data.table(id = 0, name = parent_info_summary$name))
+
+    edges$from <- key$name[match(edges$from, key$id)]
+    edges$to <- key$name[match(edges$to, key$id)]
     edges$color <- "lightgray"
     edges$width <- 1
     edges$stringsAsFactors <- FALSE
     edges <- unique(edges)
-
     all_edges <- rbind(all_edges, edges)
   }
   network <- visNetwork(all_nodes, all_edges, height = "800px", width = "100%") %>%

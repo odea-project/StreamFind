@@ -162,6 +162,7 @@ run.MassSpecMethod_GenerateTransformationProducts_biotransformer <- function(x, 
 
   if (x$parameters$use_compounds) {
     compounds <- get_compounds(nts)
+    data.table::setnames(compounds, old = c("compoundName"), new = c("name"))
     if (!all(c("SMILES", "name") %in% colnames(compounds))) {
       warning("Compounds do not have required columns 'name' and 'SMILES'! Not done.")
       return(FALSE)
@@ -406,6 +407,7 @@ run.MassSpecMethod_GenerateTransformationProducts_cts <- function(x, engine, ...
 
   if (x$parameters$use_compounds) {
     compounds <- get_compounds(nts)
+    data.table::setnames(compounds, old = c("compoundName"), new = c("name"))
     if (!all(c("SMILES", "name") %in% colnames(compounds))) {
       warning("Compounds do not have required columns 'name' and 'SMILES'! Not done.")
       return(FALSE)

@@ -1855,7 +1855,9 @@ get_features_ms2.MassSpecResults_NonTargetAnalysis <- function(
     return(data.table::data.table())
   }
 
-  ms2$replicate <- x$info$replicate[ms2$analysis]
+  rpls <- x$info$replicate
+  names(rpls) <- x$info$analysis  
+  ms2$replicate <- rpls[ms2$analysis]
   data.table::setcolorder(ms2, c("analysis", "replicate", "feature"))
 
   unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
@@ -3110,7 +3112,6 @@ get_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
     useLoadedData = TRUE,
     mzClust = 0.003,
     presence = 0.8,
-    minIntensity = 1000,
     top = 25,
     normalized = TRUE,
     groupBy = "groups",
@@ -3155,8 +3156,6 @@ get_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
     filtered = filtered,
     useLoadedData = useLoadedData
   )
-
-  ms1 <- ms1[ms1$intensity > minIntensity, ]
 
   if (nrow(ms1) == 0) {
     return(data.table::data.table())
@@ -3277,7 +3276,6 @@ get_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
     useLoadedData = TRUE,
     mzClust = 0.003,
     presence = 0.8,
-    minIntensity = 100,
     top = 25,
     normalized = TRUE,
     groupBy = "groups",
@@ -3303,7 +3301,7 @@ get_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
     return(data.table::data.table())
   }
 
-  fts <- get_features(x, features = fgs$group)
+  fts <- get_features(x, features = fgs[, c("group", "name")])
 
   if (nrow(fts) == 0) {
     return(data.table::data.table())
@@ -3321,8 +3319,6 @@ get_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
     filtered = filtered,
     useLoadedData = useLoadedData
   )
-
-  ms2 <- ms2[ms2$intensity > minIntensity, ]
 
   if (nrow(ms2) == 0) {
     return(data.table::data.table())
@@ -3450,7 +3446,6 @@ plot_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
     useLoadedData = TRUE,
     mzClust = 0.005,
     presence = 0.8,
-    minIntensity = 1000,
     top = 25,
     normalized = TRUE,
     groupBy = "groups",
@@ -3486,7 +3481,6 @@ plot_groups_ms1.MassSpecResults_NonTargetAnalysis <- function(
     useLoadedData,
     mzClust,
     presence,
-    minIntensity,
     top,
     normalized,
     groupBy,
@@ -3664,7 +3658,6 @@ plot_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
     useLoadedData = TRUE,
     mzClust = 0.003,
     presence = TRUE,
-    minIntensity = 100,
     top = 25,
     normalized = TRUE,
     groupBy = "groups",
@@ -3699,7 +3692,6 @@ plot_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
     useLoadedData,
     mzClust,
     presence,
-    minIntensity,
     top,
     normalized,
     groupBy,
@@ -6847,7 +6839,6 @@ get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis <- function(
     useLoadedData = TRUE,
     mzClust = mzClust,
     presence = presence,
-    minIntensity = minIntensity,
     top = top,
     normalized = normalized
   )
@@ -6858,7 +6849,6 @@ get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis <- function(
     useLoadedData = TRUE,
     mzClust = mzClust,
     presence = presence,
-    minIntensity = minIntensity,
     top = top,
     normalized = normalized
   )
