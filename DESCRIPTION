@@ -172,6 +172,7 @@ Collate:
     'class_RamanMethod_SubtractSpectraSection.R'
     'class_StatisticMethod_MakeModel.R'
     'class_Engine.R'
+    'class_EngineDataBase.R'
     'class_Engine_MassSpecEngine.R'
     'class_Engine_RamanEngine.R'
     'class_Engine_StatisticEngine.R'

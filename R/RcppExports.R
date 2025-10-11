@@ -5,6 +5,36 @@ rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFu
     .Call(`_StreamFind_rcpp_fill_bin_spectra`, spectra, bin_mat, bins, overlap, summaryFunction)
 }
 
+#' Test HDF5 write performance with mixed data types (numeric and string)
+#'
+#' This function tests the performance of writing mixed data types (numeric and string)
+#' to an HDF5 file. It handles each data type appropriately, storing numeric data as
+#' double arrays and string data as variable-length string datasets.
+#'
+#' @param data_list List containing mixed numeric and string columns
+#' @param file_name Name of the output HDF5 file (default: "mixed_performance_test.h5")
+#' @param enable_compression Logical, enable gzip compression (default: false)
+#' @param enable_chunking Logical, enable chunking for better I/O performance (default: false)
+#' @return List containing performance metrics and file information
+#' @export
+test_hdf5_mixed_performance <- function(data_list, file_name = "mixed_performance_test.h5", enable_compression = FALSE, enable_chunking = FALSE) {
+    .Call(`_StreamFind_test_hdf5_mixed_performance`, data_list, file_name, enable_compression, enable_chunking)
+}
+
+#' Test HDF5 read performance for mixed data types
+#'
+#' This function tests the performance of reading mixed data types from an HDF5 file.
+#' It reads both numeric and string datasets from the mixed_data group and converts
+#' them back to an R list format.
+#'
+#' @param file_name Name of the HDF5 file to read
+#' @param group_name Name of the group containing mixed data (default: "mixed_data")
+#' @return List containing the mixed data and performance metrics
+#' @export
+test_hdf5_mixed_read_performance <- function(file_name, group_name = "mixed_data") {
+    .Call(`_StreamFind_test_hdf5_mixed_read_performance`, file_name, group_name)
+}
+
 rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, verbose = FALSE) {
     .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, presence, verbose)
 }
@@ -87,6 +117,125 @@ test_read_hdf5 <- function(file_name) {
 
 test_create_hdf5 <- function() {
     .Call(`_StreamFind_test_create_hdf5`)
+}
+
+#' Generate test data for HDF5 performance testing
+#'
+#' Creates a list of numeric vectors suitable for testing HDF5 write performance.
+#' Each vector represents a column of data with normally distributed values.
+#'
+#' @param n_cols Number of columns (default: 100)
+#' @param n_rows Number of rows per column (default: 100,000)
+#' @param mean_base Base mean for normal distribution (default: 0.0)
+#' @param sd Standard deviation for normal distribution (default: 1.0)
+#' @return List with n_cols elements, each containing n_rows numeric values
+#' @export
+generate_test_data_cpp <- function(n_cols = 100L, n_rows = 100000L, mean_base = 0.0, sd = 1.0) {
+    .Call(`_StreamFind_generate_test_data_cpp`, n_cols, n_rows, mean_base, sd)
+}
+
+#' Generate mixed test data with numeric and string columns
+#'
+#' This function generates test data that includes both numeric and string columns
+#' for testing HDF5 mixed data type performance. It creates a specified number
+#' of numeric columns with normal distribution and string columns with categorical
+#' or ID-like data.
+#'
+#' @param n_cols_numeric Number of numeric columns to generate (default: 98)
+#' @param n_cols_string Number of string columns to generate (default: 2)
+#' @param n_rows Number of rows for each column (default: 100000)
+#' @param mean_base Base mean for numeric data (default: 0.0)
+#' @param sd Standard deviation for numeric data (default: 1.0)
+#' @return List with mixed numeric and string columns
+#' @export
+generate_mixed_test_data_cpp <- function(n_cols_numeric = 98L, n_cols_string = 2L, n_rows = 100000L, mean_base = 0.0, sd = 1.0) {
+    .Call(`_StreamFind_generate_mixed_test_data_cpp`, n_cols_numeric, n_cols_string, n_rows, mean_base, sd)
+}
+
+#' Test HDF5 write performance with large matrix data
+#'
+#' This function tests the performance of writing a large matrix (100 columns x 100,000 rows)
+#' to an HDF5 file. It measures conversion time, write time, and file size, providing
+#' comprehensive performance metrics for HDF5 operations.
+#'
+#' The function expects the input data as a list where each element represents a column
+#' of the matrix. Each column should contain exactly 100,000 numeric values.
+#'
+#' Performance metrics returned:
+#' - conversion_time_ms: Time to convert R list to C++ data structures
+#' - write_time_ms: Time to write data to HDF5 file
+#' - total_time_ms: Total execution time
+#' - file_size_bytes/mb: Size of the created HDF5 file
+#' - data_size_mb: Raw size of the data in memory
+#'
+#' @param data_list List containing 100 numeric vectors, each with 100,000 elements
+#' @param file_name Name of the output HDF5 file (default: "performance_test.h5")
+#' @param enable_compression Logical, enable gzip compression (default: false)
+#' @param enable_chunking Logical, enable chunking for better I/O performance (default: false)
+#' @return List containing performance metrics and file information
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # Generate test data
+#' test_data <- generate_test_data_cpp()
+#'
+#' # Run performance test without compression
+#' result1 <- test_hdf5_performance(test_data, "test_no_compress.h5")
+#'
+#' # Run performance test with compression
+#' result2 <- test_hdf5_performance(test_data, "test_compressed.h5", TRUE, FALSE)
+#'
+#' # Run performance test with both compression and chunking
+#' result3 <- test_hdf5_performance(test_data, "test_full.h5", TRUE, TRUE)
+#'
+#' # Compare file sizes
+#' cat("No compression:", round(result1$file_size_mb, 2), "MB\n")
+#' cat("With compression:", round(result2$file_size_mb, 2), "MB\n")
+#' cat("Compression ratio:", round(result2$compression_ratio, 2), ":1\n")
+#' }
+test_hdf5_performance <- function(data_list, file_name = "performance_test.h5", enable_compression = FALSE, enable_chunking = FALSE) {
+    .Call(`_StreamFind_test_hdf5_performance`, data_list, file_name, enable_compression, enable_chunking)
+}
+
+#' Test HDF5 read performance for matrix data
+#'
+#' This function tests the performance of reading a large matrix from an HDF5 file.
+#' It looks for the "matrix_data" dataset, reads it, and converts it back to an R list
+#' format (list of columns). It measures read time, conversion time, and provides
+#' comprehensive performance metrics.
+#'
+#' The function expects an HDF5 file with a "matrix_data" dataset containing a 2D matrix
+#' of double-precision floating point numbers.
+#'
+#' Performance metrics returned:
+#' - read_time_ms: Time to read data from HDF5 file
+#' - conversion_time_ms: Time to convert HDF5 data to R list format
+#' - total_time_ms: Total execution time
+#' - file_size_bytes/mb: Size of the HDF5 file
+#' - data_size_mb: Size of the data in memory
+#' - dataset_info: Information about the dataset (dimensions, type, etc.)
+#'
+#' @param file_name Name of the HDF5 file to read
+#' @param dataset_name Name of the dataset to read (default: "matrix_data")
+#' @return List containing the data as columns and performance metrics
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' # First create a test file
+#' test_data <- generate_test_data_cpp()
+#' test_hdf5_performance(test_data, "test.h5")
+#'
+#' # Then read it back
+#' result <- test_hdf5_read_performance("test.h5")
+#'
+#' # Check results
+#' print(paste("Read time:", result$performance$read_time_ms, "ms"))
+#' print(paste("Data dimensions:", paste(result$performance$dimensions, collapse=" x ")))
+#' }
+test_hdf5_read_performance <- function(file_name, dataset_name = "matrix_data") {
+    .Call(`_StreamFind_test_hdf5_read_performance`, file_name, dataset_name)
 }
 
 test_simdutf <- function() {
