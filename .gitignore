@@ -24,3 +24,4 @@
 *.so
 *.dll
 *.html
+.Rproj.user

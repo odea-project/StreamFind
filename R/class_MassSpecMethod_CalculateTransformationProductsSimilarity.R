@@ -105,136 +105,104 @@ run.MassSpecMethod_CalculateTransformationProductsSimilarity_native <- function(
   filter <- x$parameters$filter
 
   parents <- tps$parents
+  tp_list <- tps$transformation_products
 
-  res <- lapply(tps$transformation_products, function(z) {
+  parents_name <- names(tp_list)
+  if (is.null(parents_name)) {
+    warning("Transformation products list does not have names corresponding to parent names! Not done.")
+    return(FALSE)
+  }
+
+  tp_list <- Map(function(tp, pn) {
+    tp$parent_main <- pn
+    tp
+  }, tp_list, parents_name)
+
+  # Function to calculate cosine similarity between two spectra
+  calculate_cosine_similarity <- function(spec1, spec2, tol = 0.008) {
+    if (nrow(spec1) == 0 || nrow(spec2) == 0) return(0)
+    # Create intensity vectors for matching m/z values
+    all_mz <- sort(unique(c(spec1$mz, spec2$mz)))
+    int1 <- numeric(length(all_mz))
+    int2 <- numeric(length(all_mz))
+    # Fill intensity vectors
+    for (i in seq_along(all_mz)) {
+      mz_val <- all_mz[i]
+      #tol <- mz_val * ppm_tol / 1e6      
+      # Find matching peaks in spec1
+      match1 <- which(abs(spec1$mz - mz_val) <= tol)
+      if (length(match1) > 0) {
+        int1[i] <- max(spec1$intensity[match1])  # Use max intensity if multiple matches
+      }
+      # Find matching peaks in spec2
+      match2 <- which(abs(spec2$mz - mz_val) <= tol)
+      if (length(match2) > 0) {
+        int2[i] <- max(spec2$intensity[match2])  # Use max intensity if multiple matches
+      }
+    }
+    # Calculate cosine similarity
+    dot_product <- sum(int1 * int2)
+    norm1 <- sqrt(sum(int1^2))
+    norm2 <- sqrt(sum(int2^2))
+    if (norm1 == 0 || norm2 == 0) return(0)
+    return(dot_product / (norm1 * norm2))
+  }
+
+  res <- lapply(tp_list, function(z) {
     ms2_list <- z$ms2
-    z$number_fragments <- 0
-    z$max_shared_fragments <- 0L
     z$parent_similarity <- 0
-
+    z$number_shared_fragments <- 0L
+    z$number_parent_fragments <- 0L
+    z$number_tp_fragments <- 0L
     for (i in seq_len(nrow(z))) {
       ms2 <- ms2_list[[i]]
-      
       if (is.null(ms2)) next
       if (nrow(ms2) == 0) next
-
-      z$number_fragments[i] <- nrow(ms2)
-
-      parent <- parents[parents$name %in% z$parent_name[i], ]
+      z$number_tp_fragments <- nrow(ms2)
+      parent <- parents[parents$name %in% z$parent_main[i], ]
       if (nrow(parent) == 0) next
-
       parent_ms2_list <- parent$ms2
-
-      max_cosine_similarity <- 0
-      max_shared_fragments <- 0
-
+      out_cosine_similarity <- 0
+      out_shared_fragments <- 0
+      out_parent_fragments <- 0
       for (j in seq_len(length(parent_ms2_list))) {
         parent_ms2 <- parent_ms2_list[[j]]
-
         if (is.null(parent_ms2)) next
         if (nrow(parent_ms2) == 0) next
-
         fragments <- data.table::copy(parent_ms2)
-
-        mzr_calc <- fragments$mz * mzr / 1E6
-        mzr_calc[mzr_calc < mzr] <- mzr
-        fragments$mzmin <- fragments$mz - mzr_calc
-        fragments$mzmax <- fragments$mz + mzr_calc
-
-        fragments$exp_idx <- vapply(
-          seq_len(nrow(fragments)),
-          function(z_idx, ms2, fragments) {
-            idx <- which(
-              ms2$mz >= fragments$mzmin[z_idx] &
-                ms2$mz <= fragments$mzmax[z_idx]
-            )
-            if (length(idx) == 0) {
-              NA_integer_
-            } else {
-              if (length(idx) > 1) {
-                candidates <- ms2$mz[idx]
-                mz_error <- abs(candidates - fragments$mz[z_idx])
-                idx <- idx[which.min(mz_error)]
-                idx <- idx[1]
-              }
-              as.integer(idx)
-            }
-          },
-          ms2 = ms2,
-          fragments = fragments,
-          integer(1)
+        similarity <- calculate_cosine_similarity(
+          ms2,
+          fragments,
+          tol = mzr
         )
-
-        number_shared_fragments <- length(fragments$exp_idx[
-          !is.na(fragments$exp_idx)
-        ])
-
-        if (number_shared_fragments > 0) {
-          fragments$exp_mz <- ms2$mz[fragments$exp_idx]
-          fragments$mass_error <- round(
-            fragments$mz - fragments$exp_mz,
-            digits = 4
-          )
-          fragments$exp_intensity <- ms2$intensity[fragments$exp_idx]
-          fragments$exp_intensity[is.na(fragments$exp_intensity)] <- 0
-          sel <- fragments$exp_intensity > 0
-          intensity <- fragments$intensity[sel]
-          intensity <- intensity / max(intensity)
-          intensity_exp <- fragments$exp_intensity[sel]
-          intensity_exp <- intensity_exp / max(intensity_exp)
-          dot_pro <- intensity * intensity_exp
-          dot_pro <- sum(dot_pro)
-          mag_int <- sqrt(sum(intensity^2))
-          mag_exp_int <- sqrt(sum(intensity_exp^2))
-          cosine_similarity <- round(
-            dot_pro / (mag_int * mag_exp_int),
-            digits = 4
-          )
-
-          ms2_unknown <- ms2[
-            unique(-fragments$exp_idx[!is.na(fragments$exp_idx)]),
-            c("mz", "intensity"),
-            with = FALSE
-          ]
-          if (nrow(ms2_unknown) > 1) {
-            ms2_unknown$formula <- "unknown"
-            data.table::setnames(
-              ms2_unknown,
-              c("mz", "intensity"),
-              c("exp_mz", "exp_intensity")
-            )
-            fragments <- data.table::rbindlist(
-              list(fragments, ms2_unknown),
-              fill = TRUE
-            )
+        matched_peaks <- 0
+        for (k in seq_len(nrow(fragments))) {
+          parent_mz <- fragments$mz[k]
+          if (any(abs(ms2$mz - parent_mz) <= mzr)) {
+            matched_peaks <- matched_peaks + 1
           }
-        } else {
-          cosine_similarity <- 0
         }
-
-        if (cosine_similarity > max_cosine_similarity) {
-          max_cosine_similarity <- cosine_similarity
-        }
-        if (number_shared_fragments > max_shared_fragments) {
-          max_shared_fragments <- number_shared_fragments
+        if (matched_peaks > out_shared_fragments) {
+          out_cosine_similarity <- similarity
+          out_shared_fragments <- matched_peaks
+          out_parent_fragments <- nrow(fragments)
         }
       }
-
-      z$parent_similarity[i] <- max_cosine_similarity
-      z$max_shared_fragments[i] <- max_shared_fragments
+      z$parent_similarity[i] <- out_cosine_similarity
+      z$number_shared_fragments[i] <- out_shared_fragments
+      z$number_parent_fragments[i] <- out_parent_fragments
     }
-
     if (filter && (minNumberSharedFragments > 0 || minCosine > 0)) {
       filter_condition <- TRUE
       if (minNumberSharedFragments > 0) {
-        filter_condition <- filter_condition & (z$max_shared_fragments >= minNumberSharedFragments)
+        filter_condition <- filter_condition & (z$number_shared_fragments >= minNumberSharedFragments)
       }
       if (minCosine > 0) {
         filter_condition <- filter_condition & (z$parent_similarity >= minCosine)
       }
       z <- z[filter_condition, ]
     }
-
+    z$parent_main <- NULL
     return(z)
   })
 

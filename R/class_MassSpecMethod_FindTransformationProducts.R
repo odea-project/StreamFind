@@ -82,7 +82,7 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
     return(FALSE)
   }
 
-  tp_database <- data.table::rbindlist(tp_results$transformation_products, idcol = "parent", fill = TRUE)
+  tp_database <- data.table::rbindlist(tp_results$transformation_products, idcol = "parent_main", fill = TRUE)
   if ("neutralMass" %in% colnames(tp_database)) {
     data.table::setnames(tp_database, "neutralMass", "mass")
   }
@@ -153,7 +153,7 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
       tp_mass <- tp_database$mass[i]
       tp_mass_min <- tp_mass - (tp_mass * x$parameters$ppm / 1e6)
       tp_mass_max <- tp_mass + (tp_mass * x$parameters$ppm / 1e6)
-      parent <- parents[parents$name %in% tp_database$parent[i], ]
+      parent <- parents[parents$name %in% tp_database$parent_main[i], ]
       parent_rt <- mean(parent$rt, na.rm = TRUE)
       rt_direction <- tp_database$retDir[i]
       fts_idx <- which(
@@ -208,7 +208,11 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
     if (nrow(tps_not_found) > 0) {
       tps <- rbind(tps, tps_not_found, fill = TRUE)
     }
-    tps <- split(tps, tps$parent)
+    tps <- split(tps, tps$parent_main)
+    tps <- lapply(tps, function(tp){
+      tp$parent_main <- NULL
+      tp
+    })
     new_tps <- MassSpecResults_TransformationProducts(
       parents = parents,
       transformation_products = tps
@@ -218,7 +222,6 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
   } else {
     message(" Done! No transformation products found. ")
   }
-  
   message("\U2713 Transformation products screening completed!")
   TRUE
 }

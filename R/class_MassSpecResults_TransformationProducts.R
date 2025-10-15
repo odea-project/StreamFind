@@ -91,11 +91,11 @@ get_transformation_products.MassSpecResults_TransformationProducts <- function(
     x,
     parents = NULL,
     parentsReplicate = NULL,
-    productsReplicate = NULL,
-    onlyHits = TRUE) {
+    productsReplicate = NULL
+  ) {
   if (!is.null(parents)) {
     if (!all(parents %in% names(x$transformation_products))) {
-      stop(paste("Parents not found!"))
+      warning("Some parents not found!")
     }
     transformation_list <- x$transformation_products[parents]
     parents_dt <- x$parents[x$parents$name %in% parents, ]
@@ -105,26 +105,23 @@ get_transformation_products.MassSpecResults_TransformationProducts <- function(
   }
 
   all_transformations <- data.table::data.table()
-
   for (parent_name in names(transformation_list)) {
-    parents_info <- parents_dt[parents_dt$name %in% parent_name, ]
+    sel_parents <- parents_dt$name %in% parent_name
+    parents_info <- parents_dt[sel_parents, ]
     if (!is.null(parentsReplicate)) {
       if ("replicate" %in% colnames(parents_info)) {
         parents_info <- parents_info[parents_info$replicate %in% parentsReplicate, ]
       }
     }
     if (nrow(parents_info) == 0) next
-
     tps <- transformation_list[[parent_name]]
     if (is.null(tps) || nrow(tps) == 0) next
     tps <- data.table::copy(tps)
     if (!is.null(productsReplicate)) {
       if ("replicate" %in% colnames(tps)) {
-        tps$analysis[!tps$replicate %in% productsReplicate] <- NA_character_
-        tps$replicate[!tps$replicate %in% productsReplicate] <- NA_character_
+        tps <- tps[!tps$replicate %in% productsReplicate]
       }
     }
-
     if ("replicate" %in% colnames(parents_info)) {
       parent_replicates <- unique(parents_info$replicate)
       parent_replicates <- parent_replicates[!is.na(parent_replicates)]
@@ -134,7 +131,6 @@ get_transformation_products.MassSpecResults_TransformationProducts <- function(
         tps$parent_replicate <- NA_character_
       }
     }
-
     if ("group" %in% colnames(parents_info)) {
       parent_groups <- unique(parents_info$group)
       parent_groups <- parent_groups[!is.na(parent_groups)]
@@ -144,17 +140,8 @@ get_transformation_products.MassSpecResults_TransformationProducts <- function(
         tps$parent_group <- NA_character_
       }
     }
-
-    if ("analysis" %in% colnames(tps)) {
-      tps$detected <- !is.na(tps$analysis)
-    }
-
-    if (onlyHits) {
-      tps <- tps[tps$detected, ]
-    }
     all_transformations <- rbind(all_transformations, tps, fill = TRUE)
   }
-
   all_transformations
 }
 

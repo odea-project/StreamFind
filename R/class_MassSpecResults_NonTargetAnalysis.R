@@ -3657,7 +3657,7 @@ plot_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
     minIntensityFeatures = 100,
     useLoadedData = TRUE,
     mzClust = 0.003,
-    presence = TRUE,
+    presence = 0.8,
     top = 25,
     normalized = TRUE,
     groupBy = "groups",
@@ -4248,22 +4248,15 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
         },
         FALSE
       )
-
       if (any(sel)) {
         features <- features[sel, ]
         suspects_l <- features[["suspects"]]
-
         suspects <- lapply(
           seq_len(length(suspects_l)),
           function(z, suspects_l, features) {
             temp <- suspects_l[[z]]
             temp_ft <- features[z, ]
             temp_ft[["suspects"]] <- NULL
-            temp_ft$rt <- NULL
-            temp_ft$intensity <- NULL
-            temp_ft$area <- NULL
-            temp_ft$mass <- NULL
-
             if ("group" %in% colnames(temp)) {
               temp <- merge(
                 temp,
@@ -4274,15 +4267,12 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
             } else {
               temp <- merge(temp, temp_ft, by = "feature", all = TRUE)
             }
-
             data.table::setcolorder(temp, c("analysis", "replicate"))
-
             temp
           },
           suspects_l = suspects_l,
           features = features
         )
-
         suspects <- data.table::rbindlist(suspects, fill = TRUE)
       } else {
         warning(
@@ -4299,7 +4289,6 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
   } else {
     database <- data.table::as.data.table(database)
     valid_db <- FALSE
-
     if (is.data.frame(database)) {
       database <- data.table::as.data.table(database)
       if (
@@ -4314,23 +4303,19 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
         }
       }
     }
-
     if (!valid_db) {
       warning(
         "Argument database must be a data.frame with at least the columns name and mass or mz!"
       )
       return(data.table::data.table())
     }
-
     if (!"rt" %in% colnames(database)) {
       database$rt <- 0
     } else {
       database$rt[database$rt == ""] <- 0
     }
-
     database$rt <- as.numeric(database$rt)
     database$rt[is.na(rt)] <- 0
-
     if ("mass" %in% colnames(database)) {
       suspects <- get_features(
         x,
@@ -4357,19 +4342,15 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
       )
       return(data.table::data.table())
     }
-
     if (nrow(suspects) == 0) {
       message("\U2717 No suspects found!")
       return(data.table::data.table())
     }
-
     suspects <- split(suspects, suspects$analysis)
-
     suspects <- lapply(
       suspects,
       function(z, database) {
         out <- data.table::data.table()
-
         if (nrow(z) > 0) {
           for (i in seq_len(nrow(z))) {
             suspect_analysis <- z$analysis[i]
@@ -4380,7 +4361,6 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
             suspect_rt <- z$rt[i]
             suspect_intensity <- z$intensity[i]
             suspect_area <- z$area[i]
-
             suspect_db <- database[vapply(
               database$name,
               function(j) {
@@ -4390,50 +4370,31 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
             )]
             suspect_db <- suspect_db[1, ]
 
-            temp <- data.table::data.table(
-              "analysis" = suspect_analysis,
-              "feature" = suspect_feature
-            )
-
-            if ("group" %in% colnames(z)) {
-              temp$group <- z$group[i]
-            }
-            temp$name <- suspect_name
-
+            temp <- z[i, ]
             if ("formula" %in% colnames(suspect_db)) {
               temp$formula <- suspect_db$formula
             }
             if ("SMILES" %in% colnames(suspect_db)) {
               temp$SMILES <- suspect_db$SMILES
             }
-
-            temp$mass <- suspect_mass
-
             if ("mz" %in% suspect_db) {
-              temp$exp_mass <- suspect_db$mz - (z$polarity[i] * 1.007276)
+              temp$db_mass <- suspect_db$mz - (z$polarity[i] * 1.007276)
             } else {
-              temp$exp_mass <- suspect_db$mass
+              temp$db_mass <- suspect_db$mass
             }
-
             temp$error_mass <- round(
-              ((temp$mass - temp$exp_mass) / temp$mass) * 1E6,
+              ((temp$mass - temp$db_mass) / temp$mass) * 1E6,
               digits = 1
             )
-
-            temp$rt <- suspect_rt
-            temp$exp_rt <- suspect_db$rt
-            temp$error_rt <- round(temp$rt - temp$exp_rt, digits = 1)
+            temp$db_rt <- suspect_db$rt
+            temp$error_rt <- round(temp$rt - temp$db_rt, digits = 1)
             temp$id_level <- "4"
             temp$shared_fragments <- 0
             temp$cusiness <- 0
             temp$fragments <- list(data.table::data.table())
-            temp$intensity <- suspect_intensity
-            temp$area <- suspect_area
-
-            if (temp$exp_rt > 0) {
+            if (temp$db_rt > 0) {
               temp$id_level <- "3b"
             }
-
             if (
               "fragments" %in%
                 colnames(suspect_db) ||
@@ -4444,17 +4405,14 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
               } else {
                 fragments <- suspect_db$fragments_mz
               }
-
               if (!is.na(fragments)) {
                 ms2 <- data.table::data.table()
-
                 if ("ms2" %in% colnames(z)) {
                   ms2 <- z$ms2[i][[1]]
                   if (length(ms2) == 0) {
                     ms2 <- data.table::data.table()
                   }
                 }
-
                 if (nrow(ms2) > 0) {
                   if ("fragments" %in% colnames(suspect_db)) {
                     fragments <- unlist(strsplit(
@@ -4570,7 +4528,6 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
                       dot_pro / (mag_int * mag_exp_int),
                       digits = 4
                     )
-
                     ms2_unknown <- ms2[
                       unique(-fragments$exp_idx[!is.na(fragments$exp_idx)]),
                       c("mz", "intensity"),
@@ -4595,7 +4552,6 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
                   temp$shared_fragments <- number_shared_fragments
                   temp$cusiness <- cusiness
                   temp$epx_ms2_size <- nrow(ms2)
-
                   if (
                     number_shared_fragments >= minFragments ||
                       cusiness >= minCusiness
@@ -4617,7 +4573,6 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
       },
       database = database
     )
-
     suspects <- data.table::rbindlist(suspects, fill = TRUE)
   }
   suspects
@@ -4877,19 +4832,17 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
   } else {
     showleg <- rep(TRUE, length(leg))
     names(showleg) <- leg
-
     plot <- plot_ly()
-
     for (g in leg) {
       uid <- unique(suspects$uid[suspects$var %in% g])
-
       for (u in uid) {
-        ft <- suspects[suspects$uid == u, ]
+        sel <- suspects$uid %in% u
+        ft <- suspects[sel, ]
         if (nrow(ft) == 0) {
           next
         }
-        df <- eic[eic$uid == u, ]
-
+        sel2 <- eic$uid %in% u
+        df <- eic[sel2, ]
         plot <- plot %>%
           add_trace(
             x = df$rt,
@@ -4902,7 +4855,6 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
             legendgroup = g,
             showlegend = FALSE
           )
-
         df <- df[df$rt >= ft$rtmin & df$rt <= ft$rtmax, ]
         hT <- .make_features_hover_string(ft)
         hT <- paste(
@@ -4918,7 +4870,6 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
           ft$shared_fragments,
           hT
         )
-
         plot <- plot %>%
           add_trace(
             x = df$rt,
@@ -4940,29 +4891,21 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
         showleg[g] <- FALSE
       }
     }
-
     max_mz <- 0
-
     plot2 <- plot_ly()
-
     for (g in leg) {
       uid <- unique(suspects$uid[suspects$var %in% g])
-
       for (u in uid) {
         data <- suspects$ms2[suspects$uid == u][[1]]
         fragments <- suspects$fragments[suspects$uid == u][[1]]
-
         if (!is.null(data) && !is.null(fragments)) {
           bar_widths <- rep(0.2, nrow(data))
-
           if (nrow(data) > 0) {
             data$intensity <- data$intensity / max(data$intensity, na.rm = TRUE)
-
             temp_max_mz <- max(data$mz, na.rm = TRUE)
             if (temp_max_mz > max_mz) {
               max_mz <- temp_max_mz
             }
-
             plot2 <- plot2 %>%
               add_trace(
                 x = data$mz,
@@ -4995,18 +4938,15 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
                 showlegend = FALSE
               )
           }
-
           if (nrow(fragments) > 0) {
             fragments <- fragments[!is.na(fragments$intensity), ]
             fragments$intensity <- fragments$intensity /
               max(fragments$intensity, na.rm = TRUE)
             fragments$intensity <- -fragments$intensity
-
             temp_max_mz <- max(fragments$mz, na.rm = TRUE)
             if (temp_max_mz > max_mz) {
               max_mz <- temp_max_mz
             }
-
             plot2 <- plot2 %>%
               add_trace(
                 x = fragments$mz,
@@ -5038,13 +4978,11 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
                 ),
                 showlegend = FALSE
               )
-
             # add annotation text to the plot2 in the max y and max x the text "experimental spectra" and "database spectra" in the max x and min y of the plot region
           }
         }
       }
     }
-
     plot2 <- plot2 %>%
       add_trace(
         x = max_mz,
@@ -5056,7 +4994,6 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
         textfont = list(color = "black"),
         showlegend = FALSE
       )
-
     plot2 <- plot2 %>%
       add_trace(
         x = max_mz,
@@ -5068,7 +5005,6 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
         textfont = list(color = "black"),
         showlegend = FALSE
       )
-
     xaxis1 <- list(
       linecolor = toRGB("black"),
       linewidth = 2,
@@ -5077,7 +5013,6 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
       autotick = TRUE,
       ticks = "outside"
     )
-
     xaxis2 <- list(
       linecolor = toRGB("black"),
       linewidth = 2,
@@ -5086,14 +5021,12 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
       autotick = TRUE,
       ticks = "outside"
     )
-
     yaxis1 <- list(
       linecolor = toRGB("black"),
       linewidth = 2,
       title = "Intensity / counts",
       titlefont = list(size = 12, color = "black")
     )
-
     yaxis2 <- list(
       linecolor = toRGB("black"),
       linewidth = 2,
@@ -5101,12 +5034,9 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
       range = c(-1.4, 1.4),
       titlefont = list(size = 12, color = "black")
     )
-
     plotList <- list()
-
     plot <- plot %>% plotly::layout(xaxis = xaxis1, yaxis = yaxis1)
     plotList[["plot"]] <- plot
-
     plot2 <- plot2 %>%
       plotly::layout(
         xaxis = xaxis2,
@@ -5115,7 +5045,6 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
         uniformtext = list(minsize = 6, mode = "show")
       )
     plotList[["plot2"]] <- plot2
-
     plotf <- subplot(
       plotList,
       nrows = 2,
@@ -5126,7 +5055,6 @@ plot_suspects.MassSpecResults_NonTargetAnalysis <- function(
       shareX = FALSE,
       which_layout = "merge"
     )
-
     plotf
   }
 }
