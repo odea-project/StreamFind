@@ -1546,12 +1546,14 @@ plot_chromatograms_peaks.RamanAnalyses <- function(
           },
 
           "orpl_format" = {
+            if (!.ensure_python_env()) {
+              return(NULL)
+            }
             if (!reticulate::py_module_available("orpl")) {
               if (!reticulate::virtualenv_exists("r-StreamFind")) {
                 warning("Python virtual environment 'r-StreamFind' not found!")
                 return(NULL)
               }
-
               tryCatch(
                 {
                   reticulate::py_install("orpl", envname = "r-StreamFind")
@@ -1564,7 +1566,6 @@ plot_chromatograms_peaks.RamanAnalyses <- function(
                   return(NULL)
                 }
               )
-
               if (!reticulate::py_module_available("orpl")) {
                 warning(
                   "Python module 'orpl' not available for reading .sif files!"
@@ -1572,7 +1573,6 @@ plot_chromatograms_peaks.RamanAnalyses <- function(
                 return(NULL)
               }
             }
-
             tryCatch(
               {
                 orpl_module <- reticulate::import("orpl")
