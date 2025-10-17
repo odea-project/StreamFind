@@ -151,8 +151,10 @@
       names(ID_grps) <- y$ID
 
       z$group <- ID_grps[z$feature]
-
       z <- data.table::rbindlist(list(z, z_na))
+      z$filtered[is.na(z$group) | z$group %in% ""] <- TRUE
+      z$filter[is.na(z$group) | z$group %in% ""] <- "GroupFeatures"
+      z$group[is.na(z$group) | z$group %in% ""] <- ""
       z
     },
     fl,

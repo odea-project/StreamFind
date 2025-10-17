@@ -82,7 +82,7 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
     return(FALSE)
   }
 
-  tp_database <- data.table::rbindlist(tp_results$transformation_products, idcol = "parent", fill = TRUE)
+  tp_database <- data.table::rbindlist(tp_results$transformation_products, idcol = "parent_main", fill = TRUE)
   if ("neutralMass" %in% colnames(tp_database)) {
     data.table::setnames(tp_database, "neutralMass", "mass")
   }
@@ -102,11 +102,14 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
     for (i in seq_len(nrow(parent_results))) {
       parent_name <- parent_results$name[i]
       parent_smiles <- parent_results$SMILES[i]
-      suspects_fts <- vapply(a$suspects, function(z) any(z$name == parent_name | z$SMILES == parent_smiles), FALSE)
-      compound_fts <- vapply(a$compounds, function(z) any(z$name == parent_name | z$SMILES == parent_smiles), FALSE)
-      if (!any(suspects_fts) & !any(compound_fts)) {
-        next
-      }
+      suspects_fts <- vapply(a$suspects, function(z) (parent_name %in% z$name)  | (parent_smiles %in% z$SMILES), FALSE)
+      compound_fts <- vapply(a$compounds, function(z) {
+        if ("compoundName" %in% colnames(z)) {
+          (parent_name %in% z$name)  | (parent_smiles %in% z$SMILES) | (parent_name %in% z$compoundName)
+        } else {
+          (parent_name %in% z$name)  | (parent_smiles %in% z$SMILES)
+        }
+      }, FALSE)
       if (any(suspects_fts)) {
         suspect_idx <- which(suspects_fts)
         for (s_idx in suspect_idx) {
@@ -144,13 +147,13 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
   parents$replicate <- rpls[as.character(parents$analysis)]
   message(" Done! ")
   message("Finding transformation products in features...", appendLF = FALSE)
-  tps <- lapply(names(nts$features), function(a) {
+  tps <- lapply(names(nts$features), function(a, parents, tp_database, nts, x) {
     tp <- data.table::data.table()
     for (i in seq_len(nrow(tp_database))) {
       tp_mass <- tp_database$mass[i]
       tp_mass_min <- tp_mass - (tp_mass * x$parameters$ppm / 1e6)
       tp_mass_max <- tp_mass + (tp_mass * x$parameters$ppm / 1e6)
-      parent <- parents[parents$name %in% tp_database$parent[i], ]
+      parent <- parents[parents$name %in% tp_database$parent_main[i], ]
       parent_rt <- mean(parent$rt, na.rm = TRUE)
       rt_direction <- tp_database$retDir[i]
       fts_idx <- which(
@@ -160,6 +163,14 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
       )
       if (length(fts_idx) > 0) {
         for (ft in fts_idx) {
+
+          if (is.null(parent_rt < nts$features[[a]]$rt[ft])) browser()
+          if (length(parent_rt < nts$features[[a]]$rt[ft]) == 0) browser()
+          if (!is.logical(parent_rt < nts$features[[a]]$rt[ft])) browser()
+          if (is.na(parent_rt) || is.na(nts$features[[a]]$rt[ft])) {
+            browser()  # enter debug mode here
+          }
+
           if (rt_direction == -1) {
             if (parent_rt < nts$features[[a]]$rt[ft]) {
               next
@@ -183,7 +194,7 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
       }
     }
     tp
-  })
+  }, parents = parents, tp_database = tp_database, nts = nts, x = x)
   names(tps) <- names(nts$features)
   tps <- data.table::rbindlist(tps, idcol = "analysis", fill = TRUE)
   tps$replicate <- rpls[as.character(tps$analysis)]
@@ -197,7 +208,11 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
     if (nrow(tps_not_found) > 0) {
       tps <- rbind(tps, tps_not_found, fill = TRUE)
     }
-    tps <- split(tps, tps$parent)
+    tps <- split(tps, tps$parent_main)
+    tps <- lapply(tps, function(tp){
+      tp$parent_main <- NULL
+      tp
+    })
     new_tps <- MassSpecResults_TransformationProducts(
       parents = parents,
       transformation_products = tps
@@ -207,7 +222,6 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
   } else {
     message(" Done! No transformation products found. ")
   }
-  
   message("\U2713 Transformation products screening completed!")
   TRUE
 }

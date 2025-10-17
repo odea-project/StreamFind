@@ -1,5 +1,4 @@
-# MARK: ProcessingStep
-#' @title Generic (top level) ProcessingStep class and methods
+#' @title Generic ProcessingStep class and methods
 #' @description The `ProcessingStep` class is used to define a processing step within a [StreamFind::Workflow]. It contains information about the data type, method, algorithm, parameters, and other relevant metadata for the processing step. The `ProcessingStep` is the parent class of all processing methods in StreamFind.
 #' @param type A character string representing the data type (e.g., "MassSpec", "Raman").
 #' @param method A character string representing the method used (e.g., "BaselineCorrection").
@@ -16,7 +15,6 @@
 #' @param link A character string representing the link to the origin of the algorithm or link to
 #' additional information.
 #' @param doi A character string representing the DOI of the algorithm or additional information.
-#' 
 #' @return A `ProcessingStep` object. Fundamentally, it is a list with class `ProcessingStep` and a data specific method class (e.g., `RamanMethod_AverageSpectra_native`) with the following elements:
 #' - `type`: The data type (e.g., "MassSpec", "Raman").
 #' - `method`: The method used (e.g., "BaselineCorrection").

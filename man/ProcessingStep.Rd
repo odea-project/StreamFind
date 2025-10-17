@@ -7,7 +7,7 @@
 \alias{save.ProcessingStep}
 \alias{read.ProcessingStep}
 \alias{show.ProcessingStep}
-\title{Generic (top level) ProcessingStep class and methods}
+\title{Generic ProcessingStep class and methods}
 \usage{
 ProcessingStep(
   type = NA_character_,

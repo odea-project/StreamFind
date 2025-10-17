@@ -24,7 +24,6 @@
 *.so
 *.dll
 *.html
-
+.Rproj.user
 /.quarto/
-
 **/*.quarto_ipynb

@@ -1,15 +1,10 @@
-#' MassSpecMethod_FindInternalStandards_StreamFind Class
-#'
-#' @description Settings for finding internal standards using a data.frame.
-#'
-#' @param database A data.table with at least the columns name, mass, and rt indicating the name,
-#' neutral monoisotopic
-#' mass and retention time of the internal standards, respectively.
+#' @title Mass Spectrometry Method for Finding Internal Standards in MassSpecResults_NonTargetAnalysis (StreamFind algorithm)
+#' @description Processing method for finding internal standards using a data.frame of internal standards.
+#' @param database A data.table with at least the columns name, mass, and rt indicating the name, neutral monoisotopic mass and retention time of the internal standards, respectively.
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
-#'
+#' @param filtered Logical, indicating if features that were marked as filtered should be used (TRUE) or not (FALSE).
 #' @return A `MassSpecMethod_FindInternalStandards_StreamFind` object.
-#'
 #' @export
 #'
 MassSpecMethod_FindInternalStandards_StreamFind <- function(
@@ -20,7 +15,8 @@ MassSpecMethod_FindInternalStandards_StreamFind <- function(
     rt = numeric()
   ),
   ppm = 5,
-  sec = 10
+  sec = 10,
+  filtered = TRUE
 ) {
   x <- ProcessingStep(
     type = "MassSpec",
@@ -30,7 +26,8 @@ MassSpecMethod_FindInternalStandards_StreamFind <- function(
     parameters = list(
       database = data.table::as.data.table(database),
       ppm = as.numeric(ppm),
-      sec = as.numeric(sec)
+      sec = as.numeric(sec),
+      filtered = as.logical(filtered)
     ),
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),
@@ -55,6 +52,7 @@ validate_object.MassSpecMethod_FindInternalStandards_StreamFind <- function(x) {
   checkmate::assert_choice(x$algorithm, "StreamFind")
   checkmate::assert_number(x$parameters$ppm)
   checkmate::assert_number(x$parameters$sec)
+  checkmate::assert_logical(x$parameters$filtered)
   checkmate::assert_data_table(x$parameters$database)
   checkmate::assert_true(
     all(c("name", "neutralMass", "rt") %in% colnames(x$parameters$database)) ||
@@ -107,7 +105,7 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
     database = database,
     ppm = x$parameters$ppm,
     sec = x$parameters$sec,
-    filtered = TRUE
+    filtered = x$parameters$filtered,
   )
 
   if (nrow(internal_standards) == 0) {
@@ -201,15 +199,35 @@ run.MassSpecMethod_FindInternalStandards_StreamFind <- function(
           }
 
           if (nrow(temp2) > 1) {
-            temp2 <- temp2[
-              which(abs(temp2$error_rt) == min(abs(temp2$error_rt))),
-            ]
-          }
-
-          if (nrow(temp2) > 1) {
-            temp2 <- temp2[
-              which(abs(temp2$error_mass) == min(abs(temp2$error_mass))),
-            ]
+            # # Normalize errors to [0,1] scale and intensity to [0,1] scale
+            # norm_error_rt <- abs(temp2$error_rt) / max(abs(temp2$error_rt))
+            # norm_error_mass <- abs(temp2$error_mass) / max(abs(temp2$error_mass))
+            # norm_intensity <- temp2$intensity / max(temp2$intensity)  # Higher is better
+            # # Combined score with priority: RT (weight 1) > intensity (weight 2) > mass (weight 3)
+            # # Lower weights for more important factors since we minimize the score
+            # # Invert normalized intensity so lower values are better (consistent with errors)
+            # combined_score <- 1 * norm_error_rt + 1 * (1 - norm_intensity) + 1 * norm_error_mass
+            # temp2 <- temp2[which(combined_score == min(combined_score)), ]
+            # # If still multiple rows (tied combined scores), take the first one
+            
+            # Sequential selection: 1) highest intensity, 2) lowest RT error, 3) lowest mass error
+            # Step 1: Keep only rows with highest intensity
+            temp2 <- temp2[temp2$intensity == max(temp2$intensity), ]
+            
+            if (nrow(temp2) > 1) {
+              # Step 2: Among highest intensity, keep those with lowest RT error
+              temp2 <- temp2[abs(temp2$error_rt) == min(abs(temp2$error_rt)), ]
+              
+              if (nrow(temp2) > 1) {
+                # Step 3: Among those, keep the one with lowest mass error
+                temp2 <- temp2[abs(temp2$error_mass) == min(abs(temp2$error_mass)), ]
+                
+                # If still tied, take the first one
+                if (nrow(temp2) > 1) {
+                  temp2 <- temp2[1, ]
+                }
+              }
+            }
           }
 
           fts_rem <- temp[temp$name %in% d & !temp$feature %in% temp2$feature, ]
