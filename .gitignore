@@ -25,7 +25,6 @@
 *.dll
 *.html
 *.duckdb
-
+.Rproj.user
 /.quarto/
-
 **/*.quarto_ipynb

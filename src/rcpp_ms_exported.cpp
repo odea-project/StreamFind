@@ -1917,6 +1917,17 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
             {
               if (fts_j.rt[k] > sd_rt_min && fts_j.rt[k] < sd_rt_max)
               {
+                if (fts_j.quality[k].feature != "")
+                {
+                  if (fts_j.quality[k].sn < minSignalToNoiseRatio)
+                  {
+                    continue;
+                  }
+                  if (fts_j.quality[k].gauss_f < minGaussianFit)
+                  {
+                    continue;
+                  }
+                }
                 fts_j.group[k] = ana_targets_groups[j][i];
                 fts_j.filtered[k] = false;
                 fts_j.filter[k] = fts_j.filter[k] + " recovered";

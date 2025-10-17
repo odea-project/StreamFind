@@ -751,6 +751,44 @@ Engine <- R6::R6Class(
       invisible(self)
     },
 
+    # MARK: report_quarto
+    #' @description Generates a Quarto report from the analysis results based on a predefined template .qmd file.
+    #' @param template A string with the full file path to the Quarto (.qmd) template file.
+    #' @param output_file A string with the output file path. If NULL, uses the template name with appropriate extension as defined in the template header.
+    #' @param execute_dir A string with the directory where the report is executed. Default is the current working directory.
+    #' @param ... Additional arguments passed to quarto::quarto_render().
+    report_quarto = function(template = NULL, output_file = NULL, execute_dir = getwd(), ...) {
+      if (is.null(template) || !file.exists(template)) {
+        warning("Template not found!")
+        return(invisible(self))
+      }
+      if (!requireNamespace("quarto", quietly = TRUE)) {
+        warning("quarto package not installed! Please install it with: install.packages('quarto')")
+        return(invisible(self))
+      }
+      engine <- self$clone()
+      saveRDS(engine, file = "temp_engine.rds")
+      tryCatch({
+        quarto::quarto_render(
+          input = template,
+          output_file = output_file,
+          execute_dir = execute_dir,
+          execute_params = list(
+            engine_rds = "temp_engine.rds"
+          ),
+          ...
+        )
+        if (is.null(output_file)) {
+          output_file <- gsub("\\.qmd$", ".html", basename(template))
+        }
+        message("\U2713 Quarto report generated: ", output_file)
+      }, error = function(e) {
+        warning("Error generating Quarto report: ", e$message)
+      })
+      if (file.exists("temp_engine.rds")) file.remove("temp_engine.rds")
+      invisible(self)
+    },
+
     # MARK: run_app
     #' @description Runs the StreamFind Shiny app to explore, process and manage the engine data.
     #'

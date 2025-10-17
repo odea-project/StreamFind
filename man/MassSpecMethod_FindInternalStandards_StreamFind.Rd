@@ -2,27 +2,28 @@
 % Please edit documentation in R/class_MassSpecMethod_FindInternalStandards.R
 \name{MassSpecMethod_FindInternalStandards_StreamFind}
 \alias{MassSpecMethod_FindInternalStandards_StreamFind}
-\title{MassSpecMethod_FindInternalStandards_StreamFind Class}
+\title{Mass Spectrometry Method for Finding Internal Standards in MassSpecResults_NonTargetAnalysis (StreamFind algorithm)}
 \usage{
 MassSpecMethod_FindInternalStandards_StreamFind(
   database = data.table::data.table(name = character(), formula = character(), mass =
     numeric(), rt = numeric()),
   ppm = 5,
-  sec = 10
+  sec = 10,
+  filtered = TRUE
 )
 }
 \arguments{
-\item{database}{A data.table with at least the columns name, mass, and rt indicating the name,
-neutral monoisotopic
-mass and retention time of the internal standards, respectively.}
+\item{database}{A data.table with at least the columns name, mass, and rt indicating the name, neutral monoisotopic mass and retention time of the internal standards, respectively.}
 
 \item{ppm}{Numeric of length one with the mass deviation, in ppm.}
 
 \item{sec}{Numeric of length one with the time deviation, in seconds.}
+
+\item{filtered}{Logical, indicating if features that were marked as filtered should be used (TRUE) or not (FALSE).}
 }
 \value{
 A \code{MassSpecMethod_FindInternalStandards_StreamFind} object.
 }
 \description{
-Settings for finding internal standards using a data.frame.
+Processing method for finding internal standards using a data.frame of internal standards.
 }

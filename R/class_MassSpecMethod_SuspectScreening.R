@@ -136,8 +136,12 @@ run.MassSpecMethod_SuspectScreening_StreamFind <- function(x, engine = NULL) {
               sus_idx <- which(suspects$feature %in% z)
               if (length(sus_idx) > 0) {
                 sus_temp <- suspects[sus_idx, ]
-                sus_temp[["analysis"]] <- NULL
                 if (nrow(sus_temp) > 0) {
+                  sus_temp[["analysis"]] <- NULL
+                  keep_cols <- which(!colnames(sus_temp) %in% colnames(z))
+                  keep_cols <- colnames(sus_temp)[keep_cols]
+                  keep_cols <- c("feature", keep_cols)
+                  sus_temp <- sus_temp[, ..keep_cols]
                   sus_temp
                 } else {
                   data.table::data.table()

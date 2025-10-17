@@ -1,5 +1,5 @@
 #' @noRd
-.calculate_tic_matrix_suppression <- function(x, rtWindow = 10) {
+.calculate_tic_matrix_suppression <- function(x, refBlankReplicate = NA_character_, rtWindow = 10) {
   info <- info(x)
   if (nrow(info) == 0) {
     warning("No analyses available!")
@@ -16,12 +16,32 @@
 
   rpls <- info$replicate
   names(rpls) <- info$analysis
-  blankRpls <- info$blank
-  names(blankRpls) <- info$analysis
-  blankAnalyses <- info$analysis
-  names(blankAnalyses) <- info$blank
-  blankAnalyses <- blankAnalyses[info$blank %in% info$replicate]
-
+  
+  if (!is.na(refBlankReplicate)) {
+    if (!refBlankReplicate %in% info$replicate) {
+      warning("Reference replicate ", refBlankReplicate, " not found!")
+      return(NULL)
+    }
+    # blanks based on reference replicate
+    refBlank <- unique(info$blank[info$replicate %in% refBlankReplicate])
+    if (length(refBlank) == 0) {
+      warning("Reference replicate ", refBlankReplicate, " has no blank assigned!")
+      return(NULL)
+    }
+    blankRpls <- rep(refBlank, nrow(info))
+    names(blankRpls) <- info$analysis
+    blankAnalyses <- info$analysis
+    names(blankAnalyses) <- info$blank
+    blankAnalyses <- blankAnalyses[info$blank %in% refBlank]
+  } else {
+    # blanks based on assigned blanks in info
+    blankRpls <- info$blank
+    names(blankRpls) <- info$analysis
+    blankAnalyses <- info$analysis
+    names(blankAnalyses) <- info$blank
+    blankAnalyses <- blankAnalyses[info$blank %in% info$replicate]
+  }
+  
   if (length(blankAnalyses) == 0) {
     warning("No blank analyses defined!")
     return(NULL)
@@ -84,29 +104,11 @@
 
 #' MassSpecMethod_CorrectMatrixSuppression_TiChri Class
 #'
-#' @description Settings for correcting matrix suppression based on the TiChri algorithm from
-#' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm
-#' calculates the matrix profile for the total ion chromatogram (TIC) and corrects the matrix
-#' suppression for features. Internal standards can be assigned to improve the correction. The
-#' `suppression_factor` is added to the feature list and can be used to correct the features
-#' intensity. The argument/parameter `correctIntensity` is available in plotting and processing
-#' methods and when `TRUE`, the suppression factor is used to correct the feature intensity for
-#' better comparison across analyses with different matrix suppression.
-#'
-#' @param mpRtWindow Numeric of length one with the retention time window (in seconds) for
-#' calculating the matrix profile.
-#' @param istdAssignment Character of length one with the assignment method for internal standards.
-#' Possible values are `"nearest"`, `"range"`, and `"none"`. Default is `"nearest"`. Setting
-#' `"nearest"` assigns the nearest `istdN` internal standard/s, `"range"` assigns internal
-#' standard/s within the `istdRtWindow` window, and `"none"` does not assign internal standards.
-#' If internal standards are assigned, the `tichri` value is calculated for each internal standard
-#' and used to correct the matrix suppression for the features. If no internal standards are
-#' assigned, the correction is based only on the TIC matrix profile, which is less accurate.
-#' @param istdRtWindow Numeric of length one with the retention time window (in seconds) for
-#' assigning internal standards. Default is `5`.
-#' @param istdN Integer of length one with the number of internal standards to assign.
-#' Default is `2`.
-#'
+#' @description Settings for correcting matrix suppression based on the TiChri algorithm from \href{https://pubs.acs.org/doi/10.1021/acs.analchem.1c00357}{Tisler et al. (2021)}. The algorithm calculates the matrix profile for the total ion chromatogram (TIC) and corrects the matrix suppression for features. Internal standards can be assigned to improve the correction. The `suppression_factor` is added to the feature list and can be used to correct the features intensity. The argument/parameter `correctIntensity` is available in plotting and processing methods and when `TRUE`, the suppression factor is used to correct the feature intensity for better comparison across analyses with different matrix suppression.
+#' @param mpRtWindow Numeric of length one with the retention time window (in seconds) for calculating the matrix profile.
+#' @param istdAssignment Character of length one with the assignment method for internal standards. Possible values are `"nearest"`, `"range"`, and `"none"`. Default is `"nearest"`. Setting `"nearest"` assigns the nearest `istdN` internal standard/s, `"range"` assigns internal standard/s within the `istdRtWindow` window, and `"none"` does not assign internal standards. If internal standards are assigned, the `tichri` value is calculated for each internal standard and used to correct the matrix suppression for the features. If no internal standards are assigned, the correction is based only on the TIC matrix profile, which is less accurate.
+#' @param istdRtWindow Numeric of length one with the retention time window (in seconds) for assigning internal standards. Default is `5`.
+#' @param istdN Integer of length one with the number of internal standards to assign. Default is `2`.
 #' @return A `MassSpecMethod_CorrectMatrixSuppression_TiChri` object.
 #'
 #' @references
@@ -115,6 +117,7 @@
 #' @export
 #'
 MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
+  refBlankReplicate = NA_character_,
   mpRtWindow = 10,
   istdAssignment = "none",
   istdRtWindow = 5,
@@ -132,6 +135,7 @@ MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
     required = required,
     algorithm = "TiChri",
     parameters = list(
+      "refBlankReplicate" = as.character(refBlankReplicate),
       "mpRtWindow" = as.numeric(mpRtWindow),
       "istdAssignment" = as.character(istdAssignment),
       "istdRtWindow" = as.numeric(istdRtWindow),
@@ -159,6 +163,7 @@ validate_object.MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "CorrectMatrixSuppression")
   checkmate::assert_choice(x$algorithm, "TiChri")
+  checkmate::assert_character(x$parameters$refBlankReplicate, any.missing = TRUE, len = 1)
   checkmate::assert_numeric(x$parameters$mpRtWindow, lower = 0)
   checkmate::assert_choice(
     x$parameters$istdAssignment,
@@ -215,6 +220,7 @@ run.MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
   message("\U2699 Calculating TIC matrix suppression")
   ticMp <- .calculate_tic_matrix_suppression(
     engine$Analyses,
+    refBlankReplicate = parameters$refBlankReplicate,
     rtWindow = parameters$mpRtWindow
   )
 
@@ -225,11 +231,39 @@ run.MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
   info <- info(engine$Analyses)
   rpls <- info$replicate
   names(rpls) <- info$analysis
-  blankRpls <- info$blank
-  names(blankRpls) <- info$analysis
-  blankAnalyses <- info$analysis
-  names(blankAnalyses) <- info$blank
-  blankAnalyses <- blankAnalyses[info$blank %in% info$replicate]
+  
+  if (!is.na(parameters$refBlankReplicate)) {
+    if (!parameters$refBlankReplicate %in% info$replicate) {
+      warning("Reference replicate ", parameters$refBlankReplicate, " not found!")
+      return(FALSE)
+    }
+    # blanks based on reference replicate
+    refBlank <- unique(info$blank[info$replicate %in% parameters$refBlankReplicate])
+    if (length(refBlank) == 0) {
+      warning("Reference replicate ", parameters$refBlankReplicate, " has no blank assigned!")
+      return(FALSE)
+    }
+    blankRpls <- rep(refBlank, nrow(info))
+    names(blankRpls) <- info$analysis
+    blankAnalyses <- info$analysis
+    names(blankAnalyses) <- info$blank
+    blankAnalyses <- blankAnalyses[info$blank %in% refBlank]
+  } else {
+    # blanks based on assigned blanks in info
+    if (all(is.na(info$blank))) {
+      warning("No blanks assigned in info! Not done.")
+      return(FALSE)
+    }
+    if (any(is.na(info$blank))) {
+      warning("Some analyses have no blank assigned in info! Not done.")
+      return(FALSE)
+    }
+    blankRpls <- info$blank
+    names(blankRpls) <- info$analysis
+    blankAnalyses <- info$analysis
+    names(blankAnalyses) <- info$blank
+    blankAnalyses <- blankAnalyses[info$blank %in% info$replicate]
+  }
 
   if (!"none" %in% parameters$istdAssignment) {
     message("\U2699 Calculating internal standards matrix suppression")
@@ -252,13 +286,18 @@ run.MassSpecMethod_CorrectMatrixSuppression_TiChri <- function(
       i_sel <- istd$name == i
       i_istd <- istd[i_sel, ]
       i_rpls <- unique(i_istd$replicate)
+      i_anas <- unique(i_istd$analysis)
 
       for (j in i_rpls) {
         j_sel <- i_istd$replicate == j
         istd_rpl_int <- i_istd$intensity[j_sel]
 
-        istd_blk <- unique(info$blank[info$replicate %in% j])
-        istd_sel_blk <- i_istd$replicate %in% istd_blk
+        if (length(istd_rpl_int) == 0) {
+          next
+        }
+        
+        istd_blk <- blankRpls[names(blankRpls) %in% i_anas]
+        istd_sel_blk <- i_istd$analysis %in% istd_blk
         istd_blk_int <- i_istd$intensity[istd_sel_blk]
 
         if (length(istd_blk_int) == 0) {
