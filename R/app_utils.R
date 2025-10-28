@@ -304,7 +304,7 @@
 .app_util_create_plot_modal <- function(ns_full) {
   shiny::tags$div(
     id = ns_full("plot_modal_container"),
-    class = "modal fade",
+    class = "modal fade plot-modal",
     tabindex = "-1",
     role = "dialog",
     'aria-hidden' = "true",
@@ -439,7 +439,7 @@
       $('#' + plotId.replace(/[^-]*$/, 'plot_modal_container')).modal('show');
     }
 
-    // Custom CSS for the maximize button and modal body
+    // Custom CSS for the maximize button and plot modal body
     document.head.insertAdjacentHTML('beforeend', `
       <style>
         .plot-maximize-btn {
@@ -457,13 +457,32 @@
         .plot-container {
           position: relative;
         }
-        .modal-body {
+        /* Only apply to plot modals, not all modals */
+        .plot-modal .modal-body {
           height: 90vh;
           padding: 0 !important;
         }
-        .modal-body > div {
+        .plot-modal .modal-body > div {
           width: 100% !important;
           height: 100% !important;
+        }
+        /* Ensure shinyFiles modals keep their default styling */
+        .shinyFiles .modal-dialog {
+          max-width: 900px !important;
+          width: auto !important;
+        }
+        .shinyFiles .modal-body {
+          height: auto !important;
+          max-height: 70vh !important;
+          overflow-y: auto !important;
+          padding: 15px !important;
+        }
+        .shinyFiles .modal-body > div {
+          width: auto !important;
+          height: auto !important;
+        }
+        .shinyFiles {
+          z-index: 1060 !important;
         }
       </style>
     `);

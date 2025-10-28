@@ -32,33 +32,7 @@ params:
 
 ```{r}
 #| include: false
-
-options(
-  DT.options = list(
-    dom = "lfrtip",
-    autoWidth = TRUE,
-    pageLength = 10,
-    lengthMenu = c(10, 20, 50, 75, 100),
-    initComplete = htmlwidgets::JS(
-      "function(settings, json) {",
-      "$(this.api().table().body()).css({'font-size': '12px'});",
-      "$(this.api().table().body()).css({'white-space': 'nowrap'});",
-      "}"
-    )
-  )
-)
-
-packages <- c("knitr", "kableExtra", "data.table", "DT", "magrittr", "ggplot2", "plotly")
-for (pkg in packages) {
-  if (requireNamespace(pkg, quietly = TRUE)) {
-    library(pkg, character.only = TRUE)
-  } else {
-    warning(paste("Package", pkg, "is not available"))
-  }
-}
-
-library(StreamFind)
-engine <- readRDS(params$engine_rds)
+engine <- load_template_engine(params$engine_rds)
 ```
 
 ```{r}

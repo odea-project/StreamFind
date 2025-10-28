@@ -88,6 +88,7 @@ Collate:
     'utils_general.R'
     'utils_fct_assets.R'
     'fct_get_cache_info.R'
+    'fct_load_template_engine.R'
     'fct_clear_cache.R'
     'fct_load_cache.R'
     'fct_save_cache.R'

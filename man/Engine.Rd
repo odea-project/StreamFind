@@ -247,6 +247,7 @@ Generates a Quarto report from the analysis results based on a predefined templa
 \if{html}{\out{<div class="r">}}\preformatted{Engine$report_quarto(
   template = NULL,
   output_file = NULL,
+  output_dir = NULL,
   execute_dir = getwd(),
   ...
 )}\if{html}{\out{</div>}}
@@ -257,7 +258,9 @@ Generates a Quarto report from the analysis results based on a predefined templa
 \describe{
 \item{\code{template}}{A string with the full file path to the Quarto (.qmd) template file.}
 
-\item{\code{output_file}}{A string with the output file path. If NULL, uses the template name with appropriate extension as defined in the template header.}
+\item{\code{output_file}}{A string with the output file name (without extension). If NULL, uses the template name without extension.}
+
+\item{\code{output_dir}}{A string with the directory where the final output files should be moved. If NULL, files remain in the QMD directory.}
 
 \item{\code{execute_dir}}{A string with the directory where the report is executed. Default is the current working directory.}
 
