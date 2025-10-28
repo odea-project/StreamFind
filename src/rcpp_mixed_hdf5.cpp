@@ -186,48 +186,26 @@ Rcpp::List test_hdf5_mixed_performance(Rcpp::List data_list, const std::string& 
 
     auto end_time = std::chrono::high_resolution_clock::now();
 
-    // Calculate timings
+    // Calculate timings - only keep timing variables in C++
     auto conversion_duration = std::chrono::duration_cast<std::chrono::milliseconds>(conversion_time - start_time);
     auto write_duration = std::chrono::duration_cast<std::chrono::milliseconds>(write_time - conversion_time);
     auto total_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
-    // Get file size
-    std::ifstream file_stream(file_name, std::ios::binary | std::ios::ate);
-    long file_size_bytes = file_stream.tellg();
-    double file_size_mb = static_cast<double>(file_size_bytes) / (1024.0 * 1024.0);
-
-    // Estimate data size
-    double data_size_mb = (n_numeric_cols * n_rows * sizeof(double) + n_string_cols * n_rows * 20) / (1024.0 * 1024.0);
-
-    // Prepare results
+    // Prepare minimal results - only timing and basic info
     result["conversion_time_ms"] = conversion_duration.count();
     result["write_time_ms"] = write_duration.count();
     result["total_time_ms"] = total_duration.count();
-    result["file_size_bytes"] = file_size_bytes;
-    result["file_size_mb"] = file_size_mb;
-    result["data_size_mb"] = data_size_mb;
     result["n_numeric_cols"] = n_numeric_cols;
     result["n_string_cols"] = n_string_cols;
     result["n_rows"] = n_rows;
     result["compression_enabled"] = enable_compression;
     result["chunking_enabled"] = enable_chunking;
-    result["data_type"] = "mixed";
-
-    if (data_size_mb > 0) {
-      result["compression_ratio"] = data_size_mb / file_size_mb;
-    }
-
-    // Throughput calculations
-    double write_throughput_mbps = (write_duration.count() > 0) ?
-      (data_size_mb * 1000.0) / write_duration.count() : 0.0;
-    result["write_throughput_mbps"] = write_throughput_mbps;
+    result["success"] = true;
 
     Rcpp::Rcout << "Mixed data HDF5 write completed:" << std::endl;
     Rcpp::Rcout << "  Conversion time: " << conversion_duration.count() << " ms" << std::endl;
     Rcpp::Rcout << "  Write time: " << write_duration.count() << " ms" << std::endl;
     Rcpp::Rcout << "  Total time: " << total_duration.count() << " ms" << std::endl;
-    Rcpp::Rcout << "  File size: " << file_size_mb << " MB" << std::endl;
-    Rcpp::Rcout << "  Data composition: " << n_numeric_cols << " numeric + " << n_string_cols << " string columns" << std::endl;
 
   } catch (const H5::Exception& e) {
     result["error"] = "HDF5 error: " + std::string(e.getCDetailMsg());
@@ -353,37 +331,20 @@ Rcpp::List test_hdf5_mixed_read_performance(const std::string& file_name, const 
 
     auto end_time = std::chrono::high_resolution_clock::now();
 
-    // Calculate timings
+    // Calculate timings - only keep timing variables in C++
     auto read_duration = std::chrono::duration_cast<std::chrono::milliseconds>(read_end - read_start);
     auto total_duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
 
-    // Get file size
-    std::ifstream file_stream(file_name, std::ios::binary | std::ios::ate);
-    long file_size_bytes = file_stream.tellg();
-    double file_size_mb = static_cast<double>(file_size_bytes) / (1024.0 * 1024.0);
-
-    // Estimate data size
-    double data_size_mb = (n_numeric_cols * n_rows * sizeof(double) + n_string_cols * n_rows * 20) / (1024.0 * 1024.0);
-
-    // Prepare performance metrics
+    // Prepare minimal performance metrics - only timing and basic info
     performance["read_time_ms"] = read_duration.count();
     performance["total_time_ms"] = total_duration.count();
-    performance["file_size_bytes"] = file_size_bytes;
-    performance["file_size_mb"] = file_size_mb;
-    performance["data_size_mb"] = data_size_mb;
     performance["n_numeric_cols"] = n_numeric_cols;
     performance["n_string_cols"] = n_string_cols;
     performance["n_rows"] = n_rows;
-    performance["data_type"] = "mixed";
-
-    // Throughput calculations
-    double read_throughput_mbps = (read_duration.count() > 0) ?
-      (data_size_mb * 1000.0) / read_duration.count() : 0.0;
-    performance["read_throughput_mbps"] = read_throughput_mbps;
+    performance["success"] = true;
 
     result["data"] = data_list;
     result["performance"] = performance;
-    result["mixed_data_type"] = true;
 
     Rcpp::Rcout << "Mixed data HDF5 read completed:" << std::endl;
     Rcpp::Rcout << "  Read time: " << read_duration.count() << " ms" << std::endl;

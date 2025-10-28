@@ -15,6 +15,7 @@
 /Meta/
 **/log
 /cache
+/demo_data
 
 # Globally excluded file types and folders ------------------------------------
 *.sqlite
