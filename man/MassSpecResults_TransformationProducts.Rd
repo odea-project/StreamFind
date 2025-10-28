@@ -24,8 +24,7 @@ MassSpecResults_TransformationProducts(
   x,
   parents = NULL,
   parentsReplicate = NULL,
-  productsReplicate = NULL,
-  onlyHits = TRUE
+  productsReplicate = NULL
 )
 
 \method{plot_transformation_products_network}{MassSpecResults_TransformationProducts}(

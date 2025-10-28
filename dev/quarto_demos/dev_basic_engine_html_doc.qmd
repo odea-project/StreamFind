@@ -48,15 +48,16 @@ options(
   )
 )
 
-library(knitr)
-library(kableExtra)
-library(data.table)
-library(DT)
-library(magrittr)
-library(ggplot2)
-library(plotly)
-library(StreamFind)
+packages <- c("knitr", "kableExtra", "data.table", "DT", "magrittr", "ggplot2", "plotly")
+for (pkg in packages) {
+  if (requireNamespace(pkg, quietly = TRUE)) {
+    library(pkg, character.only = TRUE)
+  } else {
+    warning(paste("Package", pkg, "is not available"))
+  }
+}
 
+library(StreamFind)
 engine <- readRDS(params$engine_rds)
 ```
 
@@ -76,8 +77,8 @@ quarto::write_yaml_metadata_block(
 DT::datatable(info(engine$Analyses))
 ```
 
-<br>  
-<br>  
+<br>
+<br>
 
 ```{r}
 plot_spectra_tic(
@@ -89,5 +90,5 @@ plot_spectra_tic(
 )
 ```
 
-<br>  
-<br>  
+<br>
+<br>

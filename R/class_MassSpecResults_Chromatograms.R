@@ -213,7 +213,7 @@ get_chromatograms.MassSpecResults_Chromatograms <- function(
 #' @template arg-interactive
 #' @template arg-renderEngine
 #' @export
-#' 
+#'
 plot_chromatograms.MassSpecResults_Chromatograms <- function(
   x,
   analyses = NULL,
@@ -351,7 +351,7 @@ plot_chromatograms.MassSpecResults_Chromatograms <- function(
 #' @template arg-interactive
 #' @template arg-renderEngine
 #' @export
-#' 
+#'
 plot_chromatograms_baseline.MassSpecResults_Chromatograms <- function(
   x,
   analyses = NULL,
@@ -491,7 +491,7 @@ plot_chromatograms_baseline.MassSpecResults_Chromatograms <- function(
 #' @template arg-ms-rtmax
 #' @template arg-ms-minIntensity
 #' @export
-#' 
+#'
 get_chromatograms_peaks.MassSpecResults_Chromatograms <- function(
   x,
   analyses = NULL,
@@ -542,7 +542,7 @@ get_chromatograms_peaks.MassSpecResults_Chromatograms <- function(
       names(pks)
     )
   }
-  pks <- data.table::rbindlist(pks, fill = TRUE)
+  pks <- data.table::rbindlist(pks, idcol = "analysis", fill = TRUE)
   if (is.numeric(chromatograms)) {
     which_pks <- pks$index %in% chromatograms
     pks <- pks[which_pks, ]
@@ -580,7 +580,7 @@ get_chromatograms_peaks.MassSpecResults_Chromatograms <- function(
 #' @template arg-interactive
 #' @template arg-renderEngine
 #' @export
-#' 
+#'
 plot_chromatograms_peaks.MassSpecResults_Chromatograms <- function(
   x,
   analyses = NULL,

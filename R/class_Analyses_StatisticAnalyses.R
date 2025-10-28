@@ -154,7 +154,7 @@ get_concentrations.StatisticAnalyses <- function(x) {
 #' @template arg-value
 #' @export
 #'
-set_concentrations.MassSpecAnalyses <- function(x, value) {
+set_concentrations.StatisticAnalyses <- function(x, value) {
   if (length(value) != nrow(x$analyses)) {
     warning(
       "The length of the concentrations must be equal to the number of analyses! Not done."
@@ -173,7 +173,7 @@ set_concentrations.MassSpecAnalyses <- function(x, value) {
 #' @describeIn StatisticAnalyses Get a data frame with the analyses, features, classes and concentrations.
 #' @template arg-statistic-x
 #' @export
-#' 
+#'
 info.StatisticAnalyses <- function(x) {
   if (length(x$analyses) > 0) {
     analyses_names <- get_analysis_names(x)
@@ -320,7 +320,7 @@ remove.StatisticAnalyses <- function(x, value) {
 #' @template arg-statistic-colorGroups
 #' @template arg-statistic-xTickLabelsShow
 #' @export
-#' 
+#'
 plot_data.StatisticAnalyses <- function(
   x,
   analyses = NULL,

@@ -13,6 +13,8 @@ instead of keeping it in memory.
 \describe{
 \item{\code{Metadata}}{A \link{Metadata} object loaded from database}
 
+\item{\code{Configuration}}{Engine configuration loaded from database}
+
 \item{\code{Workflow}}{A \link{Workflow} object loaded from database}
 
 \item{\code{Analyses}}{Simple dummy analyses object}
@@ -29,6 +31,8 @@ instead of keeping it in memory.
 \item \href{#method-EngineDataBase-new}{\code{EngineDataBase$new()}}
 \item \href{#method-EngineDataBase-get_metadata}{\code{EngineDataBase$get_metadata()}}
 \item \href{#method-EngineDataBase-set_metadata}{\code{EngineDataBase$set_metadata()}}
+\item \href{#method-EngineDataBase-get_configuration}{\code{EngineDataBase$get_configuration()}}
+\item \href{#method-EngineDataBase-set_configuration}{\code{EngineDataBase$set_configuration()}}
 \item \href{#method-EngineDataBase-get_workflow}{\code{EngineDataBase$get_workflow()}}
 \item \href{#method-EngineDataBase-set_workflow}{\code{EngineDataBase$set_workflow()}}
 \item \href{#method-EngineDataBase-get_analyses}{\code{EngineDataBase$get_analyses()}}
@@ -53,24 +57,17 @@ Cleanup when object is destroyed
 
 Initialize EngineDataBase
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDataBase$new(
-  db_path,
-  engine_id = NULL,
-  engine_data_type = "Generic",
-  engine_cache = FALSE
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{EngineDataBase$new(db, id = NULL, data_type = "Generic")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{db_path}}{Path to DuckDB database file}
+\item{\code{db}}{Path to DuckDB database file}
 
-\item{\code{engine_id}}{Unique engine identifier}
+\item{\code{id}}{Unique engine identifier}
 
-\item{\code{engine_data_type}}{Type of engine data (e.g., "MassSpec", "Raman")}
-
-\item{\code{engine_cache}}{Whether to enable caching}
+\item{\code{data_type}}{Type of engine data (e.g., "MassSpec", "Raman")}
 }
 \if{html}{\out{</div>}}
 }
@@ -106,6 +103,36 @@ Set metadata in database
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EngineDataBase-get_configuration"></a>}}
+\if{latex}{\out{\hypertarget{method-EngineDataBase-get_configuration}{}}}
+\subsection{Method \code{get_configuration()}}{
+Get configuration from database
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{EngineDataBase$get_configuration()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A configuration list or NULL
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EngineDataBase-set_configuration"></a>}}
+\if{latex}{\out{\hypertarget{method-EngineDataBase-set_configuration}{}}}
+\subsection{Method \code{set_configuration()}}{
+Set configuration in database
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{EngineDataBase$set_configuration(configuration)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{configuration}}{A configuration list}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EngineDataBase-get_workflow"></a>}}
 \if{latex}{\out{\hypertarget{method-EngineDataBase-get_workflow}{}}}
 \subsection{Method \code{get_workflow()}}{
@@ -130,7 +157,7 @@ Set workflow in database
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{workflow}}{A Workflow object or list}
+\item{\code{workflow}}{A Workflow object or list with data_type and methods}
 }
 \if{html}{\out{</div>}}
 }

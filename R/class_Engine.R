@@ -754,10 +754,11 @@ Engine <- R6::R6Class(
     # MARK: report_quarto
     #' @description Generates a Quarto report from the analysis results based on a predefined template .qmd file.
     #' @param template A string with the full file path to the Quarto (.qmd) template file.
-    #' @param output_file A string with the output file path. If NULL, uses the template name with appropriate extension as defined in the template header.
+    #' @param output_file A string with the output file name (without extension). If NULL, uses the template name without extension.
+    #' @param output_dir A string with the directory where the final output files should be moved. If NULL, files remain in the QMD directory.
     #' @param execute_dir A string with the directory where the report is executed. Default is the current working directory.
     #' @param ... Additional arguments passed to quarto::quarto_render().
-    report_quarto = function(template = NULL, output_file = NULL, execute_dir = getwd(), ...) {
+    report_quarto = function(template = NULL, output_file = NULL, output_dir = NULL, execute_dir = getwd(), ...) {
       if (is.null(template) || !file.exists(template)) {
         warning("Template not found!")
         return(invisible(self))
@@ -766,26 +767,98 @@ Engine <- R6::R6Class(
         warning("quarto package not installed! Please install it with: install.packages('quarto')")
         return(invisible(self))
       }
+
+      # Prepare output_file (filename only, without extension)
+      if (is.null(output_file)) {
+        output_file <- tools::file_path_sans_ext(basename(template))
+      }
+
+      .move_rendered_files = function(qmd_file, output_file, target_dir) {
+        # Common output extensions that Quarto can generate
+        possible_extensions <- c(".html", ".pdf", ".docx", ".pptx", ".tex", ".epub", ".rtf")
+        moved_files <- character(0)
+        qmd_dir <- dirname(qmd_file)
+
+        for (ext in possible_extensions) {
+          rendered_file <- file.path(qmd_dir, paste0(output_file, ext))
+          if (file.exists(rendered_file)) {
+            # Create target directory if it doesn't exist
+            dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
+
+            # Move the main file
+            target_file <- file.path(target_dir, paste0(output_file, ext))
+            file.copy(rendered_file, target_file, overwrite = TRUE)
+            file.remove(rendered_file)
+            moved_files <- c(moved_files, target_file)
+
+            # For HTML files, also move associated _files directory
+            if (ext == ".html") {
+              files_dir <- file.path(qmd_dir, paste0(output_file, "_files"))
+              if (dir.exists(files_dir)) {
+                target_files_dir <- file.path(target_dir, paste0(output_file, "_files"))
+                if (dir.exists(target_files_dir)) {
+                  unlink(target_files_dir, recursive = TRUE)
+                }
+                file.copy(files_dir, target_dir, recursive = TRUE)
+                unlink(files_dir, recursive = TRUE)
+              }
+            }
+          }
+        }
+
+        # Also check for any other files that might have been generated with the same base name
+        all_files <- list.files(qmd_dir, pattern = paste0("^", output_file, "\\."), full.names = TRUE)
+        for (file_path in all_files) {
+          if (!file.path(qmd_dir, paste0(output_file, possible_extensions)) %in% file_path) {
+            file_name <- basename(file_path)
+            target_file <- file.path(target_dir, file_name)
+            if (!file.exists(target_file)) {
+              file.copy(file_path, target_file, overwrite = TRUE)
+              file.remove(file_path)
+              moved_files <- c(moved_files, target_file)
+            }
+          }
+        }
+
+        return(moved_files)
+      }
+
+      # Save engine temporarily for the report
       engine <- self$clone()
-      saveRDS(engine, file = "temp_engine.rds")
+      temp_engine_file <- file.path(execute_dir, "temp_engine.rds")
+      saveRDS(engine, file = temp_engine_file)
+
       tryCatch({
+        # Render the Quarto document
         quarto::quarto_render(
           input = template,
           output_file = output_file,
           execute_dir = execute_dir,
           execute_params = list(
-            engine_rds = "temp_engine.rds"
+            engine_rds = basename(temp_engine_file)
           ),
           ...
         )
-        if (is.null(output_file)) {
-          output_file <- gsub("\\.qmd$", ".html", basename(template))
+
+        # Move files to output directory if specified
+        moved_files <- character(0)
+        if (!is.null(output_dir) && nzchar(trimws(output_dir))) {
+          moved_files <- .move_rendered_files(template, output_file, output_dir)
+
+          if (length(moved_files) > 0) {
+            message("\U2713 Files moved to: ", output_dir)
+          }
         }
-        message("\U2713 Quarto report generated: ", output_file)
+
+        message("\U2713 Quarto report generated successfully!")
+
       }, error = function(e) {
         warning("Error generating Quarto report: ", e$message)
       })
-      if (file.exists("temp_engine.rds")) file.remove("temp_engine.rds")
+
+      # Clean up temporary engine file
+      if (file.exists(temp_engine_file)) file.remove(temp_engine_file)
+
       invisible(self)
     },
 

@@ -14,6 +14,7 @@ engine <- MassSpecEngine$new(
   ),
   analyses = dev_files
 )
+
 engine$report_quarto(
   template = "dev/quarto_demos/dev_basic_engine_html_doc.qmd",
   output_file = NULL
@@ -28,3 +29,38 @@ lcdad_engine <- MassSpecEngine$new(
   ),
   analyses = list.files("demo_data/lc_dad_quantification", pattern = "mzML", full.names = TRUE)
 )
+
+lcdad_engine <- MassSpecEngine$new()
+lcdad_engine$load("lcdada_quant.rds")
+
+
+names(lcdad_engine$Results)
+names(lcdad_engine$Results[[1]])
+# create a app_mod_WorkflowAssembler_MassSpecResults_Chromatograms.R file with a module for displaying results of chromatograms and a data.table with peraks (if available) similar as implemented in
+
+
+# LC-HRMS Identification -----
+ident_engine <- MassSpecEngine$new(
+  metadata = list(
+    name = "Example Intact Monoclonal Antibody Identification with LC-HRMS",
+    author = "Ricardo Cunha",
+    date = Sys.time()
+  ),
+  analyses = list.files("demo_data/lc_dad_quantification", pattern = "mzML", full.names = TRUE)[c(6:8, 16:18)]
+)
+
+ident_engine$save("ident_engine.rds")
+
+ident_engine <- MassSpecEngine$new()
+ident_engine$load("ident_engine.rds")
+
+names(ident_engine$Analyses$results)
+names(ident_engine$Analyses$results[[1]]$peaks)
+
+
+
+
+
+info()
+
+run_app()

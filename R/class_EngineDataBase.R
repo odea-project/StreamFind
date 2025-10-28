@@ -129,7 +129,7 @@ EngineDataBase <- R6::R6Class(
     #' @description Initialize EngineDataBase
     #' @param db Path to DuckDB database file
     #' @param id Unique engine identifier
-    #' @param engine_data_type Type of engine data (e.g., "MassSpec", "Raman")
+    #' @param data_type Type of engine data (e.g., "MassSpec", "Raman")
     initialize = function(db, id = NULL, data_type = "Generic") {
 
       # Validate inputs

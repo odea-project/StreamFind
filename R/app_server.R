@@ -166,6 +166,11 @@ app_server <- function(input, output, session) {
           icon = NULL
         ),
         shinydashboard::menuItem(
+          "Report",
+          tabName = "WorkflowAssembler-report",
+          icon = NULL
+        ),
+        shinydashboard::menuItem(
           "Audit Trail",
           tabName = "WorkflowAssembler-audit",
           icon = NULL

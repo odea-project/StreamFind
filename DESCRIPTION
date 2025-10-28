@@ -181,6 +181,7 @@ Collate:
     'app_utils.R'
     'app_mod_WorkflowAssembler_MassSpecResults_NonTargetAnalysis.R'
     'app_mod_WorkflowAssembler_MassSpecResults_Spectra.R'
+    'app_mod_WorkflowAssembler_MassSpecResults_Chromatograms.R'
     'app_mod_WorkflowAssembler_Workflow.R'
     'app_mod_WorkflowAssembler_MassSpecAnalyses.R'
     'app_mod_WorkflowAssembler_RamanAnalyses.R'

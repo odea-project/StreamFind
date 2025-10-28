@@ -34,7 +34,7 @@
           analyses_info$Delete <- character(0)
         }
         blocked_columns <- seq_len(ncol(analyses_info)) - 1
-        blocked_columns <- blocked_columns[!colnames(analyses_info) %in% c("replicate", "blank")]
+        blocked_columns <- blocked_columns[!colnames(analyses_info) %in% c("replicate", "blank", "concentration")]
 
         # if (length(analyses) == 0) {
         #   analyses_info <- data.frame()
@@ -139,6 +139,33 @@
       )
       analyses_info$blank[analyses_info$blank %in% ""] <- NA_character_
       analyses <- set_replicate_names(analyses, analyses_info$replicate)
+
+      # Handle concentration updates
+      if ("concentration" %in% colnames(analyses_info)) {
+        # Convert concentration to numeric, handling empty strings and invalid values
+        analyses_info$concentration[analyses_info$concentration %in% ""] <- NA_character_
+        concentration_numeric <- suppressWarnings(as.numeric(analyses_info$concentration))
+
+        # Check for invalid numeric conversions
+        if (any(is.na(concentration_numeric) & !is.na(analyses_info$concentration))) {
+          reactive_warnings(
+            .app_util_add_notifications(
+              reactive_warnings(),
+              "invalid_concentration_values",
+              "Concentration values must be numeric!"
+            )
+          )
+        } else {
+          reactive_warnings(
+            .app_util_remove_notifications(
+              reactive_warnings(),
+              "invalid_concentration_values"
+            )
+          )
+          analyses <- set_concentrations(analyses, concentration_numeric)
+        }
+      }
+
       if (any(!(analyses_info$blank %in% analyses_info$replicate) & !is.na(analyses_info$blank))) {
         reactive_warnings(
           .app_util_add_notifications(

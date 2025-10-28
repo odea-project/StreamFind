@@ -28,6 +28,12 @@
       shiny::fluidRow(shiny::uiOutput(ns("results_ui")))
     ),
     shinydashboard::tabItem(
+      tabName = ns("report"),
+      shiny::fluidRow(
+        shiny::uiOutput(ns("report_ui"))
+      )
+    ),
+    shinydashboard::tabItem(
       tabName = ns("audit"),
       shiny::fluidRow(
         shinydashboard::box(
@@ -556,7 +562,7 @@
         for (i in seq_along(res)) {
           has_result_method <- any(vapply(
             result_methods,
-            function(z) grepl(class(res[[1]])[1], z),
+            function(z) grepl(class(res[[i]])[1], z),
             FALSE
           ))
 
@@ -578,7 +584,7 @@
             )
           } else {
             shiny::showNotification(
-              paste("No results method for", class(res[[i]]), "!"),
+              paste("No results method for ", class(res[[i]])[1], "!"),
               duration = 5,
               type = "warning"
             )
@@ -759,6 +765,375 @@
           )
         }
       )
+    })
+
+    # MARK: Report
+    # Report -----
+    output$report_ui <- shiny::renderUI({
+      shinyFiles::shinyFileChoose(
+        input,
+        "select_qmd_file",
+        roots = reactive_volumes(),
+        defaultRoot = "wd",
+        session = session,
+        filetypes = c("qmd")
+      )
+
+      shinyFiles::shinyDirChoose(
+        input,
+        "select_execute_dir",
+        roots = reactive_volumes(),
+        defaultRoot = "wd",
+        session = session
+      )
+
+      shinyFiles::shinyDirChoose(
+        input,
+        "select_output_dir",
+        roots = reactive_volumes(),
+        defaultRoot = "wd",
+        session = session
+      )
+
+      shinydashboard::box(
+        width = 12,
+        title = "Quarto Report Generator",
+        solidHeader = TRUE,
+        shiny::fluidRow(
+          shiny::column(
+            width = 6,
+            shiny::h4("Select QMD Template"),
+            shiny::p("Choose a Quarto (.qmd) document to render as a report:"),
+            shinyFiles::shinyFilesButton(
+              ns("select_qmd_file"),
+              label = "Select QMD File",
+              title = "Choose a QMD template file",
+              multiple = FALSE,
+              class = "btn-primary",
+              style = "width: 200px; margin-bottom: 10px;"
+            ),
+            shiny::br(),
+            shiny::verbatimTextOutput(ns("selected_file_display")),
+
+            shiny::hr(),
+
+            shiny::h4("Execution Directory"),
+            shiny::p("Directory where the report will be executed:"),
+            shinyFiles::shinyDirButton(
+              ns("select_execute_dir"),
+              label = "Select Execute Directory",
+              title = "Choose execution directory",
+              class = "btn-info",
+              style = "width: 200px; margin-bottom: 10px;"
+            ),
+            shiny::br(),
+            shiny::verbatimTextOutput(ns("execute_dir_display"))
+          ),
+          shiny::column(
+            width = 6,
+            shiny::h4("Output Configuration"),
+            shiny::p("Configure where the generated report will be saved:"),
+
+            shiny::div(
+              style = "margin-bottom: 15px;",
+              shiny::strong("Output Directory:"),
+              shiny::br(),
+              shinyFiles::shinyDirButton(
+                ns("select_output_dir"),
+                label = "Select Output Directory",
+                title = "Choose output directory",
+                class = "btn-secondary",
+                style = "width: 200px; margin-top: 5px; margin-bottom: 10px;"
+              ),
+              shiny::br(),
+              shiny::verbatimTextOutput(ns("output_dir_display"))
+            ),
+
+            shiny::div(
+              style = "margin-bottom: 15px;",
+              shiny::strong("Output Filename (without extension):"),
+              shiny::textInput(
+                ns("output_filename"),
+                label = NULL,
+                placeholder = "Enter filename (e.g., my_report)",
+                width = "200px"
+              ),
+              shiny::p("Extension will be determined by the QMD header",
+                      style = "font-size: 12px; color: #666; margin-top: 5px;")
+            ),
+
+            shiny::hr(),
+
+            shiny::h4("Generate Report"),
+            shiny::p("Click to render the selected QMD template:"),
+            shiny::actionButton(
+              ns("generate_report_button"),
+              label = "Generate Report",
+              class = "btn-success",
+              style = "width: 150px; margin-bottom: 10px;"
+            ),
+            shiny::br(),
+            shiny::div(
+              id = ns("report_status"),
+              style = "margin-top: 10px;"
+            )
+          )
+        )
+      )
+    })
+
+    # MARK: obs Select QMD File
+    ## obs Select QMD File -----
+    reactive_selected_qmd_file <- shiny::reactiveVal(NULL)
+    reactive_execute_dir <- shiny::reactiveVal(getwd())
+    reactive_output_dir <- shiny::reactiveVal(getwd())
+
+    shiny::observeEvent(input$select_qmd_file, {
+      shiny::req(input$select_qmd_file)
+      file_info <- shinyFiles::parseFilePaths(
+        roots = reactive_volumes(),
+        input$select_qmd_file
+      )
+      if (nrow(file_info) > 0) {
+        file_path <- file_info$datapath[1]
+        reactive_selected_qmd_file(file_path)
+      }
+    })
+
+    # MARK: obs Select Execute Directory
+    ## obs Select Execute Directory -----
+    shiny::observeEvent(input$select_execute_dir, {
+      shiny::req(input$select_execute_dir)
+      dir_info <- shinyFiles::parseDirPath(
+        roots = reactive_volumes(),
+        input$select_execute_dir
+      )
+      if (length(dir_info) > 0) {
+        reactive_execute_dir(dir_info)
+      }
+    })
+
+    # MARK: obs Select Output Directory
+    ## obs Select Output Directory -----
+    shiny::observeEvent(input$select_output_dir, {
+      shiny::req(input$select_output_dir)
+      dir_info <- shinyFiles::parseDirPath(
+        roots = reactive_volumes(),
+        input$select_output_dir
+      )
+      if (length(dir_info) > 0) {
+        reactive_output_dir(dir_info)
+      }
+    })
+
+    # MARK: out Selected File Display
+    ## out Selected File Display -----
+    output$selected_file_display <- shiny::renderText({
+      selected_file <- reactive_selected_qmd_file()
+      if (is.null(selected_file)) {
+        "No file selected"
+      } else {
+        paste("Selected file:", selected_file)
+      }
+    })
+
+    # MARK: out Execute Directory Display
+    ## out Execute Directory Display -----
+    output$execute_dir_display <- shiny::renderText({
+      execute_dir <- reactive_execute_dir()
+      paste("Execute directory:", execute_dir)
+    })
+
+    # MARK: out Output Directory Display
+    ## out Output Directory Display -----
+    output$output_dir_display <- shiny::renderText({
+      output_dir <- reactive_output_dir()
+      paste("Output directory:", output_dir)
+    })
+
+    # MARK: obs Generate Report
+    ## obs Generate Report -----
+    shiny::observeEvent(input$generate_report_button, {
+      selected_file <- reactive_selected_qmd_file()
+      execute_dir <- reactive_execute_dir()
+      output_dir <- reactive_output_dir()
+      output_filename <- input$output_filename
+
+      # Check if a file is selected
+      if (is.null(selected_file) || !file.exists(selected_file)) {
+        shiny::showNotification(
+          "Please select a valid QMD file first!",
+          duration = 5,
+          type = "error"
+        )
+        return()
+      }
+
+      # Check if execute directory exists
+      if (!dir.exists(execute_dir)) {
+        shiny::showNotification(
+          "Execute directory does not exist!",
+          duration = 5,
+          type = "error"
+        )
+        return()
+      }
+
+      # Prepare output_file parameter (filename only) and handle output directory separately
+      output_file <- NULL
+      final_output_dir <- NULL
+
+      if (!is.null(output_filename) && nzchar(trimws(output_filename))) {
+        # Check if output directory exists
+        if (!dir.exists(output_dir)) {
+          shiny::showNotification(
+            "Output directory does not exist!",
+            duration = 5,
+            type = "error"
+          )
+          return()
+        }
+
+        # Set filename only (without extension)
+        output_file <- trimws(output_filename)
+        # Store the target output directory
+        final_output_dir <- output_dir
+      }      # Check if engine has unsaved changes
+      has_unsaved_changes <- "unsaved_changes" %in% names(reactive_warnings())
+      if (has_unsaved_changes) {
+        shiny::showModal(
+          shiny::modalDialog(
+            title = "Unsaved Changes Detected",
+            "The engine has unsaved changes. Please save your work before generating a report.",
+            footer = shiny::tagList(
+              shiny::actionButton(
+                ns("save_before_report"),
+                "Save & Generate Report",
+                class = "btn-primary"
+              ),
+              shiny::modalButton("Cancel", class = "btn-secondary")
+            ),
+            easyClose = FALSE
+          )
+        )
+        return()
+      }
+
+      # Generate report
+      tryCatch({
+        shiny::showNotification(
+          "Generating report... This may take a few moments.",
+          duration = 5,
+          type = "message"
+        )
+
+        # Update engine with current reactive values
+        engine$Metadata <- reactive_metadata()
+        engine$Analyses <- reactive_analyses()
+        engine$Workflow <- reactive_workflow()
+        engine$Analyses$results <- reactive_results()
+
+        # Call the enhanced engine's report_quarto method
+        engine$report_quarto(
+          template = selected_file,
+          output_file = output_file,
+          output_dir = final_output_dir,
+          execute_dir = execute_dir
+        )
+
+        shiny::showNotification(
+          "Report generated successfully!",
+          duration = 5,
+          type = "message"
+        )
+      }, error = function(e) {
+        shiny::showNotification(
+          paste("Error generating report:", conditionMessage(e)),
+          duration = 10,
+          type = "error"
+        )
+      })
+    })
+
+    # MARK: obs Save Before Report
+    ## obs Save Before Report -----
+    shiny::observeEvent(input$save_before_report, {
+      selected_file <- reactive_selected_qmd_file()
+      execute_dir <- reactive_execute_dir()
+      output_dir <- reactive_output_dir()
+      output_filename <- input$output_filename
+
+      tryCatch({
+        # Save the engine first
+        if (!is.na(reactive_engine_save_file())) {
+          engine$save(reactive_engine_save_file())
+        } else {
+          # If no save file is set, create a temporary save
+          temp_file <- tempfile(fileext = ".rds")
+          engine$save(temp_file)
+          reactive_engine_save_file(temp_file)
+        }
+
+        # Update reactive values to reflect saved state
+        reactive_warnings(.app_util_remove_notifications(
+          reactive_warnings(),
+          "unsaved_changes"
+        ))
+        reactive_saved_metadata(reactive_metadata())
+        reactive_saved_analyses(reactive_analyses())
+        reactive_saved_workflow(reactive_workflow())
+        reactive_saved_results(reactive_results())
+        reactive_audit_saved(reactive_audit())
+        reactive_engine_config_saved(reactive_engine_config())
+
+        # Close modal
+        shiny::removeModal()
+
+        # Prepare output_file parameter (filename only) and handle output directory separately
+        output_file <- NULL
+        final_output_dir <- NULL
+
+        if (!is.null(output_filename) && nzchar(trimws(output_filename))) {
+          # Set filename only (without extension)
+          output_file <- trimws(output_filename)
+          # Store the target output directory
+          final_output_dir <- output_dir
+        }
+
+        # Generate report
+        shiny::showNotification(
+          "Engine saved. Generating report... This may take a few moments.",
+          duration = 5,
+          type = "message"
+        )
+
+        # Update engine with current reactive values
+        engine$Metadata <- reactive_metadata()
+        engine$Analyses <- reactive_analyses()
+        engine$Workflow <- reactive_workflow()
+        engine$Analyses$results <- reactive_results()
+
+        # Call the enhanced engine's report_quarto method
+        engine$report_quarto(
+          template = selected_file,
+          output_file = output_file,
+          output_dir = final_output_dir,
+          execute_dir = execute_dir
+        )
+
+        shiny::showNotification(
+          "Report generated successfully!",
+          duration = 5,
+          type = "message"
+        )
+      }, error = function(e) {
+        shiny::showNotification(
+          paste("Error:", conditionMessage(e)),
+          duration = 10,
+          type = "error"
+        )
+        shiny::removeModal()
+      })
     })
   })
 }

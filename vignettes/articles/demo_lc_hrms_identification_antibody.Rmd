@@ -14,7 +14,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
   %\VignetteIndexEntry{'Identification of Intact Monoclonal Antibody with LC-HRMS'}
   %\VignetteEngine{knitr::rmarkdown}
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 
@@ -53,8 +53,8 @@ options(
   )
 )
 
-#path <- "E:/example_files/isoft/240819_BVCZ"
-path <- "C:/Users/apoli/Documents/example_files/isoft/240819_BVCZ"
+path <- "demo_data/lc_dad_quantification"
+#path <- "C:/Users/apoli/Documents/example_files/isoft/240819_BVCZ"
 files <- list.files(path = path, pattern = "\\.d$", full.names = TRUE)[c(
   6:8,
   16:18

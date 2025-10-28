@@ -7,7 +7,7 @@
 \alias{get_analysis_classes.StatisticAnalyses}
 \alias{set_analysis_classes.StatisticAnalyses}
 \alias{get_concentrations.StatisticAnalyses}
-\alias{set_concentrations.MassSpecAnalyses}
+\alias{set_concentrations.StatisticAnalyses}
 \alias{info.StatisticAnalyses}
 \alias{add.StatisticAnalyses}
 \alias{remove.StatisticAnalyses}
@@ -33,7 +33,7 @@ StatisticAnalyses(
 
 \method{get_concentrations}{StatisticAnalyses}(x)
 
-\method{set_concentrations}{MassSpecAnalyses}(x, value)
+\method{set_concentrations}{StatisticAnalyses}(x, value)
 
 \method{info}{StatisticAnalyses}(x)
 
@@ -116,6 +116,8 @@ The \code{StatisticAnalyses} class is used for tabular data statistical analysis
 
 \item \code{get_concentrations(StatisticAnalyses)}: Get the concentration values of each analysis.
 
+\item \code{set_concentrations(StatisticAnalyses)}: Set the concentrations of the analyses, where the argument \code{value} must be a numeric vector with the same length as the number of analyses.
+
 \item \code{info(StatisticAnalyses)}: Get a data frame with the analyses, features, classes and concentrations.
 
 \item \code{add(StatisticAnalyses)}: Add new analyses to the \code{StatisticAnalyses} object, where the argument \code{value} must be a csv file or directly a data frame with the same column names as the existing analyses.
@@ -127,10 +129,5 @@ The \code{StatisticAnalyses} class is used for tabular data statistical analysis
 \item \code{`[[`(StatisticAnalyses) <- value}: Add new analyses to the \code{StatisticAnalyses} object, where the argument \code{value} must be a csv file or directly a data frame with the same column names as the existing analyses.
 
 \item \code{plot_data(StatisticAnalyses)}: Plot the data of the \code{StatisticAnalyses} object.
-
-}}
-\section{Functions}{
-\itemize{
-\item \code{set_concentrations(MassSpecAnalyses)}: Set the concentrations of the analyses, where the argument \code{value} must be a numeric vector with the same length as the number of analyses.
 
 }}

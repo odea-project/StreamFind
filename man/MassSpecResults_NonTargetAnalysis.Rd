@@ -443,7 +443,7 @@ as.MassSpecResults_NonTargetAnalysis(value)
   minIntensityFeatures = 100,
   useLoadedData = TRUE,
   mzClust = 0.003,
-  presence = TRUE,
+  presence = 0.8,
   top = 25,
   normalized = TRUE,
   groupBy = "groups",

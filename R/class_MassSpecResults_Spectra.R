@@ -1136,7 +1136,7 @@ get_spectra_peaks.MassSpecResults_Spectra <- function(
     )
   }
 
-  pks <- data.table::rbindlist(pks, fill = TRUE)
+  pks <- data.table::rbindlist(pks, idcol = "analysis", fill = TRUE)
 
   if (nrow(pks) == 0) {
     message("\U2717 Peaks not found for the analyses!")

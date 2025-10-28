@@ -47,6 +47,7 @@ This is a read-only field.}
 \item \href{#method-Engine-save}{\code{Engine$save()}}
 \item \href{#method-Engine-run}{\code{Engine$run()}}
 \item \href{#method-Engine-run_workflow}{\code{Engine$run_workflow()}}
+\item \href{#method-Engine-report_quarto}{\code{Engine$report_quarto()}}
 \item \href{#method-Engine-run_app}{\code{Engine$run_app()}}
 \item \href{#method-Engine-clone}{\code{Engine$clone()}}
 }
@@ -236,6 +237,34 @@ Runs all \link{ProcessingStep} objects in the \link{Workflow}.
 \if{html}{\out{<div class="r">}}\preformatted{Engine$run_workflow()}\if{html}{\out{</div>}}
 }
 
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-report_quarto"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-report_quarto}{}}}
+\subsection{Method \code{report_quarto()}}{
+Generates a Quarto report from the analysis results based on a predefined template .qmd file.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$report_quarto(
+  template = NULL,
+  output_file = NULL,
+  execute_dir = getwd(),
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{template}}{A string with the full file path to the Quarto (.qmd) template file.}
+
+\item{\code{output_file}}{A string with the output file path. If NULL, uses the template name with appropriate extension as defined in the template header.}
+
+\item{\code{execute_dir}}{A string with the directory where the report is executed. Default is the current working directory.}
+
+\item{\code{...}}{Additional arguments passed to quarto::quarto_render().}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Engine-run_app"></a>}}
