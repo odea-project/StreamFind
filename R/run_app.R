@@ -34,6 +34,7 @@ run_app <- function(onStart = NULL, options = list(), enableBookmarking = NULL, 
     warning("sortable package not installed!")
     return(invisible(self))
   }
+  library(StreamFind)
   dots <- list(...)
   if ("file" %in% names(dots)) {
     file <- dots$file

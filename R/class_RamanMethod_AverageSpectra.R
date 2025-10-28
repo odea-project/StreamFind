@@ -99,7 +99,7 @@ run.RamanMethod_AverageSpectra_native <- function(x, engine = NULL) {
     if (length(spec_obj$chrom_peaks) > 0) {
       if (!"id" %in% colnames(spectra)) {
         warning(
-          "Filter spectra to keep only from chromatographic peaks 
+          "Filter spectra to keep only from chromatographic peaks
           using RamanMethod_FilterSpectra_native! Not done."
         )
         return(FALSE)
@@ -114,6 +114,8 @@ run.RamanMethod_AverageSpectra_native <- function(x, engine = NULL) {
       warning("No chromatographic peaks found! Not done.")
       return(FALSE)
     }
+  } else {
+    spectra$chrom_peaks <- list()
   }
   if ("replicate" %in% groupCols) {
     spectra$analysis <- NULL

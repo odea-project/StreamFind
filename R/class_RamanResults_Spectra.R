@@ -6,7 +6,7 @@
 #' @param chrom_peaks A list where each element is a `data.table` representing the chromatographic peaks found in each spectrum, when a time dimension is present.
 #' @export
 #' @seealso [StreamFind::Results] for the parent class.
-#' 
+#'
 RamanResults_Spectra <- function(
   spectra = list(),
   is_averaged = FALSE,
@@ -46,9 +46,16 @@ validate_object.RamanResults_Spectra <- function(x) {
     }
   }
   if (length(x$chrom_peaks) > 0) {
-    checkmate::assert_true(length(x$spectra) == length(x$chrom_peaks))
-    for (chrom in x$chrom_peaks) {
-      checkmate::assert_data_frame(chrom)
+    if (!x$is_averaged) {
+      checkmate::assert_true(length(x$spectra) == length(x$chrom_peaks))
+      for (chrom in x$chrom_peaks) {
+        checkmate::assert_data_frame(chrom)
+      }
+    } else {
+      checkmate::assert_true(
+        all(unique(unlist(lapply(x$spectra, function(spec) spec$group))) %in%
+        unique(unlist(lapply(x$chrom_peaks, function(chrom) chrom$group))))
+      )
     }
   }
   NextMethod()
@@ -82,7 +89,7 @@ show.RamanResults_Spectra <- function(x) {
 #' @param x A `RamanResults_Spectra` object.
 #' @template arg-i
 #' @export
-#' 
+#'
 `[.RamanResults_Spectra` <- function(x, i) {
   x$spectra <- x$spectra[i]
   if (length(x$peaks) > 0) x$peaks <- x$peaks[i]
@@ -93,7 +100,7 @@ show.RamanResults_Spectra <- function(x) {
 #' @describeIn RamanResults_Spectra Extract a single analysis from the `RamanResults_Spectra` object. The argument `i` can be a character vector with the name of the analysis or a numeric vector with the index of the analysis to extract.
 #' @param x A `RamanResults_Spectra` object.
 #' @export
-#' 
+#'
 `[[.RamanResults_Spectra` <- function(x, i) {
   x$spectra <- x$spectra[i]
   if (length(x$peaks) > 0) x$peaks <- x$peaks[i]

@@ -57,10 +57,27 @@ ident_engine$load("ident_engine.rds")
 names(ident_engine$Analyses$results)
 names(ident_engine$Analyses$results[[1]]$peaks)
 
+# Raman Spectroscopy -----
+raman_engine <- RamanEngine$new(
+  metadata = list(
+    name = "Example Raman Spectroscopy Analysis",
+    author = "Ricardo Cunha",
+    date = Sys.time()
+  ),
+  analyses = list.files("demo_data/raman_quality_evaluation", pattern = "sif", full.names = TRUE)
+)
 
+
+
+raman_engine$save("raman_engine.rds")
+
+raman_engine <- RamanEngine$new()
+raman_engine$load("raman_engine.rds")
+
+names(raman_engine$Results)
 
 
 
 info()
 
-run_app()
+StreamFind::run_app()

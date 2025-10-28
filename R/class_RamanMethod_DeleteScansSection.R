@@ -81,7 +81,7 @@ run.RamanMethod_DeleteScansSection_native <- function(x, engine = NULL) {
       z
     })
   }
-  spec_obj$Spectra <- spec_list
+  spec_obj$spectra <- spec_list
   engine$Results <- spec_obj
   message(paste0("\U2713 ", "Spectra section deleted!"))
   invisible(TRUE)

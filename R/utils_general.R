@@ -9,10 +9,10 @@
 #' @return TRUE if environment is ready, FALSE otherwise
 #' @noRd
 .ensure_python_env <- function() {
-  if (!reticulate::py_available(initialize = FALSE)) {
-    warning("Python is not installed or not available.")
-    return(FALSE)
-  }
+  # if (!reticulate::py_available(initialize = FALSE)) {
+  #   warning("Python is not installed or not available.")
+  #   return(FALSE)
+  # }
   if (!reticulate::virtualenv_exists("r-StreamFind")) {
     tryCatch({
       reticulate::virtualenv_create("r-StreamFind")
@@ -153,11 +153,11 @@
 }
 
 #' @title .check_analyses_argument
-#' 
+#'
 #' @description Checks the analyses argument as a character/integer vector to match analyses names.
 #' Returns a valid character vector with analysis names or `NULL` for non-matching. If `analyses`
 #' is `NULL`, returns all analysis names.
-#' 
+#'
 #' @noRd
 .check_analyses_argument <- function(obj, value) {
   if (is.null(value)) {
@@ -181,9 +181,9 @@
 }
 
 #' @title .convert_to_json
-#' 
+#'
 #' @description Converts an object to JSON format.
-#' 
+#'
 #' @noRd
 .convert_to_json <- function(x) {
   jsonlite::toJSON(
@@ -216,13 +216,13 @@
     brewer.pal(8, "BuPu")[6],
     brewer.pal(8, "Dark2")
   )
-  
+
   Ncol <- length(unique(obj))
-  
+
   if (Ncol > 18) {
     colors <- colorRampPalette(colors)(Ncol)
   }
-  
+
   if (length(unique(obj)) < length(obj)) {
     Vcol <- colors[seq_len(Ncol)]
     Ncol <- length(obj)
@@ -236,13 +236,13 @@
     Vcol <- colors[seq_len(Ncol)]
     names(Vcol) <- obj
   }
-  
+
   Vcol
 }
 
 #' @noRd
 .make_colorBy_varkey <- function(data = NULL, colorBy = NULL, legendNames = NULL) {
-  
+
   if (!"id" %in% colnames(data)) {
     if ("feature" %in% colnames(data)) {
       data$id <- data$feature
@@ -252,20 +252,20 @@
       data$id <- ""
     }
   }
-  
+
   if (!"analysis" %in% colnames(data)) data$analysis <- ""
-  
+
   data$id <- factor(data$id)
-  
+
   data$analysis <- factor(data$analysis)
-  
+
   if ("level" %in% colnames(data)) {
     if (!is.character(data$level)) {
       data$level <- paste("MS", data$level, sep = "")
     }
     data$level <- factor(data$level)
   }
-  
+
   if ("polarity" %in% colnames(data)) {
     if (!is.character(data$polarity)) {
       pol_key <- c("positive", "negative", "not defined")
@@ -274,74 +274,74 @@
       data$polarity <- pol_key[data$polarity]
     }
   }
-  
+
   if ("analyses" %in% colorBy) {
     varkey <- data$analysis
   } else if (
-    ("targets+analyses" %in% colorBy || "analyses+targets" %in% colorBy) && 
+    ("targets+analyses" %in% colorBy || "analyses+targets" %in% colorBy) &&
     "analysis" %in% colnames(data)) {
-    
+
     if ("name" %in% colnames(data) & isTRUE(legendNames)) {
       varkey <- paste0(data$name, " - ", data$analysis)
     } else {
       varkey <- paste0(data$id, " - ", data$analysis)
     }
-    
+
   } else if ("replicates" %in% colorBy && "replicate" %in% colnames(data)) {
     varkey <- data$replicate
-    
+
   } else if (
     ("targets+replicates" %in% colorBy || "replicates+targets" %in% colorBy) &&
     "replicate" %in% colnames(data)) {
-    
+
     if ("name" %in% colnames(data) & isTRUE(legendNames)) {
       varkey <- paste0(data$name, " - ", data$replicate)
     } else {
       varkey <- paste0(data$id, " - ", data$replicate)
     }
-    
+
   } else if ("polarities" %in% colorBy && "polarity" %in% colnames(data)) {
     varkey <- data$polarity
-    
+
   } else if (
     ("targets+polarities" %in% colorBy || "polarities+targets" %in% colorBy) &&
     "polarity" %in% colnames(data)) {
-    
+
     if ("name" %in% colnames(data) & isTRUE(legendNames)) {
       varkey <- paste0(data$name, " - ", data$polarity)
     } else {
       varkey <- paste0(data$id, " - ", data$polarity)
     }
-    
+
   } else if (
     ("analyses+polarities" %in% colorBy || "polarities+analyses" %in% colorBy) &&
     "polarity" %in% colnames(data)) {
-    
+
     varkey <- paste0(data$analysis, " - ", data$polarity)
-    
+
   } else if (
     ("replicates+polarities" %in% colorBy || "polarities+replicates" %in% colorBy) &&
     "polarity" %in% colnames(data)) {
-    
+
     varkey <- paste0(data$replicate, " - ", data$polarity)
-    
+
   } else if ("levels" %in% colorBy && "level" %in% colnames(data)) {
     varkey <- data$level
-    
+
   } else if (
     ("levels+polarities" %in% colorBy || "polarities+levels" %in% colorBy) &&
     "polarity" %in% colnames(data) && "level" %in% colnames(data)) {
-    
+
     varkey <- paste0(data$level, " - ", data$polarity)
-    
+
   } else if (is.character(legendNames) && length(legendNames) == length(unique(data$id))) {
     leg <- legendNames
     names(leg) <- unique(data$id)
     varkey <- leg[data$id]
-    
+
   } else if ("name" %in% colnames(data) && isTRUE(legendNames)) {
     varkey <- data$name
-    
+
   } else {
     varkey <- data$id
   }
@@ -478,7 +478,7 @@
       sprintf("INSERT OR IGNORE INTO %s VALUES ('%s', :d)", category, hash),
       params = df
     )
-    
+
     DBI::dbExecute(
       db,
       sprintf("UPDATE %s SET data=(:d) WHERE changes()=0 AND hash='%s'", category, hash),
@@ -509,7 +509,7 @@
       db,
       sprintf("SELECT 1 FROM sqlite_master WHERE type='table' AND name='%s'", category)
     )
-  ) 
+  )
   if (size_db > 0) {
     if (length(hashes) == 1) {
       df <- DBI::dbGetQuery(db, sprintf("SELECT data FROM %s WHERE hash='%s'", category, hashes))
@@ -561,9 +561,9 @@
 }
 
 #' @title .info_cache_sqlite
-#' 
+#'
 #' @description Cache interface adapted from patRoon package.
-#' 
+#'
 #' @noRd
 .info_cache_sqlite <- function(file = "cache.sqlite") {
   if (!file.exists(file)) {
@@ -575,12 +575,12 @@
     tableRows <- unlist(
       sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab)))
     )
-    
+
     if (length(tables) == 0) {
       message("\U2139 Cache file is empty!")
       return(data.table::data.table())
     }
-    
+
     data.table::data.table(
       category = tables,
       size = tableRows
@@ -591,34 +591,34 @@
     # combined_string <- paste(
     #   combined_string, "all (removes complete cache database)\n",
     #   sep = ""
-    # )  
+    # )
     # combined_string
   }
 }
 
 #' @title .clear_cache_sqlite
-#' 
+#'
 #' @description Cache interface adapted from patRoon package.
-#' 
+#'
 #' @noRd
 .clear_cache_sqlite <- function(what = NULL, file = "cache.sqlite") {
-  
+
   valid <- any(
     c(
       checkmate::test_character(what, null.ok = TRUE),
       checkmate::test_integer(what, null.ok = TRUE)
     )
   )
-  
+
   if (!valid) {
     stop("Invalid input for 'what'. Please provide a character vector or an integer vector.")
   }
-  
+
   if (!file.exists(file)) {
     message("\U2139 No cache file found, nothing to do.")
-    
+
   } else if ("all" %in% what) {
-    
+
     if (unlink(file) != 0) {
       gc()
       if (unlink(file) != 0) {
@@ -630,7 +630,7 @@
   } else {
     db <- .openCacheDBScope(file = file)
     tables <- DBI::dbListTables(db)
-    
+
     .get_info_string <- function(tables, db, mode = "message", el = NULL) {
       tableRows <- unlist(
         sapply(tables, function(tab) DBI::dbGetQuery(db, sprintf("SELECT Count(*) FROM %s", tab)))
@@ -638,7 +638,7 @@
       idx <- seq_len(length(tables))
       formatted_strings <- sprintf("%d: %s (%d rows)\n", idx, tables, tableRows)
       combined_string <- paste(formatted_strings, collapse = "")
-      
+
       if (mode %in% "message") {
         combined_string <- paste(
           "Please specify which cache you want to remove. Available are:\n",
@@ -652,16 +652,16 @@
           sep = ""
         )
       }
-      
+
       combined_string
     }
-    
+
     if (length(tables) == 0) {
       message("\U2139 Cache file is empty, nothing to do.")
-      
+
     } else if (is.null(what)) {
       message(.get_info_string(tables, db))
-      
+
     } else {
       if (is.integer(what)) {
         if (any(what < 1) || any(what > length(tables))) {
@@ -670,12 +670,12 @@
         }
         what <- tables[what]
       }
-      
+
       if (length(what) == 0) {
         message(.get_info_string(tables, db))
         return(invisible(NULL))
       }
-      
+
       for (el in what) {
         matchedTables <- grep(el, tables, value = TRUE)
         if (length(matchedTables) > 0) {
@@ -725,9 +725,9 @@
 }
 
 #' @title .info_cache_rds
-#' 
+#'
 #' @description Cache interface for rds files in a given folder.
-#' 
+#'
 #' @noRd
 .info_cache_rds <- function(folder = "cache") {
   files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
@@ -749,16 +749,16 @@
 }
 
 #' @title .clear_cache_rds
-#' 
+#'
 #' @description Cache interface for rds files in a given folder.
-#' 
+#'
 #' @noRd
 .clear_cache_rds <- function(what = NULL, folder = "cache") {
   if (!dir.exists(folder)) {
     warning("Folder does not exist!")
     return(invisible(NULL))
   }
-  
+
   if ("all" %in% what) {
     files <- list.files(folder, pattern = ".rds$", full.names = TRUE)
     if (length(files) > 0) {
@@ -772,7 +772,7 @@
     for (i in what) {
       remove_files <- c(remove_files, all_files[grepl(i, all_files)])
     }
-    
+
     if (length(remove_files) > 0) {
       file.remove(remove_files)
     } else {

@@ -1,0 +1,435 @@
+---
+title: "Isoft Publication Quantification with SEC-CERS"
+author: "Ricardo Cunha"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+toc: true
+format:
+  html:
+    grid:
+      sidebar-width: 300px
+      body-width: 1200px
+      margin-width: 300px
+      gutter-width: 1.5rem
+    other-links:
+      - text: StreamFind
+        href: https://odea-project.github.io/StreamFind/
+        icon: github
+    html-math-method: katex
+    theme: journal
+    code-tools: true
+    anchor-sections: true
+    code-fold: true
+    code-overflow: scroll
+    code-line-numbers: false
+    code-copy: true
+    cap-location: top
+    self-contained: true
+    embed-resources: true
+    toc: true
+    toc-location: left
+execute:
+  warning: false
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+options(DT.options = list(
+  dom = "lfrtip",
+  autoWidth = TRUE,
+  pageLength = 10,
+  lengthMenu = c(10, 20, 50, 75, 100),
+  initComplete = htmlwidgets::JS(
+    "function(settings, json) {",
+    "$(this.api().table().body()).css({'font-size': '12px'});",
+    "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+    "}"
+  )
+))
+```
+
+```{r}
+#| label: libraries
+#| include: false
+
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(DT)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(StreamFind)
+```
+
+```{r}
+#| label: data
+#| code-fold: true
+
+path <- "E:/iSoft/ABC_StreamFind_Raman_MS"
+#path <- "C:/Users/apoli/Documents/example_files/isoft/ABC_StreamFind_Raman_MS"
+rfiles <- list.files(path = paste0(path, "/1_Quantification"), pattern = "\\.sif$", full.names = TRUE)
+```
+
+# Raman Spectroscopy
+
+```{r}
+#| label: raman-engine
+#| code-fold: true
+
+raman <- StreamFind::RamanEngine$new(
+  analyses = rfiles
+)
+
+raman$analyses$replicates <- c(
+  rep(
+    c(
+      "cal_01",
+      "cal_02",
+      "cal_04",
+      "cal_08",
+      "cal_12",
+      "cal_16"
+    ),
+    3
+  )
+)
+
+raman$analyses$concentrations <- (rep(c(1, 2, 4, 8, 12, 16), 3))
+
+raman_info <- raman$analyses$info
+raman_info$file <- raman$analyses$files[raman_info$analysis]
+
+DT::datatable(raman_info)
+```
+
+<br>
+<br>
+
+## Workflow
+
+```{r}
+#| label: raman-workflow
+#| code-fold: true
+
+plot_raw_chroms <- raman$plot_chromatograms(
+  analyses = 1:6, colorBy = "replicates"
+)
+
+raman$run(
+  RamanSettings_AddShiftValues_native(
+    mode = "analyses",
+    index = 1
+  )
+)
+
+raman$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 0,
+    rtmax = 10
+  )
+)
+
+raman$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    shiftmin = -100,
+    shiftmax = 300
+  )
+)
+
+raman$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    shiftmin = 2700,
+    shiftmax = 3000
+  )
+)
+
+raman$run(
+  RamanSettings_BinSpectra_StreamFind(
+    binNames = "rt",
+    binValues = 10,
+    byUnit = FALSE
+  )
+)
+
+raman$run(
+  RamanSettings_SubtractSpectraSection_StreamFind(
+    sectionVal = "rt",
+    sectionWindow = c(20, 200)
+  )
+)
+
+plot_chroms_blk <- raman$plot_chromatograms(
+  analyses = 1:6, colorBy = "replicates"
+)
+
+raman$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 0,
+    rtmax = 300
+  )
+)
+
+raman$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    rtmin = 700,
+    rtmax = 1000
+  )
+)
+
+raman$run(
+  RamanSettings_SmoothSpectra_savgol(
+    fl = 11,
+    forder = 2,
+    dorder = 0
+  )
+)
+
+raman$run(
+  RamanSettings_CorrectSpectraBaseline_baseline_als(
+    lambda = 3,
+    p = 0.01,
+    maxit = 10
+  )
+)
+
+raman$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    shiftmin = -100,
+    shiftmax = 400
+  )
+)
+
+raman$run(
+  RamanSettings_DeleteSpectraSection_StreamFind(
+    shiftmin = 2350,
+    shiftmax = 3000
+  )
+)
+
+plot_chroms_corrected <- raman$plot_chromatograms(
+  analyses = 1:6, colorBy = "analyses"
+)
+
+raman$run(
+  RamanSettings_FindChromPeaks_LocalMaxima(
+    minWidth = 10,
+    maxWidth = 30,
+    minHeight = 6000
+  )
+)
+
+plot_chrom_peaks <- plot_chromatograms_peaks(
+  raman$analyses,
+  analyses = 1:6,
+  colorBy = "analyses"
+)
+
+raman$run(
+  RamanSettings_GroupPeaks_native(
+    fillMissingPeaks = TRUE
+  )
+)
+
+plot_chrom_peaks_grouped <- plot_chromatograms_peaks(
+  raman$analyses,
+  analyses = 1:6,
+  colorBy = "analyses"
+)
+
+raman$run(
+  RamanSettings_FilterSpectra_StreamFind(
+    onlyChromPeaksSpectra = TRUE
+  )
+)
+
+plot_chrom_peaks_onlypeaks <- plot_chromatograms_peaks(
+  raman$analyses,
+  analyses = 1:6,
+  colorBy = "analyses"
+)
+
+plot_spectra_peaks_analyses <- raman$plot_spectra(colorBy = "analyses+targets")
+
+raman$run(
+  RamanSettings_AverageSpectra_StreamFind(
+    by = "replicates+chrom_peaks"
+  )
+)
+
+```
+
+```{r}
+#| label: raman-workflow-print
+#| code-fold: true
+
+raman$print_workflow()
+```
+
+### Raw Chromatograms
+
+```{r}
+#| label: raman-plot-raw-chroms
+#| code-fold: true
+
+plot_raw_chroms
+```
+
+### Blank Subtraction
+
+```{r}
+#| label: raman-plot-chroms-blk
+#| code-fold: true
+
+plot_chroms_blk
+```
+
+### Corrected Chromatograms
+
+```{r}
+#| label: raman-plot-chroms-corrected
+#| code-fold: true
+
+plot_chroms_corrected
+```
+
+### Peaks
+
+```{r}
+#| label: raman-plot-chroms-peaks
+#| code-fold: true
+
+plot_chrom_peaks
+```
+
+### Peaks Grouped and Filled
+
+```{r}
+#| label: raman-plot-chroms-peaks-grouped
+#| code-fold: true
+
+plot_chrom_peaks_grouped
+```
+
+### Peak Chromatograms
+
+```{r}
+#| label: raman-plot-chroms-peaks-only
+#| code-fold: true
+
+plot_chrom_peaks_onlypeaks
+```
+
+### Peak Spectra (per analyses)
+
+```{r}
+#| label: raman-plot-spectra-peaks-analyses
+#| code-fold: true
+
+plot_spectra_peaks_analyses
+```
+
+### Peak Spectra (per replicate)
+
+```{r}
+#| label: raman-plot-spectra-peaks-replicates
+#| code-fold: true
+
+raman$plot_spectra(colorBy = "replicates+targets")
+```
+
+## MCRALS
+
+### API (group 2_411)
+
+```{r}
+#| label: statistic-engine
+#| code-fold: true
+
+statistic <- StreamFind::StatisticEngine$new(
+  analyses = get_spectra_matrix(raman$analyses, targets = "2_411")
+)
+
+statistic
+```
+
+```{r}
+#| label: statistic-workflow
+#| code-fold: true
+
+statistic$run(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 2))
+
+statistic$run(
+  StatisticSettings_Quantify_mcrals(
+    concentrations = c(1, 2, 4, NA_real_, 12, 16)
+  )
+)
+```
+
+```{r}
+#| label: statistic-plot-model
+#| code-fold: true
+
+plot(statistic$model)
+```
+
+```{r}
+#| label: statistic-quantification
+#| code-fold: true
+
+statistic$quantification@quantities
+```
+
+```{r}
+clear_cache("results_Quantify_mcrals")
+clear_cache("results_MakeModel_mcrals_mdatools")
+```
+
+### Excipient (group 1_621)
+
+```{r}
+#| label: statistic2-engine
+#| code-fold: true
+
+statistic2 <- StreamFind::StatisticEngine$new(
+  analyses = get_spectra_matrix(raman$analyses, targets = "1_621")
+)
+
+statistic2
+```
+
+```{r}
+#| label: statistic2-workflow
+#| code-fold: true
+
+statistic2$run(StatisticSettings_MakeModel_mcrals_mdatools(ncomp = 2))
+
+statistic2$run(
+  StatisticSettings_Quantify_mcrals(
+    concentrations = c(1, 2, 4, NA_real_, 12, 16)
+  )
+)
+```
+
+```{r}
+#| label: statistic2-plot-model
+#| code-fold: true
+
+plot(statistic2$model)
+```
+
+```{r}
+#| label: statistic2-quantification
+#| code-fold: true
+
+statistic2$quantification@quantities
+```
+
+```{r}
+clear_cache("results_Quantify_mcrals")
+clear_cache("results_MakeModel_mcrals_mdatools")
+```
+

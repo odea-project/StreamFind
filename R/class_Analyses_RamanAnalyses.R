@@ -1011,7 +1011,7 @@ plot_spectra_baseline.RamanAnalyses <- function(
 #' @template arg-interactive
 #' @template arg-renderEngine
 #' @export
-#' 
+#'
 plot_chromatograms.RamanAnalyses <- function(
   x,
   analyses = NULL,
@@ -1143,7 +1143,7 @@ plot_chromatograms.RamanAnalyses <- function(
 #' @template arg-raman-targets
 #' @template arg-raman-rt
 #' @export
-#' 
+#'
 get_chromatograms_peaks.RamanAnalyses <- function(
   x,
   analyses = NULL,
@@ -1223,7 +1223,7 @@ get_chromatograms_peaks.RamanAnalyses <- function(
 #' @template arg-interactive
 #' @template arg-renderEngine
 #' @export
-#' 
+#'
 plot_chromatograms_peaks.RamanAnalyses <- function(
   x,
   analyses = NULL,
@@ -1556,11 +1556,11 @@ plot_chromatograms_peaks.RamanAnalyses <- function(
               }
               tryCatch(
                 {
-                  reticulate::py_install("orpl", envname = "r-StreamFind")
+                  reticulate::py_install("orplib", envname = "r-StreamFind")
                 },
                 error = function(e) {
                   warning(
-                    "Error installing Python module 'orpl'! The error is ",
+                    "Error installing Python module 'orplib'! The error is ",
                     e
                   )
                   return(NULL)
@@ -1568,7 +1568,7 @@ plot_chromatograms_peaks.RamanAnalyses <- function(
               )
               if (!reticulate::py_module_available("orpl")) {
                 warning(
-                  "Python module 'orpl' not available for reading .sif files!"
+                  "Python module 'orpl' not available for reading .sif files! Please install 'orplib' package."
                 )
                 return(NULL)
               }

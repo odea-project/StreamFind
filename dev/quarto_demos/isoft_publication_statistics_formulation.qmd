@@ -1,0 +1,323 @@
+---
+title: "Isoft Publication Quality Control Evaluation"
+author: "Ricardo Cunha"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+toc: true
+format:
+  html:
+    grid:
+      sidebar-width: 300px
+      body-width: 1200px
+      margin-width: 300px
+      gutter-width: 1.5rem
+    other-links:
+      - text: StreamFind
+        href: https://odea-project.github.io/StreamFind/
+        icon: github
+    html-math-method: katex
+    theme: journal
+    code-tools: true
+    anchor-sections: true
+    code-fold: true
+    code-overflow: scroll
+    code-line-numbers: false
+    code-copy: true
+    cap-location: top
+    self-contained: true
+    embed-resources: true
+    toc: true
+    toc-location: left
+execute:
+  warning: false
+editor_options:
+  chunk_output_type: console
+---
+
+```{r}
+#| label: setup
+#| include: false
+
+options(DT.options = list(
+  dom = "lfrtip",
+  autoWidth = TRUE,
+  pageLength = 10,
+  lengthMenu = c(10, 20, 50, 75, 100),
+  initComplete = htmlwidgets::JS(
+    "function(settings, json) {",
+    "$(this.api().table().body()).css({'font-size': '12px'});",
+    "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+    "}"
+  )
+))
+```
+
+```{r}
+#| label: libraries
+#| include: false
+
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(DT)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(StreamFind)
+```
+
+```{r}
+#| label: data
+#| code-fold: true
+
+path <- "demo_data/raman_quality_evaluation"
+#path <- "C:/Users/apoli/Documents/example_files/isoft/ABC_StreamFind_Raman_MS"
+
+msfiles <- list.files(
+  path = path,
+  pattern = "\\.d$|\\.mzML$",
+  full.names = TRUE,
+  recursive = TRUE
+)
+
+ramanfiles <- list.files(
+  path = path,
+  pattern = "\\.sif$",
+  full.names = TRUE,
+  recursive = FALSE
+)
+```
+
+-----
+
+```{r}
+#| label: raman-engine
+#| code-fold: true
+
+raman <- StreamFind::RamanEngine$new(
+  analyses = ramanfiles
+)
+
+raman$Analyses <- set_replicate_names(
+  raman$Analyses,
+  c(
+    rep("Avastin", 3),
+    #rep("Zirabev", 3),
+    rep("Darzalex", 3),
+    rep("Rixathon", 3)
+  )
+)
+
+raman_info <- info(raman$Analyses)
+
+DT::datatable(raman_info)
+```
+
+## Workflow
+
+```{r}
+#| label: raman-workflow
+#| code-fold: true
+
+# plot_raw_chroms <- raman$plot_chromatograms(
+#   colorBy = "replicates"
+# )
+
+raman$run(
+  RamanMethod_AddShiftValues_native(
+    mode = "analyses",
+    index = 1
+  )
+)
+
+raman$run(
+  RamanMethod_DeleteScansSection_native(
+    min = 0,
+    max = 10
+  )
+)
+
+raman$run(
+  RamanMethod_DeleteSpectraSection_native(
+    min = -100,
+    max = 500
+  )
+)
+
+raman$run(
+  RamanMethod_DeleteSpectraSection_native(
+    min = 1800,
+    max = 3000
+  )
+)
+
+raman$run(
+  RamanMethod_BinSpectra_StreamFind(
+    binNames = "rt",
+    binValues = 10,
+    byUnit = FALSE
+  )
+)
+
+raman$run(
+  RamanMethod_SubtractScansSection_native(
+    sectionWindow = c(20, 200)
+  )
+)
+
+# plot_chroms_blk <- raman$plot_chromatograms(
+#   colorBy = "replicates"
+# )
+
+raman$run(
+  RamanMethod_DeleteScansSection_native(
+    min = 0,
+    max = 300
+  )
+)
+
+raman$run(
+  RamanMethod_SubtractScansSection_native(
+    sectionWindow = c(700, 1000)
+  )
+)
+
+raman$run(
+  RamanMethod_FindChromPeaks_LocalMaxima(
+    minWidth = 3,
+    maxWidth = 15,
+    minHeight = 20000
+  )
+)
+
+# plot_chrom_peaks <- plot_chromatograms_peaks(
+#   raman$analyses,
+#   colorBy = "analyses"
+# )
+
+raman$run(
+  RamanMethod_GroupPeaks_native(
+    fillMissingPeaks = TRUE
+  )
+)
+
+# plot_chrom_peaks_grouped <- plot_chromatograms_peaks(
+#   raman$analyses,
+#   colorBy = "analyses"
+# )
+
+raman$run(
+  RamanMethod_FilterSpectra_native(
+    onlyChromPeaksSpectra = TRUE
+  )
+)
+
+plot_chrom_peaks_onlypeaks <- plot_chromatograms_peaks(
+  raman$Analyses,
+  colorBy = "analyses"
+)
+
+raman$run(
+  RamanMethod_CorrectSpectraBaseline_baseline_als(
+    lambda = 3,
+    p = 0.01,
+    maxit = 10
+  )
+)
+
+# raman$run(
+#   RamanMethod_AverageSpectra_native(
+#     by = "replicates+chrom_peaks"
+#   )
+# )
+```
+
+```{r}
+#| label: raman-workflow-print
+#| code-fold: true
+
+show(raman$Workflow)
+```
+
+### Raw Chromatograms
+
+```{r}
+#| label: raman-plot-raw-chroms
+#| code-fold: true
+
+plot_raw_chroms
+```
+
+### Blank Subtraction
+
+```{r}
+#| label: raman-plot-chroms-blk
+#| code-fold: true
+
+plot_chroms_blk
+```
+
+### Peaks
+
+```{r}
+#| label: raman-plot-chroms-peaks
+#| code-fold: true
+
+plot_chrom_peaks
+```
+
+### Peaks Grouped and Filled
+
+```{r}
+#| label: raman-plot-chroms-peaks-grouped
+#| code-fold: true
+
+plot_chrom_peaks_grouped
+```
+
+### Peak Chromatograms
+
+```{r}
+#| label: raman-plot-chroms-peaks-only
+#| code-fold: true
+
+plot_chrom_peaks_onlypeaks
+```
+
+### Peak Spectra (per replicate)
+
+```{r}
+#| label: raman-plot-spectra-peaks-replicates
+#| code-fold: true
+
+raman$plot_spectra(colorBy = "replicates+targets")
+```
+
+# PCA
+
+```{r}
+#| label: statistic-engine
+#| code-fold: true
+
+statistic <- StreamFind::StatisticEngine$new(
+  analyses = get_spectra_matrix(raman$analyses)
+)
+
+statistic
+```
+
+```{r}
+#| label: statistic-workflow
+#| code-fold: true
+
+statistic$run(StatisticSettings_MakeModel_pca_mdatools(center = TRUE, ncomp = 2))
+```
+
+```{r}
+#| label: statistic-plot-model
+#| code-fold: true
+
+plot_data(statistic$analyses)
+plot(statistic$model)
+plot_residuals(statistic$model)
+```
+

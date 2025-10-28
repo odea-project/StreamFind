@@ -32,7 +32,7 @@ params:
 
 ```{r}
 #| include: false
-engine <- load_template_engine(params$engine_rds)
+engine <- StreamFind::load_template_engine(params$engine_rds)
 ```
 
 ```{r}

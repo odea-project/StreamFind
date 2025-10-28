@@ -11,7 +11,7 @@
 #' @export
 load_template_engine <- function(
   engine_rds_path,
-  packages = c("knitr", "kableExtra", "data.table", "DT", "magrittr", "ggplot2", "plotly")
+  packages = c("StreamFind", "knitr", "kableExtra", "data.table", "DT", "magrittr", "ggplot2", "plotly")
 ) {
   options(
     DT.options = list(
