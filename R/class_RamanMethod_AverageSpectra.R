@@ -115,7 +115,7 @@ run.RamanMethod_AverageSpectra_native <- function(x, engine = NULL) {
       return(FALSE)
     }
   } else {
-    spectra$chrom_peaks <- list()
+    spec_obj$chrom_peaks <- list()
   }
   if ("replicate" %in% groupCols) {
     spectra$analysis <- NULL

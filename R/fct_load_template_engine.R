@@ -15,7 +15,7 @@ load_template_engine <- function(
 ) {
   options(
     DT.options = list(
-      dom = "lfrtip",
+      dom = "Blfrtip",
       autoWidth = TRUE,
       pageLength = 10,
       lengthMenu = c(10, 20, 50, 75, 100),

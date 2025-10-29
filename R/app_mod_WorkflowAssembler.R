@@ -1011,7 +1011,7 @@
                 "Save & Generate Report",
                 class = "btn-primary"
               ),
-              shiny::modalButton("Cancel", class = "btn-secondary")
+              shiny::modalButton("Cancel")
             ),
             easyClose = FALSE
           )

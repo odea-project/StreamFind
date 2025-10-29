@@ -1,6 +1,6 @@
 #' @export
 #' @noRd
-.mod_WorkflowAssembler_Result_UI.MassSpecResults_Spectra <- function(
+.mod_WorkflowAssembler_Result_UI.RamanResults_Spectra <- function(
   x,
   id,
   ns
@@ -168,13 +168,13 @@
                     class = "status-item",
                     shiny::span(
                       class = "status-label",
-                      shiny::icon("atom", class = "mr-2"),
-                      "Is Neutralized?"
+                      shiny::icon("clock", class = "mr-2"),
+                      "Has Chrom Peaks?"
                     ),
                     shiny::span(
                       class = "status-value",
                       shiny::uiOutput(
-                        ns_full("is_neutralized_ui"),
+                        ns_full("has_chrom_peaks_ui"),
                         inline = TRUE
                       )
                     )
@@ -200,15 +200,12 @@
                     class = "status-item",
                     shiny::span(
                       class = "status-label",
-                      shiny::icon("bolt", class = "mr-2"),
-                      "Has Charges?"
+                      shiny::icon("clock", class = "mr-2"),
+                      "Total Chrom Peaks"
                     ),
                     shiny::span(
                       class = "status-value",
-                      shiny::uiOutput(
-                        ns_full("has_charges_ui"),
-                        inline = TRUE
-                      )
+                      shiny::textOutput(ns_full("total_chrom_peaks"), inline = TRUE)
                     )
                   ),
                   # Total Peaks
@@ -229,12 +226,12 @@
                     class = "status-item",
                     shiny::span(
                       class = "status-label",
-                      shiny::icon("bolt", class = "mr-2"),
-                      "Total Charges"
+                      shiny::icon("mountain", class = "mr-2"),
+                      "Total Peaks"
                     ),
                     shiny::span(
                       class = "status-value",
-                      shiny::textOutput(ns_full("total_charges"), inline = TRUE)
+                      shiny::textOutput(ns_full("total_peaks"), inline = TRUE)
                     )
                   )
                 )
@@ -247,7 +244,7 @@
                 shiny::div(
                   class = "d-flex justify-content-center align-items-center",
                   style = "height: 60px; background-color: white; padding: 10px;",
-                  shiny::h4("MassSpecResults_Spectra Summary", style = "margin: 0; color: #5a5c69;")
+                  shiny::h4("RamanResults_Spectra Summary", style = "margin: 0; color: #5a5c69;")
                 ),
                 # Table Container
                 shiny::column(
@@ -312,23 +309,9 @@
                   shiny::selectInput(
                     ns_full("spectra_plot_colorby"),
                     label = NULL,
-                    choices = c("analyses", "replicates"),
+                    choices = c("analyses", "replicates", "analyses+targets", "replicates+targets"),
                     selected = "analyses",
-                    width = "120px"
-                  )
-                ),
-                shiny::div(
-                  style = "display: flex; align-items: center; gap: 5px;",
-                  shiny::tags$label(
-                    "X-axis:",
-                    style = "font-size: 13px; color: #5a5c69; margin: 0;"
-                  ),
-                  shiny::selectInput(
-                    ns_full("spectra_xval"),
-                    label = NULL,
-                    choices = c("mz", "rt", "mass", "mobility"),
-                    selected = "mz",
-                    width = "100px"
+                    width = "150px"
                   )
                 )
               ),
@@ -463,23 +446,9 @@
                   shiny::selectInput(
                     ns_full("peaks_plot_colorby"),
                     label = NULL,
-                    choices = c("analyses", "replicates"),
+                    choices = c("analyses", "replicates", "analyses+targets", "replicates+targets"),
                     selected = "analyses",
-                    width = "120px"
-                  )
-                ),
-                shiny::div(
-                  style = "display: flex; align-items: center; gap: 5px;",
-                  shiny::tags$label(
-                    "X-axis:",
-                    style = "font-size: 13px; color: #5a5c69; margin: 0;"
-                  ),
-                  shiny::selectInput(
-                    ns_full("peaks_xval"),
-                    label = NULL,
-                    choices = c("mz", "mass", "mobility"),
-                    selected = "mz",
-                    width = "100px"
+                    width = "150px"
                   )
                 )
               ),
@@ -565,10 +534,10 @@
           )
         ),
 
-        # MARK: Charges Tab
-        ### Charges Tab ----
+        # MARK: Chrom Peaks Tab
+        ### Chrom Peaks Tab ----
         shiny::tabPanel(
-          title = shiny::tagList(shiny::icon("bolt", class = "mr-2"), "Charges"),
+          title = shiny::tagList(shiny::icon("clock", class = "mr-2"), "Chrom Peaks"),
 
           shiny::div(
             class = "tab-content",
@@ -576,7 +545,7 @@
 
             # MARK: Top Controls Section
             shiny::div(
-              class = "charges-controls-bar",
+              class = "chrom-peaks-controls-bar",
               style = "
                 background-color: white;
                 padding: 10px 15px;
@@ -594,13 +563,13 @@
                   shiny::tags$input(
                     type = "checkbox",
                     class = "form-check-input",
-                    id = ns_full("charges_plot_interactive"),
+                    id = ns_full("chrom_peaks_plot_interactive"),
                     checked = TRUE,
                     style = "margin-right: 5px;"
                   ),
                   shiny::tags$label(
                     class = "form-check-label",
-                    `for` = ns_full("charges_plot_interactive"),
+                    `for` = ns_full("chrom_peaks_plot_interactive"),
                     "Interactive",
                     style = "font-size: 13px; color: #5a5c69; margin: 0;"
                   )
@@ -612,11 +581,11 @@
                     style = "font-size: 13px; color: #5a5c69; margin: 0;"
                   ),
                   shiny::selectInput(
-                    ns_full("charges_plot_colorby"),
+                    ns_full("chrom_peaks_plot_colorby"),
                     label = NULL,
-                    choices = c("analyses", "replicates"),
+                    choices = c("analyses", "replicates", "analyses+targets", "replicates+targets"),
                     selected = "analyses",
-                    width = "120px"
+                    width = "150px"
                   )
                 )
               ),
@@ -624,23 +593,23 @@
               shiny::div(
                 style = "display: flex; align-items: center; gap: 10px;",
                 shiny::downloadButton(
-                  ns_full("charges_plot_save"),
-                  "Export Charges (.csv)",
+                  ns_full("chrom_peaks_plot_save"),
+                  "Export Chrom Peaks (.csv)",
                   icon = shiny::icon("file-csv"),
                   class = "btn btn-outline-primary btn-sm"
                 )
               )
             ),
 
-            # MARK: Main Content - Charges
-            ### Main Content - Charges -----
+            # MARK: Main Content - Chrom Peaks
+            ### Main Content - Chrom Peaks -----
             shiny::div(
               style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px); padding: 10px;",
               shiny::div(
                 style = "height: 30px; position: relative;",
-                .app_util_create_maximize_button("charges_plot", ns_full),
+                .app_util_create_maximize_button("chrom_peaks_plot", ns_full),
               ),
-              shiny::uiOutput(ns_full("charges_plot_ui"))
+              shiny::uiOutput(ns_full("chrom_peaks_plot_ui"))
             )
           )
         )
@@ -651,7 +620,7 @@
 
 #' @export
 #' @noRd
-.mod_WorkflowAssembler_Result_Server.MassSpecResults_Spectra <- function(
+.mod_WorkflowAssembler_Result_Server.RamanResults_Spectra <- function(
   x,
   id,
   ns,
@@ -660,21 +629,20 @@
   reactive_config
 ) {
   shiny::moduleServer(id, function(input, output, session) {
-    # Reactive value to store the MassSpecResults_Spectra object
+    # Reactive value to store the RamanResults_Spectra object
     spectra_results <- shiny::reactiveVal()
 
-    # Initialize with the MassSpecResults_Spectra object from analyses$results
+    # Initialize with the RamanResults_Spectra object from analyses$results
     shiny::observe({
       analyses <- reactive_analyses()
-      if (!is.null(analyses) && !is.null(analyses$results$MassSpecResults_Spectra)) {
-        spectra_obj <- analyses$results$MassSpecResults_Spectra
+      if (!is.null(analyses) && !is.null(analyses$results$RamanResults_Spectra)) {
+        spectra_obj <- analyses$results$RamanResults_Spectra
         # Validate the spectra object structure
         if (is.list(spectra_obj) && "spectra" %in% names(spectra_obj)) {
           # Ensure required fields exist with default values if missing
           if (is.null(spectra_obj$is_averaged)) spectra_obj$is_averaged <- FALSE
-          if (is.null(spectra_obj$is_neutralized)) spectra_obj$is_neutralized <- FALSE
           if (is.null(spectra_obj$peaks)) spectra_obj$peaks <- list()
-          if (is.null(spectra_obj$charges)) spectra_obj$charges <- list()
+          if (is.null(spectra_obj$chrom_peaks)) spectra_obj$chrom_peaks <- list()
           spectra_results(spectra_obj)
         } else {
           spectra_results(NULL)
@@ -705,19 +673,6 @@
       )
     })
 
-    output$is_neutralized_ui <- shiny::renderUI({
-      spectra_obj <- spectra_results()
-      if (is.null(spectra_obj) || length(spectra_obj$is_neutralized) == 0) {
-        value <- FALSE
-      } else {
-        value <- spectra_obj$is_neutralized
-      }
-      shiny::tags$span(
-        class = ifelse(value, "status-yes", "status-no"),
-        ifelse(value, "YES", "NO")
-      )
-    })
-
     output$has_peaks_ui <- shiny::renderUI({
       spectra_obj <- spectra_results()
       if (is.null(spectra_obj)) {
@@ -731,12 +686,12 @@
       )
     })
 
-    output$has_charges_ui <- shiny::renderUI({
+    output$has_chrom_peaks_ui <- shiny::renderUI({
       spectra_obj <- spectra_results()
       if (is.null(spectra_obj)) {
         value <- FALSE
       } else {
-        value <- length(spectra_obj$charges) > 0
+        value <- length(spectra_obj$chrom_peaks) > 0
       }
       shiny::tags$span(
         class = ifelse(value, "status-yes", "status-no"),
@@ -751,10 +706,10 @@
       as.character(total)
     })
 
-    output$total_charges <- shiny::renderText({
+    output$total_chrom_peaks <- shiny::renderText({
       spectra_obj <- spectra_results()
-      if (is.null(spectra_obj) || length(spectra_obj$charges) == 0) return("0")
-      total <- sum(vapply(spectra_obj$charges, nrow, 0))
+      if (is.null(spectra_obj) || length(spectra_obj$chrom_peaks) == 0) return("0")
+      total <- sum(vapply(spectra_obj$chrom_peaks, nrow, 0))
       as.character(total)
     })
 
@@ -764,7 +719,7 @@
       spectra_obj <- spectra_results()
       if (is.null(spectra_obj)) {
         return(DT::datatable(
-          data.frame(Message = "No MassSpecResults_Spectra object available"),
+          data.frame(Message = "No RamanResults_Spectra object available"),
           options = list(dom = "t", ordering = FALSE, paging = FALSE),
           style = "bootstrap",
           class = "table table-bordered",
@@ -792,11 +747,11 @@
         Peak_Count = vapply(analyses_names, function(x) {
           if (x %in% names(spectra_obj$peaks)) nrow(spectra_obj$peaks[[x]]) else 0
         }, 0),
-        Has_Charges = vapply(analyses_names, function(x) {
-          x %in% names(spectra_obj$charges) && nrow(spectra_obj$charges[[x]]) > 0
+        Has_Chrom_Peaks = vapply(analyses_names, function(x) {
+          x %in% names(spectra_obj$chrom_peaks) && nrow(spectra_obj$chrom_peaks[[x]]) > 0
         }, FALSE),
-        Charge_Count = vapply(analyses_names, function(x) {
-          if (x %in% names(spectra_obj$charges)) nrow(spectra_obj$charges[[x]]) else 0
+        Chrom_Peak_Count = vapply(analyses_names, function(x) {
+          if (x %in% names(spectra_obj$chrom_peaks)) nrow(spectra_obj$chrom_peaks[[x]]) else 0
         }, 0),
         stringsAsFactors = FALSE
       )
@@ -919,41 +874,23 @@
         return(NULL)
       }
 
-      # Get peaks data to extract analysis/replicate info from selected rows
+      # Since we can't use get_spectra_peaks (doesn't exist for RamanResults_Spectra),
+      # we'll extract from the table directly
       tryCatch({
-        peaks_data <- get_spectra_peaks(spectra_obj)
-        if (is.null(peaks_data) || nrow(peaks_data) == 0) {
-          return(NULL)
-        }
-
-        # Extract unique analysis/replicate values from selected rows
-        selected_data <- peaks_data[selected_rows, ]
-        if ("analysis" %in% names(selected_data)) {
-          return(unique(selected_data$analysis))
-        } else if ("replicate" %in% names(selected_data)) {
-          return(unique(selected_data$replicate))
+        # Get available analyses that have peaks
+        analyses_with_peaks <- names(spectra_obj$peaks)[
+          vapply(spectra_obj$peaks, function(z) nrow(z) > 0, FALSE)
+        ]
+        
+        # Return a subset based on selection (simplified approach)
+        if (length(analyses_with_peaks) > 0) {
+          max_idx <- min(length(selected_rows), length(analyses_with_peaks))
+          return(analyses_with_peaks[1:max_idx])
         }
         return(NULL)
       }, error = function(e) {
         return(NULL)
       })
-    })
-
-    # Helper function to get selected analyses for Charges tab (uses charges data directly)
-    get_selected_analyses_charges <- shiny::reactive({
-      spectra_obj <- spectra_results()
-
-      if (is.null(spectra_obj) || length(spectra_obj$charges) == 0) {
-        return(NULL)
-      }
-
-      # Since charges tab doesn't have its own selection table,
-      # return all available analyses with charges data
-      analyses_with_charges <- names(spectra_obj$charges)[
-        vapply(spectra_obj$charges, function(z) nrow(z) > 0, FALSE)
-      ]
-
-      return(analyses_with_charges)
     })
 
     # MARK: Spectra Plot UI
@@ -963,7 +900,7 @@
       if (is.null(spectra_obj)) {
         htmltools::div(
           style = "margin-top: 20px;",
-          htmltools::h4("No MassSpecResults_Spectra object available!")
+          htmltools::h4("No RamanResults_Spectra object available!")
         )
       } else if (!is.null(input$spectra_plot_interactive)) {
         if (input$spectra_plot_interactive) {
@@ -991,8 +928,9 @@
     output$spectra_plotly <- plotly::renderPlotly({
       selected_analyses <- get_selected_analyses_spectra()
       spectra_obj <- spectra_results()
+      analyses <- reactive_analyses()
 
-      if (is.null(selected_analyses) || is.null(spectra_obj)) {
+      if (is.null(selected_analyses) || is.null(spectra_obj) || is.null(analyses)) {
         plotly::plot_ly() %>%
           plotly::add_text(
             x = 0.5,
@@ -1008,12 +946,10 @@
       } else {
         tryCatch({
           p <- plot_spectra(
-            spectra_obj,
+            analyses,
             analyses = selected_analyses,
             colorBy = input$spectra_plot_colorby,
-            xVal = input$spectra_xval,
-            interactive
-             = TRUE
+            interactive = TRUE
           )
 
           if (!is.null(p)) {
@@ -1072,17 +1008,17 @@
     output$spectra_plot <- shiny::renderPlot({
       selected_analyses <- get_selected_analyses_spectra()
       spectra_obj <- spectra_results()
+      analyses <- reactive_analyses()
 
-      if (is.null(selected_analyses) || is.null(spectra_obj)) {
+      if (is.null(selected_analyses) || is.null(spectra_obj) || is.null(analyses)) {
         return(NULL)
       }
 
       tryCatch({
         plot_spectra(
-          spectra_obj,
+          analyses,
           analyses = selected_analyses,
           colorBy = input$spectra_plot_colorby,
-          xVal = input$spectra_xval,
           interactive = FALSE
         )
       }, error = function(e) {
@@ -1100,8 +1036,9 @@
       content = function(file) {
         selected_analyses <- get_selected_analyses_spectra()
         spectra_obj <- spectra_results()
+        analyses <- reactive_analyses()
 
-        if (is.null(selected_analyses) || is.null(spectra_obj)) {
+        if (is.null(selected_analyses) || is.null(spectra_obj) || is.null(analyses)) {
           write.csv(
             data.frame(Message = "No analyses selected or spectra object available"),
             file,
@@ -1111,7 +1048,7 @@
         }
 
         tryCatch({
-          csv_data <- get_spectra(spectra_obj, analyses = selected_analyses)
+          csv_data <- get_spectra(analyses, analyses = selected_analyses)
           csv_data <- data.table::rbindlist(csv_data, fill = TRUE)
           write.csv(csv_data, file, row.names = FALSE)
         }, error = function(e) {
@@ -1139,7 +1076,8 @@
       }
 
       tryCatch({
-        peaks_data <- get_spectra_peaks(spectra_obj)
+        # Convert peaks list to data.frame
+        peaks_data <- data.table::rbindlist(spectra_obj$peaks, idcol = "analysis", fill = TRUE)
         if (nrow(peaks_data) == 0) {
           return(DT::datatable(
             data.frame(Message = "No peaks found"),
@@ -1192,25 +1130,11 @@
     })
 
     output$peaks_plot_ui <- shiny::renderUI({
-      if (!is.null(input$peaks_plot_interactive)) {
-        if (input$peaks_plot_interactive) {
-          shinycssloaders::withSpinner(
-            plotly::plotlyOutput(
-              shiny::NS(paste0("WorkflowAssembler-", id))("peaks_plotly"),
-              height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
-            ),
-            color = "black"
-          )
-        } else {
-          shinycssloaders::withSpinner(
-            shiny::plotOutput(
-              shiny::NS(paste0("WorkflowAssembler-", id))("peaks_plot"),
-              height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
-            ),
-            color = "black"
-          )
-        }
-      }
+      htmltools::div(
+        style = "margin-top: 20px; text-align: center; color: #666;",
+        htmltools::h4("Peak plotting not yet implemented for RamanResults_Spectra"),
+        htmltools::p("Peak data is available in the table above.")
+      )
     })
 
     output$peaks_plotly <- plotly::renderPlotly({
@@ -1275,27 +1199,45 @@
       }
     })
 
-    output$peaks_plot <- shiny::renderPlot({
-      selected_analyses <- get_selected_analyses_peaks()
-      spectra_obj <- spectra_results()
-
-      if (is.null(selected_analyses) || is.null(spectra_obj) || length(spectra_obj$peaks) == 0) {
-        return(NULL)
-      }
-
-      tryCatch({
-        plot_spectra_peaks(
-          spectra_obj,
-          analyses = selected_analyses,
-          colorBy = input$peaks_plot_colorby,
-          xVal = input$peaks_xval,
-          interactive = FALSE
-        )
-      }, error = function(e) {
-        plot(1, type = "n", xlab = "", ylab = "", axes = FALSE)
-        text(1, 1, paste("Error loading peaks plot:", e$message), col = "red")
-      })
+    # MARK: Chrom Peaks Plot and Data
+    # Chrom Peaks Plot and Data -----
+    output$chrom_peaks_plot_ui <- shiny::renderUI({
+      htmltools::div(
+        style = "margin-top: 20px; text-align: center; color: #666;",
+        htmltools::h4("Chromatographic peaks data"),
+        htmltools::p("Chromatographic peak data is available for export below.")
+      )
     })
+
+    # MARK: Export Chrom Peaks Data
+    output$chrom_peaks_plot_save <- shiny::downloadHandler(
+      filename = function() {
+        paste0("chrom_peaks_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+      },
+      content = function(file) {
+        spectra_obj <- spectra_results()
+        if (is.null(spectra_obj) || length(spectra_obj$chrom_peaks) == 0) {
+          write.csv(
+            data.frame(Message = "No chromatographic peaks data available"),
+            file,
+            row.names = FALSE
+          )
+          return()
+        }
+
+        tryCatch({
+          # Convert chrom_peaks list to data.frame
+          chrom_peaks_data <- data.table::rbindlist(spectra_obj$chrom_peaks, idcol = "analysis", fill = TRUE)
+          write.csv(chrom_peaks_data, file, row.names = FALSE)
+        }, error = function(e) {
+          write.csv(
+            data.frame(Error = paste("Error exporting chromatographic peaks:", e$message)),
+            file,
+            row.names = FALSE
+          )
+        })
+      }
+    )
 
     # MARK: Export Peaks Data
     output$peaks_plot_save <- shiny::downloadHandler(
@@ -1304,9 +1246,9 @@
       },
       content = function(file) {
         spectra_obj <- spectra_results()
-        if (is.null(spectra_obj)) {
+        if (is.null(spectra_obj) || length(spectra_obj$peaks) == 0) {
           write.csv(
-            data.frame(Message = "No spectra object available"),
+            data.frame(Message = "No peaks data available"),
             file,
             row.names = FALSE
           )
@@ -1314,148 +1256,12 @@
         }
 
         tryCatch({
-          peaks_data <- get_spectra_peaks(spectra_obj)
+          # Convert peaks list to data.frame
+          peaks_data <- data.table::rbindlist(spectra_obj$peaks, idcol = "analysis", fill = TRUE)
           write.csv(peaks_data, file, row.names = FALSE)
         }, error = function(e) {
           write.csv(
             data.frame(Error = paste("Error exporting peaks:", e$message)),
-            file,
-            row.names = FALSE
-          )
-        })
-      }
-    )
-
-    # MARK: Charges Plot
-    # Charges Plot -----
-    output$charges_plot_ui <- shiny::renderUI({
-      if (!is.null(input$charges_plot_interactive)) {
-        if (input$charges_plot_interactive) {
-          shinycssloaders::withSpinner(
-            plotly::plotlyOutput(
-              shiny::NS(paste0("WorkflowAssembler-", id))("charges_plotly"),
-              height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
-            ),
-            color = "black"
-          )
-        } else {
-          shinycssloaders::withSpinner(
-            shiny::plotOutput(
-              shiny::NS(paste0("WorkflowAssembler-", id))("charges_plot"),
-              height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 45px - 20px - 30px - 50px)"
-            ),
-            color = "black"
-          )
-        }
-      }
-    })
-
-    output$charges_plotly <- plotly::renderPlotly({
-      selected_analyses <- get_selected_analyses_charges()
-      spectra_obj <- spectra_results()
-
-      if (is.null(selected_analyses) || is.null(spectra_obj) || length(spectra_obj$charges) == 0) {
-        plotly::plot_ly() %>%
-          plotly::add_text(
-            x = 0.5,
-            y = 0.5,
-            text = "No charges data available or no analyses selected",
-            textfont = list(size = 16, color = "#666")
-          ) %>%
-          plotly::layout(
-            title = "No Charges Data",
-            xaxis = list(showgrid = FALSE, showticklabels = FALSE),
-            yaxis = list(showgrid = FALSE, showticklabels = FALSE)
-          )
-      } else {
-        tryCatch({
-          p <- plot_spectra_charges(
-            spectra_obj,
-            analyses = selected_analyses,
-            colorBy = input$charges_plot_colorby,
-            interactive = TRUE
-          )
-
-          if (!is.null(p)) {
-            p <- plotly::config(
-              p,
-              displayModeBar = TRUE,
-              modeBarButtonsToRemove = c(
-                "sendDataToCloud",
-                "autoScale2d",
-                "hoverClosestCartesian",
-                "hoverCompareCartesian",
-                "lasso2d",
-                "select2d"
-              ),
-              displaylogo = FALSE,
-              responsive = TRUE
-            )
-          }
-
-          return(p)
-        }, error = function(e) {
-          plotly::plot_ly() %>%
-            plotly::add_text(
-              x = 0.5,
-              y = 0.5,
-              text = paste("Error loading charges plot:", e$message),
-              textfont = list(size = 14, color = "red")
-            ) %>%
-            plotly::layout(
-              title = "Error Loading Charges",
-              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
-              yaxis = list(showgrid = FALSE, showticklabels = FALSE)
-            )
-        })
-      }
-    })
-
-    output$charges_plot <- shiny::renderPlot({
-      selected_analyses <- get_selected_analyses_charges()
-      spectra_obj <- spectra_results()
-
-      if (is.null(selected_analyses) || is.null(spectra_obj) || length(spectra_obj$charges) == 0) {
-        return(NULL)
-      }
-
-      tryCatch({
-        plot_spectra_charges(
-          spectra_obj,
-          analyses = selected_analyses,
-          colorBy = input$charges_plot_colorby,
-          interactive = FALSE
-        )
-      }, error = function(e) {
-        plot(1, type = "n", xlab = "", ylab = "", axes = FALSE)
-        text(1, 1, paste("Error loading charges plot:", e$message), col = "red")
-      })
-    })
-
-    # MARK: Export Charges Data
-    output$charges_plot_save <- shiny::downloadHandler(
-      filename = function() {
-        paste0("charges_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
-      },
-      content = function(file) {
-        spectra_obj <- spectra_results()
-        if (is.null(spectra_obj) || length(spectra_obj$charges) == 0) {
-          write.csv(
-            data.frame(Message = "No charges data available"),
-            file,
-            row.names = FALSE
-          )
-          return()
-        }
-
-        tryCatch({
-          # Export charges data - convert list to data.table
-          charges_list <- spectra_obj$charges
-          charges_data <- data.table::rbindlist(charges_list, idcol = "analysis", fill = TRUE)
-          write.csv(charges_data, file, row.names = FALSE)
-        }, error = function(e) {
-          write.csv(
-            data.frame(Error = paste("Error exporting charges:", e$message)),
             file,
             row.names = FALSE
           )

@@ -647,6 +647,9 @@ plot_spectra.RamanAnalyses <- function(
   if ("id" %in% colnames(spectra)) {
     groupCols <- c("id", groupCols)
   }
+  if ("group" %in% colnames(spectra)) {
+    groupCols <- c("group", groupCols)
+  }
   groupCols <- groupCols[groupCols %in% colnames(spectra)]
   intensity <- NULL
   spectra <- spectra[, .(intensity = mean(intensity)), by = groupCols]

@@ -27,15 +27,24 @@ lcdad_engine <- MassSpecEngine$new(
     author = "Ricardo Cunha",
     date = Sys.time()
   ),
-  analyses = list.files("demo_data/lc_dad_quantification", pattern = "mzML", full.names = TRUE)
+  analyses = list.files("demo_data/lc_dad_quantification", pattern = "mzML", full.names = TRUE),
+  workflow = "demo_data/demo_lc_dad_quantification_workflow.json"
 )
 
+lcdad_engine$save("lcdada_quant.rds")
+
+library(StreamFind)
 lcdad_engine <- MassSpecEngine$new()
 lcdad_engine$load("lcdada_quant.rds")
 
+engine <- lcdad_engine$clone()
+
 
 names(lcdad_engine$Results)
-names(lcdad_engine$Results[[1]])
+names(lcdad_engine$Results[[1]]$calibration_model)
+
+plot_chromatograms_peaks(lcdad_engine$Results[[1]], analyses = "20240815_67_BVCZ_1")
+
 # create a app_mod_WorkflowAssembler_MassSpecResults_Chromatograms.R file with a module for displaying results of chromatograms and a data.table with peraks (if available) similar as implemented in
 
 
@@ -64,10 +73,9 @@ raman_engine <- RamanEngine$new(
     author = "Ricardo Cunha",
     date = Sys.time()
   ),
-  analyses = list.files("demo_data/raman_quality_evaluation", pattern = "sif", full.names = TRUE)
+  analyses = list.files("demo_data/raman_quality_evaluation", pattern = "sif", full.names = TRUE),
+  workflow = "demo_data/demo_raman_quality_evaluation_workflow.json"
 )
-
-
 
 raman_engine$save("raman_engine.rds")
 
@@ -79,5 +87,8 @@ names(raman_engine$Results)
 
 
 info()
+
+
+
 
 StreamFind::run_app()

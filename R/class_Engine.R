@@ -341,6 +341,18 @@ Engine <- R6::R6Class(
               warning(w)
             }
           )
+        } else if (is(workflow, "character")) {
+          tryCatch(
+            {
+              self$Workflow <- workflow
+            },
+            error = function(e) {
+              warning(e)
+            },
+            warning = function(w) {
+              warning(w)
+            }
+          )
         }
       } else {
         self$Workflow <- Workflow()

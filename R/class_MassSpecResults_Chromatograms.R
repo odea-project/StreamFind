@@ -543,6 +543,17 @@ get_chromatograms_peaks.MassSpecResults_Chromatograms <- function(
     )
   }
   pks <- data.table::rbindlist(pks, idcol = "analysis", fill = TRUE)
+
+  if (TRUE %in% duplicated(colnames(pks))) {
+    dup_cols <- colnames(pks)[duplicated(colnames(pks))]
+    for (dup_col in dup_cols) {
+      cols_to_check <- which(colnames(pks) %in% dup_col)
+      if (all(pks[[cols_to_check[1]]] == pks[[cols_to_check[2]]])) {
+        pks[[cols_to_check[2]]] <- NULL
+      }
+    }
+  }
+
   if (is.numeric(chromatograms)) {
     which_pks <- pks$index %in% chromatograms
     pks <- pks[which_pks, ]

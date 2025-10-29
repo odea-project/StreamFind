@@ -3301,6 +3301,10 @@ get_groups_ms2.MassSpecResults_NonTargetAnalysis <- function(
     return(data.table::data.table())
   }
 
+  if (!"name" %in% colnames(fgs)) {
+    fgs$name <- ""
+  }
+
   fts <- get_features(x, features = fgs[, c("group", "name")])
 
   if (nrow(fts) == 0) {

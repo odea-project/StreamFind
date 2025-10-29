@@ -1,10 +1,9 @@
 #' @export
 #' @noRd
 .mod_WorkflowAssembler_Result_UI.MassSpecResults_Chromatograms <- function(
-  x,
-  id,
-  ns
-) {
+    x,
+    id,
+    ns) {
   ns_full <- shiny::NS(paste0("WorkflowAssembler-", id))
 
   # MARK: Custom CSS
@@ -125,7 +124,6 @@
         ### Overview Tab ----
         shiny::tabPanel(
           title = shiny::tagList(shiny::icon("chart-line", class = "mr-2"), "Overview"),
-
           shiny::div(
             class = "tab-content",
             style = "max-height: calc(100vh - 50px - 30px - 60px - 45px - 10px); overflow-y: auto; padding: 0;",
@@ -195,7 +193,6 @@
         ### Chromatograms Tab ----
         shiny::tabPanel(
           title = shiny::tagList(shiny::icon("chart-area", class = "mr-2"), "Chromatograms"),
-
           shiny::div(
             class = "tab-content",
             style = "max-height: calc(100vh - 50px - 30px - 60px - 45px - 10px); overflow-y: auto; padding: 0;",
@@ -346,7 +343,6 @@
         ### Peaks Tab ----
         shiny::tabPanel(
           title = shiny::tagList(shiny::icon("mountain", class = "mr-2"), "Peaks"),
-
           shiny::div(
             class = "tab-content",
             style = "max-height: calc(100vh - 50px - 30px - 60px - 45px - 10px); overflow-y: auto; padding: 0;",
@@ -477,6 +473,109 @@
               )
             )
           )
+        ),
+
+        # MARK: Calibration Tab
+        ### Calibration Tab ----
+        shiny::tabPanel(
+          title = shiny::tagList(shiny::icon("calculator", class = "mr-2"), "Calibration"),
+          shiny::div(
+            class = "tab-content",
+            style = "max-height: calc(100vh - 50px - 30px - 60px - 45px - 10px); overflow-y: auto; padding: 0;",
+
+            # MARK: Top Controls Section
+            shiny::div(
+              class = "calibration-controls-bar",
+              style = "
+                background-color: white;
+                padding: 10px 15px;
+                height: 60px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+              ",
+              # Left: Title
+              shiny::div(
+                style = "display: flex; align-items: center; gap: 15px;",
+                shiny::h4("Calibration Model", style = "margin: 0; color: #5a5c69;")
+              ),
+              # Right: Export controls
+              shiny::div(
+                class = "calibration-export-controls",
+                style = "display: flex; align-items: center; gap: 10px;",
+                shiny::downloadButton(
+                  ns_full("calibration_export"),
+                  "Export Model (.csv)",
+                  icon = shiny::icon("file-csv"),
+                  class = "btn btn-outline-primary btn-sm"
+                )
+              )
+            ),
+
+            # MARK: Main Content - Calibration
+            ### Main Content - Calibration -----
+            shiny::div(
+              style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px); padding: 20px; overflow: auto; background-color: white;",
+
+              # Calibration Model Statistics
+              shiny::div(
+                class = "row",
+                style = "margin-bottom: 10px;",
+                shiny::div(
+                  class = "col-md-12",
+                  shiny::div(
+                    class = "status-panel",
+                    style = "padding: 15px; margin-bottom: 10px;",
+                    shiny::h5("Model Statistics", style = "margin-bottom: 15px; color: #5a5c69;"),
+                    shiny::div(
+                      class = "row",
+                      shiny::div(
+                        class = "col-md-4",
+                        shiny::div(
+                          class = "status-item",
+                          shiny::span(class = "status-label", "R-squared:"),
+                          shiny::span(class = "status-value", shiny::textOutput(ns_full("calibration_r_squared"), inline = TRUE))
+                        )
+                      ),
+                      shiny::div(
+                        class = "col-md-4",
+                        shiny::div(
+                          class = "status-item",
+                          shiny::span(class = "status-label", "Intercept:"),
+                          shiny::span(class = "status-value", shiny::textOutput(ns_full("calibration_intercept"), inline = TRUE))
+                        )
+                      ),
+                      shiny::div(
+                        class = "col-md-4",
+                        shiny::div(
+                          class = "status-item",
+                          shiny::span(class = "status-label", "Slope:"),
+                          shiny::span(class = "status-value", shiny::textOutput(ns_full("calibration_slope"), inline = TRUE))
+                        )
+                      )
+                    )
+                  )
+                )
+              ),
+
+              # Calibration Plot
+              shiny::div(
+                class = "plot-container",
+                style = "height: calc(100vh - 50px - 30px - 60px - 45px - 80px - 240px);",
+                shiny::div(
+                  style = "height: 30px; position: relative; margin-bottom: 5px;",
+                  .app_util_create_maximize_button("calibration_plot", ns_full),
+                ),
+                shinycssloaders::withSpinner(
+                  plotly::plotlyOutput(
+                    ns_full("calibration_plot"),
+                    height = "calc(100vh - 50px - 30px - 60px - 45px - 80px - 320px)"
+                  ),
+                  color = "black"
+                )
+              )
+            )
+          )
         )
       )
     )
@@ -486,13 +585,12 @@
 #' @export
 #' @noRd
 .mod_WorkflowAssembler_Result_Server.MassSpecResults_Chromatograms <- function(
-  x,
-  id,
-  ns,
-  reactive_analyses,
-  reactive_volumes,
-  reactive_config
-) {
+    x,
+    id,
+    ns,
+    reactive_analyses,
+    reactive_volumes,
+    reactive_config) {
   shiny::moduleServer(id, function(input, output, session) {
     # Reactive value to store the MassSpecResults_Chromatograms object
     chromatograms_results <- shiny::reactiveVal()
@@ -507,7 +605,9 @@
     # Overview Metrics -----
     output$total_chromatograms <- shiny::renderText({
       chromatograms_obj <- chromatograms_results()
-      if (is.null(chromatograms_obj)) return("0")
+      if (is.null(chromatograms_obj)) {
+        return("0")
+      }
       as.character(length(chromatograms_obj$chromatograms))
     })
 
@@ -539,7 +639,9 @@
 
     output$total_peaks <- shiny::renderText({
       chromatograms_obj <- chromatograms_results()
-      if (is.null(chromatograms_obj) || length(chromatograms_obj$peaks) == 0) return("0")
+      if (is.null(chromatograms_obj) || length(chromatograms_obj$peaks) == 0) {
+        return("0")
+      }
       total <- sum(vapply(chromatograms_obj$peaks, nrow, 0))
       as.character(total)
     })
@@ -713,23 +815,26 @@
       }
 
       # Get peaks data to extract analysis/replicate info from selected rows
-      tryCatch({
-        peaks_data <- get_chromatograms_peaks(chromatograms_obj)
-        if (is.null(peaks_data) || nrow(peaks_data) == 0) {
+      tryCatch(
+        {
+          peaks_data <- get_chromatograms_peaks(chromatograms_obj)
+          if (is.null(peaks_data) || nrow(peaks_data) == 0) {
+            return(NULL)
+          }
+
+          # Extract unique analysis/replicate values from selected rows
+          selected_data <- peaks_data[selected_rows, ]
+          if ("analysis" %in% names(selected_data)) {
+            return(unique(selected_data$analysis))
+          } else if ("replicate" %in% names(selected_data)) {
+            return(unique(selected_data$replicate))
+          }
+          return(NULL)
+        },
+        error = function(e) {
           return(NULL)
         }
-
-        # Extract unique analysis/replicate values from selected rows
-        selected_data <- peaks_data[selected_rows, ]
-        if ("replicate" %in% names(selected_data)) {
-          return(unique(selected_data$replicate))
-        } else if ("analysis" %in% names(selected_data)) {
-          return(unique(selected_data$analysis))
-        }
-        return(NULL)
-      }, error = function(e) {
-        return(NULL)
-      })
+      )
     })
 
     # MARK: Chromatograms Plot UI
@@ -782,58 +887,61 @@
             yaxis = list(showgrid = FALSE, showticklabels = FALSE)
           )
       } else {
-        tryCatch({
-          p <- plot_chromatograms(
-            chromatograms_obj,
-            analyses = selected_analyses,
-            colorBy = input$chromatograms_plot_colorby,
-            normalized = as.logical(input$chromatograms_normalized),
-            interactive = TRUE,
-            title = "Chromatograms Plot"
-          )
-
-          if (!is.null(p)) {
-            # Enhance the plotly object
-            p <- plotly::layout(
-              p,
-              title = list(text = "Chromatograms Plot", font = list(size = 16)),
-              xaxis = list(title = "Retention Time (s)"),
-              yaxis = list(title = "Intensity"),
-              margin = list(l = 50, r = 50, t = 50, b = 50),
-              showlegend = TRUE,
-              hovermode = "closest"
+        tryCatch(
+          {
+            p <- plot_chromatograms(
+              chromatograms_obj,
+              analyses = selected_analyses,
+              colorBy = input$chromatograms_plot_colorby,
+              normalized = as.logical(input$chromatograms_normalized),
+              interactive = TRUE,
+              title = "Chromatograms Plot"
             )
 
-            # Add interactive features
-            p <- plotly::config(
-              p,
-              displayModeBar = TRUE,
-              toImageButtonOptions = list(
-                format = 'png',
-                filename = 'chromatograms_plot',
-                height = 600,
-                width = 800,
-                scale = 1
-              ),
-              modeBarButtonsToRemove = c('pan2d', 'select2d', 'lasso2d', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian')
-            )
+            if (!is.null(p)) {
+              # Enhance the plotly object
+              p <- plotly::layout(
+                p,
+                title = list(text = "Chromatograms Plot", font = list(size = 16)),
+                xaxis = list(title = "Retention Time (s)"),
+                yaxis = list(title = "Intensity"),
+                margin = list(l = 50, r = 50, t = 50, b = 50),
+                showlegend = TRUE,
+                hovermode = "closest"
+              )
+
+              # Add interactive features
+              p <- plotly::config(
+                p,
+                displayModeBar = TRUE,
+                toImageButtonOptions = list(
+                  format = "png",
+                  filename = "chromatograms_plot",
+                  height = 600,
+                  width = 800,
+                  scale = 1
+                ),
+                modeBarButtonsToRemove = c("pan2d", "select2d", "lasso2d", "autoScale2d", "hoverClosestCartesian", "hoverCompareCartesian")
+              )
+            }
+
+            return(p)
+          },
+          error = function(e) {
+            plotly::plot_ly() %>%
+              plotly::add_text(
+                x = 0.5,
+                y = 0.5,
+                text = paste("Error loading chromatograms:", e$message),
+                textfont = list(size = 14, color = "red")
+              ) %>%
+              plotly::layout(
+                title = "Error",
+                xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+                yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+              )
           }
-
-          return(p)
-        }, error = function(e) {
-          plotly::plot_ly() %>%
-            plotly::add_text(
-              x = 0.5,
-              y = 0.5,
-              text = paste("Error loading chromatograms:", e$message),
-              textfont = list(size = 14, color = "red")
-            ) %>%
-            plotly::layout(
-              title = "Error",
-              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
-              yaxis = list(showgrid = FALSE, showticklabels = FALSE)
-            )
-        })
+        )
       }
     })
 
@@ -847,19 +955,22 @@
         return(NULL)
       }
 
-      tryCatch({
-        plot_chromatograms(
-          chromatograms_obj,
-          analyses = selected_analyses,
-          colorBy = input$chromatograms_plot_colorby,
-          normalized = as.logical(input$chromatograms_normalized),
-          interactive = FALSE,
-          title = "Chromatograms Plot"
-        )
-      }, error = function(e) {
-        plot(1, type = "n", xlab = "", ylab = "", axes = FALSE)
-        text(1, 1, paste("Error loading chromatograms:", e$message), col = "red")
-      })
+      tryCatch(
+        {
+          plot_chromatograms(
+            chromatograms_obj,
+            analyses = selected_analyses,
+            colorBy = input$chromatograms_plot_colorby,
+            normalized = as.logical(input$chromatograms_normalized),
+            interactive = FALSE,
+            title = "Chromatograms Plot"
+          )
+        },
+        error = function(e) {
+          plot(1, type = "n", xlab = "", ylab = "", axes = FALSE)
+          text(1, 1, paste("Error loading chromatograms:", e$message), col = "red")
+        }
+      )
     })
 
     # MARK: Export Chromatograms Data
@@ -875,21 +986,26 @@
         if (is.null(selected_analyses) || is.null(chromatograms_obj)) {
           write.csv(
             data.frame(Error = "No data selected or available"),
-            file, row.names = FALSE
+            file,
+            row.names = FALSE
           )
           return()
         }
 
-        tryCatch({
-          csv_data <- get_chromatograms(chromatograms_obj, analyses = selected_analyses)
-          csv_data <- data.table::rbindlist(csv_data, fill = TRUE)
-          write.csv(csv_data, file, row.names = FALSE)
-        }, error = function(e) {
-          write.csv(
-            data.frame(Error = paste("Failed to export data:", e$message)),
-            file, row.names = FALSE
-          )
-        })
+        tryCatch(
+          {
+            csv_data <- get_chromatograms(chromatograms_obj, analyses = selected_analyses)
+            csv_data <- data.table::rbindlist(csv_data, fill = TRUE)
+            write.csv(csv_data, file, row.names = FALSE)
+          },
+          error = function(e) {
+            write.csv(
+              data.frame(Error = paste("Failed to export data:", e$message)),
+              file,
+              row.names = FALSE
+            )
+          }
+        )
       }
     )
 
@@ -907,37 +1023,40 @@
         ))
       }
 
-      tryCatch({
-        peaks_data <- get_chromatograms_peaks(chromatograms_obj)
+      tryCatch(
+        {
+          peaks_data <- get_chromatograms_peaks(chromatograms_obj)
 
-        if (!is.null(peaks_data) && nrow(peaks_data) > 0) {
+          if (!is.null(peaks_data) && nrow(peaks_data) > 0) {
+            DT::datatable(
+              peaks_data,
+              options = list(
+                scrollX = TRUE,
+                scrollY = "300px",
+                pageLength = 10,
+                lengthMenu = c(10, 25, 50, 100),
+                dom = "Bfrtip",
+                buttons = c("copy", "csv", "excel", "pdf", "print")
+              ),
+              extensions = "Buttons",
+              rownames = FALSE
+            )
+          } else {
+            DT::datatable(
+              data.frame(Message = "No peaks data available"),
+              options = list(dom = "t"),
+              rownames = FALSE
+            )
+          }
+        },
+        error = function(e) {
           DT::datatable(
-            peaks_data,
-            options = list(
-              scrollX = TRUE,
-              scrollY = "300px",
-              pageLength = 10,
-              lengthMenu = c(10, 25, 50, 100),
-              dom = 'Bfrtip',
-              buttons = c('copy', 'csv', 'excel', 'pdf', 'print')
-            ),
-            extensions = 'Buttons',
-            rownames = FALSE
-          )
-        } else {
-          DT::datatable(
-            data.frame(Message = "No peaks data available"),
-            options = list(dom = 't'),
+            data.frame(Error = paste("Error loading peaks data:", e$message)),
+            options = list(dom = "t"),
             rownames = FALSE
           )
         }
-      }, error = function(e) {
-        DT::datatable(
-          data.frame(Error = paste("Error loading peaks data:", e$message)),
-          options = list(dom = 't'),
-          rownames = FALSE
-        )
-      })
+      )
     })
 
     output$peaks_plot_ui <- shiny::renderUI({
@@ -986,57 +1105,60 @@
             yaxis = list(showgrid = FALSE, showticklabels = FALSE)
           )
       } else {
-        tryCatch({
-          p <- plot_chromatograms_peaks(
-            chromatograms_obj,
-            analyses = selected_analyses,
-            colorBy = input$peaks_plot_colorby,
-            interactive = TRUE,
-            title = "Chromatograms Peaks Plot"
-          )
-
-          if (!is.null(p)) {
-            # Enhance the plotly object
-            p <- plotly::layout(
-              p,
-              title = list(text = "Chromatograms Peaks Plot", font = list(size = 16)),
-              xaxis = list(title = "Retention Time (s)"),
-              yaxis = list(title = "Intensity"),
-              margin = list(l = 50, r = 50, t = 50, b = 50),
-              showlegend = TRUE,
-              hovermode = "closest"
+        tryCatch(
+          {
+            p <- plot_chromatograms_peaks(
+              chromatograms_obj,
+              analyses = selected_analyses,
+              colorBy = input$peaks_plot_colorby,
+              interactive = TRUE,
+              title = "Chromatograms Peaks Plot"
             )
 
-            # Add interactive features
-            p <- plotly::config(
-              p,
-              displayModeBar = TRUE,
-              toImageButtonOptions = list(
-                format = 'png',
-                filename = 'peaks_plot',
-                height = 600,
-                width = 800,
-                scale = 1
-              ),
-              modeBarButtonsToRemove = c('pan2d', 'select2d', 'lasso2d', 'autoScale2d', 'hoverClosestCartesian', 'hoverCompareCartesian')
-            )
+            if (!is.null(p)) {
+              # Enhance the plotly object
+              p <- plotly::layout(
+                p,
+                title = list(text = "Chromatograms Peaks Plot", font = list(size = 16)),
+                xaxis = list(title = "Retention Time (s)"),
+                yaxis = list(title = "Intensity"),
+                margin = list(l = 50, r = 50, t = 50, b = 50),
+                showlegend = TRUE,
+                hovermode = "closest"
+              )
+
+              # Add interactive features
+              p <- plotly::config(
+                p,
+                displayModeBar = TRUE,
+                toImageButtonOptions = list(
+                  format = "png",
+                  filename = "peaks_plot",
+                  height = 600,
+                  width = 800,
+                  scale = 1
+                ),
+                modeBarButtonsToRemove = c("pan2d", "select2d", "lasso2d", "autoScale2d", "hoverClosestCartesian", "hoverCompareCartesian")
+              )
+            }
+
+            return(p)
+          },
+          error = function(e) {
+            plotly::plot_ly() %>%
+              plotly::add_text(
+                x = 0.5,
+                y = 0.5,
+                text = paste("Error loading peaks:", e$message),
+                textfont = list(size = 14, color = "red")
+              ) %>%
+              plotly::layout(
+                title = "Error",
+                xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+                yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+              )
           }
-
-          return(p)
-        }, error = function(e) {
-          plotly::plot_ly() %>%
-            plotly::add_text(
-              x = 0.5,
-              y = 0.5,
-              text = paste("Error loading peaks:", e$message),
-              textfont = list(size = 14, color = "red")
-            ) %>%
-            plotly::layout(
-              title = "Error",
-              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
-              yaxis = list(showgrid = FALSE, showticklabels = FALSE)
-            )
-        })
+        )
       }
     })
 
@@ -1048,18 +1170,21 @@
         return(NULL)
       }
 
-      tryCatch({
-        plot_chromatograms_peaks(
-          chromatograms_obj,
-          analyses = selected_analyses,
-          colorBy = input$peaks_plot_colorby,
-          interactive = FALSE,
-          title = "Chromatograms Peaks Plot"
-        )
-      }, error = function(e) {
-        plot(1, type = "n", xlab = "", ylab = "", axes = FALSE)
-        text(1, 1, paste("Error loading peaks:", e$message), col = "red")
-      })
+      tryCatch(
+        {
+          plot_chromatograms_peaks(
+            chromatograms_obj,
+            analyses = selected_analyses,
+            colorBy = input$peaks_plot_colorby,
+            interactive = FALSE,
+            title = "Chromatograms Peaks Plot"
+          )
+        },
+        error = function(e) {
+          plot(1, type = "n", xlab = "", ylab = "", axes = FALSE)
+          text(1, 1, paste("Error loading peaks:", e$message), col = "red")
+        }
+      )
     })
 
     # MARK: Export Peaks Data
@@ -1074,20 +1199,25 @@
         if (is.null(chromatograms_obj)) {
           write.csv(
             data.frame(Error = "No chromatograms data available"),
-            file, row.names = FALSE
+            file,
+            row.names = FALSE
           )
           return()
         }
 
-        tryCatch({
-          peaks_data <- get_chromatograms_peaks(chromatograms_obj)
-          write.csv(peaks_data, file, row.names = FALSE)
-        }, error = function(e) {
-          write.csv(
-            data.frame(Error = paste("Failed to export peaks data:", e$message)),
-            file, row.names = FALSE
-          )
-        })
+        tryCatch(
+          {
+            peaks_data <- get_chromatograms_peaks(chromatograms_obj)
+            write.csv(peaks_data, file, row.names = FALSE)
+          },
+          error = function(e) {
+            write.csv(
+              data.frame(Error = paste("Failed to export peaks data:", e$message)),
+              file,
+              row.names = FALSE
+            )
+          }
+        )
       }
     )
 
@@ -1208,6 +1338,211 @@
         )))
       )
     })
+
+    # MARK: Calibration Model Outputs
+    # Calibration Model Outputs -----
+
+    # Helper reactive to get calibration model
+    calibration_model <- shiny::reactive({
+      chromatograms_obj <- chromatograms_results()
+      if (is.null(chromatograms_obj) ||
+        !"calibration_model" %in% names(chromatograms_obj) ||
+        length(chromatograms_obj$calibration_model) == 0) {
+        return(NULL)
+      }
+      return(chromatograms_obj$calibration_model)
+    })
+
+    # R-squared output
+    output$calibration_r_squared <- shiny::renderText({
+      model <- calibration_model()
+      if (is.null(model)) {
+        return("N/A")
+      }
+
+      tryCatch(
+        {
+          r_squared <- summary(model)$r.squared
+          return(round(r_squared, 4))
+        },
+        error = function(e) {
+          return("Error")
+        }
+      )
+    })
+
+    # Intercept output
+    output$calibration_intercept <- shiny::renderText({
+      model <- calibration_model()
+      if (is.null(model)) {
+        return("N/A")
+      }
+
+      tryCatch(
+        {
+          intercept <- coef(model)[1]
+          return(round(intercept, 4))
+        },
+        error = function(e) {
+          return("Error")
+        }
+      )
+    })
+
+    # Slope output
+    output$calibration_slope <- shiny::renderText({
+      model <- calibration_model()
+      if (is.null(model)) {
+        return("N/A")
+      }
+
+      tryCatch(
+        {
+          slope <- coef(model)[2]
+          return(round(slope, 4))
+        },
+        error = function(e) {
+          return("Error")
+        }
+      )
+    })
+
+    # Calibration plot
+    output$calibration_plot <- plotly::renderPlotly({
+      model <- calibration_model()
+
+      if (is.null(model)) {
+        return(
+          plotly::plot_ly() %>%
+            plotly::add_text(
+              x = 0.5,
+              y = 0.5,
+              text = "No calibration model available",
+              textfont = list(size = 16, color = "#666")
+            ) %>%
+            plotly::layout(
+              title = "No Calibration Model",
+              xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+              yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+            )
+        )
+      }
+
+      tryCatch(
+        {
+          fitted_values <- stats::predict(model)
+          r_squared <- summary(model)$r.squared
+
+          # Create data table for plotting
+          dt_cal <- data.table::data.table(
+            fitted_values = fitted_values,
+            calibration_values = model$model[[2]], # Second column should be calibration values
+            values = model$model[[1]] # First column should be response values
+          )
+
+          # Create the plot
+          fig <- plotly::plot_ly(
+            dt_cal,
+            x = ~calibration_values,
+            y = ~values,
+            type = "scatter",
+            mode = "markers",
+            name = "Data Points",
+            marker = list(size = 8, color = "#4e73df")
+          ) %>%
+            plotly::add_lines(
+              x = ~calibration_values,
+              y = ~fitted_values,
+              name = "Fitted Line",
+              line = list(color = "#28a745", width = 2)
+            ) %>%
+            plotly::layout(
+              title = list(
+                text = paste("Calibration Model (R² =", round(r_squared, 4), ")"),
+                font = list(size = 16)
+              ),
+              xaxis = list(title = "Concentration (mg/L)"),
+              yaxis = list(title = "Intensity / counts"),
+              margin = list(l = 50, r = 50, t = 50, b = 50),
+              showlegend = TRUE,
+              hovermode = "closest"
+            ) %>%
+            plotly::config(
+              displayModeBar = TRUE,
+              toImageButtonOptions = list(
+                format = "png",
+                filename = "calibration_model",
+                height = 600,
+                width = 800,
+                scale = 1
+              ),
+              modeBarButtonsToRemove = c("pan2d", "select2d", "lasso2d", "autoScale2d", "hoverClosestCartesian", "hoverCompareCartesian")
+            )
+
+          return(fig)
+        },
+        error = function(e) {
+          return(
+            plotly::plot_ly() %>%
+              plotly::add_text(
+                x = 0.5,
+                y = 0.5,
+                text = paste("Error creating calibration plot:", e$message),
+                textfont = list(size = 14, color = "red")
+              ) %>%
+              plotly::layout(
+                title = "Error",
+                xaxis = list(showgrid = FALSE, showticklabels = FALSE),
+                yaxis = list(showgrid = FALSE, showticklabels = FALSE)
+              )
+          )
+        }
+      )
+    })
+
+    # Export calibration model data
+    output$calibration_export <- shiny::downloadHandler(
+      filename = function() {
+        paste0("calibration_model_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
+      },
+      content = function(file) {
+        model <- calibration_model()
+
+        if (is.null(model)) {
+          write.csv(
+            data.frame(Error = "No calibration model available"),
+            file,
+            row.names = FALSE
+          )
+          return()
+        }
+
+        tryCatch(
+          {
+            fitted_values <- stats::predict(model)
+            r_squared <- summary(model)$r.squared
+
+            # Create export data
+            export_data <- data.table::data.table(
+              fitted_values = fitted_values,
+              calibration_values = model$model[[2]],
+              values = model$model[[1]],
+              residuals = residuals(model),
+              r_squared = r_squared
+            )
+
+            write.csv(export_data, file, row.names = FALSE)
+          },
+          error = function(e) {
+            write.csv(
+              data.frame(Error = paste("Failed to export calibration data:", e$message)),
+              file,
+              row.names = FALSE
+            )
+          }
+        )
+      }
+    )
 
     # MARK: JavaScript for UI interactions
     # JavaScript for UI interactions -----

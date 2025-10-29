@@ -101,7 +101,6 @@ raman$Analyses <- set_replicate_names(
   raman$Analyses,
   c(
     rep("Avastin", 3),
-    #rep("Zirabev", 3),
     rep("Darzalex", 3),
     rep("Rixathon", 3)
   )
@@ -224,11 +223,11 @@ raman$run(
   )
 )
 
-# raman$run(
-#   RamanMethod_AverageSpectra_native(
-#     by = "replicates+chrom_peaks"
-#   )
-# )
+raman$run(
+  RamanMethod_AverageSpectra_native(
+    by = "replicates+chrom_peaks"
+  )
+)
 ```
 
 ```{r}
@@ -289,7 +288,9 @@ plot_chrom_peaks_onlypeaks
 #| label: raman-plot-spectra-peaks-replicates
 #| code-fold: true
 
-raman$plot_spectra(colorBy = "replicates+targets")
+plot_spectra(raman$Analyses, colorBy = "replicates+targets")
+
+get_spectra(raman$Analyses)
 ```
 
 # PCA
