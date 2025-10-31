@@ -157,7 +157,7 @@ run.MassSpecMethod_GenerateTransformationProducts_biotransformer <- function(x, 
     suspects <- suspects[!is.na(suspects$SMILES) & suspects$SMILES != ""]
     suspects <- unique(suspects[, c("name", "SMILES")])
     parents <- data.table::rbindlist(list(parents, suspects), use.names = TRUE, fill = TRUE)
-    parents <- unique(parents, by = "name")
+    parents <- parents[!duplicated(parents$name), ]
   }
 
   if (x$parameters$use_compounds) {
@@ -170,7 +170,7 @@ run.MassSpecMethod_GenerateTransformationProducts_biotransformer <- function(x, 
     compounds <- compounds[!is.na(compounds$SMILES) & compounds$SMILES != ""]
     compounds <- unique(compounds[, c("name", "SMILES")])
     parents <- data.table::rbindlist(list(parents, compounds), use.names = TRUE, fill = TRUE)
-    parents <- unique(parents, by = "name")
+    parents <- parents[!duplicated(parents$name), ]
   }
 
   if (nrow(parents) == 0) {
@@ -187,7 +187,7 @@ run.MassSpecMethod_GenerateTransformationProducts_biotransformer <- function(x, 
     warning("No valid SMILES structures provided in parents! Not done.")
     return(FALSE)
   }
-
+  parameters$parents[] <- lapply(parameters$parents, as.character)
   tryCatch({
     tps <- patRoon::generateTPsBioTransformer(
       parents = parameters$parents,
@@ -402,7 +402,7 @@ run.MassSpecMethod_GenerateTransformationProducts_cts <- function(x, engine, ...
     suspects <- suspects[!is.na(suspects$SMILES) & suspects$SMILES != ""]
     suspects <- unique(suspects[, c("name", "SMILES")])
     parents <- data.table::rbindlist(list(parents, suspects), use.names = TRUE, fill = TRUE)
-    parents <- unique(parents, by = "name")
+    parents <- parents[!duplicated(parents$name), ]
   }
 
   if (x$parameters$use_compounds) {
@@ -415,7 +415,7 @@ run.MassSpecMethod_GenerateTransformationProducts_cts <- function(x, engine, ...
     compounds <- compounds[!is.na(compounds$SMILES) & compounds$SMILES != ""]
     compounds <- unique(compounds[, c("name", "SMILES")])
     parents <- data.table::rbindlist(list(parents, compounds), use.names = TRUE, fill = TRUE)
-    parents <- unique(parents, by = "name")
+    parents <- parents[!duplicated(parents$name), ]
   }
 
   if (nrow(parents) == 0) {
@@ -428,11 +428,16 @@ run.MassSpecMethod_GenerateTransformationProducts_cts <- function(x, engine, ...
   parameters$use_compounds <- NULL
   parameters$parents <- data.table::as.data.table(parents)
 
+  if (any(duplicated(parameters$parents$name))) {
+    parameters$parents <- parameters$parents[!duplicated(parameters$parents$name), ]
+    warning("Duplicate parent names found! Duplicates removed.")
+  }
+
   if (all(is.na(parameters$parents$SMILES)) || all(parameters$parents$SMILES == "")) {
     warning("No valid SMILES structures provided in parents! Not done.")
     return(FALSE)
   }
-
+  parameters$parents[] <- lapply(parameters$parents, as.character)
   tryCatch({
     tps <- patRoon::generateTPsCTS(
       parents = parameters$parents,
@@ -483,6 +488,8 @@ run.MassSpecMethod_GenerateTransformationProducts_cts <- function(x, engine, ...
       parents = tps@parents,
       transformation_products = tps@products
     )
+
+    browser()
 
     engine$Results <- tp_results
     message("\U2713 Transformation products generation completed with CTS!")

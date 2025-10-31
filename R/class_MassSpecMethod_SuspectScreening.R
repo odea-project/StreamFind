@@ -121,25 +121,27 @@ run.MassSpecMethod_SuspectScreening_StreamFind <- function(x, engine = NULL) {
   )
 
   if (nrow(suspect_features) > 0) {
-    suspect_cols <- colnames(suspect_features)
     suspect_features_l <- split(suspect_features, suspect_features$analysis)
     features <- nts$features
     sus_col <- lapply(
       names(features),
-      function(a, features, suspect_features_l, suspect_cols) {
+      function(a, features, suspect_features_l) {
         suspects <- suspect_features_l[[a]]
         fts <- features[[a]]
         if (!is.null(suspects)) {
           suspects_l <- lapply(
             fts$feature,
-            function(z, suspects, suspect_cols) {
+            function(z, suspects, fts) {
               sus_idx <- which(suspects$feature %in% z)
               if (length(sus_idx) > 0) {
                 sus_temp <- suspects[sus_idx, ]
                 if (nrow(sus_temp) > 0) {
                   sus_temp[["analysis"]] <- NULL
-                  keep_cols <- which(!colnames(sus_temp) %in% colnames(z))
+                  keep_cols <- which(!colnames(sus_temp) %in% colnames(fts[fts$feature %in% z, ]))
                   keep_cols <- colnames(sus_temp)[keep_cols]
+                  if ("replicate" %in% keep_cols) {
+                    keep_cols <- keep_cols[keep_cols != "replicate"]
+                  }
                   keep_cols <- c("feature", keep_cols)
                   sus_temp <- sus_temp[, ..keep_cols]
                   sus_temp
@@ -151,7 +153,7 @@ run.MassSpecMethod_SuspectScreening_StreamFind <- function(x, engine = NULL) {
               }
             },
             suspects = suspects,
-            suspect_cols = suspect_cols
+            fts = fts
           )
           suspects_l
         } else {
@@ -159,8 +161,7 @@ run.MassSpecMethod_SuspectScreening_StreamFind <- function(x, engine = NULL) {
         }
       },
       features = features,
-      suspect_features_l = suspect_features_l,
-      suspect_cols = suspect_cols
+      suspect_features_l = suspect_features_l
     )
     names(sus_col) <- names(features)
     features <- Map(

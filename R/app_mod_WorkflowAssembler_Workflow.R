@@ -665,7 +665,7 @@
                 if (file.exists(file)) {
                   tryCatch(
                     {
-                      param_value <- read.csv(param_value, file)
+                      param_value <- read.csv(file)
                       settings$parameters[[param_name]] <- param_value
                       rw[[selected_method]] <- settings
                       reactive_workflow(rw)

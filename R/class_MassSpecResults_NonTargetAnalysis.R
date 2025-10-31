@@ -5885,10 +5885,11 @@ get_compounds.MassSpecResults_NonTargetAnalysis <- function(
 
   if (nrow(compounds) > 0) {
     if (averaged && any(vapply(x$features, function(z) !all(is.na(z$group) | z$group %in% ""), FALSE))) {
-      data.table::setcolorder(
-        compounds,
-        c("group", "rt", "mass", "polarity", "compoundName")
-      )
+      desired_cols <- c("group", "rt", "mass", "polarity", "compoundName")
+      existing_cols <- intersect(desired_cols, colnames(compounds))
+      if (length(existing_cols) > 0) {
+        data.table::setcolorder(compounds, existing_cols)
+      }
       duplos <- duplicated(paste0(
         compounds$group,
         compounds$compoundName,
@@ -5905,7 +5906,10 @@ get_compounds.MassSpecResults_NonTargetAnalysis <- function(
         "polarity",
         "compoundName"
       )
-      data.table::setcolorder(compounds, cols_order)
+      existing_cols <- intersect(cols_order, colnames(compounds))
+      if (length(existing_cols) > 0) {
+        data.table::setcolorder(compounds, existing_cols)
+      }
     }
   }
   compounds
