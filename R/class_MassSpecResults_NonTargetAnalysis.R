@@ -1856,7 +1856,7 @@ get_features_ms2.MassSpecResults_NonTargetAnalysis <- function(
   }
 
   rpls <- x$info$replicate
-  names(rpls) <- x$info$analysis  
+  names(rpls) <- x$info$analysis
   ms2$replicate <- rpls[ms2$analysis]
   data.table::setcolorder(ms2, c("analysis", "replicate", "feature"))
 
@@ -4460,13 +4460,25 @@ get_suspects.MassSpecResults_NonTargetAnalysis <- function(
                       fixed = TRUE
                     ))
                     if ("fragments_formula" %in% colnames(suspect_db)) {
-                      fragments_formula <- unlist(
-                        strsplit(
-                          suspect_db$fragments_formula,
-                          split = ";",
-                          fixed = TRUE
+                      if (grepl(";", suspect_db$fragments_formula)) {
+                        fragments_formula <- unlist(
+                          strsplit(
+                            suspect_db$fragments_formula,
+                            split = ";",
+                            fixed = TRUE
+                          )
                         )
-                      )
+                      } else if (!suspect_db$fragments_formula %in% "") {
+                        fragments_formula <- rep(
+                          suspect_db$fragments_formula,
+                          length(fragments)
+                        )
+                      } else {
+                        fragments_formula <- rep(
+                          NA_character_,
+                          length(fragments)
+                        )
+                      }
                     } else {
                       fragments_formula <- rep(NA_character_, length(fragments))
                     }
@@ -5932,7 +5944,7 @@ get_compounds.MassSpecResults_NonTargetAnalysis <- function(
 #' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
 #'
 #' @export
-#' 
+#'
 #' @references
 #' \insertRef{bader01}{StreamFind}
 #'

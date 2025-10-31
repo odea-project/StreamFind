@@ -488,9 +488,7 @@ run.MassSpecMethod_GenerateTransformationProducts_cts <- function(x, engine, ...
       parents = tps@parents,
       transformation_products = tps@products
     )
-
-    browser()
-
+    
     engine$Results <- tp_results
     message("\U2713 Transformation products generation completed with CTS!")
     return(TRUE)

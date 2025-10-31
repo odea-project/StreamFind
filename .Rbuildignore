@@ -13,6 +13,7 @@
 ^log$
 ^cache$
 ^demo_data$
+^demos$
 ^\.here$
 ^\.lintr$
 ^README\.Rmd$

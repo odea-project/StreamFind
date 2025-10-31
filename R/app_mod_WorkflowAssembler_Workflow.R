@@ -271,7 +271,8 @@
           input[[paste0("workflow_del_", i)]],
           {
             rw <- reactive_workflow()
-            rw[[i]] <- NULL
+            rw <- rw[names(rw) != i]
+            rw <- Workflow(rw)
             reactive_workflow(rw)
           },
           ignoreInit = TRUE
@@ -553,8 +554,8 @@
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
       shiny::req(selected_method %in% names(rw))
-      short_selected_method <- gsub("\\d+_", "", selected_method)
-      idx_selected_method <- gsub("\\D", "", selected_method)
+      short_selected_method <- gsub("^\\d+_", "", selected_method)
+      idx_selected_method <- gsub("^(\\d+)_.*", "\\1", selected_method)
       method_name <- processing_methods[short_selected_method]
       help_url <- paste0(
         "https://odea-project.github.io/StreamFind/reference/",
@@ -577,17 +578,26 @@
             width = "100%"
           )
         } else if (is.logical(param_value)) {
+          # Handle NA values in logical parameters
+          checkbox_value <- if (is.na(param_value)) FALSE else param_value
           input_element <- shiny::checkboxInput(
             ns(ns2(param_name)),
             label = NULL,
-            value = param_value
+            value = checkbox_value
           )
         } else if (is.numeric(param_value)) {
-          input_element <- shiny::numericInput(
+          # Handle numeric vectors by converting to space-separated string
+          display_value <- if (length(param_value) > 1) {
+            paste(param_value, collapse = " ")
+          } else {
+            as.character(param_value)
+          }
+          input_element <- shiny::textInput(
             ns(ns2(param_name)),
             label = NULL,
-            value = param_value,
-            width = "100%"
+            value = display_value,
+            width = "100%",
+            placeholder = "Enter numbers separated by spaces"
           )
         } else if (is.character(param_value)) {
           input_element <- shiny::textInput(
@@ -665,7 +675,7 @@
                 if (file.exists(file)) {
                   tryCatch(
                     {
-                      param_value <- read.csv(file)
+                      param_value <- data.table::fread(file)
                       settings$parameters[[param_name]] <- param_value
                       rw[[selected_method]] <- settings
                       reactive_workflow(rw)
@@ -825,8 +835,8 @@
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
       shiny::req(selected_method %in% names(rw))
-      short_selected_method <- gsub("\\d+_", "", selected_method)
-      idx_selected_method <- gsub("\\D", "", selected_method)
+      short_selected_method <- gsub("^\\d+_", "", selected_method)
+      idx_selected_method <- gsub("^(\\d+)_.*", "\\1", selected_method)
       method_name <- processing_methods[short_selected_method]
       package_name <- "StreamFind"
       package_path <- find.package(package_name, lib.loc = .libPaths())
@@ -920,11 +930,21 @@
               }
               settings$parameters[[param_name]] <- as.logical(value)
             } else if ("numeric" %in% param_class) {
-              value <- as.numeric(input[[param_name]])
-              if (length(value) == 0) {
+              # Handle numeric vectors from space-separated input
+              input_value <- input[[param_name]]
+              if (is.null(input_value) || input_value == "") {
                 value <- as.numeric(NA_real_)
+              } else {
+                # Split by spaces and convert to numeric
+                value_parts <- trimws(strsplit(input_value, "\\s+")[[1]])
+                value_parts <- value_parts[value_parts != ""]  # Remove empty strings
+                if (length(value_parts) == 0) {
+                  value <- as.numeric(NA_real_)
+                } else {
+                  value <- as.numeric(value_parts)
+                }
               }
-              settings$parameters[[param_name]] <- as.numeric(value)
+              settings$parameters[[param_name]] <- value
             } else if ("character" %in% param_class) {
               value <- as.character(input[[param_name]])
               if (length(value) == 0) {
@@ -992,7 +1012,7 @@
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
       shiny::req(selected_method %in% names(rw))
-      short_selected_method <- gsub("\\d+_", "", selected_method)
+      short_selected_method <- gsub("^\\d+_", "", selected_method)
       method_name <- processing_methods[short_selected_method]
       settings <- do.call(method_name, list())
       rw[[selected_method]] <- settings

@@ -163,13 +163,10 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
       )
       if (length(fts_idx) > 0) {
         for (ft in fts_idx) {
-
-          if (is.null(parent_rt < nts$features[[a]]$rt[ft])) browser()
-          if (length(parent_rt < nts$features[[a]]$rt[ft]) == 0) browser()
-          if (!is.logical(parent_rt < nts$features[[a]]$rt[ft])) browser()
-          if (is.na(parent_rt) || is.na(nts$features[[a]]$rt[ft])) {
-            browser()  # enter debug mode here
-          }
+          # if (is.null(parent_rt < nts$features[[a]]$rt[ft])) browser()
+          # if (length(parent_rt < nts$features[[a]]$rt[ft]) == 0) browser()
+          # if (!is.logical(parent_rt < nts$features[[a]]$rt[ft])) browser()
+          # if (is.na(parent_rt) || is.na(nts$features[[a]]$rt[ft])) browser()
 
           if (rt_direction == -1) {
             if (parent_rt < nts$features[[a]]$rt[ft]) {
@@ -209,7 +206,7 @@ run.MassSpecMethod_FindTransformationProducts_native <- function(x, engine = NUL
       tps <- rbind(tps, tps_not_found, fill = TRUE)
     }
     tps <- split(tps, tps$parent_main)
-    tps <- lapply(tps, function(tp){
+    tps <- lapply(tps, function(tp) {
       tp$parent_main <- NULL
       tp
     })

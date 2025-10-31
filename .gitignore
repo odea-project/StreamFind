@@ -16,6 +16,7 @@
 **/log
 /cache
 /demo_data
+/demos
 
 # Globally excluded file types and folders ------------------------------------
 *.sqlite

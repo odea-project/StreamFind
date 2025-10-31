@@ -147,40 +147,9 @@ get_methods.Workflow <- function(x) {
 #' @export
 #' 
 `[<-.Workflow` <- function(x, i, value) {
-  value <- lapply(value, function(z) as.ProcessingStep(z))
   x <- NextMethod()
-  if (length(x) > 0) {
-    type <- vapply(x, function(z) z$type, NA_character_)[1]
-    possible_methods <- .get_available_methods(type)
-    workflow_methods <- NA_character_
-    for (ps in seq_along(x)) {
-      if (!x[[ps]]$method %in% possible_methods) {
-        warning(
-          "Method ", x[[ps]]$method, " not available for the engine ", engine, "Engine!"
-        )
-        x[[ps]] <- NULL
-        next
-      }
-      ri <- x[[ps]]$required
-      if (!all(ri %in% workflow_methods)) {
-        warning(
-          "Required methods not present! Please include first: \n", paste(ri, collapse = "\n")
-        )
-        x[[ps]] <- NULL
-        next
-      }
-      workflow_methods <- c(workflow_methods, x[[ps]]$method)
-    }
-    w_names <- vapply(x, function(z) paste0(z$method, "_", z$algorithm), NA_character_)
-    w_idx <- seq_along(w_names)
-    w_names <- paste0(w_idx, "_", w_names)
-    names(x) <- w_names
-  }
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Workflow object is not valid!")
-  }
+  x <- Workflow(x)
+  x
 }
 
 #' @describeIn Workflow Extract elements from a Workflow object using `[[`.
@@ -203,38 +172,8 @@ get_methods.Workflow <- function(x) {
     stop("Value must be a valid ProcessingStep object!")
   }
   x <- NextMethod()
-  if (length(x) > 0) {
-    type <- vapply(x, function(z) z$type, NA_character_)[1]
-    possible_methods <- .get_available_methods(type)
-    workflow_methods <- NA_character_
-    for (ps in seq_along(x)) {
-      if (!x[[ps]]$method %in% possible_methods) {
-        warning(
-          "Method ", x[[ps]]$method, " not available for the engine ", engine, "Engine!"
-        )
-        x[[ps]] <- NULL
-        next
-      }
-      ri <- x[[ps]]$required
-      if (!all(ri %in% workflow_methods)) {
-        warning(
-          "Required methods not present! Please include first: \n", paste(ri, collapse = "\n")
-        )
-        x[[ps]] <- NULL
-        next
-      }
-      workflow_methods <- c(workflow_methods, x[[ps]]$method)
-    }
-    w_names <- vapply(x, function(z) paste0(z$method, "_", z$algorithm), NA_character_)
-    w_idx <- seq_along(w_names)
-    w_names <- paste0(w_idx, "_", w_names)
-    names(x) <- w_names
-  }
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Workflow object is not valid!")
-  }
+  x <- Workflow(x)
+  x
 }
 
 #' @describeIn Workflow Save a Workflow object to a file.

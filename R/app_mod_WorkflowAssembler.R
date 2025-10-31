@@ -713,7 +713,12 @@
         {
           config <- reactive_engine_config()
           audit <- reactive_audit()
-          cache_size <- size(config[["ConfigCache"]])
+          cache_config <- config[["ConfigCache"]]
+          if (file.exists(cache_config$path) || dir.exists(cache_config$path)) {
+            cache_size <- size(cache_config)
+          } else {
+            cache_size <- 0
+          }
           if (is.numeric(cache_size)) {
             if (cache_size >= 1024^3) {
               paste0(round(cache_size / (1024^3), 2), " GB")

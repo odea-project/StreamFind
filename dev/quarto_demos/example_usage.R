@@ -82,10 +82,75 @@ nts_engine <- MassSpecEngine$new(
   analyses = list.files("demo_data/data/lc_hrms_nts", pattern = "mzML", full.names = TRUE),
   workflow = "demo_data/workflows/lc_hrms_nts_workflow_with_tp_generation.json"
 )
+
 nts_engine$save("nts_engine.rds")
 
 nts_engine <- MassSpecEngine$new()
-nts_engine$load("nts_engine.rds")
+nts_engine$load("demos/nts_engine.rds")
+nts_engine$Workflow <- "demos/workflows/demo_lc_hrms_nts_openms_biotransformer.json"
+
+# nts_engine$Workflow[[18]] <- MassSpecMethod_GenerateTransformationProducts_cts(
+#   parents = data.table::data.table(
+#     name = "Gabapentine",
+#     SMILES = "C1CCC(CC1)(CC(=O)O)CN"
+#   ),
+#   use_suspects = FALSE,
+#   use_compounds = FALSE,
+#   transLibrary = "combined_photolysis_abiotic_hydrolysis",
+#   generations = 3,
+#   errorRetries = 5,
+#   skipInvalid = TRUE,
+#   prefCalcChemProps = TRUE,
+#   neutralChemProps = TRUE,
+#   neutralizeTPs = TRUE,
+#   calcLogP = "rcdk",
+#   calcSims = TRUE,
+#   fpType = "extended",
+#   fpSimMethod = "tanimoto",
+#   parallel = FALSE
+# )
+
+show(nts_engine$Workflow)
 nts_engine$run_workflow()
 
+engine <- nts_engine$clone()
+
+run(MassSpecMethod_GenerateTransformationProducts_cts(
+  parents = data.table::data.table(
+    name = "Gabapentine",
+    SMILES = "C1CCC(CC1)(CC(=O)O)CN"
+  ),
+  use_suspects = FALSE,
+  use_compounds = FALSE,
+  transLibrary = "combined_photolysis_abiotic_hydrolysis",
+  generations = 3,
+  errorRetries = 5,
+  skipInvalid = TRUE,
+  prefCalcChemProps = FALSE,
+  neutralChemProps = FALSE,
+  neutralizeTPs = TRUE,
+  calcLogP = "rcdk",
+  calcSims = FALSE,
+  fpType = "extended",
+  fpSimMethod = "tanimoto",
+  parallel = FALSE
+), nts_engine)
+
+# 747.4769 plus oxagen addition
+
+unique(get_suspects(nts_engine$MassSpecResults_NonTargetAnalysis)[, c("name", "SMILES")])[5, ]
+names(engine$Results$MassSpecResults_TransformationProducts$transformation_products)
+lapply(engine$Results$MassSpecResults_TransformationProducts$transformation_products, nrow)
+engine$Results$MassSpecResults_TransformationProducts$transformation_products[[13]]
+
+plot_transformation_products_network(
+  engine$Results$MassSpecResults_TransformationProducts,
+  parents = "Tramadol",
+  parentsReplicate = "influent",
+  productsReplicate = "effluent"
+)
+
+nts_engine$Results$MassSpecResults_TransformationProducts$parents
+unique(get_suspects(nts_engine$MassSpecResults_NonTargetAnalysis)[, c("name", "SMILES")])
+get_groups(nts_engine$MassSpecResults_NonTargetAnalysis, groups = "M250_R509_8661")
 StreamFind::run_app()
