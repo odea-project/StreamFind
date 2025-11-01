@@ -714,23 +714,26 @@
           config <- reactive_engine_config()
           audit <- reactive_audit()
           cache_config <- config[["ConfigCache"]]
-          if (file.exists(cache_config$path) || dir.exists(cache_config$path)) {
-            cache_size <- size(cache_config)
-          } else {
-            cache_size <- 0
+          # Check if cache exists based on mode
+          cache_exists <- FALSE
+          if ("sqlite" %in% cache_config$mode && !is.null(cache_config$file)) {
+            cache_exists <- file.exists(cache_config$file)
+          } else if ("rds" %in% cache_config$mode && !is.null(cache_config$folder)) {
+            cache_exists <- dir.exists(cache_config$folder)
           }
-          if (is.numeric(cache_size)) {
-            if (cache_size >= 1024^3) {
-              paste0(round(cache_size / (1024^3), 2), " GB")
-            } else if (cache_size >= 1024^2) {
-              paste0(round(cache_size / (1024^2), 2), " MB")
-            } else if (cache_size >= 1024) {
-              paste0(round(cache_size / 1024, 2), " KB")
+          
+          if (cache_exists) {
+            cache_size_result <- size(cache_config)
+            if (is.numeric(cache_size_result) && !is.na(cache_size_result)) {
+              # size() returns a named numeric vector with unit as name
+              unit <- names(cache_size_result)
+              value <- round(as.numeric(cache_size_result), 2)
+              paste0(value, " ", unit)
             } else {
-              paste0(round(cache_size, 0), " bytes")
+              "Unknown"
             }
           } else {
-            as.character(cache_size)
+            "0 bytes"
           }
         },
         error = function(e) {
@@ -739,6 +742,7 @@
             duration = 5,
             type = "error"
           )
+          "Error"
         }
       )
     })

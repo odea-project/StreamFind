@@ -150,7 +150,13 @@ plot_transformation_products_network(
   productsReplicate = "effluent"
 )
 
-nts_engine$Results$MassSpecResults_TransformationProducts$parents
+engine$Results$MassSpecResults_TransformationProducts$parents
 unique(get_suspects(nts_engine$MassSpecResults_NonTargetAnalysis)[, c("name", "SMILES")])
 get_groups(nts_engine$MassSpecResults_NonTargetAnalysis, groups = "M250_R509_8661")
 StreamFind::run_app()
+
+readRDS("C:/Users/apoli/Documents/demos/demo_02/nts_engine_res.rds")
+
+engine <- MassSpecEngine$new()
+engine$load("C:/Users/apoli/Documents/demos/demo_02/nts_engine_res.rds")
+engine$run_app()
