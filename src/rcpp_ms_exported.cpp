@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <cmath>
 #include <algorithm>
+#include <numeric>
 #include <filesystem>
 #include "StreamCraft_lib.h"
 #include "NTS_utils.h"
@@ -2148,26 +2149,26 @@ inline float calculate_mz_threshold_linear(float mz, float slope, float intercep
 
 // Calculate linear model parameters from resolution profile
 // resolution_profile[0] = resolution at 100 Da (or reference point)
-// resolution_profile[1] = resolution at 400 Da  
+// resolution_profile[1] = resolution at 400 Da
 // resolution_profile[2] = resolution at 1000 Da
 inline std::pair<float, float> calculate_linear_model_params(const std::vector<int>& resolution_profile) {
   // Use three points to fit linear model: (100, res[0]), (400, res[1]), (1000, res[2])
   // For better fit, use least squares with the three points
   const float mz1 = 100.0f, mz2 = 400.0f, mz3 = 1000.0f;
   const float res1 = static_cast<float>(resolution_profile[0]);
-  const float res2 = static_cast<float>(resolution_profile[1]); 
+  const float res2 = static_cast<float>(resolution_profile[1]);
   const float res3 = static_cast<float>(resolution_profile[2]);
-  
+
   // Linear least squares fit: y = ax + b where y=resolution, x=mz
   const float n = 3.0f;
   const float sum_x = mz1 + mz2 + mz3;
   const float sum_y = res1 + res2 + res3;
   const float sum_xx = mz1*mz1 + mz2*mz2 + mz3*mz3;
   const float sum_xy = mz1*res1 + mz2*res2 + mz3*res3;
-  
+
   const float slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
   const float intercept = (sum_y - slope * sum_x) / n;
-  
+
   return std::make_pair(slope, intercept);
 }
 
@@ -2178,15 +2179,13 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
                                   std::vector<float> rtWindowsMin,
                                   std::vector<float> rtWindowsMax,
                                   std::vector<int> resolution_profile,
-                                  int noiseBins = 70,
                                   float noiseThreshold = 15.0,
-                                  float noiseQuantile = 0.01,
                                   float minSNR = 3.0,
                                   int minTraces = 3,
                                   float baselineWindow = 200.0,
                                   float maxWidth = 100.0,
                                   float minGaussFit = 0.6) {
-  
+
   std::vector<std::string> analyses = Rcpp::as<std::vector<std::string>>(info["analysis"]);
   std::vector<std::string> analyses_files = Rcpp::as<std::vector<std::string>>(info["file"]);
   Rcpp::List feature_list(analyses.size());
@@ -2205,14 +2204,23 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
   // Calculate linear model parameters for resolution once
   const auto [slope, intercept] = calculate_linear_model_params(resolution_profile);
 
-  for (size_t a = 0; a < analyses.size(); ++a) {
-    Rcpp::Rcout << "Processing analysis " << analyses[a] << "!" << std::endl;
+  // print the mzThreshold at some reference points for verification
+  Rcpp::Rcout << std::endl;
+  Rcpp::Rcout << "Linear resolution model threshold = " << slope << " * m/z + " << intercept << std::endl;
+  Rcpp::Rcout << "Reference thresholds: " << std::endl;
+  for (float test_mz : {100.0f, 400.0f, 1000.0f}) {
+    float mzThreshold = calculate_mz_threshold_linear(test_mz, slope, intercept);
+    Rcpp::Rcout << "  m/z " << test_mz << " -> threshold " << mzThreshold << std::endl;
+  }
 
+
+  for (size_t a = 0; a < analyses.size(); ++a) {
+    Rcpp::Rcout << std::endl;
+    Rcpp::Rcout << "Processing analysis " << analyses[a] << std::endl;
     const Rcpp::List &header_ref = Rcpp::as<Rcpp::List>(spectra_headers[analyses[a]]);
     sc::MS_SPECTRA_HEADERS header = MassSpecResults_NonTargetAnalysis::as_MS_SPECTRA_HEADERS(header_ref);
     std::vector<int> idx_load;
     std::vector<float> rt_load;
-
     if (rtWindowsMin.size() > 0) {
       const std::vector<float> &rts = header.rt;
       for (size_t w = 0; w < rtWindowsMin.size(); ++w) {
@@ -2229,71 +2237,129 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       idx_load = header.index;;
       rt_load = header.rt;
     }
-
     std::string file_path = analyses_files[a];
     sc::MS_FILE ana(file_path);
-
-    Rcpp::Rcout << "Processing " << idx_load.size() << " spectra!" << std::endl;
-
-    // Use individual vectors for better cache performance and memory access
-    std::vector<float> clean_rt, clean_mz, clean_intensity, clean_noise;
-    // Reserve space to reduce memory reallocations
-    const size_t estimated_size = idx_load.size() * 50; // Conservative estimate
-    clean_rt.reserve(estimated_size);
-    clean_mz.reserve(estimated_size);
-    clean_intensity.reserve(estimated_size);
-    clean_noise.reserve(estimated_size);
+    Rcpp::Rcout << "Using " << idx_load.size() << " spectra" << std::endl;
+    std::vector<float> spec_rt, spec_mz, spec_intensity, spec_noise;
 
     for (size_t i = 0; i < idx_load.size(); ++i) {
       const float &rt = rt_load[i];
       const int spectrum_idx = idx_load[i];
-      
-      // Load one spectrum at a time
       std::vector<std::vector<std::vector<float>>> single_spectrum = ana.get_spectra({spectrum_idx});
-      if (single_spectrum.empty() || single_spectrum[0].size() < minTraces) continue;
-      
       std::vector<float>& raw_mz = single_spectrum[0][0];
       std::vector<float>& raw_intensity = single_spectrum[0][1];
       const int raw_n_traces = raw_mz.size();
       if (raw_n_traces < minTraces) continue;
       std::vector<float> raw_noise(raw_n_traces);
-      if (noiseQuantile > 0) {
-        // Create bins for local quantile calculation
-        std::vector<int> bins(raw_n_traces);
-        for (int j = 0; j < raw_n_traces; ++j) {
-          bins[j] = std::min(static_cast<int>(j * noiseBins / raw_n_traces), noiseBins - 1);
-        }
-        
-        // Calculate quantiles for each bin
-        std::vector<float> bin_quantiles(noiseBins, noiseThreshold);
-        for (int bin = 0; bin < noiseBins; ++bin) {
-          std::vector<float> bin_intensities;
-          for (int j = 0; j < raw_n_traces; ++j) {
-            if (bins[j] == bin) {
-              bin_intensities.push_back(raw_intensity[j]);
-            }
-          }
-          if (!bin_intensities.empty()) {
-            std::sort(bin_intensities.begin(), bin_intensities.end());
-            int quantile_idx = static_cast<int>(bin_intensities.size() * noiseQuantile);
-            bin_quantiles[bin] = std::max(bin_intensities[quantile_idx], noiseThreshold);
-          }
-        }
-        
-        // Assign noise levels
-        for (int j = 0; j < raw_n_traces; ++j) {
-          raw_noise[j] = bin_quantiles[bins[j]];
-        }
-      } else {
-        std::fill(raw_noise.begin(), raw_noise.end(), noiseThreshold);
+
+      // MARK: Spectra denoising - Automated parameter estimation
+
+      // Automatically estimate optimal noiseBins and noiseQuantile based on data characteristics
+      int auto_noiseBins;
+      float auto_noiseQuantile;
+
+
+      // Calculate data density and intensity distribution characteristics
+      std::vector<float> intensity_copy = raw_intensity;
+      std::sort(intensity_copy.begin(), intensity_copy.end());
+
+      // Estimate data density - use logarithmic scaling for better bin distribution
+      auto_noiseBins = std::max(10, std::min(200, static_cast<int>(std::sqrt(raw_n_traces) * 1.5)));
+
+      // Calculate intensity statistics
+      float q25 = intensity_copy[static_cast<int>(raw_n_traces * 0.25)];
+      // float q50 = intensity_copy[static_cast<int>(raw_n_traces * 0.50)]; // median
+      float q75 = intensity_copy[static_cast<int>(raw_n_traces * 0.75)];
+      float q90 = intensity_copy[static_cast<int>(raw_n_traces * 0.90)];
+      // float q95 = intensity_copy[static_cast<int>(raw_n_traces * 0.95)];
+
+      // Calculate interquartile range and coefficient of variation
+      float iqr = q75 - q25;
+      float mean_intensity = std::accumulate(raw_intensity.begin(), raw_intensity.end(), 0.0f) / raw_n_traces;
+      float variance = 0.0f;
+      for (float val : raw_intensity) {
+        variance += (val - mean_intensity) * (val - mean_intensity);
       }
-      
-      // Filter by noise threshold - optimized version
+      variance /= raw_n_traces;
+      float cv = std::sqrt(variance) / mean_intensity; // coefficient of variation
+
+      // Adaptive quantile estimation based on data characteristics
+      if (cv > 2.0f) {
+        // High variability - use moderate quantile to balance noise removal vs signal preservation
+        auto_noiseQuantile = 0.05f;  // 5% - captures lower noise floor in variable data
+      } else if (cv > 1.0f) {
+        // Medium variability - standard MS denoising approach
+        auto_noiseQuantile = 0.10f;  // 10% - typical for MS data noise removal
+      } else {
+        // Low variability - more aggressive denoising possible
+        auto_noiseQuantile = 0.20f;  // 20% - can remove more noise when data is consistent
+      }
+
+      // Adjust quantile based on signal-to-noise characteristics
+      float signal_noise_ratio = q90 / q25;
+      if (signal_noise_ratio > 100) {
+        // High dynamic range - more conservative noise estimation
+        auto_noiseQuantile *= 0.5f;
+      } else if (signal_noise_ratio < 10) {
+        // Low dynamic range - less conservative
+        auto_noiseQuantile *= 1.5f;
+      }
+
+      // Ensure quantile is within reasonable bounds
+      auto_noiseQuantile = std::max(0.01f, std::min(0.30f, auto_noiseQuantile));
+
+      // Adjust number of bins based on data sparsity
+      float data_sparsity = static_cast<float>(raw_n_traces) / auto_noiseBins;
+      if (data_sparsity < 5) {
+        // Too few points per bin - reduce number of bins
+        auto_noiseBins = std::max(5, raw_n_traces / 5);
+      } else if (data_sparsity > 50) {
+        // Too many points per bin - increase number of bins
+        auto_noiseBins = std::min(200, raw_n_traces / 20);
+      }
+
+      // Debug output for automated parameters
+      if (i == 0) { // Only show for first spectrum to avoid spam
+        Rcpp::Rcout << "Auto noise estimation: bins=" << auto_noiseBins
+                    << ", quantile = " << auto_noiseQuantile
+                    << " (CV = " << cv << ", SNR = " << signal_noise_ratio
+                    << ", n = " << raw_n_traces << ")" << std::endl;
+      }
+
+      // Create bins for local quantile calculation
+      std::vector<int> bins(raw_n_traces);
+      for (int j = 0; j < raw_n_traces; ++j) {
+        bins[j] = std::min(static_cast<int>(j * auto_noiseBins / raw_n_traces), auto_noiseBins - 1);
+      }
+
+      // Calculate quantiles for each bin
+      std::vector<float> bin_quantiles(auto_noiseBins, noiseThreshold);
+      for (int bin = 0; bin < auto_noiseBins; ++bin) {
+        std::vector<float> bin_intensities;
+        for (int j = 0; j < raw_n_traces; ++j) {
+          if (bins[j] == bin) {
+            bin_intensities.push_back(raw_intensity[j]);
+          }
+        }
+        if (!bin_intensities.empty()) {
+          std::sort(bin_intensities.begin(), bin_intensities.end());
+          int quantile_idx = std::max(0, std::min(static_cast<int>(bin_intensities.size()) - 1,
+                                                  static_cast<int>(bin_intensities.size() * auto_noiseQuantile)));
+          bin_quantiles[bin] = std::max(bin_intensities[quantile_idx], noiseThreshold);
+        }
+      }
+
+      // Assign noise levels
+      for (int j = 0; j < raw_n_traces; ++j) {
+        raw_noise[j] = bin_quantiles[bins[j]];
+      }
+
+
       std::vector<float> clean_mz, clean_intensity, clean_noise;
       clean_mz.reserve(raw_n_traces);
       clean_intensity.reserve(raw_n_traces);
       clean_noise.reserve(raw_n_traces);
-      
+
       for (int j = 0; j < raw_n_traces; ++j) {
         if (raw_intensity[j] > raw_noise[j]) {
           clean_mz.push_back(raw_mz[j]);
@@ -2311,41 +2377,49 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       std::sort(indices.begin(), indices.end(), [&](size_t a, size_t b) {
         return clean_mz[a] < clean_mz[b];
       });
-      
+
       // Apply sorting - optimized version
       std::vector<float> clean_sorted_mz, clean_sorted_intensity, clean_sorted_noise;
       clean_sorted_mz.reserve(clean_size);
       clean_sorted_intensity.reserve(clean_size);
       clean_sorted_noise.reserve(clean_size);
-      
+
       for (size_t idx : indices) {
         clean_sorted_mz.push_back(clean_mz[idx]);
         clean_sorted_intensity.push_back(clean_intensity[idx]);
         clean_sorted_noise.push_back(clean_noise[idx]);
       }
-      
-      // Cluster by mz difference - optimized with linear model
+
       std::vector<int> cent_clusters;
       cent_clusters.reserve(clean_sorted_mz.size());
-      int cent_current_cluster = 0;
-      cent_clusters.push_back(cent_current_cluster);
 
-      for (size_t j = 1; j < clean_sorted_mz.size(); ++j) {
-        const float curr_mz = clean_sorted_mz[j];
-        const float prev_mz = clean_sorted_mz[j-1];
-        
-        // Use linear model for mz threshold calculation
-        const float mz_threshold = calculate_mz_threshold_linear(curr_mz, slope, intercept);
-        
-        if (curr_mz - prev_mz > mz_threshold) {
-          cent_current_cluster++;
+      if (clean_sorted_mz.size() > 0) {
+        std::vector<float> mz_diffs;
+        std::vector<float> mz_thresholds;
+        mz_diffs.reserve(clean_sorted_mz.size() - 1);
+        mz_thresholds.reserve(clean_sorted_mz.size() - 1);
+
+        for (size_t j = 1; j < clean_sorted_mz.size(); ++j) {
+          mz_diffs.push_back(clean_sorted_mz[j] - clean_sorted_mz[j-1]);
+          mz_thresholds.push_back(calculate_mz_threshold_linear(clean_sorted_mz[j], slope, intercept));
         }
-        cent_clusters.push_back(cent_current_cluster);
+
+        cent_clusters.push_back(0); // First element always cluster 0
+        int current_cluster = 0;
+
+        std::transform(mz_diffs.begin(), mz_diffs.end(), mz_thresholds.begin(),
+                      std::back_inserter(cent_clusters),
+                      [&current_cluster](float diff, float threshold) {
+                        if (diff > threshold) {
+                          current_cluster++;
+                        }
+                        return current_cluster;
+                      });
       }
-      
+
       // Aggregate by cluster (keep max intensity peak per cluster)
       std::map<int, std::tuple<float, float, float>> cent_cluster_data; // cluster -> (mz, intensity, noise)
-      
+
       for (size_t j = 0; j < clean_sorted_mz.size(); ++j) {
         int cluster = cent_clusters[j];
         if (cent_cluster_data.find(cluster) == cent_cluster_data.end()) {
@@ -2358,54 +2432,77 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       }
 
       for (const auto& [cluster, data_tuple] : cent_cluster_data) {
-        clean_rt.push_back(rt);
-        clean_mz.push_back(std::get<0>(data_tuple));
-        clean_intensity.push_back(std::get<1>(data_tuple));
-        clean_noise.push_back(std::get<2>(data_tuple));
+        spec_rt.push_back(rt);
+        spec_mz.push_back(std::get<0>(data_tuple));
+        spec_intensity.push_back(std::get<1>(data_tuple));
+        spec_noise.push_back(std::get<2>(data_tuple));
       }
 
       // Clear single spectrum data to free memory immediately
       single_spectrum.clear();
     }
 
-    const int clean_n_traces = clean_rt.size();
+    // MARK: Mass clustering
+
+    const int clean_n_traces = spec_rt.size();
     if (clean_n_traces == 0) {
       Rcpp::List empty_list;
       empty_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
       feature_list[analyses[a]] = empty_list;
       continue;
     }
-      
+
     // Sort by mz
     std::vector<size_t> clust_sort_indices(clean_n_traces);
     std::iota(clust_sort_indices.begin(), clust_sort_indices.end(), 0);
     std::sort(clust_sort_indices.begin(), clust_sort_indices.end(), [&](size_t a, size_t b) {
-      return clean_mz[a] < clean_mz[b];
+      return spec_mz[a] < spec_mz[b];
     });
-      
-    // Calculate mz differences and assign clusters - optimized with linear model
+
+    // Calculate mz differences and assign clusters - optimized vectorized approach
     std::vector<int> clust_clusters(clean_n_traces);
-    int clust_current_cluster = 0;
-    clust_clusters[clust_sort_indices[0]] = clust_current_cluster;
 
-    for (int i = 1; i < clean_n_traces; ++i) {
-      const float prev_mz = clean_mz[clust_sort_indices[i-1]];
-      const float curr_mz = clean_mz[clust_sort_indices[i]];
-
-      // Use linear model for mz threshold calculation
-      const float mzrThreshold = calculate_mz_threshold_linear(curr_mz, slope, intercept);
-      
-      if (curr_mz - prev_mz > mzrThreshold) {
-        clust_current_cluster++;
+    if (clean_n_traces > 0) {
+      // Create sorted mz values for easier processing
+      std::vector<float> sorted_mz(clean_n_traces);
+      for (int i = 0; i < clean_n_traces; ++i) {
+        sorted_mz[i] = spec_mz[clust_sort_indices[i]];
       }
-      clust_clusters[clust_sort_indices[i]] = clust_current_cluster;
+
+      // Calculate all differences and thresholds at once
+      std::vector<float> mz_diffs;
+      std::vector<float> mz_thresholds;
+      mz_diffs.reserve(clean_n_traces - 1);
+      mz_thresholds.reserve(clean_n_traces - 1);
+
+      for (int i = 1; i < clean_n_traces; ++i) {
+        mz_diffs.push_back(sorted_mz[i] - sorted_mz[i-1]);
+        mz_thresholds.push_back(calculate_mz_threshold_linear(sorted_mz[i], slope, intercept));
+      }
+
+      // Vectorized cluster assignment
+      std::vector<int> sorted_clusters(clean_n_traces);
+      sorted_clusters[0] = 0; // First element always cluster 0
+      int current_cluster = 0;
+
+      for (size_t i = 0; i < mz_diffs.size(); ++i) {
+        if (mz_diffs[i] > mz_thresholds[i]) {
+          current_cluster++;
+        }
+        sorted_clusters[i + 1] = current_cluster;
+      }
+
+      // Map back to original indices
+      for (int i = 0; i < clean_n_traces; ++i) {
+        clust_clusters[clust_sort_indices[i]] = sorted_clusters[i];
+      }
     }
 
     // Make a cluster map for size, max and min intensity
     std::map<int, std::tuple<int, float, float>> clust_cluster_map;
     for (int i = 0; i < clean_n_traces; ++i) {
       const int cluster = clust_clusters[i];
-      const float intensity = clean_intensity[i];
+      const float intensity = spec_intensity[i];
       if (clust_cluster_map.find(cluster) == clust_cluster_map.end()) {
         clust_cluster_map[cluster] = std::make_tuple(1, intensity, intensity);
       } else {
@@ -2414,21 +2511,21 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         std::get<2>(clust_cluster_map[cluster]) = std::min(std::get<2>(clust_cluster_map[cluster]), intensity);
       }
     }
-      
+
     std::set<int> valid_clusters;
     for (const auto& [cluster, data] : clust_cluster_map) {
       if (std::get<0>(data) > minTraces) {
         float exp_snr = std::get<1>(data) / std::get<2>(data);
         if (exp_snr > minSNR) {
           valid_clusters.insert(cluster);
-        } 
+        }
       }
     }
-      
+
     // Collect final data - optimized version
     std::vector<float> clust_rt, clust_mz, clust_intensity, clust_noise;
     std::vector<int> clust_cluster;
-    
+
     // Reserve space based on estimated valid clusters
     const size_t estimated_valid = clean_n_traces / 2; // Conservative estimate
     clust_rt.reserve(estimated_valid);
@@ -2436,36 +2533,34 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
     clust_intensity.reserve(estimated_valid);
     clust_noise.reserve(estimated_valid);
     clust_cluster.reserve(estimated_valid);
-    
+
     for (int i = 0; i < clean_n_traces; ++i) {
       const int cluster = clust_clusters[i];
       if (valid_clusters.find(cluster) != valid_clusters.end()) {
-        clust_rt.push_back(clean_rt[i]);
-        clust_mz.push_back(clean_mz[i]);
-        clust_intensity.push_back(clean_intensity[i]);
-        clust_noise.push_back(clean_noise[i]);
+        clust_rt.push_back(spec_rt[i]);
+        clust_mz.push_back(spec_mz[i]);
+        clust_intensity.push_back(spec_intensity[i]);
+        clust_noise.push_back(spec_noise[i]);
         clust_cluster.push_back(cluster);
       }
     }
-      
-    // Sort by rt - optimized version
+
     const size_t final_size = clust_rt.size();
     std::vector<size_t> clust_rt_indices(final_size);
     std::iota(clust_rt_indices.begin(), clust_rt_indices.end(), 0);
     std::sort(clust_rt_indices.begin(), clust_rt_indices.end(), [&](size_t a, size_t b) {
       return clust_rt[a] < clust_rt[b];
     });
-      
+
     std::vector<float> clust_rt_sorted_rt, clust_rt_sorted_mz, clust_rt_sorted_intensity, clust_rt_sorted_noise;
     std::vector<int> clust_rt_sorted_cluster;
-    
-    // Reserve space for final sorted vectors
+
     clust_rt_sorted_rt.reserve(final_size);
     clust_rt_sorted_mz.reserve(final_size);
     clust_rt_sorted_intensity.reserve(final_size);
     clust_rt_sorted_noise.reserve(final_size);
     clust_rt_sorted_cluster.reserve(final_size);
-    
+
     for (size_t idx : clust_rt_indices) {
       clust_rt_sorted_rt.push_back(clust_rt[idx]);
       clust_rt_sorted_mz.push_back(clust_mz[idx]);
@@ -2474,6 +2569,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       clust_rt_sorted_cluster.push_back(clust_cluster[idx]);
     }
 
+    // Create output list with raw spectra data
     Rcpp::List spectra_list;
     spectra_list["rt"] = clust_rt_sorted_rt;
     spectra_list["mz"] = clust_rt_sorted_mz;
@@ -2482,7 +2578,582 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
     spectra_list["cluster"] = clust_rt_sorted_cluster;
     spectra_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
-    feature_list[analyses[a]] = spectra_list;
+    // feature_list[analyses[a]] = spectra_list;
+    // return feature_list;
+
+
+    // MARK: Peak detection
+
+    // Debug cluster to track in detail
+    const int debug_cluster = 439;
+
+    // Create a map to group data by cluster
+    std::map<int, std::vector<int>> cluster_indices;
+    for (size_t i = 0; i < clust_rt_sorted_cluster.size(); ++i) {
+      cluster_indices[clust_rt_sorted_cluster[i]].push_back(i);
+    }
+
+    Rcpp::Rcout << "Detecting peaks in " << cluster_indices.size() << " mass clusters." << std::endl;
+
+    int total_clusters_processed = 0;
+    int clusters_too_small = 0;
+
+    // Peak detection data structures
+    std::vector<float> peaks_rt, peaks_mz, peaks_intensity, peaks_noise, peaks_sn;
+    std::vector<float> peaks_rtmin, peaks_rtmax, peaks_mzmin, peaks_mzmax;
+    std::vector<float> peaks_width, peaks_ppm;
+    std::vector<float> peaks_fwhm_rt, peaks_fwhm_mz;  // FWHM in RT and MZ dimensions
+    std::vector<int> peaks_cluster, peaks_n_traces;
+    std::vector<std::string> peaks_id;
+
+    // Peak profile data as lists
+    std::vector<Rcpp::List> peaks_profile_rt, peaks_profile_raw_intensity;
+    std::vector<Rcpp::List> peaks_profile_baseline, peaks_profile_smoothed_intensity;
+
+    // Process each cluster
+    for (const auto& [cluster_id, indices] : cluster_indices) {
+      total_clusters_processed++;
+
+      if (indices.size() < static_cast<size_t>(minTraces)) {
+        clusters_too_small++;
+        if (cluster_id == debug_cluster) {
+          Rcpp::Rcout << "DEBUG Cluster " << cluster_id << " skipped: only " << indices.size() << " traces (min: " << minTraces << ")" << std::endl;
+        }
+        continue;
+      }
+
+      if (cluster_id == debug_cluster) {
+        Rcpp::Rcout << "DEBUG Processing cluster " << cluster_id << " with " << indices.size() << " traces" << std::endl;
+      }
+
+      // Extract cluster data
+      std::vector<float> cluster_rt, cluster_mz, cluster_intensity, cluster_noise;
+      for (int idx : indices) {
+        cluster_rt.push_back(clust_rt_sorted_rt[idx]);
+        cluster_mz.push_back(clust_rt_sorted_mz[idx]);
+        cluster_intensity.push_back(clust_rt_sorted_intensity[idx]);
+        cluster_noise.push_back(clust_rt_sorted_noise[idx]);
+      }
+
+      const int n = cluster_rt.size();
+      if (n < minTraces) {
+        if (cluster_id == debug_cluster) {
+          Rcpp::Rcout << "  DEBUG Cluster " << cluster_id << " skipped after extraction: only " << n << " points" << std::endl;
+        }
+        continue;
+      }
+
+      if (cluster_id == debug_cluster) {
+        Rcpp::Rcout << "  DEBUG Cluster " << cluster_id << ": n=" << n << " points" << std::endl;
+
+        // Debug: show intensity statistics
+        auto minmax_intensity = std::minmax_element(cluster_intensity.begin(), cluster_intensity.end());
+        float min_intensity = *minmax_intensity.first;
+        float max_intensity = *minmax_intensity.second;
+        float sum_intensity = std::accumulate(cluster_intensity.begin(), cluster_intensity.end(), 0.0f);
+        float mean_intensity = sum_intensity / n;
+
+        Rcpp::Rcout << "  DEBUG Intensity stats: min=" << min_intensity << ", max=" << max_intensity
+                    << ", mean=" << mean_intensity << std::endl;
+      }
+
+      // Calculate cycle time and window sizes
+      std::vector<float> rt_diffs;
+      for (int i = 1; i < n; ++i) {
+        rt_diffs.push_back(cluster_rt[i] - cluster_rt[i-1]);
+      }
+      std::sort(rt_diffs.begin(), rt_diffs.end());
+      float cycle_time = rt_diffs[rt_diffs.size() / 2]; // median
+
+      int baseline_window_size = std::max(minTraces, static_cast<int>(std::floor(baselineWindow / cycle_time))) / 2;
+      int derivative_window_size = std::max(minTraces, static_cast<int>(std::floor(4.0f / cycle_time)));
+
+      if (cluster_id == debug_cluster) {
+        Rcpp::Rcout << "  DEBUG Cycle time: " << cycle_time << ", baseline_window: " << baseline_window_size
+                    << ", derivative_window: " << derivative_window_size << std::endl;
+      }
+
+      // Calculate baseline using moving minimum
+      std::vector<float> baseline(n);
+      for (int i = 0; i < n; ++i) {
+        int start_idx = std::max(0, i - baseline_window_size);
+        int end_idx = std::min(n - 1, i + baseline_window_size);
+
+        float min_intensity = cluster_intensity[start_idx];
+        for (int j = start_idx; j <= end_idx; ++j) {
+          min_intensity = std::min(min_intensity, cluster_intensity[j]);
+        }
+        baseline[i] = min_intensity;
+      }
+
+      // Smooth baseline
+      std::vector<float> smoothed_baseline = baseline;
+      if (n >= 3) {
+        for (int i = 1; i < n - 1; ++i) {
+          smoothed_baseline[i] = (baseline[i-1] + baseline[i] + baseline[i+1]) / 3.0f;
+        }
+        baseline = smoothed_baseline;
+      }
+
+      if (cluster_id == debug_cluster) {
+        // Debug: baseline statistics
+        auto minmax_baseline = std::minmax_element(baseline.begin(), baseline.end());
+        float min_baseline = *minmax_baseline.first;
+        float max_baseline = *minmax_baseline.second;
+        float sum_baseline = std::accumulate(baseline.begin(), baseline.end(), 0.0f);
+        float mean_baseline = sum_baseline / n;
+
+        Rcpp::Rcout << "  DEBUG Baseline stats: min=" << min_baseline << ", max=" << max_baseline
+                    << ", mean=" << mean_baseline << std::endl;
+      }
+
+      // Smooth intensity
+      std::vector<float> smoothed_intensity = cluster_intensity;
+      int window_size_smooth = 2;
+      int half_window_smooth = window_size_smooth / 2;
+      if (n >= 3) {
+        for (int i = 0; i < n; ++i) {
+          int start_idx = std::max(0, i - half_window_smooth);
+          int end_idx = std::min(n - 1, i + half_window_smooth);
+
+          float sum = 0.0f;
+          int count = 0;
+          for (int j = start_idx; j <= end_idx; ++j) {
+            sum += cluster_intensity[j];
+            count++;
+          }
+          smoothed_intensity[i] = sum / count;
+        }
+      }
+
+      if (cluster_id == debug_cluster) {
+        // Debug: smoothed intensity statistics
+        auto minmax_smooth = std::minmax_element(smoothed_intensity.begin(), smoothed_intensity.end());
+        float min_smooth = *minmax_smooth.first;
+        float max_smooth = *minmax_smooth.second;
+        float sum_smooth = std::accumulate(smoothed_intensity.begin(), smoothed_intensity.end(), 0.0f);
+        float mean_smooth = sum_smooth / n;
+
+        Rcpp::Rcout << "  DEBUG Smoothed intensity stats: min=" << min_smooth << ", max=" << max_smooth
+                    << ", mean=" << mean_smooth << std::endl;
+      }
+
+      // Calculate first derivative
+      std::vector<float> dI(n - 1);
+      for (int i = 0; i < n - 1; ++i) {
+        dI[i] = smoothed_intensity[i + 1] - smoothed_intensity[i];
+      }
+
+      // Calculate second derivative
+      std::vector<float> d2I(n - 2);
+      for (int i = 0; i < n - 2; ++i) {
+        d2I[i] = dI[i + 1] - dI[i];
+      }
+
+      // Find peak candidates: where slope changes + to -
+      std::vector<int> candidates;
+      for (int i = 1; i < static_cast<int>(dI.size()); ++i) {
+        if (dI[i] <= 0 && dI[i-1] > 0) {
+          candidates.push_back(i + 1); // +1 because dI is offset by 1
+        }
+      }
+
+      if (cluster_id == debug_cluster) {
+        Rcpp::Rcout << "  DEBUG Found " << candidates.size() << " peak candidates based on derivative sign change" << std::endl;
+
+        if (candidates.empty()) {
+          Rcpp::Rcout << "  DEBUG No candidates found - checking derivative values:" << std::endl;
+          for (size_t i = 0; i < std::min(static_cast<size_t>(10), dI.size()); ++i) {
+            Rcpp::Rcout << "    DEBUG dI[" << i << "] = " << dI[i] << std::endl;
+          }
+          continue;
+        }
+      } else if (candidates.empty()) {
+        continue;
+      }
+
+      // Filter candidates based on derivative criteria
+      std::vector<int> valid_peaks;
+      int candidates_rejected_edge = 0;
+      int candidates_rejected_derivative = 0;
+      int candidates_rejected_apex = 0;
+
+      for (int idx : candidates) {
+        if (idx < derivative_window_size || idx >= n - derivative_window_size) {
+          candidates_rejected_edge++;
+          continue;
+        }
+
+        // Check first derivative before peak (should be positive)
+        float pre_avg = 0.0f;
+        int pre_count = 0;
+        for (int i = std::max(0, idx - derivative_window_size); i < idx - 1; ++i) {
+          if (i >= 0 && i < static_cast<int>(dI.size())) {
+            pre_avg += dI[i];
+            pre_count++;
+          }
+        }
+        if (pre_count > 0) pre_avg /= pre_count;
+
+        // Check first derivative after peak (should be negative)
+        float post_avg = 0.0f;
+        int post_count = 0;
+        for (int i = idx; i < std::min(n - 1, idx + derivative_window_size); ++i) {
+          if (i >= 0 && i < static_cast<int>(dI.size())) {
+            post_avg += dI[i];
+            post_count++;
+          }
+        }
+        if (post_count > 0) post_avg /= post_count;
+
+        // Check second derivative at peak (should be negative)
+        float d2_at_peak = 0.0f;
+        if (idx - 1 >= 0 && idx - 1 < static_cast<int>(d2I.size())) {
+          d2_at_peak = d2I[idx - 1];
+        }
+
+        // Check for higher apex in neighborhood
+        bool higher_apex_nearby = false;
+        // for (int i = std::max(0, idx - derivative_window_size); i < std::min(n, idx + derivative_window_size); ++i) {
+        //   if (i != idx && smoothed_intensity[i] >= smoothed_intensity[idx]) {
+        //     higher_apex_nearby = true;
+        //     break;
+        //   }
+        // }
+
+        // Keep if criteria are met
+        if (pre_count > 0 && post_count > 0 && pre_avg > 0 && post_avg < 0 &&
+            d2_at_peak < 0 && !higher_apex_nearby) {
+          valid_peaks.push_back(idx);
+          if (cluster_id == debug_cluster) {
+            Rcpp::Rcout << "    DEBUG Candidate at idx " << idx << " ACCEPTED: pre_avg=" << pre_avg
+                        << ", post_avg=" << post_avg << ", d2=" << d2_at_peak << std::endl;
+          }
+        } else {
+          if (higher_apex_nearby) {
+            candidates_rejected_apex++;
+          } else {
+            candidates_rejected_derivative++;
+          }
+          if (cluster_id == debug_cluster) {
+            Rcpp::Rcout << "    DEBUG Candidate at idx " << idx << " rejected: pre_avg=" << pre_avg
+                        << ", post_avg=" << post_avg << ", d2=" << d2_at_peak
+                        << ", higher_apex=" << higher_apex_nearby << std::endl;
+          }
+        }
+      }
+
+      if (cluster_id == debug_cluster) {
+        Rcpp::Rcout << "  DEBUG Peak filtering: " << candidates.size() << " candidates -> " << valid_peaks.size() << " valid peaks" << std::endl;
+        Rcpp::Rcout << "  DEBUG Rejected: " << candidates_rejected_edge << " (edge), "
+                    << candidates_rejected_derivative << " (derivative), "
+                    << candidates_rejected_apex << " (apex)" << std::endl;
+      }
+
+      // Process each valid peak
+      int peaks_rejected_boundary = 0;
+      int peaks_rejected_snr = 0;
+      int peaks_accepted = 0;
+
+      for (int peak_idx : valid_peaks) {
+        if (peak_idx < minTraces / 2 || peak_idx >= n - minTraces / 2) {
+          peaks_rejected_boundary++;
+          if (cluster_id == debug_cluster) {
+            Rcpp::Rcout << "    DEBUG Peak at idx " << peak_idx << " rejected: too close to boundary" << std::endl;
+          }
+          continue;
+        }
+
+        if (cluster_id == debug_cluster) {
+          Rcpp::Rcout << "    DEBUG Processing peak at idx " << peak_idx << std::endl;
+        }
+
+        // Find peak bounds using simplified version of get_peak_bounds
+        float apex_intensity = smoothed_intensity[peak_idx];
+        float min_intensity_threshold = 0.01f * apex_intensity;
+        float max_half_width = maxWidth / 2.0f;
+
+        // Left boundary
+        int left_idx = std::max(0, peak_idx - 3);
+        while (left_idx > 0) {
+          if (cluster_rt[peak_idx] - cluster_rt[left_idx] > max_half_width) break;
+          if (smoothed_intensity[left_idx] <= baseline[left_idx] * 1.1f) break;
+          if (smoothed_intensity[left_idx] <= min_intensity_threshold) break;
+          left_idx--;
+        }
+
+        // Right boundary
+        int right_idx = std::min(n - 1, peak_idx + 3);
+        while (right_idx < n - 1) {
+          if (cluster_rt[right_idx] - cluster_rt[peak_idx] > max_half_width) break;
+          if (smoothed_intensity[right_idx] <= baseline[right_idx] * 1.1f) break;
+          if (smoothed_intensity[right_idx] <= min_intensity_threshold) break;
+          right_idx++;
+        }
+
+        if (left_idx >= right_idx) {
+          if (cluster_id == debug_cluster) {
+            Rcpp::Rcout << "    DEBUG Peak at idx " << peak_idx << " rejected: invalid boundaries (left=" << left_idx << ", right=" << right_idx << ")" << std::endl;
+          }
+          continue;
+        }
+
+        // Extract peak region data
+        std::vector<float> peak_intensities, peak_rt_vals, peak_mz_vals;
+        for (int i = left_idx; i <= right_idx; ++i) {
+          peak_intensities.push_back(cluster_intensity[i]);
+          peak_rt_vals.push_back(cluster_rt[i]);
+          peak_mz_vals.push_back(cluster_mz[i]);
+        }
+
+        if (peak_intensities.empty()) continue;
+
+        // Find maximum intensity and its position
+        auto max_it = std::max_element(peak_intensities.begin(), peak_intensities.end());
+        float peak_max_intensity = *max_it;
+        int max_position = std::distance(peak_intensities.begin(), max_it);
+
+        float rt_at_max = peak_rt_vals[max_position];
+        float mz_at_max = peak_mz_vals[max_position];
+
+        // Calculate noise (minimum at edges)
+        int peak_n = peak_intensities.size();
+        std::vector<float> edge_intensities;
+        if (peak_n >= 4) {
+          edge_intensities.push_back(peak_intensities[0]);
+          edge_intensities.push_back(peak_intensities[1]);
+          edge_intensities.push_back(peak_intensities[peak_n-2]);
+          edge_intensities.push_back(peak_intensities[peak_n-1]);
+        } else {
+          edge_intensities = peak_intensities;
+        }
+
+        float noise = *std::min_element(edge_intensities.begin(), edge_intensities.end());
+        float signal = peak_max_intensity;
+        float sn = (noise > 0 && signal > 0) ? signal / noise : 0.0f;
+
+        // Check S/N ratio
+        if (sn < minSNR) {
+          peaks_rejected_snr++;
+          if (cluster_id == debug_cluster) {
+            Rcpp::Rcout << "    DEBUG Peak at idx " << peak_idx << " rejected: S/N=" << sn << " < " << minSNR
+                        << " (signal=" << signal << ", noise=" << noise << ")" << std::endl;
+          }
+          continue;
+        }
+
+        peaks_accepted++;
+        if (cluster_id == debug_cluster) {
+          Rcpp::Rcout << "    DEBUG Peak at idx " << peak_idx << " ACCEPTED: S/N=" << sn << ", intensity=" << signal << std::endl;
+        }
+
+        // Calculate m/z statistics
+        float mz_sum = 0.0f, intensity_sum = 0.0f;
+        float mz_min = peak_mz_vals[0], mz_max = peak_mz_vals[0];
+
+        for (size_t i = 0; i < peak_mz_vals.size(); ++i) {
+          mz_sum += peak_mz_vals[i] * peak_intensities[i];
+          intensity_sum += peak_intensities[i];
+          mz_min = std::min(mz_min, peak_mz_vals[i]);
+          mz_max = std::max(mz_max, peak_mz_vals[i]);
+        }
+
+        float mz_weighted = intensity_sum > 0 ? mz_sum / intensity_sum : mz_at_max;
+        float ppm = (mz_max - mz_min) / mz_weighted * 1e6f;
+        float width = cluster_rt[right_idx] - cluster_rt[left_idx];
+
+        // Calculate FWHM in RT dimension
+        float half_max_intensity = peak_max_intensity / 2.0f;
+        float fwhm_rt = 0.0f;
+
+        // Find left and right indices where intensity drops to half maximum
+        int fwhm_left_idx = max_position;
+        int fwhm_right_idx = max_position;
+
+        // Search left from apex
+        while (fwhm_left_idx > 0 && peak_intensities[fwhm_left_idx] > half_max_intensity) {
+          fwhm_left_idx--;
+        }
+
+        // Search right from apex
+        while (fwhm_right_idx < static_cast<int>(peak_intensities.size()) - 1 &&
+               peak_intensities[fwhm_right_idx] > half_max_intensity) {
+          fwhm_right_idx++;
+        }
+
+        // Calculate FWHM in RT
+        if (fwhm_left_idx < fwhm_right_idx && fwhm_right_idx < static_cast<int>(peak_rt_vals.size())) {
+          fwhm_rt = peak_rt_vals[fwhm_right_idx] - peak_rt_vals[fwhm_left_idx];
+        } else {
+          fwhm_rt = width; // fallback to total width
+        }
+
+        // Calculate FWHM in MZ dimension (intensity-weighted approach)
+        float fwhm_mz = 0.0f;
+        std::vector<float> mz_profile;
+        std::vector<float> intensity_profile;
+
+        // Create MZ profile by binning the m/z values
+        const int mz_bins = std::min(50, static_cast<int>(peak_mz_vals.size()));
+        if (mz_bins > 3) {
+          float mz_range = mz_max - mz_min;
+          float mz_bin_size = mz_range / mz_bins;
+
+          std::vector<float> binned_mz(mz_bins, 0.0f);
+          std::vector<float> binned_intensity(mz_bins, 0.0f);
+          std::vector<int> bin_counts(mz_bins, 0);
+
+          for (size_t i = 0; i < peak_mz_vals.size(); ++i) {
+            int bin_idx = std::min(mz_bins - 1, static_cast<int>((peak_mz_vals[i] - mz_min) / mz_bin_size));
+            binned_mz[bin_idx] += peak_mz_vals[i];
+            binned_intensity[bin_idx] += peak_intensities[i];
+            bin_counts[bin_idx]++;
+          }
+
+          // Average binned values
+          for (int i = 0; i < mz_bins; ++i) {
+            if (bin_counts[i] > 0) {
+              binned_mz[i] /= bin_counts[i];
+              binned_intensity[i] /= bin_counts[i];
+            }
+          }
+
+          // Find maximum in MZ profile
+          auto max_mz_it = std::max_element(binned_intensity.begin(), binned_intensity.end());
+          int max_mz_idx = std::distance(binned_intensity.begin(), max_mz_it);
+          float max_mz_intensity = *max_mz_it;
+          float half_max_mz_intensity = max_mz_intensity / 2.0f;
+
+          // Find FWHM boundaries in MZ
+          int mz_left_idx = max_mz_idx;
+          int mz_right_idx = max_mz_idx;
+
+          while (mz_left_idx > 0 && binned_intensity[mz_left_idx] > half_max_mz_intensity) {
+            mz_left_idx--;
+          }
+
+          while (mz_right_idx < mz_bins - 1 && binned_intensity[mz_right_idx] > half_max_mz_intensity) {
+            mz_right_idx++;
+          }
+
+          if (mz_left_idx < mz_right_idx) {
+            fwhm_mz = binned_mz[mz_right_idx] - binned_mz[mz_left_idx];
+          } else {
+            fwhm_mz = mz_max - mz_min; // fallback to total MZ range
+          }
+        } else {
+          fwhm_mz = mz_max - mz_min; // fallback for small peaks
+        }
+
+        // Collect peak profile data
+        std::vector<float> profile_rt_data, profile_raw_intensity_data;
+        std::vector<float> profile_baseline_data, profile_smoothed_intensity_data;
+
+        for (int i = left_idx; i <= right_idx; ++i) {
+          profile_rt_data.push_back(cluster_rt[i]);
+          profile_raw_intensity_data.push_back(cluster_intensity[i]);
+          profile_baseline_data.push_back(baseline[i]);
+          profile_smoothed_intensity_data.push_back(smoothed_intensity[i]);
+        }
+
+        // Store peak data
+        peaks_rt.push_back(rt_at_max);
+        peaks_mz.push_back(mz_weighted);
+        peaks_intensity.push_back(peak_max_intensity);
+        peaks_noise.push_back(noise);
+        peaks_sn.push_back(sn);
+        peaks_rtmin.push_back(cluster_rt[left_idx]);
+        peaks_rtmax.push_back(cluster_rt[right_idx]);
+        peaks_mzmin.push_back(mz_min);
+        peaks_mzmax.push_back(mz_max);
+        peaks_width.push_back(width);
+        peaks_ppm.push_back(ppm);
+        peaks_fwhm_rt.push_back(fwhm_rt);
+        peaks_fwhm_mz.push_back(fwhm_mz);
+        peaks_cluster.push_back(cluster_id);
+        peaks_n_traces.push_back(right_idx - left_idx + 1);
+
+        // Store peak profile data as R lists
+        peaks_profile_rt.push_back(Rcpp::wrap(profile_rt_data));
+        peaks_profile_raw_intensity.push_back(Rcpp::wrap(profile_raw_intensity_data));
+        peaks_profile_baseline.push_back(Rcpp::wrap(profile_baseline_data));
+        peaks_profile_smoothed_intensity.push_back(Rcpp::wrap(profile_smoothed_intensity_data));
+
+        // Generate peak ID
+        std::string peak_id = "CL" + std::to_string(cluster_id) +
+                             "_N" + std::to_string(peaks_rt.size()) +
+                             "_MZ" + std::to_string(static_cast<int>(std::round(mz_weighted))) +
+                             "_RT" + std::to_string(static_cast<int>(std::round(rt_at_max)));
+        peaks_id.push_back(peak_id);
+      }
+
+      if (cluster_id == debug_cluster) {
+        Rcpp::Rcout << "  DEBUG Cluster " << cluster_id << " summary: " << peaks_accepted << " peaks accepted, "
+                    << peaks_rejected_boundary << " rejected (boundary), "
+                    << peaks_rejected_snr << " rejected (S/N)" << std::endl;
+      }
+    }
+
+    Rcpp::Rcout << "Peak detection summary:" << std::endl;
+    Rcpp::Rcout << "  Total clusters: " << cluster_indices.size() << std::endl;
+    Rcpp::Rcout << "  Clusters processed: " << (total_clusters_processed - clusters_too_small) << std::endl;
+    Rcpp::Rcout << "  Clusters too small: " << clusters_too_small << std::endl;
+    Rcpp::Rcout << "  Total peaks found: " << peaks_rt.size() << std::endl;
+
+    // Create output list with detected peaks
+    Rcpp::List peaks_list;
+    if (!peaks_rt.empty()) {
+      peaks_list["id"] = peaks_id;
+      peaks_list["rt"] = peaks_rt;
+      peaks_list["mz"] = peaks_mz;
+      peaks_list["intensity"] = peaks_intensity;
+      peaks_list["noise"] = peaks_noise;
+      peaks_list["sn"] = peaks_sn;
+      peaks_list["rtmin"] = peaks_rtmin;
+      peaks_list["rtmax"] = peaks_rtmax;
+      peaks_list["mzmin"] = peaks_mzmin;
+      peaks_list["mzmax"] = peaks_mzmax;
+      peaks_list["width"] = peaks_width;
+      peaks_list["ppm"] = peaks_ppm;
+      peaks_list["fwhm_rt"] = peaks_fwhm_rt;
+      peaks_list["fwhm_mz"] = peaks_fwhm_mz;
+      peaks_list["cluster"] = peaks_cluster;
+      peaks_list["n_traces"] = peaks_n_traces;
+      peaks_list["profile_rt"] = peaks_profile_rt;
+      peaks_list["profile_raw_intensity"] = peaks_profile_raw_intensity;
+      peaks_list["profile_baseline"] = peaks_profile_baseline;
+      peaks_list["profile_smoothed_intensity"] = peaks_profile_smoothed_intensity;
+    } else {
+      // Return empty data frame with proper column names
+      peaks_list["id"] = std::vector<std::string>();
+      peaks_list["rt"] = std::vector<float>();
+      peaks_list["mz"] = std::vector<float>();
+      peaks_list["intensity"] = std::vector<float>();
+      peaks_list["noise"] = std::vector<float>();
+      peaks_list["sn"] = std::vector<float>();
+      peaks_list["rtmin"] = std::vector<float>();
+      peaks_list["rtmax"] = std::vector<float>();
+      peaks_list["mzmin"] = std::vector<float>();
+      peaks_list["mzmax"] = std::vector<float>();
+      peaks_list["width"] = std::vector<float>();
+      peaks_list["ppm"] = std::vector<float>();
+      peaks_list["fwhm_rt"] = std::vector<float>();
+      peaks_list["fwhm_mz"] = std::vector<float>();
+      peaks_list["cluster"] = std::vector<int>();
+      peaks_list["n_traces"] = std::vector<int>();
+      peaks_list["profile_rt"] = std::vector<Rcpp::List>();
+      peaks_list["profile_raw_intensity"] = std::vector<Rcpp::List>();
+      peaks_list["profile_baseline"] = std::vector<Rcpp::List>();
+      peaks_list["profile_smoothed_intensity"] = std::vector<Rcpp::List>();
+    }
+    peaks_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+
+    // Create combined output list
+    Rcpp::List combined_list;
+    combined_list["peaks"] = peaks_list;
+    combined_list["spectra"] = spectra_list;
+
+    feature_list[analyses[a]] = combined_list;
   }
   return feature_list;
 };

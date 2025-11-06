@@ -380,7 +380,7 @@ MassSpecMethod_FindFeatures_xcms3_centwave <- function(
 
 #' @export
 #' @noRd
-#' 
+#'
 validate_object.MassSpecMethod_FindFeatures_xcms3_centwave <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -516,7 +516,7 @@ MassSpecMethod_FindFeatures_xcms3_matchedfilter <- function(
 
 #' @export
 #' @noRd
-#' 
+#'
 validate_object.MassSpecMethod_FindFeatures_xcms3_matchedfilter = function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -693,7 +693,7 @@ MassSpecMethod_FindFeatures_openms <- function(
 
 #' @export
 #' @noRd
-#' 
+#'
 validate_object.MassSpecMethod_FindFeatures_openms <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -807,7 +807,7 @@ MassSpecMethod_FindFeatures_kpic2 <- function(
 
 #' @export
 #' @noRd
-#' 
+#'
 validate_object.MassSpecMethod_FindFeatures_kpic2 <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -871,7 +871,7 @@ MassSpecMethod_FindFeatures_qalgorithms <- function(ppm = 5) {
 
 #' @export
 #' @noRd
-#' 
+#'
 validate_object.MassSpecMethod_FindFeatures_qalgorithms <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
@@ -1012,17 +1012,15 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     minGaussFit = 0.6
   )
 
-  
+
 
   fts <- rcpp_nts_find_features(
     info = analyses_info,
     spectra_headers = headers,
     rtWindowsMin = parameters$rtWindows$rtmin,
     rtWindowsMax = parameters$rtWindows$rtmax,
-    resolution_profile = c(35000, 35000, 35000),
-    noiseBins = parameters$noiseBins,
+    resolution_profile = c(30000, 30000, 35000),
     noiseThreshold = parameters$noiseThreshold,
-    noiseQuantile = parameters$noiseQuantile,
     minSNR = parameters$minSNR,
     minTraces = parameters$minTraces,
     baselineWindow = parameters$baselineWindow,
@@ -1033,9 +1031,143 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
   target_mz <- 238.0547 + 1.007276
   sel <- fts[[1]]$mz > (target_mz - 0.005) & fts[[1]]$mz < (target_mz + 0.005)
   temp <- fts[[1]][sel, ]
-  plot(temp$rt, temp$intensity, type = "l")
+
+  target_mz <- 238.0547 + 1.007276
+  sel <- fts[[1]][[2]]$mz > (target_mz - 0.005) & fts[[1]][[2]]$mz < (target_mz + 0.005)
+  temp <- fts[[1]][[2]][sel, ]
+
+  temp <- fts[[1]][[2]][fts[[1]][[2]]$cluster == 439, ]
+  peaks_temp <- fts[[1]][[1]][fts[[1]][[1]]$cluster %in% temp$cluster, ]
+
+
+
+  # call function to create the interactive plotly figure
+  p <- plot_peak_profile_plotly(temp = temp, peaks_temp = peaks_temp)
+  p
+
+  # plot the linear model from fts
 
   #nts <- MassSpecResults_NonTargetAnalysis(analyses_info, headers, features = list())
 
   any(is.na(fts[[1]]$rt))
+}
+
+
+plot_peak_profile_plotly <- function(temp, peaks_temp, rect_color = "#da916f", rect_alpha = 0.25) {
+  if (!requireNamespace("plotly", quietly = TRUE)) {
+    stop("plotly package required for interactive plotting")
+  }
+  if (is.null(temp) || nrow(temp) == 0) {
+    stop("`temp` must be a data.frame/data.table with rt and intensity")
+  }
+  p <- plotly::plot_ly(
+    x = temp$rt,
+    y = temp$intensity,
+    type = "scatter", mode = "lines",
+    name = "Raw Spectra",
+    line = list(color = "black", width = 1)
+  )
+
+  if (!is.null(peaks_temp) && nrow(peaks_temp) > 0) {
+    peak_ids <- peaks_temp$id
+    peak_colors <- .get_colors(peak_ids)
+    for (i in seq_len(nrow(peaks_temp))) {
+      peak <- peaks_temp[i, ]
+      peak_id <- peak$id
+      peak_color <- peak_colors[peak_id]
+
+      hover_text <- paste0(
+        "Peak ID: ", peak_id, "<br>",
+        "RT: ", round(peak$rt, 2), " s<br>",
+        "m/z: ", round(peak$mz, 4), "<br>",
+        "Intensity: ", round(peak$intensity, 0), "<br>",
+        "Noise: ", round(peak$noise, 0), "<br>",
+        "S/N: ", round(peak$sn, 2), "<br>",
+        "RT Range: ", round(peak$rtmin, 2), " - ", round(peak$rtmax, 2), " s<br>",
+        "m/z Range: ", round(peak$mzmin, 4), " - ", round(peak$mzmax, 4), "<br>",
+        "Width: ", round(peak$width, 2), " s<br>",
+        "PPM: ", round(peak$ppm, 2), "<br>",
+        "FWHM (RT): ", round(peak$fwhm_rt, 2), " s<br>",
+        "FWHM (m/z): ", round(peak$fwhm_mz, 4), "<br>",
+        "Cluster: ", peak$cluster, "<br>",
+        "N Traces: ", peak$n_traces
+      )
+
+      p <- p %>% plotly::add_trace(
+        x = unlist(peak$profile_rt),
+        y = unlist(peak$profile_baseline),
+        type = "scatter", mode = "lines",
+        line = list(color = peak_color, width = 2, dash = "dot"),
+        name = peak_id,
+        legendgroup = peak_id,
+        showlegend = TRUE,
+        hoverinfo = "skip"
+      )
+
+      p <- p %>% plotly::add_trace(
+        x = unlist(peak$profile_rt),
+        y = unlist(peak$profile_smoothed_intensity),
+        type = "scatter", mode = "lines",
+        line = list(color = peak_color, width = 3),
+        name = peak_id,
+        legendgroup = peak_id,
+        showlegend = FALSE,
+        hoverinfo = "skip"
+      )
+
+      rgb_vals <- grDevices::col2rgb(peak_color)
+      fill_color <- sprintf("rgba(%d,%d,%d,0.3)", rgb_vals[1], rgb_vals[2], rgb_vals[3])
+
+      p <- p %>% plotly::add_trace(
+        x = c(unlist(peak$profile_rt), rev(unlist(peak$profile_rt))),
+        y = c(unlist(peak$profile_baseline), rev(peak$profile_smoothed_intensity)),
+        type = "scatter", mode = "lines",
+        fill = "toself",
+        fillcolor = fill_color,
+        line = list(color = "rgba(0,0,0,0)"),
+        name = peak_id,
+        legendgroup = peak_id,
+        showlegend = FALSE,
+        hoverinfo = "skip"
+      )
+
+      p <- p %>% plotly::add_trace(
+        x = peak$rt,
+        y = peak$intensity,
+        type = "scatter", mode = "markers",
+        marker = list(color = peak_color, size = 8, symbol = "circle"),
+        name = peak_id,
+        legendgroup = peak_id,
+        showlegend = FALSE,
+        text = hover_text,
+        hoverinfo = "text"
+      )
+    }
+  }
+
+  # Enhanced layout with better styling
+  p <- p %>%
+    plotly::layout(
+      xaxis = list(
+        title = "Retention Time (s)",
+        showgrid = TRUE,
+        gridcolor = "lightgray",
+        gridwidth = 1
+      ),
+      yaxis = list(
+        title = "Intensity",
+        showgrid = TRUE,
+        gridcolor = "lightgray",
+        gridwidth = 1
+      ),
+      legend = list(
+        orientation = "h",
+        x = 0.01,
+        y = 1.02,
+        bgcolor = "rgba(255,255,255,0.8)"
+      ),
+      hovermode = "closest",
+      showlegend = TRUE
+    )
+  p
 }
