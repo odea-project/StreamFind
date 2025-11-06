@@ -886,3 +886,156 @@ run.MassSpecMethod_FindFeatures_qalgorithms <- function(x, engine = NULL) {
   .run_find_features_patRoon(x, engine)
   FALSE
 }
+
+#' @title MassSpecMethod_FindFeatures_native class
+#' @description Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.
+#' @param rtWindows data.frame with rtmin and rtmax columns for retention time windows for data inclusion.
+#' @param noiseBins numeric(1) bin size to estimate the noise level in each scan (i.e., each rt value).
+#' @param noiseThreshold numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).
+#' @param noiseQuantile numeric(1) quantile threshold for dynamic estimation of noise.
+#' @param minSNR numeric(1) minimum signal-to-noise ratio for considering a trace and chromatographic peak.
+#' @param mzrThreshold numeric(1) mass threshold representing the mass resolution.
+#' @param minTraces numeric(1) minimum number of traces to consider a mass cluster and chromatographic peak.
+#' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
+#' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
+#' @param minGaussFit numeric(1) minimum gaussian fit for a chromatographic peak.
+#' @export
+#'
+MassSpecMethod_FindFeatures_native <- function(
+  rtWindows = data.frame(rtmin = 300, rtmax = 3600),
+  noiseBins = 70,
+  noiseThreshold = 15,
+  noiseQuantile = 0.01,
+  minSNR = 3,
+  mzrThreshold = 0.005,
+  minTraces = 3,
+  baselineWindow = 200,
+  maxWidth = 100,
+  minGaussFit = 0.6
+) {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "FindFeatures",
+    required = NA_character_,
+    algorithm = "native",
+    input_class = NA_character_,
+    output_class = "MassSpecResults_NonTargetAnalysis",
+    parameters = list(
+      rtWindows = rtWindows,
+      noiseBins = as.numeric(noiseBins),
+      noiseThreshold = as.numeric(noiseThreshold),
+      noiseQuantile = as.numeric(noiseQuantile),
+      minSNR = as.numeric(minSNR),
+      mzrThreshold = as.numeric(mzrThreshold),
+      minTraces = as.numeric(minTraces),
+      baselineWindow = as.numeric(baselineWindow),
+      maxWidth = as.numeric(maxWidth),
+      minGaussFit = as.numeric(minGaussFit)
+    ),
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_
+  )
+  if (is.null(validate_object(x))) {
+    x
+  } else {
+    stop("Invalid parameters for MassSpecMethod_FindFeatures_native.")
+  }
+}
+
+#' @export
+#' @noRd
+validate_object.MassSpecMethod_FindFeatures_native <- function(x) {
+  checkmate::assert_choice(x$type, "MassSpec")
+  checkmate::assert_choice(x$method, "FindFeatures")
+  checkmate::assert_choice(x$algorithm, "native")
+  checkmate::assert_data_frame(x$parameters$rtWindows, min.rows = 1)
+  checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
+  checkmate::assert_numeric(x$parameters$noiseBins, len = 1, lower = 1)
+  checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$noiseQuantile, len = 1, lower = 0, upper = 1)
+  checkmate::assert_numeric(x$parameters$minSNR, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$mzrThreshold, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$minTraces, len = 1, lower = 1)
+  checkmate::assert_numeric(x$parameters$baselineWindow, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$maxWidth, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$minGaussFit, len = 1, lower = 0, upper = 1)
+  NULL
+}
+
+#' @export
+#' @noRd
+run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
+  warning("Native feature finding method is not yet implemented.")
+  return(FALSE)
+
+  if (!"MassSpecAnalyses" %in% class(engine$Analyses)) {
+    warning("Engine does not contain MassSpecAnalyses.")
+    return(FALSE)
+  }
+
+  analyses <- info(engine$Analyses)
+
+  if (nrow(analyses) == 0) {
+    warning("No analyses found in the engine.")
+    return(FALSE)
+  }
+
+  analyses_files <- vapply(engine$Analyses$analyses, function(z) z$file, NA_character_)
+
+  analyses_info <- data.table::data.table(
+    analysis = analyses$analysis,
+    replicate = analyses$replicate,
+    blank = analyses$blank,
+    file = analyses_files
+  )
+
+  headers <- lapply(
+    engine$Analyses$analyses,
+    function(z) z$spectra_headers
+  )
+
+  parameters <- list(
+    rtWindows = data.frame(rtmin = 0, rtmax = 3600),
+    noiseBins = 70,
+    noiseThreshold = 250,
+    noiseQuantile = 0.01,
+    minSNR = 3,
+    mzrThreshold = 0.005,
+    minTraces = 3,
+    baselineWindow = 200,
+    maxWidth = 100,
+    minGaussFit = 0.6
+  )
+
+  
+
+  fts <- rcpp_nts_find_features(
+    info = analyses_info,
+    spectra_headers = headers,
+    rtWindowsMin = parameters$rtWindows$rtmin,
+    rtWindowsMax = parameters$rtWindows$rtmax,
+    resolution_profile = c(35000, 35000, 35000),
+    noiseBins = parameters$noiseBins,
+    noiseThreshold = parameters$noiseThreshold,
+    noiseQuantile = parameters$noiseQuantile,
+    minSNR = parameters$minSNR,
+    minTraces = parameters$minTraces,
+    baselineWindow = parameters$baselineWindow,
+    maxWidth = parameters$maxWidth,
+    minGaussFit = parameters$minGaussFit
+  )
+
+  target_mz <- 238.0547 + 1.007276
+  sel <- fts[[1]]$mz > (target_mz - 0.005) & fts[[1]]$mz < (target_mz + 0.005)
+  temp <- fts[[1]][sel, ]
+  plot(temp$rt, temp$intensity, type = "l")
+
+  #nts <- MassSpecResults_NonTargetAnalysis(analyses_info, headers, features = list())
+
+  any(is.na(fts[[1]]$rt))
+}

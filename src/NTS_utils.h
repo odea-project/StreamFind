@@ -18,7 +18,7 @@
 namespace MassSpecResults_NonTargetAnalysis
 {
   // MARK: INLINE FUNCTIONS
-  
+
   // MARK: make_empty_dt
   inline Rcpp::List get_empty_dt()
   {
@@ -26,18 +26,20 @@ namespace MassSpecResults_NonTargetAnalysis
     out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
     return out;
   };
-  
+
   // MARK: check_must_have_names_list
   inline bool check_must_have_names_list(const Rcpp::List &list,
                                          const std::vector<std::string> &must_have_names)
   {
     std::vector<std::string> names_list = list.names();
     const int must_have_names_size = must_have_names.size();
-    if (must_have_names_size == 0) return false;
+    if (must_have_names_size == 0)
+      return false;
     const int names_list_size = names_list.size();
-    if (names_list_size == 0) return false;
+    if (names_list_size == 0)
+      return false;
     std::vector<bool> has_must_have_names(must_have_names_size, false);
-    
+
     for (int i = 0; i < must_have_names_size; ++i)
     {
       for (int j = 0; j < names_list_size; ++j)
@@ -46,9 +48,9 @@ namespace MassSpecResults_NonTargetAnalysis
           has_must_have_names[i] = true;
       }
     }
-    
+
     bool has_all_must_have_names = true;
-    
+
     for (int i = 0; i < must_have_names_size; ++i)
     {
       if (!has_must_have_names[i])
@@ -57,16 +59,16 @@ namespace MassSpecResults_NonTargetAnalysis
         break;
       }
     }
-    
+
     return has_all_must_have_names;
   };
-  
+
   // MARK: mean
   inline float mean(const std::vector<float> &v)
   {
     return std::accumulate(v.begin(), v.end(), 0.0) / v.size();
   };
-  
+
   // MARK: standard_deviation
   inline float standard_deviation(const std::vector<float> &v,
                                   float mean_val)
@@ -78,19 +80,19 @@ namespace MassSpecResults_NonTargetAnalysis
     }
     return sqrt(sum / v.size());
   };
-  
+
   // MARK: find_max_index
   inline size_t find_max_index(const std::vector<float> &v)
   {
     return std::max_element(v.begin(), v.end()) - v.begin();
   };
-  
+
   // MARK: find_min_index
   inline size_t find_min_index(const std::vector<float> &v)
   {
     return std::min_element(v.begin(), v.end()) - v.begin();
   };
-  
+
   // MARK: gaussian_function
   inline float gaussian_function(const float &A,
                                  const float &mu,
@@ -99,29 +101,29 @@ namespace MassSpecResults_NonTargetAnalysis
   {
     return A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
   };
-  
+
   // MARK: ONLY DEFINED FUNCTIONS
 
   // MARK: as_MS_SPECTRA_HEADERS
   sc::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd);
-  
+
   // MARK: merge_traces_within_rt
   void merge_traces_within_rt(std::vector<float> &rt,
                               std::vector<float> &mz,
                               std::vector<float> &intensity);
-  
+
   // MARK: find_central_max_index
   size_t find_central_max_index(const std::vector<float> &rt,
                                 const std::vector<float> &intensity,
                                 const float &rt_mean,
                                 const float &rtWindow);
-  
+
   // MARK: trim_eic_by_low_cut
   void trim_eic_by_low_cut(std::vector<float> &rt,
                            std::vector<float> &mz,
                            std::vector<float> &intensity,
                            const float &lowCut);
-  
+
   // MARK: trim_to_equal_length_around_max_position
   void trim_to_equal_length_around_max_position(std::vector<float> &rt,
                                                 std::vector<float> &mz,
@@ -130,57 +132,57 @@ namespace MassSpecResults_NonTargetAnalysis
                                                 const int minDiffSize,
                                                 const int minTraces,
                                                 const float maxTimeHalfWidth);
-  
+
   // MARK: trim_peak_base
   void trim_peak_base(std::vector<float> &rt,
                       std::vector<float> &mz,
                       std::vector<float> &intensity,
                       size_t &max_position,
                       const float curRatio);
-  
+
   // MARK: apply_moving_average
-  void apply_moving_average(std::vector<float>& x,
+  void apply_moving_average(std::vector<float> &x,
                             const size_t &start,
                             const size_t &end,
                             const int &windowSize);
-  
+
   // MARK: smooth_eic_sides
-  void smooth_eic_sides(std::vector<float>& x,
+  void smooth_eic_sides(std::vector<float> &x,
                         const size_t &max_position,
                         const int &windowSize);
-  
+
   // MARK: fit_gaussian_cost_function
   float fit_gaussian_cost_function(const std::vector<float> &x,
                                    const std::vector<float> &y,
                                    const float &A,
                                    const float &mu,
                                    const float &sigma);
-  
+
   // MARK: fit_gaussian
   void fit_gaussian(const std::vector<float> &x,
                     const std::vector<float> &y,
                     float &A, float &mu,
                     float &sigma);
-  
+
   // MARK: calculate_gaussian_rsquared
   float calculate_gaussian_rsquared(const std::vector<float> &x,
                                     const std::vector<float> &y,
                                     const float &A,
                                     const float &mu,
                                     const float &sigma);
-  
+
   // MARK: trapezoidal_area
   float trapezoidal_area(const std::vector<float> &x,
                          const std::vector<float> &intensity);
-  
+
   // MARK: is_max_gap_reached
   bool is_max_gap_reached(const int &s, const int &maxGaps,
                           const std::vector<int> &steps);
-  
+
   // MARK: cluster_spectra
   Rcpp::List cluster_spectra(const Rcpp::List &spectra,
                              const float &mzClust, const float &presence);
-  
+
   // MARK: cluster_spectra_internal
   void cluster_spectra_internal(std::vector<float> &pre_ce,
                                 std::vector<float> &pre_mz,
@@ -190,9 +192,9 @@ namespace MassSpecResults_NonTargetAnalysis
                                 std::vector<bool> &is_pre,
                                 const float &mzClust,
                                 const float &presence);
-  
+
   // MARK: STRUCTS
-  
+
   // MARK: FEATURE_EIC
   struct FEATURE_EIC
   {
@@ -202,60 +204,59 @@ namespace MassSpecResults_NonTargetAnalysis
     std::vector<float> rt;
     std::vector<float> mz;
     std::vector<float> intensity;
-    
+
     int size() const
     {
       return rt.size();
     };
-    
+
     Rcpp::List to_list_dt() const
     {
       if (feature == "" || rt.size() == 0)
         return get_empty_dt();
-      
+
       std::vector<std::string> feature_v(rt.size(), feature);
       std::vector<int> polarity_v(rt.size(), polarity);
       std::vector<int> level_v(rt.size(), level);
-      
+
       Rcpp::List out = Rcpp::List::create(
-        Rcpp::Named("feature") = feature_v,
-        Rcpp::Named("polarity") = polarity_v,
-        Rcpp::Named("level") = level_v,
-        Rcpp::Named("rt") = rt,
-        Rcpp::Named("mz") = mz,
-        Rcpp::Named("intensity") = intensity
-      );
-      
+          Rcpp::Named("feature") = feature_v,
+          Rcpp::Named("polarity") = polarity_v,
+          Rcpp::Named("level") = level_v,
+          Rcpp::Named("rt") = rt,
+          Rcpp::Named("mz") = mz,
+          Rcpp::Named("intensity") = intensity);
+
       out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-      
+
       return out;
     };
-    
+
     void import_from_list(const Rcpp::List &eic_list)
     {
       if (eic_list.size() == 0)
         return;
-      
+
       std::vector<std::string> must_have_names = {
-        "feature", "polarity", "level", "rt", "mz", "intensity"
-      };
-      
+          "feature", "polarity", "level", "rt", "mz", "intensity"};
+
       if (!check_must_have_names_list(eic_list, must_have_names))
       {
         Rcpp::Rcout << "Error: EIC list does not have all required names." << std::endl;
         return;
       }
-      
+
       const std::vector<std::string> &feature_ref = Rcpp::as<std::vector<std::string>>(eic_list["feature"]);
       const std::vector<int> &polarity_ref = Rcpp::as<std::vector<int>>(eic_list["polarity"]);
       const std::vector<int> &level_ref = Rcpp::as<std::vector<int>>(eic_list["level"]);
       const std::vector<float> &rt_ref = Rcpp::as<std::vector<float>>(eic_list["rt"]);
       const std::vector<float> &mz_ref = Rcpp::as<std::vector<float>>(eic_list["mz"]);
       const std::vector<float> &intensity_ref = Rcpp::as<std::vector<float>>(eic_list["intensity"]);
-      
+
       const int n = rt_ref.size();
-      if (n == 0) return;
-      
+      if (n == 0)
+        return;
+
       feature = feature_ref[0];
       polarity = polarity_ref[0];
       level = level_ref[0];
@@ -263,7 +264,7 @@ namespace MassSpecResults_NonTargetAnalysis
       mz = mz_ref;
       intensity = intensity_ref;
     };
-    
+
     void import_from_ms_targets_spectra(const sc::MS_TARGETS_SPECTRA &spectra)
     {
       if (spectra.rt.size() > 0)
@@ -291,52 +292,50 @@ namespace MassSpecResults_NonTargetAnalysis
     std::vector<float> mz;
     std::vector<float> intensity;
     std::vector<bool> is_pre;
-    
+
     int size() const
     {
       return rt.size();
     };
-    
+
     Rcpp::List to_list_dt() const
     {
       if (feature == "" || rt.size() == 0)
         return get_empty_dt();
-      
+
       std::vector<std::string> feature_v(rt.size(), feature);
       std::vector<int> polarity_v(rt.size(), polarity);
       std::vector<int> level_v(rt.size(), level);
-      
+
       Rcpp::List out = Rcpp::List::create(
-        Rcpp::Named("feature") = feature_v,
-        Rcpp::Named("polarity") = polarity_v,
-        Rcpp::Named("level") = level_v,
-        Rcpp::Named("pre_mz") = pre_mz,
-        Rcpp::Named("rt") = rt,
-        Rcpp::Named("mz") = mz,
-        Rcpp::Named("intensity") = intensity,
-        Rcpp::Named("is_pre") = is_pre
-      );
-      
+          Rcpp::Named("feature") = feature_v,
+          Rcpp::Named("polarity") = polarity_v,
+          Rcpp::Named("level") = level_v,
+          Rcpp::Named("pre_mz") = pre_mz,
+          Rcpp::Named("rt") = rt,
+          Rcpp::Named("mz") = mz,
+          Rcpp::Named("intensity") = intensity,
+          Rcpp::Named("is_pre") = is_pre);
+
       out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-      
+
       return out;
     };
-    
+
     void import_from_list(const Rcpp::List &ms1_list)
     {
       if (ms1_list.size() == 0)
         return;
-      
+
       std::vector<std::string> must_have_names = {
-        "feature", "polarity", "level", "pre_mz", "rt", "mz", "intensity", "is_pre"
-      };
-      
+          "feature", "polarity", "level", "pre_mz", "rt", "mz", "intensity", "is_pre"};
+
       if (!check_must_have_names_list(ms1_list, must_have_names))
       {
         Rcpp::Rcout << "Error: MS1 list does not have all required names." << std::endl;
         return;
       }
-      
+
       const std::vector<std::string> &feature_ref = Rcpp::as<std::vector<std::string>>(ms1_list["feature"]);
       const std::vector<int> &polarity_ref = Rcpp::as<std::vector<int>>(ms1_list["polarity"]);
       const std::vector<int> &level_ref = Rcpp::as<std::vector<int>>(ms1_list["level"]);
@@ -345,11 +344,11 @@ namespace MassSpecResults_NonTargetAnalysis
       const std::vector<float> &mz_ref = Rcpp::as<std::vector<float>>(ms1_list["mz"]);
       const std::vector<float> &intensity_ref = Rcpp::as<std::vector<float>>(ms1_list["intensity"]);
       const std::vector<bool> &is_pre_ref = Rcpp::as<std::vector<bool>>(ms1_list["is_pre"]);
-      
+
       const int n = rt_ref.size();
       if (n == 0)
         return;
-      
+
       feature = feature_ref[0];
       polarity = polarity_ref[0];
       level = level_ref[0];
@@ -361,7 +360,7 @@ namespace MassSpecResults_NonTargetAnalysis
       intensity = intensity_ref;
       is_pre = is_pre_ref;
     };
-    
+
     void import_from_ms_targets_spectra(const sc::MS_TARGETS_SPECTRA &spectra)
     {
       if (spectra.rt.size() > 0)
@@ -378,25 +377,26 @@ namespace MassSpecResults_NonTargetAnalysis
         is_pre = is_pre_temp;
       }
     };
-    
+
     void sort_by_mz()
     {
       if (rt.size() == 0)
         return;
-      
+
       const int n = rt.size();
-      
+
       std::vector<size_t> indices(mz.size());
       std::iota(indices.begin(), indices.end(), 0);
-      std::sort(indices.begin(), indices.end(), [&](size_t i1, size_t i2) { return mz[i1] < mz[i2]; });
-      
+      std::sort(indices.begin(), indices.end(), [&](size_t i1, size_t i2)
+                { return mz[i1] < mz[i2]; });
+
       std::vector<float> pre_ce_temp(n);
       std::vector<float> pre_mz_temp(n);
       std::vector<float> rt_temp(n);
       std::vector<float> mz_temp(n);
       std::vector<float> intensity_temp(n);
       std::vector<bool> is_pre_temp(n);
-      
+
       for (size_t i = 0; i < indices.size(); ++i)
       {
         pre_ce_temp[i] = pre_ce[indices[i]];
@@ -406,7 +406,7 @@ namespace MassSpecResults_NonTargetAnalysis
         intensity_temp[i] = intensity[indices[i]];
         is_pre_temp[i] = is_pre[indices[i]];
       }
-      
+
       pre_ce = pre_ce_temp;
       pre_mz = pre_mz_temp;
       rt = rt_temp;
@@ -414,18 +414,18 @@ namespace MassSpecResults_NonTargetAnalysis
       intensity = intensity_temp;
       is_pre = is_pre_temp;
     };
-    
+
     void set_precursor_mz(const float &val)
     {
       if (rt.size() == 0)
         return;
-      
+
       for (size_t i = 0; i < pre_mz.size(); ++i)
       {
         pre_mz[i] = val;
       }
     };
-    
+
     void cluster(const float &mzClust, const float &presence)
     {
       if (rt.size() > 0)
@@ -435,7 +435,7 @@ namespace MassSpecResults_NonTargetAnalysis
       }
     };
   };
-  
+
   // MARK: FEATURE_MS2
   struct FEATURE_MS2
   {
@@ -448,52 +448,50 @@ namespace MassSpecResults_NonTargetAnalysis
     std::vector<float> mz;
     std::vector<float> intensity;
     std::vector<bool> is_pre;
-    
+
     int size() const
     {
       return rt.size();
     };
-    
+
     Rcpp::List to_list_dt() const
     {
       if (feature == "" || rt.size() == 0)
         return get_empty_dt();
-      
+
       std::vector<std::string> feature_v(rt.size(), feature);
       std::vector<int> polarity_v(rt.size(), polarity);
       std::vector<int> level_v(rt.size(), level);
-      
+
       Rcpp::List out = Rcpp::List::create(
-        Rcpp::Named("feature") = feature_v,
-        Rcpp::Named("polarity") = polarity_v,
-        Rcpp::Named("level") = level_v,
-        Rcpp::Named("pre_mz") = pre_mz,
-        Rcpp::Named("rt") = rt,
-        Rcpp::Named("mz") = mz,
-        Rcpp::Named("intensity") = intensity,
-        Rcpp::Named("is_pre") = is_pre
-      );
-      
+          Rcpp::Named("feature") = feature_v,
+          Rcpp::Named("polarity") = polarity_v,
+          Rcpp::Named("level") = level_v,
+          Rcpp::Named("pre_mz") = pre_mz,
+          Rcpp::Named("rt") = rt,
+          Rcpp::Named("mz") = mz,
+          Rcpp::Named("intensity") = intensity,
+          Rcpp::Named("is_pre") = is_pre);
+
       out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-      
+
       return out;
     };
-    
+
     void import_from_list(const Rcpp::List &ms2_list)
     {
       if (ms2_list.size() == 0)
         return;
-      
+
       std::vector<std::string> must_have_names = {
-        "feature", "polarity", "level", "pre_mz", "rt", "mz", "intensity", "is_pre"
-      };
-      
+          "feature", "polarity", "level", "pre_mz", "rt", "mz", "intensity", "is_pre"};
+
       if (!check_must_have_names_list(ms2_list, must_have_names))
       {
         Rcpp::Rcout << "Error: MS2 list does not have all required names." << std::endl;
         return;
       }
-      
+
       const std::vector<std::string> &feature_ref = Rcpp::as<std::vector<std::string>>(ms2_list["feature"]);
       const std::vector<int> &polarity_ref = Rcpp::as<std::vector<int>>(ms2_list["polarity"]);
       const std::vector<int> &level_ref = Rcpp::as<std::vector<int>>(ms2_list["level"]);
@@ -502,11 +500,11 @@ namespace MassSpecResults_NonTargetAnalysis
       const std::vector<float> &mz_ref = Rcpp::as<std::vector<float>>(ms2_list["mz"]);
       const std::vector<float> &intensity_ref = Rcpp::as<std::vector<float>>(ms2_list["intensity"]);
       const std::vector<bool> &is_pre_ref = Rcpp::as<std::vector<bool>>(ms2_list["is_pre"]);
-      
+
       const int n = rt_ref.size();
       if (n == 0)
         return;
-      
+
       feature = feature_ref[0];
       polarity = polarity_ref[0];
       level = level_ref[0];
@@ -518,7 +516,7 @@ namespace MassSpecResults_NonTargetAnalysis
       intensity = intensity_ref;
       is_pre = is_pre_ref;
     };
-    
+
     void import_from_ms_targets_spectra(const sc::MS_TARGETS_SPECTRA &spectra)
     {
       if (spectra.rt.size() > 0)
@@ -535,25 +533,26 @@ namespace MassSpecResults_NonTargetAnalysis
         is_pre = is_pre_temp;
       }
     };
-    
+
     void sort_by_mz()
     {
       if (rt.size() == 0)
         return;
-      
+
       const int n = rt.size();
-      
+
       std::vector<size_t> indices(mz.size());
       std::iota(indices.begin(), indices.end(), 0);
-      std::sort(indices.begin(), indices.end(), [&](size_t i1, size_t i2) { return mz[i1] < mz[i2]; });
-      
+      std::sort(indices.begin(), indices.end(), [&](size_t i1, size_t i2)
+                { return mz[i1] < mz[i2]; });
+
       std::vector<float> pre_ce_temp(n);
       std::vector<float> pre_mz_temp(n);
       std::vector<float> rt_temp(n);
       std::vector<float> mz_temp(n);
       std::vector<float> intensity_temp(n);
       std::vector<bool> is_pre_temp(n);
-      
+
       for (size_t i = 0; i < indices.size(); ++i)
       {
         pre_ce_temp[i] = pre_ce[indices[i]];
@@ -563,7 +562,7 @@ namespace MassSpecResults_NonTargetAnalysis
         intensity_temp[i] = intensity[indices[i]];
         is_pre_temp[i] = is_pre[indices[i]];
       }
-      
+
       pre_ce = pre_ce_temp;
       pre_mz = pre_mz_temp;
       rt = rt_temp;
@@ -571,19 +570,19 @@ namespace MassSpecResults_NonTargetAnalysis
       intensity = intensity_temp;
       is_pre = is_pre_temp;
     };
-    
+
     void set_precursor_mz(const float &val)
     {
       if (pre_mz.size() == 0)
         return;
-      
+
       for (size_t i = 0; i < pre_mz.size(); ++i)
       {
         if (is_pre[i])
           pre_mz[i] = val;
       }
     };
-    
+
     void cluster(const float &mzClust, const float &presence)
     {
       if (rt.size() > 0)
@@ -593,7 +592,7 @@ namespace MassSpecResults_NonTargetAnalysis
       }
     };
   };
-  
+
   // MARK: FEATURE_QUALITY
   struct FEATURE_QUALITY
   {
@@ -604,42 +603,40 @@ namespace MassSpecResults_NonTargetAnalysis
     float gauss_u = 0.0f;
     float gauss_s = 0.0f;
     float gauss_f = 0.0f;
-    
+
     Rcpp::List to_list_dt() const
     {
       if (feature == "")
         return get_empty_dt();
-      
+
       Rcpp::List out = Rcpp::List::create(
-        Rcpp::Named("feature") = feature,
-        Rcpp::Named("noise") = noise,
-        Rcpp::Named("sn") = sn,
-        Rcpp::Named("gauss_a") = gauss_a,
-        Rcpp::Named("gauss_u") = gauss_u,
-        Rcpp::Named("gauss_s") = gauss_s,
-        Rcpp::Named("gauss_f") = gauss_f
-      );
-      
+          Rcpp::Named("feature") = feature,
+          Rcpp::Named("noise") = noise,
+          Rcpp::Named("sn") = sn,
+          Rcpp::Named("gauss_a") = gauss_a,
+          Rcpp::Named("gauss_u") = gauss_u,
+          Rcpp::Named("gauss_s") = gauss_s,
+          Rcpp::Named("gauss_f") = gauss_f);
+
       out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-      
+
       return out;
     };
-    
+
     void import_from_list(const Rcpp::List &quality_list)
     {
       if (quality_list.size() == 0)
         return;
-    
+
       std::vector<std::string> must_have_names = {
-        "feature", "noise", "sn", "gauss_a", "gauss_u", "gauss_s", "gauss_f"
-      };
-      
+          "feature", "noise", "sn", "gauss_a", "gauss_u", "gauss_s", "gauss_f"};
+
       if (!check_must_have_names_list(quality_list, must_have_names))
       {
         Rcpp::Rcout << "Error: Quality list does not have all required names." << std::endl;
         return;
       }
-      
+
       const std::vector<std::string> &feature_ref = Rcpp::as<std::vector<std::string>>(quality_list["feature"]);
       const std::vector<float> &noise_ref = Rcpp::as<std::vector<float>>(quality_list["noise"]);
       const std::vector<float> &sn_ref = Rcpp::as<std::vector<float>>(quality_list["sn"]);
@@ -647,11 +644,11 @@ namespace MassSpecResults_NonTargetAnalysis
       const std::vector<float> &gauss_u_ref = Rcpp::as<std::vector<float>>(quality_list["gauss_u"]);
       const std::vector<float> &gauss_s_ref = Rcpp::as<std::vector<float>>(quality_list["gauss_s"]);
       const std::vector<float> &gauss_f_ref = Rcpp::as<std::vector<float>>(quality_list["gauss_f"]);
-      
+
       const int n = feature_ref.size();
       if (n == 0)
         return;
-      
+
       feature = feature_ref[0];
       noise = noise_ref[0];
       sn = sn_ref[0];
@@ -661,8 +658,8 @@ namespace MassSpecResults_NonTargetAnalysis
       gauss_f = gauss_f_ref[0];
     };
   };
-  
-  // MARK: FEATURE_ANNOTATION 
+
+  // MARK: FEATURE_ANNOTATION
   struct FEATURE_ANNOTATION
   {
     std::string feature = "";
@@ -685,7 +682,7 @@ namespace MassSpecResults_NonTargetAnalysis
     std::string adduct_cat = "";
     float adduct_time_error = 0.0f;
     float adduct_mass_error = 0.0f;
-    
+
     void as_only_monoisotopic_ion(const std::string &ft)
     {
       feature = ft;
@@ -705,59 +702,57 @@ namespace MassSpecResults_NonTargetAnalysis
       iso_number_carbons = 0;
       iso_size = 0;
     };
-    
+
     Rcpp::List to_list_dt() const
     {
       if (feature == "")
         return get_empty_dt();
-      
+
       Rcpp::List out = Rcpp::List::create(
-        Rcpp::Named("feature") = feature,
-        Rcpp::Named("component_feature") = component_feature,
-        Rcpp::Named("iso_size") = iso_size,
-        Rcpp::Named("iso_charge") = iso_charge,
-        Rcpp::Named("iso_step") = iso_step,
-        Rcpp::Named("iso_cat") = iso_cat,
-        Rcpp::Named("iso_isotope") = iso_isotope,
-        Rcpp::Named("iso_mzr") = iso_mzr,
-        Rcpp::Named("iso_relative_intensity") = iso_relative_intensity,
-        Rcpp::Named("iso_theoretical_min_relative_intensity") = iso_theoretical_min_relative_intensity,
-        Rcpp::Named("iso_theoretical_max_relative_intensity") = iso_theoretical_max_relative_intensity,
-        Rcpp::Named("iso_mass_distance") = iso_mass_distance,
-        Rcpp::Named("iso_theoretical_mass_distance") = iso_theoretical_mass_distance,
-        Rcpp::Named("iso_mass_distance_error") = iso_mass_distance_error,
-        Rcpp::Named("iso_time_error") = iso_time_error,
-        Rcpp::Named("iso_number_carbons") = iso_number_carbons,
-        Rcpp::Named("adduct_element") = adduct_element,
-        Rcpp::Named("adduct_cat") = adduct_cat,
-        Rcpp::Named("adduct_time_error") = adduct_time_error,
-        Rcpp::Named("adduct_mass_error") = adduct_mass_error
-      );
-      
+          Rcpp::Named("feature") = feature,
+          Rcpp::Named("component_feature") = component_feature,
+          Rcpp::Named("iso_size") = iso_size,
+          Rcpp::Named("iso_charge") = iso_charge,
+          Rcpp::Named("iso_step") = iso_step,
+          Rcpp::Named("iso_cat") = iso_cat,
+          Rcpp::Named("iso_isotope") = iso_isotope,
+          Rcpp::Named("iso_mzr") = iso_mzr,
+          Rcpp::Named("iso_relative_intensity") = iso_relative_intensity,
+          Rcpp::Named("iso_theoretical_min_relative_intensity") = iso_theoretical_min_relative_intensity,
+          Rcpp::Named("iso_theoretical_max_relative_intensity") = iso_theoretical_max_relative_intensity,
+          Rcpp::Named("iso_mass_distance") = iso_mass_distance,
+          Rcpp::Named("iso_theoretical_mass_distance") = iso_theoretical_mass_distance,
+          Rcpp::Named("iso_mass_distance_error") = iso_mass_distance_error,
+          Rcpp::Named("iso_time_error") = iso_time_error,
+          Rcpp::Named("iso_number_carbons") = iso_number_carbons,
+          Rcpp::Named("adduct_element") = adduct_element,
+          Rcpp::Named("adduct_cat") = adduct_cat,
+          Rcpp::Named("adduct_time_error") = adduct_time_error,
+          Rcpp::Named("adduct_mass_error") = adduct_mass_error);
+
       out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-      
+
       return out;
     };
-    
+
     void import_from_list(const Rcpp::List &annotation_list)
     {
       if (annotation_list.size() == 0)
         return;
-      
+
       std::vector<std::string> must_have_names = {
-        "feature", "component_feature", "iso_size", "iso_charge", "iso_step", "iso_cat",
-        "iso_isotope", "iso_mzr", "iso_relative_intensity", "iso_theoretical_min_relative_intensity",
-        "iso_theoretical_max_relative_intensity", "iso_mass_distance", "iso_theoretical_mass_distance",
-        "iso_mass_distance_error", "iso_time_error", "iso_number_carbons", "adduct_element",
-        "adduct_cat", "adduct_time_error", "adduct_mass_error"
-      };
-      
+          "feature", "component_feature", "iso_size", "iso_charge", "iso_step", "iso_cat",
+          "iso_isotope", "iso_mzr", "iso_relative_intensity", "iso_theoretical_min_relative_intensity",
+          "iso_theoretical_max_relative_intensity", "iso_mass_distance", "iso_theoretical_mass_distance",
+          "iso_mass_distance_error", "iso_time_error", "iso_number_carbons", "adduct_element",
+          "adduct_cat", "adduct_time_error", "adduct_mass_error"};
+
       if (!check_must_have_names_list(annotation_list, must_have_names))
       {
         Rcpp::Rcout << "Error: Annotation list does not have all required names." << std::endl;
         return;
       }
-      
+
       const std::vector<std::string> &feature_ref = Rcpp::as<std::vector<std::string>>(annotation_list["feature"]);
       const std::vector<std::string> &component_feature_ref = Rcpp::as<std::vector<std::string>>(annotation_list["component_feature"]);
       const std::vector<int> &iso_size_ref = Rcpp::as<std::vector<int>>(annotation_list["iso_size"]);
@@ -778,11 +773,11 @@ namespace MassSpecResults_NonTargetAnalysis
       const std::vector<std::string> &adduct_cat_ref = Rcpp::as<std::vector<std::string>>(annotation_list["adduct_cat"]);
       const std::vector<float> &adduct_time_error_ref = Rcpp::as<std::vector<float>>(annotation_list["adduct_time_error"]);
       const std::vector<float> &adduct_mass_error_ref = Rcpp::as<std::vector<float>>(annotation_list["adduct_mass_error"]);
-      
+
       const int n = feature_ref.size();
       if (n == 0)
         return;
-      
+
       feature = feature_ref[0];
       component_feature = component_feature_ref[0];
       iso_size = iso_size_ref[0];
@@ -805,10 +800,10 @@ namespace MassSpecResults_NonTargetAnalysis
       adduct_mass_error = adduct_mass_error_ref[0];
     };
   };
-  
+
   // MARK: FEATURE
-  struct 
-    FEATURE
+  struct
+      FEATURE
   {
     std::string analysis;
     std::string feature;
@@ -837,11 +832,11 @@ namespace MassSpecResults_NonTargetAnalysis
     Rcpp::List suspects;
     Rcpp::List formulas;
     Rcpp::List compounds;
-    
+
     void calculate_quality(const float &baseCut,
                            const float &rtWindow,
                            const float &maxTimeHalfWidth);
-    
+
     void update_properties()
     {
       if (eic.rt.size() > 0)
@@ -850,20 +845,20 @@ namespace MassSpecResults_NonTargetAnalysis
         mzmax = *std::max_element(eic.mz.begin(), eic.mz.end());
         rtmin = *std::min_element(eic.rt.begin(), eic.rt.end());
         rtmax = *std::max_element(eic.rt.begin(), eic.rt.end());
-        
+
         size_t max_position = find_central_max_index(eic.rt, eic.intensity, rt, 0);
-        
+
         if (!(max_position < 1 || max_position >= eic.rt.size() - 1))
         {
           rt = eic.rt[max_position];
           intensity = eic.intensity[max_position];
         }
-        
+
         area = trapezoidal_area(eic.rt, eic.intensity);
       }
     }
   };
-  
+
   // MARK: FEATURES
   struct FEATURES
   {
@@ -895,34 +890,33 @@ namespace MassSpecResults_NonTargetAnalysis
     std::vector<Rcpp::List> formulas;
     std::vector<Rcpp::List> compounds;
     bool valid = false;
-    
+
     void import_from_list(const std::string &a, const Rcpp::List &fts)
     {
       analysis = a;
-      
+
       if (fts.size() == 0)
       {
         return;
       }
-      
+
       std::vector<std::string> must_have_names = {
-        "feature", "group",
-        "rt", "mz",
-        "intensity", "area",
-        "rtmin",  "rtmax", "mzmin", "mzmax",
-        "mass", "polarity", "adduct",
-        "filtered", "filter", "filled", "correction",
-        "eic", "ms1", "ms2",
-        "quality", "annotation", "istd",
-        "suspects", "formulas", "compounds"
-      };
-      
+          "feature", "group",
+          "rt", "mz",
+          "intensity", "area",
+          "rtmin", "rtmax", "mzmin", "mzmax",
+          "mass", "polarity", "adduct",
+          "filtered", "filter", "filled", "correction",
+          "eic", "ms1", "ms2",
+          "quality", "annotation", "istd",
+          "suspects", "formulas", "compounds"};
+
       if (!check_must_have_names_list(fts, must_have_names))
       {
         Rcpp::Rcout << "Error: FEATURES::import_from_list() - missing required names in the list." << std::endl;
         return;
       }
-      
+
       const std::vector<std::string> &rf_feature = Rcpp::as<std::vector<std::string>>(fts["feature"]);
       const std::vector<std::string> &rf_group = Rcpp::as<std::vector<std::string>>(fts["group"]);
       const std::vector<float> &rf_rt = Rcpp::as<std::vector<float>>(fts["rt"]);
@@ -949,14 +943,14 @@ namespace MassSpecResults_NonTargetAnalysis
       const std::vector<Rcpp::List> &rf_suspects = Rcpp::as<std::vector<Rcpp::List>>(fts["suspects"]);
       const std::vector<Rcpp::List> &rf_formulas = Rcpp::as<std::vector<Rcpp::List>>(fts["formulas"]);
       const std::vector<Rcpp::List> &rf_compounds = Rcpp::as<std::vector<Rcpp::List>>(fts["compounds"]);
-      
+
       const int n = rf_feature.size();
-      
+
       if (n == 0)
       {
         return;
       }
-      
+
       eic.resize(n);
       ms1.resize(n);
       ms2.resize(n);
@@ -966,7 +960,7 @@ namespace MassSpecResults_NonTargetAnalysis
       suspects.resize(n);
       formulas.resize(n);
       compounds.resize(n);
-      
+
       feature = rf_feature;
       group = rf_group;
       rt = rf_rt;
@@ -984,7 +978,7 @@ namespace MassSpecResults_NonTargetAnalysis
       filter = rf_filter;
       filled = rf_filled;
       correction = rf_correction;
-      
+
       for (int i = 0; i < n; i++)
       {
         const Rcpp::List &eic_list = rf_eic[i];
@@ -996,42 +990,43 @@ namespace MassSpecResults_NonTargetAnalysis
         const Rcpp::List &suspects_list = rf_suspects[i];
         const Rcpp::List &formulas_list = rf_formulas[i];
         const Rcpp::List &compounds_list = rf_compounds[i];
-        
+
         FEATURE_EIC eic_i;
         eic_i.import_from_list(eic_list);
         eic[i] = eic_i;
-        
+
         FEATURE_MS1 ms1_i;
         ms1_i.import_from_list(ms1_list);
         ms1[i] = ms1_i;
-        
+
         FEATURE_MS2 ms2_i;
         ms2_i.import_from_list(ms2_list);
         ms2[i] = ms2_i;
-        
+
         FEATURE_QUALITY quality_i;
         quality_i.import_from_list(quality_list);
         quality[i] = quality_i;
-        
+
         FEATURE_ANNOTATION annotation_i;
         annotation_i.import_from_list(annotation_list);
         annotation[i] = annotation_i;
-        
+
         istd[i] = istd_list;
         suspects[i] = suspects_list;
         formulas[i] = formulas_list;
         compounds[i] = compounds_list;
       }
-      
+
       valid = true;
     };
-    
+
     int size() const
     {
       return feature.size();
     };
-    
-    FEATURE get_feature(const int &i) const {
+
+    FEATURE get_feature(const int &i) const
+    {
       FEATURE feature_i;
       feature_i.analysis = analysis;
       feature_i.feature = feature[i];
@@ -1062,8 +1057,9 @@ namespace MassSpecResults_NonTargetAnalysis
       feature_i.compounds = compounds[i];
       return feature_i;
     };
-    
-    void set_feature(const int &i, const FEATURE &feature_i) {
+
+    void set_feature(const int &i, const FEATURE &feature_i)
+    {
       feature[i] = feature_i.feature;
       group[i] = feature_i.group;
       rt[i] = feature_i.rt;
@@ -1091,8 +1087,9 @@ namespace MassSpecResults_NonTargetAnalysis
       formulas[i] = feature_i.formulas;
       compounds[i] = feature_i.compounds;
     };
-    
-    void append_feature(const FEATURE &feature_i) {
+
+    void append_feature(const FEATURE &feature_i)
+    {
       feature.push_back(feature_i.feature);
       group.push_back(feature_i.group);
       rt.push_back(feature_i.rt);
@@ -1120,17 +1117,17 @@ namespace MassSpecResults_NonTargetAnalysis
       formulas.push_back(feature_i.formulas);
       compounds.push_back(feature_i.compounds);
     };
-    
+
     Rcpp::List to_list_dt() const
     {
-      
+
       int n = feature.size();
-      
+
       if (n == 0 || !valid)
       {
         return get_empty_dt();
       }
-      
+
       std::vector<Rcpp::List> eic_list(n);
       std::vector<Rcpp::List> ms1_list(n);
       std::vector<Rcpp::List> ms2_list(n);
@@ -1140,7 +1137,7 @@ namespace MassSpecResults_NonTargetAnalysis
       std::vector<Rcpp::List> suspects_list(n);
       std::vector<Rcpp::List> formulas_list(n);
       std::vector<Rcpp::List> compounds_list(n);
-      
+
       for (int i = 0; i < n; i++)
       {
         eic_list[i] = eic[i].to_list_dt();
@@ -1157,59 +1154,60 @@ namespace MassSpecResults_NonTargetAnalysis
         compounds_list[i] = compounds[i];
         compounds_list[i].attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
       }
-      
+
       Rcpp::List out = Rcpp::List::create(
-        Rcpp::Named("feature") = feature,
-        Rcpp::Named("group") = group,
-        Rcpp::Named("rt") = rt,
-        Rcpp::Named("mz") = mz,
-        Rcpp::Named("intensity") = intensity,
-        Rcpp::Named("area") = area,
-        Rcpp::Named("rtmin") = rtmin,
-        Rcpp::Named("rtmax") = rtmax,
-        Rcpp::Named("mzmin") = mzmin,
-        Rcpp::Named("mzmax") = mzmax,
-        Rcpp::Named("mass") = mass,
-        Rcpp::Named("polarity") = polarity,
-        Rcpp::Named("adduct") = adduct,
-        Rcpp::Named("filtered") = filtered,
-        Rcpp::Named("filter") = filter,
-        Rcpp::Named("filled") = filled,
-        Rcpp::Named("correction") = correction,
-        Rcpp::Named("eic") = eic_list,
-        Rcpp::Named("ms1") = ms1_list,
-        Rcpp::Named("ms2") = ms2_list,
-        Rcpp::Named("quality") = quality_list,
-        Rcpp::Named("annotation") = annotation_list,
-        Rcpp::Named("istd") = istd_list,
-        Rcpp::Named("suspects") = suspects_list,
-        Rcpp::Named("formulas") = formulas_list,
-        Rcpp::Named("compounds") = compounds_list
-      );
-      
+          Rcpp::Named("feature") = feature,
+          Rcpp::Named("group") = group,
+          Rcpp::Named("rt") = rt,
+          Rcpp::Named("mz") = mz,
+          Rcpp::Named("intensity") = intensity,
+          Rcpp::Named("area") = area,
+          Rcpp::Named("rtmin") = rtmin,
+          Rcpp::Named("rtmax") = rtmax,
+          Rcpp::Named("mzmin") = mzmin,
+          Rcpp::Named("mzmax") = mzmax,
+          Rcpp::Named("mass") = mass,
+          Rcpp::Named("polarity") = polarity,
+          Rcpp::Named("adduct") = adduct,
+          Rcpp::Named("filtered") = filtered,
+          Rcpp::Named("filter") = filter,
+          Rcpp::Named("filled") = filled,
+          Rcpp::Named("correction") = correction,
+          Rcpp::Named("eic") = eic_list,
+          Rcpp::Named("ms1") = ms1_list,
+          Rcpp::Named("ms2") = ms2_list,
+          Rcpp::Named("quality") = quality_list,
+          Rcpp::Named("annotation") = annotation_list,
+          Rcpp::Named("istd") = istd_list,
+          Rcpp::Named("suspects") = suspects_list,
+          Rcpp::Named("formulas") = formulas_list,
+          Rcpp::Named("compounds") = compounds_list);
+
       out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-      
+
       return out;
     };
-    
-    void sort_by_mz() {
-      
+
+    void sort_by_mz()
+    {
+
       if (!valid)
       {
         Rcpp::Rcout << "Error: FEATURES::sort_by_mz() - features are not valid." << std::endl;
         return;
       }
-      
+
       if (feature.size() == 0)
       {
         return;
       }
-      
+
       std::vector<int> indices(feature.size());
       std::iota(indices.begin(), indices.end(), 0);
-      
-      std::sort(indices.begin(), indices.end(), [this](int i1, int i2) { return mz[i1] < mz[i2]; });
-      
+
+      std::sort(indices.begin(), indices.end(), [this](int i1, int i2)
+                { return mz[i1] < mz[i2]; });
+
       std::vector<std::string> feature_sorted;
       std::vector<std::string> group_sorted;
       std::vector<float> rt_sorted;
@@ -1236,7 +1234,7 @@ namespace MassSpecResults_NonTargetAnalysis
       std::vector<Rcpp::List> suspects_sorted;
       std::vector<Rcpp::List> formulas_sorted;
       std::vector<Rcpp::List> compounds_sorted;
-      
+
       for (size_t i = 0; i < feature.size(); i++)
       {
         feature_sorted.push_back(feature[indices[i]]);
@@ -1266,7 +1264,7 @@ namespace MassSpecResults_NonTargetAnalysis
         formulas_sorted.push_back(formulas[indices[i]]);
         compounds_sorted.push_back(compounds[indices[i]]);
       }
-      
+
       feature = feature_sorted;
       group = group_sorted;
       rt = rt_sorted;
@@ -1295,7 +1293,7 @@ namespace MassSpecResults_NonTargetAnalysis
       compounds = compounds_sorted;
     };
   };
-  
+
   struct NTS_DATA
   {
     std::vector<std::string> analyses;
@@ -1305,66 +1303,65 @@ namespace MassSpecResults_NonTargetAnalysis
     std::vector<sc::MS_SPECTRA_HEADERS> headers;
     std::vector<FEATURES> features;
     bool valid = false;
-    
+
     NTS_DATA(const Rcpp::List &info,
              const Rcpp::List &spectra_headers,
              const Rcpp::List &feature_list)
     {
-      
+
       std::vector<std::string> info_must_have_names = {
-        "analysis", "replicate", "blank", "file"
-      };
-      
+          "analysis", "replicate", "blank", "file"};
+
       if (!check_must_have_names_list(info, info_must_have_names))
       {
         Rcpp::Rcout << "Error: NTS_DATA::NTS_DATA() - missing required names in the list." << std::endl;
         return;
       }
-      
+
       const std::vector<std::string> &analyses_names = Rcpp::as<std::vector<std::string>>(info["analysis"]);
       const std::vector<std::string> &replicates_names = Rcpp::as<std::vector<std::string>>(info["replicate"]);
       const std::vector<std::string> &blanks_names = Rcpp::as<std::vector<std::string>>(info["blank"]);
       const std::vector<std::string> &analyses_files = Rcpp::as<std::vector<std::string>>(info["file"]);
-      
+
       analyses = analyses_names;
       replicates = replicates_names;
       blanks = blanks_names;
       files = analyses_files;
-      
+
       const int number_analyses = analyses.size();
-      
+
       if (number_analyses == 0)
       {
         Rcpp::Rcout << "Error: No analyses given!" << std::endl;
         return;
       }
-      
+
       const int number_files = files.size();
-      
+
       if (number_analyses != number_files)
       {
-        Rcpp::Rcout << "Error: Files not of the same same as analyses!" << std::endl;
+        Rcpp::Rcout << "Error: Files not of the same as analyses!" << std::endl;
         return;
       }
-      
+
       const int number_features_analyses = feature_list.size();
-      
+
       if (number_features_analyses != number_analyses)
       {
         Rcpp::Rcout << "Error: Feature list not of the same size as analyses!" << std::endl;
         return;
       }
-      
+
       const int number_headers_analyses = spectra_headers.size();
-      
+
       if (number_headers_analyses != number_analyses)
       {
         Rcpp::Rcout << "Error: Spectra headers not of the same size as analyses!" << std::endl;
         return;
       }
-      
+
       std::vector<std::string> names_features = feature_list.names();
-      
+
       for (int i = 0; i < number_analyses; i++)
       {
         if (analyses[i] != names_features[i])
@@ -1373,9 +1370,9 @@ namespace MassSpecResults_NonTargetAnalysis
           return;
         }
       }
-      
+
       std::vector<std::string> names_headers = spectra_headers.names();
-      
+
       for (int i = 0; i < number_analyses; i++)
       {
         if (analyses[i] != names_headers[i])
@@ -1384,20 +1381,20 @@ namespace MassSpecResults_NonTargetAnalysis
           return;
         }
       }
-      
+
       headers.resize(number_analyses);
       features.resize(number_analyses);
-      
+
       bool valid_features = true;
-      
+
       for (int i = 0; i < number_analyses; i++)
       {
         const Rcpp::List &header_ref = Rcpp::as<Rcpp::List>(spectra_headers[i]);
         const Rcpp::List &feature_ref = Rcpp::as<Rcpp::List>(feature_list[i]);
-        
+
         headers[i] = as_MS_SPECTRA_HEADERS(header_ref);
         features[i].import_from_list(analyses[i], feature_ref);
-        
+
         if (!features[i].valid)
         {
           valid_features = false;
@@ -1405,52 +1402,52 @@ namespace MassSpecResults_NonTargetAnalysis
           break;
         }
       }
-      
+
       if (!valid_features)
         return;
-      
+
       valid = true;
     };
-    
+
     int size() const
     {
       return analyses.size();
     };
-    
+
     Rcpp::List features_as_list_of_dt() const
     {
       const int n = features.size();
       Rcpp::List out(n);
-      
+
       if (n == 0 || !valid)
       {
         return out;
       }
-      
+
       for (int i = 0; i < n; i++)
       {
         out[i] = features[i].to_list_dt();
       }
-      
+
       Rcpp::CharacterVector names(n);
       for (int i = 0; i < n; i++)
       {
         names[i] = analyses[i];
       }
       out.attr("names") = names;
-      
+
       return out;
     };
-    
+
     std::vector<std::vector<int>> get_polarities() const
     {
       std::vector<std::vector<int>> out;
-      
+
       if (features.size() == 0 || !valid)
       {
         return out;
       }
-      
+
       for (const FEATURES &fts : features)
       {
         std::vector<int> polarities(fts.polarity);
@@ -1461,7 +1458,7 @@ namespace MassSpecResults_NonTargetAnalysis
       return out;
     };
   };
-  
+
   // MARK: ANNOTATION_ISOTOPE
   struct ANNOTATION_ISOTOPE
   {
@@ -1474,18 +1471,18 @@ namespace MassSpecResults_NonTargetAnalysis
     int max;
 
     ANNOTATION_ISOTOPE(const std::string &element,
-               const std::string &isotope,
-               float mass_distance,
-               float abundance,
-               float abundance_monoisotopic,
-               int min,
-               int max) : element(element),
-                          isotope(isotope),
-                          mass_distance(mass_distance),
-                          abundance(abundance),
-                          abundance_monoisotopic(abundance_monoisotopic),
-                          min(min),
-                          max(max) {};
+                       const std::string &isotope,
+                       float mass_distance,
+                       float abundance,
+                       float abundance_monoisotopic,
+                       int min,
+                       int max) : element(element),
+                                  isotope(isotope),
+                                  mass_distance(mass_distance),
+                                  abundance(abundance),
+                                  abundance_monoisotopic(abundance_monoisotopic),
+                                  min(min),
+                                  max(max) {};
   };
 
   // MARK: ANNOTATION_ISOTOPE_SET
@@ -1594,7 +1591,7 @@ namespace MassSpecResults_NonTargetAnalysis
       data = data_filtered;
     };
   };
-  
+
   // MARK: ANNOTATION_ISOTOPE_COMBINATIONS
   struct ANNOTATION_ISOTOPE_COMBINATIONS
   {
@@ -1698,7 +1695,8 @@ namespace MassSpecResults_NonTargetAnalysis
 
       std::vector<int> order_idx(length);
       std::iota(order_idx.begin(), order_idx.end(), 0);
-      std::stable_sort(order_idx.begin(), order_idx.end(), [&](int i, int j) { return mass_distances_unordered[i] < mass_distances_unordered[j]; });
+      std::stable_sort(order_idx.begin(), order_idx.end(), [&](int i, int j)
+                       { return mass_distances_unordered[i] < mass_distances_unordered[j]; });
 
       tensor_combinations.resize(length);
       tensor_mass_distances.resize(length);
@@ -1716,7 +1714,7 @@ namespace MassSpecResults_NonTargetAnalysis
       }
     };
   };
-  
+
   // MARK: ANNOTATION_ISOTOPE_CHAIN
   struct ANNOTATION_ISOTOPE_CHAIN
   {
@@ -1737,7 +1735,7 @@ namespace MassSpecResults_NonTargetAnalysis
     std::vector<float> theoretical_abundance_max;
     float number_carbons;
     int length;
-    
+
     ANNOTATION_ISOTOPE_CHAIN(const int &z, FEATURE mono_ion, float mono_mzr)
     {
       chain.resize(1);
@@ -1755,7 +1753,7 @@ namespace MassSpecResults_NonTargetAnalysis
       abundance.resize(1);
       theoretical_abundance_min.resize(1);
       theoretical_abundance_max.resize(1);
-      
+
       chain[0] = mono_ion;
       candidate_indices[0] = 0;
       charge[0] = z;
@@ -1775,7 +1773,7 @@ namespace MassSpecResults_NonTargetAnalysis
       length = 1;
     };
   };
-  
+
   // MARK: ANNOTATION_ADDUCT
   struct ANNOTATION_ADDUCT
   {
@@ -1784,7 +1782,7 @@ namespace MassSpecResults_NonTargetAnalysis
     std::string cat;
     int charge;
     float mass_distance;
-    
+
     ANNOTATION_ADDUCT(const std::string &e, const int &p, const std::string &c, const float &md, const int &z)
     {
       element = e;
@@ -1794,32 +1792,32 @@ namespace MassSpecResults_NonTargetAnalysis
       mass_distance = md;
     };
   };
-  
+
   // MARK: ANNOTATION_ADDUCT_SET
   struct ANNOTATION_ADDUCT_SET
   {
-    
+
     std::vector<ANNOTATION_ADDUCT> neutralizers{
-      ANNOTATION_ADDUCT("H", 1, "[M+H]+", -1.007276, 1),
-      ANNOTATION_ADDUCT("H", -1, "[M-H]-", 1.007276, 1)};
-    
+        ANNOTATION_ADDUCT("H", 1, "[M+H]+", -1.007276, 1),
+        ANNOTATION_ADDUCT("H", -1, "[M-H]-", 1.007276, 1)};
+
     std::vector<ANNOTATION_ADDUCT> all_adducts{
-      // Positive Adducts
-      ANNOTATION_ADDUCT("Na", 1, "[M+Na]+", 22.989218, 1),
-      ANNOTATION_ADDUCT("K", 1, "[M+K]+", 38.963158, 1),
-      ANNOTATION_ADDUCT("NH4", 1, "[M+NH4]+", 18.033823, 1),
-      // ANNOTATION_ADDUCT("CH3OH", 1, "[M+CH3OH+H]+", 33.033489, 1), // Methanol
-      // ANNOTATION_ADDUCT("DMSO", 1, "[M+DMSO+H]+", 79.02122, 1),    // Dimethyl sulfoxide
-      // ANNOTATION_ADDUCT("CH3CN", 1, "[M+CH3CN+H]+", 42.033823, 1), // Acetonitrile
-      // Negative Adducts
-      ANNOTATION_ADDUCT("Cl", -1, "[M+Cl]-", 34.969402, 1),
-      ANNOTATION_ADDUCT("Br", -1, "[M+Br]-", 78.918885, 1),
-      ANNOTATION_ADDUCT("CHO2", -1, "[M+CHO2]-", 44.998201, 1),     // Formate
-      // ANNOTATION_ADDUCT("CH3COO", -1, "[M+CH3COO]-", 59.013851, 1), // Acetate
-      // ANNOTATION_ADDUCT("-2H+Na", -1, "[M-2H+Na]-", 20.974666, 1),
-      // ANNOTATION_ADDUCT("-2H+K", -1, "[M-2H+K]-", 36.948606, 1)
+        // Positive Adducts
+        ANNOTATION_ADDUCT("Na", 1, "[M+Na]+", 22.989218, 1),
+        ANNOTATION_ADDUCT("K", 1, "[M+K]+", 38.963158, 1),
+        ANNOTATION_ADDUCT("NH4", 1, "[M+NH4]+", 18.033823, 1),
+        // ANNOTATION_ADDUCT("CH3OH", 1, "[M+CH3OH+H]+", 33.033489, 1), // Methanol
+        // ANNOTATION_ADDUCT("DMSO", 1, "[M+DMSO+H]+", 79.02122, 1),    // Dimethyl sulfoxide
+        // ANNOTATION_ADDUCT("CH3CN", 1, "[M+CH3CN+H]+", 42.033823, 1), // Acetonitrile
+        // Negative Adducts
+        ANNOTATION_ADDUCT("Cl", -1, "[M+Cl]-", 34.969402, 1),
+        ANNOTATION_ADDUCT("Br", -1, "[M+Br]-", 78.918885, 1),
+        ANNOTATION_ADDUCT("CHO2", -1, "[M+CHO2]-", 44.998201, 1), // Formate
+        // ANNOTATION_ADDUCT("CH3COO", -1, "[M+CH3COO]-", 59.013851, 1), // Acetate
+        // ANNOTATION_ADDUCT("-2H+Na", -1, "[M-2H+Na]-", 20.974666, 1),
+        // ANNOTATION_ADDUCT("-2H+K", -1, "[M-2H+K]-", 36.948606, 1)
     };
-    
+
     float neutralizer(const int &pol)
     {
       if (pol == 1)
@@ -1828,11 +1826,11 @@ namespace MassSpecResults_NonTargetAnalysis
       }
       return neutralizers[1].mass_distance;
     };
-    
+
     std::vector<ANNOTATION_ADDUCT> adducts(const int &pol)
     {
       std::vector<ANNOTATION_ADDUCT> out;
-      
+
       if (pol == 1)
       {
         for (const ANNOTATION_ADDUCT &a : all_adducts)
@@ -1854,58 +1852,59 @@ namespace MassSpecResults_NonTargetAnalysis
           }
         }
       }
-      
+
       return out;
     };
   };
-  
+
   // MARK: ANNOTATION_CANDIDATE_CHAIN
   struct ANNOTATION_CANDIDATE_CHAIN
   {
     std::vector<FEATURE> chain;
     std::vector<int> indices;
-    
+
     void clear()
     {
       chain.clear();
       indices.clear();
     };
-    
+
     int size() const
     {
       return chain.size();
     };
-    
+
     void sort_by_mz()
     {
       if (chain.size() == 0)
         return;
-      
+
       std::vector<int> new_order(chain.size());
       std::iota(new_order.begin(), new_order.end(), 0);
-      
-      std::sort(new_order.begin(), new_order.end(), [this](int i1, int i2) { return chain[i1].mz < chain[i2].mz; });
-      
+
+      std::sort(new_order.begin(), new_order.end(), [this](int i1, int i2)
+                { return chain[i1].mz < chain[i2].mz; });
+
       std::vector<FEATURE> chain_sorted;
       std::vector<int> indices_sorted;
-      
+
       for (size_t i = 0; i < chain.size(); i++)
       {
         chain_sorted.push_back(chain[new_order[i]]);
         indices_sorted.push_back(new_order[i]);
       }
-      
+
       chain = chain_sorted;
       indices = indices_sorted;
     };
-    
+
     std::vector<float> get_chain_mzr() const
     {
       if (chain.size() == 0)
         return std::vector<float>();
-      
+
       std::vector<float> mzr(chain.size());
-      
+
       for (size_t i = 0; i < chain.size(); i++)
       {
         float left = chain[i].mz - chain[i].mzmin;
@@ -1918,17 +1917,17 @@ namespace MassSpecResults_NonTargetAnalysis
       }
       return mzr;
     };
-    
+
     float get_max_mzr() const
     {
       if (chain.size() == 0)
         return 0.0;
-      
+
       std::vector<float> mzr = this->get_chain_mzr();
       float max_mzr = *std::max_element(mzr.begin(), mzr.end());
       return max_mzr;
     };
-    
+
     void find_isotopic_candidates(const FEATURE &ft,
                                   const FEATURES &fts,
                                   const int &ft_index,
@@ -1950,19 +1949,19 @@ namespace MassSpecResults_NonTargetAnalysis
       rtW = rtW * rtWindowAlignment;
       rtmin = rt - rtW;
       rtmax = rt + rtW;
-      
+
       chain.push_back(ft);
       indices.push_back(ft_index);
-      
+
       const int number_features = fts.size();
-      
+
       for (int z = 0; z < number_features; ++z)
       {
         const bool within_time_window = fts.rt[z] >= rtmin && fts.rt[z] <= rtmax;
         const bool within_max_mz_chain = fts.mz[z] > mz && fts.mz[z] <= max_mz_chain;
         const bool same_polarity = fts.polarity[z] == polarity;
         const bool not_main_ft = fts.feature[z] != feature;
-        
+
         if (within_time_window && within_max_mz_chain && same_polarity && not_main_ft)
         {
           chain.push_back(fts.get_feature(z));
@@ -1970,12 +1969,12 @@ namespace MassSpecResults_NonTargetAnalysis
         }
       }
     };
-    
+
     void annotate_isotopes(const MassSpecResults_NonTargetAnalysis::ANNOTATION_ISOTOPE_COMBINATIONS &combinations,
                            const int &maxIsotopes,
                            const int &maxCharge,
                            const int &maxGaps);
-    
+
     void find_adduct_candidates(const FEATURE &ft,
                                 const FEATURES &fts,
                                 const int &ft_index,
@@ -1996,19 +1995,19 @@ namespace MassSpecResults_NonTargetAnalysis
       rtW = rtW * rtWindowAlignment;
       rtmin = rt - rtW;
       rtmax = rt + rtW;
-      
+
       chain.push_back(ft);
       indices.push_back(ft_index);
-      
+
       const int number_features = fts.size();
-      
+
       for (int z = 0; z < number_features; ++z)
       {
         const bool within_time_window = fts.rt[z] >= rtmin && fts.rt[z] <= rtmax;
         const bool within_max_mz_chain = fts.mz[z] > mz && fts.mz[z] <= max_mz_chain;
         const bool same_polarity = fts.polarity[z] == polarity;
         const bool not_main_ft = fts.feature[z] != feature;
-        
+
         if (within_time_window && within_max_mz_chain && same_polarity && not_main_ft)
         {
           chain.push_back(fts.get_feature(z));
@@ -2016,7 +2015,7 @@ namespace MassSpecResults_NonTargetAnalysis
         }
       }
     };
-    
+
     void annotate_adducts();
   };
 

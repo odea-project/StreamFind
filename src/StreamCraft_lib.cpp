@@ -2821,14 +2821,11 @@ sc::MS_SPECTRUM sc::mzml::MZML::get_spectrum(const int &idx)
   }
 
   const std::vector<MZML_BINARY_METADATA> mtd = spec.extract_binary_metadata();
-
   spectrum.binary_arrays_count = mtd.size();
-
-  for (MZML_BINARY_METADATA i : mtd)
+  for (MZML_BINARY_METADATA i : mtd) {
     spectrum.binary_names.push_back(i.data_name_short);
-
+  }
   spectrum.binary_data = spec.extract_binary_data(mtd);
-
   return spectrum;
 };
 
@@ -3801,13 +3798,9 @@ sc::MS_SPECTRUM sc::mzxml::MZXML::get_spectrum(const int &idx)
   spectrum.precursor_charge = 0;
 
   const sc::MZXML_BINARY_METADATA binary_metadata = spec.extract_binary_metadata();
-
   spectrum.binary_arrays_count = 2;
-
   spectrum.binary_names = {"mz", "intensity"};
-
   spectrum.binary_data = spec.extract_binary_data(binary_metadata);
-
   return spectrum;
 };
 

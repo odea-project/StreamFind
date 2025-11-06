@@ -73,12 +73,13 @@ engine$load("engine.json")
 engine <- Engine$new(Metadata = list(file = "engine.rds"))
 
 # MassSpecResults_Spectra -----
-ms_files <- StreamFindData::get_ms_file_paths()[1:3]
+ms_files <- StreamFindData::get_ms_file_paths()[1]
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 cols <- c("name", "formula", "mass", "rt", "fragments", "tag")
 db <- db[, cols, with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
+dbis[, c("name", "mass", "rt")]
 
 engine <- MassSpecEngine$new(
   metadata = Metadata(list(name = "Ricardo")),

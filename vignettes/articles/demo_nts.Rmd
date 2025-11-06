@@ -165,7 +165,19 @@ ms$Analyses <- set_blank_names(ms$Analyses, blks)
 DT::datatable(
   info(ms$Analyses)
 )
+
+plot_tic <- plot_spectra_tic(ms$Analyses, downsize = 3, colorBy = "replicates", levels = 1)
+orca(plot_tic, "spectra_tic_wastewater.png", width = 1200, height = 800, scale = 2)
+files <- choose.files()
+files <- files |> stringr::str_detect("blank|influent|o3sw")
+ms2 <- StreamFind::MassSpecEngine$new(
+  metadata = list(name = "Wastewater NTA"),
+  analyses = files
+)
+info_dt <- info(ms2$Analyses)
 ```
+
+
 
 # *ProcessingStep*
 
