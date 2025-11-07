@@ -95,8 +95,8 @@ rcpp_nts_fill_features <- function(info, spectra_headers, feature_list, withinRe
     .Call(`_StreamFind_rcpp_nts_fill_features`, info, spectra_headers, feature_list, withinReplicate, filtered, rtExpand, mzExpand, minPeakWidth, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, baseCut, maxSearchWindow, minSignalToNoiseRatio, minGaussianFit)
 }
 
-rcpp_nts_find_features <- function(info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold = 15.0, minSNR = 3.0, minTraces = 3L, baselineWindow = 200.0, maxWidth = 100.0, minGaussFit = 0.6) {
-    .Call(`_StreamFind_rcpp_nts_find_features`, info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth, minGaussFit)
+rcpp_nts_find_features <- function(info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold = 15.0, minSNR = 3.0, minTraces = 3L, baselineWindow = 200.0, maxWidth = 100.0) {
+    .Call(`_StreamFind_rcpp_nts_find_features`, info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth)
 }
 
 rcpp_ms_group_features <- function(features, rt_dev = 10, verbose = FALSE) {

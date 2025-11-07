@@ -1,11 +1,11 @@
 #include <vector>
 #include <string>
 #include <Rcpp.h>
-#include <omp.h>
 #include <unordered_map>
 #include <cmath>
 #include <algorithm>
 #include <numeric>
+#include <iomanip>
 #include <filesystem>
 #include "StreamCraft_lib.h"
 #include "NTS_utils.h"
@@ -2183,19 +2183,15 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
                                   float minSNR = 3.0,
                                   int minTraces = 3,
                                   float baselineWindow = 200.0,
-                                  float maxWidth = 100.0,
-                                  float minGaussFit = 0.6) {
-
+                                  float maxWidth = 100.0) {
   std::vector<std::string> analyses = Rcpp::as<std::vector<std::string>>(info["analysis"]);
   std::vector<std::string> analyses_files = Rcpp::as<std::vector<std::string>>(info["file"]);
   Rcpp::List feature_list(analyses.size());
   feature_list.names() = analyses;
-
   if (resolution_profile.size() != 3) {
     Rcpp::Rcout << "Error: resolution_profile must have exactly 3 elements correspondent to 100, 400, and 1000 Da correspondent resolutions!" << std::endl;
     return feature_list;
   }
-
   if (rtWindowsMin.size() != rtWindowsMax.size()) {
     Rcpp::Rcout << "Error: rtWindowsMin and rtWindowsMax must have the same length!" << std::endl;
     return feature_list;
@@ -2203,8 +2199,6 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
 
   // Calculate linear model parameters for resolution once
   const auto [slope, intercept] = calculate_linear_model_params(resolution_profile);
-
-  // print the mzThreshold at some reference points for verification
   Rcpp::Rcout << std::endl;
   Rcpp::Rcout << "Linear resolution model threshold = " << slope << " * m/z + " << intercept << std::endl;
   Rcpp::Rcout << "Reference thresholds: " << std::endl;
@@ -2213,10 +2207,15 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
     Rcpp::Rcout << "  m/z " << test_mz << " -> threshold " << mzThreshold << std::endl;
   }
 
+  // Debug cluster to track in detail
+  const int debug_cluster = 439;
+  const bool debug = false;
+
+  const int total_analyses = analyses.size();
 
   for (size_t a = 0; a < analyses.size(); ++a) {
     Rcpp::Rcout << std::endl;
-    Rcpp::Rcout << "Processing analysis " << analyses[a] << std::endl;
+    Rcpp::Rcout << a + 1 << "/" << total_analyses << " Processing analysis " << analyses[a] << std::endl;
     const Rcpp::List &header_ref = Rcpp::as<Rcpp::List>(spectra_headers[analyses[a]]);
     sc::MS_SPECTRA_HEADERS header = MassSpecResults_NonTargetAnalysis::as_MS_SPECTRA_HEADERS(header_ref);
     std::vector<int> idx_load;
@@ -2239,8 +2238,14 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
     }
     std::string file_path = analyses_files[a];
     sc::MS_FILE ana(file_path);
-    Rcpp::Rcout << "Using " << idx_load.size() << " spectra" << std::endl;
     std::vector<float> spec_rt, spec_mz, spec_intensity, spec_noise;
+
+    // MARK: Spectra denoising
+    Rcpp::Rcout << "  1/5 Denoising " << idx_load.size() << " spectra" << std::endl;
+
+    // Track denoising statistics
+    size_t total_raw_points = 0;
+    size_t total_clean_points = 0;
 
     for (size_t i = 0; i < idx_load.size(); ++i) {
       const float &rt = rt_load[i];
@@ -2250,31 +2255,26 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       std::vector<float>& raw_intensity = single_spectrum[0][1];
       const int raw_n_traces = raw_mz.size();
       if (raw_n_traces < minTraces) continue;
+      
+      // Count raw data points for denoising statistics
+      total_raw_points += raw_n_traces;
+      
       std::vector<float> raw_noise(raw_n_traces);
 
-      // MARK: Spectra denoising - Automated parameter estimation
-
-      // Automatically estimate optimal noiseBins and noiseQuantile based on data characteristics
       int auto_noiseBins;
       float auto_noiseQuantile;
-
-
-      // Calculate data density and intensity distribution characteristics
       std::vector<float> intensity_copy = raw_intensity;
       std::sort(intensity_copy.begin(), intensity_copy.end());
-
-      // Estimate data density - use logarithmic scaling for better bin distribution
       auto_noiseBins = std::max(10, std::min(200, static_cast<int>(std::sqrt(raw_n_traces) * 1.5)));
 
       // Calculate intensity statistics
       float q25 = intensity_copy[static_cast<int>(raw_n_traces * 0.25)];
       // float q50 = intensity_copy[static_cast<int>(raw_n_traces * 0.50)]; // median
-      float q75 = intensity_copy[static_cast<int>(raw_n_traces * 0.75)];
+      // float q75 = intensity_copy[static_cast<int>(raw_n_traces * 0.75)];
       float q90 = intensity_copy[static_cast<int>(raw_n_traces * 0.90)];
       // float q95 = intensity_copy[static_cast<int>(raw_n_traces * 0.95)];
 
       // Calculate interquartile range and coefficient of variation
-      float iqr = q75 - q25;
       float mean_intensity = std::accumulate(raw_intensity.begin(), raw_intensity.end(), 0.0f) / raw_n_traces;
       float variance = 0.0f;
       for (float val : raw_intensity) {
@@ -2318,9 +2318,8 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         auto_noiseBins = std::min(200, raw_n_traces / 20);
       }
 
-      // Debug output for automated parameters
-      if (i == 0) { // Only show for first spectrum to avoid spam
-        Rcpp::Rcout << "Auto noise estimation: bins=" << auto_noiseBins
+      if (i == 0 && debug) {
+        Rcpp::Rcout << "DEBUG Auto noise estimation: bins=" << auto_noiseBins
                     << ", quantile = " << auto_noiseQuantile
                     << " (CV = " << cv << ", SNR = " << signal_noise_ratio
                     << ", n = " << raw_n_traces << ")" << std::endl;
@@ -2372,6 +2371,10 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
 
       // Sort by mz - optimized version
       const size_t clean_size = clean_mz.size();
+      
+      // Count clean data points for denoising statistics
+      total_clean_points += clean_size;
+      
       std::vector<size_t> indices(clean_size);
       std::iota(indices.begin(), indices.end(), 0);
       std::sort(indices.begin(), indices.end(), [&](size_t a, size_t b) {
@@ -2442,8 +2445,6 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       single_spectrum.clear();
     }
 
-    // MARK: Mass clustering
-
     const int clean_n_traces = spec_rt.size();
     if (clean_n_traces == 0) {
       Rcpp::List empty_list;
@@ -2451,6 +2452,9 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       feature_list[analyses[a]] = empty_list;
       continue;
     }
+
+    // MARK: Mass clustering
+    Rcpp::Rcout << "  2/5 Clustering " << clean_n_traces << " denoised traces by m/z" << std::endl;
 
     // Sort by mz
     std::vector<size_t> clust_sort_indices(clean_n_traces);
@@ -2570,59 +2574,58 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
     }
 
     // Create output list with raw spectra data
-    Rcpp::List spectra_list;
-    spectra_list["rt"] = clust_rt_sorted_rt;
-    spectra_list["mz"] = clust_rt_sorted_mz;
-    spectra_list["intensity"] = clust_rt_sorted_intensity;
-    spectra_list["noise"] = clust_rt_sorted_noise;
-    spectra_list["cluster"] = clust_rt_sorted_cluster;
-    spectra_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-
+    // Rcpp::List spectra_list;
+    // spectra_list["rt"] = clust_rt_sorted_rt;
+    // spectra_list["mz"] = clust_rt_sorted_mz;
+    // spectra_list["intensity"] = clust_rt_sorted_intensity;
+    // spectra_list["noise"] = clust_rt_sorted_noise;
+    // spectra_list["cluster"] = clust_rt_sorted_cluster;
+    // spectra_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
     // feature_list[analyses[a]] = spectra_list;
     // return feature_list;
 
-
     // MARK: Peak detection
-
-    // Debug cluster to track in detail
-    const int debug_cluster = 439;
-
+    Rcpp::Rcout << "  3/5 Detecting peaks in " << valid_clusters.size() << " valid m/z clusters" << std::endl;
+    
     // Create a map to group data by cluster
     std::map<int, std::vector<int>> cluster_indices;
     for (size_t i = 0; i < clust_rt_sorted_cluster.size(); ++i) {
       cluster_indices[clust_rt_sorted_cluster[i]].push_back(i);
     }
 
-    Rcpp::Rcout << "Detecting peaks in " << cluster_indices.size() << " mass clusters." << std::endl;
 
-    int total_clusters_processed = 0;
-    int clusters_too_small = 0;
 
     // Peak detection data structures
     std::vector<float> peaks_rt, peaks_mz, peaks_intensity, peaks_noise, peaks_sn;
     std::vector<float> peaks_rtmin, peaks_rtmax, peaks_mzmin, peaks_mzmax;
     std::vector<float> peaks_width, peaks_ppm;
     std::vector<float> peaks_fwhm_rt, peaks_fwhm_mz;  // FWHM in RT and MZ dimensions
+    std::vector<float> peaks_area;  // Peak area using trapezoidal integration
     std::vector<int> peaks_cluster, peaks_n_traces;
     std::vector<std::string> peaks_id;
 
-    // Peak profile data as lists
-    std::vector<Rcpp::List> peaks_profile_rt, peaks_profile_raw_intensity;
-    std::vector<Rcpp::List> peaks_profile_baseline, peaks_profile_smoothed_intensity;
+    // Peak profile data as native C++ vectors
+    std::vector<std::vector<float>> peaks_profile_rt, peaks_profile_raw_intensity;
+    std::vector<std::vector<float>> peaks_profile_baseline, peaks_profile_smoothed_intensity;
+    std::vector<std::vector<float>> peaks_fitted_intensity;
+    std::vector<std::vector<float>> peaks_fitted_rt;
 
-    // Process each cluster
+    int total_clusters_processed = 0;
+    int clusters_too_small = 0;
+
+    // Process each cluster sequentially to handle complex overlap merging
     for (const auto& [cluster_id, indices] : cluster_indices) {
       total_clusters_processed++;
 
       if (indices.size() < static_cast<size_t>(minTraces)) {
         clusters_too_small++;
-        if (cluster_id == debug_cluster) {
+        if (debug && cluster_id == debug_cluster) {
           Rcpp::Rcout << "DEBUG Cluster " << cluster_id << " skipped: only " << indices.size() << " traces (min: " << minTraces << ")" << std::endl;
         }
         continue;
       }
 
-      if (cluster_id == debug_cluster) {
+      if (debug && cluster_id == debug_cluster) {
         Rcpp::Rcout << "DEBUG Processing cluster " << cluster_id << " with " << indices.size() << " traces" << std::endl;
       }
 
@@ -2637,14 +2640,14 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
 
       const int n = cluster_rt.size();
       if (n < minTraces) {
-        if (cluster_id == debug_cluster) {
-          Rcpp::Rcout << "  DEBUG Cluster " << cluster_id << " skipped after extraction: only " << n << " points" << std::endl;
+        if (debug && cluster_id == debug_cluster) {
+          Rcpp::Rcout << "DEBUG Cluster " << cluster_id << " skipped after extraction: only " << n << " points" << std::endl;
         }
         continue;
       }
 
-      if (cluster_id == debug_cluster) {
-        Rcpp::Rcout << "  DEBUG Cluster " << cluster_id << ": n=" << n << " points" << std::endl;
+      if (debug && cluster_id == debug_cluster) {
+        Rcpp::Rcout << "DEBUG Cluster " << cluster_id << ": n=" << n << " points" << std::endl;
 
         // Debug: show intensity statistics
         auto minmax_intensity = std::minmax_element(cluster_intensity.begin(), cluster_intensity.end());
@@ -2653,7 +2656,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         float sum_intensity = std::accumulate(cluster_intensity.begin(), cluster_intensity.end(), 0.0f);
         float mean_intensity = sum_intensity / n;
 
-        Rcpp::Rcout << "  DEBUG Intensity stats: min=" << min_intensity << ", max=" << max_intensity
+        Rcpp::Rcout << "DEBUG Intensity stats: min=" << min_intensity << ", max=" << max_intensity
                     << ", mean=" << mean_intensity << std::endl;
       }
 
@@ -2668,8 +2671,8 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       int baseline_window_size = std::max(minTraces, static_cast<int>(std::floor(baselineWindow / cycle_time))) / 2;
       int derivative_window_size = std::max(minTraces, static_cast<int>(std::floor(4.0f / cycle_time)));
 
-      if (cluster_id == debug_cluster) {
-        Rcpp::Rcout << "  DEBUG Cycle time: " << cycle_time << ", baseline_window: " << baseline_window_size
+      if (debug && cluster_id == debug_cluster) {
+        Rcpp::Rcout << "DEBUG Cycle time: " << cycle_time << ", baseline_window: " << baseline_window_size
                     << ", derivative_window: " << derivative_window_size << std::endl;
       }
 
@@ -2695,7 +2698,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         baseline = smoothed_baseline;
       }
 
-      if (cluster_id == debug_cluster) {
+      if (debug && cluster_id == debug_cluster) {
         // Debug: baseline statistics
         auto minmax_baseline = std::minmax_element(baseline.begin(), baseline.end());
         float min_baseline = *minmax_baseline.first;
@@ -2703,7 +2706,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         float sum_baseline = std::accumulate(baseline.begin(), baseline.end(), 0.0f);
         float mean_baseline = sum_baseline / n;
 
-        Rcpp::Rcout << "  DEBUG Baseline stats: min=" << min_baseline << ", max=" << max_baseline
+        Rcpp::Rcout << "DEBUG Baseline stats: min=" << min_baseline << ", max=" << max_baseline
                     << ", mean=" << mean_baseline << std::endl;
       }
 
@@ -2726,7 +2729,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         }
       }
 
-      if (cluster_id == debug_cluster) {
+      if (debug && cluster_id == debug_cluster) {
         // Debug: smoothed intensity statistics
         auto minmax_smooth = std::minmax_element(smoothed_intensity.begin(), smoothed_intensity.end());
         float min_smooth = *minmax_smooth.first;
@@ -2734,7 +2737,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         float sum_smooth = std::accumulate(smoothed_intensity.begin(), smoothed_intensity.end(), 0.0f);
         float mean_smooth = sum_smooth / n;
 
-        Rcpp::Rcout << "  DEBUG Smoothed intensity stats: min=" << min_smooth << ", max=" << max_smooth
+        Rcpp::Rcout << "DEBUG Smoothed intensity stats: min=" << min_smooth << ", max=" << max_smooth
                     << ", mean=" << mean_smooth << std::endl;
       }
 
@@ -2758,13 +2761,13 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         }
       }
 
-      if (cluster_id == debug_cluster) {
-        Rcpp::Rcout << "  DEBUG Found " << candidates.size() << " peak candidates based on derivative sign change" << std::endl;
+      if (debug && cluster_id == debug_cluster) {
+        Rcpp::Rcout << "DEBUG Found " << candidates.size() << " peak candidates based on derivative sign change" << std::endl;
 
         if (candidates.empty()) {
-          Rcpp::Rcout << "  DEBUG No candidates found - checking derivative values:" << std::endl;
+          Rcpp::Rcout << "DEBUG No candidates found - checking derivative values:" << std::endl;
           for (size_t i = 0; i < std::min(static_cast<size_t>(10), dI.size()); ++i) {
-            Rcpp::Rcout << "    DEBUG dI[" << i << "] = " << dI[i] << std::endl;
+            Rcpp::Rcout << "DEBUG dI[" << i << "] = " << dI[i] << std::endl;
           }
           continue;
         }
@@ -2825,8 +2828,8 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         if (pre_count > 0 && post_count > 0 && pre_avg > 0 && post_avg < 0 &&
             d2_at_peak < 0 && !higher_apex_nearby) {
           valid_peaks.push_back(idx);
-          if (cluster_id == debug_cluster) {
-            Rcpp::Rcout << "    DEBUG Candidate at idx " << idx << " ACCEPTED: pre_avg=" << pre_avg
+          if (debug && cluster_id == debug_cluster) {
+            Rcpp::Rcout << "DEBUG Candidate at idx " << idx << " ACCEPTED: pre_avg=" << pre_avg
                         << ", post_avg=" << post_avg << ", d2=" << d2_at_peak << std::endl;
           }
         } else {
@@ -2835,17 +2838,17 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
           } else {
             candidates_rejected_derivative++;
           }
-          if (cluster_id == debug_cluster) {
-            Rcpp::Rcout << "    DEBUG Candidate at idx " << idx << " rejected: pre_avg=" << pre_avg
+          if (debug && cluster_id == debug_cluster) {
+            Rcpp::Rcout << "DEBUG Candidate at idx " << idx << " rejected: pre_avg=" << pre_avg
                         << ", post_avg=" << post_avg << ", d2=" << d2_at_peak
                         << ", higher_apex=" << higher_apex_nearby << std::endl;
           }
         }
       }
 
-      if (cluster_id == debug_cluster) {
-        Rcpp::Rcout << "  DEBUG Peak filtering: " << candidates.size() << " candidates -> " << valid_peaks.size() << " valid peaks" << std::endl;
-        Rcpp::Rcout << "  DEBUG Rejected: " << candidates_rejected_edge << " (edge), "
+      if (debug && cluster_id == debug_cluster) {
+        Rcpp::Rcout << "DEBUG Peak filtering: " << candidates.size() << " candidates -> " << valid_peaks.size() << " valid peaks" << std::endl;
+        Rcpp::Rcout << "DEBUG Rejected: " << candidates_rejected_edge << " (edge), "
                     << candidates_rejected_derivative << " (derivative), "
                     << candidates_rejected_apex << " (apex)" << std::endl;
       }
@@ -2858,14 +2861,14 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       for (int peak_idx : valid_peaks) {
         if (peak_idx < minTraces / 2 || peak_idx >= n - minTraces / 2) {
           peaks_rejected_boundary++;
-          if (cluster_id == debug_cluster) {
-            Rcpp::Rcout << "    DEBUG Peak at idx " << peak_idx << " rejected: too close to boundary" << std::endl;
+          if (debug && cluster_id == debug_cluster) {
+            Rcpp::Rcout << "DEBUG Peak at idx " << peak_idx << " rejected: too close to boundary" << std::endl;
           }
           continue;
         }
 
-        if (cluster_id == debug_cluster) {
-          Rcpp::Rcout << "    DEBUG Processing peak at idx " << peak_idx << std::endl;
+        if (debug && cluster_id == debug_cluster) {
+          Rcpp::Rcout << "DEBUG Processing peak at idx " << peak_idx << std::endl;
         }
 
         // Find peak bounds using simplified version of get_peak_bounds
@@ -2877,7 +2880,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         int left_idx = std::max(0, peak_idx - 3);
         while (left_idx > 0) {
           if (cluster_rt[peak_idx] - cluster_rt[left_idx] > max_half_width) break;
-          if (smoothed_intensity[left_idx] <= baseline[left_idx] * 1.1f) break;
+          if (smoothed_intensity[left_idx] <= baseline[left_idx] * 1.2f) break;
           if (smoothed_intensity[left_idx] <= min_intensity_threshold) break;
           left_idx--;
         }
@@ -2886,14 +2889,14 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         int right_idx = std::min(n - 1, peak_idx + 3);
         while (right_idx < n - 1) {
           if (cluster_rt[right_idx] - cluster_rt[peak_idx] > max_half_width) break;
-          if (smoothed_intensity[right_idx] <= baseline[right_idx] * 1.1f) break;
+          if (smoothed_intensity[right_idx] <= baseline[right_idx] * 1.2f) break;
           if (smoothed_intensity[right_idx] <= min_intensity_threshold) break;
           right_idx++;
         }
 
         if (left_idx >= right_idx) {
-          if (cluster_id == debug_cluster) {
-            Rcpp::Rcout << "    DEBUG Peak at idx " << peak_idx << " rejected: invalid boundaries (left=" << left_idx << ", right=" << right_idx << ")" << std::endl;
+          if (debug && cluster_id == debug_cluster) {
+            Rcpp::Rcout << "DEBUG Peak at idx " << peak_idx << " rejected: invalid boundaries (left=" << left_idx << ", right=" << right_idx << ")" << std::endl;
           }
           continue;
         }
@@ -2935,16 +2938,16 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
         // Check S/N ratio
         if (sn < minSNR) {
           peaks_rejected_snr++;
-          if (cluster_id == debug_cluster) {
-            Rcpp::Rcout << "    DEBUG Peak at idx " << peak_idx << " rejected: S/N=" << sn << " < " << minSNR
+          if (debug && cluster_id == debug_cluster) {
+            Rcpp::Rcout << "DEBUG Peak at idx " << peak_idx << " rejected: S/N=" << sn << " < " << minSNR
                         << " (signal=" << signal << ", noise=" << noise << ")" << std::endl;
           }
           continue;
         }
 
         peaks_accepted++;
-        if (cluster_id == debug_cluster) {
-          Rcpp::Rcout << "    DEBUG Peak at idx " << peak_idx << " ACCEPTED: S/N=" << sn << ", intensity=" << signal << std::endl;
+        if (debug && cluster_id == debug_cluster) {
+          Rcpp::Rcout << "DEBUG Peak at idx " << peak_idx << " ACCEPTED: S/N=" << sn << ", intensity=" << signal << std::endl;
         }
 
         // Calculate m/z statistics
@@ -2988,61 +2991,25 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
           fwhm_rt = width; // fallback to total width
         }
 
-        // Calculate FWHM in MZ dimension (intensity-weighted approach)
+        // Calculate FWHM in MZ dimension based on MZ range at FWHM RT window
         float fwhm_mz = 0.0f;
-        std::vector<float> mz_profile;
-        std::vector<float> intensity_profile;
-
-        // Create MZ profile by binning the m/z values
-        const int mz_bins = std::min(50, static_cast<int>(peak_mz_vals.size()));
-        if (mz_bins > 3) {
-          float mz_range = mz_max - mz_min;
-          float mz_bin_size = mz_range / mz_bins;
-
-          std::vector<float> binned_mz(mz_bins, 0.0f);
-          std::vector<float> binned_intensity(mz_bins, 0.0f);
-          std::vector<int> bin_counts(mz_bins, 0);
-
-          for (size_t i = 0; i < peak_mz_vals.size(); ++i) {
-            int bin_idx = std::min(mz_bins - 1, static_cast<int>((peak_mz_vals[i] - mz_min) / mz_bin_size));
-            binned_mz[bin_idx] += peak_mz_vals[i];
-            binned_intensity[bin_idx] += peak_intensities[i];
-            bin_counts[bin_idx]++;
+        
+        if (fwhm_left_idx < fwhm_right_idx && 
+            fwhm_left_idx < static_cast<int>(peak_mz_vals.size()) && 
+            fwhm_right_idx < static_cast<int>(peak_mz_vals.size())) {
+          
+          // Find min and max m/z values within the FWHM RT window
+          float mz_min_fwhm = peak_mz_vals[fwhm_left_idx];
+          float mz_max_fwhm = peak_mz_vals[fwhm_left_idx];
+          
+          for (int i = fwhm_left_idx; i <= fwhm_right_idx; ++i) {
+            mz_min_fwhm = std::min(mz_min_fwhm, peak_mz_vals[i]);
+            mz_max_fwhm = std::max(mz_max_fwhm, peak_mz_vals[i]);
           }
-
-          // Average binned values
-          for (int i = 0; i < mz_bins; ++i) {
-            if (bin_counts[i] > 0) {
-              binned_mz[i] /= bin_counts[i];
-              binned_intensity[i] /= bin_counts[i];
-            }
-          }
-
-          // Find maximum in MZ profile
-          auto max_mz_it = std::max_element(binned_intensity.begin(), binned_intensity.end());
-          int max_mz_idx = std::distance(binned_intensity.begin(), max_mz_it);
-          float max_mz_intensity = *max_mz_it;
-          float half_max_mz_intensity = max_mz_intensity / 2.0f;
-
-          // Find FWHM boundaries in MZ
-          int mz_left_idx = max_mz_idx;
-          int mz_right_idx = max_mz_idx;
-
-          while (mz_left_idx > 0 && binned_intensity[mz_left_idx] > half_max_mz_intensity) {
-            mz_left_idx--;
-          }
-
-          while (mz_right_idx < mz_bins - 1 && binned_intensity[mz_right_idx] > half_max_mz_intensity) {
-            mz_right_idx++;
-          }
-
-          if (mz_left_idx < mz_right_idx) {
-            fwhm_mz = binned_mz[mz_right_idx] - binned_mz[mz_left_idx];
-          } else {
-            fwhm_mz = mz_max - mz_min; // fallback to total MZ range
-          }
+          
+          fwhm_mz = mz_max_fwhm - mz_min_fwhm;
         } else {
-          fwhm_mz = mz_max - mz_min; // fallback for small peaks
+          fwhm_mz = mz_max - mz_min; // fallback to total MZ range
         }
 
         // Collect peak profile data
@@ -3056,49 +3023,595 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
           profile_smoothed_intensity_data.push_back(smoothed_intensity[i]);
         }
 
-        // Store peak data
-        peaks_rt.push_back(rt_at_max);
-        peaks_mz.push_back(mz_weighted);
-        peaks_intensity.push_back(peak_max_intensity);
-        peaks_noise.push_back(noise);
-        peaks_sn.push_back(sn);
-        peaks_rtmin.push_back(cluster_rt[left_idx]);
-        peaks_rtmax.push_back(cluster_rt[right_idx]);
-        peaks_mzmin.push_back(mz_min);
-        peaks_mzmax.push_back(mz_max);
-        peaks_width.push_back(width);
-        peaks_ppm.push_back(ppm);
-        peaks_fwhm_rt.push_back(fwhm_rt);
-        peaks_fwhm_mz.push_back(fwhm_mz);
-        peaks_cluster.push_back(cluster_id);
-        peaks_n_traces.push_back(right_idx - left_idx + 1);
+        // Check for overlapping peaks within FWHM RT window before storing
+        bool merged = false;
+        float fwhm_rt_half = fwhm_rt / 2.0f;
+        
+        for (size_t existing_idx = 0; existing_idx < peaks_rt.size(); ++existing_idx) {
+          // Only check peaks from the same cluster
+          if (peaks_cluster[existing_idx] != cluster_id) continue;
+          
+          // Calculate RT distance between current peak and existing peak
+          float rt_distance = std::abs(rt_at_max - peaks_rt[existing_idx]);
+          float existing_fwhm_half = peaks_fwhm_rt[existing_idx] / 2.0f;
+          
+          // Check if peaks overlap within their FWHM RT windows
+          if (rt_distance < (fwhm_rt_half + existing_fwhm_half)) {
+            // Peaks overlap - merge them, keeping the one with higher intensity
+            
+            // Find the existing peak's boundaries in the cluster data
+            int existing_left_idx = -1, existing_right_idx = -1;
+            float existing_rtmin = peaks_rtmin[existing_idx];
+            float existing_rtmax = peaks_rtmax[existing_idx];
+            
+            // Find indices corresponding to existing peak boundaries
+            for (int i = 0; i < n; ++i) {
+              if (existing_left_idx == -1 && cluster_rt[i] >= existing_rtmin) {
+                existing_left_idx = i;
+              }
+              if (cluster_rt[i] <= existing_rtmax) {
+                existing_right_idx = i;
+              }
+            }
+            
+            // Determine merged boundaries (wider RT window)
+            int merged_left_idx = std::min(existing_left_idx != -1 ? existing_left_idx : left_idx, left_idx);
+            int merged_right_idx = std::max(existing_right_idx != -1 ? existing_right_idx : right_idx, right_idx);
+            
+            // Extract merged peak region data
+            std::vector<float> merged_intensities, merged_rt_vals, merged_mz_vals;
+            std::vector<float> merged_profile_rt, merged_profile_raw_intensity;
+            std::vector<float> merged_profile_baseline, merged_profile_smoothed_intensity;
+            
+            for (int i = merged_left_idx; i <= merged_right_idx; ++i) {
+              merged_intensities.push_back(cluster_intensity[i]);
+              merged_rt_vals.push_back(cluster_rt[i]);
+              merged_mz_vals.push_back(cluster_mz[i]);
+              merged_profile_rt.push_back(cluster_rt[i]);
+              merged_profile_raw_intensity.push_back(cluster_intensity[i]);
+              merged_profile_baseline.push_back(baseline[i]);
+              merged_profile_smoothed_intensity.push_back(smoothed_intensity[i]);
+            }
+            
+            if (peak_max_intensity > peaks_intensity[existing_idx]) {
+              if (debug && cluster_id == debug_cluster) {
+                Rcpp::Rcout << "DEBUG Merging overlapping peaks: keeping current (intensity=" 
+                           << peak_max_intensity << ") over existing (intensity=" 
+                           << peaks_intensity[existing_idx] << ")" << std::endl;
+              }
+              
+              // Update existing peak with current peak's data (higher intensity)
+              peaks_rt[existing_idx] = rt_at_max;
+              peaks_mz[existing_idx] = mz_weighted;
+              peaks_intensity[existing_idx] = peak_max_intensity;
+              peaks_noise[existing_idx] = noise;
+              peaks_sn[existing_idx] = sn;
+              
+              // Update boundaries using min/max approach
+              peaks_rtmin[existing_idx] = cluster_rt[merged_left_idx];
+              peaks_rtmax[existing_idx] = cluster_rt[merged_right_idx];
+              peaks_mzmin[existing_idx] = std::min(peaks_mzmin[existing_idx], mz_min);
+              peaks_mzmax[existing_idx] = std::max(peaks_mzmax[existing_idx], mz_max);
+              
+              // Update peak ID
+              std::string updated_peak_id = "CL" + std::to_string(cluster_id) +
+                                          "_N" + std::to_string(existing_idx + 1) +
+                                          "_MZ" + std::to_string(static_cast<int>(std::round(mz_weighted))) +
+                                          "_RT" + std::to_string(static_cast<int>(std::round(rt_at_max)));
+              peaks_id[existing_idx] = updated_peak_id;
+              
+            } else {
+              if (debug && cluster_id == debug_cluster) {
+                Rcpp::Rcout << "DEBUG Merging overlapping peaks: keeping existing (intensity=" 
+                           << peaks_intensity[existing_idx] << ") over current (intensity=" 
+                           << peak_max_intensity << ")" << std::endl;
+              }
+              
+              // Keep existing peak's main parameters but update boundaries
+              peaks_rtmin[existing_idx] = cluster_rt[merged_left_idx];
+              peaks_rtmax[existing_idx] = cluster_rt[merged_right_idx];
+              peaks_mzmin[existing_idx] = std::min(peaks_mzmin[existing_idx], mz_min);
+              peaks_mzmax[existing_idx] = std::max(peaks_mzmax[existing_idx], mz_max);
+            }
+            
+            // Recalculate FWHM based on merged peak data
+            if (!merged_intensities.empty()) {
+              auto merged_max_it = std::max_element(merged_intensities.begin(), merged_intensities.end());
+              float merged_max_intensity = *merged_max_it;
+              int merged_max_position = std::distance(merged_intensities.begin(), merged_max_it);
+              
+              // Calculate FWHM in RT dimension for merged peak
+              float merged_half_max = merged_max_intensity / 2.0f;
+              int merged_fwhm_left = merged_max_position;
+              int merged_fwhm_right = merged_max_position;
+              
+              // Search left from apex
+              while (merged_fwhm_left > 0 && merged_intensities[merged_fwhm_left] > merged_half_max) {
+                merged_fwhm_left--;
+              }
+              
+              // Search right from apex
+              while (merged_fwhm_right < static_cast<int>(merged_intensities.size()) - 1 &&
+                     merged_intensities[merged_fwhm_right] > merged_half_max) {
+                merged_fwhm_right++;
+              }
+              
+              // Calculate merged FWHM in RT
+              float merged_fwhm_rt = 0.0f;
+              if (merged_fwhm_left < merged_fwhm_right && 
+                  merged_fwhm_right < static_cast<int>(merged_rt_vals.size())) {
+                merged_fwhm_rt = merged_rt_vals[merged_fwhm_right] - merged_rt_vals[merged_fwhm_left];
+              } else {
+                merged_fwhm_rt = merged_rt_vals.back() - merged_rt_vals.front(); // fallback to total width
+              }
+              
+              // Calculate merged FWHM in MZ
+              float merged_fwhm_mz = 0.0f;
+              if (merged_fwhm_left < merged_fwhm_right && 
+                  merged_fwhm_left < static_cast<int>(merged_mz_vals.size()) && 
+                  merged_fwhm_right < static_cast<int>(merged_mz_vals.size())) {
+                
+                float mz_min_fwhm = merged_mz_vals[merged_fwhm_left];
+                float mz_max_fwhm = merged_mz_vals[merged_fwhm_left];
+                
+                for (int i = merged_fwhm_left; i <= merged_fwhm_right; ++i) {
+                  mz_min_fwhm = std::min(mz_min_fwhm, merged_mz_vals[i]);
+                  mz_max_fwhm = std::max(mz_max_fwhm, merged_mz_vals[i]);
+                }
+                
+                merged_fwhm_mz = mz_max_fwhm - mz_min_fwhm;
+              } else {
+                merged_fwhm_mz = peaks_mzmax[existing_idx] - peaks_mzmin[existing_idx]; // fallback
+              }
+              
+              // Update FWHM values with recalculated merged values
+              peaks_fwhm_rt[existing_idx] = merged_fwhm_rt;
+              peaks_fwhm_mz[existing_idx] = merged_fwhm_mz;
+            }
+            
+            // Recalculate other merged peak parameters
+            float merged_width = peaks_rtmax[existing_idx] - peaks_rtmin[existing_idx];
+            float merged_ppm = (peaks_mzmax[existing_idx] - peaks_mzmin[existing_idx]) / peaks_mz[existing_idx] * 1e6f;
+            
+            peaks_width[existing_idx] = merged_width;
+            peaks_ppm[existing_idx] = merged_ppm;
+            peaks_n_traces[existing_idx] = merged_right_idx - merged_left_idx + 1;
+            
+            // Update profile data with merged data
+            peaks_profile_rt[existing_idx] = merged_profile_rt;
+            peaks_profile_raw_intensity[existing_idx] = merged_profile_raw_intensity;
+            peaks_profile_baseline[existing_idx] = merged_profile_baseline;
+            peaks_profile_smoothed_intensity[existing_idx] = merged_profile_smoothed_intensity;
+            
+            // Reset fitted intensity and fitted RT (will be recalculated during Gaussian fitting)
+            peaks_fitted_intensity[existing_idx] = std::vector<float>();
+            peaks_fitted_rt[existing_idx] = std::vector<float>();
+            
+            merged = true;
+            break;
+          }
+        }
+        
+        // If no overlap was found, store as new peak
+        if (!merged) {
+          // Store peak data
+          peaks_rt.push_back(rt_at_max);
+          peaks_mz.push_back(mz_weighted);
+          peaks_intensity.push_back(peak_max_intensity);
+          peaks_noise.push_back(noise);
+          peaks_sn.push_back(sn);
+          peaks_rtmin.push_back(cluster_rt[left_idx]);
+          peaks_rtmax.push_back(cluster_rt[right_idx]);
+          peaks_mzmin.push_back(mz_min);
+          peaks_mzmax.push_back(mz_max);
+          peaks_width.push_back(width);
+          peaks_ppm.push_back(ppm);
+          peaks_fwhm_rt.push_back(fwhm_rt);
+          peaks_fwhm_mz.push_back(fwhm_mz);
+          peaks_cluster.push_back(cluster_id);
+          peaks_n_traces.push_back(right_idx - left_idx + 1);
 
-        // Store peak profile data as R lists
-        peaks_profile_rt.push_back(Rcpp::wrap(profile_rt_data));
-        peaks_profile_raw_intensity.push_back(Rcpp::wrap(profile_raw_intensity_data));
-        peaks_profile_baseline.push_back(Rcpp::wrap(profile_baseline_data));
-        peaks_profile_smoothed_intensity.push_back(Rcpp::wrap(profile_smoothed_intensity_data));
+          // Store peak profile data as native C++ vectors
+          peaks_profile_rt.push_back(profile_rt_data);
+          peaks_profile_raw_intensity.push_back(profile_raw_intensity_data);
+          peaks_profile_baseline.push_back(profile_baseline_data);
+          peaks_profile_smoothed_intensity.push_back(profile_smoothed_intensity_data);
+          
+          // Initialize empty fitted intensity and fitted RT vectors (will be filled during Gaussian fitting)
+          peaks_fitted_intensity.push_back(std::vector<float>());
+          peaks_fitted_rt.push_back(std::vector<float>());
 
-        // Generate peak ID
-        std::string peak_id = "CL" + std::to_string(cluster_id) +
-                             "_N" + std::to_string(peaks_rt.size()) +
-                             "_MZ" + std::to_string(static_cast<int>(std::round(mz_weighted))) +
-                             "_RT" + std::to_string(static_cast<int>(std::round(rt_at_max)));
-        peaks_id.push_back(peak_id);
+          // Generate peak ID
+          std::string peak_id = "CL" + std::to_string(cluster_id) +
+                               "_N" + std::to_string(peaks_rt.size()) +
+                               "_MZ" + std::to_string(static_cast<int>(std::round(mz_weighted))) +
+                               "_RT" + std::to_string(static_cast<int>(std::round(rt_at_max)));
+          peaks_id.push_back(peak_id);
+        }
       }
 
-      if (cluster_id == debug_cluster) {
-        Rcpp::Rcout << "  DEBUG Cluster " << cluster_id << " summary: " << peaks_accepted << " peaks accepted, "
+      if (debug && cluster_id == debug_cluster) {
+        Rcpp::Rcout << "DEBUG Cluster " << cluster_id << " summary: " << peaks_accepted << " peaks accepted, "
                     << peaks_rejected_boundary << " rejected (boundary), "
                     << peaks_rejected_snr << " rejected (S/N)" << std::endl;
       }
     }
 
-    Rcpp::Rcout << "Peak detection summary:" << std::endl;
-    Rcpp::Rcout << "  Total clusters: " << cluster_indices.size() << std::endl;
-    Rcpp::Rcout << "  Clusters processed: " << (total_clusters_processed - clusters_too_small) << std::endl;
-    Rcpp::Rcout << "  Clusters too small: " << clusters_too_small << std::endl;
-    Rcpp::Rcout << "  Total peaks found: " << peaks_rt.size() << std::endl;
+    // MARK: Calculate Peak Area
+    Rcpp::Rcout << "  4/5 Calculating peak areas for " << peaks_rt.size() << " peaks" << std::endl;
+    
+    // Initialize area vector with correct size
+    peaks_area.resize(peaks_rt.size(), 0.0f);
+    
+    for (size_t peak_idx = 0; peak_idx < peaks_rt.size(); ++peak_idx) {
+      float area = 0.0f;
+      try {
+        // Use the raw intensity profile data for area calculation
+        if (peak_idx < peaks_profile_rt.size() && peak_idx < peaks_profile_raw_intensity.size()) {
+          const std::vector<float>& profile_rt = peaks_profile_rt[peak_idx];
+          const std::vector<float>& profile_intensity = peaks_profile_raw_intensity[peak_idx];
+          
+          // Validate data
+          if (!profile_rt.empty() && !profile_intensity.empty() && 
+              profile_rt.size() == profile_intensity.size() && profile_rt.size() >= 2) {
+            
+            // Check for valid data (no NaN, no infinite values)
+            bool valid_data = true;
+            for (size_t i = 0; i < profile_rt.size(); ++i) {
+              if (std::isnan(profile_rt[i]) || std::isinf(profile_rt[i]) ||
+                  std::isnan(profile_intensity[i]) || std::isinf(profile_intensity[i]) ||
+                  profile_intensity[i] < 0) {
+                valid_data = false;
+                break;
+              }
+            }
+            
+            if (valid_data) {
+              // Calculate area using trapezoidal integration from NTS_utils
+              area = MassSpecResults_NonTargetAnalysis::trapezoidal_area(profile_rt, profile_intensity);
+              
+              // Validate result
+              if (std::isnan(area) || std::isinf(area) || area < 0) {
+                area = 0.0f;
+              }
+              
+              if (debug && peak_idx < peaks_cluster.size() && peaks_cluster[peak_idx] == debug_cluster) {
+                Rcpp::Rcout << "  DEBUG Peak " << peak_idx << " area calculation: "
+                            << "RT range [" << profile_rt.front() << " to " << profile_rt.back() << "], "
+                            << "intensity range [" << *std::min_element(profile_intensity.begin(), profile_intensity.end())
+                            << " to " << *std::max_element(profile_intensity.begin(), profile_intensity.end()) << "], "
+                            << "area = " << area << std::endl;
+              }
+            } else {
+              if (debug && peak_idx < peaks_cluster.size() && peaks_cluster[peak_idx] == debug_cluster) {
+                Rcpp::Rcout << "  DEBUG Peak " << peak_idx << " area calculation failed: invalid data detected" << std::endl;
+              }
+            }
+          } else {
+            if (debug && peak_idx < peaks_cluster.size() && peaks_cluster[peak_idx] == debug_cluster) {
+              Rcpp::Rcout << "  DEBUG Peak " << peak_idx << " area calculation failed: insufficient or mismatched data (RT size: " 
+                          << profile_rt.size() << ", intensity size: " << profile_intensity.size() << ")" << std::endl;
+            }
+          }
+        }
+      } catch (...) {
+        // Catch any exception and set safe default
+        area = 0.0f;
+      }
+      
+      // Store the calculated area
+      peaks_area[peak_idx] = area;
+    }
+    
+    // MARK: Peak Gaussian Fit
+    Rcpp::Rcout << "  5/5 Calculating Gaussian fit quality for " << peaks_rt.size() << " peaks" << std::endl;
+
+    // Extra quality parameters by estimating the gaussian fit
+    std::vector<float> peaks_gaussian_A, peaks_gaussian_mu, peaks_gaussian_sigma, peaks_gaussian_rsquared;
+    
+    for (size_t peak_idx = 0; peak_idx < peaks_rt.size(); ++peak_idx) {
+      // Initialize Gaussian parameters with safe defaults
+      float A = 0.0f, mu = 0.0f, sigma = 0.0f, rsquared = 0.0f;
+      
+      try {
+        // Safely extract RT and smoothed intensity data from stored profile
+        if (peak_idx < peaks_profile_rt.size() && peak_idx < peaks_profile_smoothed_intensity.size()) {
+          const std::vector<float>& peak_rt_data = peaks_profile_rt[peak_idx];
+          const std::vector<float>& peak_smoothed_data = peaks_profile_smoothed_intensity[peak_idx];
+          
+          // Check if vectors are valid
+          if (!peak_rt_data.empty() && !peak_smoothed_data.empty()) {
+            
+            // Enhanced validation of data
+            if (peak_rt_data.size() >= 3 && peak_smoothed_data.size() >= 3 && 
+                peak_rt_data.size() == peak_smoothed_data.size() &&
+                peak_rt_data.size() <= 1000) { // Prevent excessive memory use
+              
+              // Check for valid intensity values (no NaN, no infinite values)
+              bool valid_data = true;
+              for (float intensity : peak_smoothed_data) {
+                if (std::isnan(intensity) || std::isinf(intensity) || intensity < 0) {
+                  valid_data = false;
+                  break;
+                }
+              }
+              
+              // Check for valid RT values
+              for (float rt : peak_rt_data) {
+                if (std::isnan(rt) || std::isinf(rt)) {
+                  valid_data = false;
+                  break;
+                }
+              }
+              
+              if (valid_data) {
+                // Find peak maximum first
+                auto max_it = std::max_element(peak_smoothed_data.begin(), peak_smoothed_data.end());
+                if (max_it == peak_smoothed_data.end()) continue;
+                
+                size_t max_idx = std::distance(peak_smoothed_data.begin(), max_it);
+                
+                // Trim data to be centered around the apex with equal points on both sides (max 5 per side)
+                const int max_points_per_side = 5;
+                int left_points = std::min(static_cast<int>(max_idx), max_points_per_side);
+                int right_points = std::min(static_cast<int>(peak_rt_data.size() - max_idx - 1), max_points_per_side);
+                
+                // Use the minimum of left and right to keep it balanced
+                int points_per_side = std::min(left_points, right_points);
+                
+                // Create trimmed vectors centered on the apex
+                std::vector<float> trimmed_rt_data, trimmed_smoothed_data;
+                
+                if (points_per_side > 0) {
+                  size_t start_idx = max_idx - points_per_side;
+                  size_t end_idx = max_idx + points_per_side;
+                  
+                  trimmed_rt_data = std::vector<float>(peak_rt_data.begin() + start_idx, 
+                                                     peak_rt_data.begin() + end_idx + 1);
+                  trimmed_smoothed_data = std::vector<float>(peak_smoothed_data.begin() + start_idx, 
+                                                           peak_smoothed_data.begin() + end_idx + 1);
+                  
+                  if (debug && peak_idx < peaks_cluster.size() && peaks_cluster[peak_idx] == debug_cluster) {
+                    Rcpp::Rcout << "DEBUG Pre-fitting trimmed data - original size: " << peak_rt_data.size() 
+                                << ", trimmed size: " << trimmed_rt_data.size() 
+                                << ", points per side: " << points_per_side << std::endl;
+                    Rcpp::Rcout << "  DEBUG Pre-fitting trimmed RT range: " << trimmed_rt_data.front() 
+                                << " to " << trimmed_rt_data.back() << std::endl;
+                  }
+                } else {
+                  // If we can't trim, use original data
+                  trimmed_rt_data = peak_rt_data;
+                  trimmed_smoothed_data = peak_smoothed_data;
+                }
+                
+                // Initial parameter estimation with safety checks using trimmed data
+                auto trimmed_max_it = std::max_element(trimmed_smoothed_data.begin(), trimmed_smoothed_data.end());
+                if (trimmed_max_it != trimmed_smoothed_data.end()) {
+                  A = *trimmed_max_it;
+                  size_t trimmed_max_idx = std::distance(trimmed_smoothed_data.begin(), trimmed_max_it);
+                  
+                  // Set mu to the RT at the apex of trimmed data
+                  if (trimmed_max_idx < trimmed_rt_data.size()) {
+                    mu = trimmed_rt_data[trimmed_max_idx];
+                  } else {
+                    // Fallback: use original data apex
+                    mu = peak_rt_data[max_idx];
+                  }
+                  
+                  // Safe sigma estimation
+                  if (peak_idx < peaks_fwhm_rt.size()) {
+                    float fwhm = peaks_fwhm_rt[peak_idx];
+                    if (fwhm > 0 && !std::isnan(fwhm) && !std::isinf(fwhm)) {
+                      sigma = fwhm / 2.355f;
+                    }
+                  }
+                  
+                  // Fallback sigma estimation using trimmed data for better accuracy
+                  if (sigma <= 0 || std::isnan(sigma) || std::isinf(sigma)) {
+                    if (trimmed_rt_data.size() >= 2) {
+                      float rt_range = trimmed_rt_data.back() - trimmed_rt_data.front();
+                      if (rt_range > 0 && !std::isnan(rt_range) && !std::isinf(rt_range)) {
+                        sigma = rt_range / 4.0f;
+                      }
+                    } else if (peak_rt_data.size() >= 2) {
+                      // Fallback to original data if trimmed is too small
+                      float rt_range = peak_rt_data.back() - peak_rt_data.front();
+                      if (rt_range > 0 && !std::isnan(rt_range) && !std::isinf(rt_range)) {
+                        sigma = rt_range / 8.0f; // Use smaller sigma for untrimmed data
+                      }
+                    }
+                  }
+                  
+                  // Ensure sigma is within reasonable bounds
+                  if (sigma <= 0 || std::isnan(sigma) || std::isinf(sigma)) {
+                    sigma = 1.0f;
+                  }
+                  sigma = std::max(0.1f, std::min(sigma, 100.0f)); // Clamp sigma
+                  
+                  // Ensure A and mu are valid
+                  if (A <= 0 || std::isnan(A) || std::isinf(A)) {
+                    A = 1.0f;
+                  }
+                  if (std::isnan(mu) || std::isinf(mu)) {
+                    mu = peak_rt_data[peak_rt_data.size() / 2]; // Use middle RT as fallback
+                  }
+
+                  // Only perform fitting if parameters are reasonable
+                  if (A > 0 && A < 1e10 && sigma > 0.01 && sigma < 1000 && 
+                      !std::isnan(mu) && !std::isinf(mu)) {
+                    
+                    // Create copies for fitting (to preserve originals if fitting fails)
+                    float A_fit = A, mu_fit = mu, sigma_fit = sigma;
+                    
+                    // Use trimmed data for fitting (should always be available now)
+                    const std::vector<float>* rt_data_ptr = &trimmed_rt_data;
+                    const std::vector<float>* smoothed_data_ptr = &trimmed_smoothed_data;
+                    bool used_trimmed_data = true;
+                    
+                    // Perform Gaussian fitting with timeout protection
+                    MassSpecResults_NonTargetAnalysis::fit_gaussian(*rt_data_ptr, *smoothed_data_ptr, A_fit, mu_fit, sigma_fit);
+                    
+                    // Validate fitted parameters
+                    if (!std::isnan(A_fit) && !std::isinf(A_fit) && A_fit > 0 &&
+                        !std::isnan(mu_fit) && !std::isinf(mu_fit) &&
+                        !std::isnan(sigma_fit) && !std::isinf(sigma_fit) && sigma_fit > 0) {
+                      
+                      A = A_fit;
+                      sigma = sigma_fit;
+                      
+                      // Since we used trimmed data, mu_fit is in trimmed coordinates
+                      // We need to use the original RT value at the apex for consistency
+                      mu = peak_rt_data[max_idx]; // Use the original RT at max intensity
+                      
+                      // Calculate R-squared with safety checks
+                      rsquared = MassSpecResults_NonTargetAnalysis::calculate_gaussian_rsquared(
+                        *rt_data_ptr, *smoothed_data_ptr, A, mu, sigma);
+                      
+                      // Validate R-squared
+                      if (std::isnan(rsquared) || std::isinf(rsquared)) {
+                        rsquared = 0.0f;
+                      } else {
+                        rsquared = std::max(0.0f, std::min(rsquared, 1.0f));
+                      }
+                      
+                      // Calculate fitted intensity values using the Gaussian model for the trimmed RT data
+                      std::vector<float> fitted_intensities;
+                      fitted_intensities.reserve(trimmed_rt_data.size());
+                      
+                      for (float rt_val : trimmed_rt_data) {
+                        float fitted_val = MassSpecResults_NonTargetAnalysis::gaussian_function(A, mu, sigma, rt_val);
+                        // Ensure fitted value is valid
+                        if (std::isnan(fitted_val) || std::isinf(fitted_val)) {
+                          fitted_val = 0.0f;
+                        }
+                        fitted_intensities.push_back(fitted_val);
+                      }
+                      
+                      // Check if all fitted values are zero (debugging)
+                      bool all_zero = true;
+                      for (float val : fitted_intensities) {
+                        if (val > 1e-6) { // Consider very small values as effectively zero
+                          all_zero = false;
+                          break;
+                        }
+                      }
+                      
+                      if (debug && all_zero && peak_idx < peaks_cluster.size() && peaks_cluster[peak_idx] == debug_cluster) {
+                        Rcpp::Rcout << "DEBUG All fitted intensities are zero for Peak " << peak_idx << std::endl;
+                        Rcpp::Rcout << "DEBUG RT range vs mu: RT[" << peak_rt_data.front() << " to " << peak_rt_data.back() 
+                                    << "], mu=" << mu << ", sigma=" << sigma << std::endl;
+                        // Test Gaussian function at mu
+                        float test_at_mu = MassSpecResults_NonTargetAnalysis::gaussian_function(A, mu, sigma, mu);
+                        Rcpp::Rcout << "DEBUG Gaussian at mu: " << test_at_mu << " (should be A=" << A << ")" << std::endl;
+                      }
+                      
+                      // Store fitted intensities and corresponding RT values
+                      peaks_fitted_intensity[peak_idx] = fitted_intensities;
+                      peaks_fitted_rt[peak_idx] = trimmed_rt_data;
+                      
+                      // Debug message for debug cluster
+                      if (debug && peak_idx < peaks_cluster.size() && peaks_cluster[peak_idx] == debug_cluster) {
+                        Rcpp::Rcout << "DEBUG Cluster " << debug_cluster << " - Peak " << peak_idx << " fitted intensities: ";
+                        for (size_t i = 0; i < std::min(fitted_intensities.size(), static_cast<size_t>(10)); ++i) {
+                          Rcpp::Rcout << fitted_intensities[i];
+                          if (i < std::min(fitted_intensities.size(), static_cast<size_t>(10)) - 1) Rcpp::Rcout << ", ";
+                        }
+                        if (fitted_intensities.size() > 10) {
+                          Rcpp::Rcout << " ... (" << fitted_intensities.size() << " total)";
+                        }
+                        Rcpp::Rcout << std::endl;
+                        Rcpp::Rcout << "DEBUG Gaussian params: A=" << A << ", mu=" << mu << ", sigma=" << sigma << ", R²=" << rsquared << std::endl;
+                        Rcpp::Rcout << "DEBUG Original apex RT: " << peak_rt_data[max_idx] << ", fitted mu: " << mu_fit << std::endl;
+                        if (used_trimmed_data) {
+                          Rcpp::Rcout << "DEBUG Used trimmed data for fitting, corrected mu to original apex RT" << std::endl;
+                        }
+                        
+                        // Debug RT values and Gaussian calculation details
+                        Rcpp::Rcout << "DEBUG RT values: ";
+                        for (size_t i = 0; i < std::min(peak_rt_data.size(), static_cast<size_t>(10)); ++i) {
+                          Rcpp::Rcout << peak_rt_data[i];
+                          if (i < std::min(peak_rt_data.size(), static_cast<size_t>(10)) - 1) Rcpp::Rcout << ", ";
+                        }
+                        Rcpp::Rcout << std::endl;
+                        
+                        // Calculate and show some individual Gaussian values manually
+                        if (peak_rt_data.size() >= 3) {
+                          float rt_min = peak_rt_data[0];
+                          float rt_max = peak_rt_data.back();
+                          float rt_center = peak_rt_data[peak_rt_data.size()/2];
+                          
+                          Rcpp::Rcout << "DEBUG RT range: " << rt_min << " to " << rt_max 
+                                      << " (center: " << rt_center << ", span: " << (rt_max - rt_min) << ")" << std::endl;
+                          
+                          // Manual Gaussian calculation for verification
+                          float gauss_min = A * std::exp(-0.5f * std::pow((rt_min - mu) / sigma, 2.0f));
+                          float gauss_center = A * std::exp(-0.5f * std::pow((rt_center - mu) / sigma, 2.0f));
+                          float gauss_max = A * std::exp(-0.5f * std::pow((rt_max - mu) / sigma, 2.0f));
+                          
+                          Rcpp::Rcout << "DEBUG Manual Gaussian: min_rt=" << gauss_min 
+                                      << ", center_rt=" << gauss_center << ", max_rt=" << gauss_max << std::endl;
+                          
+                          // Show ratio of sigma to RT range
+                          float sigma_to_range_ratio = sigma / (rt_max - rt_min);
+                          Rcpp::Rcout << "DEBUG Sigma/RT_range ratio: " << sigma_to_range_ratio 
+                                      << " (>1 means curve is very flat)" << std::endl;
+                        }
+                      }
+                      
+                    } else {
+                      // Fitting produced invalid parameters
+                      A = mu = sigma = rsquared = 0.0f;
+                      
+                      // Store empty fitted intensities and RT for failed fits
+                      peaks_fitted_intensity[peak_idx] = std::vector<float>(trimmed_rt_data.size(), 0.0f);
+                      peaks_fitted_rt[peak_idx] = trimmed_rt_data;
+                    }
+                  } else {
+                    // Parameters not reasonable for fitting - store zeros
+                    A = mu = sigma = rsquared = 0.0f;
+                    peaks_fitted_intensity[peak_idx] = std::vector<float>(trimmed_rt_data.size(), 0.0f);
+                    peaks_fitted_rt[peak_idx] = trimmed_rt_data;
+                  }
+                }
+              }
+            }
+          }
+        }
+      } catch (...) {
+        // Catch any exception and set safe defaults
+        A = mu = sigma = rsquared = 0.0f;
+        // Ensure fitted intensity and fitted RT vectors exist even on exception
+        if (peak_idx < peaks_fitted_intensity.size()) {
+          peaks_fitted_intensity[peak_idx] = std::vector<float>();
+        }
+        if (peak_idx < peaks_fitted_rt.size()) {
+          peaks_fitted_rt[peak_idx] = std::vector<float>();
+        }
+      }
+      
+      // Store Gaussian fit parameters (always store something to maintain vector size)
+      peaks_gaussian_A.push_back(A);
+      peaks_gaussian_mu.push_back(mu);
+      peaks_gaussian_sigma.push_back(sigma);
+      peaks_gaussian_rsquared.push_back(rsquared);
+    }
+
+    Rcpp::Rcout << "  Peak detection summary:" << std::endl;
+    
+    // Calculate and display denoising statistics
+    float denoising_reduction_percentage = 0.0f;
+    if (total_raw_points > 0) {
+      size_t points_removed = total_raw_points - total_clean_points;
+      denoising_reduction_percentage = (static_cast<float>(points_removed) / static_cast<float>(total_raw_points)) * 100.0f;
+    }
+    
+    // Rcpp::Rcout << "    Data points before denoising: " << total_raw_points << std::endl;
+    // Rcpp::Rcout << "    Data points after denoising: " << total_clean_points << std::endl;
+    Rcpp::Rcout << "    Data reduction by denoising: " << std::fixed << std::setprecision(1) << denoising_reduction_percentage << "%" << std::endl;
+
+    Rcpp::Rcout << "    Total clusters: " << cluster_indices.size() << std::endl;
+    Rcpp::Rcout << "    Clusters processed: " << (total_clusters_processed - clusters_too_small) << std::endl;
+    Rcpp::Rcout << "    Total peaks found: " << peaks_rt.size() << std::endl;
 
     // Create output list with detected peaks
     Rcpp::List peaks_list;
@@ -3114,15 +3627,39 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       peaks_list["mzmin"] = peaks_mzmin;
       peaks_list["mzmax"] = peaks_mzmax;
       peaks_list["width"] = peaks_width;
+      peaks_list["area"] = peaks_area;
       peaks_list["ppm"] = peaks_ppm;
       peaks_list["fwhm_rt"] = peaks_fwhm_rt;
       peaks_list["fwhm_mz"] = peaks_fwhm_mz;
       peaks_list["cluster"] = peaks_cluster;
       peaks_list["n_traces"] = peaks_n_traces;
-      peaks_list["profile_rt"] = peaks_profile_rt;
-      peaks_list["profile_raw_intensity"] = peaks_profile_raw_intensity;
-      peaks_list["profile_baseline"] = peaks_profile_baseline;
-      peaks_list["profile_smoothed_intensity"] = peaks_profile_smoothed_intensity;
+      // Convert native C++ vectors to R lists
+      Rcpp::List profile_rt_list(peaks_profile_rt.size());
+      Rcpp::List profile_raw_intensity_list(peaks_profile_raw_intensity.size());
+      Rcpp::List profile_baseline_list(peaks_profile_baseline.size());
+      Rcpp::List profile_smoothed_intensity_list(peaks_profile_smoothed_intensity.size());
+      Rcpp::List profile_fitted_intensity_list(peaks_fitted_intensity.size());
+      Rcpp::List profile_fitted_rt_list(peaks_fitted_rt.size());
+      
+      for (size_t i = 0; i < peaks_profile_rt.size(); ++i) {
+        profile_rt_list[i] = Rcpp::wrap(peaks_profile_rt[i]);
+        profile_raw_intensity_list[i] = Rcpp::wrap(peaks_profile_raw_intensity[i]);
+        profile_baseline_list[i] = Rcpp::wrap(peaks_profile_baseline[i]);
+        profile_smoothed_intensity_list[i] = Rcpp::wrap(peaks_profile_smoothed_intensity[i]);
+        profile_fitted_intensity_list[i] = Rcpp::wrap(peaks_fitted_intensity[i]);
+        profile_fitted_rt_list[i] = Rcpp::wrap(peaks_fitted_rt[i]);
+      }
+      
+      peaks_list["profile_rt"] = profile_rt_list;
+      peaks_list["profile_raw_intensity"] = profile_raw_intensity_list;
+      peaks_list["profile_baseline"] = profile_baseline_list;
+      peaks_list["profile_smoothed_intensity"] = profile_smoothed_intensity_list;
+      peaks_list["profile_fitted_intensity"] = profile_fitted_intensity_list;
+      peaks_list["profile_fitted_rt"] = profile_fitted_rt_list;
+      peaks_list["gaussian_A"] = peaks_gaussian_A;
+      peaks_list["gaussian_mu"] = peaks_gaussian_mu;
+      peaks_list["gaussian_sigma"] = peaks_gaussian_sigma;
+      peaks_list["gaussian_rsquared"] = peaks_gaussian_rsquared;
     } else {
       // Return empty data frame with proper column names
       peaks_list["id"] = std::vector<std::string>();
@@ -3136,6 +3673,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       peaks_list["mzmin"] = std::vector<float>();
       peaks_list["mzmax"] = std::vector<float>();
       peaks_list["width"] = std::vector<float>();
+      peaks_list["area"] = std::vector<float>();
       peaks_list["ppm"] = std::vector<float>();
       peaks_list["fwhm_rt"] = std::vector<float>();
       peaks_list["fwhm_mz"] = std::vector<float>();
@@ -3145,15 +3683,21 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
       peaks_list["profile_raw_intensity"] = std::vector<Rcpp::List>();
       peaks_list["profile_baseline"] = std::vector<Rcpp::List>();
       peaks_list["profile_smoothed_intensity"] = std::vector<Rcpp::List>();
+      peaks_list["profile_fitted_intensity"] = std::vector<Rcpp::List>();
+      peaks_list["profile_fitted_rt"] = std::vector<Rcpp::List>();
+      peaks_list["gaussian_A"] = std::vector<float>();
+      peaks_list["gaussian_mu"] = std::vector<float>();
+      peaks_list["gaussian_sigma"] = std::vector<float>();
+      peaks_list["gaussian_rsquared"] = std::vector<float>();
     }
     peaks_list.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
 
     // Create combined output list
-    Rcpp::List combined_list;
-    combined_list["peaks"] = peaks_list;
-    combined_list["spectra"] = spectra_list;
+    // Rcpp::List combined_list;
+    // combined_list["peaks"] = peaks_list;
+    // combined_list["spectra"] = spectra_list;
 
-    feature_list[analyses[a]] = combined_list;
+    feature_list[analyses[a]] = peaks_list;
   }
   return feature_list;
 };

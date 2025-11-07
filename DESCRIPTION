@@ -107,6 +107,7 @@ Collate:
     'class_MassSpecResults_Chromatograms.R'
     'class_MassSpecResults_NonTargetAnalysis.R'
     'class_MassSpecResults_TransformationProducts.R'
+    'class_MassSpecResults_NonTargetAnalysis2.R'
     'class_StatisticResults_Model.R'
     'class_StatisticResults_PCA_mdatools.R'
     'class_StatisticResults_MCRALS_mdatools.R'

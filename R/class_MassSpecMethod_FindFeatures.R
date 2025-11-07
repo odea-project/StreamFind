@@ -892,26 +892,22 @@ run.MassSpecMethod_FindFeatures_qalgorithms <- function(x, engine = NULL) {
 #' @param rtWindows data.frame with rtmin and rtmax columns for retention time windows for data inclusion.
 #' @param noiseBins numeric(1) bin size to estimate the noise level in each scan (i.e., each rt value).
 #' @param noiseThreshold numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).
-#' @param noiseQuantile numeric(1) quantile threshold for dynamic estimation of noise.
 #' @param minSNR numeric(1) minimum signal-to-noise ratio for considering a trace and chromatographic peak.
 #' @param mzrThreshold numeric(1) mass threshold representing the mass resolution.
 #' @param minTraces numeric(1) minimum number of traces to consider a mass cluster and chromatographic peak.
 #' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
 #' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
-#' @param minGaussFit numeric(1) minimum gaussian fit for a chromatographic peak.
 #' @export
 #'
 MassSpecMethod_FindFeatures_native <- function(
   rtWindows = data.frame(rtmin = 300, rtmax = 3600),
-  noiseBins = 70,
-  noiseThreshold = 15,
-  noiseQuantile = 0.01,
+  resolution_profile = c(30000, 30000, 35000),
+  noiseThreshold = 250,
   minSNR = 3,
   mzrThreshold = 0.005,
   minTraces = 3,
   baselineWindow = 200,
-  maxWidth = 100,
-  minGaussFit = 0.6
+  maxWidth = 100
 ) {
   x <- ProcessingStep(
     type = "MassSpec",
@@ -922,15 +918,13 @@ MassSpecMethod_FindFeatures_native <- function(
     output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       rtWindows = rtWindows,
-      noiseBins = as.numeric(noiseBins),
+      resolution_profile = as.numeric(resolution_profile),
       noiseThreshold = as.numeric(noiseThreshold),
-      noiseQuantile = as.numeric(noiseQuantile),
       minSNR = as.numeric(minSNR),
       mzrThreshold = as.numeric(mzrThreshold),
       minTraces = as.numeric(minTraces),
       baselineWindow = as.numeric(baselineWindow),
-      maxWidth = as.numeric(maxWidth),
-      minGaussFit = as.numeric(minGaussFit)
+      maxWidth = as.numeric(maxWidth)
     ),
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),
@@ -955,24 +949,18 @@ validate_object.MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_data_frame(x$parameters$rtWindows, min.rows = 1)
   checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
-  checkmate::assert_numeric(x$parameters$noiseBins, len = 1, lower = 1)
+  checkmate::assert_numeric(x$parameters$resolution_profile, len = 3, lower = 0)
   checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)
-  checkmate::assert_numeric(x$parameters$noiseQuantile, len = 1, lower = 0, upper = 1)
   checkmate::assert_numeric(x$parameters$minSNR, len = 1, lower = 0)
-  checkmate::assert_numeric(x$parameters$mzrThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minTraces, len = 1, lower = 1)
   checkmate::assert_numeric(x$parameters$baselineWindow, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$maxWidth, len = 1, lower = 0)
-  checkmate::assert_numeric(x$parameters$minGaussFit, len = 1, lower = 0, upper = 1)
   NULL
 }
 
 #' @export
 #' @noRd
 run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
-  warning("Native feature finding method is not yet implemented.")
-  return(FALSE)
-
   if (!"MassSpecAnalyses" %in% class(engine$Analyses)) {
     warning("Engine does not contain MassSpecAnalyses.")
     return(FALSE)
@@ -991,6 +979,9 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     analysis = analyses$analysis,
     replicate = analyses$replicate,
     blank = analyses$blank,
+    polarity = vapply(engine$Analyses$analyses, function(a) {
+      paste0(unique(a$spectra_headers$polarity), collapse = ", ")
+    }, "0"),
     file = analyses_files
   )
 
@@ -999,20 +990,8 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     function(z) z$spectra_headers
   )
 
-  parameters <- list(
-    rtWindows = data.frame(rtmin = 0, rtmax = 3600),
-    noiseBins = 70,
-    noiseThreshold = 250,
-    noiseQuantile = 0.01,
-    minSNR = 3,
-    mzrThreshold = 0.005,
-    minTraces = 3,
-    baselineWindow = 200,
-    maxWidth = 100,
-    minGaussFit = 0.6
-  )
-
-
+  # Use parameters from the method object
+  parameters <- x$parameters
 
   fts <- rcpp_nts_find_features(
     info = analyses_info,
@@ -1024,49 +1003,44 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     minSNR = parameters$minSNR,
     minTraces = parameters$minTraces,
     baselineWindow = parameters$baselineWindow,
-    maxWidth = parameters$maxWidth,
-    minGaussFit = parameters$minGaussFit
+    maxWidth = parameters$maxWidth
   )
 
-  target_mz <- 238.0547 + 1.007276
-  sel <- fts[[1]]$mz > (target_mz - 0.005) & fts[[1]]$mz < (target_mz + 0.005)
-  temp <- fts[[1]][sel, ]
+  if (is.null(fts) || length(fts) == 0) {
+    warning("No features found.")
+    return(FALSE)
+  }
 
-  target_mz <- 238.0547 + 1.007276
-  sel <- fts[[1]][[2]]$mz > (target_mz - 0.005) & fts[[1]][[2]]$mz < (target_mz + 0.005)
-  temp <- fts[[1]][[2]][sel, ]
+  names(fts) <- analyses_info$analysis
 
-  temp <- fts[[1]][[2]][fts[[1]][[2]]$cluster == 439, ]
-  peaks_temp <- fts[[1]][[1]][fts[[1]][[1]]$cluster %in% temp$cluster, ]
+  nts <- MassSpecResults_NonTargetAnalysis2(analyses_info, headers, fts)
 
-
-
-  # call function to create the interactive plotly figure
-  p <- plot_peak_profile_plotly(temp = temp, peaks_temp = peaks_temp)
-  p
-
-  # plot the linear model from fts
-
-  #nts <- MassSpecResults_NonTargetAnalysis(analyses_info, headers, features = list())
-
-  any(is.na(fts[[1]]$rt))
+  if (is.null(validate_object(nts))) {
+    engine$Analyses$results[["MassSpecResults_NonTargetAnalysis2"]] <- nts
+    TRUE
+  } else {
+    FALSE
+  }
 }
 
 
-plot_peak_profile_plotly <- function(temp, peaks_temp, rect_color = "#da916f", rect_alpha = 0.25) {
+plot_peak_profile_plotly <- function(peaks_temp, rect_color = "#da916f", rect_alpha = 0.25) {
   if (!requireNamespace("plotly", quietly = TRUE)) {
     stop("plotly package required for interactive plotting")
   }
   if (is.null(temp) || nrow(temp) == 0) {
     stop("`temp` must be a data.frame/data.table with rt and intensity")
   }
-  p <- plotly::plot_ly(
-    x = temp$rt,
-    y = temp$intensity,
-    type = "scatter", mode = "lines",
-    name = "Raw Spectra",
-    line = list(color = "black", width = 1)
-  )
+  # p <- plotly::plot_ly(
+  #   x = temp$rt,
+  #   y = temp$intensity,
+  #   type = "scatter",
+  #   mode = "lines",
+  #   name = "Raw Spectra",
+  #   line = list(color = "black", width = 1)
+  # )
+
+  p <- plotly::plot_ly()
 
   if (!is.null(peaks_temp) && nrow(peaks_temp) > 0) {
     peak_ids <- peaks_temp$id
@@ -1081,6 +1055,7 @@ plot_peak_profile_plotly <- function(temp, peaks_temp, rect_color = "#da916f", r
         "RT: ", round(peak$rt, 2), " s<br>",
         "m/z: ", round(peak$mz, 4), "<br>",
         "Intensity: ", round(peak$intensity, 0), "<br>",
+        "Area: ", round(peak$area, 0), "<br>",
         "Noise: ", round(peak$noise, 0), "<br>",
         "S/N: ", round(peak$sn, 2), "<br>",
         "RT Range: ", round(peak$rtmin, 2), " - ", round(peak$rtmax, 2), " s<br>",
@@ -1089,26 +1064,60 @@ plot_peak_profile_plotly <- function(temp, peaks_temp, rect_color = "#da916f", r
         "PPM: ", round(peak$ppm, 2), "<br>",
         "FWHM (RT): ", round(peak$fwhm_rt, 2), " s<br>",
         "FWHM (m/z): ", round(peak$fwhm_mz, 4), "<br>",
+        "Gaussian A: ", round(peak$gaussian_A, 2), "<br>",
+        "Gaussian μ: ", round(peak$gaussian_mu, 2), "<br>",
+        "Gaussian σ: ", round(peak$gaussian_sigma, 2), "<br>",
+        "Gaussian R²: ", round(peak$gaussian_rsquared, 3), "<br>",
         "Cluster: ", peak$cluster, "<br>",
         "N Traces: ", peak$n_traces
       )
 
+      # Create filled area between baseline and smoothed intensity
+      rt_vals <- unlist(peak$profile_rt)
+      raw_vals <- unlist(peak$profile_raw_intensity)
+      baseline_vals <- unlist(peak$profile_baseline)
+      smoothed_vals <- unlist(peak$profile_smoothed_intensity)
+      fitted_vals <- unlist(peak$profile_fitted_intensity)
+      rt_fitted_vals <- unlist(peak$profile_fitted_rt)
+
       p <- p %>% plotly::add_trace(
-        x = unlist(peak$profile_rt),
-        y = unlist(peak$profile_baseline),
+        x = rt_vals,
+        y = raw_vals,
         type = "scatter", mode = "lines",
-        line = list(color = peak_color, width = 2, dash = "dot"),
+        line = list(color = peak_color, width = 1, dash = "dash"),
         name = peak_id,
         legendgroup = peak_id,
-        showlegend = TRUE,
+        showlegend = FALSE,
         hoverinfo = "skip"
       )
 
       p <- p %>% plotly::add_trace(
-        x = unlist(peak$profile_rt),
-        y = unlist(peak$profile_smoothed_intensity),
+        x = rt_vals,
+        y = baseline_vals,
+        type = "scatter", mode = "lines",
+        line = list(color = peak_color, width = 2, dash = "dot"),
+        name = peak_id,
+        legendgroup = peak_id,
+        showlegend = FALSE,
+        hoverinfo = "skip"
+      )
+
+      p <- p %>% plotly::add_trace(
+        x = rt_vals,
+        y = smoothed_vals,
         type = "scatter", mode = "lines",
         line = list(color = peak_color, width = 3),
+        name = peak_id,
+        legendgroup = peak_id,
+        showlegend = FALSE,
+        hoverinfo = "skip"
+      )
+
+      p <- p %>% plotly::add_trace(
+        x = rt_fitted_vals,
+        y = fitted_vals,
+        type = "scatter", mode = "lines",
+        line = list(color = peak_color, width = 2, dash = "dashdot"),
         name = peak_id,
         legendgroup = peak_id,
         showlegend = FALSE,
@@ -1119,12 +1128,13 @@ plot_peak_profile_plotly <- function(temp, peaks_temp, rect_color = "#da916f", r
       fill_color <- sprintf("rgba(%d,%d,%d,0.3)", rgb_vals[1], rgb_vals[2], rgb_vals[3])
 
       p <- p %>% plotly::add_trace(
-        x = c(unlist(peak$profile_rt), rev(unlist(peak$profile_rt))),
-        y = c(unlist(peak$profile_baseline), rev(peak$profile_smoothed_intensity)),
-        type = "scatter", mode = "lines",
+        x = c(rt_vals, rev(rt_vals)),
+        y = c(baseline_vals, rev(smoothed_vals)),
+        type = "scatter",
+        mode = "lines",
         fill = "toself",
         fillcolor = fill_color,
-        line = list(color = "rgba(0,0,0,0)"),
+        line = list(color = "rgba(0,0,0,0)", width = 0),
         name = peak_id,
         legendgroup = peak_id,
         showlegend = FALSE,
@@ -1134,11 +1144,12 @@ plot_peak_profile_plotly <- function(temp, peaks_temp, rect_color = "#da916f", r
       p <- p %>% plotly::add_trace(
         x = peak$rt,
         y = peak$intensity,
-        type = "scatter", mode = "markers",
+        type = "scatter", mode = "markers+lines",
         marker = list(color = peak_color, size = 8, symbol = "circle"),
+        line = list(color = peak_color, width = 2),
         name = peak_id,
         legendgroup = peak_id,
-        showlegend = FALSE,
+        showlegend = TRUE,
         text = hover_text,
         hoverinfo = "text"
       )
@@ -1159,12 +1170,6 @@ plot_peak_profile_plotly <- function(temp, peaks_temp, rect_color = "#da916f", r
         showgrid = TRUE,
         gridcolor = "lightgray",
         gridwidth = 1
-      ),
-      legend = list(
-        orientation = "h",
-        x = 0.01,
-        y = 1.02,
-        bgcolor = "rgba(255,255,255,0.8)"
       ),
       hovermode = "closest",
       showlegend = TRUE

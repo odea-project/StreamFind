@@ -6,25 +6,19 @@
 \usage{
 MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = 300, rtmax = 3600),
-  noiseBins = 70,
-  noiseThreshold = 15,
-  noiseQuantile = 0.01,
+  resolution_profile = c(30000, 30000, 35000),
+  noiseThreshold = 250,
   minSNR = 3,
   mzrThreshold = 0.005,
   minTraces = 3,
   baselineWindow = 200,
-  maxWidth = 100,
-  minGaussFit = 0.6
+  maxWidth = 100
 )
 }
 \arguments{
 \item{rtWindows}{data.frame with rtmin and rtmax columns for retention time windows for data inclusion.}
 
-\item{noiseBins}{numeric(1) bin size to estimate the noise level in each scan (i.e., each rt value).}
-
 \item{noiseThreshold}{numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).}
-
-\item{noiseQuantile}{numeric(1) quantile threshold for dynamic estimation of noise.}
 
 \item{minSNR}{numeric(1) minimum signal-to-noise ratio for considering a trace and chromatographic peak.}
 
@@ -36,7 +30,7 @@ MassSpecMethod_FindFeatures_native(
 
 \item{maxWidth}{numeric(1) expected maximum window for a chromatographic peak.}
 
-\item{minGaussFit}{numeric(1) minimum gaussian fit for a chromatographic peak.}
+\item{noiseBins}{numeric(1) bin size to estimate the noise level in each scan (i.e., each rt value).}
 }
 \description{
 Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.

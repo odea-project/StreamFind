@@ -81,9 +81,47 @@ dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 dbis[, c("name", "mass", "rt")]
 
+clear_cache("all")
+
 engine <- MassSpecEngine$new(
   metadata = Metadata(list(name = "Ricardo")),
   analyses = ms_files,
+)
+
+engine$run(
+  MassSpecMethod_FindFeatures_native(
+    rtWindows = data.frame(rtmin = 300, rtmax = 3000),
+    resolution_profile = c(30000, 30000, 35000),
+    noiseThreshold = 250,
+    minSNR = 3,
+    minTraces = 3,
+    baselineWindow = 200,
+    maxWidth = 100
+  )
+)
+
+# plot_spectra_tic(
+#   engine$Analyses,
+#   analyses = 1
+# )
+
+get_features_count(
+  engine$Analyses$results$MassSpecResults_NonTargetAnalysis2
+)
+
+get_features(
+  engine$Analyses$results$MassSpecResults_NonTargetAnalysis,
+  mass = dbis,
+  ppm = 20,
+  sec = 60
+)
+
+plot_features(
+  engine$Analyses$results$MassSpecResults_NonTargetAnalysis,
+  mass = dbis,
+  ppm = 20,
+  sec = 60,
+  legendNames = TRUE
 )
 
 engine$run(
