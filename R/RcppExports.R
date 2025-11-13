@@ -99,6 +99,14 @@ rcpp_nts_find_features <- function(info, spectra_headers, rtWindowsMin, rtWindow
     .Call(`_StreamFind_rcpp_nts_find_features`, info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth)
 }
 
+rcpp_nts_find_features2 <- function(info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold = 15.0, minSNR = 3.0, minTraces = 3L, baselineWindow = 200.0, maxWidth = 100.0) {
+    .Call(`_StreamFind_rcpp_nts_find_features2`, info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth)
+}
+
+rcpp_decode_eic_data <- function(base64_encoded) {
+    .Call(`_StreamFind_rcpp_decode_eic_data`, base64_encoded)
+}
+
 rcpp_ms_group_features <- function(features, rt_dev = 10, verbose = FALSE) {
     .Call(`_StreamFind_rcpp_ms_group_features`, features, rt_dev, verbose)
 }

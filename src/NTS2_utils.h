@@ -308,6 +308,60 @@ namespace NTS2
       ms2_mz = Rcpp::as<std::vector<std::string>>(fts["ms2_mz"]);
       ms2_intensity = Rcpp::as<std::vector<std::string>>(fts["ms2_intensity"]);
     };
+
+    Rcpp::List to_list_dt() const
+    {
+      int n = feature.size();
+      if (n == 0)
+      {
+        return SF_UTILITY::get_empty_dt();
+      }
+
+      Rcpp::List out = Rcpp::List::create(
+          Rcpp::Named("feature") = feature,
+          Rcpp::Named("group") = group,
+          Rcpp::Named("component") = component,
+          Rcpp::Named("adduct") = adduct,
+          Rcpp::Named("rt") = rt,
+          Rcpp::Named("mz") = mz,
+          Rcpp::Named("mass") = mass,
+          Rcpp::Named("intensity") = intensity,
+          Rcpp::Named("noise") = noise,
+          Rcpp::Named("sn") = sn,
+          Rcpp::Named("area") = area,
+          Rcpp::Named("rtmin") = rtmin,
+          Rcpp::Named("rtmax") = rtmax,
+          Rcpp::Named("width") = width,
+          Rcpp::Named("mzmin") = mzmin,
+          Rcpp::Named("mzmax") = mzmax,
+          Rcpp::Named("ppm") = ppm,
+          Rcpp::Named("fwhm_rt") = fwhm_rt,
+          Rcpp::Named("fwhm_mz") = fwhm_mz,
+          Rcpp::Named("gaussian_A") = gaussian_A,
+          Rcpp::Named("gaussian_mu") = gaussian_mu,
+          Rcpp::Named("gaussian_sigma") = gaussian_sigma,
+          Rcpp::Named("gaussian_r2") = gaussian_r2,
+          Rcpp::Named("polarity") = polarity,
+          Rcpp::Named("filtered") = filtered,
+          Rcpp::Named("filter") = filter,
+          Rcpp::Named("filled") = filled,
+          Rcpp::Named("correction") = correction,
+          Rcpp::Named("eic_size") = eic_size,
+          Rcpp::Named("eic_rt") = eic_rt,
+          Rcpp::Named("eic_mz") = eic_mz,
+          Rcpp::Named("eic_intensity") = eic_intensity,
+          Rcpp::Named("eic_baseline") = eic_baseline,
+          Rcpp::Named("eic_smoothed") = eic_smoothed,
+          Rcpp::Named("ms1_size") = ms1_size,
+          Rcpp::Named("ms1_mz") = ms1_mz,
+          Rcpp::Named("ms1_intensity") = ms1_intensity,
+          Rcpp::Named("ms2_size") = ms2_size,
+          Rcpp::Named("ms2_mz") = ms2_mz,
+          Rcpp::Named("ms2_intensity") = ms2_intensity);
+
+      out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+      return out;
+    };
   };
 
   // MARK: NTS_DATA
@@ -320,9 +374,9 @@ namespace NTS2
     std::vector<sc::MS_SPECTRA_HEADERS> headers;
     std::vector<FEATURES> features;
 
-    NTS_DATA(const Rcpp::List &info,
-             const Rcpp::List &spectra_headers,
-             const Rcpp::List &feature_list)
+    NTS_DATA(Rcpp::List info,
+             Rcpp::List spectra_headers,
+             Rcpp::List feature_list)
     {
 
       std::vector<std::string> info_must_have_names = {
@@ -385,6 +439,27 @@ namespace NTS2
     int size() const
     {
       return analyses.size();
+    };
+
+    Rcpp::List features_as_list_of_dt() const
+    {
+      const int n = features.size();
+      Rcpp::List out(n);
+      if (n == 0)
+      {
+        return out;
+      }
+      for (int i = 0; i < n; i++)
+      {
+        out[i] = features[i].to_list_dt();
+      }
+      Rcpp::CharacterVector names(n);
+      for (int i = 0; i < n; i++)
+      {
+        names[i] = analyses[i];
+      }
+      out.attr("names") = names;
+      return out;
     };
 
     void find_features(

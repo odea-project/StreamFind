@@ -993,12 +993,12 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
   # Use parameters from the method object
   parameters <- x$parameters
 
-  fts <- rcpp_nts_find_features(
+  fts <- rcpp_nts_find_features2(
     info = analyses_info,
     spectra_headers = headers,
     rtWindowsMin = parameters$rtWindows$rtmin,
     rtWindowsMax = parameters$rtWindows$rtmax,
-    resolution_profile = c(30000, 30000, 35000),
+    resolution_profile = parameters$resolution_profile,
     noiseThreshold = parameters$noiseThreshold,
     minSNR = parameters$minSNR,
     minTraces = parameters$minTraces,

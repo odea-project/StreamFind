@@ -1,9 +1,9 @@
 # MARK: MassSpecResults_NonTargetAnalysis2
 #' @title Constructor and methods to handle non-target analysis results for mass spectrometry data
-#' @description The `MassSpecResults_NonTargetAnalysis2` class is a child of the [StreamFind::Results] class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec"). It is specifically designed to handle the output from `rcpp_nts_find_features()`.
+#' @description The `MassSpecResults_NonTargetAnalysis2` class is a child of the [StreamFind::Results] class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec"). It is specifically designed to handle the output from `rcpp_nts_find_features2()`.
 #' @param info A data frame containing information about the analyses.
 #' @param headers A list of data frames containing information about the spectra headers.
-#' @param features A list of data frames containing information about the features detected by `rcpp_nts_find_features()`.
+#' @param features A list of data frames containing information about the features detected by `rcpp_nts_find_features2()`.
 #' @return An object of class `MassSpecResults_NonTargetAnalysis2` with the following structure:
 #' \itemize{
 #'   \item `type`: The type of the results, which is "MassSpec".
@@ -14,12 +14,16 @@
 #'   \item `headers`: A list of data frames containing information about the spectra headers.
 #'   \item `features`: A list of data frames containing information about the features.
 #' }
-#' The `info` data.table contains the following columns: analysis, replicate, blank, polarity and file. Each `features` data frame contains the following columns from `rcpp_nts_find_features()`:
+#' The `info` data.table contains the following columns: analysis, replicate, blank, polarity and file. Each `features` data frame contains the following columns from `rcpp_nts_find_features2()`:
 #' \itemize{
-#'   \item Required columns: id, rt, mz, intensity, noise, sn, rtmin, rtmax, mzmin, mzmax, width, area, ppm, fwhm_rt, fwhm_mz, cluster, n_traces
-#'   \item Profile data (lists): profile_rt, profile_raw_intensity, profile_baseline, profile_smoothed_intensity, profile_fitted_intensity, profile_fitted_rt
-#'   \item Gaussian parameters: gaussian_A, gaussian_mu, gaussian_sigma, gaussian_rsquared
-#'   \item Optional downstream columns: feature, group, mass, polarity, adduct, filtered, filter, filled, correction, eic, ms1, ms2, quality, annotation, istd, suspects, formulas, compounds
+#'   \item Core feature properties: feature, group, component, adduct, rt, mz, mass, intensity, noise, sn, area
+#'   \item Chromatographic boundaries: rtmin, rtmax, width, mzmin, mzmax, ppm
+#'   \item Peak shape characterization: fwhm_rt, fwhm_mz
+#'   \item Gaussian fitting parameters: gaussian_A, gaussian_mu, gaussian_sigma, gaussian_r2
+#'   \item Processing flags: polarity, filtered, filter, filled, correction
+#'   \item Encoded profile data: eic_size, eic_rt, eic_mz, eic_intensity, eic_baseline, eic_smoothed
+#'   \item MS spectral data: ms1_size, ms1_mz, ms1_intensity, ms2_size, ms2_mz, ms2_intensity
+#'   \item Optional downstream columns: quality, annotation, istd, suspects, formulas, compounds
 #' }
 #' @export
 #'
@@ -58,51 +62,52 @@ validate_object.MassSpecResults_NonTargetAnalysis2 <- function(x) {
   if (length(x$features) > 0) {
     checkmate::assert_true(identical(x$info$analysis, names(x$features)))
     checkmate::assert_true(identical(x$info$analysis, names(x$headers)))
-    # Required columns from rcpp_nts_find_features output
+    # Required columns from rcpp_nts_find_features2 output (FEATURE structure)
     fp_required <- c(
-      "id",
+      "feature",
+      "group",
+      "component",
+      "adduct",
       "rt",
       "mz",
+      "mass",
       "intensity",
       "noise",
       "sn",
+      "area",
       "rtmin",
       "rtmax",
+      "width",
       "mzmin",
       "mzmax",
-      "width",
-      "area",
       "ppm",
       "fwhm_rt",
       "fwhm_mz",
-      "cluster",
-      "n_traces",
-      "profile_rt",
-      "profile_raw_intensity",
-      "profile_baseline",
-      "profile_smoothed_intensity",
-      "profile_fitted_intensity",
-      "profile_fitted_rt",
       "gaussian_A",
       "gaussian_mu",
       "gaussian_sigma",
-      "gaussian_rsquared"
-    )
-    
-    # Optional columns that may be added later
-    fp_optional <- c(
-      "feature",
-      "group",
-      "mass",
+      "gaussian_r2",
       "polarity",
-      "adduct",
       "filtered",
       "filter",
       "filled",
       "correction",
-      "eic",
-      "ms1",
-      "ms2",
+      "eic_size",
+      "eic_rt",
+      "eic_mz",
+      "eic_intensity",
+      "eic_baseline",
+      "eic_smoothed",
+      "ms1_size",
+      "ms1_mz",
+      "ms1_intensity",
+      "ms2_size",
+      "ms2_mz",
+      "ms2_intensity"
+    )
+
+    # Optional columns that may be added in downstream processing
+    fp_optional <- c(
       "quality",
       "annotation",
       "istd",
@@ -113,42 +118,60 @@ validate_object.MassSpecResults_NonTargetAnalysis2 <- function(x) {
     lapply(x$features, function(z) {
       checkmate::assert_data_table(z)
       if (nrow(z) > 0) {
-        # Check that all required columns from rcpp_nts_find_features are present
+        # Check that all required columns from rcpp_nts_find_features2 are present
         missing_required <- fp_required[!fp_required %in% colnames(z)]
         if (length(missing_required) > 0) {
           stop(paste("Missing required columns:", paste(missing_required, collapse = ", ")))
         }
-        
-        # Validate profile columns are lists
-        profile_cols <- c("profile_rt", "profile_raw_intensity", "profile_baseline", 
-                         "profile_smoothed_intensity", "profile_fitted_intensity", "profile_fitted_rt")
-        for (col in profile_cols) {
+
+        # Validate EIC columns are character (base64 encoded)
+        eic_cols <- c("eic_rt", "eic_mz", "eic_intensity", "eic_baseline", "eic_smoothed")
+        for (col in eic_cols) {
           if (col %in% colnames(z)) {
-            checkmate::assert_list(z[[col]], min.len = nrow(z))
+            checkmate::assert_character(z[[col]], len = nrow(z))
           }
         }
-        
+
+        # Validate MS1/MS2 columns are character (base64 encoded)
+        ms_cols <- c("ms1_mz", "ms1_intensity", "ms2_mz", "ms2_intensity")
+        for (col in ms_cols) {
+          if (col %in% colnames(z)) {
+            checkmate::assert_character(z[[col]], len = nrow(z))
+          }
+        }
+
         # Validate numeric columns
-        numeric_cols <- c("rt", "mz", "intensity", "noise", "sn", "rtmin", "rtmax", 
+        numeric_cols <- c("rt", "mz", "mass", "intensity", "noise", "sn", "rtmin", "rtmax",
                          "mzmin", "mzmax", "width", "area", "ppm", "fwhm_rt", "fwhm_mz",
-                         "gaussian_A", "gaussian_mu", "gaussian_sigma", "gaussian_rsquared")
+                         "gaussian_A", "gaussian_mu", "gaussian_sigma", "gaussian_r2", "correction")
         for (col in numeric_cols) {
           if (col %in% colnames(z)) {
             checkmate::assert_numeric(z[[col]], len = nrow(z))
           }
         }
-        
-        # Validate integer columns  
-        integer_cols <- c("cluster", "n_traces")
+
+        # Validate integer columns
+        integer_cols <- c("polarity", "eic_size", "ms1_size", "ms2_size")
         for (col in integer_cols) {
           if (col %in% colnames(z)) {
             checkmate::assert_integerish(z[[col]], len = nrow(z))
           }
         }
-        
+
+        # Validate logical columns
+        logical_cols <- c("filtered", "filled")
+        for (col in logical_cols) {
+          if (col %in% colnames(z)) {
+            checkmate::assert_logical(z[[col]], len = nrow(z))
+          }
+        }
+
         # Validate character columns
-        if ("id" %in% colnames(z)) {
-          checkmate::assert_character(z[["id"]], len = nrow(z))
+        character_cols <- c("feature", "group", "component", "adduct", "filter")
+        for (col in character_cols) {
+          if (col %in% colnames(z)) {
+            checkmate::assert_character(z[[col]], len = nrow(z))
+          }
         }
       }
     })
@@ -184,10 +207,8 @@ show.MassSpecResults_NonTargetAnalysis2 <- function(x) {
     "groups" = vapply(
       x$features,
       function(z) {
-        # Use 'cluster' from rcpp_nts_find_features, fallback to 'group' if available
-        if ("cluster" %in% colnames(z)) {
-          grs <- unique(z$cluster)
-        } else if ("group" %in% colnames(z)) {
+        # Use 'group' from rcpp_nts_find_features2 for grouping information
+        if ("group" %in% colnames(z)) {
           grs <- unique(z$group)
         } else {
           grs <- character(0)
@@ -234,33 +255,23 @@ as.MassSpecResults_NonTargetAnalysis2 <- function(value) {
         if (nrow(z) == 0) {
           return(z)
         }
-        
-        # Check for required columns from rcpp_nts_find_features
-        required_cols <- c("id", "rt", "mz", "intensity")
+
+        # Check for required columns from rcpp_nts_find_features2
+        required_cols <- c("feature", "rt", "mz", "intensity")
         checkmate::assert_true(
           all(required_cols %in% colnames(z)),
           .var.name = paste("Required columns:", paste(required_cols, collapse = ", "))
         )
-        
+
         # Convert optional nested list columns to data.tables if they exist
-        optional_list_cols <- c("eic", "ms1", "ms2", "quality", "annotation", 
+        optional_list_cols <- c("quality", "annotation",
                                "istd", "suspects", "formulas", "compounds")
         for (col in optional_list_cols) {
           if (col %in% colnames(z)) {
             z[[col]] <- lapply(z[[col]], data.table::as.data.table)
           }
         }
-        
-        # Ensure profile columns remain as lists (they should already be lists from C++)
-        profile_cols <- c("profile_rt", "profile_raw_intensity", "profile_baseline", 
-                         "profile_smoothed_intensity", "profile_fitted_intensity", "profile_fitted_rt")
-        for (col in profile_cols) {
-          if (col %in% colnames(z) && !is.list(z[[col]])) {
-            warning(paste("Converting", col, "to list format"))
-            z[[col]] <- as.list(z[[col]])
-          }
-        }
-        
+
         z
       })
       checkmate::assert_true(
@@ -1201,12 +1212,8 @@ get_features_eic.MassSpecResults_NonTargetAnalysis2 <- function(
         temp_ms <- data.table::as.data.table(temp_ms)
       }
       temp_ms$analysis <- temp$analysis
-      # Use 'id' from rcpp_nts_find_features, fallback to 'feature' if available
-      if ("id" %in% colnames(temp)) {
-        temp_ms$feature <- temp$id
-      } else {
-        temp_ms$feature <- temp$feature
-      }
+      # Use 'feature' from rcpp_nts_find_features2
+      temp_ms$feature <- temp$feature
       temp_ms
     },
     fts = fts
@@ -1216,20 +1223,11 @@ get_features_eic.MassSpecResults_NonTargetAnalysis2 <- function(
   names(rpls) <- x$info$analysis
   eic$replicate <- rpls[eic$analysis]
   data.table::setcolorder(eic, c("analysis", "replicate", "feature"))
-  # Create unique identifiers using appropriate feature column
-  if ("id" %in% colnames(fts)) {
-    unique_fts_id <- paste0(fts$analysis, "-", fts$id)
-  } else {
-    unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
-  }
+  # Create unique identifiers using feature column from rcpp_nts_find_features2
+  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
   unique_eic_id <- paste0(eic$analysis, "-", eic$feature)
-  # Use 'cluster' from rcpp_nts_find_features, fallback to 'group' if available
-  if ("cluster" %in% colnames(fts)) {
-    fgs <- fts$cluster
-    names(fgs) <- unique_fts_id
-    eic$group <- fgs[unique_eic_id]
-    data.table::setcolorder(eic, c("analysis", "replicate", "group"))
-  } else if ("group" %in% colnames(fts)) {
+  # Use 'group' from rcpp_nts_find_features2 for grouping
+  if ("group" %in% colnames(fts)) {
     fgs <- fts$group
     names(fgs) <- unique_fts_id
     eic$group <- fgs[unique_eic_id]
@@ -1306,25 +1304,38 @@ plot_features.MassSpecResults_NonTargetAnalysis2 <- function(
     return(NULL)
   }
 
-  eic <- get_features_eic(
-    x,
-    analyses = unique(fts$analysis),
-    features = fts,
-    rtExpand = rtExpand,
-    mzExpand = mzExpand,
-    filtered = filtered,
-    useLoadedData = useLoadedData
-  )
+  # Decode EIC data from base64-encoded strings
+  eic_list <- list()
+  for (i in seq_len(nrow(fts))) {
+    ft <- fts[i, ]
 
-  if (nrow(eic) == 0) {
-    message("\U2717 Traces not found for the targets!")
+    # Decode EIC data using the new rcpp_decode_eic_data function
+    if (!is.na(ft$eic_rt) && !is.na(ft$eic_intensity) &&
+        nchar(ft$eic_rt) > 0 && nchar(ft$eic_intensity) > 0) {
+
+      rt_decoded <- rcpp_decode_eic_data(ft$eic_rt)
+      intensity_decoded <- rcpp_decode_eic_data(ft$eic_intensity)
+
+      if (length(rt_decoded) > 0 && length(intensity_decoded) > 0 &&
+          length(rt_decoded) == length(intensity_decoded)) {
+
+        eic_data <- data.table::data.table(
+          analysis = ft$analysis,
+          feature = ft$feature,
+          rt = rt_decoded,
+          intensity = intensity_decoded
+        )
+        eic_list[[i]] <- eic_data
+      }
+    }
+  }
+
+  if (length(eic_list) == 0) {
+    message("\U2717 No valid EIC data found for plotting!")
     return(NULL)
   }
 
-  intensity <- NULL
-  cols_by <- c("analysis", "replicate", "polarity", "feature", "rt")
-  eic <- eic[, `:=`(intensity = max(intensity)), by = cols_by]
-  eic <- unique(eic)
+  eic <- data.table::rbindlist(eic_list, fill = TRUE)
 
   fts <- .make_colorBy_varkey(fts, colorBy, legendNames)
 
@@ -1336,40 +1347,34 @@ plot_features.MassSpecResults_NonTargetAnalysis2 <- function(
     plot <- ggplot2::ggplot(eic, ggplot2::aes(x = rt))
 
     for (i in seq_len(nrow(fts))) {
-      ft_analysis <- fts[["analysis"]][i]
-      ft_replicate <- fts[["replicate"]][i]
-      ft_id <- fts[["feature"]][i]
-      ft_var <- fts[["var"]][i]
-      ft_min <- fts[["min"]][i]
-      ft_max <- fts[["max"]][i]
+      ft <- fts[i, ]
+      ft_var <- ft$var
 
-      temp <- dplyr::filter(
-        eic,
-        analysis %in%
-          ft_analysis &
-          replicate %in% ft_replicate &
-          feature %in% ft_id
-      )
+      temp <- eic[eic$analysis == ft$analysis & eic$feature == ft$feature, ]
+      if (nrow(temp) > 0) {
+        temp$var <- ft_var
 
-      temp$var <- ft_var
-
-      plot <- plot +
-        ggplot2::geom_line(
-          data = temp,
-          ggplot2::aes(y = intensity, color = var)
-        )
-
-      temp <- temp[temp$rt >= ft_min & temp$rt <= ft_max, ]
-
-      plot <- plot +
-        ggplot2::geom_ribbon(
-          data = temp,
-          ggplot2::aes(
-            ymin = rep(min(intensity), length(intensity)),
-            ymax = intensity,
-            fill = var
+        plot <- plot +
+          ggplot2::geom_line(
+            data = temp,
+            ggplot2::aes(y = intensity, color = var)
           )
-        )
+
+        # Filter for peak region
+        peak_region <- temp[temp$rt >= ft$rtmin & temp$rt <= ft$rtmax, ]
+        if (nrow(peak_region) > 0) {
+          plot <- plot +
+            ggplot2::geom_ribbon(
+              data = peak_region,
+              ggplot2::aes(
+                ymin = rep(0, nrow(peak_region)),
+                ymax = intensity,
+                fill = var
+              ),
+              alpha = 0.3
+            )
+        }
+      }
     }
 
     plot <- plot +
@@ -1400,76 +1405,75 @@ plot_features.MassSpecResults_NonTargetAnalysis2 <- function(
 
     for (i in seq_len(nrow(fts))) {
       pk <- fts[i, ]
-
       ft_var <- pk$var
 
       hT <- .make_features_hover_string(pk)
 
-      temp <- dplyr::filter(
-        eic,
-        analysis %in%
-          pk$analysis &
-          replicate %in% pk$replicate &
-          feature %in% pk$feature &
-          rt >= pk$rtmin &
-          rt <= pk$rtmax
-      )
+      # Get EIC data for this feature
+      temp <- eic[eic$analysis == pk$analysis & eic$feature == pk$feature, ]
 
-      plot <- plot %>%
-        add_trace(
-          data = temp,
-          x = ~rt,
-          y = ~intensity,
-          type = "scatter",
-          mode = "markers",
-          marker = list(color = cl[ft_var], size = 5),
-          text = paste(hT, "<br>x: ", temp$rt, "<br>y: ", temp$intensity),
-          hoverinfo = "text",
-          name = ft_var,
-          legendgroup = ft_var,
-          showlegend = FALSE
-        )
+      if (nrow(temp) > 0) {
+        # Filter for peak region
+        peak_region <- temp[temp$rt >= pk$rtmin & temp$rt <= pk$rtmax, ]
 
-      plot <- plot %>%
-        plotly::add_ribbons(
-          data = temp,
-          x = ~rt,
-          ymin = ~ min(intensity),
-          ymax = ~intensity,
-          line = list(color = cl[ft_var], width = 1.5),
-          fillcolor = cl50[ft_var],
-          text = paste(hT, "<br>x: ", temp$rt, "<br>y: ", temp$intensity),
-          hoverinfo = "text",
-          name = ft_var,
-          legendgroup = ft_var,
-          showlegend = show_legend[ft_var]
-        )
+        if (nrow(peak_region) > 0) {
+          plot <- plot %>%
+            add_trace(
+              data = peak_region,
+              x = ~rt,
+              y = ~intensity,
+              type = "scatter",
+              mode = "markers",
+              marker = list(color = cl[ft_var], size = 5),
+              text = paste(hT, "<br>RT: ", round(peak_region$rt, 2), "<br>Intensity: ", round(peak_region$intensity, 0)),
+              hoverinfo = "text",
+              name = ft_var,
+              legendgroup = ft_var,
+              showlegend = FALSE
+            )
 
-      show_legend[ft_var] <- FALSE
+          plot <- plot %>%
+            plotly::add_ribbons(
+              data = peak_region,
+              x = ~rt,
+              ymin = 0,
+              ymax = ~intensity,
+              line = list(color = cl[ft_var], width = 1.5),
+              fillcolor = cl50[ft_var],
+              text = paste(hT, "<br>RT: ", round(peak_region$rt, 2), "<br>Intensity: ", round(peak_region$intensity, 0)),
+              hoverinfo = "text",
+              name = ft_var,
+              legendgroup = ft_var,
+              showlegend = show_legend[ft_var]
+            )
+
+          show_legend[ft_var] <- FALSE
+        }
+      }
     }
 
+    # Add full EIC traces as background lines
     for (i in seq_len(nrow(fts))) {
       pk <- fts[i, ]
       ft_var <- pk$var
 
-      plot <- plot %>%
-        add_trace(
-          data = dplyr::filter(
-            eic,
-            analysis %in%
-              pk$analysis &
-              replicate %in% pk$replicate &
-              feature %in% pk$feature
-          ),
-          x = ~rt,
-          y = ~intensity,
-          type = "scatter",
-          mode = "lines",
-          line = list(color = cl[ft_var], width = 0.5),
-          name = ft_var,
-          legendgroup = ft_var,
-          showlegend = FALSE
-        )
+      temp <- eic[eic$analysis == pk$analysis & eic$feature == pk$feature, ]
+
+      if (nrow(temp) > 0) {
+        plot <- plot %>%
+          add_trace(
+            data = temp,
+            x = ~rt,
+            y = ~intensity,
+            type = "scatter",
+            mode = "lines",
+            line = list(color = cl[ft_var], width = 0.5),
+            name = ft_var,
+            legendgroup = ft_var,
+            showlegend = FALSE,
+            hoverinfo = "skip"
+          )
+      }
     }
 
     plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)

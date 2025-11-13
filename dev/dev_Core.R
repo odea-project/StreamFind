@@ -88,16 +88,15 @@ engine <- MassSpecEngine$new(
   analyses = ms_files,
 )
 
-engine$run(
-  MassSpecMethod_FindFeatures_native(
+run(MassSpecMethod_FindFeatures_native(
     rtWindows = data.frame(rtmin = 300, rtmax = 3000),
-    resolution_profile = c(30000, 30000, 35000),
-    noiseThreshold = 250,
+    resolution_profile = c(45000, 60000, 80000),
+    noiseThreshold = 300,
     minSNR = 3,
     minTraces = 3,
     baselineWindow = 200,
     maxWidth = 100
-  )
+  ), engine
 )
 
 # plot_spectra_tic(
@@ -110,18 +109,18 @@ get_features_count(
 )
 
 get_features(
-  engine$Analyses$results$MassSpecResults_NonTargetAnalysis,
-  mass = dbis,
-  ppm = 20,
-  sec = 60
-)
+  engine$Analyses$results$MassSpecResults_NonTargetAnalysis2,
+  mass = dbis[8, ],
+  ppm = 50,
+  sec = 120
+)[, 1:30]
 
 plot_features(
-  engine$Analyses$results$MassSpecResults_NonTargetAnalysis,
-  mass = dbis,
-  ppm = 20,
-  sec = 60,
-  legendNames = TRUE
+  engine$Analyses$results$MassSpecResults_NonTargetAnalysis2,
+  mass = dbis[8, ],
+  ppm = 60,
+  sec = 120,
+  legendNames = FALSE
 )
 
 engine$run(
