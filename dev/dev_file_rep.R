@@ -1,6 +1,4 @@
 
-
-
 # Close the connection first
 rm(engine_db)
 
@@ -30,7 +28,6 @@ engine_db$get_audit_trail()
 engine_db$get_metadata()
 
 fromJSON(engine_db$query_database("SELECT metadata FROM Engines")[1, 1])
-
 engine_db$query_database("SELECT * FROM AuditTrails")
 
 

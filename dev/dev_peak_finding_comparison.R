@@ -10,7 +10,7 @@ library(microbenchmark)
 
 # Set up file paths
 path <- "C:/Users/apoli/Documents/example_files"
-files <- list.files(path, pattern = ".mzML", full.names = TRUE)[1:3]
+files <- list.files(path, pattern = ".mzML", full.names = TRUE)[1]
 
 if (length(files) == 0) {
   stop("No .mzML files found in the specified path. Please check the path or add test files.")
@@ -98,7 +98,7 @@ methods <- list(
     gap = 2,
     width = 3,
     min_snr = 3,
-    kmeans = TRUE,
+    kmeans = FALSE,
     alpha = 0.3
   )
 )

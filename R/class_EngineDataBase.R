@@ -1,9 +1,7 @@
 # MARK: EngineDataBase
 # EngineDataBase -----
 #' @title File-based Database Engine for StreamFind
-#' @description The [StreamFind::EngineDataBase] R6 class provides file-based storage
-#' for StreamFind Engine data using DuckDB. Data is accessed by reading from the database
-#' instead of keeping it in memory.
+#' @description The [StreamFind::EngineDataBase] R6 class provides file-based storage for StreamFind Engine data using DuckDB. Data is accessed by reading from the database instead of keeping it in memory.
 #' @export
 #'
 EngineDataBase <- R6::R6Class(
@@ -589,47 +587,6 @@ EngineDataBase <- R6::R6Class(
   )
 )
 
-# Helper functions for serialization/deserialization
-.serialize_value <- function(value) {
-  if (is.null(value) || (length(value) == 1 && is.na(value))) {
-    return(NA_character_)
-  }
-
-  if (is.atomic(value) && length(value) == 1) {
-    if (inherits(value, "POSIXt")) {
-      return(format(value, "%Y-%m-%d %H:%M:%S"))
-    }
-    return(as.character(value))
-  }
-
-  # For complex objects, serialize as JSON
-  tryCatch({
-    jsonlite::toJSON(value, auto_unbox = TRUE, null = "null")
-  }, error = function(e) {
-    as.character(value)
-  })
-}
-
-.deserialize_value <- function(value, type) {
-  if (is.na(value) || is.null(value)) {
-    return(NA)
-  }
-
-  switch(type,
-    "character" = as.character(value),
-    "numeric" = as.numeric(value),
-    "logical" = as.logical(value),
-    "datetime" = as.POSIXct(value),
-    "list" = tryCatch({
-      jsonlite::fromJSON(value, simplifyVector = FALSE)
-    }, error = function(e) {
-      value
-    }),
-    # Default
-    as.character(value)
-  )
-}
-
 #' Generate a unique identifier
 #'
 #' @param prefix Character prefix for the ID
@@ -639,56 +596,12 @@ EngineDataBase <- R6::R6Class(
   paste0(prefix, gsub("-", "", uuid::UUIDgenerate()))
 }
 
-#' Convert R value to appropriate JSON/string for DuckDB storage
-#'
-#' @param value The R value to convert
-#' @return A character string suitable for DuckDB storage
-#' @noRd
-.serialize_for_duckdb <- function(value) {
-  if (is.null(value) || (length(value) == 1 && is.na(value))) {
-    return(NA_character_)
-  }
-
-  if (is.atomic(value) && length(value) == 1) {
-    if (inherits(value, "POSIXt")) {
-      return(format(value, "%Y-%m-%d %H:%M:%S"))
-    }
-    return(as.character(value))
-  }
-
-  # For complex objects, serialize as JSON
-  tryCatch({
-    jsonlite::toJSON(value, auto_unbox = TRUE, null = "null")
-  }, error = function(e) {
-    # Fallback: serialize to base64-encoded RDS
-    rawToChar(base64enc::base64encode(serialize(value, NULL)))
-  })
-}
-
-#' Determine the data type of an R object for storage
-#'
-#' @param value The R value to analyze
-#' @return A character string describing the data type
-#' @noRd
-.get_data_type <- function(value) {
-  if (is.null(value)) return("null")
-  if (is.character(value)) return("character")
-  if (is.numeric(value)) return("numeric")
-  if (is.logical(value)) return("logical")
-  if (inherits(value, "POSIXt")) return("datetime")
-  if (is.data.frame(value)) return("dataframe")
-  if (is.list(value)) return("list")
-  if (is.matrix(value)) return("matrix")
-  return("other")
-}
-
-#' Create DuckDB schema for StreamFind Engine
+#' Create DuckDB schema for StreamFind EngineDataBase
 #'
 #' @param conn DuckDB connection object
 #' @return TRUE if successful
 #' @noRd
 create_engine_duckdb_schema <- function(conn) {
-
   # Install JSON extension for enhanced JSON support
   tryCatch({
     DBI::dbExecute(conn, "INSTALL json")
