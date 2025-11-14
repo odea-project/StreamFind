@@ -3714,7 +3714,8 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
                                    float minSNR = 3.0,
                                    int minTraces = 3,
                                    float baselineWindow = 200.0,
-                                   float maxWidth = 100.0) {
+                                   float maxWidth = 100.0,
+                                   float base_quantile = 0.10) {
   Rcpp::List features;
   NTS2::NTS_DATA nts_data(info, spectra_headers, features);
   nts_data.find_features(
@@ -3725,7 +3726,8 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
     minSNR,
     minTraces,
     baselineWindow,
-    maxWidth
+    maxWidth,
+    base_quantile
   );
   return(nts_data.features_as_list_of_dt());
 };

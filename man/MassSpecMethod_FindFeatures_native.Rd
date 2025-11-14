@@ -12,7 +12,8 @@ MassSpecMethod_FindFeatures_native(
   mzrThreshold = 0.005,
   minTraces = 3,
   baselineWindow = 200,
-  maxWidth = 100
+  maxWidth = 100,
+  base_quantile = 0.1
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ MassSpecMethod_FindFeatures_native(
 \item{baselineWindow}{numeric(1) retention time window to build a baseline in a mass cluster.}
 
 \item{maxWidth}{numeric(1) expected maximum window for a chromatographic peak.}
+
+\item{base_quantile}{numeric(1) quantile to estimate the baseline in a mass cluster.}
 
 \item{noiseBins}{numeric(1) bin size to estimate the noise level in each scan (i.e., each rt value).}
 }

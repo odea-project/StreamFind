@@ -4,9 +4,7 @@
 \alias{EngineDataBase}
 \title{File-based Database Engine for StreamFind}
 \description{
-The \link{EngineDataBase} R6 class provides file-based storage
-for StreamFind Engine data using DuckDB. Data is accessed by reading from the database
-instead of keeping it in memory.
+The \link{EngineDataBase} R6 class provides file-based storage for StreamFind Engine data using DuckDB. Data is accessed by reading from the database instead of keeping it in memory.
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}

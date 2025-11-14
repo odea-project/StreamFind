@@ -6,7 +6,6 @@
 \alias{show.MassSpecResults_NonTargetAnalysis2}
 \alias{as.MassSpecResults_NonTargetAnalysis2}
 \alias{[.MassSpecResults_NonTargetAnalysis2}
-\alias{[[.MassSpecResults_NonTargetAnalysis2}
 \alias{get_features_count.MassSpecResults_NonTargetAnalysis2}
 \alias{plot_features_count.MassSpecResults_NonTargetAnalysis2}
 \alias{get_features.MassSpecResults_NonTargetAnalysis2}
@@ -28,16 +27,10 @@
 \alias{plot_groups_ms2.MassSpecResults_NonTargetAnalysis2}
 \alias{get_components.MassSpecResults_NonTargetAnalysis2}
 \alias{map_components.MassSpecResults_NonTargetAnalysis2}
-\alias{get_suspects.MassSpecResults_NonTargetAnalysis2}
-\alias{plot_suspects.MassSpecResults_NonTargetAnalysis2}
-\alias{get_internal_standards.MassSpecResults_NonTargetAnalysis2}
-\alias{plot_internal_standards.MassSpecResults_NonTargetAnalysis2}
-\alias{get_compounds.MassSpecResults_NonTargetAnalysis2}
 \alias{get_fold_change.MassSpecResults_NonTargetAnalysis2}
 \alias{plot_fold_change.MassSpecResults_NonTargetAnalysis2}
 \alias{get_patRoon_features.MassSpecResults_NonTargetAnalysis2}
 \alias{get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis2}
-\alias{get_patRoon_compounds.MassSpecResults_NonTargetAnalysis2}
 \title{Constructor and methods to handle non-target analysis results for mass spectrometry data}
 \usage{
 MassSpecResults_NonTargetAnalysis2(
@@ -53,8 +46,6 @@ MassSpecResults_NonTargetAnalysis2(
 as.MassSpecResults_NonTargetAnalysis2(value)
 
 \method{[}{MassSpecResults_NonTargetAnalysis2}(x, i, j)
-
-\method{[[}{MassSpecResults_NonTargetAnalysis2}(x, value)
 
 \method{get_features_count}{MassSpecResults_NonTargetAnalysis2}(x, analyses = NULL, filtered = FALSE)
 
@@ -493,78 +484,6 @@ as.MassSpecResults_NonTargetAnalysis2(value)
   renderEngine = "webgl"
 )
 
-\method{get_suspects}{MassSpecResults_NonTargetAnalysis2}(
-  x,
-  analyses = NULL,
-  database = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 5,
-  sec = 10,
-  millisec = 5,
-  ppmMS2 = 10,
-  mzrMS2 = 0.008,
-  minCusiness = 0.7,
-  minFragments = 3,
-  filtered = FALSE
-)
-
-\method{plot_suspects}{MassSpecResults_NonTargetAnalysis2}(
-  x,
-  analyses = NULL,
-  database = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 5,
-  sec = 10,
-  millisec = 5,
-  ppmMS2 = 10,
-  mzrMS2 = 0.008,
-  minCusiness = 0.7,
-  minFragments = 3,
-  filtered = FALSE,
-  rtExpand = 120,
-  mzExpand = 0.005,
-  useLoadedData = TRUE,
-  legendNames = NULL,
-  colorBy = "replicates+targets",
-  heights = c(0.5, 0.5),
-  interactive = TRUE
-)
-
-\method{get_internal_standards}{MassSpecResults_NonTargetAnalysis2}(x, average = TRUE)
-
-\method{plot_internal_standards}{MassSpecResults_NonTargetAnalysis2}(
-  x,
-  analyses = NULL,
-  showPresence = TRUE,
-  showRecovery = TRUE,
-  showDeviations = TRUE,
-  showWidths = TRUE,
-  renderEngine = "webgl"
-)
-
-\method{get_compounds}{MassSpecResults_NonTargetAnalysis2}(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE,
-  averaged = TRUE
-)
-
 \method{get_fold_change}{MassSpecResults_NonTargetAnalysis2}(
   x,
   replicatesIn = NULL,
@@ -620,8 +539,6 @@ as.MassSpecResults_NonTargetAnalysis2(value)
   top = 25,
   normalized = FALSE
 )
-
-\method{get_patRoon_compounds}{MassSpecResults_NonTargetAnalysis2}(x)
 }
 \arguments{
 \item{info}{A data frame containing information about the analyses.}
@@ -766,22 +683,6 @@ in any spectra) to 1 (i.e., must be present in all spectra) for traces during cl
 \item{groupBy}{String with the way of grouping. Possible values are \code{groups} and \code{replicates} to group by feature
 groups or feature groups and replicates, respectively.}
 
-\item{ppmMS2}{Numeric (length 1) with the mass deviation for MS2, in ppm.}
-
-\item{mzrMS2}{Numeric (length 1). The m/z resolution for MS2 spectra.}
-
-\item{minCusiness}{Numeric (length 1). The minimum cusiness value for spectral comparison.}
-
-\item{minFragments}{Integer (length 1) with the minimum number of fragments.}
-
-\item{showPresence}{Logical (length 1). When \code{TRUE} the presence of the internal standards is plotted.}
-
-\item{showRecovery}{Logical (length 1). When \code{TRUE} the recovery of the internal standards is plotted.}
-
-\item{showDeviations}{Logical (length 1). When \code{TRUE} the deviations of the internal standards is plotted.}
-
-\item{showWidths}{Logical (length 1). When \code{TRUE} the widths of the internal standards is plotted.}
-
 \item{replicatesIn}{Character vector with the names of the replicates to be considered as
 the denominator.}
 
@@ -812,16 +713,19 @@ An object of class \code{MassSpecResults_NonTargetAnalysis2} with the following 
 \item \code{headers}: A list of data frames containing information about the spectra headers.
 \item \code{features}: A list of data frames containing information about the features.
 }
-The \code{info} data.table contains the following columns: analysis, replicate, blank, polarity and file. Each \code{features} data frame contains the following columns from \code{rcpp_nts_find_features()}:
+The \code{info} data.table contains the following columns: analysis, replicate, blank, polarity and file. Each \code{features} data frame contains the following columns from \code{rcpp_nts_find_features2()}:
 \itemize{
-\item Required columns: id, rt, mz, intensity, noise, sn, rtmin, rtmax, mzmin, mzmax, width, area, ppm, fwhm_rt, fwhm_mz, cluster, n_traces
-\item Profile data (lists): profile_rt, profile_raw_intensity, profile_baseline, profile_smoothed_intensity, profile_fitted_intensity, profile_fitted_rt
-\item Gaussian parameters: gaussian_A, gaussian_mu, gaussian_sigma, gaussian_rsquared
-\item Optional downstream columns: feature, group, mass, polarity, adduct, filtered, filter, filled, correction, eic, ms1, ms2, quality, annotation, istd, suspects, formulas, compounds
+\item Core feature properties: feature, group, component, adduct, rt, mz, mass, intensity, noise, sn, area
+\item Chromatographic boundaries: rtmin, rtmax, width, mzmin, mzmax, ppm
+\item Peak shape characterization: fwhm_rt, fwhm_mz
+\item Gaussian fitting parameters: gaussian_A, gaussian_mu, gaussian_sigma, gaussian_r2
+\item Processing flags: polarity, filtered, filter, filled, correction
+\item Encoded profile data: eic_size, eic_rt, eic_mz, eic_intensity, eic_baseline, eic_smoothed
+\item MS spectral data: ms1_size, ms1_mz, ms1_intensity, ms2_size, ms2_mz, ms2_intensity
 }
 }
 \description{
-The \code{MassSpecResults_NonTargetAnalysis2} class is a child of the \link{Results} class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec"). It is specifically designed to handle the output from \code{rcpp_nts_find_features()}.
+The \code{MassSpecResults_NonTargetAnalysis2} class is a child of the \link{Results} class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec"). It is specifically designed to handle the output from \code{rcpp_nts_find_features2()}.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -830,8 +734,6 @@ The \code{MassSpecResults_NonTargetAnalysis2} class is a child of the \link{Resu
 \item \code{show(MassSpecResults_NonTargetAnalysis2)}: Prints a summary of the MassSpecResults_NonTargetAnalysis2 object.
 
 \item \code{[}: Subsets the MassSpecResults_NonTargetAnalysis2 object by analyses (with \code{i}) or feature groups (\code{j}).
-
-\item \code{[[}: Subsets the MassSpecResults_NonTargetAnalysis2 object by feature groups. The argument \code{value} should be a character vector with the group names.
 
 \item \code{get_features_count(MassSpecResults_NonTargetAnalysis2)}: Returns a data table with the number of features for each analysis.
 
@@ -875,16 +777,6 @@ The \code{MassSpecResults_NonTargetAnalysis2} class is a child of the \link{Resu
 
 \item \code{map_components(MassSpecResults_NonTargetAnalysis2)}: Maps components based on annotation from the MassSpecResults_NonTargetAnalysis2 object according to the specified parameters.
 
-\item \code{get_suspects(MassSpecResults_NonTargetAnalysis2)}: Extracts feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the MassSpecResults_NonTargetAnalysis2 object if they were previously annotated.
-
-\item \code{plot_suspects(MassSpecResults_NonTargetAnalysis2)}: Plots feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the MassSpecResults_NonTargetAnalysis2 object if they were previously annotated.
-
-\item \code{get_internal_standards(MassSpecResults_NonTargetAnalysis2)}: Extracts internal standards from the MassSpecResults_NonTargetAnalysis2 object. If the MassSpecResults_NonTargetAnalysis2 object has groups, it averages the internal standards across replicates, when \code{average = TRUE}.
-
-\item \code{plot_internal_standards(MassSpecResults_NonTargetAnalysis2)}: Plots internal standards from the MassSpecResults_NonTargetAnalysis2 object. If the MassSpecResults_NonTargetAnalysis2 object has groups, it averages the internal standards across replicates, when \code{average = TRUE}.
-
-\item \code{get_compounds(MassSpecResults_NonTargetAnalysis2)}: Extracts compounds from the MassSpecResults_NonTargetAnalysis2 object. If the MassSpecResults_NonTargetAnalysis2 object has groups, it averages the compounds across replicates, when \code{averaged = TRUE}.
-
 \item \code{get_fold_change(MassSpecResults_NonTargetAnalysis2)}: Gets a data.table with fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}. This method is adapted from the work of \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
 
 \item \code{plot_fold_change(MassSpecResults_NonTargetAnalysis2)}: Plots the fold-change analysis between the \code{replicatesIn} and \code{replicatesOut}. This method is adapted from the work of \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
@@ -892,8 +784,6 @@ The \code{MassSpecResults_NonTargetAnalysis2} class is a child of the \link{Resu
 \item \code{get_patRoon_features(MassSpecResults_NonTargetAnalysis2)}: Creates an S4 class \code{features} or \code{featureGroups}from the \pkg{patRoon} package.
 
 \item \code{get_patRoon_MSPeakLists(MassSpecResults_NonTargetAnalysis2)}: Creates S4 class \code{MSPeakLists}. Note that feature groups are required. The MS and MSMS spectra of each feature are then average by \pkg{patRoon} to produce the feature group spectra.
-
-\item \code{get_patRoon_compounds(MassSpecResults_NonTargetAnalysis2)}: Creates an S4 class \code{Compounds} from the \pkg{patRoon} package.
 
 }}
 \section{Functions}{

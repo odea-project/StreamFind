@@ -23,7 +23,7 @@
 #'   \item Processing flags: polarity, filtered, filter, filled, correction
 #'   \item Encoded profile data: eic_size, eic_rt, eic_mz, eic_intensity, eic_baseline, eic_smoothed
 #'   \item MS spectral data: ms1_size, ms1_mz, ms1_intensity, ms2_size, ms2_mz, ms2_intensity
-#'   \item Optional downstream columns: quality, annotation, istd, suspects, formulas, compounds
+
 #' }
 #' @export
 #'
@@ -62,7 +62,6 @@ validate_object.MassSpecResults_NonTargetAnalysis2 <- function(x) {
   if (length(x$features) > 0) {
     checkmate::assert_true(identical(x$info$analysis, names(x$features)))
     checkmate::assert_true(identical(x$info$analysis, names(x$headers)))
-    # Required columns from rcpp_nts_find_features2 output (FEATURE structure)
     fp_required <- c(
       "feature",
       "group",
@@ -106,15 +105,6 @@ validate_object.MassSpecResults_NonTargetAnalysis2 <- function(x) {
       "ms2_intensity"
     )
 
-    # Optional columns that may be added in downstream processing
-    fp_optional <- c(
-      "quality",
-      "annotation",
-      "istd",
-      "suspects",
-      "formulas",
-      "compounds"
-    )
     lapply(x$features, function(z) {
       checkmate::assert_data_table(z)
       if (nrow(z) > 0) {
@@ -141,9 +131,11 @@ validate_object.MassSpecResults_NonTargetAnalysis2 <- function(x) {
         }
 
         # Validate numeric columns
-        numeric_cols <- c("rt", "mz", "mass", "intensity", "noise", "sn", "rtmin", "rtmax",
-                         "mzmin", "mzmax", "width", "area", "ppm", "fwhm_rt", "fwhm_mz",
-                         "gaussian_A", "gaussian_mu", "gaussian_sigma", "gaussian_r2", "correction")
+        numeric_cols <- c(
+          "rt", "mz", "mass", "intensity", "noise", "sn", "rtmin", "rtmax",
+          "mzmin", "mzmax", "width", "area", "ppm", "fwhm_rt", "fwhm_mz",
+          "gaussian_A", "gaussian_mu", "gaussian_sigma", "gaussian_r2", "correction"
+        )
         for (col in numeric_cols) {
           if (col %in% colnames(z)) {
             checkmate::assert_numeric(z[[col]], len = nrow(z))
@@ -255,23 +247,12 @@ as.MassSpecResults_NonTargetAnalysis2 <- function(value) {
         if (nrow(z) == 0) {
           return(z)
         }
-
         # Check for required columns from rcpp_nts_find_features2
         required_cols <- c("feature", "rt", "mz", "intensity")
         checkmate::assert_true(
           all(required_cols %in% colnames(z)),
           .var.name = paste("Required columns:", paste(required_cols, collapse = ", "))
         )
-
-        # Convert optional nested list columns to data.tables if they exist
-        optional_list_cols <- c("quality", "annotation",
-                               "istd", "suspects", "formulas", "compounds")
-        for (col in optional_list_cols) {
-          if (col %in% colnames(z)) {
-            z[[col]] <- lapply(z[[col]], data.table::as.data.table)
-          }
-        }
-
         z
       })
       checkmate::assert_true(
@@ -373,29 +354,6 @@ names.MassSpecResults_NonTargetAnalysis2 <- function(x) {
   x
 }
 
-# MARK: `[[`
-#' @describeIn MassSpecResults_NonTargetAnalysis2 Subsets the MassSpecResults_NonTargetAnalysis2 object by feature groups. The argument `value` should be a character vector with the group names.
-#' @template arg-value
-#' @export
-#'
-`[[.MassSpecResults_NonTargetAnalysis2` <- function(x, value) {
-  if (!missing(value)) {
-    if (length(x$features) == 0) {
-      warning("No feature groups found to subset!")
-    } else {
-      if (!any(vapply(x$features, function(z) any(!is.na(z$group), FALSE)))) {
-        warning("No feature groups found to subset!")
-      } else {
-        x$features <- lapply(x$features, function(z) {
-          z <- z[z$group %in% value, ]
-          z
-        })
-      }
-    }
-  }
-  x
-}
-
 # MARK: get_features_count
 #' @describeIn MassSpecResults_NonTargetAnalysis2 Returns a data table with the number of features for each analysis.
 #' @template arg-nts-x
@@ -414,36 +372,50 @@ get_features_count.MassSpecResults_NonTargetAnalysis2 <- function(
       "analysis" = x$info$analysis,
       "replicate" = x$info$replicate,
       "features" = vapply(x$features, function(z, filtered) {
-        return(nrow(z))
-        # if (filtered) {
-        #   return(nrow(z))
-        # }
-        # return(nrow(z[!z$filtered, ]))
-      }, integer(1), filtered = filtered)
-      # "filtered" = vapply(
-      #   x$features,
-      #   function(z) {
-      #     sum(z$filtered)
-      #   },
-      #   integer(1)
-      # ),
-      # "groups" = vapply(
-      #   x$features,
-      #   function(z, filtered) {
-      #     if (filtered) {
-      #       z <- z[!z$filtered, ]
-      #       zg <- unique(z$group)
-      #       zg <- zg[!is.na(zg) & zg != ""]
-      #       return(length(zg))
-      #     } else {
-      #       zg <- unique(z$group[!z$filtered])
-      #       zg <- zg[!is.na(zg) & zg != ""]
-      #       return(length(zg))
-      #     }
-      #   },
-      #   integer(1),
-      #   filtered = filtered
-      # )
+        if (filtered) {
+          return(nrow(z))
+        }
+        return(nrow(z[!z$filtered, ]))
+      }, integer(1), filtered = filtered),
+      "filtered" = vapply(
+        x$features,
+        function(z) {
+          sum(z$filtered)
+        },
+        integer(1)
+      ),
+      "components" = vapply(
+        x$features,
+        function(z, filtered) {
+          if (filtered) {
+            cp <- unique(z$component)
+            cp <- cp[!is.na(cp) & cp != ""]
+            return(length(cp))
+          } else {
+            cp <- unique(z$component[!z$filtered])
+            cp <- cp[!is.na(cp) & cp != ""]
+            return(length(cp))
+          }
+        },
+        integer(1),
+        filtered = filtered
+      ),
+      "groups" = vapply(
+        x$features,
+        function(z, filtered) {
+          if (filtered) {
+            zg <- unique(z$group)
+            zg <- zg[!is.na(zg) & zg != ""]
+            return(length(zg))
+          } else {
+            zg <- unique(z$group[!z$filtered])
+            zg <- zg[!is.na(zg) & zg != ""]
+            return(length(zg))
+          }
+        },
+        integer(1),
+        filtered = filtered
+      )
     )
     info <- info[info$analysis %in% analyses, ]
   }
@@ -472,13 +444,10 @@ plot_features_count.MassSpecResults_NonTargetAnalysis2 <- function(
     showLegend = TRUE,
     showHoverText = TRUE) {
   info <- get_features_count(x, analyses, filtered)
-
   if ("replicates" %in% colorBy) {
     info$analysis <- info$replicate
   }
-
   features <- NULL
-
   info <- info[,
     .(
       features = round(mean(features), digits = 0),
@@ -487,11 +456,8 @@ plot_features_count.MassSpecResults_NonTargetAnalysis2 <- function(
     ),
     by = c("analysis")
   ]
-
   info$features_sd[is.na(info$features_sd)] <- 0
-
   info <- unique(info)
-
   if (showHoverText) {
     info$hover_text <- paste(
       info$analysis,
@@ -508,15 +474,11 @@ plot_features_count.MassSpecResults_NonTargetAnalysis2 <- function(
   } else {
     info$hover_text <- ""
   }
-
   info <- info[order(info$analysis), ]
-
   colors_tag <- .get_colors(info$analysis)
-
   if (is.null(yLab)) {
     yLab <- "Number of features"
   }
-
   plot <- plotly::plot_ly(
     x = info$analysis,
     y = info$features,
@@ -542,7 +504,6 @@ plot_features_count.MassSpecResults_NonTargetAnalysis2 <- function(
         titlefont = list(size = 18)
       )
     )
-
   plot
 }
 
@@ -577,29 +538,21 @@ get_features.MassSpecResults_NonTargetAnalysis2 <- function(
   if (is.null(analyses)) {
     return(data.table::data.table())
   }
-
   fts <- NULL
-
   if (length(x$features) > 0) {
     fts <- x$features[analyses]
   }
-
   if (is.null(fts)) {
     return(data.table::data.table())
   }
-
   fts <- data.table::rbindlist(fts, idcol = "analysis", fill = TRUE)
-
   if (nrow(fts) == 0) {
     return(data.table::data.table())
   }
-
   if (!filtered) {
     fts <- fts[!fts$filtered, ]
   }
-
   fts$feature <- as.character(fts$feature)
-
   if (!is.null(features)) {
     target_id <- features
 
@@ -1311,20 +1264,33 @@ plot_features.MassSpecResults_NonTargetAnalysis2 <- function(
 
     # Decode EIC data using the new rcpp_decode_eic_data function
     if (!is.na(ft$eic_rt) && !is.na(ft$eic_intensity) &&
-        nchar(ft$eic_rt) > 0 && nchar(ft$eic_intensity) > 0) {
-
+      nchar(ft$eic_rt) > 0 && nchar(ft$eic_intensity) > 0) {
       rt_decoded <- rcpp_decode_eic_data(ft$eic_rt)
       intensity_decoded <- rcpp_decode_eic_data(ft$eic_intensity)
 
-      if (length(rt_decoded) > 0 && length(intensity_decoded) > 0 &&
-          length(rt_decoded) == length(intensity_decoded)) {
+      # Decode baseline if available
+      baseline_decoded <- NULL
+      if (!is.na(ft$eic_baseline) && nchar(ft$eic_baseline) > 0) {
+        baseline_decoded <- rcpp_decode_eic_data(ft$eic_baseline)
+      }
 
+      if (length(rt_decoded) > 0 && length(intensity_decoded) > 0 &&
+        length(rt_decoded) == length(intensity_decoded)) {
+        # Create EIC data with baseline if available
         eic_data <- data.table::data.table(
           analysis = ft$analysis,
           feature = ft$feature,
           rt = rt_decoded,
           intensity = intensity_decoded
         )
+
+        # Add baseline column if decoded successfully
+        if (!is.null(baseline_decoded) && length(baseline_decoded) == length(rt_decoded)) {
+          eic_data$baseline <- baseline_decoded
+        } else {
+          eic_data$baseline <- 0 # Default to 0 if no baseline available
+        }
+
         eic_list[[i]] <- eic_data
       }
     }
@@ -1436,7 +1402,7 @@ plot_features.MassSpecResults_NonTargetAnalysis2 <- function(
             plotly::add_ribbons(
               data = peak_region,
               x = ~rt,
-              ymin = 0,
+              ymin = ~baseline,
               ymax = ~intensity,
               line = list(color = cl[ft_var], width = 1.5),
               fillcolor = cl50[ft_var],
@@ -2317,9 +2283,6 @@ get_groups.MassSpecResults_NonTargetAnalysis2 <- function(
       mzmin <- NULL
       mzmax <- NULL
       feature <- NULL
-      quality <- NULL
-      annotation <- NULL
-      istd <- NULL
 
       max_presence <- nrow(x$info)
 
@@ -2331,40 +2294,6 @@ get_groups.MassSpecResults_NonTargetAnalysis2 <- function(
           massdev = round(max(mzmax - mzmin), digits = 4),
           presence = round(length(feature) / max_presence * 100, digits = 1),
           maxint = round(max(intensity), digits = 0),
-          sn = round(
-            max(
-              vapply(
-                quality,
-                function(z) {
-                  if (length(z) > 0) {
-                    z$sn
-                  } else {
-                    0
-                  }
-                },
-                0
-              ),
-              na.rm = TRUE
-            ),
-            digits = 1
-          ),
-          gauss_f = round(
-            max(
-              vapply(
-                quality,
-                function(z) {
-                  if (length(z) > 0) {
-                    z$gauss_f
-                  } else {
-                    0
-                  }
-                },
-                0
-              ),
-              na.rm = TRUE
-            ),
-            digits = 4
-          ),
           iso = min(
             vapply(
               annotation,
@@ -4274,1760 +4203,6 @@ map_components.MassSpecResults_NonTargetAnalysis2 <- function(
     plot
   }
 }
-
-# MARK: get_suspects
-#' @describeIn MassSpecResults_NonTargetAnalysis2 Extracts feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the MassSpecResults_NonTargetAnalysis2 object if they were previously annotated.
-#' @template arg-nts-x
-#' @template arg-analyses
-#' @template arg-ms-features
-#' @template arg-ms-mass
-#' @template arg-ms-mz
-#' @template arg-ms-rt
-#' @template arg-ms-mobility
-#' @template arg-ms-ppm
-#' @template arg-ms-sec
-#' @template arg-ms-millisec
-#' @template arg-ms-ppmMS2
-#' @template arg-ms-mzrMS2
-#' @template arg-ms-minCusiness
-#' @template arg-ms-minFragments
-#' @template arg-ms-filtered
-#' @export
-#'
-get_suspects.MassSpecResults_NonTargetAnalysis2 <- function(
-    x,
-    analyses = NULL,
-    database = NULL,
-    features = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 5,
-    sec = 10,
-    millisec = 5,
-    ppmMS2 = 10,
-    mzrMS2 = 0.008,
-    minCusiness = 0.7,
-    minFragments = 3,
-    filtered = FALSE) {
-  if (length(x$features) == 0) {
-    warning("Features not found!")
-    return(data.table::data.table())
-  }
-
-  if (is.null(database)) {
-    features <- get_features(
-      x,
-      analyses,
-      features,
-      mass,
-      mz,
-      rt,
-      mobility,
-      ppm,
-      sec,
-      millisec,
-      filtered
-    )
-
-    if (nrow(features) == 0) {
-      message("\U2717 Features not found for targets!")
-      return(data.table::data.table())
-    }
-
-    features[["name"]] <- NULL
-
-    if ("suspects" %in% colnames(features)) {
-      sel <- vapply(
-        features$suspects,
-        function(z) {
-          if (length(z) > 0) {
-            if (is.data.frame(z)) {
-              if (nrow(z) > 0) {
-                return(TRUE)
-              }
-            }
-          }
-          FALSE
-        },
-        FALSE
-      )
-      if (any(sel)) {
-        features <- features[sel, ]
-        suspects_l <- features[["suspects"]]
-        suspects <- lapply(
-          seq_len(length(suspects_l)),
-          function(z, suspects_l, features) {
-            temp <- suspects_l[[z]]
-            temp_ft <- features[z, ]
-            temp_ft[["suspects"]] <- NULL
-            if ("group" %in% colnames(temp)) {
-              temp <- merge(
-                temp,
-                temp_ft,
-                by = c("feature", "group"),
-                all = TRUE
-              )
-            } else {
-              temp <- merge(temp, temp_ft, by = "feature", all = TRUE)
-            }
-            data.table::setcolorder(temp, c("analysis", "replicate"))
-            temp
-          },
-          suspects_l = suspects_l,
-          features = features
-        )
-        suspects <- data.table::rbindlist(suspects, fill = TRUE)
-      } else {
-        warning(
-          "Suspects were not found! Run SuspectScreening Method or give a database."
-        )
-        return(data.table::data.table())
-      }
-    } else {
-      warning(
-        "Suspects were not found! Run SuspectScreening Method or give a database."
-      )
-      return(data.table::data.table())
-    }
-  } else {
-    database <- data.table::as.data.table(database)
-    valid_db <- FALSE
-    if (is.data.frame(database)) {
-      database <- data.table::as.data.table(database)
-      if (
-        any(c("mass", "neutralMass") %in% colnames(database)) |
-          "mz" %in% colnames(database)
-      ) {
-        if ("name" %in% colnames(database)) {
-          if ("neutralMass" %in% colnames(database)) {
-            data.table::setnames(database, "neutralMass", "mass")
-          }
-          valid_db <- TRUE
-        }
-      }
-    }
-    if (!valid_db) {
-      warning(
-        "Argument database must be a data.frame with at least the columns name and mass or mz!"
-      )
-      return(data.table::data.table())
-    }
-    if (!"rt" %in% colnames(database)) {
-      database$rt <- 0
-    } else {
-      database$rt[database$rt == ""] <- 0
-    }
-    database$rt <- as.numeric(database$rt)
-    database$rt[is.na(rt)] <- 0
-    if ("mass" %in% colnames(database)) {
-      suspects <- get_features(
-        x,
-        analyses,
-        mass = database,
-        ppm = ppm,
-        sec = sec,
-        millisec = millisec,
-        filtered = filtered
-      )
-    } else if ("mz" %in% colnames(database)) {
-      suspects <- get_features(
-        x,
-        analyses,
-        mz = database,
-        ppm = ppm,
-        sec = sec,
-        millisec = millisec,
-        filtered = filtered
-      )
-    } else {
-      warning(
-        "Argument database must be a data.frame with at least the columns name and mass or mz!"
-      )
-      return(data.table::data.table())
-    }
-    if (nrow(suspects) == 0) {
-      message("\U2717 No suspects found!")
-      return(data.table::data.table())
-    }
-    suspects <- split(suspects, suspects$analysis)
-    suspects <- lapply(
-      suspects,
-      function(z, database) {
-        out <- data.table::data.table()
-        if (nrow(z) > 0) {
-          for (i in seq_len(nrow(z))) {
-            suspect_analysis <- z$analysis[i]
-            suspect_replicate <- z$replicate[i]
-            suspect_feature <- z$feature[i]
-            suspect_name <- z$name[i]
-            suspect_mass <- z$mass[i]
-            suspect_rt <- z$rt[i]
-            suspect_intensity <- z$intensity[i]
-            suspect_area <- z$area[i]
-            suspect_db <- database[vapply(
-              database$name,
-              function(j) {
-                grepl(j, suspect_name)
-              },
-              FALSE
-            )]
-            suspect_db <- suspect_db[1, ]
-
-            temp <- z[i, ]
-            if ("formula" %in% colnames(suspect_db)) {
-              temp$formula <- suspect_db$formula
-            }
-            if ("SMILES" %in% colnames(suspect_db)) {
-              temp$SMILES <- suspect_db$SMILES
-            }
-            if ("mz" %in% suspect_db) {
-              temp$db_mass <- suspect_db$mz - (z$polarity[i] * 1.007276)
-            } else {
-              temp$db_mass <- suspect_db$mass
-            }
-            temp$error_mass <- round(
-              ((temp$mass - temp$db_mass) / temp$mass) * 1E6,
-              digits = 1
-            )
-            temp$db_rt <- suspect_db$rt
-            temp$error_rt <- round(temp$rt - temp$db_rt, digits = 1)
-            temp$id_level <- "4"
-            temp$shared_fragments <- 0
-            temp$cusiness <- 0
-            temp$fragments <- list(data.table::data.table())
-            if (temp$db_rt > 0) {
-              temp$id_level <- "3b"
-            }
-            if (
-              "fragments" %in%
-                colnames(suspect_db) ||
-                "fragments_mz" %in% colnames(suspect_db)
-            ) {
-              if ("fragments" %in% colnames(suspect_db)) {
-                fragments <- suspect_db$fragments
-              } else {
-                fragments <- suspect_db$fragments_mz
-              }
-              if (!is.na(fragments)) {
-                ms2 <- data.table::data.table()
-                if ("ms2" %in% colnames(z)) {
-                  ms2 <- z$ms2[i][[1]]
-                  if (length(ms2) == 0) {
-                    ms2 <- data.table::data.table()
-                  }
-                }
-                if (nrow(ms2) > 0) {
-                  if ("fragments" %in% colnames(suspect_db)) {
-                    fragments <- unlist(strsplit(
-                      fragments,
-                      split = "; ",
-                      fixed = TRUE
-                    ))
-                    fragments <- strsplit(fragments, " ")
-                    fragments <- data.table::data.table(
-                      "formula" = vapply(
-                        fragments,
-                        function(x) {
-                          x[1]
-                        },
-                        NA_character_
-                      ),
-                      "mz" = vapply(
-                        fragments,
-                        function(x) {
-                          as.numeric(x[1])
-                        },
-                        NA_real_
-                      ),
-                      "intensity" = vapply(
-                        fragments,
-                        function(x) {
-                          as.numeric(x[2])
-                        },
-                        NA_real_
-                      )
-                    )
-                  } else {
-                    fragments <- unlist(strsplit(
-                      fragments,
-                      split = ";",
-                      fixed = TRUE
-                    ))
-                    fragments_int <- unlist(strsplit(
-                      suspect_db$fragments_int,
-                      split = ";",
-                      fixed = TRUE
-                    ))
-                    if ("fragments_formula" %in% colnames(suspect_db)) {
-                      if (grepl(";", suspect_db$fragments_formula)) {
-                        fragments_formula <- unlist(
-                          strsplit(
-                            suspect_db$fragments_formula,
-                            split = ";",
-                            fixed = TRUE
-                          )
-                        )
-                      } else if (!suspect_db$fragments_formula %in% "") {
-                        fragments_formula <- rep(
-                          suspect_db$fragments_formula,
-                          length(fragments)
-                        )
-                      } else {
-                        fragments_formula <- rep(
-                          NA_character_,
-                          length(fragments)
-                        )
-                      }
-                    } else {
-                      fragments_formula <- rep(NA_character_, length(fragments))
-                    }
-
-                    fragments <- data.table::data.table(
-                      "formula" = fragments_formula,
-                      "mz" = as.numeric(fragments),
-                      "intensity" = as.numeric(fragments_int)
-                    )
-                  }
-
-                  mzr <- fragments$mz * ppm / 1E6
-                  mzr[mzr < mzrMS2] <- mzrMS2
-                  fragments$mzmin <- fragments$mz - mzr
-                  fragments$mzmax <- fragments$mz + mzr
-
-                  fragments$exp_idx <- vapply(
-                    seq_len(nrow(fragments)),
-                    function(z, ms2, fragments) {
-                      idx <- which(
-                        ms2$mz >= fragments$mzmin[z] &
-                          ms2$mz <= fragments$mzmax[z]
-                      )
-                      if (length(idx) == 0) {
-                        NA_integer_
-                      } else {
-                        if (length(idx) > 1) {
-                          candidates <- ms2$mz[idx]
-                          mz_error <- abs(candidates - fragments$mz[z])
-                          idx <- idx[which.min(mz_error)]
-                          idx <- idx[1]
-                        }
-                        as.integer(idx)
-                      }
-                    },
-                    ms2 = ms2,
-                    fragments = fragments,
-                    integer(1)
-                  )
-
-                  number_shared_fragments <- length(fragments$exp_idx[
-                    !is.na(fragments$exp_idx)
-                  ])
-
-                  if (number_shared_fragments > 0) {
-                    fragments$exp_mz <- ms2$mz[fragments$exp_idx]
-                    fragments$mass_error <- round(
-                      fragments$mz - fragments$exp_mz,
-                      digits = 4
-                    )
-                    fragments$exp_intensity <- ms2$intensity[fragments$exp_idx]
-                    fragments$exp_intensity[is.na(fragments$exp_intensity)] <- 0
-                    sel <- fragments$exp_intensity > 0
-                    intensity <- fragments$intensity[sel]
-                    intensity <- intensity / max(intensity)
-                    intensity_exp <- fragments$exp_intensity[sel]
-                    intensity_exp <- intensity_exp / max(intensity_exp)
-                    dot_pro <- intensity * intensity_exp
-                    dot_pro <- sum(dot_pro)
-                    mag_int <- sqrt(sum(intensity^2))
-                    mag_exp_int <- sqrt(sum(intensity_exp^2))
-                    cusiness <- round(
-                      dot_pro / (mag_int * mag_exp_int),
-                      digits = 4
-                    )
-                    ms2_unknown <- ms2[
-                      unique(-fragments$exp_idx[!is.na(fragments$exp_idx)]),
-                      c("mz", "intensity"),
-                      with = FALSE
-                    ]
-                    if (nrow(ms2_unknown) > 1) {
-                      ms2_unknown$formula <- "unkown"
-                      data.table::setnames(
-                        ms2_unknown,
-                        c("mz", "intensity"),
-                        c("exp_mz", "exp_intensity")
-                      )
-                      fragments <- data.table::rbindlist(
-                        list(fragments, ms2_unknown),
-                        fill = TRUE
-                      )
-                    }
-                  } else {
-                    cusiness <- 0
-                  }
-
-                  temp$shared_fragments <- number_shared_fragments
-                  temp$cusiness <- cusiness
-                  temp$epx_ms2_size <- nrow(ms2)
-                  if (
-                    number_shared_fragments >= minFragments ||
-                      cusiness >= minCusiness
-                  ) {
-                    temp$fragments <- list(fragments)
-                    if (temp$id_level == "3b") {
-                      temp$id_level <- "1"
-                    } else if (temp$id_level == "4") {
-                      temp$id_level <- "2"
-                    }
-                  }
-                }
-              }
-            }
-            out <- data.table::rbindlist(list(out, temp), fill = TRUE)
-          }
-        }
-        out
-      },
-      database = database
-    )
-    suspects <- data.table::rbindlist(suspects, fill = TRUE)
-  }
-  suspects
-}
-
-# MARK: plot_suspects
-#' @describeIn MassSpecResults_NonTargetAnalysis2 Plots feature suspects based on a database. The database should be a data.frame with at least the columns name and mass, indicating the name and neutral monoisotopic mass of the suspect targets. If a database is not provided, it will extract suspects from the MassSpecResults_NonTargetAnalysis2 object if they were previously annotated.
-#' @template arg-nts-x
-#' @template arg-analyses
-#' @template arg-ms-features
-#' @template arg-ms-mass
-#' @template arg-ms-mz
-#' @template arg-ms-rt
-#' @template arg-ms-mobility
-#' @template arg-ms-ppm
-#' @template arg-ms-sec
-#' @template arg-ms-millisec
-#' @template arg-ms-ppmMS2
-#' @template arg-ms-mzrMS2
-#' @template arg-ms-minCusiness
-#' @template arg-ms-minFragments
-#' @template arg-ms-filtered
-#' @template arg-ms-rtExpand
-#' @template arg-ms-mzExpand
-#' @template arg-useLoadedData
-#' @template arg-colorBy
-#' @template arg-nts-heights
-#' @template arg-interactive
-#' @export
-#'
-plot_suspects.MassSpecResults_NonTargetAnalysis2 <- function(
-    x,
-    analyses = NULL,
-    database = NULL,
-    features = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 5,
-    sec = 10,
-    millisec = 5,
-    ppmMS2 = 10,
-    mzrMS2 = 0.008,
-    minCusiness = 0.7,
-    minFragments = 3,
-    filtered = FALSE,
-    rtExpand = 120,
-    mzExpand = 0.005,
-    useLoadedData = TRUE,
-    legendNames = NULL,
-    colorBy = "replicates+targets",
-    heights = c(0.5, 0.5),
-    interactive = TRUE) {
-  suspects <- get_suspects(
-    x,
-    analyses,
-    database,
-    features,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    ppmMS2,
-    mzrMS2,
-    minCusiness,
-    minFragments,
-    filtered
-  )
-
-  if (nrow(suspects) == 0) {
-    warning("\U2717 Suspects not found!")
-    return(NULL)
-  }
-
-  eic <- get_features_eic(
-    x,
-    analyses = unique(suspects$analysis),
-    features = suspects$feature,
-    rtExpand = rtExpand,
-    mzExpand = mzExpand,
-    filtered = filtered,
-    useLoadedData = useLoadedData
-  )
-
-  if (nrow(eic) == 0) {
-    message("\U2717 Traces and/or features not found for targets!")
-    return(NULL)
-  }
-
-  suspects <- .make_colorBy_varkey(suspects, colorBy, TRUE)
-
-  eic$uid <- paste0(eic$feature, "_", eic$analysis)
-  suspects$uid <- paste0(suspects$feature, "_", suspects$analysis)
-
-  leg <- suspects$var
-  names(leg) <- paste0(suspects$feature, "_", suspects$analysis)
-
-  eic$var <- leg[eic$uid]
-
-  leg <- unique(leg)
-  cl <- .get_colors(leg)
-
-  if (!interactive) {
-    p1 <- ggplot2::ggplot() +
-      ggplot2::geom_line(
-        data = eic,
-        ggplot2::aes(
-          x = rt,
-          y = intensity,
-          group = uid,
-          color = var
-        ),
-        linewidth = 0.5
-      ) +
-      ggplot2::scale_color_manual(values = cl) +
-      ggplot2::labs(x = "Retention time / seconds", y = "Intensity / counts") +
-      ggplot2::theme_classic()
-
-    for (g in leg) {
-      uid_list <- unique(eic$uid[eic$var == g])
-
-      for (u in uid_list) {
-        df <- dplyr::filter(eic, uid == u)
-        ft <- dplyr::filter(suspects, uid == u)
-
-        if (nrow(ft) > 0) {
-          df_filled <- dplyr::filter(df, rt >= ft$rtmin & rt <= ft$rtmax)
-
-          p1 <- p1 +
-            ggplot2::geom_ribbon(
-              data = df_filled,
-              ggplot2::aes(
-                x = rt,
-                ymin = 0,
-                ymax = intensity
-              ),
-              fill = cl[g],
-              alpha = 0.5
-            )
-        }
-      }
-    }
-
-    data <- suspects$ms2
-    names(data) <- suspects$uid
-    data <- Map(
-      function(i, j) {
-        if (nrow(i) > 0) {
-          i$var <- j
-          i$intensity <- i$intensity / max(i$intensity, na.rm = TRUE)
-        }
-        i
-      },
-      data,
-      suspects$var
-    )
-    data <- data.table::rbindlist(data, idcol = "uid", fill = TRUE)
-
-    fragments <- suspects$fragments
-    names(fragments) <- suspects$uid
-
-    fragments <- lapply(fragments, function(z) {
-      if (!is.na(z)) {
-        z <- unlist(strsplit(z, split = "; ", fixed = TRUE))
-        z <- strsplit(z, " ")
-        z <- data.table::data.table(
-          "mz" = vapply(
-            z,
-            function(x) {
-              as.numeric(x[1])
-            },
-            NA_real_
-          ),
-          "intensity" = vapply(
-            z,
-            function(x) {
-              as.numeric(x[2])
-            },
-            NA_real_
-          )
-        )
-
-        z$intensity <- z$intensity / max(z$intensity, na.rm = TRUE)
-        z$intensity <- -z$intensity
-      } else {
-        z <- data.table::data.table()
-      }
-      z
-    })
-
-    fragments <- Map(
-      function(i, j) {
-        if (nrow(i) > 0) {
-          i$var <- j
-        }
-        i
-      },
-      fragments,
-      suspects$var
-    )
-
-    fragments <- data.table::rbindlist(fragments, idcol = "uid", fill = TRUE)
-
-    all_data <- data.table::rbindlist(list(data, fragments), fill = TRUE)
-
-    all_data$vpos <- -0.2
-    all_data$vpos[all_data$intensity < 0] <- 1.2
-
-    p2 <- ggplot2::ggplot(
-      all_data,
-      ggplot2::aes(x = mz, y = intensity, fill = var)
-    ) +
-      ggplot2::geom_col(width = 0.5, position = "identity") +
-      ggplot2::scale_fill_manual(values = cl) +
-      ggplot2::scale_color_manual(values = cl) +
-      ggplot2::guides(fill = "none") +
-      ggplot2::geom_text(
-        ggplot2::aes(label = round(mz, 4), color = var),
-        vjust = 0.2,
-        hjust = all_data$vpos,
-        angle = 90,
-        size = 2,
-        show.legend = FALSE
-      ) +
-      ggplot2::labs(
-        x = expression(italic("m/z ") / " Da"),
-        y = "Normalized intensity (Exp vs -Database)"
-      ) +
-      ggplot2::theme_classic() +
-      ggplot2::geom_hline(yintercept = 0, linetype = "solid") +
-      ggplot2::annotate(
-        "text",
-        x = max(all_data$mz, na.rm = TRUE) - 0.1,
-        y = 1.25,
-        label = "Experimental spectra",
-        hjust = 1
-      ) +
-      ggplot2::annotate(
-        "text",
-        x = max(all_data$mz, na.rm = TRUE) - 0.1,
-        y = -1.25,
-        label = "Database spectra",
-        hjust = 1
-      ) +
-      ggplot2::scale_y_continuous(
-        limits = c(
-          min(all_data$intensity, na.rm = TRUE) * 1.3,
-          max(all_data$intensity, na.rm = TRUE) * 1.3
-        )
-      )
-
-    gridExtra::grid.arrange(p1, p2, ncol = 1)
-  } else {
-    showleg <- rep(TRUE, length(leg))
-    names(showleg) <- leg
-    plot <- plot_ly()
-    for (g in leg) {
-      uid <- unique(suspects$uid[suspects$var %in% g])
-      for (u in uid) {
-        sel <- suspects$uid %in% u
-        ft <- suspects[sel, ]
-        if (nrow(ft) == 0) {
-          next
-        }
-        sel2 <- eic$uid %in% u
-        df <- eic[sel2, ]
-        plot <- plot %>%
-          add_trace(
-            x = df$rt,
-            y = df$intensity,
-            type = "scatter",
-            mode = "lines",
-            line = list(width = 0.5, color = cl[g]),
-            connectgaps = TRUE,
-            name = g,
-            legendgroup = g,
-            showlegend = FALSE
-          )
-        df <- df[df$rt >= ft$rtmin & df$rt <= ft$rtmax, ]
-        hT <- .make_features_hover_string(ft)
-        hT <- paste(
-          "</br> suspect: ",
-          g,
-          "</br> id_level: ",
-          ft$id_level,
-          "</br> error_mass: ",
-          ft$error_mass,
-          "</br> error_rt: ",
-          ft$error_rt,
-          "</br> shared_fragments: ",
-          ft$shared_fragments,
-          hT
-        )
-        plot <- plot %>%
-          add_trace(
-            x = df$rt,
-            y = df$intensity,
-            type = "scatter",
-            mode = "lines+markers",
-            fill = "tozeroy",
-            connectgaps = TRUE,
-            fillcolor = paste(color = cl[g], 50, sep = ""),
-            line = list(width = 0.1, color = cl[g]),
-            marker = list(size = 3, color = cl[g]),
-            text = hT,
-            hoverinfo = "text",
-            name = g,
-            legendgroup = g,
-            showlegend = showleg[g]
-          )
-
-        showleg[g] <- FALSE
-      }
-    }
-    max_mz <- 0
-    plot2 <- plot_ly()
-    for (g in leg) {
-      uid <- unique(suspects$uid[suspects$var %in% g])
-      for (u in uid) {
-        data <- suspects$ms2[suspects$uid == u][[1]]
-        fragments <- suspects$fragments[suspects$uid == u][[1]]
-        if (!is.null(data) && !is.null(fragments)) {
-          bar_widths <- rep(0.2, nrow(data))
-          if (nrow(data) > 0) {
-            data$intensity <- data$intensity / max(data$intensity, na.rm = TRUE)
-            temp_max_mz <- max(data$mz, na.rm = TRUE)
-            if (temp_max_mz > max_mz) {
-              max_mz <- temp_max_mz
-            }
-            plot2 <- plot2 %>%
-              add_trace(
-                x = data$mz,
-                y = data$intensity,
-                type = "bar",
-                width = 0.05,
-                marker = list(
-                  color = cl[g],
-                  line = list(color = cl[g], width = bar_widths)
-                ),
-                text = paste0(
-                  round(
-                    as.numeric(
-                      data$mz
-                    ),
-                    4
-                  ),
-                  "  "
-                ),
-                textposition = "outside",
-                textangle = 90,
-                textfont = list(size = 9, color = cl[g]),
-                name = g,
-                legendgroup = g,
-                hovertemplate = paste(
-                  "Exp:",
-                  "<br><i>m/z</i>: %{x:.4f}",
-                  "<br>intensity: %{y:.0f}"
-                ),
-                showlegend = FALSE
-              )
-          }
-          if (nrow(fragments) > 0) {
-            fragments <- fragments[!is.na(fragments$intensity), ]
-            fragments$intensity <- fragments$intensity /
-              max(fragments$intensity, na.rm = TRUE)
-            fragments$intensity <- -fragments$intensity
-            temp_max_mz <- max(fragments$mz, na.rm = TRUE)
-            if (temp_max_mz > max_mz) {
-              max_mz <- temp_max_mz
-            }
-            plot2 <- plot2 %>%
-              add_trace(
-                x = fragments$mz,
-                y = fragments$intensity,
-                type = "bar",
-                width = 0.05,
-                marker = list(
-                  color = cl[g],
-                  line = list(color = cl[g], width = bar_widths)
-                ),
-                text = paste0(
-                  round(
-                    as.numeric(
-                      fragments$mz
-                    ),
-                    4
-                  ),
-                  "  "
-                ),
-                textposition = "outside",
-                textangle = 90,
-                textfont = list(size = 9, color = cl[g]),
-                name = g,
-                legendgroup = g,
-                hovertemplate = paste(
-                  "Database:",
-                  "<br><i>m/z</i>: %{x:.4f}",
-                  "<br>intensity: %{y:.0f}"
-                ),
-                showlegend = FALSE
-              )
-            # add annotation text to the plot2 in the max y and max x the text "experimental spectra" and "database spectra" in the max x and min y of the plot region
-          }
-        }
-      }
-    }
-    plot2 <- plot2 %>%
-      add_trace(
-        x = max_mz,
-        y = 1.2,
-        type = "scatter",
-        mode = "text",
-        text = "<i>Experimental spectra</i>",
-        textposition = "top left",
-        textfont = list(color = "black"),
-        showlegend = FALSE
-      )
-    plot2 <- plot2 %>%
-      add_trace(
-        x = max_mz,
-        y = -1.2,
-        type = "scatter",
-        mode = "text",
-        text = "<i>Database spectra</i>",
-        textposition = "bottom left",
-        textfont = list(color = "black"),
-        showlegend = FALSE
-      )
-    xaxis1 <- list(
-      linecolor = toRGB("black"),
-      linewidth = 2,
-      title = "Retention time / seconds",
-      titlefont = list(size = 12, color = "black"),
-      autotick = TRUE,
-      ticks = "outside"
-    )
-    xaxis2 <- list(
-      linecolor = toRGB("black"),
-      linewidth = 2,
-      title = "<i>m/z</i> / Da",
-      titlefont = list(size = 12, color = "black"),
-      autotick = TRUE,
-      ticks = "outside"
-    )
-    yaxis1 <- list(
-      linecolor = toRGB("black"),
-      linewidth = 2,
-      title = "Intensity / counts",
-      titlefont = list(size = 12, color = "black")
-    )
-    yaxis2 <- list(
-      linecolor = toRGB("black"),
-      linewidth = 2,
-      title = "Normalized intensity (Exp vs -Database)",
-      range = c(-1.4, 1.4),
-      titlefont = list(size = 12, color = "black")
-    )
-    plotList <- list()
-    plot <- plot %>% plotly::layout(xaxis = xaxis1, yaxis = yaxis1)
-    plotList[["plot"]] <- plot
-    plot2 <- plot2 %>%
-      plotly::layout(
-        xaxis = xaxis2,
-        yaxis = yaxis2,
-        barmode = "overlay",
-        uniformtext = list(minsize = 6, mode = "show")
-      )
-    plotList[["plot2"]] <- plot2
-    plotf <- subplot(
-      plotList,
-      nrows = 2,
-      titleY = TRUE,
-      titleX = TRUE,
-      heights = heights[1:2],
-      margin = 0.03,
-      shareX = FALSE,
-      which_layout = "merge"
-    )
-    plotf
-  }
-}
-
-# MARK: get_internal_standards
-#' @describeIn MassSpecResults_NonTargetAnalysis2 Extracts internal standards from the MassSpecResults_NonTargetAnalysis2 object. If the MassSpecResults_NonTargetAnalysis2 object has groups, it averages the internal standards across replicates, when `average = TRUE`.
-#' @template arg-nts-x
-#' @template arg-ms-average
-#' @export
-#'
-get_internal_standards.MassSpecResults_NonTargetAnalysis2 <- function(
-    x,
-    average = TRUE) {
-  istd <- get_features(x, filtered = TRUE)
-  if ("istd" %in% colnames(istd)) {
-    sel <- vapply(
-      istd$istd,
-      function(z) {
-        if (length(z) > 0) {
-          if (is.data.frame(z)) {
-            if (nrow(z) > 0) {
-              return(TRUE)
-            }
-          }
-        }
-        FALSE
-      },
-      FALSE
-    )
-    istd <- istd[sel, ]
-    if (nrow(istd) > 0) {
-      istd_l <- istd[["istd"]]
-      istd_l2 <- lapply(
-        seq_len(length(istd_l)),
-        function(z, istd_l, istd) {
-          temp <- istd_l[[z]]
-          temp_ft <- istd[z, ]
-          temp <- cbind(temp, temp_ft)
-          temp
-        },
-        istd = istd,
-        istd_l = istd_l
-      )
-      istd <- data.table::rbindlist(istd_l2, fill = TRUE)
-      istd$rtr <- round(istd$rtmax - istd$rtmin, digits = 1)
-      istd$mzr <- round(istd$mzmax - istd$mzmin, digits = 4)
-      if ("annotation" %in% colnames(istd)) {
-        istd$iso_n <- vapply(
-          istd$annotation,
-          function(z) {
-            if (length(z) == 0) {
-              NA_real_
-            } else {
-              z$iso_size
-            }
-          },
-          NA_real_
-        )
-        istd$iso_c <- vapply(
-          istd$annotation,
-          function(z) {
-            if (length(z) == 0) {
-              NA_real_
-            } else {
-              z$iso_number_carbons
-            }
-          },
-          NA_real_
-        )
-      } else {
-        istd$iso_n <- NA_real_
-        istd$iso_c <- NA_real_
-      }
-      if (
-        any(vapply(x$features, function(x) any(!is.na(x$group) | x$group %in% ""), FALSE)) &&
-          average
-      ) {
-        rpl <- x$info$replicate
-        names(rpl) <- x$info$analysis
-        istd$replicate <- rpl[istd$analysis]
-        cols <- c(
-          "name",
-          "rt",
-          "mass",
-          "intensity",
-          "area",
-          "rtr",
-          "mzr",
-          "error_rt",
-          "error_mass",
-          "rec",
-          "iso_n",
-          "iso_c",
-          "replicate",
-          "group"
-        )
-
-        istd <- istd[, cols, with = FALSE]
-
-        area <- NULL
-        rt <- NULL
-        mass <- NULL
-        intensity <- NULL
-        rtr <- NULL
-        mzr <- NULL
-        error_rt <- NULL
-        error_mass <- NULL
-        rec <- NULL
-        iso_n <- NULL
-        iso_c <- NULL
-
-        istd <- istd[,
-          `:=`(
-            freq = length(intensity),
-            rt = round(mean(rt, na.rm = TRUE), digits = 0),
-            mass = round(mean(mass, na.rm = TRUE), digits = 4),
-            intensity = round(mean(intensity, na.rm = TRUE), digits = 0),
-            intensity_sd = round(sd(intensity, na.rm = TRUE), digits = 0),
-            area = round(mean(area, na.rm = TRUE), digits = 0),
-            area_sd = round(sd(area, na.rm = TRUE), digits = 0),
-            rtr = round(mean(rtr, na.rm = TRUE), digits = 1),
-            rtr_sd = round(sd(rtr, na.rm = TRUE), digits = 1),
-            mzr = round(mean(mzr, na.rm = TRUE), digits = 4),
-            mzr_sd = round(sd(mzr, na.rm = TRUE), digits = 4),
-            error_rt = round(mean(error_rt, na.rm = TRUE), digits = 1),
-            error_rt_sd = round(sd(error_rt, na.rm = TRUE), digits = 1),
-            error_mass = round(mean(error_mass, na.rm = TRUE), digits = 1),
-            error_mass_sd = round(sd(error_mass, na.rm = TRUE), digits = 1),
-            rec = round(mean(rec, na.rm = TRUE), digits = 1),
-            rec_sd = round(sd(rec, na.rm = TRUE), digits = 1),
-            iso_n = round(mean(iso_n, na.rm = TRUE), digits = 0),
-            iso_n_sd = round(sd(iso_n, na.rm = TRUE), digits = 0),
-            iso_c = round(mean(iso_c, na.rm = TRUE), digits = 0),
-            iso_c_sd = round(sd(iso_c, na.rm = TRUE), digits = 0)
-          ),
-          by = c("name", "group", "replicate")
-        ][]
-
-        istd <- unique(istd)
-
-        istd$rec[is.nan(istd$rec)] <- NA_real_
-      } else {
-        cols <- c(
-          "name",
-          "rt",
-          "mass",
-          "intensity",
-          "area",
-          "rtr",
-          "mzr",
-          "error_rt",
-          "error_mass",
-          "rec",
-          "iso_n",
-          "iso_c",
-          "analysis",
-          "feature"
-        )
-        if (
-          any(vapply(
-            x$features,
-            function(x) any(!(is.na(x$group) | x$group == "")),
-            FALSE
-          ))
-        ) {
-          cols <- c(cols, "group")
-        }
-
-        istd <- istd[, cols, with = FALSE]
-        istd$intensity <- round(istd$intensity, digits = 0)
-        istd$area <- round(istd$area, digits = 0)
-      }
-
-      setorder(istd, "name")
-
-      istd
-    } else {
-      warning("Internal standards not found!")
-      data.table::data.table()
-    }
-  } else {
-    warning(
-      "Not present! Run FindInternalStandards method to tag the internal standards!"
-    )
-    data.table::data.table()
-  }
-}
-
-# MARK: plot_internal_standards
-#' @describeIn MassSpecResults_NonTargetAnalysis2 Plots internal standards from the MassSpecResults_NonTargetAnalysis2 object. If the MassSpecResults_NonTargetAnalysis2 object has groups, it averages the internal standards across replicates, when `average = TRUE`.
-#' @template arg-nts-x
-#' @template arg-analyses
-#' @template arg-ms-showPresence
-#' @template arg-ms-showRecovery
-#' @template arg-ms-showDeviations
-#' @template arg-ms-showWidths
-#' @template arg-renderEngine
-#' @export
-#'
-plot_internal_standards.MassSpecResults_NonTargetAnalysis2 <- function(
-    x,
-    analyses = NULL,
-    showPresence = TRUE,
-    showRecovery = TRUE,
-    showDeviations = TRUE,
-    showWidths = TRUE,
-    renderEngine = "webgl") {
-  analyses <- .check_analyses_argument(x$features, analyses)
-  if (any(vapply(x$features[analyses], function(x) any(!(is.na(x$group) | x$group %in% "")), FALSE))) {
-    istd <- get_internal_standards(x, average = TRUE)
-    if (nrow(istd) == 0) {
-      warning("Internal standards not found!")
-      return(NULL)
-    }
-    rpls <- x$info$replicate
-    names(rpls) <- x$info$analysis
-    istd <- istd[istd$replicate %in% rpls[analyses], ]
-    if (nrow(istd) == 0) {
-      warning("Internal standards not found!")
-      return(NULL)
-    }
-  } else {
-    istd <- get_internal_standards(x, average = FALSE)
-    if (nrow(istd) == 0) {
-      warning("Internal standards not found!")
-      return(NULL)
-    }
-    istd <- istd[istd$analysis %in% analyses, ]
-    if (nrow(istd) == 0) {
-      warning("Internal standards not found!")
-      return(NULL)
-    }
-  }
-  if (
-    !("analysis" %in% colnames(istd)) &
-      "replicate" %in% colnames(istd)
-  ) {
-    istd$analysis <- istd$replicate
-  }
-  analyses <- unique(istd$analysis)
-  leg <- unique(istd$name)
-  colors <- .get_colors(leg)
-  showLegend <- TRUE
-  showLegendPresence <- FALSE
-  showLegendRecovery <- FALSE
-  showLegendDeviations <- FALSE
-  showLegendWidths <- FALSE
-
-  if (showPresence && "freq" %in% colnames(istd)) {
-    plot_presence <- plot_ly(istd, x = analyses)
-    showLegendPresence <- TRUE
-    showLegend <- FALSE
-    max_freq <- max(istd$freq, na.rm = TRUE)
-  }
-
-  if (showRecovery && !all(is.na(istd$rec))) {
-    plot_recovery <- plot_ly(istd, x = analyses)
-    if (showLegend) {
-      showLegendRecovery <- TRUE
-      showLegend <- FALSE
-    }
-  }
-
-  if (showDeviations) {
-    plot_rtr <- plot_ly(istd, x = analyses)
-    plot_mzr <- plot_ly(istd, x = analyses)
-    if (showLegend) {
-      showLegendDeviations <- TRUE
-      showLegend <- FALSE
-    }
-  }
-
-  if (showWidths) {
-    plot_rtw <- plot_ly(istd, x = analyses)
-    plot_mzw <- plot_ly(istd, x = analyses)
-    if (showLegend) {
-      showLegendWidths <- TRUE
-      showLegend <- FALSE
-    }
-  }
-
-  freq_template <- rep(0, length(analyses))
-  names(freq_template) <- analyses
-
-  for (i in unique(istd$name)) {
-    df <- istd[istd$name == i, ]
-
-    if ("freq" %in% colnames(istd) && showPresence) {
-      freq <- freq_template
-      for (j in analyses) {
-        freq[j] <- sum(df$freq[df$analysis == j])
-      }
-      freq <- freq / max_freq * 100
-
-      plot_presence <- plot_presence %>%
-        add_trace(
-          df,
-          x = analyses,
-          y = freq,
-          type = "scatter",
-          mode = "markers",
-          marker = list(size = 5, color = colors[i]),
-          connectgaps = FALSE,
-          name = i,
-          legendgroup = i,
-          showlegend = showLegendPresence
-        )
-    }
-
-    if ("rec" %in% colnames(istd) && showRecovery) {
-      df_rec <- df[!is.na(df$rec), ]
-
-      if (nrow(df_rec) > 0) {
-        if (!"rec_sd" %in% colnames(df_rec)) {
-          error_rec <- NULL
-        } else {
-          df_rec$rec_sd[is.na(df_rec$rec_sd)] <- 0
-
-          error_rec <- list(
-            type = "data",
-            symmetric = FALSE,
-            arrayminus = df_rec$rec_sd,
-            array = df_rec$rec_sd,
-            color = colors[i],
-            width = 5
-          )
-        }
-
-        plot_recovery <- plot_recovery %>%
-          add_trace(
-            df_rec,
-            x = df_rec$analysis,
-            y = df_rec$rec * 100,
-            type = "scatter",
-            mode = "markers",
-            marker = list(size = 5, color = colors[i]),
-            error_y = error_rec,
-            connectgaps = TRUE,
-            name = i,
-            legendgroup = i,
-            showlegend = showLegendRecovery
-          )
-      }
-    }
-
-    if (showDeviations) {
-      df_rtr <- df[!is.na(df$error_rt), ]
-
-      if (nrow(df_rtr) > 0) {
-        if (!"error_rt_sd" %in% colnames(df_rtr)) {
-          error_error_rt <- NULL
-        } else {
-          df_rtr$error_rt_sd[is.na(df_rtr$error_rt_sd)] <- 0
-
-          error_error_rt <- list(
-            type = "data",
-            symmetric = FALSE,
-            arrayminus = df_rtr$error_rt_sd,
-            array = df_rtr$error_rt_sd,
-            color = colors[i],
-            width = 5
-          )
-        }
-
-        plot_rtr <- plot_rtr %>%
-          add_trace(
-            df_rtr,
-            x = df_rtr$analysis,
-            y = df_rtr$error_rt,
-            type = "scatter",
-            mode = "markers",
-            marker = list(size = 5, color = colors[i]),
-            error_y = error_error_rt,
-            connectgaps = FALSE,
-            name = i,
-            legendgroup = i,
-            showlegend = showLegendDeviations
-          )
-      }
-
-      df_mzr <- df[!is.na(df$error_mass), ]
-
-      if (nrow(df_mzr) > 0) {
-        if (!"error_mass_sd" %in% colnames(df_mzr)) {
-          error_error_mass <- NULL
-        } else {
-          df_mzr$error_mass_sd[is.na(df_mzr$error_mass_sd)] <- 0
-
-          error_error_mass <- list(
-            type = "data",
-            symmetric = FALSE,
-            arrayminus = df_mzr$error_mass_sd,
-            array = df_mzr$error_mass_sd,
-            color = colors[i],
-            width = 5
-          )
-        }
-
-        plot_mzr <- plot_mzr %>%
-          add_trace(
-            df_mzr,
-            x = df_mzr$analysis,
-            y = df_mzr$error_mass,
-            type = "scatter",
-            mode = "markers",
-            marker = list(size = 5, color = colors[i]),
-            error_y = error_error_mass,
-            connectgaps = FALSE,
-            name = i,
-            legendgroup = i,
-            showlegend = FALSE
-          )
-      }
-    }
-
-    if (showWidths) {
-      df_rtw <- df[!is.na(df$rtr), ]
-
-      if (nrow(df_rtw) > 0) {
-        if (!"rtr_sd" %in% colnames(df_rtw)) {
-          error_rtr <- NULL
-        } else {
-          df_rtw$rtr_sd[is.na(df_rtw$rtr_sd)] <- 0
-
-          error_rtr <- list(
-            type = "data",
-            symmetric = FALSE,
-            arrayminus = df_rtw$rtr_sd,
-            array = df_rtw$rtr_sd,
-            color = colors[i],
-            width = 5
-          )
-        }
-
-        plot_rtw <- plot_rtw %>%
-          add_trace(
-            df_rtw,
-            x = df_rtw$analysis,
-            y = df_rtw$rtr,
-            type = "scatter",
-            mode = "markers",
-            marker = list(size = 5, color = colors[i]),
-            error_y = error_rtr,
-            connectgaps = TRUE,
-            name = i,
-            legendgroup = i,
-            showlegend = showLegendWidths
-          )
-      }
-
-      df_mzw <- df[!is.na(df$mzr), ]
-
-      if (nrow(df_mzw) > 0) {
-        if (!"mzr_sd" %in% colnames(df_mzw)) {
-          error_mzr <- NULL
-        } else {
-          df_mzw$mzr_sd[is.na(df_mzw$mzr_sd)] <- 0
-
-          error_mzr <- list(
-            type = "data",
-            symmetric = FALSE,
-            arrayminus = df_mzw$mzr_sd,
-            array = df_mzw$mzr_sd,
-            color = colors[i],
-            width = 5
-          )
-        }
-
-        plot_mzw <- plot_mzw %>%
-          add_trace(
-            df_mzw,
-            x = df_mzw$analysis,
-            y = df_mzw$mzr,
-            type = "scatter",
-            mode = "markers",
-            marker = list(size = 5, color = colors[i]),
-            error_y = error_mzr,
-            connectgaps = TRUE,
-            name = i,
-            legendgroup = i,
-            showlegend = FALSE
-          )
-      }
-    }
-  }
-
-  if ("group" %in% colnames(istd)) {
-    rt_error <- c(
-      (min(istd$error_rt, na.rm = TRUE) - max(istd$error_rt_sd, na.rm = TRUE)) *
-        0.9,
-      (max(istd$error_rt, na.rm = TRUE) + max(istd$error_rt_sd, na.rm = TRUE)) *
-        1.1
-    )
-
-    mz_error <- c(
-      (min(istd$error_mass, na.rm = TRUE) -
-        max(istd$error_mass_sd, na.rm = TRUE)) *
-        0.9,
-      (max(istd$error_mass, na.rm = TRUE) +
-        max(istd$error_mass_sd, na.rm = TRUE)) *
-        1.1
-    )
-
-    time_range <- c(
-      0,
-      (max(istd$rtr, na.rm = TRUE) + max(istd$rtr_sd, na.rm = TRUE)) * 1.1
-    )
-
-    mass_range <- c(
-      0,
-      (max(istd$mzr, na.rm = TRUE) + max(istd$mzr_sd, na.rm = TRUE)) * 1.1
-    )
-  } else {
-    rt_error <- c(
-      min(istd$error_rt, na.rm = TRUE) * 0.9,
-      max(istd$error_rt, na.rm = TRUE) * 1.1
-    )
-    mz_error <- c(
-      min(istd$error_mass, na.rm = TRUE) * 0.9,
-      max(istd$error_mass, na.rm = TRUE) * 1.1
-    )
-    time_range <- c(0, max(istd$rtr, na.rm = TRUE) * 1.1)
-    mass_range <- c(0, max(istd$mzr, na.rm = TRUE) * 1.1)
-  }
-
-  if (rt_error[1] >= -20) {
-    rt_error <- c(-20, rt_error[2])
-  }
-  if (rt_error[2] <= 20) {
-    rt_error <- c(rt_error[1], 20)
-  }
-  if (mz_error[1] >= -15) {
-    mz_error <- c(-15, mz_error[2])
-  }
-  if (mz_error[2] <= 15) {
-    mz_error <- c(mz_error[1], 15)
-  }
-  if (time_range[2] <= 30) {
-    time_range <- c(0, 30)
-  }
-  if (mass_range[2] <= 0.01) {
-    mass_range <- c(0, 0.01)
-  }
-
-  xaxis <- list(
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    title = NULL
-  )
-
-  yaxis_presence <- list(
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    title = "Presence / %",
-    titlefont = list(size = 12, color = "black"),
-    range = c(-10, 200)
-  )
-
-  yaxis_recovery <- list(
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    title = "Recovery / %",
-    titlefont = list(size = 12, color = "black"),
-    range = c(-10, 200)
-  )
-
-  yaxis_deviation_rt <- list(
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    title = "RT / s",
-    titlefont = list(size = 12, color = "black"),
-    range = rt_error
-  )
-
-  yaxis_deviation_mz <- list(
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    title = "Mass / ppm",
-    titlefont = list(size = 12, color = "black"),
-    range = mz_error
-  )
-
-  yaxis_width_rt <- list(
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    title = "Width / s",
-    titlefont = list(size = 12, color = "black"),
-    range = time_range
-  )
-
-  yaxis_width_mz <- list(
-    linecolor = toRGB("black"),
-    linewidth = 2,
-    title = "Width / Da",
-    titlefont = list(size = 12, color = "black"),
-    range = mass_range
-  )
-
-  plotList <- list()
-
-  hrect <- function(y0 = 0, y1 = 1, fillcolor = "lightgreen", opacity = 0.2) {
-    list(
-      type = "rect",
-      x0 = 0,
-      x1 = 1,
-      xref = "paper",
-      y0 = y0,
-      y1 = y1,
-      line_width = 0,
-      fillcolor = fillcolor,
-      opacity = opacity,
-      layer = "below"
-    )
-  }
-
-  if ("freq" %in% colnames(istd) && showPresence) {
-    plot_presence <- plot_presence %>%
-      plotly::layout(
-        xaxis = xaxis,
-        yaxis = yaxis_presence,
-        shapes = hrect(90, 110)
-      )
-    plotList[["plot_presence"]] <- plot_presence
-  }
-
-  if ("rec" %in% colnames(istd) && showRecovery) {
-    plot_recovery <- plot_recovery %>%
-      plotly::layout(
-        xaxis = xaxis,
-        yaxis = yaxis_recovery,
-        shapes = hrect(50, 150)
-      )
-    plotList[["plot_recovery"]] <- plot_recovery
-  }
-
-  if (showDeviations) {
-    plot_rtr <- plot_rtr %>%
-      plotly::layout(
-        xaxis = xaxis,
-        yaxis = yaxis_deviation_rt,
-        shapes = hrect(-15, 15)
-      )
-    plotList[["plot_rtr"]] <- plot_rtr
-    plot_mzr <- plot_mzr %>%
-      plotly::layout(
-        xaxis = xaxis,
-        yaxis = yaxis_deviation_mz,
-        shapes = hrect(-10, 10)
-      )
-    plotList[["plot_mzr"]] <- plot_mzr
-  }
-
-  if (showWidths) {
-    plot_rtw <- plot_rtw %>%
-      plotly::layout(
-        xaxis = xaxis,
-        yaxis = yaxis_width_rt,
-        shapes = hrect(5, 25)
-      )
-    plotList[["plot_rtw"]] <- plot_rtw
-    plot_mzw <- plot_mzw %>%
-      plotly::layout(
-        xaxis = xaxis,
-        yaxis = yaxis_width_mz,
-        shapes = hrect(0, 0.005)
-      )
-    plotList[["plot_mzw"]] <- plot_mzw
-  }
-
-  if (length(plotList) == 0) {
-    return(NULL)
-  } else if (length(plotList) == 1) {
-    final_plot <- plotList[[1]]
-  } else {
-    final_plot <- subplot(
-      plotList,
-      nrows = length(plotList),
-      titleY = TRUE,
-      titleX = TRUE,
-      shareX = TRUE,
-      which_layout = "merge"
-    )
-  }
-
-  if (renderEngine %in% "webgl") {
-    final_plot <- final_plot %>% plotly::toWebGL()
-  }
-
-  final_plot
-}
-
-# MARK: get_compounds
-#' @describeIn MassSpecResults_NonTargetAnalysis2 Extracts compounds from the MassSpecResults_NonTargetAnalysis2 object. If the MassSpecResults_NonTargetAnalysis2 object has groups, it averages the compounds across replicates, when `averaged = TRUE`.
-#' @template arg-nts-x
-#' @template arg-analyses
-#' @template arg-ms-features
-#' @template arg-ms-mass
-#' @template arg-ms-mz
-#' @template arg-ms-rt
-#' @template arg-ms-mobility
-#' @template arg-ms-ppm
-#' @template arg-ms-sec
-#' @template arg-ms-millisec
-#' @template arg-ms-filtered
-#' @template arg-averaged
-#' @export
-#'
-get_compounds.MassSpecResults_NonTargetAnalysis2 <- function(
-    x,
-    analyses = NULL,
-    features = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    filtered = FALSE,
-    averaged = TRUE) {
-  if (length(x$features) == 0) {
-    warning("Features not found!")
-    return(data.table::data.table())
-  }
-
-  fts <- get_features(
-    x,
-    analyses,
-    features,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    filtered
-  )
-
-  if (nrow(fts) == 0) {
-    message("\U2717 Features not found for targets!")
-    return(data.table::data.table())
-  }
-
-  compounds <- fts$compounds
-
-  if (!averaged && any(vapply(x$features, function(x) any(!is.na(x$group))))) {
-    compounds <- Map(
-      function(z, y) {
-        if (nrow(z) > 0) {
-          z$analysis <- y
-        }
-        z
-      },
-      compounds,
-      fts$analysis
-    )
-
-    compounds <- Map(
-      function(z, y) {
-        if (nrow(z) > 0) {
-          z$feature <- y
-        }
-        z
-      },
-      compounds,
-      fts$feature
-    )
-  }
-
-  compounds <- Map(
-    function(z, y) {
-      if (nrow(z) > 0) {
-        z$polarity <- y
-      }
-      z
-    },
-    compounds,
-    fts$polarity
-  )
-
-  compounds <- Map(
-    function(z, y) {
-      if (nrow(z) > 0) {
-        z$rt <- y
-      }
-      z
-    },
-    compounds,
-    fts$rt
-  )
-
-  compounds <- Map(
-    function(z, y) {
-      if (nrow(z) > 0) {
-        z$mass <- y
-      }
-      z
-    },
-    compounds,
-    fts$mass
-  )
-
-  compounds <- Map(
-    function(z, y) {
-      if (nrow(z) > 0) {
-        z$group <- y
-      }
-      z
-    },
-    compounds,
-    fts$group
-  )
-
-  compounds <- compounds[vapply(
-    compounds,
-    function(z) {
-      nrow(z) > 0
-    },
-    FALSE
-  )]
-
-  compounds <- data.table::rbindlist(compounds, fill = TRUE)
-
-  if (nrow(compounds) > 0) {
-    if (averaged && any(vapply(x$features, function(z) !all(is.na(z$group) | z$group %in% ""), FALSE))) {
-      desired_cols <- c("group", "rt", "mass", "polarity", "compoundName")
-      existing_cols <- intersect(desired_cols, colnames(compounds))
-      if (length(existing_cols) > 0) {
-        data.table::setcolorder(compounds, existing_cols)
-      }
-      duplos <- duplicated(paste0(
-        compounds$group,
-        compounds$compoundName,
-        compounds$polarity
-      ))
-      compounds <- compounds[!duplos]
-    } else {
-      cols_order <- c(
-        "analysis",
-        "feature",
-        "group",
-        "rt",
-        "mass",
-        "polarity",
-        "compoundName"
-      )
-      existing_cols <- intersect(cols_order, colnames(compounds))
-      if (length(existing_cols) > 0) {
-        data.table::setcolorder(compounds, existing_cols)
-      }
-    }
-  }
-  compounds
-}
-
 # MARK: get_fold_change
 #' @describeIn MassSpecResults_NonTargetAnalysis2 Gets a data.table with fold-change analysis between the `replicatesIn` and `replicatesOut`. This method is adapted from the work of \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
 #'
@@ -7040,54 +5215,7 @@ get_patRoon_MSPeakLists.MassSpecResults_NonTargetAnalysis2 <- function(
   plfinal
 }
 
-# MARK: get_patRoon_compounds
-#' @describeIn MassSpecResults_NonTargetAnalysis2 Creates an S4 class `Compounds` from the \pkg{patRoon} package.
-#' @template arg-nts-x
-#' @template arg-ms-filtered
-#' @export
-#'
-get_patRoon_compounds.MassSpecResults_NonTargetAnalysis2 <- function(x) {
-  comp <- get_compounds(x, filtered = FALSE)
 
-  if (nrow(comp) == 0) {
-    warning("No compounds found to get!")
-    return(NULL)
-  }
-
-  if (!requireNamespace("patRoon", quietly = TRUE)) {
-    warning("patRoon package not found! Install it for finding features.")
-    return(FALSE)
-  }
-
-  comp_split <- comp$group
-  comp$group <- NULL
-  comp$rt <- NULL
-  comp$polarity <- NULL
-  comp$mass <- NULL
-  comp <- split(comp, comp_split)
-
-  scoreRanges <- lapply(comp, function(z) {
-    scores <- lapply(z, function(k) {
-      if (is.numeric(k)) {
-        return(c(min(k), max(k)))
-      } else {
-        NULL
-      }
-    })
-
-    scores <- scores[!sapply(scores, is.null)]
-  })
-
-  pat_comp <- patRoon::compounds(
-    MS2QuantMeta = list(),
-    groupAnnotations = comp,
-    scoreTypes = names(scoreRanges[[1]]),
-    scoreRanges = scoreRanges,
-    algorithm = "metfrag"
-  )
-
-  pat_comp
-}
 
 # MARK: report
 #' @export
@@ -7235,250 +5363,44 @@ report.MassSpecResults_NonTargetAnalysis2 <- function(
   if (nrow(pk) == 0) {
     return("")
   }
-  has_quality <- any(vapply(
-    pk[["quality"]],
-    function(z) {
-      nrow(z) > 0
-    },
-    logical(1)
-  ))
-  has_annotation <- any(vapply(
-    pk[["annotation"]],
-    function(z) {
-      nrow(z) > 0
-    },
-    logical(1)
-  ))
 
+  # Create simple hover layout with core feature properties only
   hT <- paste(
     if ("var" %in% colnames(pk)) {
       paste("</br>", pk[["var"]])
     } else {
       ""
     },
-    "</br> feature: ",
-    pk[["feature"]],
-    if ("group" %in% colnames(pk)) {
-      paste("</br> group: ", pk[["group"]])
-    } else {
-      ""
-    },
-    "</br> analysis: ",
-    pk[["analysis"]],
-    "</br> replicate: ",
-    pk[["replicate"]],
-    "</br> mass: ",
-    round(pk[["mass"]], digits = 4),
-    "</br> <i>m/z</i>: ",
-    round(pk[["mz"]], digits = 4),
-    "</br> dppm: ",
-    round(((pk[["mzmax"]] - pk[["mzmin"]]) / pk[["mz"]]) * 1E6, digits = 0),
-    "</br> rt: ",
-    round(pk[["rt"]], digits = 0),
-    "</br> drt: ",
-    round(pk[["rtmax"]] - pk[["rtmin"]], digits = 0),
-    "</br> intensity: ",
-    round(pk[["intensity"]], digits = 0),
-    "</br> area: ",
-    round(pk[["area"]], digits = 0),
-    "</br> correction: ",
-    round(pk[["correction"]], digits = 2),
-    "</br> filtered: ",
-    pk[["filtered"]],
-    "</br> filter: ",
-    pk[["filter"]],
-    "</br> filled: ",
-    pk[["filled"]],
-    if (has_quality) {
-      paste(
-        "</br></br> Quality: ",
-        "</br>   noise: ",
-        vapply(
-          pk[["quality"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["noise"]], digits = 0)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   sn: ",
-        vapply(
-          pk[["quality"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["sn"]], digits = 1)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   gaufit: ",
-        vapply(
-          pk[["quality"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["gauss_f"]], digits = 4)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   A: ",
-        vapply(
-          pk[["quality"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["gauss_a"]], digits = 2)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   mu: ",
-        vapply(
-          pk[["quality"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["gauss_u"]], digits = 2)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   sigma: ",
-        vapply(
-          pk[["quality"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["gauss_s"]], digits = 2)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        )
-      )
-    } else {
-      ""
-    },
-    if (has_annotation) {
-      paste(
-        "</br></br> Annotation: ",
-        "</br>   component: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              z[["component_feature"]]
-            } else {
-              NA_character_
-            }
-          },
-          NA_character_
-        ),
-        "</br>   isotope: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              z[["iso_cat"]]
-            } else {
-              NA_character_
-            }
-          },
-          NA_character_
-        ),
-        "</br>   elements: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            z[["iso_isotope"]]
-          },
-          NA_character_
-        ),
-        "</br>   number_carbons: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["iso_number_carbons"]], digits = 0)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   iso_mass_error: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["iso_mass_distance_error"]], digits = 5)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   iso_time_error: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["iso_time_error"]], digits = 1)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   adduct: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              z[["adduct_cat"]]
-            } else {
-              NA_character_
-            }
-          },
-          NA_character_
-        ),
-        "</br>   adduct_mass_error: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["adduct_mass_error"]], digits = 5)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        ),
-        "</br>   adduct_time_error: ",
-        vapply(
-          pk[["annotation"]],
-          function(z) {
-            if (nrow(z) > 0) {
-              round(z[["adduct_time_error"]], digits = 1)
-            } else {
-              NA_real_
-            }
-          },
-          NA_real_
-        )
-      )
-    } else {
-      ""
-    }
+    "</br>feature: ", pk[["feature"]],
+    "</br>group: ", pk[["group"]],
+    "</br>component: ", pk[["component"]],
+    "</br>adduct: ", pk[["adduct"]],
+    "</br>analysis: ", pk[["analysis"]],
+    "</br>replicate: ", pk[["replicate"]],
+    "</br>polarity: ", pk[["polarity"]],
+    "</br>mass: ", round(pk[["mass"]], digits = 4),
+    "</br>mz: ", round(pk[["mz"]], digits = 4),
+    "</br>mzmin: ", round(pk[["mzmin"]], digits = 4),
+    "</br>mzmax: ", round(pk[["mzmax"]], digits = 4),
+    "</br>ppm: ", round(pk[["ppm"]], digits = 1),
+    "</br>fwhm_mz: ", round(pk[["fwhm_mz"]], digits = 4),
+    "</br>rt: ", round(pk[["rt"]], digits = 2),
+    "</br>rtmin: ", round(pk[["rtmin"]], digits = 2),
+    "</br>rtmax: ", round(pk[["rtmax"]], digits = 2),
+    "</br>width: ", round(pk[["width"]], digits = 2),
+    "</br>fwhm_rt: ", round(pk[["fwhm_rt"]], digits = 2),
+    "</br>intensity: ", format(round(pk[["intensity"]], digits = 0), scientific = FALSE, big.mark = ","),
+    "</br>area: ", format(round(pk[["area"]], digits = 0), scientific = FALSE, big.mark = ","),
+    "</br>noise: ", format(round(pk[["noise"]], digits = 0), scientific = FALSE, big.mark = ","),
+    "</br>sn: ", round(pk[["sn"]], digits = 1),
+    "</br>correction: ", round(pk[["correction"]], digits = 3),
+    "</br>gaussian_A: ", format(round(pk[["gaussian_A"]], digits = 0), scientific = FALSE, big.mark = ","),
+    "</br>gaussian_mu: ", round(pk[["gaussian_mu"]], digits = 2),
+    "</br>gaussian_sigma: ", round(pk[["gaussian_sigma"]], digits = 2),
+    "</br>gaussian_r2: ", round(pk[["gaussian_r2"]], digits = 3),
+    "</br>filtered: ", pk[["filtered"]],
+    "</br>filter: ", pk[["filter"]],
+    "</br>filled: ", pk[["filled"]]
   )
 
   hT

@@ -1,4 +1,5 @@
 #include "sf_utility_functions.h"
+#include "NTS2_utils.h"
 #include <algorithm>
 #include <numeric>
 #include <cmath>
@@ -6,6 +7,7 @@
 #include <unordered_map>
 #include <set>
 #include <functional>
+#include <iomanip>
 
 // MARK: BASIC UTILITY FUNCTIONS
 
@@ -228,7 +230,11 @@ SF_UTILITY::AdaptiveNoiseParams::AdaptiveNoiseParams(const VectorStats &stats, i
   {
     threshold_multiplier = 1.0f;
   }
-  quantile = std::clamp(quantile, 0.01f, 0.30f);
+  
+  // Dynamic upper limit based on base_quantile to allow aggressive denoising when requested
+  float max_quantile = std::max(0.30f, base_quantile * 1.2f); // Allow up to 20% higher than base_quantile
+  quantile = std::clamp(quantile, 0.01f, max_quantile);
+  
   // Adjust bins based on data sparsity
   float data_sparsity = static_cast<float>(data_size) / bins;
   if (data_sparsity < 5.0f)
@@ -241,7 +247,7 @@ SF_UTILITY::AdaptiveNoiseParams::AdaptiveNoiseParams(const VectorStats &stats, i
   }
 }
 
-// MARK: CORE UTILITY FUNCTION IMPLEMENTATIONS
+// MARK: CORE UTILITIES
 
 std::vector<size_t> SF_UTILITY::get_sort_indices_float(const std::vector<float> &data)
 {
@@ -387,7 +393,7 @@ std::vector<int> SF_UTILITY::cluster_by_threshold_float(const std::vector<float>
   return clusters;
 }
 
-// MARK: SPECTRAL FUNCTION IMPLEMENTATIONS
+// MARK: SPECTRAL FUNCTIONS
 
 std::vector<int> SF_UTILITY::cluster_by_mz(const std::vector<float> &mz_values,
                                            float slope, float intercept)
@@ -555,7 +561,6 @@ void SF_UTILITY::filter_and_cluster(const std::vector<float> &raw_mz,
                                     std::vector<float> &final_intensity,
                                     std::vector<float> &final_noise)
 {
-  const size_t n = raw_mz.size();
   auto valid_indices = filter_above_threshold(raw_intensity, raw_noise);
   if (valid_indices.empty())
     return;
@@ -615,7 +620,8 @@ void SF_UTILITY::denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, cons
                                  const float &slope, const float &intercept,
                                  std::vector<float> &spec_rt, std::vector<float> &spec_mz,
                                  std::vector<float> &spec_intensity, std::vector<float> &spec_noise,
-                                 size_t &total_raw_points, size_t &total_clean_points, const bool &debug)
+                                 size_t &total_raw_points, size_t &total_clean_points, const bool &debug,
+                                 const float &base_quantile)
 {
   std::vector<std::vector<std::vector<float>>> single_spectrum = ana.get_spectra({spectrum_idx});
   std::vector<float> &raw_mz = single_spectrum[0][0];
@@ -627,18 +633,38 @@ void SF_UTILITY::denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, cons
 
   total_raw_points += raw_n_traces;
 
-  VectorStats stats(raw_intensity);
-  AdaptiveNoiseParams noise_params(stats, raw_n_traces);
+  // Fast removal of zeros from intensity data for unbiased noise evaluation
+  std::vector<float> non_zero_intensities;
+  non_zero_intensities.reserve(raw_n_traces); // Reserve space to avoid reallocations
+  
+  for (const float intensity : raw_intensity) {
+    if (intensity > 0.0f) {
+      non_zero_intensities.push_back(intensity);
+    }
+  }
+
+  // Use non-zero intensities for noise parameter estimation
+  VectorStats stats(non_zero_intensities.empty() ? raw_intensity : non_zero_intensities);
+  AdaptiveNoiseParams noise_params(stats, raw_n_traces, base_quantile);
+
+  auto raw_noise = SF_UTILITY::calculate_noise_levels(raw_intensity, noise_params, noiseThreshold);
 
   if (debug)
   {
-    Rcpp::Rcout << "DEBUG Auto noise estimation: bins=" << noise_params.bins
-                << ", quantile=" << noise_params.quantile
+    // Calculate noise level statistics for debug output
+    float noise_mean = SF_UTILITY::mean(raw_noise);
+    float noise_stddev = SF_UTILITY::standard_deviation(raw_noise, noise_mean);
+    int zeros_removed = raw_n_traces - static_cast<int>(non_zero_intensities.size());
+    float max_quantile = std::max(0.30f, base_quantile * 1.2f);
+    
+    Rcpp::Rcout << "DEBUG Auto noise estimation: base_quantile=" << base_quantile
+                << " -> adaptive_quantile=" << noise_params.quantile << "/" << max_quantile
+                << ", bins=" << noise_params.bins
                 << " (CV=" << stats.coefficient_variation << ", SNR=" << stats.signal_noise_ratio
-                << ", n=" << raw_n_traces << ")" << std::endl;
+                << ", n=" << raw_n_traces << ", zeros_removed=" << zeros_removed << ")" << std::endl;
+    Rcpp::Rcout << "      Noise levels: mean=" << std::fixed << std::setprecision(2) << noise_mean 
+                << ", stddev=" << noise_stddev << std::endl;
   }
-
-  auto raw_noise = SF_UTILITY::calculate_noise_levels(raw_intensity, noise_params, noiseThreshold);
 
   std::vector<float> final_mz, final_intensity, final_noise;
   filter_and_cluster(raw_mz, raw_intensity, raw_noise,
@@ -657,7 +683,7 @@ void SF_UTILITY::denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, cons
   }
 }
 
-// MARK: PEAK DETECTION AND ANALYSIS IMPLEMENTATIONS
+// MARK: PEAK DETECTION
 
 std::vector<float> SF_UTILITY::calculate_baseline(const std::vector<float> &intensity, int window_size)
 {
@@ -1048,4 +1074,322 @@ float SF_UTILITY::calculate_gaussian_rsquared(const std::vector<float> &x, const
     return 0.0f;
 
   return std::max(0.0f, std::min(1.0f, 1.0f - (ss_residual / ss_total)));
+}
+
+// MARK: POLARITY-SPECIFIC PROCESSING FUNCTIONS
+
+std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
+    const std::vector<float> &clust_rt,
+    const std::vector<float> &clust_mz, 
+    const std::vector<float> &clust_intensity,
+    const std::vector<float> &clust_noise,
+    const std::vector<int> &clust_cluster,
+    int number_clusters,
+    int polarity_sign,
+    const std::string &adduct_name,
+    float mass_correction,
+    int minTraces,
+    float minSNR,
+    float baselineWindow,
+    float maxWidth,
+    const std::string &analysis_name,
+    bool debug,
+    int debug_cluster)
+{
+  
+  std::map<int, std::vector<int>> cluster_indices;
+  for (size_t i = 0; i < clust_cluster.size(); ++i)
+  {
+    cluster_indices[clust_cluster[i]].push_back(static_cast<int>(i));
+  }
+
+  std::vector<NTS2::FEATURE> polarity_features;
+
+  for (const auto& [cluster_id, indices] : cluster_indices)
+  {
+    if (indices.size() < static_cast<size_t>(minTraces))
+      continue;
+
+    if (debug && cluster_id == debug_cluster)
+    {
+      Rcpp::Rcout << "DEBUG Processing cluster " << cluster_id << " with " << indices.size() << " traces (polarity: " << polarity_sign << ")" << std::endl;
+    }
+
+    std::vector<float> cluster_rt, cluster_mz, cluster_intensity, cluster_noise;
+    cluster_rt.reserve(indices.size());
+    cluster_mz.reserve(indices.size());
+    cluster_intensity.reserve(indices.size());
+    cluster_noise.reserve(indices.size());
+    for (int idx : indices)
+    {
+      cluster_rt.push_back(clust_rt[idx]);
+      cluster_mz.push_back(clust_mz[idx]);
+      cluster_intensity.push_back(clust_intensity[idx]);
+      cluster_noise.push_back(clust_noise[idx]);
+    }
+
+    const int n = cluster_rt.size();
+    if (n < minTraces) continue;
+
+    std::vector<float> rt_diffs;
+    rt_diffs.reserve(n - 1);
+    for (int i = 1; i < n; ++i)
+    {
+      rt_diffs.push_back(cluster_rt[i] - cluster_rt[i-1]);
+    }
+    std::sort(rt_diffs.begin(), rt_diffs.end());
+    float cycle_time = rt_diffs[rt_diffs.size() / 2]; // median
+
+    int baseline_window_size = std::max(minTraces, static_cast<int>(std::floor(baselineWindow / cycle_time))) / 2;
+    int derivative_window_size = std::max(minTraces, static_cast<int>(std::floor(4.0f / cycle_time)));
+
+    auto baseline = calculate_baseline(cluster_intensity, baseline_window_size);
+    auto smoothed_intensity = smooth_intensity(cluster_intensity, 3);
+    std::vector<float> first_derivative, second_derivative;
+    calculate_derivatives(smoothed_intensity, first_derivative, second_derivative);
+    auto candidates = find_peak_candidates(first_derivative);
+    auto valid_peaks = validate_peak_candidates(candidates, first_derivative, second_derivative,
+                                                            smoothed_intensity, derivative_window_size, minTraces);
+
+    std::vector<std::pair<int, std::pair<int, int>>> peak_boundaries; // {peak_idx, {left_idx, right_idx}}
+
+    for (int peak_idx : valid_peaks)
+    {
+      if (peak_idx < minTraces / 2 || peak_idx >= n - minTraces / 2)
+        continue;
+
+      auto [left_idx, right_idx] = calculate_peak_boundaries(peak_idx, cluster_rt, smoothed_intensity,
+                                                                         baseline, maxWidth / 2.0f, minTraces);
+      if (left_idx < right_idx)
+      {
+        peak_boundaries.emplace_back(peak_idx, std::make_pair(left_idx, right_idx));
+      }
+    }
+
+    // Check for overlaps using RT boundaries and merge
+    bool merged_any = true;
+    while (merged_any && peak_boundaries.size() > 1)
+    {
+      merged_any = false;
+
+      for (size_t i = 0; i < peak_boundaries.size(); ++i)
+      {
+        for (size_t j = i + 1; j < peak_boundaries.size(); ++j)
+        {
+          auto& [peak_i, bounds_i] = peak_boundaries[i];
+          auto& [peak_j, bounds_j] = peak_boundaries[j];
+          auto& [left_i, right_i] = bounds_i;
+          auto& [left_j, right_j] = bounds_j;
+
+          // Check if RT ranges overlap using actual peak boundaries
+          float rt_min_i = cluster_rt[left_i];
+          float rt_max_i = cluster_rt[right_i];
+          float rt_min_j = cluster_rt[left_j];
+          float rt_max_j = cluster_rt[right_j];
+
+          bool rt_overlaps = !(rt_max_i < rt_min_j || rt_max_j < rt_min_i);
+
+          if (rt_overlaps)
+          {
+            if (debug && cluster_id == debug_cluster)
+            {
+              Rcpp::Rcout << "DEBUG Merging overlapping peaks: RT1=" << cluster_rt[peak_i]
+                         << " (range: " << rt_min_i << "-" << rt_max_i << "), RT2=" << cluster_rt[peak_j]
+                         << " (range: " << rt_min_j << "-" << rt_max_j << ")" << std::endl;
+            }
+
+            // Choose peak with higher intensity
+            bool keep_i = cluster_intensity[peak_i] > cluster_intensity[peak_j];
+            size_t keep_idx = keep_i ? i : j;
+            size_t remove_idx = keep_i ? j : i;
+
+            // Merge edge boundaries
+            auto& [keep_peak, keep_bounds] = peak_boundaries[keep_idx];
+            auto& [remove_peak, remove_bounds] = peak_boundaries[remove_idx];
+            auto& [keep_left, keep_right] = keep_bounds;
+            auto& [remove_left, remove_right] = remove_bounds;
+
+            keep_left = std::min(keep_left, remove_left);
+            keep_right = std::max(keep_right, remove_right);
+
+            // Recalculate boundaries with baseline and 1% intensity criteria
+            float peak_intensity_1pct = cluster_intensity[keep_peak] * 0.01f;
+
+            // Recalculate left boundary
+            for (int k = keep_peak; k >= 0; k--) {
+              if (k < keep_left) break;
+              if (cluster_intensity[k] <= baseline[k] || cluster_intensity[k] <= peak_intensity_1pct) {
+                keep_left = k + 1;
+                break;
+              }
+            }
+
+            // Recalculate right boundary
+            for (int k = keep_peak; k < static_cast<int>(cluster_intensity.size()); k++) {
+              if (k > keep_right) break;
+              if (cluster_intensity[k] <= baseline[k] || cluster_intensity[k] <= peak_intensity_1pct) {
+                keep_right = k - 1;
+                break;
+              }
+            }
+
+            // Ensure boundaries are valid
+            keep_left = std::max(0, keep_left);
+            keep_right = std::min(static_cast<int>(cluster_intensity.size()) - 1, keep_right);
+
+            // Remove the merged peak
+            peak_boundaries.erase(peak_boundaries.begin() + remove_idx);
+            merged_any = true;
+            break;
+          }
+        }
+        if (merged_any) break;
+      }
+    }
+
+    // Step 2: Calculate final properties for non-overlapping peaks
+    for (const auto& [peak_idx, bounds] : peak_boundaries)
+    {
+      const auto& [left_idx, right_idx] = bounds;
+
+      // Extract peak region data
+      std::vector<float> peak_rt, peak_mz, peak_intensity;
+      std::vector<float> peak_baseline, peak_smoothed;
+
+      for (int i = left_idx; i <= right_idx; ++i)
+      {
+        peak_rt.push_back(cluster_rt[i]);
+        peak_mz.push_back(cluster_mz[i]);
+        peak_intensity.push_back(cluster_intensity[i]);
+        peak_baseline.push_back(baseline[i]);
+        peak_smoothed.push_back(smoothed_intensity[i]);
+      }
+
+      if (peak_intensity.empty()) continue;
+
+      // Find maximum intensity and its position
+      auto max_it = std::max_element(peak_intensity.begin(), peak_intensity.end());
+      float peak_max_intensity = *max_it;
+      int max_position = std::distance(peak_intensity.begin(), max_it);
+
+      float rt_at_max = peak_rt[max_position];
+      float mz_at_max = peak_mz[max_position];
+
+      // Calculate noise and S/N using both edges to ensure Gaussian shape
+      std::vector<float> left_edge_intensities, right_edge_intensities;
+      float noise = 0.0f;
+      float sn = 0.0f;
+
+      if (peak_intensity.size() >= 4)
+      {
+        // Get left edge intensities (first two points)
+        left_edge_intensities = {peak_intensity[0], peak_intensity[1]};
+        // Get right edge intensities (last two points)
+        right_edge_intensities = {peak_intensity[peak_intensity.size()-2], peak_intensity[peak_intensity.size()-1]};
+
+        float left_min = *std::min_element(left_edge_intensities.begin(), left_edge_intensities.end());
+        float right_min = *std::min_element(right_edge_intensities.begin(), right_edge_intensities.end());
+
+        // Use the maximum of the two edge minimums to ensure both sides are low
+        noise = std::max(left_min, right_min);
+        sn = (noise > 0) ? peak_max_intensity / noise : 0.0f;
+      }
+      else
+      {
+        // For small peaks, use minimum of all points
+        noise = *std::min_element(peak_intensity.begin(), peak_intensity.end());
+        sn = (noise > 0) ? peak_max_intensity / noise : 0.0f;
+      }
+
+      if (sn < minSNR) continue;
+
+      // Create FEATURE structure
+      NTS2::FEATURE feature;
+
+      // Basic identification with polarity-specific naming
+      std::string polarity_suffix = (polarity_sign > 0) ? "POS" : "NEG";
+      feature.analysis = analysis_name;
+      feature.feature = "CL" + std::to_string(cluster_id) + "_MZ" + std::to_string(static_cast<int>(std::round(mz_at_max))) +
+                       "_RT" + std::to_string(static_cast<int>(std::round(rt_at_max))) + "_" + polarity_suffix;
+      feature.group = "";
+      feature.component = "";
+      feature.adduct = adduct_name; // Set polarity-specific adduct
+
+      // Peak characteristics
+      feature.rt = rt_at_max;
+      feature.mz = mean(peak_mz);
+
+      // Calculate neutral mass using polarity-specific correction
+      feature.mass = feature.mz + mass_correction; // mass_correction is negative for positive mode, positive for negative mode
+
+      feature.intensity = peak_max_intensity;
+      feature.noise = noise;
+      feature.sn = sn;
+      feature.polarity = polarity_sign; // Set polarity correctly
+
+      // Calculate boundaries and dimensions
+      feature.rtmin = cluster_rt[left_idx];
+      feature.rtmax = cluster_rt[right_idx];
+      feature.width = feature.rtmax - feature.rtmin;
+
+      // Calculate m/z range and ppm spread
+      feature.mzmin = peak_mz[0];
+      feature.mzmax = peak_mz[0];
+      for (size_t i = 0; i < peak_mz.size(); ++i)
+      {
+        feature.mzmin = std::min(feature.mzmin, peak_mz[i]);
+        feature.mzmax = std::max(feature.mzmax, peak_mz[i]);
+      }
+      feature.ppm = (feature.mzmax - feature.mzmin) / feature.mz * 1e6f;
+
+      // Calculate FWHM values
+      auto [fwhm_rt_val, fwhm_mz_val] = calculate_fwhm_combined(peak_rt, peak_mz, peak_intensity);
+      feature.fwhm_rt = fwhm_rt_val;
+      feature.fwhm_mz = fwhm_mz_val;
+
+      // Calculate area
+      feature.area = calculate_peak_area(peak_rt, peak_intensity);
+
+      // Gaussian fitting
+      feature.gaussian_A = peak_max_intensity;
+      feature.gaussian_mu = rt_at_max;
+      feature.gaussian_sigma = feature.fwhm_rt / 2.355f; // Convert FWHM to sigma
+      if (feature.gaussian_sigma <= 0) feature.gaussian_sigma = feature.width / 4.0f;
+
+      fit_gaussian(peak_rt, peak_smoothed, feature.gaussian_A, feature.gaussian_mu, feature.gaussian_sigma);
+      feature.gaussian_r2 = calculate_gaussian_rsquared(peak_rt, peak_smoothed,
+                                                                   feature.gaussian_A, feature.gaussian_mu, feature.gaussian_sigma);
+
+      
+      feature.filtered = false;
+      feature.filter = "";
+      feature.filled = false;
+      feature.correction = 1.0f;
+      
+      feature.eic_size = static_cast<int>(peak_rt.size());
+      std::string rt_encoded = sc::encode_little_endian_from_float(peak_rt, 4);
+      std::string mz_encoded = sc::encode_little_endian_from_float(peak_mz, 4);
+      std::string intensity_encoded = sc::encode_little_endian_from_float(peak_intensity, 4);
+      std::string baseline_encoded = sc::encode_little_endian_from_float(peak_baseline, 4);
+      std::string smoothed_encoded = sc::encode_little_endian_from_float(peak_smoothed, 4);
+
+      feature.eic_rt = sc::encode_base64(rt_encoded);
+      feature.eic_mz = sc::encode_base64(mz_encoded);
+      feature.eic_intensity = sc::encode_base64(intensity_encoded);
+      feature.eic_baseline = sc::encode_base64(baseline_encoded);
+      feature.eic_smoothed = sc::encode_base64(smoothed_encoded);
+
+      // Set MS1 and MS2 as empty for now
+      feature.ms1_size = 0;
+      feature.ms1_mz = "";
+      feature.ms1_intensity = "";
+      feature.ms2_size = 0;
+      feature.ms2_mz = "";
+      feature.ms2_intensity = "";
+
+      polarity_features.push_back(feature);
+    }
+  }
+
+  return polarity_features;
 }

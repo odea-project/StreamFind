@@ -897,6 +897,8 @@ run.MassSpecMethod_FindFeatures_qalgorithms <- function(x, engine = NULL) {
 #' @param minTraces numeric(1) minimum number of traces to consider a mass cluster and chromatographic peak.
 #' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
 #' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
+#' @param base_quantile numeric(1) quantile to estimate the baseline in a mass cluster.
+#' 
 #' @export
 #'
 MassSpecMethod_FindFeatures_native <- function(
@@ -907,7 +909,8 @@ MassSpecMethod_FindFeatures_native <- function(
   mzrThreshold = 0.005,
   minTraces = 3,
   baselineWindow = 200,
-  maxWidth = 100
+  maxWidth = 100,
+  base_quantile = 0.1
 ) {
   x <- ProcessingStep(
     type = "MassSpec",
@@ -924,7 +927,8 @@ MassSpecMethod_FindFeatures_native <- function(
       mzrThreshold = as.numeric(mzrThreshold),
       minTraces = as.numeric(minTraces),
       baselineWindow = as.numeric(baselineWindow),
-      maxWidth = as.numeric(maxWidth)
+      maxWidth = as.numeric(maxWidth),
+      base_quantile = as.numeric(base_quantile)
     ),
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),
@@ -955,6 +959,7 @@ validate_object.MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_numeric(x$parameters$minTraces, len = 1, lower = 1)
   checkmate::assert_numeric(x$parameters$baselineWindow, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$maxWidth, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$base_quantile, len = 1, lower = 0, upper = 1)
   NULL
 }
 
@@ -1003,7 +1008,8 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     minSNR = parameters$minSNR,
     minTraces = parameters$minTraces,
     baselineWindow = parameters$baselineWindow,
-    maxWidth = parameters$maxWidth
+    maxWidth = parameters$maxWidth,
+    base_quantile = parameters$base_quantile
   )
 
   if (is.null(fts) || length(fts) == 0) {

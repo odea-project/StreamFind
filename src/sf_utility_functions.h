@@ -5,6 +5,11 @@
 #include "StreamCraft_lib.h"
 #include <vector>
 
+// Forward declaration to avoid circular dependency
+namespace NTS2 {
+  struct FEATURE;
+}
+
 namespace SF_UTILITY
 {
   // MARK: DATA STRUCTURES
@@ -181,7 +186,8 @@ namespace SF_UTILITY
                        const float &slope, const float &intercept,
                        std::vector<float> &spec_rt, std::vector<float> &spec_mz,
                        std::vector<float> &spec_intensity, std::vector<float> &spec_noise,
-                       size_t &total_raw_points, size_t &total_clean_points, const bool &debug);
+                       size_t &total_raw_points, size_t &total_clean_points, const bool &debug,
+                       const float &base_quantile = 0.10f);
 
   // MARK: PEAK DETECTION AND ANALYSIS FUNCTIONS
 
@@ -242,6 +248,27 @@ namespace SF_UTILITY
 
   float calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y,
                                    float A, float mu, float sigma);
+
+  // MARK: POLARITY-SPECIFIC PROCESSING FUNCTIONS
+  
+  // Process clusters for a specific polarity and return features
+  std::vector<NTS2::FEATURE> process_polarity_clusters(
+      const std::vector<float> &clust_rt,
+      const std::vector<float> &clust_mz, 
+      const std::vector<float> &clust_intensity,
+      const std::vector<float> &clust_noise,
+      const std::vector<int> &clust_cluster,
+      int number_clusters,
+      int polarity_sign,
+      const std::string &adduct_name,
+      float mass_correction,
+      int minTraces,
+      float minSNR,
+      float baselineWindow,
+      float maxWidth,
+      const std::string &analysis_name,
+      bool debug,
+      int debug_cluster);
 
 }; // namespace SF_UTILITY
 

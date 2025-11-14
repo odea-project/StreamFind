@@ -470,7 +470,9 @@ namespace NTS2
         const float &minSNR,
         const int &minTraces,
         const float &baselineWindow,
-        const float &maxWidth);
+        const float &maxWidth,
+        const float &base_quantile);
+
   };
 }; // namespace NTS2
 

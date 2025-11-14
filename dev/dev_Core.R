@@ -90,12 +90,13 @@ engine <- MassSpecEngine$new(
 
 run(MassSpecMethod_FindFeatures_native(
     rtWindows = data.frame(rtmin = 300, rtmax = 3000),
-    resolution_profile = c(45000, 60000, 80000),
-    noiseThreshold = 300,
+    resolution_profile = c(15000, 25000, 35000),
+    noiseThreshold = 250,
     minSNR = 3,
     minTraces = 3,
     baselineWindow = 200,
-    maxWidth = 100
+    maxWidth = 100,
+    base_quantile = 0.98
   ), engine
 )
 
@@ -108,18 +109,18 @@ get_features_count(
   engine$Analyses$results$MassSpecResults_NonTargetAnalysis2
 )
 
-get_features(
+t(get_features(
   engine$Analyses$results$MassSpecResults_NonTargetAnalysis2,
   mass = dbis[8, ],
-  ppm = 50,
+  ppm = 10,
   sec = 120
-)[, 1:30]
+)[, 1:30])
 
 plot_features(
   engine$Analyses$results$MassSpecResults_NonTargetAnalysis2,
-  mass = dbis[8, ],
-  ppm = 60,
-  sec = 120,
+  mass = dbis,
+  ppm = 20,
+  sec = 30,
   legendNames = FALSE
 )
 

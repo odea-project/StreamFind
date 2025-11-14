@@ -24,29 +24,18 @@ for (i in seq_along(files)) {
 
 dummy <- MassSpecEngine$new(analyses = files) # dummy to cache data files
 
-# Define comparable parameters for each algorithm
-# Base parameters similar to the native method you provided
-base_params <- list(
-  rtWindows = data.frame(rtmin = 300, rtmax = 3000),
-  resolution_profile = c(30000, 30000, 35000),
-  noiseThreshold = 250,
-  minSNR = 3,
-  minTraces = 3,
-  baselineWindow = 200,
-  maxWidth = 100
-)
-
 # Create methods with comparable parameters
 methods <- list(
   # Native StreamFind method
   native = MassSpecMethod_FindFeatures_native(
     rtWindows = data.frame(rtmin = 300, rtmax = 3000),
-    resolution_profile = c(30000, 30000, 35000),
+    resolution_profile = c(15000, 25000, 35000),
     noiseThreshold = 250,
     minSNR = 3,
     minTraces = 3,
     baselineWindow = 200,
-    maxWidth = 100
+    maxWidth = 100,
+    base_quantile = 0.2
   ),
   
   # XCMS3 CentWave method with comparable parameters
@@ -138,13 +127,24 @@ run_method <- function(method_name, method_obj, files) {
     nta_results <- engine$Results[[1]]
     
     # Count features using the get_features_count function
-    if (!is.null(nta_results)) {
-      # Get feature counts (non-filtered features)
-      feature_counts <- get_features_count(nta_results, filtered = FALSE)
-      
-      # Extract features per file and calculate total
-      features_per_file <- feature_counts$features
-      total_features <- sum(features_per_file)
+    if (!is.null(nta_results) && length(engine$Results) > 0) {
+      tryCatch({
+        # Get feature counts (non-filtered features)
+        feature_counts <- get_features_count(nta_results, filtered = FALSE)
+        
+        # Extract features per file and calculate total
+        if (!is.null(feature_counts) && !is.null(feature_counts$features)) {
+          features_per_file <- feature_counts$features
+          total_features <- sum(features_per_file)
+        } else {
+          features_per_file <- rep(0, length(files))
+          total_features <- 0
+        }
+      }, error = function(e) {
+        cat("  Warning: Could not count features properly:", e$message, "\n")
+        features_per_file <<- rep(0, length(files))
+        total_features <<- 0
+      })
     } else {
       # No results found
       features_per_file <- rep(0, length(files))
@@ -256,13 +256,13 @@ if (nrow(successful_results) > 0) {
   
   # Calculate and display performance metrics
   cat("\nPERFORMANCE METRICS:\n")
-  if (nrow(successful_results) > 0) {
+  if (nrow(successful_results) > 0 && all(c("execution_time", "total_features") %in% names(successful_results))) {
     fastest <- successful_results[which.min(successful_results$execution_time), ]
     most_features <- successful_results[which.max(successful_results$total_features), ]
     cat("Fastest algorithm:", fastest$method, "(", round(fastest$execution_time, 2), "seconds )\n")
     cat("Most features found:", most_features$method, "(", most_features$total_features, "features )\n")
     # Calculate features per second metric
-    successful_results$features_per_second <- successful_results$total_features / successful_results$execution_time
+    successful_results$features_per_second <- successful_results$total_features / pmax(successful_results$execution_time, 0.001)
     most_efficient <- successful_results[which.max(successful_results$features_per_second), ]
     cat("Most efficient (features/second):", most_efficient$method, 
         "(", round(most_efficient$features_per_second, 1), "features/sec )\n")
