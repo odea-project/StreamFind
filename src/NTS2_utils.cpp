@@ -10,12 +10,13 @@ void NTS2::NTS_DATA::find_features(
     const int &minTraces,
     const float &baselineWindow,
     const float &maxWidth,
-    const float &base_quantile)
+    const float &base_quantile,
+    const float &debug_mz)
 {
 
   if (resolution_profile.size() != 3)
   {
-    Rcpp::Rcout << "Error: resolution_profile must have exactly 3 elements correspondent to 100, 400, and 1000 Da correspondent resolutions!" << std::endl;
+    Rcpp::Rcout << "Error: resolution_profile must have exactly 3 elements!" << std::endl;
     return;
   }
   if (rtWindowsMin.size() != rtWindowsMax.size())
@@ -24,19 +25,20 @@ void NTS2::NTS_DATA::find_features(
     return;
   }
 
-  const auto [slope, intercept] = SF_UTILITY::calculate_mass_resolution_model_param(resolution_profile);
+  // Calculate linear model parameters from resolution profile
+  const auto [slope, intercept] = SF_UTILITY::calculate_linear_model_params(resolution_profile);
+
   Rcpp::Rcout << std::endl;
   Rcpp::Rcout << "Linear resolution model threshold = " << slope << " * m/z + " << intercept << std::endl;
-  Rcpp::Rcout << "Reference thresholds: " << std::endl;
-  for (float test_mz : {100.0f, 400.0f, 1000.0f})
+  Rcpp::Rcout << "Reference thresholds (Da): " << std::endl;
+  for (float test_mz : {100.0f, 200.0f, 400.0f, 600.0f, 1000.0f})
   {
-    float mzThreshold = SF_UTILITY::calculate_mass_resolution_model_threshold(test_mz, slope, intercept);
-    Rcpp::Rcout << "  m/z " << test_mz << " -> threshold " << mzThreshold << std::endl;
+    float mzThreshold = SF_UTILITY::calculate_mz_threshold_linear(test_mz, slope, intercept);
+    Rcpp::Rcout << "  m/z " << std::fixed << std::setprecision(1) << test_mz 
+                << " -> threshold " << std::fixed << std::setprecision(6) << mzThreshold << " Da" << std::endl;
   }
 
-  // Debug cluster to track in detail
-  const int debug_cluster = 160;
-  bool debug = true;
+  bool debug = false;
 
   for (size_t a = 0; a < analyses.size(); ++a)
   {
@@ -78,7 +80,7 @@ void NTS2::NTS_DATA::find_features(
     std::vector<float> spec_pos_rt, spec_pos_mz, spec_pos_intensity, spec_pos_noise;
     std::vector<float> spec_neg_rt, spec_neg_mz, spec_neg_intensity, spec_neg_noise;
 
-    Rcpp::Rcout << "  1/5 Denoising " << idx_load.size() << " spectra (separating by polarity)" << std::endl;
+    Rcpp::Rcout << "  1/5 Denoising " << idx_load.size() << " spectra" << std::endl;
 
     size_t total_raw_points = 0;
     size_t total_clean_points = 0;
@@ -98,15 +100,14 @@ void NTS2::NTS_DATA::find_features(
           rt,
           noiseThreshold,
           minTraces,
-          slope,
-          intercept,
+          resolution_profile,
           spec_pos_rt,
           spec_pos_mz,
           spec_pos_intensity,
           spec_pos_noise,
           total_raw_points,
           total_clean_points,
-          debug && i == 10, // Show debug info for first spectrum only
+          false && i == 10, // Show debug info for first spectrum only
           base_quantile
         );
       } else if (polarity < 0) {
@@ -117,15 +118,14 @@ void NTS2::NTS_DATA::find_features(
           rt,
           noiseThreshold,
           minTraces,
-          slope,
-          intercept,
+          resolution_profile,
           spec_neg_rt,
           spec_neg_mz,
           spec_neg_intensity,
           spec_neg_noise,
           total_raw_points,
           total_clean_points,
-          debug && i == 10, // Show debug info for first spectrum only
+          false && i == 10, // Show debug info for first spectrum only
           base_quantile
         );
       }
@@ -147,47 +147,51 @@ void NTS2::NTS_DATA::find_features(
     // Process positive polarity
     if (spec_pos_rt.size() > 0) {
       Rcpp::Rcout << "  2a/5 Clustering " << spec_pos_rt.size() << " positive polarity traces by m/z" << std::endl;
-      
       std::vector<float> pos_clust_rt, pos_clust_mz, pos_clust_intensity, pos_clust_noise;
       std::vector<int> pos_clust_cluster;
       int pos_number_clusters = 0;
 
       SF_UTILITY::cluster_spectra_by_mz(
-          spec_pos_rt, spec_pos_mz, spec_pos_intensity, spec_pos_noise,
-          slope, intercept, minTraces, minSNR,
-          pos_clust_rt, pos_clust_mz, pos_clust_intensity,
-          pos_clust_noise, pos_clust_cluster, pos_number_clusters
+        spec_pos_rt, spec_pos_mz, spec_pos_intensity, spec_pos_noise,
+        resolution_profile, minTraces, minSNR,
+        pos_clust_rt, pos_clust_mz, pos_clust_intensity,
+        pos_clust_noise, pos_clust_cluster, pos_number_clusters
       );
 
       Rcpp::Rcout << "  3a/5 Detecting peaks in " << pos_number_clusters << " positive m/z clusters" << std::endl;
-      pos_features = SF_UTILITY::process_polarity_clusters(pos_clust_rt, pos_clust_mz, pos_clust_intensity, 
-                                               pos_clust_noise, pos_clust_cluster, pos_number_clusters,
-                                               +1, "[M+H]+", -1.007276f, // positive: subtract proton
-                                               minTraces, minSNR, baselineWindow, maxWidth, 
-                                               analyses[a], debug, debug_cluster);
+      pos_features = SF_UTILITY::process_polarity_clusters(
+        pos_clust_rt, pos_clust_mz, pos_clust_intensity, 
+        pos_clust_noise, pos_clust_cluster, pos_number_clusters,
+        +1, "[M+H]+", -1.007276f, // positive: subtract proton
+        minTraces, minSNR, baselineWindow, maxWidth, 
+        analyses[a],
+        debug_mz
+      );
     }
 
     // Process negative polarity  
     if (spec_neg_rt.size() > 0) {
       Rcpp::Rcout << "  2b/5 Clustering " << spec_neg_rt.size() << " negative polarity traces by m/z" << std::endl;
-      
       std::vector<float> neg_clust_rt, neg_clust_mz, neg_clust_intensity, neg_clust_noise;
       std::vector<int> neg_clust_cluster;
       int neg_number_clusters = 0;
 
       SF_UTILITY::cluster_spectra_by_mz(
-          spec_neg_rt, spec_neg_mz, spec_neg_intensity, spec_neg_noise,
-          slope, intercept, minTraces, minSNR,
-          neg_clust_rt, neg_clust_mz, neg_clust_intensity,
-          neg_clust_noise, neg_clust_cluster, neg_number_clusters
+        spec_neg_rt, spec_neg_mz, spec_neg_intensity, spec_neg_noise,
+        resolution_profile, minTraces, minSNR,
+        neg_clust_rt, neg_clust_mz, neg_clust_intensity,
+        neg_clust_noise, neg_clust_cluster, neg_number_clusters
       );
 
       Rcpp::Rcout << "  3b/5 Detecting peaks in " << neg_number_clusters << " negative m/z clusters" << std::endl;
-      neg_features = SF_UTILITY::process_polarity_clusters(neg_clust_rt, neg_clust_mz, neg_clust_intensity, 
-                                               neg_clust_noise, neg_clust_cluster, neg_number_clusters,
-                                               -1, "[M-H]-", 1.007276f, // negative: add proton  
-                                               minTraces, minSNR, baselineWindow, maxWidth, 
-                                               analyses[a], debug, debug_cluster);
+      neg_features = SF_UTILITY::process_polarity_clusters(
+        neg_clust_rt, neg_clust_mz, neg_clust_intensity, 
+        neg_clust_noise, neg_clust_cluster, neg_number_clusters,
+        -1, "[M-H]-", 1.007276f, // negative: add proton  
+        minTraces, minSNR, baselineWindow, maxWidth, 
+        analyses[a],
+        debug_mz
+      );
     }
 
     // Combine features from both polarities

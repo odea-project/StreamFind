@@ -81,12 +81,26 @@ namespace SF_UTILITY
 
   float gaussian_function(const float &A, const float &mu,
                           const float &sigma, const float &x);
+  
+  float gaussian_function_with_baseline(const float &A, const float &mu,
+                                        const float &sigma, const float &baseline,
+                                        const float &x);
+  
+  // Skew-Gaussian (Azzalini skew-normal) functions
+  float standard_normal_pdf(const float &z);
+  float standard_normal_cdf(const float &z);
+  float skew_gaussian_function(const float &A, const float &xi,
+                               const float &omega, const float &alpha,
+                               const float &t);
+  
+  // EMG (Exponentially Modified Gaussian) function for chromatographic tailing
+  float emg_function(const float &A, const float &mu, const float &sigma,
+                    const float &lambda, const float &baseline, const float &t);
 
   sc::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd);
 
-  std::pair<float, float> calculate_mass_resolution_model_param(const std::vector<int> &resolution_profile);
-  float calculate_mass_resolution_model_threshold(float mz, float slope, float intercept);
   float calculate_mz_threshold_linear(float mz, float slope, float intercept);
+  std::pair<float, float> calculate_linear_model_params(const std::vector<int>& resolution_profile);
 
   // Sorting indices for float data
   std::vector<size_t> get_sort_indices_float(const std::vector<float> &data);
@@ -138,7 +152,7 @@ namespace SF_UTILITY
 
   // Fast m/z-based clustering using optimized algorithms
   std::vector<int> cluster_by_mz(const std::vector<float> &mz_values,
-                                 float slope, float intercept);
+                                 const std::vector<int> &resolution_profile);
 
   // Cluster validation and filtering for spectral data
   std::vector<size_t> filter_valid_clusters(const std::vector<SpectraPoint> &data,
@@ -155,7 +169,7 @@ namespace SF_UTILITY
                              const std::vector<float> &spec_mz,
                              const std::vector<float> &spec_intensity,
                              const std::vector<float> &spec_noise,
-                             float slope, float intercept,
+                             const std::vector<int> &resolution_profile,
                              int minTraces, float minSNR,
                              std::vector<float> &final_rt,
                              std::vector<float> &final_mz,
@@ -175,7 +189,7 @@ namespace SF_UTILITY
   void filter_and_cluster(const std::vector<float> &raw_mz,
                           const std::vector<float> &raw_intensity,
                           const std::vector<float> &raw_noise,
-                          float slope, float intercept,
+                          const std::vector<int> &resolution_profile,
                           std::vector<float> &final_mz,
                           std::vector<float> &final_intensity,
                           std::vector<float> &final_noise);
@@ -183,7 +197,7 @@ namespace SF_UTILITY
   // Optimized spectral denoising function
   void denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, const float &rt,
                        const float &noiseThreshold, const int &minTraces,
-                       const float &slope, const float &intercept,
+                       const std::vector<int> &resolution_profile,
                        std::vector<float> &spec_rt, std::vector<float> &spec_mz,
                        std::vector<float> &spec_intensity, std::vector<float> &spec_noise,
                        size_t &total_raw_points, size_t &total_clean_points, const bool &debug,
@@ -202,22 +216,28 @@ namespace SF_UTILITY
                             std::vector<float> &first_derivative,
                             std::vector<float> &second_derivative);
 
-  // Find peak candidates based on derivative analysis
-  std::vector<int> find_peak_candidates(const std::vector<float> &first_derivative);
+  // Find peak candidates based on derivative zero-crossings (positive to negative)
+  std::vector<int> find_peak_candidates(const std::vector<float> &first_derivative,
+                                       const std::vector<float> &raw_intensity = std::vector<float>(),
+                                       int refine_window = 0);
 
   // Validate peak candidates using derivative criteria
   std::vector<int> validate_peak_candidates(const std::vector<int> &candidates,
                                            const std::vector<float> &first_derivative,
                                            const std::vector<float> &second_derivative,
                                            const std::vector<float> &smoothed_intensity,
-                                           int derivative_window_size, int min_traces);
+                                           int derivative_window_size, int min_traces,
+                                           bool debug = false,
+                                           const std::vector<float> &rt = std::vector<float>(),
+                                           const std::vector<float> &intensity = std::vector<float>());
 
   // Calculate peak boundaries
   std::pair<int, int> calculate_peak_boundaries(int peak_idx,
                                                const std::vector<float> &rt,
                                                const std::vector<float> &smoothed_intensity,
                                                const std::vector<float> &baseline,
-                                               float max_half_width, int min_traces);
+                                               float max_half_width, int min_traces,
+                                               bool debug = false, float debug_mz = 0.0f);
 
   // Calculate FWHM boundaries
   std::pair<int, int> calculate_fwhm_boundaries(int peak_idx,
@@ -235,19 +255,37 @@ namespace SF_UTILITY
   float calculate_fwhm_mz(const std::vector<float> &mz, const std::vector<float> &intensity);
 
   // Combined FWHM calculation for both RT and MZ dimensions
-  std::pair<float, float> calculate_fwhm_combined(const std::vector<float> &rt,
-                                                  const std::vector<float> &mz,
-                                                  const std::vector<float> &intensity);
+  // Returns: {fwhm_rt, fwhm_mz, mean_mz_in_fwhm}
+  std::tuple<float, float, float> calculate_fwhm_combined(const std::vector<float> &rt,
+                                                           const std::vector<float> &mz,
+                                                           const std::vector<float> &intensity);
+
+  // Simple FWHM calculation for RT dimension only
+  float calculate_fwhm_rt(const std::vector<float> &rt, const std::vector<float> &intensity);
 
   // Gaussian fitting functions
   float gaussian_cost_function(const std::vector<float> &x, const std::vector<float> &y,
                               float A, float mu, float sigma);
 
   void fit_gaussian(const std::vector<float> &x, const std::vector<float> &y,
-                   float &A, float &mu, float &sigma);
+                   float &A, float &mu, float &sigma, float &baseline);
 
   float calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y,
-                                   float A, float mu, float sigma);
+                                   float A, float mu, float sigma, float baseline);
+  
+  // Skew-Gaussian fitting functions
+  void fit_skew_gaussian(const std::vector<float> &t, const std::vector<float> &y,
+                        float &A, float &xi, float &omega, float &alpha);
+  
+  float calculate_skew_gaussian_rsquared(const std::vector<float> &t, const std::vector<float> &y,
+                                        float A, float xi, float omega, float alpha);
+  
+  // EMG fitting functions (Exponentially Modified Gaussian)
+  void fit_emg(const std::vector<float> &t, const std::vector<float> &y,
+              float &A, float &mu, float &sigma, float &lambda, float &baseline);
+  
+  float calculate_emg_rsquared(const std::vector<float> &t, const std::vector<float> &y,
+                              float A, float mu, float sigma, float lambda, float baseline);
 
   // MARK: POLARITY-SPECIFIC PROCESSING FUNCTIONS
   
@@ -267,8 +305,7 @@ namespace SF_UTILITY
       float baselineWindow,
       float maxWidth,
       const std::string &analysis_name,
-      bool debug,
-      int debug_cluster);
+      float debug_mz = 0.0f);
 
 }; // namespace SF_UTILITY
 

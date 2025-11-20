@@ -890,10 +890,9 @@ run.MassSpecMethod_FindFeatures_qalgorithms <- function(x, engine = NULL) {
 #' @title MassSpecMethod_FindFeatures_native class
 #' @description Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.
 #' @param rtWindows data.frame with rtmin and rtmax columns for retention time windows for data inclusion.
-#' @param noiseBins numeric(1) bin size to estimate the noise level in each scan (i.e., each rt value).
-#' @param noiseThreshold numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).
+#' @param resolution_profile integer(3) vector defining mass resolution at 100, 400, and 1000 Da for calculating m/z clustering thresholds via linear model.
 #' @param minSNR numeric(1) minimum signal-to-noise ratio for considering a trace and chromatographic peak.
-#' @param mzrThreshold numeric(1) mass threshold representing the mass resolution.
+#' @param noiseThreshold numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).
 #' @param minTraces numeric(1) minimum number of traces to consider a mass cluster and chromatographic peak.
 #' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
 #' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
@@ -903,14 +902,14 @@ run.MassSpecMethod_FindFeatures_qalgorithms <- function(x, engine = NULL) {
 #'
 MassSpecMethod_FindFeatures_native <- function(
   rtWindows = data.frame(rtmin = 300, rtmax = 3600),
-  resolution_profile = c(30000, 30000, 35000),
+  resolution_profile = c(35000L, 35000L, 35000L),
   noiseThreshold = 250,
   minSNR = 3,
-  mzrThreshold = 0.005,
   minTraces = 3,
   baselineWindow = 200,
   maxWidth = 100,
-  base_quantile = 0.1
+  base_quantile = 0.1,
+  debug_mz = 0
 ) {
   x <- ProcessingStep(
     type = "MassSpec",
@@ -921,14 +920,14 @@ MassSpecMethod_FindFeatures_native <- function(
     output_class = "MassSpecResults_NonTargetAnalysis",
     parameters = list(
       rtWindows = rtWindows,
-      resolution_profile = as.numeric(resolution_profile),
+      resolution_profile = as.integer(resolution_profile),
       noiseThreshold = as.numeric(noiseThreshold),
       minSNR = as.numeric(minSNR),
-      mzrThreshold = as.numeric(mzrThreshold),
       minTraces = as.numeric(minTraces),
       baselineWindow = as.numeric(baselineWindow),
       maxWidth = as.numeric(maxWidth),
-      base_quantile = as.numeric(base_quantile)
+      base_quantile = as.numeric(base_quantile),
+      debug_mz = as.numeric(debug_mz)
     ),
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),
@@ -953,7 +952,7 @@ validate_object.MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_data_frame(x$parameters$rtWindows, min.rows = 1)
   checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
-  checkmate::assert_numeric(x$parameters$resolution_profile, len = 3, lower = 0)
+  checkmate::assert_integer(x$parameters$resolution_profile, len = 3, lower = 1)
   checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minSNR, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minTraces, len = 1, lower = 1)
@@ -1009,7 +1008,8 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     minTraces = parameters$minTraces,
     baselineWindow = parameters$baselineWindow,
     maxWidth = parameters$maxWidth,
-    base_quantile = parameters$base_quantile
+    base_quantile = parameters$base_quantile,
+    debug_mz = parameters$debug_mz
   )
 
   if (is.null(fts) || length(fts) == 0) {

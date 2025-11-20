@@ -8,6 +8,43 @@
 #include <set>
 #include <functional>
 #include <iomanip>
+#include <fstream>
+
+// Debug log file stream (global for debugging)
+static std::ofstream debug_log;
+
+// Helper function to initialize debug log with dynamic filename
+static void init_debug_log(const std::string& filename, const std::string& header = "")
+{
+  if (!debug_log.is_open())
+  {
+    debug_log.open(filename, std::ios::out | std::ios::trunc);
+    if (debug_log.is_open() && !header.empty())
+    {
+      debug_log << header << std::endl;
+    }
+  }
+}
+
+// Helper function to close debug log
+static void close_debug_log()
+{
+  if (debug_log.is_open())
+  {
+    debug_log.close();
+  }
+}
+
+// Macro to write verbose debug output ONLY to log file (not console)
+#define DEBUG_LOG(x) do { \
+  if (debug_log.is_open()) { debug_log << x; debug_log.flush(); } \
+} while(0)
+
+// Macro to write important debug output to both console and log file
+#define DEBUG_OUT(x) do { \
+  if (debug_log.is_open()) { debug_log << x; debug_log.flush(); } \
+  Rcpp::Rcout << x; \
+} while(0)
 
 // MARK: BASIC UTILITY FUNCTIONS
 
@@ -101,6 +138,83 @@ float SF_UTILITY::gaussian_function(const float &A,
   return A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
 }
 
+// Gaussian function with baseline
+float SF_UTILITY::gaussian_function_with_baseline(const float &A,
+                                                   const float &mu,
+                                                   const float &sigma,
+                                                   const float &baseline,
+                                                   const float &x)
+{
+  return baseline + A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
+}
+
+// Helper function: Standard normal PDF φ(z) = (1/√(2π)) * exp(-z²/2)
+float SF_UTILITY::standard_normal_pdf(const float &z)
+{
+  static const float inv_sqrt_2pi = 1.0f / std::sqrt(2.0f * M_PI);
+  return inv_sqrt_2pi * std::exp(-0.5f * z * z);
+}
+
+// Helper function: Standard normal CDF Φ(z) using error function
+// Φ(z) = 0.5 * (1 + erf(z/√2))
+float SF_UTILITY::standard_normal_cdf(const float &z)
+{
+  return 0.5f * (1.0f + std::erf(z / std::sqrt(2.0f)));
+}
+
+// Skew-Gaussian (Azzalini skew-normal) function
+// f(t) = A * (2/ω) * φ((t-ξ)/ω) * Φ(α*(t-ξ)/ω)
+// Where:
+//   A = amplitude (height scaling)
+//   xi = location (peak center, similar to μ)
+//   omega = scale (similar to σ, controls width)
+//   alpha = skewness parameter
+//     alpha = 0: symmetric Gaussian
+//     alpha > 0: right tail (tailing)
+//     alpha < 0: left tail (fronting)
+float SF_UTILITY::skew_gaussian_function(const float &A,
+                                         const float &xi,
+                                         const float &omega,
+                                         const float &alpha,
+                                         const float &t)
+{
+  if (omega <= 0.0f) return 0.0f; // Invalid omega
+  
+  const float z = (t - xi) / omega;
+  const float phi_z = standard_normal_pdf(z);
+  const float Phi_alpha_z = standard_normal_cdf(alpha * z);
+  
+  return A * (2.0f / omega) * phi_z * Phi_alpha_z;
+}
+
+// Exponentially Modified Gaussian (EMG) function
+// Suitable for chromatographic peaks with tailing
+// f(t) = baseline + A * (λ/2) * exp[(λ/2) * (2μ + λσ² - 2t)] * erfc[(μ + λσ² - t) / (√2 * σ)]
+// Where:
+//   A = amplitude (scales peak height)
+//   mu = center of underlying Gaussian (retention time)
+//   sigma = std deviation of Gaussian (width)
+//   lambda = exponential decay rate (>0 for right tailing, typical 0.01-0.5)
+//   baseline = constant offset
+float SF_UTILITY::emg_function(const float &A,
+                               const float &mu,
+                               const float &sigma,
+                               const float &lambda,
+                               const float &baseline,
+                               const float &t)
+{
+  if (sigma <= 0.0f || lambda <= 0.0f) return baseline;
+  
+  const float lambda_half = lambda / 2.0f;
+  const float sigma2 = sigma * sigma;
+  const float sqrt2_sigma = std::sqrt(2.0f) * sigma;
+  
+  const float exp_arg = lambda_half * (2.0f * mu + lambda * sigma2 - 2.0f * t);
+  const float erfc_arg = (mu + lambda * sigma2 - t) / sqrt2_sigma;
+  
+  return baseline + A * lambda_half * std::exp(exp_arg) * std::erfc(erfc_arg);
+}
+
 sc::MS_SPECTRA_HEADERS SF_UTILITY::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
 {
   sc::MS_SPECTRA_HEADERS headers;
@@ -127,37 +241,31 @@ sc::MS_SPECTRA_HEADERS SF_UTILITY::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
   return headers;
 }
 
-std::pair<float, float> SF_UTILITY::calculate_mass_resolution_model_param(const std::vector<int> &resolution_profile)
-{
-  // Use three points to fit linear model: (100, res[0]), (400, res[1]), (1000, res[2])
-  // For better fit, use least squares with the three points
-  const float mz1 = 100.0f, mz2 = 400.0f, mz3 = 1000.0f;
-  const float res1 = static_cast<float>(resolution_profile[0]);
-  const float res2 = static_cast<float>(resolution_profile[1]);
-  const float res3 = static_cast<float>(resolution_profile[2]);
-  // Linear least squares fit: y = ax + b where y=resolution, x=mz
-  const float n = 3.0f;
-  const float sum_x = mz1 + mz2 + mz3;
-  const float sum_y = res1 + res2 + res3;
-  const float sum_xx = mz1 * mz1 + mz2 * mz2 + mz3 * mz3;
-  const float sum_xy = mz1 * res1 + mz2 * res2 + mz3 * res3;
-  const float slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
-  const float intercept = (sum_y - slope * sum_x) / n;
-  return std::make_pair(slope, intercept);
-}
-
-float SF_UTILITY::calculate_mass_resolution_model_threshold(float mz, float slope, float intercept)
-{
-  const float resolution = slope * mz + intercept;
-  // Add safety check to avoid division by very small resolutions
-  return mz / std::max(resolution, 1.0f);
-}
-
 float SF_UTILITY::calculate_mz_threshold_linear(float mz, float slope, float intercept)
 {
   const float resolution = slope * mz + intercept;
   // Add safety check to avoid division by very small resolutions
   return mz / std::max(resolution, 1.0f);
+}
+
+std::pair<float, float> SF_UTILITY::calculate_linear_model_params(const std::vector<int>& resolution_profile) {
+  // Use three points to fit linear model: (100, res[0]), (400, res[1]), (1000, res[2])
+  const float mz1 = 100.0f, mz2 = 400.0f, mz3 = 1000.0f;
+  const float res1 = static_cast<float>(resolution_profile[0]);
+  const float res2 = static_cast<float>(resolution_profile[1]);
+  const float res3 = static_cast<float>(resolution_profile[2]);
+
+  // Linear least squares fit: y = ax + b where y=resolution, x=mz
+  const float n = 3.0f;
+  const float sum_x = mz1 + mz2 + mz3;
+  const float sum_y = res1 + res2 + res3;
+  const float sum_xx = mz1*mz1 + mz2*mz2 + mz3*mz3;
+  const float sum_xy = mz1*res1 + mz2*res2 + mz3*res3;
+
+  const float slope = (n * sum_xy - sum_x * sum_y) / (n * sum_xx - sum_x * sum_x);
+  const float intercept = (sum_y - slope * sum_x) / n;
+
+  return std::make_pair(slope, intercept);
 }
 
 // MARK: DATA STATISTICS IMPLEMENTATIONS
@@ -396,13 +504,16 @@ std::vector<int> SF_UTILITY::cluster_by_threshold_float(const std::vector<float>
 // MARK: SPECTRAL FUNCTIONS
 
 std::vector<int> SF_UTILITY::cluster_by_mz(const std::vector<float> &mz_values,
-                                           float slope, float intercept)
+                                           const std::vector<int> &resolution_profile)
 {
   const size_t n = mz_values.size();
   if (n == 0)
     return std::vector<int>();
 
-  // Pre-calculate all thresholds
+  // Calculate linear model parameters from resolution profile
+  const auto [slope, intercept] = calculate_linear_model_params(resolution_profile);
+
+  // Pre-calculate all thresholds using linear model
   std::vector<float> thresholds(n);
   for (size_t i = 0; i < n; ++i)
   {
@@ -462,7 +573,7 @@ void SF_UTILITY::cluster_spectra_by_mz(const std::vector<float> &spec_rt,
                                        const std::vector<float> &spec_mz,
                                        const std::vector<float> &spec_intensity,
                                        const std::vector<float> &spec_noise,
-                                       float slope, float intercept,
+                                       const std::vector<int> &resolution_profile,
                                        int minTraces, float minSNR,
                                        std::vector<float> &final_rt,
                                        std::vector<float> &final_mz,
@@ -481,7 +592,7 @@ void SF_UTILITY::cluster_spectra_by_mz(const std::vector<float> &spec_rt,
   {
     sorted_mz[i] = spec_mz[mz_indices[i]];
   }
-  auto sorted_clusters = cluster_by_mz(sorted_mz, slope, intercept);
+  auto sorted_clusters = cluster_by_mz(sorted_mz, resolution_profile);
   std::vector<int> clusters(n);
   for (size_t i = 0; i < n; ++i)
   {
@@ -496,7 +607,33 @@ void SF_UTILITY::cluster_spectra_by_mz(const std::vector<float> &spec_rt,
   }
   auto valid_indices = filter_valid_clusters(data, clusters, minTraces, minSNR);
 
-  const size_t final_size = valid_indices.size();
+  // Merge traces within same cluster and RT, keeping highest intensity
+  std::map<std::pair<int, float>, size_t> cluster_rt_map; // (cluster, rt) -> index in data
+  
+  for (size_t idx : valid_indices)
+  {
+    const auto &point = data[idx];
+    auto key = std::make_pair(point.cluster, point.rt);
+    auto it = cluster_rt_map.find(key);
+    
+    if (it == cluster_rt_map.end())
+    {
+      // First trace for this cluster+rt combination
+      cluster_rt_map[key] = idx;
+    }
+    else
+    {
+      // Already have a trace for this cluster+rt, keep the one with higher intensity
+      size_t existing_idx = it->second;
+      if (point.intensity > data[existing_idx].intensity)
+      {
+        cluster_rt_map[key] = idx; // Replace with higher intensity trace
+      }
+    }
+  }
+  
+  // Build final output from merged traces
+  const size_t final_size = cluster_rt_map.size();
   number_clusters = 0;
   final_rt.clear();
   final_rt.reserve(final_size);
@@ -508,8 +645,10 @@ void SF_UTILITY::cluster_spectra_by_mz(const std::vector<float> &spec_rt,
   final_noise.reserve(final_size);
   final_cluster.clear();
   final_cluster.reserve(final_size);
-  for (size_t idx : valid_indices)
+  
+  for (const auto &entry : cluster_rt_map)
   {
+    size_t idx = entry.second;
     const auto &point = data[idx];
     if (point.cluster + 1 > number_clusters)
       number_clusters = point.cluster + 1;
@@ -556,7 +695,7 @@ std::vector<float> SF_UTILITY::calculate_noise_levels(const std::vector<float> &
 void SF_UTILITY::filter_and_cluster(const std::vector<float> &raw_mz,
                                     const std::vector<float> &raw_intensity,
                                     const std::vector<float> &raw_noise,
-                                    float slope, float intercept,
+                                    const std::vector<int> &resolution_profile,
                                     std::vector<float> &final_mz,
                                     std::vector<float> &final_intensity,
                                     std::vector<float> &final_noise)
@@ -580,7 +719,7 @@ void SF_UTILITY::filter_and_cluster(const std::vector<float> &raw_mz,
 
   auto sort_indices = get_sort_indices_float(filtered_mz);
   reorder_multiple_vectors(sort_indices, filtered_mz, filtered_intensity, filtered_noise);
-  auto clusters = cluster_by_mz(filtered_mz, slope, intercept);
+  auto clusters = cluster_by_mz(filtered_mz, resolution_profile);
 
   // Aggregate by cluster (keep max intensity per cluster)
   std::unordered_map<int, std::tuple<float, float, float>> cluster_data;
@@ -617,7 +756,7 @@ void SF_UTILITY::filter_and_cluster(const std::vector<float> &raw_mz,
 
 void SF_UTILITY::denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, const float &rt,
                                  const float &noiseThreshold, const int &minTraces,
-                                 const float &slope, const float &intercept,
+                                 const std::vector<int> &resolution_profile,
                                  std::vector<float> &spec_rt, std::vector<float> &spec_mz,
                                  std::vector<float> &spec_intensity, std::vector<float> &spec_noise,
                                  size_t &total_raw_points, size_t &total_clean_points, const bool &debug,
@@ -657,18 +796,18 @@ void SF_UTILITY::denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, cons
     int zeros_removed = raw_n_traces - static_cast<int>(non_zero_intensities.size());
     float max_quantile = std::max(0.30f, base_quantile * 1.2f);
     
-    Rcpp::Rcout << "DEBUG Auto noise estimation: base_quantile=" << base_quantile
+    DEBUG_LOG("DEBUG Auto noise estimation: base_quantile=" << base_quantile
                 << " -> adaptive_quantile=" << noise_params.quantile << "/" << max_quantile
                 << ", bins=" << noise_params.bins
                 << " (CV=" << stats.coefficient_variation << ", SNR=" << stats.signal_noise_ratio
-                << ", n=" << raw_n_traces << ", zeros_removed=" << zeros_removed << ")" << std::endl;
-    Rcpp::Rcout << "      Noise levels: mean=" << std::fixed << std::setprecision(2) << noise_mean 
-                << ", stddev=" << noise_stddev << std::endl;
+                << ", n=" << raw_n_traces << ", zeros_removed=" << zeros_removed << ")" << std::endl);
+    DEBUG_LOG("      Noise levels: mean=" << std::fixed << std::setprecision(2) << noise_mean 
+                << ", stddev=" << noise_stddev << std::endl);
   }
 
   std::vector<float> final_mz, final_intensity, final_noise;
   filter_and_cluster(raw_mz, raw_intensity, raw_noise,
-                     slope, intercept,
+                     resolution_profile,
                      final_mz, final_intensity, final_noise);
 
   total_clean_points += final_mz.size();
@@ -764,17 +903,27 @@ void SF_UTILITY::calculate_derivatives(const std::vector<float> &smoothed_intens
   }
 }
 
-std::vector<int> SF_UTILITY::find_peak_candidates(const std::vector<float> &first_derivative)
+std::vector<int> SF_UTILITY::find_peak_candidates(const std::vector<float> &first_derivative,
+                                                  const std::vector<float> &raw_intensity,
+                                                  int refine_window)
 {
   std::vector<int> candidates;
   candidates.reserve(first_derivative.size() / 10); // Conservative estimate
 
-  // Find where slope changes from positive to negative
+  // Find where slope changes from positive to negative (zero-crossing)
+  // Note: first_derivative[i] = smoothed[i+1] - smoothed[i]
+  // When first_derivative[i-1] > 0 and first_derivative[i] <= 0:
+  //   - slope between smoothed[i-1] and smoothed[i] is positive (going up)
+  //   - slope between smoothed[i] and smoothed[i+1] is negative (going down)
+  //   - therefore the peak is at smoothed[i]
   for (size_t i = 1; i < first_derivative.size(); ++i)
   {
     if (first_derivative[i] <= 0 && first_derivative[i-1] > 0)
     {
-      candidates.push_back(static_cast<int>(i + 1)); // +1 because derivative is offset by 1
+      // Peak detected at position i in the smoothed data
+      int peak_pos = static_cast<int>(i);
+      
+      candidates.push_back(peak_pos);
     }
   }
 
@@ -785,7 +934,10 @@ std::vector<int> SF_UTILITY::validate_peak_candidates(const std::vector<int> &ca
                                                      const std::vector<float> &first_derivative,
                                                      const std::vector<float> &second_derivative,
                                                      const std::vector<float> &smoothed_intensity,
-                                                     int derivative_window_size, int min_traces)
+                                                     int derivative_window_size, int min_traces,
+                                                     bool debug,
+                                                     const std::vector<float> &rt,
+                                                     const std::vector<float> &intensity)
 {
   std::vector<int> valid_peaks;
   valid_peaks.reserve(candidates.size());
@@ -793,9 +945,19 @@ std::vector<int> SF_UTILITY::validate_peak_candidates(const std::vector<int> &ca
 
   for (int idx : candidates)
   {
-    // Check edge proximity
-    if (idx < derivative_window_size || idx >= n - derivative_window_size)
+    std::string reject_reason = "";
+    
+    // Check edge proximity - require minimum 2 points from edge
+    const int min_edge_distance = 2;
+    if (idx < min_edge_distance || idx >= n - min_edge_distance)
+    {
+      if (debug && !rt.empty() && idx < static_cast<int>(rt.size()))
+      {
+        DEBUG_LOG("        × REJECTED (too close to edge): RT=" << std::fixed << std::setprecision(2) << rt[idx]
+                   << ", intensity=" << std::setprecision(0) << intensity[idx] << std::endl);
+      }
       continue;
+    }
 
     // Check first derivative before peak (should be positive)
     float pre_avg = 0.0f;
@@ -830,10 +992,86 @@ std::vector<int> SF_UTILITY::validate_peak_candidates(const std::vector<int> &ca
       d2_at_peak = second_derivative[idx - 1];
     }
 
-    // Validate criteria
-    if (pre_count > 0 && post_count > 0 && pre_avg > 0 && post_avg < 0 && d2_at_peak < 0)
+    // Check for higher apex in preceding or following traces (matching R implementation)
+    // A peak candidate is only kept if it's a local maximum among ALL nearby points
+    // This ensures only the highest point in a cluster of close peaks is retained
+    bool pre_apex = false;
+    bool post_apex = false;
+    float apex_intensity = smoothed_intensity[idx];
+    int higher_idx_pre = -1;
+    int higher_idx_post = -1;
+    
+    // Check pre_range: any point with intensity >= current peak
+    int pre_start = std::max(0, idx - derivative_window_size);
+    int pre_end = idx - 1;
+    for (int i = pre_start; i <= pre_end; ++i)
+    {
+      if (i >= 0 && i < n && smoothed_intensity[i] >= apex_intensity)
+      {
+        pre_apex = true;
+        higher_idx_pre = i;
+        break;
+      }
+    }
+    
+    // Check post_range: any point with intensity >= current peak
+    int post_start = idx + 1;
+    int post_end = std::min(n - 1, idx + derivative_window_size);
+    for (int i = post_start; i <= post_end; ++i)
+    {
+      if (i >= 0 && i < n && smoothed_intensity[i] >= apex_intensity)
+      {
+        post_apex = true;
+        higher_idx_post = i;
+        break;
+      }
+    }
+
+    // Build rejection reason if validation fails
+    bool pre_valid = pre_avg > 0;
+    bool post_valid = post_avg < 0;
+    // NOTE: Second derivative (d2) check removed - it's unreliable for sharp peaks
+    // The first derivative checks (positive before, negative after) are sufficient
+    bool is_local_max = !pre_apex && !post_apex;
+    
+    if (!is_local_max) 
+    {
+      reject_reason = "not a local maximum";
+      if (debug && !rt.empty())
+      {
+        if (pre_apex && higher_idx_pre >= 0 && higher_idx_pre < static_cast<int>(rt.size()))
+        {
+          // Show SMOOTHED intensity (what's actually compared) not raw
+          reject_reason += " (higher SMOOTHED before at idx=" + std::to_string(higher_idx_pre) + 
+                          ", RT=" + std::to_string(rt[higher_idx_pre]) + 
+                          ", smoothed=" + std::to_string(smoothed_intensity[higher_idx_pre]) + 
+                          ", apex_smoothed=" + std::to_string(apex_intensity) + ")";
+        }
+        if (post_apex && higher_idx_post >= 0 && higher_idx_post < static_cast<int>(rt.size()))
+        {
+          // Show SMOOTHED intensity (what's actually compared) not raw
+          reject_reason += " (higher SMOOTHED after at idx=" + std::to_string(higher_idx_post) + 
+                          ", RT=" + std::to_string(rt[higher_idx_post]) + 
+                          ", smoothed=" + std::to_string(smoothed_intensity[higher_idx_post]) + 
+                          ", apex_smoothed=" + std::to_string(apex_intensity) + ")";
+        }
+      }
+    }
+    else if (!pre_valid) reject_reason = "d1_before not positive";
+    else if (!post_valid) reject_reason = "d1_after not negative";
+
+    // Validate criteria: first derivatives + local maximum check (d2 removed - unreliable for sharp peaks)
+    if (pre_count > 0 && post_count > 0 && pre_valid && post_valid && is_local_max)
     {
       valid_peaks.push_back(idx);
+    }
+    else if (debug && !rt.empty() && idx < static_cast<int>(rt.size()))
+    {
+      DEBUG_LOG("        × REJECTED (" << reject_reason << "): RT=" << std::fixed << std::setprecision(2) << rt[idx]
+                 << ", intensity=" << std::setprecision(0) << intensity[idx]
+                 << " | d1_before=" << std::setprecision(1) << pre_avg
+                 << ", d1_after=" << post_avg
+                 << ", d2=" << d2_at_peak << std::endl);
     }
   }
 
@@ -844,30 +1082,175 @@ std::pair<int, int> SF_UTILITY::calculate_peak_boundaries(int peak_idx,
                                                          const std::vector<float> &rt,
                                                          const std::vector<float> &smoothed_intensity,
                                                          const std::vector<float> &baseline,
-                                                         float max_half_width, int min_traces)
+                                                         float max_half_width, int min_traces,
+                                                         bool debug, float debug_mz)
 {
   const int n = static_cast<int>(rt.size());
   float apex_intensity = smoothed_intensity[peak_idx];
   float min_intensity_threshold = 0.01f * apex_intensity;
 
-  // Left boundary
-  int left_idx = std::max(0, peak_idx - 3);
-  while (left_idx > 0)
+  // Left boundary - detect valleys by looking for local minima
+  // A valley is a point where intensity is lower than neighbors and then starts increasing
+  int left_idx = peak_idx;
+  std::string left_stop_reason = "";
+  
+  // Move left from apex, looking for valley points
+  for (int i = peak_idx - 1; i >= 0; --i)
   {
-    if (rt[peak_idx] - rt[left_idx] > max_half_width) break;
-    if (smoothed_intensity[left_idx] <= baseline[left_idx] * 1.2f) break;
-    if (smoothed_intensity[left_idx] <= min_intensity_threshold) break;
-    left_idx--;
+    // Check max_half_width constraint
+    if (rt[peak_idx] - rt[i] > max_half_width)
+    {
+      left_idx = i + 1; // Stop at previous point (inside the limit)
+      left_stop_reason = "max_half_width exceeded";
+      break;
+    }
+    
+    // Stop if at or below baseline (with 10% tolerance)
+    if (smoothed_intensity[i] <= baseline[i] * 1.1f)
+    {
+      left_idx = i;
+      left_stop_reason = "intensity <= baseline * 1.1";
+      break;
+    }
+    
+    // Stop if intensity < 1% of apex
+    if (smoothed_intensity[i] <= min_intensity_threshold)
+    {
+      left_idx = i;
+      left_stop_reason = "intensity <= 1% of apex";
+      break;
+    }
+    
+    // Detect valley: local minimum with sustained rising trend afterwards
+    // A true valley should show 3 consecutive rising points with >20% increase from valley
+    if (i > 0 && i < peak_idx - 1)
+    {
+      bool is_local_minimum = (smoothed_intensity[i] < smoothed_intensity[i-1]) &&
+                              (smoothed_intensity[i] < smoothed_intensity[i+1]);
+      
+      if (is_local_minimum)
+      {
+        // Check for sustained upward trend: 3 consecutive points rising with >20% increase
+        float valley_intensity = smoothed_intensity[i];
+        float threshold_20pct = valley_intensity * 1.2f;
+        bool sustained_rise = false;
+        
+        // Need at least 3 points after valley to check trend
+        if (i + 3 < static_cast<int>(smoothed_intensity.size()))
+        {
+          float pt1 = smoothed_intensity[i + 1];
+          float pt2 = smoothed_intensity[i + 2];
+          float pt3 = smoothed_intensity[i + 3];
+          
+          // Check: all 3 points exceed 20% increase AND each point is higher than previous
+          bool all_above_threshold = (pt1 > threshold_20pct) && 
+                                     (pt2 > threshold_20pct) && 
+                                     (pt3 > threshold_20pct);
+          bool all_rising = (pt2 > pt1) && (pt3 > pt2);
+          
+          sustained_rise = all_above_threshold && all_rising;
+        }
+        
+        if (sustained_rise)
+        {
+          left_idx = i;
+          left_stop_reason = "valley found (sustained rising trend)";
+          break;
+        }
+      }
+    }
+    
+    left_idx = i;
   }
+  if (left_idx <= 0 && left_stop_reason.empty()) left_stop_reason = "reached start of cluster";
 
-  // Right boundary
-  int right_idx = std::min(n - 1, peak_idx + 3);
-  while (right_idx < n - 1)
+  // Right boundary - detect valleys by looking for local minima
+  // A valley is a point where intensity is lower than neighbors and then starts increasing
+  int right_idx = peak_idx;
+  std::string right_stop_reason = "";
+  
+  // Move right from apex, looking for valley points
+  for (int i = peak_idx + 1; i < n; ++i)
   {
-    if (rt[right_idx] - rt[peak_idx] > max_half_width) break;
-    if (smoothed_intensity[right_idx] <= baseline[right_idx] * 1.2f) break;
-    if (smoothed_intensity[right_idx] <= min_intensity_threshold) break;
-    right_idx++;
+    // Check max_half_width constraint
+    if (rt[i] - rt[peak_idx] > max_half_width)
+    {
+      right_idx = i - 1; // Stop at previous point (inside the limit)
+      right_stop_reason = "max_half_width exceeded";
+      break;
+    }
+    
+    // Stop if at or below baseline (with 10% tolerance)
+    if (smoothed_intensity[i] <= baseline[i] * 1.1f)
+    {
+      right_idx = i;
+      right_stop_reason = "intensity <= baseline * 1.1";
+      break;
+    }
+    
+    // Stop if intensity < 1% of apex
+    if (smoothed_intensity[i] <= min_intensity_threshold)
+    {
+      right_idx = i;
+      right_stop_reason = "intensity <= 1% of apex";
+      break;
+    }
+    
+    // Detect valley: local minimum with sustained rising trend afterwards
+    // A true valley should show 3 consecutive rising points with >20% increase from valley
+    if (i > peak_idx + 1 && i < n - 1)
+    {
+      bool is_local_minimum = (smoothed_intensity[i] < smoothed_intensity[i-1]) &&
+                              (smoothed_intensity[i] < smoothed_intensity[i+1]);
+      
+      if (is_local_minimum)
+      {
+        // Check for sustained upward trend: 3 consecutive points rising with >20% increase
+        float valley_intensity = smoothed_intensity[i];
+        float threshold_20pct = valley_intensity * 1.2f;
+        bool sustained_rise = false;
+        
+        // Need at least 3 points after valley to check trend
+        if (i + 3 < static_cast<int>(smoothed_intensity.size()))
+        {
+          float pt1 = smoothed_intensity[i + 1];
+          float pt2 = smoothed_intensity[i + 2];
+          float pt3 = smoothed_intensity[i + 3];
+          
+          // Check: all 3 points exceed 20% increase AND each point is higher than previous
+          bool all_above_threshold = (pt1 > threshold_20pct) && 
+                                     (pt2 > threshold_20pct) && 
+                                     (pt3 > threshold_20pct);
+          bool all_rising = (pt2 > pt1) && (pt3 > pt2);
+          
+          sustained_rise = all_above_threshold && all_rising;
+        }
+        
+        if (sustained_rise)
+        {
+          right_idx = i;
+          right_stop_reason = "valley found (sustained rising trend)";
+          break;
+        }
+      }
+    }
+    
+    right_idx = i;
+  }
+  if (right_idx >= n - 1 && right_stop_reason.empty()) right_stop_reason = "reached end of cluster";
+
+  if (debug)
+  {
+    DEBUG_LOG("        Boundary calculation: apex_idx=" << peak_idx 
+               << " (RT=" << std::fixed << std::setprecision(2) << rt[peak_idx] 
+               << ", intensity=" << std::setprecision(0) << apex_intensity << ")" << std::endl);
+    DEBUG_LOG("          Left: " << left_idx << " → " << peak_idx 
+               << " (stopped: " << left_stop_reason << ")" << std::endl);
+    DEBUG_LOG("          Right: " << peak_idx << " → " << right_idx 
+               << " (stopped: " << right_stop_reason << ")" << std::endl);
+    DEBUG_LOG("          Thresholds: max_half_width=" << max_half_width 
+               << "s, min_intensity=" << min_intensity_threshold 
+               << " (1% of apex)" << std::endl);
   }
 
   return std::make_pair(left_idx, right_idx);
@@ -887,7 +1270,7 @@ std::pair<int, int> SF_UTILITY::calculate_fwhm_boundaries(int peak_idx,
   }
 
   // Calculate FWHM using existing function (we only need the RT component)
-  auto [fwhm_rt_val, fwhm_mz_val] = calculate_fwhm_combined(peak_rt, peak_rt, peak_intensity); // Use peak_rt for both RT and MZ
+  auto [fwhm_rt_val, fwhm_mz_val, mean_mz_unused] = calculate_fwhm_combined(peak_rt, peak_rt, peak_intensity); // Use peak_rt for both RT and MZ
 
   // Find FWHM boundaries in the cluster indices
   float rt_at_peak = rt[peak_idx];
@@ -936,19 +1319,24 @@ float SF_UTILITY::calculate_peak_area(const std::vector<float> &rt, const std::v
   return std::max(0.0f, area);
 }
 
-std::pair<float, float> SF_UTILITY::calculate_fwhm_combined(const std::vector<float> &rt,
-                                                           const std::vector<float> &mz,
-                                                           const std::vector<float> &intensity)
+std::tuple<float, float, float> SF_UTILITY::calculate_fwhm_combined(const std::vector<float> &rt,
+                                                                      const std::vector<float> &mz,
+                                                                      const std::vector<float> &intensity)
 {
   if (rt.size() != intensity.size() || mz.size() != intensity.size() || rt.empty())
-    return std::make_pair(0.0f, 0.0f);
+    return std::make_tuple(0.0f, 0.0f, 0.0f);
 
   // Find maximum intensity and its position
   auto max_it = std::max_element(intensity.begin(), intensity.end());
   float max_intensity = *max_it;
   size_t max_idx = std::distance(intensity.begin(), max_it);
 
-  float half_max = max_intensity / 2.0f;
+  // Estimate baseline as the minimum of the first and last points (edge intensities)
+  float baseline = std::min(intensity.front(), intensity.back());
+  
+  // Calculate half-maximum as half the peak height above baseline
+  float peak_height = max_intensity - baseline;
+  float half_max = baseline + (peak_height / 2.0f);
 
   // Find left and right indices where intensity drops to half maximum
   size_t left_idx = max_idx;
@@ -966,7 +1354,7 @@ std::pair<float, float> SF_UTILITY::calculate_fwhm_combined(const std::vector<fl
     right_idx++;
   }
 
-  float fwhm_rt, fwhm_mz;
+  float fwhm_rt, fwhm_mz, mean_mz_fwhm;
 
   // Calculate FWHM in RT dimension (RT difference at half maximum boundaries)
   if (left_idx < right_idx && right_idx < rt.size())
@@ -978,53 +1366,94 @@ std::pair<float, float> SF_UTILITY::calculate_fwhm_combined(const std::vector<fl
     fwhm_rt = rt.back() - rt.front(); // fallback to total RT width
   }
 
-  // Calculate FWHM in m/z dimension (m/z range within the RT FWHM region)
+  // Calculate FWHM in m/z dimension and mean m/z within the RT FWHM region
   if (left_idx < right_idx && right_idx < mz.size())
   {
-    // Find min and max m/z values within the FWHM RT range
+    // Find min, max, and mean m/z values within the FWHM RT range
     float min_mz = mz[left_idx];
     float max_mz = mz[left_idx];
+    float sum_mz = 0.0f;
+    size_t count = 0;
+    
     for (size_t i = left_idx; i <= right_idx; ++i)
     {
       min_mz = std::min(min_mz, mz[i]);
       max_mz = std::max(max_mz, mz[i]);
+      sum_mz += mz[i];
+      count++;
     }
+    
     fwhm_mz = max_mz - min_mz;
+    mean_mz_fwhm = (count > 0) ? sum_mz / count : mz[max_idx];
   }
   else
   {
     fwhm_mz = mz.back() - mz.front(); // fallback to total m/z width
+    mean_mz_fwhm = mz[max_idx]; // fallback to apex m/z
   }
 
-  return std::make_pair(fwhm_rt, fwhm_mz);
+  return std::make_tuple(fwhm_rt, fwhm_mz, mean_mz_fwhm);
+}
+
+// Simple FWHM calculation for RT dimension only
+float SF_UTILITY::calculate_fwhm_rt(const std::vector<float> &rt, const std::vector<float> &intensity)
+{
+  if (rt.empty() || intensity.empty() || rt.size() != intensity.size())
+    return 0.0f;
+
+  // Find maximum intensity and its position
+  auto max_it = std::max_element(intensity.begin(), intensity.end());
+  float max_intensity = *max_it;
+  size_t max_idx = std::distance(intensity.begin(), max_it);
+  float half_max = max_intensity / 2.0f;
+
+  // Find left and right indices where intensity drops to half maximum
+  size_t left_idx = max_idx;
+  size_t right_idx = max_idx;
+
+  // Search left from apex
+  while (left_idx > 0 && intensity[left_idx] > half_max)
+    left_idx--;
+
+  // Search right from apex
+  while (right_idx < intensity.size() - 1 && intensity[right_idx] > half_max)
+    right_idx++;
+
+  // Calculate FWHM in RT dimension
+  if (left_idx < right_idx && right_idx < rt.size())
+    return rt[right_idx] - rt[left_idx];
+  else
+    return rt.back() - rt.front(); // fallback to total RT width
 }
 
 void SF_UTILITY::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y,
-                             float &A, float &mu, float &sigma)
+                             float &A, float &mu, float &sigma, float &baseline)
 {
   // Adam optimizer parameters
   const float alpha = 0.01f;   // Learning rate
   const float beta1 = 0.9f;    // First moment decay rate
   const float beta2 = 0.999f;  // Second moment decay rate
   const float epsilon = 1e-8f; // Small value to prevent division by zero
-  const int max_iterations = 300;
+  const int max_iterations = 500;
 
   float m_A = 0.0f, v_A = 0.0f, m_mu = 0.0f, v_mu = 0.0f, m_sigma = 0.0f, v_sigma = 0.0f;
+  float m_baseline = 0.0f, v_baseline = 0.0f;
 
   for (int iter = 1; iter <= max_iterations; ++iter)
   {
-    float grad_A = 0.0f, grad_mu = 0.0f, grad_sigma = 0.0f;
+    float grad_A = 0.0f, grad_mu = 0.0f, grad_sigma = 0.0f, grad_baseline = 0.0f;
 
     // Calculate gradients
     for (size_t i = 0; i < x.size(); ++i)
     {
       float exp_term = std::exp(-std::pow(x[i] - mu, 2) / (2 * std::pow(sigma, 2)));
-      float y_pred = A * exp_term;
+      float y_pred = baseline + A * exp_term;
       float error = y[i] - y_pred;
 
       grad_A += -2 * error * exp_term;
       grad_mu += -2 * error * A * exp_term * (x[i] - mu) / std::pow(sigma, 2);
       grad_sigma += -2 * error * A * exp_term * std::pow(x[i] - mu, 2) / std::pow(sigma, 3);
+      grad_baseline += -2 * error;
     }
 
     // Adam update for A
@@ -1033,6 +1462,7 @@ void SF_UTILITY::fit_gaussian(const std::vector<float> &x, const std::vector<flo
     float A_hat = m_A / (1 - std::pow(beta1, iter));
     float v_A_hat = v_A / (1 - std::pow(beta2, iter));
     A -= alpha * A_hat / (std::sqrt(v_A_hat) + epsilon);
+    A = std::max(0.1f, A); // Keep positive
 
     // Adam update for mu
     m_mu = beta1 * m_mu + (1 - beta1) * grad_mu;
@@ -1047,14 +1477,20 @@ void SF_UTILITY::fit_gaussian(const std::vector<float> &x, const std::vector<flo
     float sigma_hat = m_sigma / (1 - std::pow(beta1, iter));
     float v_sigma_hat = v_sigma / (1 - std::pow(beta2, iter));
     sigma -= alpha * sigma_hat / (std::sqrt(v_sigma_hat) + epsilon);
+    sigma = std::max(0.1f, std::min(sigma, 100.0f)); // Constrain sigma
 
-    // Constrain sigma to reasonable bounds
-    sigma = std::max(0.1f, std::min(sigma, 100.0f));
+    // Adam update for baseline
+    m_baseline = beta1 * m_baseline + (1 - beta1) * grad_baseline;
+    v_baseline = beta2 * v_baseline + (1 - beta2) * grad_baseline * grad_baseline;
+    float baseline_hat = m_baseline / (1 - std::pow(beta1, iter));
+    float v_baseline_hat = v_baseline / (1 - std::pow(beta2, iter));
+    baseline -= alpha * baseline_hat / (std::sqrt(v_baseline_hat) + epsilon);
+    baseline = std::max(0.0f, baseline); // Keep non-negative
   }
 }
 
 float SF_UTILITY::calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y,
-                                             float A, float mu, float sigma)
+                                             float A, float mu, float sigma, float baseline)
 {
   if (x.empty() || y.empty() || x.size() != y.size())
     return 0.0f;
@@ -1065,7 +1501,7 @@ float SF_UTILITY::calculate_gaussian_rsquared(const std::vector<float> &x, const
 
   for (size_t i = 0; i < x.size(); ++i)
   {
-    float y_pred = SF_UTILITY::gaussian_function(A, mu, sigma, x[i]);
+    float y_pred = SF_UTILITY::gaussian_function_with_baseline(A, mu, sigma, baseline, x[i]);
     ss_residual += std::pow(y[i] - y_pred, 2);
     ss_total += std::pow(y[i] - mean_y, 2);
   }
@@ -1073,7 +1509,228 @@ float SF_UTILITY::calculate_gaussian_rsquared(const std::vector<float> &x, const
   if (ss_total == 0.0f)
     return 0.0f;
 
-  return std::max(0.0f, std::min(1.0f, 1.0f - (ss_residual / ss_total)));
+  float r2 = 1.0f - (ss_residual / ss_total);
+  // Don't clamp - negative R² indicates fit worse than mean (important diagnostic!)
+  return r2;
+}
+
+// Fit EMG (Exponentially Modified Gaussian) using Adam optimizer
+// Optimizes A, mu, sigma, lambda, baseline
+void SF_UTILITY::fit_emg(const std::vector<float> &t, const std::vector<float> &y,
+                        float &A, float &mu, float &sigma, float &lambda, float &baseline)
+{
+  if (t.size() != y.size() || t.empty()) return;
+  
+  // Adam optimizer parameters
+  const float alpha = 0.01f;      // learning rate (smaller for stability with 5 params)
+  const float beta1 = 0.9f;       // momentum
+  const float beta2 = 0.999f;     // RMSprop
+  const float epsilon = 1e-8f;
+  const int max_iterations = 1000;
+  
+  // Initialize Adam moments for each parameter
+  float m_A = 0.0f, v_A = 0.0f;
+  float m_mu = 0.0f, v_mu = 0.0f;
+  float m_sigma = 0.0f, v_sigma = 0.0f;
+  float m_lambda = 0.0f, v_lambda = 0.0f;
+  float m_baseline = 0.0f, v_baseline = 0.0f;
+  
+  for (int iter = 1; iter <= max_iterations; ++iter)
+  {
+    // Compute gradients using numerical differentiation
+    const float h = 1e-4f;
+    float grad_A = 0.0f, grad_mu = 0.0f, grad_sigma = 0.0f, grad_lambda = 0.0f, grad_baseline = 0.0f;
+    
+    for (size_t i = 0; i < t.size(); ++i)
+    {
+      float y_pred = emg_function(A, mu, sigma, lambda, baseline, t[i]);
+      float error = y[i] - y_pred;
+      
+      // Numerical gradients
+      float y_pred_A_plus = emg_function(A + h, mu, sigma, lambda, baseline, t[i]);
+      float y_pred_mu_plus = emg_function(A, mu + h, sigma, lambda, baseline, t[i]);
+      float y_pred_sigma_plus = emg_function(A, mu, sigma + h, lambda, baseline, t[i]);
+      float y_pred_lambda_plus = emg_function(A, mu, sigma, lambda + h, baseline, t[i]);
+      float y_pred_baseline_plus = emg_function(A, mu, sigma, lambda, baseline + h, t[i]);
+      
+      grad_A += -2.0f * error * (y_pred_A_plus - y_pred) / h;
+      grad_mu += -2.0f * error * (y_pred_mu_plus - y_pred) / h;
+      grad_sigma += -2.0f * error * (y_pred_sigma_plus - y_pred) / h;
+      grad_lambda += -2.0f * error * (y_pred_lambda_plus - y_pred) / h;
+      grad_baseline += -2.0f * error * (y_pred_baseline_plus - y_pred) / h;
+    }
+    
+    // Adam updates for A
+    m_A = beta1 * m_A + (1.0f - beta1) * grad_A;
+    v_A = beta2 * v_A + (1.0f - beta2) * grad_A * grad_A;
+    float A_hat = m_A / (1.0f - std::pow(beta1, iter));
+    float v_A_hat = v_A / (1.0f - std::pow(beta2, iter));
+    A -= alpha * A_hat / (std::sqrt(v_A_hat) + epsilon);
+    A = std::max(0.1f, A); // Keep positive
+    
+    // Adam updates for mu
+    m_mu = beta1 * m_mu + (1.0f - beta1) * grad_mu;
+    v_mu = beta2 * v_mu + (1.0f - beta2) * grad_mu * grad_mu;
+    float mu_hat = m_mu / (1.0f - std::pow(beta1, iter));
+    float v_mu_hat = v_mu / (1.0f - std::pow(beta2, iter));
+    mu -= alpha * mu_hat / (std::sqrt(v_mu_hat) + epsilon);
+    mu = std::max(t.front(), std::min(t.back(), mu)); // Keep within RT range
+    
+    // Adam updates for sigma
+    m_sigma = beta1 * m_sigma + (1.0f - beta1) * grad_sigma;
+    v_sigma = beta2 * v_sigma + (1.0f - beta2) * grad_sigma * grad_sigma;
+    float sigma_hat = m_sigma / (1.0f - std::pow(beta1, iter));
+    float v_sigma_hat = v_sigma / (1.0f - std::pow(beta2, iter));
+    sigma -= alpha * sigma_hat / (std::sqrt(v_sigma_hat) + epsilon);
+    sigma = std::max(0.01f, std::min(100.0f, sigma)); // Keep reasonable
+    
+    // Adam updates for lambda
+    m_lambda = beta1 * m_lambda + (1.0f - beta1) * grad_lambda;
+    v_lambda = beta2 * v_lambda + (1.0f - beta2) * grad_lambda * grad_lambda;
+    float lambda_hat = m_lambda / (1.0f - std::pow(beta1, iter));
+    float v_lambda_hat = v_lambda / (1.0f - std::pow(beta2, iter));
+    lambda -= alpha * lambda_hat / (std::sqrt(v_lambda_hat) + epsilon);
+    lambda = std::max(0.001f, std::min(2.0f, lambda)); // Keep positive and reasonable (typical 0.01-0.5)
+    
+    // Adam updates for baseline
+    m_baseline = beta1 * m_baseline + (1.0f - beta1) * grad_baseline;
+    v_baseline = beta2 * v_baseline + (1.0f - beta2) * grad_baseline * grad_baseline;
+    float baseline_hat = m_baseline / (1.0f - std::pow(beta1, iter));
+    float v_baseline_hat = v_baseline / (1.0f - std::pow(beta2, iter));
+    baseline -= alpha * baseline_hat / (std::sqrt(v_baseline_hat) + epsilon);
+    baseline = std::max(0.0f, baseline); // Keep non-negative
+  }
+}
+
+// Calculate R² for EMG fit
+float SF_UTILITY::calculate_emg_rsquared(const std::vector<float> &t, const std::vector<float> &y,
+                                        float A, float mu, float sigma, float lambda, float baseline)
+{
+  if (t.empty() || y.empty() || t.size() != y.size())
+    return 0.0f;
+  
+  float ss_total = 0.0f;
+  float ss_residual = 0.0f;
+  float mean_y = SF_UTILITY::mean(y);
+  
+  for (size_t i = 0; i < t.size(); ++i)
+  {
+    float y_pred = emg_function(A, mu, sigma, lambda, baseline, t[i]);
+    ss_residual += std::pow(y[i] - y_pred, 2);
+    ss_total += std::pow(y[i] - mean_y, 2);
+  }
+  
+  if (ss_total == 0.0f)
+    return 0.0f;
+  
+  float r2 = 1.0f - (ss_residual / ss_total);
+  // Don't clamp - negative R² indicates fit worse than mean
+  return r2;
+}
+
+// Fit skew-Gaussian using Levenberg-Marquardt-like optimization
+// Starting from initial guesses, optimizes A, xi, omega, alpha
+void SF_UTILITY::fit_skew_gaussian(const std::vector<float> &t, const std::vector<float> &y,
+                                   float &A, float &xi, float &omega, float &alpha)
+{
+  // Adam optimizer parameters (works well for skew-Gaussian)
+  const float learning_rate = 0.01f;
+  const float beta1 = 0.9f;
+  const float beta2 = 0.999f;
+  const float epsilon = 1e-8f;
+  const int max_iterations = 500; // More iterations for 4 parameters
+  
+  // Initialize moment vectors for Adam
+  float m_A = 0.0f, v_A = 0.0f;
+  float m_xi = 0.0f, v_xi = 0.0f;
+  float m_omega = 0.0f, v_omega = 0.0f;
+  float m_alpha = 0.0f, v_alpha = 0.0f;
+  
+  for (int iter = 1; iter <= max_iterations; ++iter)
+  {
+    float grad_A = 0.0f, grad_xi = 0.0f, grad_omega = 0.0f, grad_alpha = 0.0f;
+    
+    // Calculate gradients via numerical differentiation (simple and robust)
+    const float h = 1e-4f; // Step size for numerical gradient
+    
+    for (size_t i = 0; i < t.size(); ++i)
+    {
+      float y_pred = skew_gaussian_function(A, xi, omega, alpha, t[i]);
+      float error = y[i] - y_pred;
+      
+      // Numerical gradients
+      float y_pred_A_plus = skew_gaussian_function(A + h, xi, omega, alpha, t[i]);
+      grad_A += -2.0f * error * (y_pred_A_plus - y_pred) / h;
+      
+      float y_pred_xi_plus = skew_gaussian_function(A, xi + h, omega, alpha, t[i]);
+      grad_xi += -2.0f * error * (y_pred_xi_plus - y_pred) / h;
+      
+      float y_pred_omega_plus = skew_gaussian_function(A, xi, omega + h, alpha, t[i]);
+      grad_omega += -2.0f * error * (y_pred_omega_plus - y_pred) / h;
+      
+      float y_pred_alpha_plus = skew_gaussian_function(A, xi, omega, alpha + h, t[i]);
+      grad_alpha += -2.0f * error * (y_pred_alpha_plus - y_pred) / h;
+    }
+    
+    // Adam update for A
+    m_A = beta1 * m_A + (1.0f - beta1) * grad_A;
+    v_A = beta2 * v_A + (1.0f - beta2) * grad_A * grad_A;
+    float m_A_hat = m_A / (1.0f - std::pow(beta1, iter));
+    float v_A_hat = v_A / (1.0f - std::pow(beta2, iter));
+    A -= learning_rate * m_A_hat / (std::sqrt(v_A_hat) + epsilon);
+    
+    // Adam update for xi
+    m_xi = beta1 * m_xi + (1.0f - beta1) * grad_xi;
+    v_xi = beta2 * v_xi + (1.0f - beta2) * grad_xi * grad_xi;
+    float m_xi_hat = m_xi / (1.0f - std::pow(beta1, iter));
+    float v_xi_hat = v_xi / (1.0f - std::pow(beta2, iter));
+    xi -= learning_rate * m_xi_hat / (std::sqrt(v_xi_hat) + epsilon);
+    
+    // Adam update for omega
+    m_omega = beta1 * m_omega + (1.0f - beta1) * grad_omega;
+    v_omega = beta2 * v_omega + (1.0f - beta2) * grad_omega * grad_omega;
+    float m_omega_hat = m_omega / (1.0f - std::pow(beta1, iter));
+    float v_omega_hat = v_omega / (1.0f - std::pow(beta2, iter));
+    omega -= learning_rate * m_omega_hat / (std::sqrt(v_omega_hat) + epsilon);
+    
+    // Adam update for alpha
+    m_alpha = beta1 * m_alpha + (1.0f - beta1) * grad_alpha;
+    v_alpha = beta2 * v_alpha + (1.0f - beta2) * grad_alpha * grad_alpha;
+    float m_alpha_hat = m_alpha / (1.0f - std::pow(beta1, iter));
+    float v_alpha_hat = v_alpha / (1.0f - std::pow(beta2, iter));
+    alpha -= learning_rate * m_alpha_hat / (std::sqrt(v_alpha_hat) + epsilon);
+    
+    // Constrain parameters to reasonable bounds
+    A = std::max(0.1f, A); // Amplitude must be positive
+    omega = std::max(0.01f, std::min(omega, 1000.0f)); // Width must be positive
+    alpha = std::max(-10.0f, std::min(alpha, 10.0f)); // Skewness bounded
+  }
+}
+
+// Calculate R² for skew-Gaussian fit
+float SF_UTILITY::calculate_skew_gaussian_rsquared(const std::vector<float> &t, const std::vector<float> &y,
+                                                   float A, float xi, float omega, float alpha)
+{
+  if (t.empty() || y.empty() || t.size() != y.size())
+    return 0.0f;
+  
+  float ss_total = 0.0f;
+  float ss_residual = 0.0f;
+  float mean_y = SF_UTILITY::mean(y);
+  
+  for (size_t i = 0; i < t.size(); ++i)
+  {
+    float y_pred = SF_UTILITY::skew_gaussian_function(A, xi, omega, alpha, t[i]);
+    ss_residual += std::pow(y[i] - y_pred, 2);
+    ss_total += std::pow(y[i] - mean_y, 2);
+  }
+  
+  if (ss_total == 0.0f)
+    return 0.0f;
+  
+  // R² = 1 - (SS_residual / SS_total)
+  // Can be negative if fit is worse than mean, so don't clamp to [0,1]
+  return 1.0f - (ss_residual / ss_total);
 }
 
 // MARK: POLARITY-SPECIFIC PROCESSING FUNCTIONS
@@ -1093,9 +1750,17 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
     float baselineWindow,
     float maxWidth,
     const std::string &analysis_name,
-    bool debug,
-    int debug_cluster)
+    float debug_mz)
 {
+  // Initialize debug log file with dynamic filename based on debug_mz
+  if (debug_mz > 0.0f)
+  {
+    std::string filename = "log/debug_log_peak_detection_" + std::to_string(debug_mz) + ".log";
+    std::ostringstream header;
+    header << "=== Peak Detection Debug Log (m/z = " << std::fixed << std::setprecision(4) 
+           << debug_mz << ") ===\n";
+    init_debug_log(filename, header.str());
+  }
   
   std::map<int, std::vector<int>> cluster_indices;
   for (size_t i = 0; i < clust_cluster.size(); ++i)
@@ -1109,10 +1774,41 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
   {
     if (indices.size() < static_cast<size_t>(minTraces))
       continue;
+    
+    // Enable debug mode only if debug_mz is greater than 0
+    bool debug = (debug_mz > 0.0f);
 
-    if (debug && cluster_id == debug_cluster)
+    // Check if this cluster contains the target m/z within its range
+    bool cluster_matches_debug_mz = false;
+    if (debug && !indices.empty())
     {
-      Rcpp::Rcout << "DEBUG Processing cluster " << cluster_id << " with " << indices.size() << " traces (polarity: " << polarity_sign << ")" << std::endl;
+      // Find min and max m/z of cluster
+      float cluster_min_mz = clust_mz[indices[0]];
+      float cluster_max_mz = clust_mz[indices[0]];
+      float cluster_mean_mz = 0.0f;
+      
+      for (int idx : indices)
+      {
+        float mz = clust_mz[idx];
+        cluster_min_mz = std::min(cluster_min_mz, mz);
+        cluster_max_mz = std::max(cluster_max_mz, mz);
+        cluster_mean_mz += mz;
+      }
+      cluster_mean_mz /= indices.size();
+      
+      // Check if debug_mz falls within the cluster's m/z range
+      if (debug_mz >= cluster_min_mz && debug_mz <= cluster_max_mz)
+      {
+        cluster_matches_debug_mz = true;
+        DEBUG_LOG("DEBUG Processing cluster " << cluster_id << " with " << indices.size() 
+                    << " traces (polarity: " << polarity_sign << ")" << std::endl);
+        DEBUG_LOG("      Cluster m/z range: " << std::fixed << std::setprecision(4) 
+                    << cluster_min_mz << " to " << cluster_max_mz
+                    << " (mean: " << cluster_mean_mz << ")" << std::endl);
+        DEBUG_LOG("      Target m/z " << debug_mz << " is within cluster range" << std::endl);
+        std::string debug_filename = "log/debug_log_peak_detection_" + std::to_string(debug_mz) + ".log";
+        Rcpp::Rcout << "      Processing cluster " << cluster_id << " - detailed output in: " << debug_filename << std::endl;
+      }
     }
 
     std::vector<float> cluster_rt, cluster_mz, cluster_intensity, cluster_noise;
@@ -1126,6 +1822,43 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
       cluster_mz.push_back(clust_mz[idx]);
       cluster_intensity.push_back(clust_intensity[idx]);
       cluster_noise.push_back(clust_noise[idx]);
+    }
+
+    // DEBUG: Log raw cluster data for plotting
+    if (cluster_matches_debug_mz)
+    {
+      DEBUG_LOG("      RAW CLUSTER DATA (for plotting):" << std::endl);
+      DEBUG_LOG("      cluster_rt <- c(");
+      for (size_t i = 0; i < cluster_rt.size(); ++i)
+      {
+        DEBUG_LOG(std::fixed << std::setprecision(4) << cluster_rt[i]);
+        if (i < cluster_rt.size() - 1) DEBUG_LOG(", ");
+      }
+      DEBUG_LOG(")" << std::endl);
+      
+      DEBUG_LOG("      cluster_mz <- c(");
+      for (size_t i = 0; i < cluster_mz.size(); ++i)
+      {
+        DEBUG_LOG(std::fixed << std::setprecision(4) << cluster_mz[i]);
+        if (i < cluster_mz.size() - 1) DEBUG_LOG(", ");
+      }
+      DEBUG_LOG(")" << std::endl);
+      
+      DEBUG_LOG("      cluster_intensity <- c(");
+      for (size_t i = 0; i < cluster_intensity.size(); ++i)
+      {
+        DEBUG_LOG(std::fixed << std::setprecision(1) << cluster_intensity[i]);
+        if (i < cluster_intensity.size() - 1) DEBUG_LOG(", ");
+      }
+      DEBUG_LOG(")" << std::endl);
+      
+      DEBUG_LOG("      cluster_noise <- c(");
+      for (size_t i = 0; i < cluster_noise.size(); ++i)
+      {
+        DEBUG_LOG(std::fixed << std::setprecision(1) << cluster_noise[i]);
+        if (i < cluster_noise.size() - 1) DEBUG_LOG(", ");
+      }
+      DEBUG_LOG(")" << std::endl);
     }
 
     const int n = cluster_rt.size();
@@ -1144,12 +1877,85 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
     int derivative_window_size = std::max(minTraces, static_cast<int>(std::floor(4.0f / cycle_time)));
 
     auto baseline = calculate_baseline(cluster_intensity, baseline_window_size);
+    // Use gentle smoothing for derivatives (window_size=2 means averaging 3 points: [i-1, i, i+1])
+    // This reduces noise while preserving sharp peaks
     auto smoothed_intensity = smooth_intensity(cluster_intensity, 3);
+    
+    // DEBUG: Log smoothed and baseline data for inspection
+    if (cluster_matches_debug_mz)
+    {
+      DEBUG_LOG("      cluster_smoothed <- c(");
+      for (size_t i = 0; i < smoothed_intensity.size(); ++i)
+      {
+        DEBUG_LOG(std::fixed << std::setprecision(1) << smoothed_intensity[i]);
+        if (i < smoothed_intensity.size() - 1) DEBUG_LOG(", ");
+      }
+      DEBUG_LOG(")" << std::endl);
+      
+      DEBUG_LOG("      cluster_baseline <- c(");
+      for (size_t i = 0; i < baseline.size(); ++i)
+      {
+        DEBUG_LOG(std::fixed << std::setprecision(1) << baseline[i]);
+        if (i < baseline.size() - 1) DEBUG_LOG(", ");
+      }
+      DEBUG_LOG(")" << std::endl);
+    }
+    
     std::vector<float> first_derivative, second_derivative;
     calculate_derivatives(smoothed_intensity, first_derivative, second_derivative);
-    auto candidates = find_peak_candidates(first_derivative);
-    auto valid_peaks = validate_peak_candidates(candidates, first_derivative, second_derivative,
-                                                            smoothed_intensity, derivative_window_size, minTraces);
+    auto candidates = find_peak_candidates(first_derivative, smoothed_intensity, 0);
+    
+    if (cluster_matches_debug_mz)
+    {
+      DEBUG_LOG("      Peaks found (candidates): " << candidates.size() << " peaks" << std::endl);
+      if (!candidates.empty())
+      {
+        DEBUG_LOG("      Peak positions (RT, m/z, smoothed_intensity):" << std::endl);
+        for (int peak_idx : candidates)
+        {
+          if (peak_idx < static_cast<int>(cluster_rt.size()))
+          {
+            DEBUG_LOG("        - RT=" << std::fixed << std::setprecision(2) << cluster_rt[peak_idx]
+                       << ", m/z=" << std::setprecision(4) << cluster_mz[peak_idx]
+                       << ", smoothed_intensity=" << std::setprecision(0) << smoothed_intensity[peak_idx] << std::endl);
+          }
+        }
+      }
+    }
+    
+    auto valid_peaks = validate_peak_candidates(
+      candidates,
+      first_derivative,
+      second_derivative,
+      smoothed_intensity,
+      derivative_window_size,
+      minTraces,
+      cluster_matches_debug_mz,
+      cluster_rt,
+      cluster_intensity
+    );
+    
+    if (cluster_matches_debug_mz)
+    {
+      DEBUG_LOG("      Peaks after validation: " << valid_peaks.size() << " peaks" << std::endl);
+      if (!valid_peaks.empty())
+      {
+        DEBUG_LOG("      Valid peak positions (RT, m/z, smoothed_intensity):" << std::endl);
+        for (int peak_idx : valid_peaks)
+        {
+          if (peak_idx < static_cast<int>(cluster_rt.size()))
+          {
+            DEBUG_LOG("        - RT=" << std::fixed << std::setprecision(2) << cluster_rt[peak_idx]
+                       << ", m/z=" << std::setprecision(4) << cluster_mz[peak_idx]
+                       << ", smoothed_intensity=" << std::setprecision(0) << smoothed_intensity[peak_idx] << std::endl);
+          }
+        }
+      }
+      else
+      {
+        DEBUG_LOG("      All peaks rejected during validation" << std::endl);
+      }
+    }
 
     std::vector<std::pair<int, std::pair<int, int>>> peak_boundaries; // {peak_idx, {left_idx, right_idx}}
 
@@ -1159,7 +1965,8 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
         continue;
 
       auto [left_idx, right_idx] = calculate_peak_boundaries(peak_idx, cluster_rt, smoothed_intensity,
-                                                                         baseline, maxWidth / 2.0f, minTraces);
+                                                                         baseline, maxWidth / 2.0f, minTraces,
+                                                                         cluster_matches_debug_mz, debug_mz);
       if (left_idx < right_idx)
       {
         peak_boundaries.emplace_back(peak_idx, std::make_pair(left_idx, right_idx));
@@ -1186,17 +1993,46 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
           float rt_max_i = cluster_rt[right_i];
           float rt_min_j = cluster_rt[left_j];
           float rt_max_j = cluster_rt[right_j];
+          
+          float apex_rt_i = cluster_rt[peak_i];
+          float apex_rt_j = cluster_rt[peak_j];
 
           bool rt_overlaps = !(rt_max_i < rt_min_j || rt_max_j < rt_min_i);
+          
+          // Only merge if boundaries overlap AND apexes are close enough
+          // Check if apex distance is small relative to peak widths
+          float apex_distance = std::abs(apex_rt_j - apex_rt_i);
+          float width_i = rt_max_i - rt_min_i;
+          float width_j = rt_max_j - rt_min_j;
+          float avg_width = (width_i + width_j) / 2.0f;
+          
+          // Merge if apexes are within 30% of average peak width
+          // This prevents merging widely separated peaks with overlapping tails
+          bool apexes_close = (apex_distance < (avg_width * 0.3f));
+          bool should_merge = rt_overlaps && apexes_close;
 
-          if (rt_overlaps)
+          if (should_merge)
           {
-            if (debug && cluster_id == debug_cluster)
+            if (cluster_matches_debug_mz)
             {
-              Rcpp::Rcout << "DEBUG Merging overlapping peaks: RT1=" << cluster_rt[peak_i]
-                         << " (range: " << rt_min_i << "-" << rt_max_i << "), RT2=" << cluster_rt[peak_j]
-                         << " (range: " << rt_min_j << "-" << rt_max_j << ")" << std::endl;
+              DEBUG_LOG("      Merging overlapping peaks: RT1=" << apex_rt_i
+                         << " (range: " << rt_min_i << "-" << rt_max_i << "), RT2=" << apex_rt_j
+                         << " (range: " << rt_min_j << "-" << rt_max_j << ")"
+                         << " | apex_distance=" << std::setprecision(2) << apex_distance 
+                         << ", threshold=" << (avg_width * 0.3f) << " (30% of avg width)" << std::endl);
             }
+          }
+          else if (rt_overlaps && cluster_matches_debug_mz)
+          {
+            DEBUG_LOG("      NOT merging peaks with overlapping tails but distant apexes: RT1=" << apex_rt_i
+                       << " (range: " << rt_min_i << "-" << rt_max_i << "), RT2=" << apex_rt_j
+                       << " (range: " << rt_min_j << "-" << rt_max_j << ")"
+                       << " | apex_distance=" << std::setprecision(2) << apex_distance 
+                       << " > threshold=" << (avg_width * 0.3f) << std::endl);
+          }
+          
+          if (should_merge)
+          {
 
             // Choose peak with higher intensity
             bool keep_i = cluster_intensity[peak_i] > cluster_intensity[peak_j];
@@ -1247,10 +2083,43 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
       }
     }
 
+    if (cluster_matches_debug_mz)
+    {
+      DEBUG_LOG("      Peaks after boundary calculation & merging: " << peak_boundaries.size() << " peaks" << std::endl);
+      if (!peak_boundaries.empty())
+      {
+        DEBUG_LOG("      Peak boundaries (apex RT, RT range, width, n_traces):" << std::endl);
+        for (const auto& [peak_idx, bounds] : peak_boundaries)
+        {
+          const auto& [left_idx, right_idx] = bounds;
+          float apex_rt = cluster_rt[peak_idx];
+          float apex_mz = cluster_mz[peak_idx];
+          float apex_intensity = cluster_intensity[peak_idx];
+          float rt_min = cluster_rt[left_idx];
+          float rt_max = cluster_rt[right_idx];
+          float width = rt_max - rt_min;
+          int n_traces = right_idx - left_idx + 1;
+          
+          DEBUG_LOG("        - Apex: RT=" << std::fixed << std::setprecision(2) << apex_rt
+                     << ", m/z=" << std::setprecision(4) << apex_mz
+                     << ", intensity=" << std::setprecision(0) << apex_intensity
+                     << " | Range: " << std::setprecision(2) << rt_min << "-" << rt_max
+                     << " (width=" << width << "s, n=" << n_traces << ")" << std::endl);
+        }
+      }
+    }
+
     // Step 2: Calculate final properties for non-overlapping peaks
     for (const auto& [peak_idx, bounds] : peak_boundaries)
     {
       const auto& [left_idx, right_idx] = bounds;
+
+      if (cluster_matches_debug_mz)
+      {
+        DEBUG_LOG("      Processing peak with original apex at idx=" << peak_idx
+                   << " (RT=" << std::fixed << std::setprecision(2) << cluster_rt[peak_idx]
+                   << ", intensity=" << std::setprecision(0) << cluster_intensity[peak_idx] << ")" << std::endl);
+      }
 
       // Extract peak region data
       std::vector<float> peak_rt, peak_mz, peak_intensity;
@@ -1271,37 +2140,362 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
       auto max_it = std::max_element(peak_intensity.begin(), peak_intensity.end());
       float peak_max_intensity = *max_it;
       int max_position = std::distance(peak_intensity.begin(), max_it);
+      int actual_max_idx = left_idx + max_position; // Actual index in cluster data
 
       float rt_at_max = peak_rt[max_position];
       float mz_at_max = peak_mz[max_position];
 
-      // Calculate noise and S/N using both edges to ensure Gaussian shape
-      std::vector<float> left_edge_intensities, right_edge_intensities;
+      if (cluster_matches_debug_mz && actual_max_idx != peak_idx)
+      {
+        DEBUG_LOG("        WARNING: Apex shifted from idx=" << peak_idx 
+                   << " (RT=" << cluster_rt[peak_idx] << ", intensity=" << cluster_intensity[peak_idx]
+                   << ") to idx=" << actual_max_idx
+                   << " (RT=" << rt_at_max << ", intensity=" << peak_max_intensity << ")" << std::endl);
+      }
+
+      // Calculate noise and S/N using smoothed intensities at the actual peak boundaries
+      // This ensures we're measuring baseline noise, not the peak's descending edge
       float noise = 0.0f;
       float sn = 0.0f;
 
-      if (peak_intensity.size() >= 4)
+      if (peak_smoothed.size() >= 4)
       {
-        // Get left edge intensities (first two points)
-        left_edge_intensities = {peak_intensity[0], peak_intensity[1]};
-        // Get right edge intensities (last two points)
-        right_edge_intensities = {peak_intensity[peak_intensity.size()-2], peak_intensity[peak_intensity.size()-1]};
+        // Get smoothed intensities at left edge (first two points)
+        float left_edge_1 = peak_smoothed[0];
+        float left_edge_2 = peak_smoothed[1];
+        // Get smoothed intensities at right edge (last two points)
+        float right_edge_1 = peak_smoothed[peak_smoothed.size()-2];
+        float right_edge_2 = peak_smoothed[peak_smoothed.size()-1];
 
-        float left_min = *std::min_element(left_edge_intensities.begin(), left_edge_intensities.end());
-        float right_min = *std::min_element(right_edge_intensities.begin(), right_edge_intensities.end());
+        float left_min = std::min(left_edge_1, left_edge_2);
+        float right_min = std::min(right_edge_1, right_edge_2);
 
-        // Use the maximum of the two edge minimums to ensure both sides are low
-        noise = std::max(left_min, right_min);
+        // Use the mean of the two edge minimums for more balanced noise estimation
+        noise = (left_min + right_min) / 2.0f;
         sn = (noise > 0) ? peak_max_intensity / noise : 0.0f;
+
+        if (cluster_matches_debug_mz)
+        {
+          DEBUG_LOG("        Noise calculation: left_edge=" << std::setprecision(0) << left_min
+                     << " (smoothed at idx " << left_idx << "-" << (left_idx+1) << ")"
+                     << ", right_edge=" << right_min
+                     << " (smoothed at idx " << (right_idx-1) << "-" << right_idx << ")"
+                     << " → noise=" << noise
+                     << " (mean of edges), S/N=" << std::setprecision(1) << sn << std::endl);
+        }
       }
       else
       {
-        // For small peaks, use minimum of all points
-        noise = *std::min_element(peak_intensity.begin(), peak_intensity.end());
+        // For small peaks, use minimum of smoothed intensities
+        noise = *std::min_element(peak_smoothed.begin(), peak_smoothed.end());
         sn = (noise > 0) ? peak_max_intensity / noise : 0.0f;
+
+        if (cluster_matches_debug_mz)
+        {
+          DEBUG_LOG("        Noise calculation (small peak): min_smoothed=" << std::setprecision(0) << noise
+                     << ", S/N=" << std::setprecision(1) << sn << std::endl);
+        }
       }
 
-      if (sn < minSNR) continue;
+      if (sn < minSNR)
+      {
+        if (cluster_matches_debug_mz)
+        {
+          DEBUG_LOG("        → Peak REJECTED (S/N too low): RT=" << std::fixed << std::setprecision(2) << rt_at_max
+                     << ", S/N=" << std::setprecision(1) << sn << " < " << minSNR << std::endl);
+        }
+        continue;
+      }
+
+      // Calculate FWHM values and mean m/z within FWHM range (to avoid contamination from low intensity traces)
+      auto [fwhm_rt_val, fwhm_mz_val, mean_mz_fwhm] = calculate_fwhm_combined(peak_rt, peak_mz, peak_intensity);
+      
+      // Use original smoothed peak data for fitting
+      std::vector<float> fit_rt = peak_rt;
+      std::vector<float> fit_smoothed = peak_smoothed;
+      
+      // Find apex position
+      auto max_it_orig = std::max_element(peak_smoothed.begin(), peak_smoothed.end());
+      int apex_idx = std::distance(peak_smoothed.begin(), max_it_orig);
+      
+      // Check slope correctness using first derivatives and interpolate outliers
+      // Left side (from edge to apex): should have POSITIVE slope (rising)
+      // Right side (from apex to edge): should have NEGATIVE slope (falling)
+      std::vector<bool> needs_interpolation(peak_smoothed.size(), false);
+      int interpolated_left = 0, interpolated_right = 0;
+      
+      // Check left side: mark consecutive points that break the rising trend for interpolation
+      if (apex_idx > 1)
+      {
+        for (int i = 0; i < apex_idx - 1; ++i)
+        {
+          if (needs_interpolation[i]) continue; // Skip already marked points
+          
+          float current_intensity = peak_smoothed[i];
+          
+          // Mark all consecutive points that are not rising for interpolation
+          for (int j = i + 1; j < apex_idx; ++j)
+          {
+            if (peak_smoothed[j] <= current_intensity) // Not rising, needs interpolation
+            {
+              needs_interpolation[j] = true;
+              interpolated_left++;
+            }
+            else // Found a higher point, continue from here
+            {
+              break;
+            }
+          }
+        }
+      }
+      
+      // Check right side: mark consecutive points that break the falling trend for interpolation
+      if (apex_idx < static_cast<int>(peak_smoothed.size()) - 2)
+      {
+        for (int i = apex_idx + 1; i < static_cast<int>(peak_smoothed.size()) - 1; ++i)
+        {
+          if (needs_interpolation[i]) continue; // Skip already marked points
+          
+          float current_intensity = peak_smoothed[i];
+          
+          // Mark all consecutive points that are not falling for interpolation
+          for (int j = i + 1; j < static_cast<int>(peak_smoothed.size()); ++j)
+          {
+            if (peak_smoothed[j] >= current_intensity) // Not falling, needs interpolation
+            {
+              needs_interpolation[j] = true;
+              interpolated_right++;
+            }
+            else // Found a lower point, continue from here
+            {
+              break;
+            }
+          }
+        }
+      }
+      
+      // Interpolate marked points using linear interpolation between surrounding valid points
+      if (interpolated_left > 0 || interpolated_right > 0)
+      {
+        std::vector<float> corrected_smoothed = peak_smoothed;
+        
+        if (cluster_matches_debug_mz)
+        {
+          DEBUG_LOG("        Slope checking: found " << interpolated_left << " left outliers, " 
+                     << interpolated_right << " right outliers to interpolate" << std::endl);
+        }
+        
+        // Process each consecutive group of outliers
+        int i = 0;
+        while (i < static_cast<int>(needs_interpolation.size()))
+        {
+          if (needs_interpolation[i])
+          {
+            // Find the start of outlier sequence
+            int start_outlier = i;
+            
+            // Find the end of outlier sequence
+            int end_outlier = i;
+            while (end_outlier < static_cast<int>(needs_interpolation.size()) && needs_interpolation[end_outlier])
+              end_outlier++;
+            end_outlier--; // Last outlier index
+            
+            // Find valid points before and after the outlier sequence
+            int before_idx = start_outlier - 1;
+            int after_idx = end_outlier + 1;
+            
+            // Ensure we have valid boundary points
+            if (before_idx >= 0 && after_idx < static_cast<int>(peak_smoothed.size()))
+            {
+              float intensity_before = peak_smoothed[before_idx];
+              float intensity_after = peak_smoothed[after_idx];
+              float rt_before = peak_rt[before_idx];
+              float rt_after = peak_rt[after_idx];
+              
+              // Linear interpolation for each outlier point
+              for (int j = start_outlier; j <= end_outlier; ++j)
+              {
+                float rt_j = peak_rt[j];
+                float t = (rt_j - rt_before) / (rt_after - rt_before); // Interpolation factor
+                float interpolated_intensity = intensity_before + t * (intensity_after - intensity_before);
+                
+                if (cluster_matches_debug_mz)
+                {
+                  DEBUG_LOG("        Interpolated idx=" << j 
+                             << " RT=" << std::fixed << std::setprecision(2) << rt_j
+                             << " intensity: " << std::setprecision(0) << peak_smoothed[j]
+                             << " → " << interpolated_intensity << std::endl);
+                }
+                
+                corrected_smoothed[j] = interpolated_intensity;
+              }
+            }
+            
+            i = end_outlier + 1;
+          }
+          else
+          {
+            i++;
+          }
+        }
+        
+        fit_smoothed = corrected_smoothed;
+      }
+      
+      // Calculate FWHM from cleaned peak for parameter estimation
+      float fwhm_peak_rt = calculate_fwhm_rt(fit_rt, fit_smoothed);
+      
+      // Print fitting data to debug log
+      if (cluster_matches_debug_mz)
+      {
+        DEBUG_LOG("        Fitting data vectors:" << std::endl);
+        DEBUG_LOG("          RT values (" << fit_rt.size() << " points): ");
+        for (size_t i = 0; i < fit_rt.size(); ++i)
+        {
+          DEBUG_LOG(std::setprecision(2) << fit_rt[i]);
+          if (i < fit_rt.size() - 1) DEBUG_LOG(", ");
+        }
+        DEBUG_LOG(std::endl);
+        DEBUG_LOG("          Smoothed intensity values: ");
+        for (size_t i = 0; i < fit_smoothed.size(); ++i)
+        {
+          DEBUG_LOG(std::setprecision(1) << fit_smoothed[i]);
+          if (i < fit_smoothed.size() - 1) DEBUG_LOG(", ");
+        }
+        DEBUG_LOG(std::endl);
+      }
+      
+      // Recalculate apex from cleaned data (after slope removal)
+      auto fit_max_it = std::max_element(fit_smoothed.begin(), fit_smoothed.end());
+      float fit_max_intensity = *fit_max_it;
+      int fit_max_position = std::distance(fit_smoothed.begin(), fit_max_it);
+      float fit_rt_at_max = fit_rt[fit_max_position];
+      
+      if (cluster_matches_debug_mz && std::abs(fit_rt_at_max - rt_at_max) > 1.0f)
+      {
+        DEBUG_LOG("        Apex recalculated after slope removal: RT=" << std::setprecision(2) << fit_rt_at_max
+                   << " (was " << rt_at_max << "), intensity=" << std::setprecision(0) << fit_max_intensity 
+                   << " (was " << peak_max_intensity << ")" << std::endl);
+      }
+      
+      // Gaussian fitting parameters
+      float gaussian_baseline = std::min(fit_smoothed.front(), fit_smoothed.back());
+      float gaussian_A = fit_max_intensity - gaussian_baseline;
+      float gaussian_mu = fit_rt_at_max;  // Use recalculated apex RT
+      float gaussian_sigma = fwhm_peak_rt / 2.355f;
+      if (gaussian_sigma <= 0) gaussian_sigma = (fit_rt.back() - fit_rt.front()) / 4.0f;
+      
+      // Optimize Gaussian parameters (with baseline)
+      fit_gaussian(fit_rt, fit_smoothed, gaussian_A, gaussian_mu, gaussian_sigma, gaussian_baseline);
+      float gaussian_r2 = calculate_gaussian_rsquared(fit_rt, fit_smoothed,
+                                                      gaussian_A, gaussian_mu, gaussian_sigma, gaussian_baseline);
+      
+      if (cluster_matches_debug_mz)
+      {
+        DEBUG_LOG("        Gaussian fitting:" << std::endl);
+        DEBUG_LOG("          Peak: " << fit_rt.size() << " points"
+                     << " (RT range: " << std::setprecision(2) << fit_rt.front()
+                     << " to " << fit_rt.back() << ")" << std::endl);
+        DEBUG_LOG("          FWHM: " << std::setprecision(3) << fwhm_peak_rt << "s" << std::endl);
+        DEBUG_LOG("          Optimized parameters: A=" << std::setprecision(0) << gaussian_A 
+                     << ", μ=" << std::setprecision(2) << gaussian_mu
+                     << ", σ=" << std::setprecision(3) << gaussian_sigma
+                     << ", baseline=" << std::setprecision(1) << gaussian_baseline << std::endl);
+        
+        // Print fitted values vs actual in horizontal format for easy plotting
+        DEBUG_LOG("          Fitted vs Actual intensities:" << std::endl);
+        float ss_total = 0.0f, ss_residual = 0.0f;
+        float mean_y = SF_UTILITY::mean(fit_smoothed);
+        
+        // Calculate all predictions and errors first
+        std::vector<float> predictions;
+        std::vector<float> errors;
+        for (size_t i = 0; i < fit_rt.size(); ++i)
+        {
+          float pred = gaussian_function_with_baseline(gaussian_A, gaussian_mu, gaussian_sigma, gaussian_baseline, fit_rt[i]);
+          float residual = fit_smoothed[i] - pred;
+          predictions.push_back(pred);
+          errors.push_back(residual);
+          ss_residual += residual * residual;
+          ss_total += (fit_smoothed[i] - mean_y) * (fit_smoothed[i] - mean_y);
+        }
+        
+        // Print RT values
+        DEBUG_LOG("            RT values: ");
+        for (size_t i = 0; i < fit_rt.size(); ++i)
+        {
+          DEBUG_LOG(std::setprecision(2) << std::fixed << fit_rt[i]);
+          if (i < fit_rt.size() - 1) DEBUG_LOG(", ");
+        }
+        DEBUG_LOG(std::endl);
+        
+        // Print actual intensities
+        DEBUG_LOG("            Actual:    ");
+        for (size_t i = 0; i < fit_smoothed.size(); ++i)
+        {
+          DEBUG_LOG(std::setprecision(1) << fit_smoothed[i]);
+          if (i < fit_smoothed.size() - 1) DEBUG_LOG(", ");
+        }
+        DEBUG_LOG(std::endl);
+        
+        // Print fitted intensities
+        DEBUG_LOG("            Fitted:    ");
+        for (size_t i = 0; i < predictions.size(); ++i)
+        {
+          DEBUG_LOG(std::setprecision(1) << predictions[i]);
+          if (i < predictions.size() - 1) DEBUG_LOG(", ");
+        }
+        DEBUG_LOG(std::endl);
+        
+        // Print errors
+        DEBUG_LOG("            Errors:    ");
+        for (size_t i = 0; i < errors.size(); ++i)
+        {
+          DEBUG_LOG(std::setprecision(1) << std::showpos << errors[i] << std::noshowpos);
+          if (i < errors.size() - 1) DEBUG_LOG(", ");
+        }
+        DEBUG_LOG(std::endl);
+        
+        DEBUG_LOG("          Sum of squared residuals: " << std::setprecision(1) << ss_residual << std::endl);
+        DEBUG_LOG("          Sum of squared total: " << std::setprecision(1) << ss_total << std::endl);
+        DEBUG_LOG("          Gaussian R²=" << std::setprecision(3) << gaussian_r2 << std::endl);
+      }
+      
+      float final_r2 = gaussian_r2;
+      std::string fit_type = "Gaussian";
+      
+      // Accept peaks with very poor fit if they have good S/N
+      // Many real chromatographic peaks are asymmetric due to tailing, adsorption, etc.
+      // R² is informative but shouldn't be a hard rejection criterion with good S/N
+      if (final_r2 <= -1.0f)
+      {
+        if (cluster_matches_debug_mz)
+        {
+          DEBUG_LOG("        → Peak REJECTED (extremely poor " << fit_type << " fit): RT=" << std::fixed << std::setprecision(2) << rt_at_max
+                     << ", R²=" << std::setprecision(3) << final_r2 << " <= -1.0" << std::endl);
+        }
+        continue;
+      }
+      
+      // Log acceptance with fit quality
+      if (cluster_matches_debug_mz)
+      {
+        if (final_r2 >= 0.7f)
+        {
+          DEBUG_LOG("        → Peak ACCEPTED (good " << fit_type << " fit): RT=" << std::fixed << std::setprecision(2) << rt_at_max
+                     << ", R²=" << std::setprecision(3) << final_r2 << std::endl);
+        }
+        else if (final_r2 >= 0.5f)
+        {
+          DEBUG_LOG("        → Peak ACCEPTED (moderate " << fit_type << " fit): RT=" << std::fixed << std::setprecision(2) << rt_at_max
+                     << ", R²=" << std::setprecision(3) << final_r2 << std::endl);
+        }
+        else
+        {
+          DEBUG_LOG("        → Peak ACCEPTED (poor " << fit_type << " fit, but good S/N): RT=" << std::fixed << std::setprecision(2) << rt_at_max
+                     << ", R²=" << std::setprecision(3) << final_r2 << ", S/N=" << std::setprecision(1) << sn << std::endl);
+        }
+      }
 
       // Create FEATURE structure
       NTS2::FEATURE feature;
@@ -1317,7 +2511,7 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
 
       // Peak characteristics
       feature.rt = rt_at_max;
-      feature.mz = mean(peak_mz);
+      feature.mz = mean_mz_fwhm; // Use mean m/z from FWHM region only
 
       // Calculate neutral mass using polarity-specific correction
       feature.mass = feature.mz + mass_correction; // mass_correction is negative for positive mode, positive for negative mode
@@ -1342,23 +2536,17 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
       }
       feature.ppm = (feature.mzmax - feature.mzmin) / feature.mz * 1e6f;
 
-      // Calculate FWHM values
-      auto [fwhm_rt_val, fwhm_mz_val] = calculate_fwhm_combined(peak_rt, peak_mz, peak_intensity);
       feature.fwhm_rt = fwhm_rt_val;
       feature.fwhm_mz = fwhm_mz_val;
 
       // Calculate area
       feature.area = calculate_peak_area(peak_rt, peak_intensity);
 
-      // Gaussian fitting
-      feature.gaussian_A = peak_max_intensity;
-      feature.gaussian_mu = rt_at_max;
-      feature.gaussian_sigma = feature.fwhm_rt / 2.355f; // Convert FWHM to sigma
-      if (feature.gaussian_sigma <= 0) feature.gaussian_sigma = feature.width / 4.0f;
-
-      fit_gaussian(peak_rt, peak_smoothed, feature.gaussian_A, feature.gaussian_mu, feature.gaussian_sigma);
-      feature.gaussian_r2 = calculate_gaussian_rsquared(peak_rt, peak_smoothed,
-                                                                   feature.gaussian_A, feature.gaussian_mu, feature.gaussian_sigma);
+      // Store Gaussian fitting results
+      feature.gaussian_A = gaussian_A;
+      feature.gaussian_mu = gaussian_mu;
+      feature.gaussian_sigma = gaussian_sigma;
+      feature.gaussian_r2 = final_r2;
 
       
       feature.filtered = false;
@@ -1387,9 +2575,40 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
       feature.ms2_mz = "";
       feature.ms2_intensity = "";
 
+      if (cluster_matches_debug_mz)
+      {
+        DEBUG_LOG("        → FINAL FEATURE: " << feature.feature << std::endl);
+        DEBUG_LOG("          RT=" << std::fixed << std::setprecision(2) << feature.rt
+                   << " (range: " << feature.rtmin << "-" << feature.rtmax
+                   << ", width=" << feature.width << "s, FWHM=" << feature.fwhm_rt << "s)" << std::endl);
+        DEBUG_LOG("          m/z=" << std::setprecision(4) << feature.mz
+                   << " (range: " << feature.mzmin << "-" << feature.mzmax
+                   << ", ppm=" << std::setprecision(1) << feature.ppm << ")" << std::endl);
+        DEBUG_LOG("          Intensity=" << std::setprecision(0) << feature.intensity
+                   << ", Noise=" << feature.noise << ", S/N=" << std::setprecision(1) << feature.sn << std::endl);
+        DEBUG_LOG("          Area=" << std::setprecision(0) << feature.area
+                   << ", Gaussian R²=" << std::setprecision(3) << feature.gaussian_r2
+                   << ", n_traces=" << feature.eic_size << std::endl);
+      }
+
       polarity_features.push_back(feature);
     }
+    
+    if (cluster_matches_debug_mz)
+    {
+      int features_from_cluster = 0;
+      for (const auto& feat : polarity_features)
+      {
+        if (feat.feature.find("CL" + std::to_string(cluster_id) + "_") == 0)
+          features_from_cluster++;
+      }
+      DEBUG_LOG("      ===== Total features extracted from cluster " << cluster_id << ": " 
+                 << features_from_cluster << " features =====" << std::endl << std::endl);
+    }
   }
+
+  // Close debug log at the end of processing to allow new log files to be created
+  close_debug_log();
 
   return polarity_features;
 }
