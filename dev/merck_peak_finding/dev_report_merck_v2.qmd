@@ -19,7 +19,7 @@ format:
     theme: journal
     code-tools: true
     anchor-sections: true
-    code-fold: show
+    code-fold: true
     code-overflow: scroll
     code-line-numbers: false
     code-copy: true
@@ -76,10 +76,10 @@ examples <- unique(files_merck_ex$example)
 ```{r}
 #| label: all-files
 
-# DT::datatable(
-#   files_merck_ex[, 1:3],
-#   options = simple_table_opt
-# )
+DT::datatable(
+  files_merck_ex[, 1:3],
+  options = simple_table_opt
+)
 ```
 
 # Targets
@@ -87,7 +87,7 @@ examples <- unique(files_merck_ex$example)
 ```{r}
 #| label: targets-merck
 
-#DT::datatable(db_merck_ex, options = simple_table_opt)
+DT::datatable(db_merck_ex)
 ```
 
 # Peak Finding Targets
@@ -350,7 +350,9 @@ for (i in seq_along(plot_list_example)) {
 
 :::
 
-# Speed Test
+# Comparison with Other Algorithms
+
+The C++ native peak finding is compared against OpenMS and XCMS3 (centWave).
 
 ```{r}
 #| label: create-engine
@@ -365,7 +367,7 @@ engine
 ## Algorithms
 
 ```{r}
-#| label: create-workflow
+#| label: ps-ff-definitions
 
 ps_ff_sf <- MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = 300, rtmax = 3400),
@@ -418,95 +420,24 @@ ps_ff_xcms <- MassSpecMethod_FindFeatures_xcms3_centwave(
   firstBaselineCheck = FALSE,
   extendLengthMSW = FALSE
 )
-
 ```
 
 ```{r}
-#| label: test-speed-microbenchmark
+#| label: run-speed-test
+#| include: false
 
-# Speed test function
-run_speed_test <- function(ps, algorithm_name, iterations = 3) {
-  times <- numeric(iterations)
-  n_features_list <- list()
-  
-  for (i in seq_len(iterations)) {
-    cat("\n", algorithm_name, "- Iteration", i, "\n")
-    clear_cache("all")
-    engine$Workflow <- list(ps)
-    
-    start_time <- Sys.time()
-    engine$run_workflow()
-    end_time <- Sys.time()
-    
-    times[i] <- as.numeric(difftime(end_time, start_time, units = "secs"))
-    
-    # Get features and count them per analysis
-    tryCatch({
-      results_obj <- engine$Analyses$results[[1]]
-      features <- get_features(results_obj)
-      
-      if (!is.null(features) && nrow(features) > 0) {
-        # Count features per analysis
-        n_features_per_analysis <- features[, .N, by = analysis]
-        n_features_list[[i]] <- n_features_per_analysis
-        total_features <- sum(n_features_per_analysis$N)
-        cat("Total features:", total_features, "\n")
-      } else {
-        n_features_list[[i]] <- data.frame(analysis = character(0), N = numeric(0))
-        cat("No features found\n")
-      }
-    }, error = function(e) {
-      cat("Error getting features:", conditionMessage(e), "\n")
-      n_features_list[[i]] <- data.frame(analysis = character(0), N = numeric(0))
-    })
-    
-    cat("Time:", round(times[i], 2), "seconds\n")
-  }
-  
-  # Calculate average number of features across iterations
-  total_features_per_iter <- sapply(n_features_list, function(x) sum(x$N))
-  mean_features <- mean(total_features_per_iter)
-  
-  return(data.frame(
-    algorithm = algorithm_name,
-    iteration = seq_len(iterations),
-    time_seconds = times,
-    n_features = total_features_per_iter,
-    mean_time = mean(times),
-    sd_time = sd(times),
-    mean_features = mean_features,
-    features_per_second = mean_features / mean(times)
-  ))
-}
+#source("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding\\run_speed_test.R")
+results_dir <- "C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding"
+all_results <- fread(file.path(results_dir, "speed_test_all_results.csv"))
+summary_stats <- fread(file.path(results_dir, "speed_test_summary_stats.csv"))
+all_intensity_data <- fread(file.path(results_dir, "speed_test_intensity_data.csv"))
+intensity_summary <- fread(file.path(results_dir, "speed_test_intensity_summary.csv"))
+```
 
-# Run speed tests
-cat("=== Speed Test Results ===\n")
+## Speed Test Summary
 
-results_native <- run_speed_test(ps_ff_sf, "Native (StreamFind)", iterations = 1)
-results_openms <- run_speed_test(ps_ff_openms, "OpenMS", iterations = 1)
-results_xcms <- run_speed_test(ps_ff_xcms, "XCMS3 CentWave", iterations = 1)
-
-# Combine results
-all_results <- rbind(results_native, results_openms, results_xcms)
-
-# Summary table with all metrics
-summary_table <- all_results[, c("algorithm", "iteration", "time_seconds", "n_features")]
-summary_stats <- unique(all_results[, c("algorithm", "mean_time", "sd_time", "mean_features", "features_per_second")])
-
-cat("\n=== Summary Statistics ===\n")
-print(summary_stats)
-
-# Display detailed results
-DT::datatable(
-  summary_table,
-  options = list(
-    dom = 't',
-    paging = FALSE
-  ),
-  caption = "Speed Test - Detailed Results"
-) %>%
-  DT::formatRound(columns = c("time_seconds"), digits = 2) %>%
-  DT::formatRound(columns = c("n_features"), digits = 0)
+```{r}
+#| label: display-speed-test-summary
 
 # Display summary statistics
 DT::datatable(
@@ -521,41 +452,239 @@ DT::datatable(
   DT::formatRound(columns = c("mean_features"), digits = 0)
 ```
 
-
-
-
-
-
-# Run Peak Finding
+## Intensity Distribution Comparison
 
 ```{r}
-#| label: show-ff-merck-results
+#| label: intensity-distribution-histograms
+#| results: hide
 
-# fts_sel <- get_features(
-#   ms$Analyses$results$MassSpecResults_NonTargetAnalysis2,
-#   mz = db_merck,
-#   ppm = 100,
-#   sec = 60
-# )
-
-# fts_sel$mass_error_ppm <- round((fts_sel$mz - db_merck$mz[match(fts_sel$name, db_merck$name)]) / db_merck$mz[match(fts_sel$name, db_merck$name)] * 1e6, 2)
-
-# data.table::setcolorder(fts_sel, c("name", "feature", "mz", "mass_error_ppm", "rt", "intensity"))
-
-# DT::datatable(
-#   fts_sel,
-#   options = simple_table_opt
-# )
+# Create interactive plotly histogram data for comparison
+if (!is.null(all_intensity_data) && nrow(all_intensity_data) > 0) {
+  # Calculate histogram bins for each algorithm
+  n_bins <- 50
+  
+  # Create color palette
+  colors <- c("#F8766D", "#00BA38", "#619CFF")
+  algorithms <- unique(all_intensity_data$algorithm)
+  
+  # Histogram on log10 scale (Plotly)
+  p1 <- plot_ly() %>%
+    layout(
+      title = "Feature Intensity Distribution (Log10 Scale)",
+      xaxis = list(title = "Log10(Intensity + 1)"),
+      yaxis = list(title = "Count"),
+      barmode = "overlay",
+      legend = list(x = 0.5, y = -0.2, orientation = "h", xanchor = "center")
+    )
+  
+  for (i in seq_along(algorithms)) {
+    alg <- algorithms[i]
+    data_subset <- all_intensity_data[algorithm == alg, log10_intensity]
+    p1 <- p1 %>%
+      add_histogram(
+        x = data_subset,
+        name = alg,
+        opacity = 0.6,
+        marker = list(color = colors[i]),
+        nbinsx = n_bins
+      )
+  }
+  
+  # Density plot on log10 scale (Plotly)
+  p2 <- plot_ly() %>%
+    layout(
+      title = "Feature Intensity Density (Log10 Scale)",
+      xaxis = list(title = "Log10(Intensity + 1)"),
+      yaxis = list(title = "Density"),
+      legend = list(x = 0.5, y = -0.2, orientation = "h", xanchor = "center")
+    )
+  
+  for (i in seq_along(algorithms)) {
+    alg <- algorithms[i]
+    data_subset <- all_intensity_data[algorithm == alg, log10_intensity]
+    density_result <- density(data_subset, n = 512)
+    p2 <- p2 %>%
+      add_lines(
+        x = density_result$x,
+        y = density_result$y,
+        name = alg,
+        fill = "tozeroy",
+        fillcolor = paste0(colors[i], "4D"),
+        line = list(color = colors[i], width = 2)
+      )
+  }
+  
+  # Box plot comparison - Log10 scale (Plotly)
+  p3_log <- plot_ly() %>%
+    layout(
+      title = "Feature Intensity Distribution by Algorithm (Log10 Scale)",
+      xaxis = list(title = "Algorithm"),
+      yaxis = list(title = "Log10(Intensity + 1)"),
+      legend = list(x = 0.5, y = -0.2, orientation = "h", xanchor = "center")
+    )
+  
+  for (i in seq_along(algorithms)) {
+    alg <- algorithms[i]
+    data_subset <- all_intensity_data[algorithm == alg, log10_intensity]
+    p3_log <- p3_log %>%
+      add_boxplot(
+        y = data_subset,
+        name = alg,
+        fillcolor = paste0(colors[i], "4D"),
+        marker = list(
+          color = colors[i],
+          outliercolor = colors[i]
+        ),
+        line = list(color = colors[i]),
+        boxmean = TRUE
+      )
+  }
+  
+  # Box plot comparison - Actual intensity scale (Plotly)
+  p3_actual <- plot_ly() %>%
+    layout(
+      title = "Feature Intensity Distribution by Algorithm",
+      xaxis = list(title = "Algorithm"),
+      yaxis = list(title = "Intensity"),
+      legend = list(x = 0.5, y = -0.2, orientation = "h", xanchor = "center")
+    )
+  
+  for (i in seq_along(algorithms)) {
+    alg <- algorithms[i]
+    data_subset <- all_intensity_data[algorithm == alg, intensity]
+    p3_actual <- p3_actual %>%
+      add_boxplot(
+        y = data_subset,
+        name = alg,
+        fillcolor = paste0(colors[i], "4D"),
+        marker = list(
+          color = colors[i],
+          outliercolor = colors[i]
+        ),
+        line = list(color = colors[i]),
+        boxmean = TRUE
+      )
+  }
+  
+} else {
+  cat("No intensity data available for comparison.\n")
+}
 ```
 
 ```{r}
-#| label: plot-ff-merck-results-plot
+#| label: plot-intensity-distribution-histograms
+#| fig-width: 12
+#| fig-height: 8
 
-# plot_features(
-#   ms$Analyses$results$MassSpecResults_NonTargetAnalysis2,
-#   mz = db_merck,
-#   ppm = 20,
-#   sec = 60
-# )
+p1
 ```
 
+```{r}
+#| label: plot-intensity-distribution-density
+#| fig-width: 12
+#| fig-height: 8
+
+p2
+```
+
+```{r}
+#| label: plot-intensity-distribution-boxplot-log
+#| fig-width: 12
+#| fig-height: 8
+
+p3_log
+```
+
+```{r}
+#| label: plot-intensity-distribution-boxplot-actual
+#| fig-width: 12
+#| fig-height: 8
+
+p3_actual
+```
+
+```{r}
+#| label: display-intensity-summary
+
+# Display intensity distribution summary table
+if (!is.null(intensity_summary) && nrow(intensity_summary) > 0) {
+  DT::datatable(
+    intensity_summary,
+    options = list(
+      dom = 't',
+      paging = FALSE
+    ),
+    caption = "Intensity Distribution Summary by Algorithm"
+  ) %>%
+    DT::formatRound(columns = c("mean_intensity", "median_intensity", "sd_intensity", 
+                                  "q25_intensity", "q75_intensity", "min_intensity", 
+                                  "max_intensity"), digits = 0)
+} else {
+  cat("No intensity summary data available.\n")
+}
+```
+
+# StreamFind Workflow
+
+```{r}
+demo <- MassSpecEngine$new(
+  analyses = files_merck_ex$file_path[c(1, 2)],
+  metadata = list(name = "Demo Project")
+)
+
+demo$Analyses <- set_replicate_names(demo$Analyses, c("blank", "sample"))
+demo$Analyses <- set_blank_names(demo$Analyses, rep("blank", 2))
+demo
+```
+
+## Inspect TIC
+
+```{r}
+#| label: plot-demo-tic
+
+plot_spectra_tic(demo$Analyses, downsize = 5, levels = 1)
+```
+
+## Workflow
+
+```{r}
+#| label: run-demo-workflow
+
+workflow <- list(
+  MassSpecMethod_FindFeatures_native(
+    rtWindows = data.frame(rtmin = 300, rtmax = 3400),
+    resolution_profile = c(25000L, 55000L, 80000L),
+    noiseThreshold = 15,
+    minSNR = 3,
+    minTraces = 3,
+    baselineWindow = 200,
+    maxWidth = 250,
+    base_quantile = 0.99,
+    debug_mz = 0
+  )
+)
+
+demo$Workflow <- workflow
+demo
+```
+
+```{r}
+#| label: run-demo-workflow-execute
+
+demo$run_workflow()
+```
+
+## Results
+
+```{r}
+#| label: show-demo-results
+#| fig-height: 8
+
+plot_features(
+  demo$Results[[1]],
+  analyses = 2,
+  mz = db_merck_ex[db_merck_ex$example %in% examples[1], ],
+  ppm = 20,
+  sec = 60
+)
+```

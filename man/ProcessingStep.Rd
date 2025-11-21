@@ -97,20 +97,3 @@ A \code{ProcessingStep} object. Fundamentally, it is a list with class \code{Pro
 \description{
 The \code{ProcessingStep} class is used to define a processing step within a \link{Workflow}. It contains information about the data type, method, algorithm, parameters, and other relevant metadata for the processing step. The \code{ProcessingStep} is the parent class of all processing methods in StreamFind.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(ProcessingStep)}: Validate the \code{ProcessingStep} object, returns \code{NULL} if valid.
-
-\item \code{save(ProcessingStep)}: Save a \code{ProcessingStep} object to a file in JSON or RDS format.
-
-\item \code{read(ProcessingStep)}: Read a \code{ProcessingStep} object from a file in JSON or RDS format,
-returning the updated object.
-
-\item \code{show(ProcessingStep)}: Show the details of a \code{ProcessingStep} object.
-
-}}
-\section{Functions}{
-\itemize{
-\item \code{as.ProcessingStep()}: Convert a list or JSON object to a \code{ProcessingStep} object.
-
-}}

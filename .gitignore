@@ -26,6 +26,7 @@
 *.so
 *.dll
 *.html
+*.csv
 *.duckdb
 .Rproj.user
 /.quarto/
