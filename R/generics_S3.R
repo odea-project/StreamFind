@@ -1,4 +1,4 @@
-# A -----
+# MARK: A -----
 
 #' @title S3 generic `add`
 #' @description S3 generic to add data to `x`.
@@ -11,9 +11,20 @@ add <- function(x, ...) {
   UseMethod("add")
 }
 
-# B -----
+#' @title S3 generic `add_analyses`
+#' @description Add analyses into a database-backed analyses object.
+#' @param x Object to add analyses to.
+#' @param ... Additional arguments.
+#' @export
+#' @noRd
+#' 
+add_analyses <- function(x, ...) {
+  UseMethod("add_analyses")
+}
 
-# C -----
+# MARK: B -----
+
+# MARK: C -----
 
 #' @title S3 generic `clear_cache`
 #' @description S3 generic to clear the cache from `x`.
@@ -26,13 +37,13 @@ clear_cache <- function(x, ...) {
   UseMethod("clear_cache")
 }
 
-# D -----
+# MARK: D -----
 
-# E -----
+# MARK: E -----
 
-# F -----
+# MARK: F -----
 
-# G -----
+# MARK: G -----
 
 #' @title S3 generic `get_analysis_classes`
 #' @description S3 generic to get analysis classes from `x`.
@@ -89,6 +100,17 @@ get_chromatograms <- function(x, ...) {
   UseMethod("get_chromatograms")
 }
 
+#' @title S3 generic `get_chromatograms_headers`
+#' @description S3 generic to get chromatograms headers from `x`.
+#' @param x An object from which the chromatograms headers will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+get_chromatograms_headers <- function(x, ...) {
+  UseMethod("get_chromatograms_headers")
+}
+
 #' @title S3 generic `get_chromatograms_peaks`
 #' @description S3 generic to get chromatograms peaks from `x`.
 #' @param x An object from which the chromatograms peaks will be retrieved.
@@ -131,6 +153,17 @@ get_compounds <- function(x, ...) {
 #'
 get_concentrations <- function(x, ...) {
   UseMethod("get_concentrations")
+}
+
+#' @title S3 generic `get_db_table_info`
+#' @description Get row count and column info for a table in a database-backed object.
+#' @param x Object containing a path to a DuckDB file.
+#' @param table_name Table name.
+#' @export
+#' @noRd
+#' 
+get_db_table_info <- function(x, table_name) {
+  UseMethod("get_db_table_info")
 }
 
 #' @title S3 generic `get_features`
@@ -487,9 +520,9 @@ get_transformation_products <- function(x, ...) {
   UseMethod("get_transformation_products")
 }
 
-# H -----
+# MARK: H -----
 
-# I -----
+# MARK: I -----
 
 #' @title Generic `info`
 #' @description S3 generic to get information from `x`.
@@ -502,11 +535,21 @@ info <- function(x, ...) {
   UseMethod("info")
 }
 
-# J -----
+# MARK: J -----
 
-# K -----
+# MARK: K -----
 
-# L -----
+# MARK: L -----
+
+#' @title S3 generic `list_db_tables`
+#' @description List tables in a database-backed object.
+#' @param x Object containing a path to a DuckDB file.
+#' @export
+#' @noRd
+#' 
+list_db_tables <- function(x) {
+  UseMethod("list_db_tables")
+}
 
 #' @title Generic `load`
 #' @description S3 generic to load data from `x`.
@@ -552,7 +595,7 @@ load_spectra <- function(x, ...) {
   UseMethod("load_spectra")
 }
 
-# M -----
+# MARK: M -----
 
 #' @title Generic `map_components`
 #' @description S3 generic to map components from `x`.
@@ -587,11 +630,11 @@ map_features_intensity <- function(x, ...) {
   UseMethod("map_features_intensity")
 }
 
-# N -----
+# MARK: N -----
 
-# O -----
+# MARK: O -----
 
-# P -----
+# MARK: P -----
 
 #' @title Generic `plot_chromatograms`
 #' @description S3 generic to plot chromatograms from `x`.
@@ -1044,9 +1087,21 @@ predict <- function(x, ...) {
   UseMethod("predict")
 }
 
-# Q -----
+# MARK: Q -----
 
-# R -----
+#' @title S3 generic `query_db`
+#' @description Execute a SQL query on a database-backed object.
+#' @param x Object containing a path to a DuckDB file.
+#' @param sql SQL string.
+#' @param params Optional parameter list.
+#' @export
+#' @noRd
+#' 
+query_db <- function(x, sql, params = NULL) {
+  UseMethod("query_db")
+}
+
+# MARK: R -----
 
 #' @title Generic `read`
 #' @description S3 generic to read data from `x`.
@@ -1092,7 +1147,7 @@ run <- function(x, ...) {
   UseMethod("run")
 }
 
-# S -----
+# MARK: S -----
 
 #' @title S3 generic `save`
 #' @description S3 generic to save data from `x`.
@@ -1182,7 +1237,7 @@ size <- function(x, ...) {
   UseMethod("size")
 }
 
-# T -----
+# MARK: T -----
 
 #' @title Generic `test`
 #' @description S3 generic to test data from `x`.
@@ -1195,9 +1250,9 @@ test <- function(x, ...) {
   UseMethod("test")
 }
 
-# U -----
+# MARK: U -----
 
-# V -----
+# MARK: V -----
 
 #' @title S3 generic `validate_object`
 #' @description S3 generic to validate_object the object `x`.
@@ -1210,13 +1265,13 @@ validate_object <- function(x, ...) {
   UseMethod("validate_object")
 }
 
-# W -----
+# MARK: W -----
 
-# X -----
+# MARK: X -----
 
-# Y -----
+# MARK: Y -----
 
-# Z -----
+# MARK: Z -----
 
 # App Generics -----
 

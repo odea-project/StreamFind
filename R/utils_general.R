@@ -1,6 +1,32 @@
 # MARK: General utility functions
 # General utility functions -----
 
+#' @title .resolve_analyses_selection
+#' @description Utility to resolve analyses selection by name or index, returning only valid matches.
+#' If analyses is NULL, returns all_analyses. If numeric, returns valid indices only. If character, returns valid names only.
+#' Returns character() if no valid matches.
+#' @param analyses Analyses selection (NULL, integer, or character).
+#' @param all_analyses Character vector of all available analyses.
+#' @return Character vector of valid selected analyses (may be character(0)).
+#' @noRd
+.resolve_analyses_selection <- function(analyses, all_analyses) {
+  if (is.null(analyses)) {
+    return(all_analyses)
+  }
+  if (is.numeric(analyses)) {
+    # Only keep valid indices
+    valid_idx <- analyses[analyses >= 1 & analyses <= length(all_analyses)]
+    if (length(valid_idx) == 0) return(character())
+    return(all_analyses[valid_idx])
+  }
+  if (is.character(analyses)) {
+    valid_names <- intersect(analyses, all_analyses)
+    return(valid_names)
+  }
+  # If type is not supported, return character()
+  character()
+}
+
 #' Ensure Python and StreamFind virtualenv are available
 #'
 #' This function checks if Python is available and sets up the 'r-StreamFind' virtualenv.
@@ -789,4 +815,61 @@
     warning("Nothing selected to remove! Run get_cache_info() to get an overview.")
   }
   return(invisible(NULL))
+}
+
+# MARK: DB Utilitiy Functions
+
+#' @title .query_db
+#' @description Execute a SQL query on a database-backed object.
+#' @param conn Database connection object.
+#' @param query SQL query string.
+#' @param params Optional list of parameters for parameterized queries.
+#' @return Data frame with query results.
+#' @noRd
+#' 
+.query_db <- function(conn, query, params = list()) {
+  if (is.null(params)) {
+    res <- DBI::dbGetQuery(conn, query)
+  } else {
+    res <- DBI::dbGetQuery(conn, query, params)
+  }
+  res
+}
+
+#' @title .list_db_tables
+#' @description List all tables in a database-backed object.
+#' @param conn Database connection object.
+#' @return Character vector with table names.
+#' @noRd
+#' 
+.list_db_tables <- function(conn) {
+  tables <- DBI::dbListTables(conn)
+  tables
+}
+
+#' @title .get_db_table_info
+#' @description Get information about a specific table in a database-backed object.
+#' @param conn Database connection object.
+#' @param table_name Name of the table to get information about.
+#' @return Data frame with table information.
+#' @noRd
+#' 
+.get_db_table_info <- function(conn, table_name) {
+  res <- NULL
+  tryCatch({
+    # Get row count
+    count_result <- DBI::dbGetQuery(conn,
+      paste("SELECT COUNT(*) as row_count FROM", table_name))
+    # Get column info
+    columns <- DBI::dbGetQuery(conn,
+      paste("PRAGMA table_info(", table_name, ")"))
+    res <- list(
+      table_name = table_name,
+      row_count = count_result$row_count[1],
+      columns = columns
+    )
+  }, error = function(e) {
+    warning("Error getting table info for ", table_name, ": ", e$message)
+  })
+  res
 }

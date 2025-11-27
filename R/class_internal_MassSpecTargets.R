@@ -128,11 +128,8 @@ MassSpecTargets <- function(
   }
 
   checkmate::assert_numeric(ppm, len = 1, null.ok = TRUE)
-
   checkmate::assert_numeric(sec, len = 1, null.ok = TRUE)
-
   checkmate::assert_numeric(millisec, len = 1, null.ok = TRUE)
-
   checkmate::assert_character(as.character(id), null.ok = TRUE)
 
   if (!is.null(targets)) {
@@ -143,7 +140,6 @@ MassSpecTargets <- function(
   }
 
   checkmate::assert_character(analyses, null.ok = TRUE)
-
   checkmate::assert_character(polarities, null.ok = TRUE)
 
   if (!is.null(polarities) && !is.null(analyses)) {
@@ -208,7 +204,7 @@ MassSpecTargets <- function(
     }
 
     for (i in seq_len(nrow(targets))) {
-      if (grepl("1", targets$polarity[i]) && grepl("-1", targets$polarity[i])) {
+      if ("1" %in% targets$polarity[i] && "-1" %in% targets$polarity[i]) {
         if (
           cols_mz %in%
             colnames(targets) ||
@@ -492,4 +488,26 @@ MassSpecTargets <- function(
   checkmate::assert_data_frame(targets)
   checkmate::assert_true(all(cols %in% colnames(targets)))
   targets
+}
+
+#' Check if MassSpecTargets object is empty
+#' @param targets MassSpecTargets object
+#' @noRd
+.is_targets_empty <- function(targets) {
+  num_cols <- c(
+    "mz",
+    "rt",
+    "mobility",
+    "mzmin",
+    "mzmax",
+    "rtmin",
+    "rtmax",
+    "mobilitymin",
+    "mobilitymax"
+  )
+  all(
+    apply(targets[, num_cols, with = FALSE], 1, function(z) {
+      sum(z, na.rm = TRUE)
+    }) == 0
+  )
 }
