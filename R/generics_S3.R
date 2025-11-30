@@ -22,6 +22,17 @@ add_analyses <- function(x, ...) {
   UseMethod("add_analyses")
 }
 
+#' @title S3 generic `as.json`
+#' @description S3 generic to convert an object to JSON.
+#' @param x An object to convert to JSON.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#' 
+as.json <- function(x, ...) {
+  UseMethod("as.json")
+}
+
 # MARK: B -----
 
 # MARK: C -----
@@ -1092,8 +1103,8 @@ predict <- function(x, ...) {
 #' @title S3 generic `query_db`
 #' @description Execute a SQL query on a database-backed object.
 #' @param x Object containing a path to a DuckDB file.
-#' @param sql SQL string.
-#' @param params Optional parameter list.
+#' @template arg-sql-sql
+#' @template arg-sql-params
 #' @export
 #' @noRd
 #' 

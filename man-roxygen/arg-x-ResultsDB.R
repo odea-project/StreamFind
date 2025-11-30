@@ -1,0 +1,1 @@
+#' @param x ResultsDB object.

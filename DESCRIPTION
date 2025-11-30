@@ -38,7 +38,8 @@ Imports:
     reticulate,
     ggplot2,
     dplyr,
-    gridExtra
+    gridExtra,
+    duckdb
 Suggests:
     StreamFindData,
     mzR,
@@ -102,6 +103,7 @@ Collate:
     'class_ProcessingStep.R'
     'class_Workflow.R'
     'class_Results.R'
+    'class_ResultsDB.R'
     'class_RamanResults_Spectra.R'
     'class_RamanResults_SpectraSimilarity.R'
     'class_MassSpecResults_Spectra.R'
@@ -109,6 +111,7 @@ Collate:
     'class_MassSpecResults_NonTargetAnalysis.R'
     'class_MassSpecResults_TransformationProducts.R'
     'class_MassSpecResults_NonTargetAnalysis2.R'
+    'class_MassSpecResults_NonTargetAnalysisDB.R'
     'class_StatisticResults_Model.R'
     'class_StatisticResults_PCA_mdatools.R'
     'class_StatisticResults_MCRALS_mdatools.R'
@@ -120,6 +123,7 @@ Collate:
     'class_Analyses_StatisticAnalyses.R'
     'class_AnalysesDB.R'
     'class_AnalysesDB_MassSpecAnalysesDB.R'
+    'class_MassSpecMethod_FindFeaturesDB.R'
     'class_MassSpecMethod_AnnotateFeatures.R'
     'class_MassSpecMethod_AverageSpectra.R'
     'class_MassSpecMethod_BinSpectra.R'

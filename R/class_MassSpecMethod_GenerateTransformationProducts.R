@@ -274,7 +274,7 @@ MassSpecMethod_GenerateTransformationProducts_cts <- function(
   parents = data.table::data.table(name = character(), SMILES = character()),
   use_suspects = FALSE,
   use_compounds = FALSE,
-  transLibrary = character(),
+  transLibrary = "combined_photolysis_abiotic_hydrolysis",
   generations = 1,
   errorRetries = 3,
   skipInvalid = TRUE,

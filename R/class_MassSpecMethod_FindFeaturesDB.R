@@ -1,0 +1,129 @@
+
+# MARK: Native
+# Native ------
+
+#' @title MassSpecMethod_FindFeaturesDB_native class
+#' @description Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.
+#' @param rtWindows data.frame with rtmin and rtmax columns for retention time windows for data inclusion.
+#' @param resolution_profile integer(3) vector defining mass resolution at 100, 400, and 1000 Da for calculating m/z clustering thresholds via linear model.
+#' @param minSNR numeric(1) minimum signal-to-noise ratio for considering a trace and chromatographic peak.
+#' @param noiseThreshold numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).
+#' @param minTraces numeric(1) minimum number of traces to consider a mass cluster and chromatographic peak.
+#' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
+#' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
+#' @param base_quantile numeric(1) quantile to estimate the baseline in a mass cluster.
+#' @export
+#'
+MassSpecMethod_FindFeaturesDB_native <- function(
+  rtWindows = data.frame(rtmin = 300, rtmax = 3600),
+  resolution_profile = c(35000L, 35000L, 35000L),
+  noiseThreshold = 250,
+  minSNR = 3,
+  minTraces = 3,
+  baselineWindow = 200,
+  maxWidth = 100,
+  base_quantile = 0.1,
+  debug_mz = 0
+) {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "FindFeaturesDB",
+    required = NA_character_,
+    algorithm = "native",
+    input_class = "MassSpecAnalysesDB",
+    output_class = "MassSpecResults_NonTargetAnalysisDB",
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_,
+    parameters = list(
+      rtWindows = rtWindows,
+      resolution_profile = as.integer(resolution_profile),
+      noiseThreshold = as.numeric(noiseThreshold),
+      minSNR = as.numeric(minSNR),
+      minTraces = as.numeric(minTraces),
+      baselineWindow = as.numeric(baselineWindow),
+      maxWidth = as.numeric(maxWidth),
+      base_quantile = as.numeric(base_quantile),
+      debug_mz = as.numeric(debug_mz)
+    )
+  )
+  if (is.null(validate_object(x))) {
+    x
+  } else {
+    stop("Invalid parameters for MassSpecMethod_FindFeaturesDB_native.")
+  }
+}
+
+#' @export
+#' @noRd
+validate_object.MassSpecMethod_FindFeaturesDB_native <- function(x) {
+  checkmate::assert_choice(x$type, "MassSpec")
+  checkmate::assert_choice(x$method, "FindFeaturesDB")
+  checkmate::assert_choice(x$algorithm, "native")
+  checkmate::assert_data_frame(x$parameters$rtWindows, min.rows = 1)
+  checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
+  checkmate::assert_integer(x$parameters$resolution_profile, len = 3, lower = 1)
+  checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$minSNR, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$minTraces, len = 1, lower = 1)
+  checkmate::assert_numeric(x$parameters$baselineWindow, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$maxWidth, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$base_quantile, len = 1, lower = 0, upper = 1)
+  NULL
+}
+
+#' @export
+#' @noRd
+run.MassSpecMethod_FindFeaturesDB_native <- function(x, engine = NULL) {
+  if (!"MassSpecAnalysesDB" %in% class(engine$Analyses)) {
+    warning("Engine does not contain MassSpecAnalysesDB.")
+    return(FALSE)
+  }
+
+  analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
+
+  if (nrow(analyses) == 0) {
+    warning("No analyses found in the MassSpecAnalysesDB.")
+    return(FALSE)
+  }
+
+  headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
+  headers_list <- split(headers, headers$analysis)
+  parameters <- x$parameters
+
+  fts <- rcpp_nts_find_features2(
+    info = analyses,
+    spectra_headers = headers_list,
+    rtWindowsMin = parameters$rtWindows$rtmin,
+    rtWindowsMax = parameters$rtWindows$rtmax,
+    resolution_profile = parameters$resolution_profile,
+    noiseThreshold = parameters$noiseThreshold,
+    minSNR = parameters$minSNR,
+    minTraces = parameters$minTraces,
+    baselineWindow = parameters$baselineWindow,
+    maxWidth = parameters$maxWidth,
+    base_quantile = parameters$base_quantile,
+    debug_mz = parameters$debug_mz
+  )
+
+  if (is.null(fts) || length(fts) == 0) {
+    warning("No features found.")
+    return(FALSE)
+  }
+
+  names(fts) <- analyses$analysis
+  fts <- data.table::rbindlist(fts, fill = TRUE, idcol = "analysis")
+  fts$group <- NULL
+  db <- file.path(engine$sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
+  MassSpecResults_NonTargetAnalysisDB(db, analyses, headers, fts)
+  # if (is.null(validate_object(nts))) {
+  #   engine$Analyses$results[["MassSpecResults_NonTargetAnalysis2"]] <- nts
+  #   TRUE
+  # } else {
+  #   FALSE
+  # }
+}

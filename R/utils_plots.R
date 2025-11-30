@@ -9,9 +9,10 @@
 #' @param title Plot title.
 #' @param xLab X axis label.
 #' @param yLab Y axis label.
-#' @param colorPallete Optional vector of colors, otherwise uses .get_colors.
+#' @param colorPalette Optional vector of colors, otherwise uses .get_colors.
 #' @return Plot object (plotly or ggplot2)
 #' @export
+#' 
 .plot_lines_tabular_data <- function(
   data,
   xvar,
@@ -21,7 +22,7 @@
   title = NULL,
   xLab = NULL,
   yLab = NULL,
-  colorPallete = NULL
+  colorPalette = NULL
 ) {
   stopifnot(xvar %in% colnames(data), yvar %in% colnames(data))
   if (is.null(xLab)) xLab <- xvar
@@ -31,7 +32,7 @@
   # Color assignment
   if (!is.null(groupBy) && groupBy %in% colnames(data)) {
     groups <- unique(data[[groupBy]])
-    colors <- if (!is.null(colorPallete)) colorPallete else .get_colors(groups)
+    colors <- if (!is.null(colorPalette)) colorPalette else .get_colors(groups)
     data$color_group <- data[[groupBy]]
   } else {
     data$color_group <- "all"

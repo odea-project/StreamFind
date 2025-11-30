@@ -13,7 +13,7 @@
   title = NULL,
   xLab = NULL,
   yLab = NULL,
-  colorPallete = NULL
+  colorPalette = NULL
 )
 }
 \arguments{
@@ -33,7 +33,7 @@
 
 \item{yLab}{Y axis label.}
 
-\item{colorPallete}{Optional vector of colors, otherwise uses .get_colors.}
+\item{colorPalette}{Optional vector of colors, otherwise uses .get_colors.}
 }
 \value{
 Plot object (plotly or ggplot2)

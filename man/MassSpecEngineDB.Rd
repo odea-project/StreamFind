@@ -13,6 +13,8 @@ R6 child of EngineDB for MassSpec data that uses MassSpecAnalysesDB for on-disk 
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
 \item{\code{Analyses}}{A MassSpecAnalysesDB object backed by DuckDB.}
+
+\item{\code{NonTargetAnalysis}}{A MassSpecResults_NonTargetAnalysisDB object backed by DuckDB.}
 }
 \if{html}{\out{</div>}}
 }
@@ -41,18 +43,14 @@ R6 child of EngineDB for MassSpec data that uses MassSpecAnalysesDB for on-disk 
 <details><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="add_audit_entry"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-add_audit_entry'><code>StreamFind::EngineDB$add_audit_entry()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_analyses"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_analyses'><code>StreamFind::EngineDB$get_analyses()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="add_configuration"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-add_configuration'><code>StreamFind::EngineDB$add_configuration()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="add_metadata"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-add_metadata'><code>StreamFind::EngineDB$add_metadata()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="add_workflow"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-add_workflow'><code>StreamFind::EngineDB$add_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_audit_trail"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_audit_trail'><code>StreamFind::EngineDB$get_audit_trail()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_configuration"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_configuration'><code>StreamFind::EngineDB$get_configuration()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_engine_info"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_engine_info'><code>StreamFind::EngineDB$get_engine_info()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_metadata"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_metadata'><code>StreamFind::EngineDB$get_metadata()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_results"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_results'><code>StreamFind::EngineDB$get_results()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_workflow"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_workflow'><code>StreamFind::EngineDB$get_workflow()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="set_analyses"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-set_analyses'><code>StreamFind::EngineDB$set_analyses()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="set_configuration"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-set_configuration'><code>StreamFind::EngineDB$set_configuration()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="set_metadata"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-set_metadata'><code>StreamFind::EngineDB$set_metadata()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="set_results"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-set_results'><code>StreamFind::EngineDB$set_results()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="set_workflow"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-set_workflow'><code>StreamFind::EngineDB$set_workflow()</code></a></span></li>
 </ul>
 </details>
 }}
@@ -66,7 +64,9 @@ Initialize MassSpecEngineDB
   project_dir = "data.sf",
   metadata = NULL,
   workflow = NULL,
-  analyses = NULL,
+  files = NULL,
+  centroid = FALSE,
+  levels = c(1, 2),
   configuration = NULL
 )}\if{html}{\out{</div>}}
 }
@@ -74,15 +74,28 @@ Initialize MassSpecEngineDB
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{project_dir}}{Path to StreamFind project folder (.sf). EngineDB will place main.duckdb inside it.}
+\item{\code{project_dir}}{Path to StreamFind project folder (.sf). EngineDB will place main.duckdb inside it. If reusing an existing project_dir, EngineDB will connect to the existing Engine.duckdb file and preserve previous data. If the project_dir does not exist, EngineDB will create the directory and initialize a new Engine.duckdb file.}
 
-\item{\code{metadata}}{Optional metadata to persist.}
+\item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
+There is no type restrictions except for name (must be type character), author (must be type
+character) and date (must be class POSIXct or POSIXt). A file entry must be a character string
+with a full path to a file.}
 
-\item{\code{workflow}}{Optional workflow to persist.}
+\item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
+with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
-\item{\code{analyses}}{Optional MS files/data.frame to load into analyses DB.}
+\item{\code{files}}{A character vector with full file path/s of \emph{mzML}
+or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
+and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
+(character), the replicate group name (character) and the associated blank
+replicate group name (character). Note the file paths must have the extension
+\emph{.mzML} or \emph{.mzXML}.}
 
-\item{\code{configuration}}{Optional configuration list to persist.}
+\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
+
+\item{\code{levels}}{Integer vector with the levels of MS data.}
+
+\item{\code{configuration}}{A list of configuration parameters to persist or use for the engine/database.}
 }
 \if{html}{\out{</div>}}
 }
@@ -99,11 +112,16 @@ Add analyses (append; overwrites duplicates)
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{files}}{Files/data.frame accepted by \code{.get_MassSpecAnalysis_from_files}.}
+\item{\code{files}}{A character vector with full file path/s of \emph{mzML}
+or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
+and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
+(character), the replicate group name (character) and the associated blank
+replicate group name (character). Note the file paths must have the extension
+\emph{.mzML} or \emph{.mzXML}.}
 
-\item{\code{centroid}}{Logical, passed to parser.}
+\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
 
-\item{\code{levels}}{Integer vector, MS levels to keep.}
+\item{\code{levels}}{Integer vector with the levels of MS data.}
 }
 \if{html}{\out{</div>}}
 }
@@ -215,13 +233,14 @@ Get info summary
 \subsection{Method \code{get_spectra_headers()}}{
 Get spectra headers for an analysis
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$get_spectra_headers(analysis = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$get_spectra_headers(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analysis}}{Analysis name.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -232,13 +251,14 @@ Get spectra headers for an analysis
 \subsection{Method \code{get_chromatograms_headers()}}{
 Get chromatograms headers for an analysis
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$get_chromatograms_headers(analysis = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$get_chromatograms_headers(analyses = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{analysis}}{Analysis name.}
+\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 }
 \if{html}{\out{</div>}}
 }
@@ -259,13 +279,13 @@ List tables in analyses DB
 \subsection{Method \code{get_db_table_info()}}{
 Get table info in analyses DB
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$get_db_table_info(table_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$get_db_table_info(tableName)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{table_name}}{Table name.}
+\item{\code{tableName}}{Name of the table to query or retrieve information about.}
 }
 \if{html}{\out{</div>}}
 }
@@ -282,9 +302,9 @@ Run query on analyses DB
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{sql}}{SQL string.}
+\item{\code{sql}}{SQL query string to execute against the database.}
 
-\item{\code{params}}{Optional params.}
+\item{\code{params}}{Query parameters to be used with the SQL query (optional).}
 }
 \if{html}{\out{</div>}}
 }

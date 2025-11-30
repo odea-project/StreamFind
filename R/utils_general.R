@@ -1,6 +1,7 @@
 # MARK: General utility functions
 # General utility functions -----
 
+# MARK: .resolve_analyses_selection
 #' @title .resolve_analyses_selection
 #' @description Utility to resolve analyses selection by name or index, returning only valid matches.
 #' If analyses is NULL, returns all_analyses. If numeric, returns valid indices only. If character, returns valid names only.
@@ -14,7 +15,6 @@
     return(all_analyses)
   }
   if (is.numeric(analyses)) {
-    # Only keep valid indices
     valid_idx <- analyses[analyses >= 1 & analyses <= length(all_analyses)]
     if (length(valid_idx) == 0) return(character())
     return(all_analyses[valid_idx])
@@ -23,10 +23,10 @@
     valid_names <- intersect(analyses, all_analyses)
     return(valid_names)
   }
-  # If type is not supported, return character()
   character()
 }
 
+# MARK: .ensure_python_env
 #' Ensure Python and StreamFind virtualenv are available
 #'
 #' This function checks if Python is available and sets up the 'r-StreamFind' virtualenv.
@@ -59,6 +59,7 @@
   })
 }
 
+# MARK: .get_available_engines
 #' @noRd
 .get_available_engines <- function() {
   StreamFind_env <- asNamespace("StreamFind")
@@ -68,18 +69,22 @@
       "R6ClassGenerator" %in% is(get(x, envir = .GlobalEnv))
     })
   ]
-  available_engines <- available_engines[!available_engines %in% c("Engine", "CoreEngine")]
+  available_engines <- available_engines[!available_engines %in% c("Engine", "CoreEngine", "EngineDB")]
   available_engines
 }
 
+# MARK: .get_available_processing_methods
 #' @noRd
 .get_available_processing_methods <- function(data_type = NA_character_) {
   StreamFind_env <- asNamespace("StreamFind")
   if (grepl("Engine$", data_type)) data_type <- gsub("Engine", "", data_type)
   data_type_methods_key <- paste0(data_type, "Method_")
-  return(ls(envir = StreamFind_env, pattern = paste0("^", data_type_methods_key)))
+  ns_methods <- ls(envir = StreamFind_env, pattern = paste0("^", data_type_methods_key))
+  global_methods <- ls(envir = .GlobalEnv, pattern = paste0("^", data_type_methods_key))
+  unique(c(ns_methods, global_methods))
 }
 
+# MARK: .get_available_methods
 #' @noRd
 .get_available_methods <- function(data_type = NA_character_) {
   if (grepl("Engine$", data_type)) data_type <- gsub("Engine", "", data_type)
@@ -89,6 +94,35 @@
   return(unique(processing_methods))
 }
 
+# MARK: list_processing_steps_metadata
+#' @noRd
+.list_processing_steps_metadata <- function(data_type = NULL) {
+  ps_steps <- .get_available_processing_methods(data_type)
+  ps_steps <- lapply(ps_steps, function(x) do.call(x, list()))
+  ps_steps_dt <- data.table::rbindlist(
+    lapply(ps_steps, function(x) {
+      data.table::data.table(
+        type = x$type,
+        method = x$method,
+        algorithm = x$algorithm,
+        input_class = x$input_class,
+        output_class = x$output_class,
+        parameters = list(x$parameters),
+        number_permitted = x$number_permitted,
+        version = x$version,
+        software = x$software,
+        developer = x$developer,
+        contact = x$contact,
+        link = x$link,
+        doi = x$doi
+      )
+    }),
+    fill = TRUE
+  )
+  ps_steps_dt
+}
+
+# MARK: .trim_vector
 #' .trim_vector
 #'
 #' @description Asset function for fast trimming of a vector based on a list of ranges.
@@ -106,6 +140,7 @@
   rowSums(as.matrix(mapply(function(a, b) v >= a & v <= b, a = a, b = b))) > 0
 }
 
+# MARK: .trim_spectra_targets
 #' .trim_spectra_targets
 #'
 #' @param traces A data.frame with spectra.
@@ -819,11 +854,12 @@
 
 # MARK: DB Utilitiy Functions
 
+# MARK: .query_db
 #' @title .query_db
 #' @description Execute a SQL query on a database-backed object.
 #' @param conn Database connection object.
 #' @param query SQL query string.
-#' @param params Optional list of parameters for parameterized queries.
+#' @template arg-sql-params
 #' @return Data frame with query results.
 #' @noRd
 #' 
@@ -836,6 +872,7 @@
   res
 }
 
+# MARK: .list_db_tables
 #' @title .list_db_tables
 #' @description List all tables in a database-backed object.
 #' @param conn Database connection object.
@@ -847,6 +884,7 @@
   tables
 }
 
+# MARK: .get_db_table_info
 #' @title .get_db_table_info
 #' @description Get information about a specific table in a database-backed object.
 #' @param conn Database connection object.

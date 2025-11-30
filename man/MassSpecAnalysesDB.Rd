@@ -14,14 +14,17 @@
 \alias{info.MassSpecAnalysesDB}
 \alias{get_spectra_headers.MassSpecAnalysesDB}
 \alias{get_spectra_tic.MassSpecAnalysesDB}
+\alias{plot_spectra_tic.MassSpecAnalysesDB}
 \alias{get_spectra_bpc.MassSpecAnalysesDB}
+\alias{plot_spectra_bpc.MassSpecAnalysesDB}
 \alias{get_raw_spectra.MassSpecAnalysesDB}
+\alias{get_spectra_eic.MassSpecAnalysesDB}
+\alias{get_spectra_ms1.MassSpecAnalysesDB}
+\alias{get_spectra_ms2.MassSpecAnalysesDB}
 \alias{get_chromatograms_headers.MassSpecAnalysesDB}
 \alias{query_db.MassSpecAnalysesDB}
 \alias{list_db_tables.MassSpecAnalysesDB}
 \alias{get_db_table_info.MassSpecAnalysesDB}
-\alias{plot_spectra_tic.MassSpecAnalysesDB}
-\alias{plot_spectra_bpc.MassSpecAnalysesDB}
 \title{Database-backed Mass Spectrometry Analyses}
 \usage{
 MassSpecAnalysesDB(
@@ -51,22 +54,38 @@ MassSpecAnalysesDB(
 
 \method{info}{MassSpecAnalysesDB}(x)
 
-\method{get_spectra_headers}{MassSpecAnalysesDB}(x, analysis = NULL)
+\method{get_spectra_headers}{MassSpecAnalysesDB}(x, analyses = NULL)
 
-\method{get_spectra_tic}{MassSpecAnalysesDB}(
+\method{get_spectra_tic}{MassSpecAnalysesDB}(x, analyses = NULL, levels = c(1, 2), rt = NULL)
+
+\method{plot_spectra_tic}{MassSpecAnalysesDB}(
   x,
   analyses = NULL,
   levels = c(1, 2),
   rt = NULL,
-  as_list = FALSE
+  downsize = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "analysis",
+  interactive = TRUE,
+  colorPalette = NULL
 )
 
-\method{get_spectra_bpc}{MassSpecAnalysesDB}(
+\method{get_spectra_bpc}{MassSpecAnalysesDB}(x, analyses = NULL, levels = c(1, 2), rt = NULL)
+
+\method{plot_spectra_bpc}{MassSpecAnalysesDB}(
   x,
   analyses = NULL,
   levels = c(1, 2),
   rt = NULL,
-  as_list = FALSE
+  downsize = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "analysis",
+  interactive = TRUE,
+  colorPalette = NULL
 )
 
 \method{get_raw_spectra}{MassSpecAnalysesDB}(
@@ -87,62 +106,98 @@ MassSpecAnalysesDB(
   minIntensityMS2 = 0
 )
 
-\method{get_chromatograms_headers}{MassSpecAnalysesDB}(x, analysis = NULL)
+\method{get_spectra_eic}{MassSpecAnalysesDB}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL
+)
+
+\method{get_spectra_ms1}{MassSpecAnalysesDB}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000
+)
+
+\method{get_spectra_ms2}{MassSpecAnalysesDB}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 0
+)
+
+\method{get_chromatograms_headers}{MassSpecAnalysesDB}(x, analyses = NULL)
 
 \method{query_db}{MassSpecAnalysesDB}(x, sql, params = NULL)
 
 \method{list_db_tables}{MassSpecAnalysesDB}(x)
 
-\method{get_db_table_info}{MassSpecAnalysesDB}(x, table_name)
-
-\method{plot_spectra_tic}{MassSpecAnalysesDB}(
-  x,
-  analyses = NULL,
-  levels = c(1, 2),
-  rt = NULL,
-  downsize = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  groupBy = "analysis",
-  interactive = TRUE,
-  color_palette = NULL
-)
-
-\method{plot_spectra_bpc}{MassSpecAnalysesDB}(
-  x,
-  analyses = NULL,
-  levels = c(1, 2),
-  rt = NULL,
-  downsize = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  groupBy = "analysis",
-  interactive = TRUE,
-  color_palette = NULL
-)
+\method{get_db_table_info}{MassSpecAnalysesDB}(x, tableName)
 }
 \arguments{
 \item{db}{Path to the MassSpec analyses DuckDB file. Defaults to \code{data.sf/MassSpecAnalyses.duckdb}.}
 
-\item{files}{Files/data.frame accepted by \code{.get_MassSpecAnalysis_from_files}.}
+\item{files}{A character vector with full file path/s of \emph{mzML}
+or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
+and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
+(character), the replicate group name (character) and the associated blank
+replicate group name (character). Note the file paths must have the extension
+\emph{.mzML} or \emph{.mzXML}.}
 
-\item{centroid}{Logical, passed to parser.}
+\item{centroid}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
 
-\item{levels}{Integer vector, MS levels to keep.}
+\item{levels}{Integer vector with the levels of MS data.}
 
 \item{x}{MassSpecAnalysesDB object.}
 
 \item{value}{Numeric vector of concentrations matching the number of analyses.}
 
-\item{analysis}{Analysis name (file basename).}
+\item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
 
-\item{analyses}{Analyses to plot (indices or names).}
+\item{rt}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
 
-\item{rt}{Numeric vector of length 2, retention time range (optional).}
+\item{downsize}{An integer of length one to downsize the TIC plot. The default is 1.}
 
-\item{as_list}{Logical, return list per analysis (default: FALSE).}
+\item{xLab}{X axis label for the plot.}
+
+\item{yLab}{Y axis label for the plot.}
+
+\item{title}{Plot title.}
+
+\item{groupBy}{Column to use for color grouping (default: "analysis").}
+
+\item{interactive}{Logical, use plotly if TRUE, ggplot2 if FALSE.}
+
+\item{colorPalette}{Optional vector of colors for the plot; if not provided, an internal function is used.}
 
 \item{mass}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -192,32 +247,25 @@ data (i.e., MS1 data).}
 \item{minIntensityMS2}{Numeric value with the minimum intensity of level 2
 data (i.e., MS2 data).}
 
-\item{sql}{SQL query string.}
+\item{mzClust}{Numeric (length 1) with the mass deviation threshold (in Da) to cluster mass traces. Highly dependent
+on the mass resolution of the MS data.}
 
-\item{params}{Optional parameters for parameterized queries.}
+\item{presence}{Numeric (length 1) with the required presence ratio from 0 (i.e., doesn't need to be present in any
+spectra) to 1 (i.e., must be present in all spectra) for traces during clustering of spectra.}
 
-\item{table_name}{Name of the table to get info for.}
+\item{minIntensity}{Numeric (length 1) with the minimum intensity.}
 
-\item{downsize}{Integer, number of points to downsize to (optional).}
+\item{sql}{SQL query string to execute against the database.}
 
-\item{xLab}{X axis label.}
+\item{params}{Query parameters to be used with the SQL query (optional).}
 
-\item{yLab}{Y axis label.}
-
-\item{title}{Plot title.}
-
-\item{groupBy}{Column to use for color grouping (default: "analysis").}
-
-\item{interactive}{Logical, use plotly if TRUE, ggplot2 if FALSE.}
-
-\item{color_palette}{Optional vector of colors, otherwise uses an internal function.}
+\item{tableName}{Name of the table to query or retrieve information about.}
 }
 \value{
 An object of class \code{MassSpecAnalysesDB}, extending \code{AnalysesDB}.
 }
 \description{
 The \code{MassSpecAnalysesDB} class stores MassSpec analyses metadata and headers in a DuckDB file.
-It mirrors the structure of \link{MassSpecAnalyses} but keeps data on disk.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -239,15 +287,25 @@ It mirrors the structure of \link{MassSpecAnalyses} but keeps data on disk.
 
 \item \code{set_concentrations(MassSpecAnalysesDB)}: Set concentrations.
 
-\item \code{info(MassSpecAnalysesDB)}: Get a summary table (similar to info.MassSpecAnalyses).
+\item \code{info(MassSpecAnalysesDB)}: Get a summary table.
 
 \item \code{get_spectra_headers(MassSpecAnalysesDB)}: Fetch spectra headers for a given analysis.
 
-\item \code{get_spectra_tic(MassSpecAnalysesDB)}: Get the total ion current (TIC) spectra for the specified analyses (DuckDB backend).
+\item \code{get_spectra_tic(MassSpecAnalysesDB)}: Get the total ion current (TIC) spectra for the specified analyses.
 
-\item \code{get_spectra_bpc(MassSpecAnalysesDB)}: Get the base peak chromatograms (BPC) spectra for the specified analyses (DuckDB backend).
+\item \code{plot_spectra_tic(MassSpecAnalysesDB)}: Plot total ion current (TIC) spectra for the specified analyses.
 
-\item \code{get_raw_spectra(MassSpecAnalysesDB)}: Get raw spectra data from specified analyses, returning a \code{data.table} with the spectra data (DuckDB backend).
+\item \code{get_spectra_bpc(MassSpecAnalysesDB)}: Get the base peak chromatograms (BPC) spectra for the specified analyses.
+
+\item \code{plot_spectra_bpc(MassSpecAnalysesDB)}: Plot base peak chromatogram (BPC) spectra for the specified analyses.
+
+\item \code{get_raw_spectra(MassSpecAnalysesDB)}: Get raw spectra data from specified analyses, returning a \code{data.table} with the spectra data.
+
+\item \code{get_spectra_eic(MassSpecAnalysesDB)}: Get extracted ion chromatograms (EIC) for the specified analyses and targets.
+
+\item \code{get_spectra_ms1(MassSpecAnalysesDB)}: Get MS1 spectra for the specified analyses and targets.
+
+\item \code{get_spectra_ms2(MassSpecAnalysesDB)}: Get MS2 spectra for the specified analyses and targets.
 
 \item \code{get_chromatograms_headers(MassSpecAnalysesDB)}: Fetch chromatograms headers for a given analysis.
 
@@ -256,9 +314,5 @@ It mirrors the structure of \link{MassSpecAnalyses} but keeps data on disk.
 \item \code{list_db_tables(MassSpecAnalysesDB)}: Internal: list tables in the DB.
 
 \item \code{get_db_table_info(MassSpecAnalysesDB)}: Internal: get table info from the DB.
-
-\item \code{plot_spectra_tic(MassSpecAnalysesDB)}: Plot total ion current (TIC) spectra for the specified analyses (DuckDB backend).
-
-\item \code{plot_spectra_bpc(MassSpecAnalysesDB)}: Plot base peak chromatogram (BPC) spectra for the specified analyses (DuckDB backend).
 
 }}

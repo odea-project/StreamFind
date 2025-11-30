@@ -23,7 +23,6 @@
 #' - `algorithm`: The algorithm used (e.g., "baseline_als").
 #' - `input_class`: The class of the input data.
 #' - `output_class`: The class of the output data.
-#' - `parameters`: A list of parameters for the processing step.
 #' - `number_permitted`: The number of permitted instances.
 #' - `version`: The version of the processing step.
 #' - `software`: The original software used.
@@ -31,6 +30,7 @@
 #' - `contact`: The contact information for the developer.
 #' - `link`: A link to the origin of the algorithm or additional information.
 #' - `doi`: The DOI of the algorithm or additional information.
+#' - `parameters`: A list of parameters for the processing step.
 #'
 #' @export
 #'
@@ -41,14 +41,14 @@ ProcessingStep <- function(
   algorithm = NA_character_,
   input_class = NA_character_,
   output_class = NA_character_,
-  parameters = list(),
   number_permitted = NA_real_,
   version = NA_character_,
   software = NA_character_,
   developer = NA_character_,
   contact = NA_character_,
   link = NA_character_,
-  doi = NA_character_
+  doi = NA_character_,
+  parameters = list()
 ) {
   if (!is.na(method)) {
     call <- c(paste0(type, "Method_", method, "_", algorithm), "ProcessingStep")
@@ -63,14 +63,14 @@ ProcessingStep <- function(
       algorithm = algorithm,
       input_class = input_class,
       output_class = output_class,
-      parameters = parameters,
       number_permitted = number_permitted,
       version = version,
       software = software,
       developer = developer,
       contact = contact,
       link = link,
-      doi = doi
+      doi = doi,
+      parameters = parameters
     ),
     class = call
   )
@@ -81,13 +81,13 @@ ProcessingStep <- function(
   }
 }
 
-# MARK: ProcessingStep methods
+# MARK: validate_object
 #' Validate the `ProcessingStep` object, returns `NULL` if valid.
 #' @rdname ProcessingStep
 #' @param x A `ProcessingStep` object.
 #' @export
 #'
-validate_object.ProcessingStep = function(x) {
+validate_object.ProcessingStep <- function(x) {
   checkmate::assert_character(x$type, len = 1)
   checkmate::assert_character(x$method, len = 1)
   checkmate::assert_character(x$required)
@@ -97,7 +97,6 @@ validate_object.ProcessingStep = function(x) {
   checkmate::assert_character(x$algorithm, len = 1)
   checkmate::assert_character(x$input_class, len = 1)
   checkmate::assert_character(x$output_class, len = 1)
-  checkmate::assert_list(x$parameters)
   checkmate::assert_numeric(x$number_permitted, len = 1)
   checkmate::assert_character(x$version, len = 1)
   checkmate::assert_character(x$software, len = 1)
@@ -105,6 +104,7 @@ validate_object.ProcessingStep = function(x) {
   checkmate::assert_character(x$contact, len = 1)
   checkmate::assert_character(x$link, len = 1)
   checkmate::assert_character(x$doi, len = 1)
+  checkmate::assert_list(x$parameters)
   if (is.list(x$parameters)) {
     lapply(names(x$parameters), function(z) {
       param <- x$parameters[[z]]
@@ -173,6 +173,18 @@ as.ProcessingStep <- function(value) {
   return(do.call(settings_constructor, value$parameters))
 }
 
+# MARK: as.json
+## S3 method to convert ProcessingStep to JSON
+#' Convert a ProcessingStep object to JSON
+#' @rdname ProcessingStep
+#' @param x A `ProcessingStep` object
+#' @param ... Additional arguments (not used)
+#' @export
+#'
+as.json.ProcessingStep <- function(x) {
+  .convert_to_json(as.list(x))
+}
+
 # MARK: save
 #' Save a `ProcessingStep` object to a file in JSON or RDS format.
 #' @rdname ProcessingStep
@@ -195,8 +207,7 @@ save.ProcessingStep <- function(x, file = "settings.json") {
 }
 
 # MARK: read
-#' Read a `ProcessingStep` object from a file in JSON or RDS format,
-#' returning the updated object.
+#' Read a `ProcessingStep` object from a file in JSON or RDS format, returning the updated object.
 #' @rdname ProcessingStep
 #' @param x A `ProcessingStep` object.
 #' @param file A character string specifying the file path to read the object from.

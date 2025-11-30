@@ -1,7 +1,18 @@
 # MARK: EngineDB
 # EngineDB -----
 #' @title File-based Database Engine for StreamFind
-#' @description The [StreamFind::EngineDB] R6 class provides file-based storage for StreamFind Engine data using DuckDB. Data is accessed by reading from the database instead of keeping it in memory.
+#' @description The [StreamFind::EngineDB] R6 class provides file-based storage for StreamFind Engine data using DuckDB.
+#' @template arg-core-project-dir
+#' @template arg-core-metadata
+#' @template arg-core-workflow
+#' @template arg-core-configuration
+#' @template arg-core-audit-trail-operation_type
+#' @template arg-core-audit-trail-object_type
+#' @template arg-core-audit-trail-object_id
+#' @template arg-core-audit-trail-details
+#' @template arg-sql-tableName
+#' @template arg-sql-sql
+#' @template arg-sql-params
 #' @export
 #'
 EngineDB <- R6::R6Class(
@@ -34,13 +45,19 @@ EngineDB <- R6::R6Class(
   # active bindings -----
   active = list(
 
+    # MARK: sf_root
+    #' @field sf_root Path to the StreamFind (.sf) project directory
+    sf_root = function() {
+      private$.sf_root
+    },
+
     # MARK: Metadata
     #' @field Metadata A [StreamFind::Metadata] object loaded from database
     Metadata = function(value) {
       if (missing(value)) {
         return(self$get_metadata())
       }
-      self$set_metadata(value)
+      self$add_metadata(value)
       invisible(self)
     },
 
@@ -50,7 +67,7 @@ EngineDB <- R6::R6Class(
       if (missing(value)) {
         return(self$get_configuration())
       }
-      self$set_configuration(value)
+      self$add_configuration(value)
       invisible(self)
     },
 
@@ -60,29 +77,11 @@ EngineDB <- R6::R6Class(
       if (missing(value)) {
         return(self$get_workflow())
       }
-      self$set_workflow(value)
+      self$add_workflow(value)
       invisible(self)
     },
 
-    # MARK: Analyses
-    #' @field Analyses Simple dummy analyses object
-    Analyses = function(value) {
-      if (missing(value)) {
-        return(self$get_analyses())
-      }
-      self$set_analyses(value)
-      invisible(self)
-    },
-
-    # MARK: Results
-    #' @field Results Simple dummy results object
-    Results = function(value) {
-      if (missing(value)) {
-        return(self$get_results())
-      }
-      self$set_results(value)
-      invisible(self)
-    },
+    # ...existing code...
 
     # MARK: AuditTrail
     #' @field AuditTrail Audit trail from database (read-only)
@@ -97,16 +96,10 @@ EngineDB <- R6::R6Class(
 
     # MARK: initialize
     #' @description Initialize EngineDB
-    #' @param project_dir Path to StreamFind project folder (.sf). EngineDB will place main.duckdb inside it.
-    #' @param metadata Optional metadata object or list to persist on init
-    #' @param workflow Optional workflow object/list/json to persist on init
-    #' @param analyses Optional analyses object (unused in base EngineDB)
-    #' @param configuration Optional configuration list to persist on init
     #' @param data_type Engine data type (internal; defaults to "Unknown")
     initialize = function(project_dir = "data.sf",
                           metadata = NULL,
                           workflow = NULL,
-                          analyses = NULL,
                           configuration = NULL,
                           data_type = "Unknown") {
 
@@ -114,93 +107,61 @@ EngineDB <- R6::R6Class(
       checkmate::assert_character(project_dir, len = 1)
       checkmate::assert_character(data_type, len = 1)
 
-      # Resolve .sf root and main DuckDB path
+      # Resolve .sf root and Engine DuckDB path
       sf_root <- project_dir
-      main_db <- project_dir
+      engine_db <- project_dir
       if (tolower(tools::file_ext(sf_root)) == "duckdb") {
         sf_root <- dirname(sf_root)
-        main_db <- project_dir
+        engine_db <- project_dir
       } else {
-        main_db <- file.path(sf_root, "main.duckdb")
+        engine_db <- file.path(sf_root, "Engine.duckdb")
       }
 
       # Ensure target directory exists and set private fields
       dir.create(sf_root, recursive = TRUE, showWarnings = FALSE)
       private$.sf_root <- sf_root
-      private$.db <- main_db
+      private$.db <- engine_db
       private$.id <- .generate_id("engine_")
       private$.data_type <- data_type
 
-      # Create database schema if needed
+      # Create or validate database schema
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
-      create_engine_duckdb_schema(conn)
-
-      # Check if engine table has required JSON columns (for existing databases)
-      tryCatch({
-        table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Engines)")
-        has_metadata <- "metadata" %in% table_info$name
-        has_config <- "configuration" %in% table_info$name
-        if (!has_metadata) {
-          message("Adding missing metadata column to Engines table...")
-          DBI::dbExecute(conn, "
-            ALTER TABLE Engines ADD COLUMN metadata JSON
-          ")
-        }
-        if (!has_config) {
-          message("Adding missing configuration column to engines table...")
-          DBI::dbExecute(conn, "
-            ALTER TABLE Engines ADD COLUMN configuration JSON
-          ")
-        }
-      }, error = function(e) {
-        # If table doesn't exist, create_engine_duckdb_schema already handled it
-        message("Schema migration check: ", e$message)
-      })
+      .create_engine_duckdb_schema(conn)
 
       # Ensure engine exists (single row)
       existing <- DBI::dbGetQuery(conn, "SELECT id, data_type FROM Engines")
       if (nrow(existing) > 0) {
-        if (!is.null(private$.id) && private$.id != existing$id[1]) {
-          message("EngineDB: using existing engine id ", existing$id[1], " (ignoring provided id).")
-        }
         private$.id <- existing$id[1]
-        DBI::dbExecute(conn, "
-          UPDATE Engines SET data_type = ?
-          WHERE id = ?
-        ", list(private$.data_type, private$.id))
+        sql <- " UPDATE Engines SET data_type = ? WHERE id = ?"
+        DBI::dbExecute(conn, sql, list(private$.data_type, private$.id))
       } else {
-        DBI::dbExecute(conn, "
-          INSERT INTO Engines (id, data_type)
-          VALUES (?, ?)
-        ", list(private$.id, private$.data_type))
+        sql <- "INSERT INTO Engines (id, data_type) VALUES (?, ?)"
+        DBI::dbExecute(conn, sql, list(private$.id, private$.data_type))
       }
 
-      # Persist project_dir and main_db path into configuration if not already present
+      # Persist project_dir and engine_db path into configuration if not already present
       current_cfg <- self$get_configuration()
       if (is.null(current_cfg)) current_cfg <- list()
-      path_cfg <- list(project_dir = private$.sf_root, main_db = private$.db)
+      path_cfg <- list(project_dir = private$.sf_root, engine_db = private$.db)
       missing_keys <- setdiff(names(path_cfg), names(current_cfg))
       if (length(missing_keys) > 0) {
         for (nm in missing_keys) current_cfg[[nm]] <- path_cfg[[nm]]
-        self$set_configuration(current_cfg)
+        self$add_configuration(current_cfg)
       }
 
       # Seed optional data
       if (!is.null(metadata)) {
-        try(self$set_metadata(metadata), silent = TRUE)
+        try(self$add_metadata(metadata), silent = TRUE)
       }
       if (!is.null(configuration)) {
-        try(self$set_configuration(configuration), silent = TRUE)
+        try(self$add_configuration(configuration), silent = TRUE)
       }
       if (!is.null(workflow)) {
-        try(self$set_workflow(workflow), silent = TRUE)
+        try(self$add_workflow(workflow), silent = TRUE)
       }
-      if (!is.null(analyses)) {
-        try(self$set_analyses(analyses), silent = TRUE)
-      }
-
-      message(paste("EngineDB initialized with ID:", private$.id))
+      
+      message(private$.data_type, " engine initialized on ", private$.sf_root)
     },
 
     # MARK: get_metadata
@@ -242,10 +203,9 @@ EngineDB <- R6::R6Class(
       }
     },
 
-    # MARK: set_metadata
+    # MARK: add_metadata
     #' @description Set metadata in database
-    #' @param metadata A Metadata object or named list
-    set_metadata = function(metadata) {
+    add_metadata = function(metadata) {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       DBI::dbExecute(conn, "BEGIN")
@@ -285,14 +245,13 @@ EngineDB <- R6::R6Class(
       rollback_needed <- FALSE
 
       # Add audit trail entry
-      self$add_audit_entry("update", "Metadata", NULL, list(operation = "set_metadata"))
+      self$add_audit_entry("update", "Metadata", NULL, list(operation = "add_metadata"))
 
       invisible(self)
     },
 
     # MARK: get_configuration
     #' @description Get configuration from database
-    #' @return A configuration list or NULL
     get_configuration = function() {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -322,10 +281,9 @@ EngineDB <- R6::R6Class(
       return(config)
     },
 
-    # MARK: set_configuration
+    # MARK: add_configuration
     #' @description Set configuration in database
-    #' @param configuration A configuration list
-    set_configuration = function(configuration) {
+    add_configuration = function(configuration) {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       DBI::dbExecute(conn, "BEGIN")
@@ -361,14 +319,13 @@ EngineDB <- R6::R6Class(
       rollback_needed <- FALSE
 
       # Add audit trail entry
-      self$add_audit_entry("update", "Configuration", NULL, list(operation = "set_configuration"))
+      self$add_audit_entry("update", "Configuration", NULL, list(operation = "add_configuration"))
 
       invisible(self)
     },
 
     # MARK: get_workflow
     #' @description Get workflow from database
-    #' @return A Workflow object or NULL
     get_workflow = function() {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -428,10 +385,9 @@ EngineDB <- R6::R6Class(
       wf_obj
     },
 
-    # MARK: set_workflow
+    # MARK: add_workflow
     #' @description Set workflow in database
-    #' @param workflow A Workflow object, a list of ProcessingStep definitions, or a JSON string representing such a list
-    set_workflow = function(workflow) {
+    add_workflow = function(workflow) {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       DBI::dbExecute(conn, "BEGIN")
@@ -493,50 +449,15 @@ EngineDB <- R6::R6Class(
       rollback_needed <- FALSE
 
       # Add audit trail entry
-      self$add_audit_entry("update", "Workflow", workflow_id, list(operation = "set_workflow"))
+      self$add_audit_entry("update", "Workflow", workflow_id, list(operation = "add_workflow"))
 
       invisible(self)
     },
 
-    # MARK: get_analyses (dummy)
-    #' @description Get dummy analyses object
-    #' @return A simple analyses list
-    get_analyses = function() {
-      list(
-        type = private$.engine_data_type,
-        analyses = list(),
-        results = list()
-      )
-    },
-
-    # MARK: set_analyses (dummy)
-    #' @description Set dummy analyses object
-    #' @param analyses Analyses object (ignored in dummy implementation)
-    set_analyses = function(analyses) {
-      # Dummy implementation - just add audit trail
-      self$add_audit_entry("update", "Analyses", NULL, list(operation = "set_analyses"))
-      invisible(self)
-    },
-
-    # MARK: get_results (dummy)
-    #' @description Get dummy results object
-    #' @return A simple results list
-    get_results = function() {
-      list()
-    },
-
-    # MARK: set_results (dummy)
-    #' @description Set dummy results object
-    #' @param results Results object (ignored in dummy implementation)
-    set_results = function(results) {
-      # Dummy implementation - just add audit trail
-      self$add_audit_entry("update", "Results", NULL, list(operation = "set_results"))
-      invisible(self)
-    },
+    # ...existing code...
 
     # MARK: get_audit_trail
     #' @description Get audit trail from database
-    #' @return A data.frame with audit trail entries
     get_audit_trail = function() {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -552,10 +473,6 @@ EngineDB <- R6::R6Class(
 
     # MARK: add_audit_entry
     #' @description Add entry to audit trail
-    #' @param operation_type Type of operation
-    #' @param object_type Type of object
-    #' @param object_id Object identifier
-    #' @param details Additional details
     add_audit_entry = function(operation_type, object_type, object_id = NULL, details = NULL) {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -592,7 +509,6 @@ EngineDB <- R6::R6Class(
 
     # MARK: get_engine_info
     #' @description Get basic engine information
-    #' @return List with engine information
     get_engine_info = function() {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -607,9 +523,6 @@ EngineDB <- R6::R6Class(
 
     # MARK: query_db
     #' @description Execute SQL query on the database
-    #' @param sql SQL query string
-    #' @param params Query parameters
-    #' @return Query results
     query_db = function(sql, params = NULL) {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -618,7 +531,6 @@ EngineDB <- R6::R6Class(
 
     # MARK: list_db_tables
     #' @description List all tables in the database
-    #' @return Character vector of table names
     list_db_tables = function() {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -627,16 +539,17 @@ EngineDB <- R6::R6Class(
 
     # MARK: get_db_table_info
     #' @description Get information about a specific table
-    #' @param table_name Name of the table
-    #' @return Data frame with table information
-    get_db_table_info = function(table_name) {
+    get_db_table_info = function(tableName) {
       conn <- private$.connect()
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
-      .get_db_table_info(conn, table_name)
+      .get_db_table_info(conn, tableName)
     }
   )
 )
 
+# MARK: Utilities
+
+# MARK: .generate_id
 #' Generate a unique identifier
 #'
 #' @param prefix Character prefix for the ID
@@ -646,12 +559,13 @@ EngineDB <- R6::R6Class(
   paste0(prefix, gsub("-", "", uuid::UUIDgenerate()))
 }
 
+# MARK: .create_engine_duckdb_schema
 #' Create DuckDB schema for StreamFind EngineDB
 #'
 #' @param conn DuckDB connection object
 #' @return TRUE if successful
 #' @noRd
-create_engine_duckdb_schema <- function(conn) {
+.create_engine_duckdb_schema <- function(conn) {
   # Install JSON extension for enhanced JSON support
   tryCatch({
     DBI::dbExecute(conn, "INSTALL json")
@@ -672,6 +586,25 @@ create_engine_duckdb_schema <- function(conn) {
     )
   ")
 
+  # Ensure all columns for Engines table
+  tryCatch({
+    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Engines)")
+    required <- list(
+      metadata = "JSON",
+      configuration = "JSON",
+      created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+      updated_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+    )
+    for (col in names(required)) {
+      if (!(col %in% table_info$name)) {
+        message(sprintf("Adding missing %s column to Engines table...", col))
+        DBI::dbExecute(conn, sprintf("ALTER TABLE Engines ADD COLUMN %s %s", col, required[[col]]))
+      }
+    }
+  }, error = function(e) {
+    message("Schema migration check (Engines): ", e$message)
+  })
+
   # Workflow table
   DBI::dbExecute(conn, "
     CREATE TABLE IF NOT EXISTS Workflows (
@@ -684,6 +617,25 @@ create_engine_duckdb_schema <- function(conn) {
       FOREIGN KEY (engine_id) REFERENCES engines(id)
     )
   ")
+
+  # Ensure all columns for Workflows table
+  tryCatch({
+    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Workflows)")
+    required <- list(
+      data_type = "JSON",
+      methods = "JSON",
+      created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+      updated_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+    )
+    for (col in names(required)) {
+      if (!(col %in% table_info$name)) {
+        message(sprintf("Adding missing %s column to Workflows table...", col))
+        DBI::dbExecute(conn, sprintf("ALTER TABLE Workflows ADD COLUMN %s %s", col, required[[col]]))
+      }
+    }
+  }, error = function(e) {
+    message("Schema migration check (Workflows): ", e$message)
+  })
 
   # Audit Trail table
   DBI::dbExecute(conn, "
@@ -699,30 +651,31 @@ create_engine_duckdb_schema <- function(conn) {
     )
   ")
 
-  # Analyses catalog (paths to analysis-specific DuckDB files)
-  DBI::dbExecute(conn, "
-    CREATE TABLE IF NOT EXISTS AnalysisCatalog (
-      id VARCHAR PRIMARY KEY,
-      engine_id VARCHAR NOT NULL,
-      analysis_type VARCHAR NOT NULL,
-      db_path VARCHAR NOT NULL,
-      label VARCHAR,
-      status VARCHAR DEFAULT 'ready',
-      extra JSON,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (engine_id) REFERENCES engines(id)
+  # Ensure all columns for AuditTrails table
+  tryCatch({
+    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(AuditTrails)")
+    required <- list(
+      operation_type = "VARCHAR NOT NULL",
+      object_type = "VARCHAR NOT NULL",
+      object_id = "VARCHAR",
+      operation_details = "VARCHAR",
+      timestamp = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
     )
-  ")
+    for (col in names(required)) {
+      if (!(col %in% table_info$name)) {
+        message(sprintf("Adding missing %s column to AuditTrails table...", col))
+        DBI::dbExecute(conn, sprintf("ALTER TABLE AuditTrails ADD COLUMN %s %s", col, required[[col]]))
+      }
+    }
+  }, error = function(e) {
+    message("Schema migration check (AuditTrails): ", e$message)
+  })
+
 
   # Create indexes for better performance
   DBI::dbExecute(conn, "CREATE INDEX IF NOT EXISTS idx_Workflows_engine ON Workflows(engine_id)")
   DBI::dbExecute(conn, "CREATE INDEX IF NOT EXISTS idx_AuditTrails_engine ON AuditTrails(engine_id)")
-  DBI::dbExecute(conn, "CREATE INDEX IF NOT EXISTS idx_AnalysisCatalog_engine ON AnalysisCatalog(engine_id)")
+  # ...existing code...
 
-  message("DuckDB schema for StreamFind Engine created successfully!")
-  TRUE
+  invisible(TRUE)
 }
-
-# Null coalescing operator
-`%||%` <- function(x, y) if (is.null(x)) y else x

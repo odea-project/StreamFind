@@ -2872,6 +2872,29 @@ plot_matrix_suppression.MassSpecAnalyses <- function(
           return(NULL)
         }
 
+        ana$polarity <- unique(ana$spectra_headers$polarity)
+
+        if (!is.null(ana$polarity)) {
+          if (length(ana$polarity) > 1) {
+            if (all(ana$polarity %in% c(-1, 1))) {
+              ana$polarity <- paste(unique(ana$polarity), collapse = ", ")
+              ana$polarity <- gsub("-1", "negative", ana$polarity)
+              ana$polarity <- gsub("1", "positive", ana$polarity)
+            } else {
+              ana$polarity <- "unknown"
+            }
+          }
+          if (ana$polarity == 1) {
+            ana$polarity <- "positive"
+          } else if (ana$polarity == -1) {
+            ana$polarity <- "negative"
+          } else {
+            ana$polarity <- "unknown"
+          }
+        } else {
+          ana$polarity <- "unknown"
+        }
+
         message(" Done!")
 
         rpl <- replicates[x]

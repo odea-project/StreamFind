@@ -9,8 +9,8 @@ dbsus <- db[!grepl("IS", db$tag), ]
 
 
 # Path to the StreamFind data folder (.sf). EngineDB will create/use main.duckdb inside it.
-sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
-main_db <- file.path(sf_root, "main.duckdb")
+# sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
+# main_db <- file.path(sf_root, "main.duckdb")
 
 # MARK: EngineDB tests
 # engine <- EngineDB$new(project_dir = sf_root, data_type = "Unknown")
@@ -49,21 +49,91 @@ ms_files <- StreamFindData::get_ms_file_paths()[1:3]
 
 engine_ms <- MassSpecEngineDB$new(
   project_dir = sf_root,
-  analyses = ms_files
+  files = ms_files
 )
 
-engine_ms$info_analyses()
-engine_ms$list_db_tables()
-engine_ms$get_db_table_info("SpectraHeaders")
+# engine_ms$info_analyses()
+# engine_ms$list_db_tables()
+# engine_ms$get_db_table_info("SpectraHeaders")
 
-head(get_spectra_headers(engine_ms$Analyses))
+# head(get_spectra_headers(engine_ms$Analyses))
+# head(get_spectra_bpc(engine_ms$Analyses))
+# head(get_spectra_tic(engine_ms$Analyses))
+# plot_spectra_tic(engine_ms$Analyses, levels = 1, downsize = 2)
+# plot_spectra_bpc(engine_ms$Analyses, levels = 1, downsize = 2)
 
-head(get_spectra_bpc(engine_ms$Analyses))
+# get_raw_spectra(engine_ms$Analyses, levels = 1, mass = dbis[7, ], ppm = 20, sec = 30)
+# get_spectra_eic(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
+# get_spectra_ms1(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
+# get_spectra_ms2(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
 
-head(get_spectra_tic(engine_ms$Analyses))
-plot_spectra_tic(engine_ms$Analyses, levels = 1, downsize = 2)
+ps_ff <- MassSpecMethod_FindFeaturesDB_native()
 
-plot_spectra_bpc(engine_ms$Analyses, levels = 1, downsize = 2)
+run(ps_ff, engine = engine_ms)
 
 
-get_raw_spectra(engine_ms$Analyses, levels = 1, mass = dbis[7, ], ppm = 20, sec = 30)
+sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
+nts_db_path <- file.path(sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
+nts <- MassSpecResults_NonTargetAnalysisDB(db = nts_db_path)
+show(nts)
+
+list_db_tables(nts)
+
+
+
+
+
+
+
+
+.get_available_engines()
+length(.get_available_processing_methods(data_type = "MassSpec"))
+length(.get_available_methods(data_type = "MassSpec"))
+.list_processing_steps_metadata(data_type = "MassSpec")[, 1:4]
+
+# Dummy ProcessingStep S3 child for testing
+MassSpecMethod_TestStep <- function() {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "FindFeatures",
+    required = NA_character_,
+    algorithm = "TestStep",
+    input_class = NA_character_,
+    output_class = "DummyOutput",
+    parameters = list(dummy = TRUE),
+    number_permitted = 1,
+    version = "0.0.1",
+    software = "DummySoftware",
+    developer = "Test Developer",
+    contact = "test@example.com",
+    link = NA_character_,
+    doi = NA_character_
+  )
+  if (is.null(validate_object(x))) {
+    x
+  } else {
+    stop("Invalid parameters for MassSpecMethod_TestStep.")
+  }
+}
+
+validate_object.MassSpecMethod_TestStep <- function(x) {
+  # Dummy validation: always valid
+  TRUE
+}
+
+run.MassSpecMethod_TestStep <- function(x, engine = NULL) {
+  # Dummy run: returns a message
+  list(result = "Dummy run executed", engine = engine)
+}
+
+dummy_ps <- MassSpecMethod_TestStep()
+run.MassSpecMethod_TestStep(dummy_ps)
+
+.list_processing_steps_metadata(data_type = "MassSpec")[, 1:4]
+
+sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
+nts_db_path <- file.path(sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
+nts <- MassSpecResults_NonTargetAnalysisDB(db = nts_db_path)
+show(nts)
+
+list_db_tables(nts)

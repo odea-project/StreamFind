@@ -4,20 +4,18 @@
 \alias{EngineDB}
 \title{File-based Database Engine for StreamFind}
 \description{
-The \link{EngineDB} R6 class provides file-based storage for StreamFind Engine data using DuckDB. Data is accessed by reading from the database instead of keeping it in memory.
+The \link{EngineDB} R6 class provides file-based storage for StreamFind Engine data using DuckDB.
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
+\item{\code{sf_root}}{Path to the StreamFind (.sf) project directory}
+
 \item{\code{Metadata}}{A \link{Metadata} object loaded from database}
 
 \item{\code{Configuration}}{Engine configuration loaded from database}
 
 \item{\code{Workflow}}{A \link{Workflow} object loaded from database}
-
-\item{\code{Analyses}}{Simple dummy analyses object}
-
-\item{\code{Results}}{Simple dummy results object}
 
 \item{\code{AuditTrail}}{Audit trail from database (read-only)}
 }
@@ -28,15 +26,11 @@ The \link{EngineDB} R6 class provides file-based storage for StreamFind Engine d
 \itemize{
 \item \href{#method-EngineDB-new}{\code{EngineDB$new()}}
 \item \href{#method-EngineDB-get_metadata}{\code{EngineDB$get_metadata()}}
-\item \href{#method-EngineDB-set_metadata}{\code{EngineDB$set_metadata()}}
+\item \href{#method-EngineDB-add_metadata}{\code{EngineDB$add_metadata()}}
 \item \href{#method-EngineDB-get_configuration}{\code{EngineDB$get_configuration()}}
-\item \href{#method-EngineDB-set_configuration}{\code{EngineDB$set_configuration()}}
+\item \href{#method-EngineDB-add_configuration}{\code{EngineDB$add_configuration()}}
 \item \href{#method-EngineDB-get_workflow}{\code{EngineDB$get_workflow()}}
-\item \href{#method-EngineDB-set_workflow}{\code{EngineDB$set_workflow()}}
-\item \href{#method-EngineDB-get_analyses}{\code{EngineDB$get_analyses()}}
-\item \href{#method-EngineDB-set_analyses}{\code{EngineDB$set_analyses()}}
-\item \href{#method-EngineDB-get_results}{\code{EngineDB$get_results()}}
-\item \href{#method-EngineDB-set_results}{\code{EngineDB$set_results()}}
+\item \href{#method-EngineDB-add_workflow}{\code{EngineDB$add_workflow()}}
 \item \href{#method-EngineDB-get_audit_trail}{\code{EngineDB$get_audit_trail()}}
 \item \href{#method-EngineDB-add_audit_entry}{\code{EngineDB$add_audit_entry()}}
 \item \href{#method-EngineDB-get_engine_info}{\code{EngineDB$get_engine_info()}}
@@ -59,7 +53,6 @@ Initialize EngineDB
   project_dir = "data.sf",
   metadata = NULL,
   workflow = NULL,
-  analyses = NULL,
   configuration = NULL,
   data_type = "Unknown"
 )}\if{html}{\out{</div>}}
@@ -68,15 +61,17 @@ Initialize EngineDB
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{project_dir}}{Path to StreamFind project folder (.sf). EngineDB will place main.duckdb inside it.}
+\item{\code{project_dir}}{Path to StreamFind project folder (.sf). EngineDB will place main.duckdb inside it. If reusing an existing project_dir, EngineDB will connect to the existing Engine.duckdb file and preserve previous data. If the project_dir does not exist, EngineDB will create the directory and initialize a new Engine.duckdb file.}
 
-\item{\code{metadata}}{Optional metadata object or list to persist on init}
+\item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
+There is no type restrictions except for name (must be type character), author (must be type
+character) and date (must be class POSIXct or POSIXt). A file entry must be a character string
+with a full path to a file.}
 
-\item{\code{workflow}}{Optional workflow object/list/json to persist on init}
+\item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
+with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
-\item{\code{analyses}}{Optional analyses object (unused in base EngineDB)}
-
-\item{\code{configuration}}{Optional configuration list to persist on init}
+\item{\code{configuration}}{A list of configuration parameters to persist or use for the engine/database.}
 
 \item{\code{data_type}}{Engine data type (internal; defaults to "Unknown")}
 }
@@ -97,18 +92,21 @@ A Metadata object or NULL
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-set_metadata"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-set_metadata}{}}}
-\subsection{Method \code{set_metadata()}}{
+\if{html}{\out{<a id="method-EngineDB-add_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-EngineDB-add_metadata}{}}}
+\subsection{Method \code{add_metadata()}}{
 Set metadata in database
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$set_metadata(metadata)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{EngineDB$add_metadata(metadata)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{metadata}}{A Metadata object or named list}
+\item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
+There is no type restrictions except for name (must be type character), author (must be type
+character) and date (must be class POSIXct or POSIXt). A file entry must be a character string
+with a full path to a file.}
 }
 \if{html}{\out{</div>}}
 }
@@ -122,23 +120,20 @@ Get configuration from database
 \if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_configuration()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A configuration list or NULL
-}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-set_configuration"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-set_configuration}{}}}
-\subsection{Method \code{set_configuration()}}{
+\if{html}{\out{<a id="method-EngineDB-add_configuration"></a>}}
+\if{latex}{\out{\hypertarget{method-EngineDB-add_configuration}{}}}
+\subsection{Method \code{add_configuration()}}{
 Set configuration in database
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$set_configuration(configuration)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{EngineDB$add_configuration(configuration)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{configuration}}{A configuration list}
+\item{\code{configuration}}{A list of configuration parameters to persist or use for the engine/database.}
 }
 \if{html}{\out{</div>}}
 }
@@ -152,83 +147,21 @@ Get workflow from database
 \if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_workflow()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A Workflow object or NULL
-}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-set_workflow"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-set_workflow}{}}}
-\subsection{Method \code{set_workflow()}}{
+\if{html}{\out{<a id="method-EngineDB-add_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-EngineDB-add_workflow}{}}}
+\subsection{Method \code{add_workflow()}}{
 Set workflow in database
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$set_workflow(workflow)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{EngineDB$add_workflow(workflow)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{workflow}}{A Workflow object, a list of ProcessingStep definitions, or a JSON string representing such a list}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-get_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-get_analyses}{}}}
-\subsection{Method \code{get_analyses()}}{
-Get dummy analyses object
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_analyses()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-A simple analyses list
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-set_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-set_analyses}{}}}
-\subsection{Method \code{set_analyses()}}{
-Set dummy analyses object
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$set_analyses(analyses)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Analyses object (ignored in dummy implementation)}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-get_results"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-get_results}{}}}
-\subsection{Method \code{get_results()}}{
-Get dummy results object
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_results()}\if{html}{\out{</div>}}
-}
-
-\subsection{Returns}{
-A simple results list
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-set_results"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-set_results}{}}}
-\subsection{Method \code{set_results()}}{
-Set dummy results object
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$set_results(results)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{results}}{Results object (ignored in dummy implementation)}
+\item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
+with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -242,9 +175,6 @@ Get audit trail from database
 \if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_audit_trail()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-A data.frame with audit trail entries
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EngineDB-add_audit_entry"></a>}}
@@ -263,13 +193,13 @@ Add entry to audit trail
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{operation_type}}{Type of operation}
+\item{\code{operation_type}}{Type of operation performed (e.g., 'create', 'update', 'delete').}
 
-\item{\code{object_type}}{Type of object}
+\item{\code{object_type}}{Type of object affected (e.g., 'Metadata', 'Workflow', 'Analyses').}
 
-\item{\code{object_id}}{Object identifier}
+\item{\code{object_id}}{Identifier of the affected object (may be NULL).}
 
-\item{\code{details}}{Additional details}
+\item{\code{details}}{Additional details about the operation (as a named list or NULL).}
 }
 \if{html}{\out{</div>}}
 }
@@ -283,9 +213,6 @@ Get basic engine information
 \if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_engine_info()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-List with engine information
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EngineDB-query_db"></a>}}
@@ -299,14 +226,11 @@ Execute SQL query on the database
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{sql}}{SQL query string}
+\item{\code{sql}}{SQL query string to execute against the database.}
 
-\item{\code{params}}{Query parameters}
+\item{\code{params}}{Query parameters to be used with the SQL query (optional).}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Query results
 }
 }
 \if{html}{\out{<hr>}}
@@ -318,9 +242,6 @@ List all tables in the database
 \if{html}{\out{<div class="r">}}\preformatted{EngineDB$list_db_tables()}\if{html}{\out{</div>}}
 }
 
-\subsection{Returns}{
-Character vector of table names
-}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EngineDB-get_db_table_info"></a>}}
@@ -328,18 +249,15 @@ Character vector of table names
 \subsection{Method \code{get_db_table_info()}}{
 Get information about a specific table
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_db_table_info(table_name)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_db_table_info(tableName)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{table_name}}{Name of the table}
+\item{\code{tableName}}{Name of the table to query or retrieve information about.}
 }
 \if{html}{\out{</div>}}
-}
-\subsection{Returns}{
-Data frame with table information
 }
 }
 \if{html}{\out{<hr>}}

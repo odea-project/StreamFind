@@ -139,7 +139,7 @@ MassSpecMethod_SmoothChromatograms_savgol <- function(
 
 #' @export
 #' @noRd
-validate_object.MassSpecMethod_SmoothChromatograms_savgol <- function(self) {
+validate_object.MassSpecMethod_SmoothChromatograms_savgol <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SmoothChromatograms")
   checkmate::assert_choice(x$algorithm, "savgol")

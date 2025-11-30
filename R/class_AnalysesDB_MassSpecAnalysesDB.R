@@ -1,12 +1,12 @@
 # MARK: MassSpecAnalysesDB
 #' @title Database-backed Mass Spectrometry Analyses
 #' @description The `MassSpecAnalysesDB` class stores MassSpec analyses metadata and headers in a DuckDB file.
-#' It mirrors the structure of [StreamFind::MassSpecAnalyses] but keeps data on disk.
-#' @param db Path to the MassSpec analyses DuckDB file. Defaults to `data.sf/MassSpecAnalyses.duckdb`.
-#' @param files Optional vector or data.frame (see [StreamFind::.get_MassSpecAnalysis_from_files]) to import on creation.
-#' @param centroid Logical, passed to `.get_MassSpecAnalysis_from_files` during import.
-#' @param levels Integer vector, MS levels to keep during import.
+#' @template arg-ms-db
+#' @template arg-ms-files
+#' @template arg-ms-centroid
+#' @template arg-ms-levels
 #' @return An object of class `MassSpecAnalysesDB`, extending `AnalysesDB`.
+ #' @template arg-plot-colorPalette
 #' @export
 #' 
 MassSpecAnalysesDB <- function(
@@ -18,18 +18,15 @@ MassSpecAnalysesDB <- function(
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
   conn <- DBI::dbConnect(duckdb::duckdb(), db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-
-  .create_massspec_analyses_db_schema(conn)
-
-  # Inline import of analyses if files are provided (replace existing data)
+  .create_MassSpecAnalysesDB_Analyses_db_schema(conn)
+  .validate_MassSpecAnalysesDB_Analyses_db_schema(conn)
   if (!is.null(files)) {
     analyses <- .get_MassSpecAnalysis_from_files(files, centroid = centroid, levels = levels)
     if (is.null(analyses) || length(analyses) == 0) {
       stop("No analyses parsed from files.")
     }
-    .write_massspec_analyses_to_db(db, analyses, truncate = TRUE)
+    .write_massspec_analyses_to_db(conn, analyses, truncate = TRUE)
   }
-
   obj <- structure(
     list(
       db = db,
@@ -43,7 +40,7 @@ MassSpecAnalysesDB <- function(
 
 # MARK: validate_object
 #' @describeIn MassSpecAnalysesDB Validate the MassSpecAnalysesDB object (schema + type).
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalyses
 #' @export
 #' 
 validate_object.MassSpecAnalysesDB <- function(x) {
@@ -58,10 +55,12 @@ validate_object.MassSpecAnalysesDB <- function(x) {
   NextMethod()
 }
 
+# MARK: add_analyses
 #' @describeIn MassSpecAnalysesDB Add analyses to the DB (append; overwrites only duplicates)
-#' @param files Files/data.frame accepted by `.get_MassSpecAnalysis_from_files`.
-#' @param centroid Logical, passed to parser.
-#' @param levels Integer vector, MS levels to keep.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-ms-files
+#' @template arg-ms-centroid
+#' @template arg-ms-levels
 #' @export
 add_analyses.MassSpecAnalysesDB <- function(x, files, centroid = FALSE, levels = c(1, 2)) {
   analyses <- .get_MassSpecAnalysis_from_files(files, centroid = centroid, levels = levels)
@@ -75,40 +74,49 @@ add_analyses.MassSpecAnalysesDB <- function(x, files, centroid = FALSE, levels =
 
 # MARK: get_analysis_names
 #' @describeIn MassSpecAnalysesDB Get analysis names.
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalysesDB
 #' @export
 #' 
 get_analysis_names.MassSpecAnalysesDB <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  res <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  names(res) <- all_analyses
+  res
 }
 
 # MARK: get_replicate_names
 #' @describeIn MassSpecAnalysesDB Get replicate names.
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalysesDB
 #' @export
 #' 
 get_replicate_names.MassSpecAnalysesDB <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses ORDER BY analysis")$replicate
+  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  res <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses ORDER BY analysis")$replicate
+  names(res) <- all_analyses
+  res
 }
 
 # MARK: get_blank_names
 #' @describeIn MassSpecAnalysesDB Get blank names.
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalysesDB
 #' @export
 #' 
 get_blank_names.MassSpecAnalysesDB <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  DBI::dbGetQuery(conn, "SELECT blank FROM Analyses ORDER BY analysis")$blank
+  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  res <- DBI::dbGetQuery(conn, "SELECT blank FROM Analyses ORDER BY analysis")$blank
+  names(res) <- all_analyses
+  res
 }
 
 # MARK: set_replicate_names
 #' @describeIn MassSpecAnalysesDB Set replicate names.
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalysesDB
 #' @param value Character vector of replicate names matching the number of analyses.
 #' @export
 #' 
@@ -136,7 +144,7 @@ set_replicate_names.MassSpecAnalysesDB <- function(x, value) {
 
 # MARK: set_blank_names
 #' @describeIn MassSpecAnalysesDB Set blank names.
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalysesDB
 #' @param value Character vector of blank names matching the number of analyses.
 #' @export
 #' 
@@ -164,18 +172,21 @@ set_blank_names.MassSpecAnalysesDB <- function(x, value) {
 
 # MARK: get_concentrations
 #' @describeIn MassSpecAnalysesDB Get concentrations.
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalysesDB
 #' @export
 #' 
 get_concentrations.MassSpecAnalysesDB <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  DBI::dbGetQuery(conn, "SELECT concentration FROM Analyses ORDER BY analysis")$concentration
+  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  res <- DBI::dbGetQuery(conn, "SELECT concentration FROM Analyses ORDER BY analysis")$concentration
+  names(res) <- all_analyses
+  res
 }
 
 # MARK: set_concentrations
 #' @describeIn MassSpecAnalysesDB Set concentrations.
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalysesDB
 #' @param value Numeric vector of concentrations matching the number of analyses.
 #' @export
 #' 
@@ -203,8 +214,8 @@ set_concentrations.MassSpecAnalysesDB <- function(x, value) {
 }
 
 # MARK: info
-#' @describeIn MassSpecAnalysesDB Get a summary table (similar to info.MassSpecAnalyses).
-#' @param x MassSpecAnalysesDB object.
+#' @describeIn MassSpecAnalysesDB Get a summary table.
+#' @template arg-x-MassSpecAnalysesDB
 #' @export
 #' 
 info.MassSpecAnalysesDB <- function(x) {
@@ -216,6 +227,7 @@ info.MassSpecAnalysesDB <- function(x) {
       replicate,
       blank,
       type,
+      polarity,
       spectra_number AS spectra,
       chromatograms_number AS chromatograms,
       concentration
@@ -226,16 +238,16 @@ info.MassSpecAnalysesDB <- function(x) {
 
 # MARK: get_spectra_headers
 #' @describeIn MassSpecAnalysesDB Fetch spectra headers for a given analysis.
-#' @param x MassSpecAnalysesDB object.
-#' @param analysis Analysis name (file basename).
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
 #' @export
 #' 
-get_spectra_headers.MassSpecAnalysesDB <- function(x, analysis = NULL) {
+get_spectra_headers.MassSpecAnalysesDB <- function(x, analyses = NULL) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   if (!"SpectraHeaders" %in% DBI::dbListTables(conn)) return(NULL)
   all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  sel_names <- .resolve_analyses_selection(analysis, all_names)
+  sel_names <- .resolve_analyses_selection(analyses, all_names)
   rpls <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses")$replicate
   names(rpls) <- all_names
   if (length(sel_names) == 0) return(data.table::data.table())
@@ -255,19 +267,18 @@ get_spectra_headers.MassSpecAnalysesDB <- function(x, analysis = NULL) {
 }
 
 # MARK: get_spectra_tic
-#' @describeIn MassSpecAnalysesDB Get the total ion current (TIC) spectra for the specified analyses (DuckDB backend).
-#' @param x MassSpecAnalysesDB object.
-#' @param analyses Character vector of analysis names (default: all).
-#' @param levels Integer vector, MS levels to keep (default: c(1,2)).
-#' @param rt Numeric vector of length 2, retention time range (optional).
-#' @param as_list Logical, return list per analysis (default: FALSE).
+#' @describeIn MassSpecAnalysesDB Get the total ion current (TIC) spectra for the specified analyses.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-rt
 #' @export
+#' 
 get_spectra_tic.MassSpecAnalysesDB <- function(
   x,
   analyses = NULL,
   levels = c(1, 2),
-  rt = NULL,
-  as_list = FALSE
+  rt = NULL
 ) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -294,20 +305,77 @@ get_spectra_tic.MassSpecAnalysesDB <- function(
   data.table::rbindlist(value, fill = TRUE)
 }
 
-# MARK: get_spectra_bpc
-#' @describeIn MassSpecAnalysesDB Get the base peak chromatograms (BPC) spectra for the specified analyses (DuckDB backend).
-#' @param x MassSpecAnalysesDB object.
-#' @param analyses Character vector of analysis names (default: all).
-#' @param levels Integer vector, MS levels to keep (default: c(1,2)).
-#' @param rt Numeric vector of length 2, retention time range (optional).
-#' @param as_list Logical, return list per analysis (default: FALSE).
+# MARK: plot_spectra_tic
+#' @describeIn MassSpecAnalysesDB Plot total ion current (TIC) spectra for the specified analyses.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-rt
+#' @template arg-plot-downsize
+#' @template arg-plot-xLab
+#' @template arg-plot-yLab
+#' @template arg-plot-title
+#' @template arg-plot-groupBy
+#' @template arg-plot-interactive
+#' @template arg-plot-colorPalette
 #' @export
-get_spectra_bpc.MassSpecAnalysesDB <- function(
+#' 
+plot_spectra_tic.MassSpecAnalysesDB <- function(
   x,
   analyses = NULL,
   levels = c(1, 2),
   rt = NULL,
-  as_list = FALSE
+  downsize = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "analysis",
+  interactive = TRUE,
+  colorPalette = NULL
+) {
+  tic <- get_spectra_tic(x, analyses, levels, rt)
+  if (nrow(tic) == 0) {
+    message("\U2717 TIC not found for the analyses!")
+    return(NULL)
+  }
+  if (!is.null(downsize) && downsize > 0 && nrow(tic) > downsize) {
+    tic <- as.data.table(tic)
+    tic$rt <- floor(tic$rt / downsize) * downsize
+    tic <- tic[, lapply(.SD, function(col) {
+      if (is.numeric(col)) mean(col, na.rm = TRUE)
+      else if (is.character(col)) col[1]
+      else col[1]
+    }), by = .(rt, analysis)]
+  }
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  if (is.null(title)) title <- "Total Ion Current (TIC)"
+  .plot_lines_tabular_data(
+    data = tic,
+    xvar = "rt",
+    yvar = "tic",
+    groupBy = groupBy,
+    interactive = interactive,
+    title = title,
+    xLab = xLab,
+    yLab = yLab,
+    colorPalette = colorPalette
+  )
+}
+
+# MARK: get_spectra_bpc
+#' @describeIn MassSpecAnalysesDB Get the base peak chromatograms (BPC) spectra for the specified analyses.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-rt
+#' @export
+#' 
+get_spectra_bpc.MassSpecAnalysesDB <- function(
+  x,
+  analyses = NULL,
+  levels = c(1, 2),
+  rt = NULL
 ) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -334,9 +402,67 @@ get_spectra_bpc.MassSpecAnalysesDB <- function(
   data.table::rbindlist(value, fill = TRUE)
 }
 
+# MARK: plot_spectra_bpc
+#' @describeIn MassSpecAnalysesDB Plot base peak chromatogram (BPC) spectra for the specified analyses.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
+#' @template arg-ms-levels
+#' @template arg-ms-rt
+#' @template arg-plot-downsize
+#' @template arg-plot-xLab
+#' @template arg-plot-yLab
+#' @template arg-plot-title
+#' @template arg-plot-groupBy
+#' @template arg-plot-interactive
+#' @template arg-plot-colorPalette
+#' @export
+#' 
+plot_spectra_bpc.MassSpecAnalysesDB <- function(
+  x,
+  analyses = NULL,
+  levels = c(1, 2),
+  rt = NULL,
+  downsize = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "analysis",
+  interactive = TRUE,
+  colorPalette = NULL
+) {
+  bpc <- get_spectra_bpc(x, analyses, levels, rt)
+  if (nrow(bpc) == 0) {
+    message("\U2717 BPC not found for the analyses!")
+    return(NULL)
+  }
+  if (!is.null(downsize) && downsize > 0 && nrow(bpc) > downsize) {
+    bpc <- as.data.table(bpc)
+    bpc[, rt := floor(rt / downsize) * downsize]
+    bpc <- bpc[, lapply(.SD, function(col) {
+      if (is.numeric(col)) mean(col, na.rm = TRUE)
+      else if (is.character(col)) col[1]
+      else col[1]
+    }), by = .(rt, analysis)]
+  }
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  if (is.null(title)) title <- "Base Peak Chromatogram (BPC)"
+  .plot_lines_tabular_data(
+    data = bpc,
+    xvar = "rt",
+    yvar = "bpint",
+    groupBy = groupBy,
+    interactive = interactive,
+    title = title,
+    xLab = xLab,
+    yLab = yLab,
+    colorPalette = colorPalette
+  )
+}
+
 # MARK: get_raw_spectra
-#' @describeIn MassSpecAnalysesDB Get raw spectra data from specified analyses, returning a `data.table` with the spectra data (DuckDB backend).
-#' @param x MassSpecAnalysesDB object.
+#' @describeIn MassSpecAnalysesDB Get raw spectra data from specified analyses, returning a `data.table` with the spectra data.
+#' @template arg-x-MassSpecAnalysesDB
 #' @template arg-analyses
 #' @template arg-ms-levels
 #' @template arg-ms-mass
@@ -352,6 +478,7 @@ get_spectra_bpc.MassSpecAnalysesDB <- function(
 #' @template arg-ms-minIntensityMS1
 #' @template arg-ms-minIntensityMS2
 #' @export
+#' 
 get_raw_spectra.MassSpecAnalysesDB <- function(
   x,
   analyses = NULL,
@@ -463,18 +590,258 @@ get_raw_spectra.MassSpecAnalysesDB <- function(
   spec
 }
 
-# MARK: get_chromatograms_headers
-#' @describeIn MassSpecAnalysesDB Fetch chromatograms headers for a given analysis.
-#' @param x MassSpecAnalysesDB object.
-#' @param analysis Analysis name (file basename).
+# MARK: get_spectra_eic
+#' @describeIn MassSpecAnalysesDB Get extracted ion chromatograms (EIC) for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
 #' @export
 #' 
-get_chromatograms_headers.MassSpecAnalysesDB <- function(x, analysis = NULL) {
+get_spectra_eic.MassSpecAnalysesDB <- function(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL
+) {
+  eic <- get_raw_spectra(
+    x,
+    analyses,
+    levels = 1,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    id,
+    allTraces = TRUE,
+    isolationWindow = 1.3,
+    minIntensityMS1 = 0,
+    minIntensityMS2 = 0
+  )
+  if (nrow(eic) > 0) {
+    intensity <- NULL
+    eic <- data.table::as.data.table(eic)
+    if (!"id" %in% colnames(eic)) {
+      eic$id <- NA_character_
+    }
+    if (!"polarity" %in% colnames(eic)) {
+      eic$polarity <- 0
+    }
+    cols_summary <- c("analysis", "replicate", "polarity", "id", "rt")
+    intensity <- NULL
+    mz <- NULL
+    eic <- eic[, .(intensity = max(intensity), mz = mean(mz)), by = cols_summary]
+    sel_cols <- c("analysis", "replicate", "id", "polarity", "rt", "mz", "intensity")
+    eic <- eic[, sel_cols, with = FALSE]
+    eic <- unique(eic)
+  }
+  eic
+}
+
+# MARK: get_spectra_ms1
+#' @describeIn MassSpecAnalysesDB Get MS1 spectra for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-ms-mzClust
+#' @template arg-ms-presence
+#' @template arg-ms-minIntensity
+#' @export
+#' 
+get_spectra_ms1.MassSpecAnalysesDB <- function(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  mzClust = 0.003,
+  presence = 0.8,
+  minIntensity = 1000
+) {
+  ms1 <- get_raw_spectra(
+    x,
+    analyses,
+    levels = 1,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    id,
+    allTraces = TRUE,
+    minIntensityMS1 = minIntensity,
+    minIntensityMS2 = 0
+  )
+  if (nrow(ms1) == 0) {
+    return(ms1)
+  }
+  if (!"id" %in% colnames(ms1)) {
+    hd <- get_spectra_headers(x, analyses)
+    has_ion_mobility <- any(hd$mobility > 0)
+    if (has_ion_mobility) {
+      ms1$id <- paste(
+        round(min(ms1$mz), 4), "-",
+        round(max(ms1$mz), 4), "/",
+        round(max(ms1$rt), 0), "-",
+        round(min(ms1$rt), 0), "/",
+        round(max(ms1$mobility), 0), "-",
+        round(min(ms1$mobility), 0), sep = ""
+      )
+    } else {
+      ms1$id <- paste(
+        round(min(ms1$mz), 4), "-",
+        round(max(ms1$mz), 4), "/",
+        round(max(ms1$rt), 0), "-",
+        round(min(ms1$rt), 0), sep = ""
+      )
+    }
+  }
+  if (!is.numeric(mzClust)) {
+    mzClust <- 0.01
+  }
+  ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id, "_", ms1$polarity)
+  ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, FALSE)
+  ms1_df <- data.table::rbindlist(ms1_list, fill = TRUE)
+  ms1_df <- ms1_df[order(ms1_df$mz), ]
+  ms1_df <- ms1_df[order(ms1_df$id), ]
+  ms1_df <- ms1_df[order(ms1_df$analysis), ]
+  rpls <- get_replicate_names(x)
+  ms1_df$replicate <- rpls[ms1_df$analysis]
+  data.table::setcolorder(ms1_df, c("analysis", "replicate"))
+  ms1_df
+}
+
+# MARK: get_spectra_ms2
+#' @describeIn MassSpecAnalysesDB Get MS2 spectra for the specified analyses and targets.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-ms-isolationWindow
+#' @template arg-ms-mzClust
+#' @template arg-ms-presence
+#' @template arg-ms-minIntensity
+#' @export
+#' 
+get_spectra_ms2.MassSpecAnalysesDB <- function(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  isolationWindow = 1.3,
+  mzClust = 0.005,
+  presence = 0.8,
+  minIntensity = 0
+) {
+  ms2 <- get_raw_spectra(
+    x,
+    analyses,
+    levels = 2,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    id,
+    isolationWindow = isolationWindow,
+    allTraces = FALSE,
+    minIntensityMS1 = 0,
+    minIntensityMS2 = minIntensity
+  )
+  if (nrow(ms2) == 0) {
+    return(ms2)
+  }
+  if (!"id" %in% colnames(ms2)) {
+    hd <- get_spectra_headers(x, analyses)
+    has_ion_mobility <- any(hd$mobility > 0)
+    if (has_ion_mobility) {
+      ms2$id <- paste(
+        round(min(ms2$mz), 4), "-",
+        round(max(ms2$mz), 4), "/",
+        round(max(ms2$rt), 0), "-",
+        round(min(ms2$rt), 0), "/",
+        round(max(ms2$mobility), 0), "-",
+        round(min(ms2$mobility), 0), sep = ""
+      )
+    } else {
+      ms2$id <- paste(
+        round(min(ms2$mz), 4), "-",
+        round(max(ms2$mz), 4), "/",
+        round(max(ms2$rt), 0), "-",
+        round(min(ms2$rt), 0), sep = ""
+      )
+    }
+  }
+  if (!is.numeric(mzClust)) {
+    mzClust <- 0.01
+  }
+  ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id, "_", ms2$polarity)
+  ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, FALSE)
+  ms2_df <- data.table::rbindlist(ms2_list, fill = TRUE)
+  ms2_df <- ms2_df[order(ms2_df$mz), ]
+  ms2_df <- ms2_df[order(ms2_df$id), ]
+  ms2_df <- ms2_df[order(ms2_df$analysis), ]
+  rpls <- get_replicate_names(x)
+  ms2_df$replicate <- rpls[ms2_df$analysis]
+  data.table::setcolorder(ms2_df, c("analysis", "replicate"))
+  ms2_df
+}
+
+# MARK: get_chromatograms_headers
+#' @describeIn MassSpecAnalysesDB Fetch chromatograms headers for a given analysis.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-analyses
+#' @export
+#' 
+get_chromatograms_headers.MassSpecAnalysesDB <- function(x, analyses = NULL) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   if (!"ChromatogramsHeaders" %in% DBI::dbListTables(conn)) return(NULL)
   all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  sel_names <- .resolve_analyses_selection(analysis, all_names)
+  sel_names <- .resolve_analyses_selection(analyses, all_names)
   rpls <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses")$replicate
   names(rpls) <- all_names
   if (length(sel_names) == 0) return(data.table::data.table())
@@ -495,9 +862,9 @@ get_chromatograms_headers.MassSpecAnalysesDB <- function(x, analysis = NULL) {
 
 # MARK: query_db
 #' @describeIn MassSpecAnalysesDB Internal: execute a query on the DB.
-#' @param x MassSpecAnalysesDB object.
-#' @param sql SQL query string.
-#' @param params Optional parameters for parameterized queries.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-sql-sql
+#' @template arg-sql-params
 #' @export
 #' 
 query_db.MassSpecAnalysesDB <- function(x, sql, params = NULL) {
@@ -508,7 +875,7 @@ query_db.MassSpecAnalysesDB <- function(x, sql, params = NULL) {
 
 # MARK: list_db_tables
 #' @describeIn MassSpecAnalysesDB Internal: list tables in the DB.
-#' @param x MassSpecAnalysesDB object.
+#' @template arg-x-MassSpecAnalysesDB
 #' @export
 #' 
 list_db_tables.MassSpecAnalysesDB <- function(x) {
@@ -519,25 +886,35 @@ list_db_tables.MassSpecAnalysesDB <- function(x) {
 
 # MARK: get_db_table_info
 #' @describeIn MassSpecAnalysesDB Internal: get table info from the DB.
-#' @param x MassSpecAnalysesDB object.
-#' @param table_name Name of the table to get info for.
+#' @template arg-x-MassSpecAnalysesDB
+#' @template arg-sql-tableName
 #' @export
 #' 
-get_db_table_info.MassSpecAnalysesDB <- function(x, table_name) {
+get_db_table_info.MassSpecAnalysesDB <- function(x, tableName) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .get_db_table_info(conn, table_name)
+  .get_db_table_info(conn, tableName)
 }
 
-# MARK: .create_massspec_analyses_db_schema
-#' @describeIn MassSpecAnalysesDB Internal: create schema if missing.
-#' @param conn DuckDB connection.
+# MARK: .validate_MassSpecAnalysesDB_analyses_dt
 #' @noRd
-#' 
-.create_massspec_analyses_db_schema <- function(conn) {
+.validate_MassSpecAnalysesDB_analyses_dt <- function(x) {
+  cols <- c(
+    "analysis", "replicate", "blank", "file", "format", "type", "polarity",
+    "spectra_number", "chromatograms_number", "concentration"
+  )
+  missing_cols <- setdiff(cols, colnames(x))
+  if (length(missing_cols) > 0) {
+    stop("Missing required columns in analyses data.table: ", paste(missing_cols, collapse = ", "))
+  }
+  invisible(TRUE)
+}
+
+# MARK: .create_MassSpecAnalysesDB_Analyses_db_schema
+#' @noRd
+.create_MassSpecAnalysesDB_Analyses_db_schema <- function(conn) {
   DBI::dbExecute(conn, "INSTALL json")
   DBI::dbExecute(conn, "LOAD json")
-
   DBI::dbExecute(conn, "
     CREATE TABLE IF NOT EXISTS Analyses (
       analysis VARCHAR PRIMARY KEY,
@@ -546,27 +923,58 @@ get_db_table_info.MassSpecAnalysesDB <- function(x, table_name) {
       file VARCHAR NOT NULL,
       format VARCHAR,
       type VARCHAR,
+      polarity VARCHAR,
       spectra_number INTEGER,
       chromatograms_number INTEGER,
       concentration DOUBLE,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   ")
+  DBI::dbExecute(conn, "
+    CREATE TABLE IF NOT EXISTS SpectraHeaders (
+      analysis VARCHAR
+    )
+  ")
 }
 
+# MARK: .validate_MassSpecAnalysesDB_Analyses_db_schema
 #' @noRd
-.write_massspec_analyses_to_db <- function(db, analyses, truncate = FALSE) {
-  dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
-  conn <- DBI::dbConnect(duckdb::duckdb(), db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .create_massspec_analyses_db_schema(conn)
+.validate_MassSpecAnalysesDB_Analyses_db_schema <- function(conn) {
+  tryCatch({
+    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Analyses)")
+    required <- list(
+      analysis = "VARCHAR PRIMARY KEY",
+      replicate = "VARCHAR",
+      blank = "VARCHAR",
+      file = "VARCHAR NOT NULL",
+      format = "VARCHAR",
+      type = "VARCHAR",
+      polarity = "VARCHAR",
+      spectra_number = "INTEGER",
+      chromatograms_number = "INTEGER",
+      concentration = "DOUBLE",
+      created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+    )
+    for (col in names(required)) {
+      if (!(col %in% table_info$name)) {
+        message(sprintf("Adding missing %s column to Analyses table...", col))
+        DBI::dbExecute(conn, sprintf("ALTER TABLE Analyses ADD COLUMN %s %s", col, required[[col]]))
+      }
+    }
+  }, error = function(e) {
+    stop("Schema migration check (Analyses): ", e$message)
+  })
+  invisible(TRUE)
+}
 
+# MARK: .write_massspec_analyses_to_db
+#' @noRd
+.write_massspec_analyses_to_db <- function(conn, analyses, truncate = FALSE) {
   incoming_names <- vapply(analyses, function(a) a$name, "")
   dup_incoming <- incoming_names[duplicated(incoming_names)]
   if (length(dup_incoming) > 0) {
     stop("Duplicate analyses within import batch: ", paste(unique(dup_incoming), collapse = ", "))
   }
-
   DBI::dbExecute(conn, "BEGIN")
   rollback_needed <- TRUE
   on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
@@ -597,6 +1005,7 @@ get_db_table_info.MassSpecAnalysesDB <- function(x, table_name) {
     file = vapply(analyses, function(a) a$file, NA_character_),
     format = vapply(analyses, function(a) a$format, NA_character_),
     type = vapply(analyses, function(a) a$type, NA_character_),
+    polarity = vapply(analyses, function(a) a$polarity, NA_character_),
     spectra_number = vapply(analyses, function(a) a$spectra_number, NA_integer_),
     chromatograms_number = vapply(analyses, function(a) a$chromatograms_number, NA_integer_),
     concentration = vapply(analyses, function(a) a$concentration, NA_real_),
@@ -645,117 +1054,4 @@ get_db_table_info.MassSpecAnalysesDB <- function(x, table_name) {
 
   DBI::dbExecute(conn, "COMMIT")
   rollback_needed <- FALSE
-}
-
-# MARK: plot_spectra_tic
-#' @describeIn MassSpecAnalysesDB Plot total ion current (TIC) spectra for the specified analyses (DuckDB backend).
-#' @param x MassSpecAnalysesDB object.
-#' @param analyses Analyses to plot (indices or names).
-#' @param levels Integer vector, MS levels to keep.
-#' @param rt Numeric vector of length 2, retention time range (optional).
-#' @param downsize Integer, number of points to downsize to (optional).
-#' @param xLab X axis label.
-#' @param yLab Y axis label.
-#' @param title Plot title.
-#' @param groupBy Column to use for color grouping (default: "analysis").
-#' @param interactive Logical, use plotly if TRUE, ggplot2 if FALSE.
-#' @export
-plot_spectra_tic.MassSpecAnalysesDB <- function(
-  x,
-  analyses = NULL,
-  levels = c(1, 2),
-  rt = NULL,
-  downsize = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  groupBy = "analysis",
-  interactive = TRUE,
-  color_palette = NULL
-) {
-  tic <- get_spectra_tic(x, analyses, levels, rt)
-  if (nrow(tic) == 0) {
-    message("\U2717 TIC not found for the analyses!")
-    return(NULL)
-  }
-  if (!is.null(downsize) && downsize > 0 && nrow(tic) > downsize) {
-    tic <- as.data.table(tic)
-    tic$rt <- floor(tic$rt / downsize) * downsize
-    tic <- tic[, lapply(.SD, function(col) {
-      if (is.numeric(col)) mean(col, na.rm = TRUE)
-      else if (is.character(col)) col[1]
-      else col[1]
-    }), by = .(rt, analysis)]
-  }
-  if (is.null(xLab)) xLab <- "Retention time / seconds"
-  if (is.null(yLab)) yLab <- "Intensity / counts"
-  if (is.null(title)) title <- "Total Ion Current (TIC)"
-  .plot_lines_tabular_data(
-    data = tic,
-    xvar = "rt",
-    yvar = "tic",
-    groupBy = groupBy,
-    interactive = interactive,
-    title = title,
-    xLab = xLab,
-    yLab = yLab,
-    color_palette = color_palette
-  )
-}
-
-# MARK: plot_spectra_bpc
-#' @describeIn MassSpecAnalysesDB Plot base peak chromatogram (BPC) spectra for the specified analyses (DuckDB backend).
-#' @param x MassSpecAnalysesDB object.
-#' @param analyses Analyses to plot (indices or names).
-#' @param levels Integer vector, MS levels to keep.
-#' @param rt Numeric vector of length 2, retention time range (optional).
-#' @param downsize Integer, number of points to downsize to (optional).
-#' @param xLab X axis label.
-#' @param yLab Y axis label.
-#' @param title Plot title.
-#' @param groupBy Column to use for color grouping (default: "analysis").
-#' @param interactive Logical, use plotly if TRUE, ggplot2 if FALSE.
-#' @param color_palette Optional vector of colors, otherwise uses an internal function.
-#' @export
-plot_spectra_bpc.MassSpecAnalysesDB <- function(
-  x,
-  analyses = NULL,
-  levels = c(1, 2),
-  rt = NULL,
-  downsize = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  groupBy = "analysis",
-  interactive = TRUE,
-  color_palette = NULL
-) {
-  bpc <- get_spectra_bpc(x, analyses, levels, rt)
-  if (nrow(bpc) == 0) {
-    message("\U2717 BPC not found for the analyses!")
-    return(NULL)
-  }
-  if (!is.null(downsize) && downsize > 0 && nrow(bpc) > downsize) {
-    bpc <- as.data.table(bpc)
-    bpc[, rt := floor(rt / downsize) * downsize]
-    bpc <- bpc[, lapply(.SD, function(col) {
-      if (is.numeric(col)) mean(col, na.rm = TRUE)
-      else if (is.character(col)) col[1]
-      else col[1]
-    }), by = .(rt, analysis)]
-  }
-  if (is.null(xLab)) xLab <- "Retention time / seconds"
-  if (is.null(yLab)) yLab <- "Intensity / counts"
-  if (is.null(title)) title <- "Base Peak Chromatogram (BPC)"
-  .plot_lines_tabular_data(
-    data = bpc,
-    xvar = "rt",
-    yvar = "bpint",
-    groupBy = groupBy,
-    interactive = interactive,
-    title = title,
-    xLab = xLab,
-    yLab = yLab,
-    color_palette = color_palette
-  )
 }

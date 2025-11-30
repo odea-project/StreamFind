@@ -830,6 +830,9 @@ run.MassSpecMethod_FindFeatures_kpic2 <- function(x, engine = NULL) {
   .run_find_features_patRoon(x, engine)
 }
 
+# MARK: qAlgorithms
+# qAlgorithms ------
+
 #' MassSpecMethod_FindFeatures_qalgorithms class
 #'
 #' @description The qAlgorithms uses a comprehensive peak model developed by
@@ -887,6 +890,9 @@ run.MassSpecMethod_FindFeatures_qalgorithms <- function(x, engine = NULL) {
   FALSE
 }
 
+# MARK: Native
+# Native ------
+
 #' @title MassSpecMethod_FindFeatures_native class
 #' @description Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.
 #' @param rtWindows data.frame with rtmin and rtmax columns for retention time windows for data inclusion.
@@ -897,7 +903,6 @@ run.MassSpecMethod_FindFeatures_qalgorithms <- function(x, engine = NULL) {
 #' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
 #' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
 #' @param base_quantile numeric(1) quantile to estimate the baseline in a mass cluster.
-#' 
 #' @export
 #'
 MassSpecMethod_FindFeatures_native <- function(
@@ -917,7 +922,7 @@ MassSpecMethod_FindFeatures_native <- function(
     required = NA_character_,
     algorithm = "native",
     input_class = NA_character_,
-    output_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis2",
     parameters = list(
       rtWindows = rtWindows,
       resolution_profile = as.integer(resolution_profile),

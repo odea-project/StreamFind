@@ -1,0 +1,1 @@
+#' @param x MassSpecAnalysesDB object.
