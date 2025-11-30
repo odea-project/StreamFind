@@ -935,6 +935,13 @@ get_db_table_info.MassSpecAnalysesDB <- function(x, tableName) {
       analysis VARCHAR
     )
   ")
+
+  DBI::dbExecute(conn, "
+    CREATE TABLE IF NOT EXISTS ChromatogramsHeaders (
+      analysis VARCHAR
+    )
+  ")
+  invisible(TRUE)
 }
 
 # MARK: .validate_MassSpecAnalysesDB_Analyses_db_schema
@@ -980,8 +987,8 @@ get_db_table_info.MassSpecAnalysesDB <- function(x, tableName) {
   on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
 
   if (truncate) {
-    DBI::dbExecute(conn, "DELETE FROM SpectraHeaders")
-    DBI::dbExecute(conn, "DELETE FROM ChromatogramsHeaders")
+    DBI::dbExecute(conn, "DROP TABLE IF EXISTS SpectraHeaders")
+    DBI::dbExecute(conn, "DROP TABLE IF EXISTS ChromatogramsHeaders")
     DBI::dbExecute(conn, "DELETE FROM Analyses")
   } else {
     # Overwrite duplicates only

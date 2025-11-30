@@ -25,6 +25,7 @@ The \link{EngineDB} R6 class provides file-based storage for StreamFind Engine d
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-EngineDB-new}{\code{EngineDB$new()}}
+\item \href{#method-EngineDB-print}{\code{EngineDB$print()}}
 \item \href{#method-EngineDB-get_metadata}{\code{EngineDB$get_metadata()}}
 \item \href{#method-EngineDB-add_metadata}{\code{EngineDB$add_metadata()}}
 \item \href{#method-EngineDB-get_configuration}{\code{EngineDB$get_configuration()}}
@@ -44,9 +45,6 @@ The \link{EngineDB} R6 class provides file-based storage for StreamFind Engine d
 \if{html}{\out{<a id="method-EngineDB-new"></a>}}
 \if{latex}{\out{\hypertarget{method-EngineDB-new}{}}}
 \subsection{Method \code{new()}}{
-Cleanup when object is destroyed
-
-
 Initialize EngineDB
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{EngineDB$new(
@@ -77,6 +75,16 @@ with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EngineDB-print"></a>}}
+\if{latex}{\out{\hypertarget{method-EngineDB-print}{}}}
+\subsection{Method \code{print()}}{
+Prints a summary to the console.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{EngineDB$print()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EngineDB-get_metadata"></a>}}

@@ -51,6 +51,7 @@ R6 child of EngineDB for MassSpec data that uses MassSpecAnalysesDB for on-disk 
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_engine_info"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_engine_info'><code>StreamFind::EngineDB$get_engine_info()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_metadata"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_metadata'><code>StreamFind::EngineDB$get_metadata()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_workflow"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_workflow'><code>StreamFind::EngineDB$get_workflow()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="print"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-print'><code>StreamFind::EngineDB$print()</code></a></span></li>
 </ul>
 </details>
 }}

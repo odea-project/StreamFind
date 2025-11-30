@@ -52,6 +52,9 @@ engine_ms <- MassSpecEngineDB$new(
   files = ms_files
 )
 
+engine_ms$Metadata[["project"]] <- "ms-demo"
+
+
 # engine_ms$info_analyses()
 # engine_ms$list_db_tables()
 # engine_ms$get_db_table_info("SpectraHeaders")
@@ -68,9 +71,16 @@ engine_ms <- MassSpecEngineDB$new(
 # get_spectra_ms2(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
 
 ps_ff <- MassSpecMethod_FindFeaturesDB_native()
+wf <- Workflow(list(ps_ff))
+show(wf)
+
+engine_ms$Workflow <- wf
+
+engine_ms$get_audit_trail()
+
+show(engine_ms$Workflow)
 
 run(ps_ff, engine = engine_ms)
-
 
 sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
 nts_db_path <- file.path(sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")

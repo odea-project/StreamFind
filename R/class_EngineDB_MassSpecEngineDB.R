@@ -20,7 +20,8 @@ MassSpecEngineDB <- R6::R6Class(
 
   private = list(
     .data_type = "MassSpec",
-    .Analyses = NULL
+    .Analyses = NULL,
+    .Results = list()
   ),
 
   active = list(
@@ -46,7 +47,11 @@ MassSpecEngineDB <- R6::R6Class(
     #' @field NonTargetAnalysis A MassSpecResults_NonTargetAnalysisDB object backed by DuckDB.
     NonTargetAnalysis = function() {
       nts_db_path <- file.path(private$.sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
-      MassSpecResults_NonTargetAnalysisDB(db = nts_db_path)
+      if (!file.exists(nts_db_path)) {
+        NULL
+      } else {
+        MassSpecResults_NonTargetAnalysisDB(db = nts_db_path)
+      }
     }
   ),
 
@@ -79,7 +84,6 @@ MassSpecEngineDB <- R6::R6Class(
       self$Analyses <- add_analyses(self$Analyses, files = files, centroid = centroid, levels = levels)
       invisible(self)
     },
-
     #' @description Get analysis names
     get_analysis_names = function() get_analysis_names(self$Analyses),
     #' @description Get replicate names
@@ -102,13 +106,6 @@ MassSpecEngineDB <- R6::R6Class(
     #' @description Get spectra headers for an analysis
     get_spectra_headers = function(analyses = NULL) get_spectra_headers(self$Analyses, analyses),
     #' @description Get chromatograms headers for an analysis
-    get_chromatograms_headers = function(analyses = NULL) get_chromatograms_headers(self$Analyses, analyses),
-    #' @description List tables in analyses DB
-    list_db_tables = function() list_db_tables(self$Analyses),
-    #' @description Get table info in analyses DB
-    get_db_table_info = function(tableName) get_db_table_info(self$Analyses, tableName),
-    #' @description Run query on analyses DB
- 
-    query_db = function(sql, params = NULL) query_db(self$Analyses, sql, params)
+    get_chromatograms_headers = function(analyses = NULL) get_chromatograms_headers(self$Analyses, analyses)
   )
 )

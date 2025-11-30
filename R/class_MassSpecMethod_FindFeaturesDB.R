@@ -15,7 +15,7 @@
 #' @export
 #'
 MassSpecMethod_FindFeaturesDB_native <- function(
-  rtWindows = data.frame(rtmin = 300, rtmax = 3600),
+  rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
   resolution_profile = c(35000L, 35000L, 35000L),
   noiseThreshold = 250,
   minSNR = 3,
@@ -64,7 +64,7 @@ validate_object.MassSpecMethod_FindFeaturesDB_native <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeaturesDB")
   checkmate::assert_choice(x$algorithm, "native")
-  checkmate::assert_data_frame(x$parameters$rtWindows, min.rows = 1)
+  checkmate::assert_data_table(data.table::as.data.table(x$parameters$rtWindows))
   checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
   checkmate::assert_integer(x$parameters$resolution_profile, len = 3, lower = 1)
   checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)

@@ -1,10 +1,7 @@
 # MARK: Workflow
-# Workflow -----
 #' @title Generic (top level) Workflow class and methods
 #' @description The `Workflow` class is an ordered list of [StreamFind::ProcessingStep] objects dedicated to a specific type of data.
-#' 
 #' @param processing_steps A list of [StreamFind::ProcessingStep] objects.
-#' 
 #' @export
 #' 
 Workflow <- function(processing_steps = list()) {
