@@ -13,11 +13,11 @@ The \link{EngineDB} R6 class provides file-based storage for StreamFind Engine d
 
 \item{\code{Metadata}}{A \link{Metadata} object loaded from database}
 
-\item{\code{Configuration}}{Engine configuration loaded from database}
-
 \item{\code{Workflow}}{A \link{Workflow} object loaded from database}
 
 \item{\code{AuditTrail}}{Audit trail from database (read-only)}
+
+\item{\code{Cache}}{A \link{CacheManager} object for managing cached data}
 }
 \if{html}{\out{</div>}}
 }
@@ -28,10 +28,10 @@ The \link{EngineDB} R6 class provides file-based storage for StreamFind Engine d
 \item \href{#method-EngineDB-print}{\code{EngineDB$print()}}
 \item \href{#method-EngineDB-get_metadata}{\code{EngineDB$get_metadata()}}
 \item \href{#method-EngineDB-add_metadata}{\code{EngineDB$add_metadata()}}
-\item \href{#method-EngineDB-get_configuration}{\code{EngineDB$get_configuration()}}
-\item \href{#method-EngineDB-add_configuration}{\code{EngineDB$add_configuration()}}
 \item \href{#method-EngineDB-get_workflow}{\code{EngineDB$get_workflow()}}
 \item \href{#method-EngineDB-add_workflow}{\code{EngineDB$add_workflow()}}
+\item \href{#method-EngineDB-run}{\code{EngineDB$run()}}
+\item \href{#method-EngineDB-run_workflow}{\code{EngineDB$run_workflow()}}
 \item \href{#method-EngineDB-get_audit_trail}{\code{EngineDB$get_audit_trail()}}
 \item \href{#method-EngineDB-add_audit_entry}{\code{EngineDB$add_audit_entry()}}
 \item \href{#method-EngineDB-get_engine_info}{\code{EngineDB$get_engine_info()}}
@@ -120,33 +120,6 @@ with a full path to a file.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-get_configuration"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-get_configuration}{}}}
-\subsection{Method \code{get_configuration()}}{
-Get configuration from database
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$get_configuration()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-EngineDB-add_configuration"></a>}}
-\if{latex}{\out{\hypertarget{method-EngineDB-add_configuration}{}}}
-\subsection{Method \code{add_configuration()}}{
-Set configuration in database
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$add_configuration(configuration)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{configuration}}{A list of configuration parameters to persist or use for the engine/database.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EngineDB-get_workflow"></a>}}
 \if{latex}{\out{\hypertarget{method-EngineDB-get_workflow}{}}}
 \subsection{Method \code{get_workflow()}}{
@@ -175,6 +148,33 @@ with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EngineDB-run"></a>}}
+\if{latex}{\out{\hypertarget{method-EngineDB-run}{}}}
+\subsection{Method \code{run()}}{
+Runs a processing method defined by the \link{ProcessingStep} object.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{EngineDB$run(step = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{step}}{A \link{ProcessingStep} object.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-EngineDB-run_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-EngineDB-run_workflow}{}}}
+\subsection{Method \code{run_workflow()}}{
+Runs all \link{ProcessingStep} objects in the \link{Workflow}.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{EngineDB$run_workflow()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-EngineDB-get_audit_trail"></a>}}
 \if{latex}{\out{\hypertarget{method-EngineDB-get_audit_trail}{}}}
 \subsection{Method \code{get_audit_trail()}}{
@@ -190,12 +190,7 @@ Get audit trail from database
 \subsection{Method \code{add_audit_entry()}}{
 Add entry to audit trail
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{EngineDB$add_audit_entry(
-  operation_type,
-  object_type,
-  object_id = NULL,
-  details = NULL
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{EngineDB$add_audit_entry(operation_type, object_type, details = NULL)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -204,8 +199,6 @@ Add entry to audit trail
 \item{\code{operation_type}}{Type of operation performed (e.g., 'create', 'update', 'delete').}
 
 \item{\code{object_type}}{Type of object affected (e.g., 'Metadata', 'Workflow', 'Analyses').}
-
-\item{\code{object_id}}{Identifier of the affected object (may be NULL).}
 
 \item{\code{details}}{Additional details about the operation (as a named list or NULL).}
 }

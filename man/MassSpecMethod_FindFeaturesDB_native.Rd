@@ -5,7 +5,7 @@
 \title{MassSpecMethod_FindFeaturesDB_native class}
 \usage{
 MassSpecMethod_FindFeaturesDB_native(
-  rtWindows = data.frame(rtmin = 300, rtmax = 3600),
+  rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
   resolution_profile = c(35000L, 35000L, 35000L),
   noiseThreshold = 250,
   minSNR = 3,

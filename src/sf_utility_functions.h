@@ -236,8 +236,11 @@ namespace SF_UTILITY
                                                const std::vector<float> &rt,
                                                const std::vector<float> &smoothed_intensity,
                                                const std::vector<float> &baseline,
-                                               float max_half_width, int min_traces,
-                                               bool debug = false, float debug_mz = 0.0f);
+                                               float max_half_width,
+                                               int min_traces,
+                                               float cycle_time,
+                                               bool debug = false,
+                                               float debug_mz = 0.0f);
 
   // Calculate FWHM boundaries
   std::pair<int, int> calculate_fwhm_boundaries(int peak_idx,

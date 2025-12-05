@@ -926,8 +926,7 @@ get_db_table_info.MassSpecAnalysesDB <- function(x, tableName) {
       polarity VARCHAR,
       spectra_number INTEGER,
       chromatograms_number INTEGER,
-      concentration DOUBLE,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      concentration DOUBLE
     )
   ")
   DBI::dbExecute(conn, "
@@ -959,8 +958,7 @@ get_db_table_info.MassSpecAnalysesDB <- function(x, tableName) {
       polarity = "VARCHAR",
       spectra_number = "INTEGER",
       chromatograms_number = "INTEGER",
-      concentration = "DOUBLE",
-      created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      concentration = "DOUBLE"
     )
     for (col in names(required)) {
       if (!(col %in% table_info$name)) {

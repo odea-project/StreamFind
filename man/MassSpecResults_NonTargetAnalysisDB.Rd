@@ -4,6 +4,8 @@
 \alias{MassSpecResults_NonTargetAnalysisDB}
 \alias{validate_object.MassSpecResults_NonTargetAnalysisDB}
 \alias{show.MassSpecResults_NonTargetAnalysisDB}
+\alias{get_features.MassSpecResults_NonTargetAnalysisDB}
+\alias{plot_features.MassSpecResults_NonTargetAnalysisDB}
 \title{Constructor and methods to handle non-target analysis results for mass spectrometry data}
 \usage{
 MassSpecResults_NonTargetAnalysisDB(
@@ -16,13 +18,111 @@ MassSpecResults_NonTargetAnalysisDB(
 \method{validate_object}{MassSpecResults_NonTargetAnalysisDB}(x)
 
 \method{show}{MassSpecResults_NonTargetAnalysisDB}(x)
+
+\method{get_features}{MassSpecResults_NonTargetAnalysisDB}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE
+)
+
+\method{plot_features}{MassSpecResults_NonTargetAnalysisDB}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  rtExpand = 120,
+  mzExpand = 0.001,
+  useLoadedData = TRUE,
+  filtered = FALSE,
+  legendNames = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  colorBy = "targets",
+  interactive = TRUE,
+  renderEngine = "webgl"
+)
 }
 \arguments{
+\item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
 \item{headers}{A list of data frames containing information about the spectra headers.}
 
-\item{features}{A list of data frames containing information about the features detected by \code{rcpp_nts_find_features2()}.}
+\item{features}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
+with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
 
 \item{x}{A \code{MassSpecResults_NonTargetAnalysisDB} object.}
+
+\item{mass}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
+and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
+and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
+data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
+and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
+minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
+must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
+\code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{mz}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
+\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
+retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
+and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
+calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
+retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
+\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
+arguments are not used.}
+
+\item{rt}{A vector with target retention time values (in seconds) or
+a two columns data.table or data.frame with minimum and maximum retention
+time values (in seconds).}
+
+\item{mobility}{A vector with target drift time values (in milliseconds) or
+a two columns data.table or data.frame with minimum and maximum drift
+time values (in milliseconds).}
+
+\item{ppm}{Numeric of length one with the mass deviation, in ppm.}
+
+\item{sec}{Numeric of length one with the time deviation, in seconds.}
+
+\item{millisec}{Numeric of length one with the drift time deviation,
+in milliseconds.}
+
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
+retention time range.}
+
+\item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
+right the mass range.}
+
+\item{legendNames}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
+the added targets as legend of the plot.}
+
+\item{xLab}{A string with the title for the x axis.}
+
+\item{yLab}{A string with the title for the y axis.}
+
+\item{colorBy}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
+\code{replicates}.}
+
+\item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
+
+\item{renderEngine}{The engine to render the data. The default is "webgl".}
 
 \item{info}{A data frame containing information about the analyses.}
 }
@@ -56,5 +156,9 @@ The \code{MassSpecResults_NonTargetAnalysis2} class is a child of the \link{Resu
 \item \code{validate_object(MassSpecResults_NonTargetAnalysisDB)}: Validates the MassSpecResults_NonTargetAnalysisDB object, returning NULL if valid.
 
 \item \code{show(MassSpecResults_NonTargetAnalysisDB)}: Prints a summary of the MassSpecResults_NonTargetAnalysisDB object.
+
+\item \code{get_features(MassSpecResults_NonTargetAnalysisDB)}: Retrieves features from the MassSpecResults_NonTargetAnalysisDB object based on specified criteria.
+
+\item \code{plot_features(MassSpecResults_NonTargetAnalysisDB)}: Plots features from the MassSpecResults_NonTargetAnalysisDB object according to the specified parameters.
 
 }}

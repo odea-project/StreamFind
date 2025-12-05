@@ -1082,8 +1082,11 @@ std::pair<int, int> SF_UTILITY::calculate_peak_boundaries(int peak_idx,
                                                          const std::vector<float> &rt,
                                                          const std::vector<float> &smoothed_intensity,
                                                          const std::vector<float> &baseline,
-                                                         float max_half_width, int min_traces,
-                                                         bool debug, float debug_mz)
+                                                         float max_half_width,
+                                                         int min_traces,
+                                                         float cycle_time,
+                                                         bool debug,
+                                                         float debug_mz)
 {
   const int n = static_cast<int>(rt.size());
   float apex_intensity = smoothed_intensity[peak_idx];
@@ -1097,6 +1100,12 @@ std::pair<int, int> SF_UTILITY::calculate_peak_boundaries(int peak_idx,
   // Move left from apex, looking for valley points
   for (int i = peak_idx - 1; i >= 0; --i)
   {
+    // Stop if there is a large RT gap (likely a break in the trace)
+    if (i < peak_idx - 1 && rt[i + 1] - rt[i] > cycle_time * 3.0f) {
+      left_idx = i + 1; // Stop at the trace closest to the apex
+      left_stop_reason = "gap > 3x cycle_time";
+      break;
+    }
     // Check max_half_width constraint
     if (rt[peak_idx] - rt[i] > max_half_width)
     {
@@ -1110,6 +1119,12 @@ std::pair<int, int> SF_UTILITY::calculate_peak_boundaries(int peak_idx,
     {
       left_idx = i;
       left_stop_reason = "intensity <= baseline * 1.1";
+      break;
+    }
+
+    if (smoothed_intensity[i] > apex_intensity * 1.2f) {
+      left_idx = i;
+      left_stop_reason = "intensity > 120% of apex (rising into another peak)";
       break;
     }
     
@@ -1172,6 +1187,12 @@ std::pair<int, int> SF_UTILITY::calculate_peak_boundaries(int peak_idx,
   // Move right from apex, looking for valley points
   for (int i = peak_idx + 1; i < n; ++i)
   {
+    // Stop if there is a large RT gap (likely a break in the trace)
+    if (i > peak_idx + 1 && rt[i] - rt[i - 1] > cycle_time * 3.0f) {
+      right_idx = i - 1;
+      right_stop_reason = "gap > 3x cycle_time";
+      break;
+    }
     // Check max_half_width constraint
     if (rt[i] - rt[peak_idx] > max_half_width)
     {
@@ -1185,6 +1206,12 @@ std::pair<int, int> SF_UTILITY::calculate_peak_boundaries(int peak_idx,
     {
       right_idx = i;
       right_stop_reason = "intensity <= baseline * 1.1";
+      break;
+    }
+
+    if (smoothed_intensity[i] > apex_intensity * 1.2f) {
+      right_idx = i;
+      right_stop_reason = "intensity > 120% of apex (rising into another peak)";
       break;
     }
     
@@ -1964,9 +1991,17 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
       if (peak_idx < minTraces / 2 || peak_idx >= n - minTraces / 2)
         continue;
 
-      auto [left_idx, right_idx] = calculate_peak_boundaries(peak_idx, cluster_rt, smoothed_intensity,
-                                                                         baseline, maxWidth / 2.0f, minTraces,
-                                                                         cluster_matches_debug_mz, debug_mz);
+      auto [left_idx, right_idx] = calculate_peak_boundaries(
+        peak_idx,
+        cluster_rt,
+        smoothed_intensity,
+        baseline,
+        maxWidth / 2.0f,
+        minTraces,
+        cycle_time,
+        cluster_matches_debug_mz,
+        debug_mz
+      );
       if (left_idx < right_idx)
       {
         peak_boundaries.emplace_back(peak_idx, std::make_pair(left_idx, right_idx));
@@ -2137,11 +2172,35 @@ std::vector<NTS2::FEATURE> SF_UTILITY::process_polarity_clusters(
       if (peak_intensity.empty()) continue;
 
       // Find maximum intensity and its position
-      auto max_it = std::max_element(peak_intensity.begin(), peak_intensity.end());
-      float peak_max_intensity = *max_it;
-      int max_position = std::distance(peak_intensity.begin(), max_it);
-      int actual_max_idx = left_idx + max_position; // Actual index in cluster data
+      // auto max_it = std::max_element(peak_intensity.begin(), peak_intensity.end());
+      // float peak_max_intensity = *max_it;
+      // int max_position = std::distance(peak_intensity.begin(), max_it);
+      // int actual_max_idx = left_idx + max_position; // Actual index in cluster data
+      // float rt_at_max = peak_rt[max_position];
 
+      float avg_width = peak_rt.back() - peak_rt.front(); // or use feature.width if available
+      float allowed_shift = avg_width * 0.5f;
+      float center_rt = peak_rt[peak_idx - left_idx]; // initial apex RT
+
+      // Find indices within allowed window
+      std::vector<int> allowed_indices;
+      for (size_t i = 0; i < peak_rt.size(); ++i) {
+        if (std::abs(peak_rt[i] - center_rt) <= allowed_shift) {
+            allowed_indices.push_back(i);
+        }
+      }
+      
+      // Search for max only within allowed_indices
+      int max_position = allowed_indices[0];
+      float peak_max_intensity = peak_intensity[max_position];
+      for (int idx : allowed_indices) {
+        if (peak_intensity[idx] > peak_max_intensity) {
+          peak_max_intensity = peak_intensity[idx];
+          max_position = idx;
+        }
+      }
+      int actual_max_idx = left_idx + max_position;
+      
       float rt_at_max = peak_rt[max_position];
       float mz_at_max = peak_mz[max_position];
 

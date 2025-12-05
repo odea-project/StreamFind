@@ -98,6 +98,7 @@ Collate:
     'class_internal_DataTypes.R'
     'class_internal_MassSpecTargets.R'
     'class_Config.R'
+    'class_CacheDB.R'
     'class_AuditTrail.R'
     'class_Metadata.R'
     'class_ProcessingStep.R'

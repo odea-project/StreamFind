@@ -33,9 +33,6 @@ R6 child of EngineDB for MassSpec data that uses MassSpecAnalysesDB for on-disk 
 \item \href{#method-MassSpecEngineDB-info_analyses}{\code{MassSpecEngineDB$info_analyses()}}
 \item \href{#method-MassSpecEngineDB-get_spectra_headers}{\code{MassSpecEngineDB$get_spectra_headers()}}
 \item \href{#method-MassSpecEngineDB-get_chromatograms_headers}{\code{MassSpecEngineDB$get_chromatograms_headers()}}
-\item \href{#method-MassSpecEngineDB-list_db_tables}{\code{MassSpecEngineDB$list_db_tables()}}
-\item \href{#method-MassSpecEngineDB-get_db_table_info}{\code{MassSpecEngineDB$get_db_table_info()}}
-\item \href{#method-MassSpecEngineDB-query_db}{\code{MassSpecEngineDB$query_db()}}
 \item \href{#method-MassSpecEngineDB-clone}{\code{MassSpecEngineDB$clone()}}
 }
 }
@@ -43,15 +40,18 @@ R6 child of EngineDB for MassSpec data that uses MassSpecAnalysesDB for on-disk 
 <details><summary>Inherited methods</summary>
 <ul>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="add_audit_entry"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-add_audit_entry'><code>StreamFind::EngineDB$add_audit_entry()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="add_configuration"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-add_configuration'><code>StreamFind::EngineDB$add_configuration()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="add_metadata"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-add_metadata'><code>StreamFind::EngineDB$add_metadata()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="add_workflow"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-add_workflow'><code>StreamFind::EngineDB$add_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_audit_trail"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_audit_trail'><code>StreamFind::EngineDB$get_audit_trail()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_configuration"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_configuration'><code>StreamFind::EngineDB$get_configuration()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_db_table_info"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_db_table_info'><code>StreamFind::EngineDB$get_db_table_info()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_engine_info"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_engine_info'><code>StreamFind::EngineDB$get_engine_info()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_metadata"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_metadata'><code>StreamFind::EngineDB$get_metadata()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="get_workflow"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-get_workflow'><code>StreamFind::EngineDB$get_workflow()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="list_db_tables"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-list_db_tables'><code>StreamFind::EngineDB$list_db_tables()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="print"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-print'><code>StreamFind::EngineDB$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="query_db"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-query_db'><code>StreamFind::EngineDB$query_db()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="run"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-run'><code>StreamFind::EngineDB$run()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="EngineDB" data-id="run_workflow"><a href='../../StreamFind/html/EngineDB.html#method-EngineDB-run_workflow'><code>StreamFind::EngineDB$run_workflow()</code></a></span></li>
 </ul>
 </details>
 }}
@@ -260,52 +260,6 @@ Get chromatograms headers for an analysis
 \describe{
 \item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngineDB-list_db_tables"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngineDB-list_db_tables}{}}}
-\subsection{Method \code{list_db_tables()}}{
-List tables in analyses DB
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$list_db_tables()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngineDB-get_db_table_info"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngineDB-get_db_table_info}{}}}
-\subsection{Method \code{get_db_table_info()}}{
-Get table info in analyses DB
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$get_db_table_info(tableName)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{tableName}}{Name of the table to query or retrieve information about.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-MassSpecEngineDB-query_db"></a>}}
-\if{latex}{\out{\hypertarget{method-MassSpecEngineDB-query_db}{}}}
-\subsection{Method \code{query_db()}}{
-Run query on analyses DB
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{MassSpecEngineDB$query_db(sql, params = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{sql}}{SQL query string to execute against the database.}
-
-\item{\code{params}}{Query parameters to be used with the SQL query (optional).}
 }
 \if{html}{\out{</div>}}
 }

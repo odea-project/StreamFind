@@ -45,7 +45,7 @@ dbsus <- db[!grepl("IS", db$tag), ]
 
 # MARK: EngineDB with MassSpec tests
 sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
-ms_files <- StreamFindData::get_ms_file_paths()[1:3]
+ms_files <- StreamFindData::get_ms_file_paths()[1]
 
 engine_ms <- MassSpecEngineDB$new(
   project_dir = sf_root,
@@ -53,7 +53,6 @@ engine_ms <- MassSpecEngineDB$new(
 )
 
 engine_ms$Metadata[["project"]] <- "ms-demo"
-
 
 # engine_ms$info_analyses()
 # engine_ms$list_db_tables()
@@ -70,17 +69,43 @@ engine_ms$Metadata[["project"]] <- "ms-demo"
 # get_spectra_ms1(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
 # get_spectra_ms2(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
 
-ps_ff <- MassSpecMethod_FindFeaturesDB_native()
+ps_ff <- MassSpecMethod_FindFeaturesDB_native(
+  rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600), resolution_profile = c(35000L, 35000L, 35000L), noiseThreshold = 250, minSNR = 3, minTraces = 3, baselineWindow = 200, maxWidth = 100, base_quantile = 0.1,
+  debug_mz = dbis$mass[1] + 1.007276
+)
+
 wf <- Workflow(list(ps_ff))
-show(wf)
 
 engine_ms$Workflow <- wf
 
-engine_ms$get_audit_trail()
+info(engine_ms$NonTargetAnalysis)
 
-show(engine_ms$Workflow)
+# engine_ms$get_audit_trail()
+# show(engine_ms$Workflow)
+
+clear_cache(engine_ms$Cache)
+engine_ms$run_workflow()
 
 run(ps_ff, engine = engine_ms)
+
+size(engine_ms$Cache)
+get_cache_info(engine_ms$Cache)
+show(engine_ms$Workflow)
+show(engine_ms$NonTargetAnalysis)
+
+get_features(
+  engine_ms$NonTargetAnalysis,
+  analyses = 1,
+  mass = dbis, ppm = 20
+)
+
+plot_features(
+  engine_ms$NonTargetAnalysis,
+  analyses = 1,
+  mass = dbis,
+  ppm = 20,
+  legendNames = TRUE
+)
 
 sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
 nts_db_path <- file.path(sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")

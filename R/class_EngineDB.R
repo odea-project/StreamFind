@@ -47,16 +47,6 @@ EngineDB <- R6::R6Class(
       invisible(self)
     },
 
-    # MARK: Configuration
-    #' @field Configuration Engine configuration loaded from database
-    Configuration = function(value) {
-      if (missing(value)) {
-        return(self$get_configuration())
-      }
-      self$add_configuration(value)
-      invisible(self)
-    },
-
     # MARK: Workflow
     #' @field Workflow A [StreamFind::Workflow] object loaded from database
     Workflow = function(value) {
@@ -67,12 +57,16 @@ EngineDB <- R6::R6Class(
       invisible(self)
     },
 
-    # ...existing code...
-
     # MARK: AuditTrail
     #' @field AuditTrail Audit trail from database (read-only)
     AuditTrail = function() {
       self$get_audit_trail()
+    },
+
+    # MARK: Cache
+    #' @field Cache A [StreamFind::CacheManager] object for managing cached data
+    Cache = function() {
+      CacheManager(db = private$.db_cache)
     }
   ),
 
@@ -89,14 +83,11 @@ EngineDB <- R6::R6Class(
       workflow = NULL,
       configuration = NULL,
       data_type = "Unknown") {
-      
       if (!requireNamespace("duckdb", quietly = TRUE)) {
         stop("duckdb package is required for EngineDB")
       }
-
       checkmate::assert_character(project_dir, len = 1)
       checkmate::assert_character(data_type, len = 1)
-      
       sf_root <- project_dir
       engine_db <- project_dir
       if (tolower(tools::file_ext(sf_root)) == "duckdb") {
@@ -106,6 +97,7 @@ EngineDB <- R6::R6Class(
         engine_db <- file.path(sf_root, "Engine.duckdb")
       }
       dir.create(sf_root, recursive = TRUE, showWarnings = FALSE)
+      .create_sf_data_project_icon(sf_root)
       private$.sf_root <- sf_root
       private$.db <- engine_db
       private$.db_cache <- file.path(sf_root, "Cache.duckdb")
@@ -114,44 +106,13 @@ EngineDB <- R6::R6Class(
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       conn_cache <- DBI::dbConnect(duckdb::duckdb(), private$.db_cache)
       on.exit(DBI::dbDisconnect(conn_cache), add = TRUE)
-      
-      .create_EngineDB_db_schema(conn)
+      .create_EngineDB_db_schema(conn, private$.data_type)
       .validate_EngineDB_db_schema(conn)
-      
-      existing <- DBI::dbGetQuery(conn, "SELECT rowid, data_type FROM Engine")
-      if (nrow(existing) > 0) {
-        sql <- "UPDATE Engine SET data_type = ? WHERE rowid = ?"
-        DBI::dbExecute(conn, sql, list(private$.data_type, existing$rowid[1]))
-      } else {
-        sql <- "INSERT INTO Engine (data_type) VALUES (?)"
-        DBI::dbExecute(conn, sql, list(private$.data_type))
-        self$add_metadata(Metadata())
-      }
-
-      existing_wf <- DBI::dbGetQuery(conn, "SELECT rowid FROM Workflow")
-      if (nrow(existing_wf) == 0) {
-        sql_wf <- "INSERT INTO Workflow (data_type, methods) VALUES (?, NULL)"
-        DBI::dbExecute(conn, sql_wf, list(private$.data_type))
-      } else {
-        sql_wf <- "UPDATE Workflow SET data_type = ? WHERE rowid = ?"
-        DBI::dbExecute(conn, sql_wf, list(private$.data_type, existing_wf$rowid[1]))
-      }
-
-      # current_cfg <- self$get_configuration()
-      # if (is.null(current_cfg)) current_cfg <- list()
-      # path_cfg <- list(sf_root = private$.sf_root, db = private$.db)
-      # missing_keys <- setdiff(names(path_cfg), names(current_cfg))
-      # if (length(missing_keys) > 0) {
-      #   for (nm in missing_keys) current_cfg[[nm]] <- path_cfg[[nm]]
-      #   self$add_configuration(current_cfg)
-      # }
-
+      .create_Cache_db_schema(conn_cache)
+      .validate_Cache_db_schema(conn_cache)
       if (!is.null(metadata)) {
         try(self$add_metadata(metadata), silent = TRUE)
       }
-      # if (!is.null(configuration)) {
-      #   try(self$add_configuration(configuration), silent = TRUE)
-      # }
       if (!is.null(workflow)) {
         try(self$add_workflow(workflow), silent = TRUE)
       }
@@ -203,65 +164,6 @@ EngineDB <- R6::R6Class(
       DBI::dbExecute(conn, "UPDATE Engine SET metadata = ? WHERE rowid = ?", list(json_data, 0))
       DBI::dbExecute(conn, "COMMIT")
       rollback_needed <- FALSE
-      invisible(self)
-    },
-
-    # MARK: get_configuration
-    #' @description Get configuration from database
-    get_configuration = function() {
-      conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
-      on.exit(DBI::dbDisconnect(conn), add = TRUE)
-      config_df <- DBI::dbGetQuery(conn, "SELECT configuration FROM Engine LIMIT 1")
-      if (nrow(config_df) == 0) return(NULL)
-      json_data <- config_df$configuration[1]
-      if (is.na(json_data) || is.null(json_data)) return(NULL)
-      config <- tryCatch({
-        jsonlite::fromJSON(json_data, simplifyVector = FALSE)
-      }, error = function(e) {
-        warning("Could not parse configuration JSON: ", e$message)
-        return(NULL)
-      })
-      return(config)
-    },
-
-    # MARK: add_configuration
-    #' @description Set configuration in database
-    add_configuration = function(configuration) {
-      conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
-      on.exit(DBI::dbDisconnect(conn), add = TRUE)
-      DBI::dbExecute(conn, "BEGIN")
-      rollback_needed <- TRUE
-      on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
-
-      if (is.null(configuration) || length(configuration) == 0) {
-        # Clear configuration
-        DBI::dbExecute(conn, "
-          UPDATE Engine SET configuration = NULL WHERE id = ?", list(private$.id))
-        DBI::dbExecute(conn, "COMMIT")
-        rollback_needed <- FALSE
-        return(invisible(self))
-      }
-
-      if (!is.list(configuration)) {
-        stop("configuration must be a named list")
-      }
-
-      # Convert to JSON
-      json_data <- jsonlite::toJSON(configuration, auto_unbox = TRUE)
-      json_data <- as.character(json_data)
-
-      # Update engine configuration
-      DBI::dbExecute(conn, "
-        UPDATE Engine
-        SET configuration = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
-      ", list(json_data, private$.id))
-      DBI::dbExecute(conn, "COMMIT")
-      rollback_needed <- FALSE
-
-      # Add audit trail entry
-      self$add_audit_entry("update", "Configuration", NULL, list(operation = "add_configuration"))
-
       invisible(self)
     },
 
@@ -337,20 +239,21 @@ EngineDB <- R6::R6Class(
       }
       if (length(self$Workflow) == 0) {
         self$Workflow <- Workflow()
-        
       }
       message("\U2699 Running ", step$method, " using ", step$algorithm)
       processed <- run(step, self)
-      
       if (processed) {
         if (step$method %in% get_methods(self$Workflow)) {
           if (step$number_permitted > 1) {
+            # If multiple instances are allowed, append
             self$Workflow[length(self$Workflow) + 1] <- step
           } else {
+            # Otherwise, replace existing
             step_idx <- which(get_methods(self$Workflow) %in% step$method)
             self$Workflow[step_idx] <- step
           }
         } else {
+          # New method, append
           self$Workflow[[length(self$Workflow) + 1]] <- step
         }
         self$add_audit_entry(
@@ -361,6 +264,25 @@ EngineDB <- R6::R6Class(
             algorithm = step$algorithm
           )
         )
+      }
+      invisible(self)
+    },
+
+    # MARK: run_workflow
+    #' @description Runs all [StreamFind::ProcessingStep] objects in the [StreamFind::Workflow].
+    run_workflow = function() {
+      if (length(self$Workflow) > 0) {
+        steps <- self$Workflow
+        results_files <- list.files(private$.sf_root, pattern = "^Results.*\\.duckdb$", full.names = TRUE)
+        if (length(results_files) > 0) {
+          message("\U1F5D1 Removing existing results database files...", appendLF = FALSE)
+          file.remove(results_files)
+          message("Done.")
+        }
+        self$Workflow <- Workflow()
+        lapply(steps, function(x) self$run(x))
+      } else {
+        warning("There are no processing steps to run!")
       }
       invisible(self)
     },
@@ -441,7 +363,7 @@ EngineDB <- R6::R6Class(
 
 # MARK: .create_EngineDB_db_schema
 #' @noRd
-.create_EngineDB_db_schema <- function(conn) {
+.create_EngineDB_db_schema <- function(conn, data_type) {
   tryCatch({
     DBI::dbExecute(conn, "INSTALL json")
     DBI::dbExecute(conn, "LOAD json")
@@ -461,8 +383,7 @@ EngineDB <- R6::R6Class(
   DBI::dbExecute(conn, "
     CREATE TABLE IF NOT EXISTS Workflow (
       data_type VARCHAR NOT NULL,
-      methods JSON,
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      methods JSON
     )
   ")
 
@@ -474,6 +395,29 @@ EngineDB <- R6::R6Class(
       timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   ")
+
+  # Engine table initialization
+  existing <- DBI::dbGetQuery(conn, "SELECT rowid, data_type FROM Engine")
+  if (nrow(existing) > 0) {
+    sql <- "UPDATE Engine SET data_type = ? WHERE rowid = ?"
+    DBI::dbExecute(conn, sql, list(data_type, existing$rowid[1]))
+  } else {
+    metadata <- Metadata()
+    json_data <- .convert_to_json(metadata)
+    sql <- "INSERT INTO Engine (data_type, metadata) VALUES (?, ?)"
+    DBI::dbExecute(conn, sql, list(data_type, json_data))
+  }
+
+  # Workflow table initialization
+  existing_wf <- DBI::dbGetQuery(conn, "SELECT rowid FROM Workflow")
+  if (nrow(existing_wf) == 0) {
+    sql_wf <- "INSERT INTO Workflow (data_type, methods) VALUES (?, NULL)"
+    DBI::dbExecute(conn, sql_wf, list(data_type))
+  } else {
+    sql_wf <- "UPDATE Workflow SET data_type = ? WHERE rowid = ?"
+    DBI::dbExecute(conn, sql_wf, list(data_type, existing_wf$rowid[1]))
+  }
+
   invisible(TRUE)
 }
 
@@ -532,4 +476,65 @@ EngineDB <- R6::R6Class(
   })
 
   invisible(TRUE)
+}
+
+# MARK: .create_sf_data_project_icon
+#' @noRd
+.create_sf_data_project_icon <- function(sf_root) {
+  if (.Platform$OS.type != "windows") return(invisible(FALSE))
+  
+  icon_path <- file.path(sf_root, "streamfind.ico")
+  if (!file.exists(icon_path)) {
+    sf_icon <- c(
+      system.file("app/www/streamfind.ico", package = "StreamFind", mustWork = FALSE),
+      file.path(getwd(), "inst", "app", "www", "streamfind.ico")
+    )
+    sf_icon <- sf_icon[file.exists(sf_icon)]
+    if (length(sf_icon) == 0) return(invisible(FALSE))
+    sf_icon <- sf_icon[[1]]
+    icon_path <- file.path(sf_root, basename(sf_icon))
+    if (!file.exists(icon_path)) {
+      file.copy(sf_icon, icon_path, overwrite = TRUE)
+      if (!file.exists(icon_path)) return(invisible(FALSE))
+    }
+    try(system2("attrib", c("+h", shQuote(icon_path))), silent = TRUE)
+  }
+  
+  ini_path <- file.path(sf_root, "desktop.ini")
+  if (!file.exists(ini_path)) {
+    ini <- c(
+      "[.ShellClassInfo]",
+      sprintf("IconResource=%s,0", basename(sf_icon)),
+      "IconIndex=0"
+    )
+    writeLines(ini, ini_path, useBytes = TRUE)
+    try(system2("attrib", c("+s", shQuote(sf_root))), silent = TRUE)
+    try(system2("attrib", c("+h", shQuote(ini_path))), silent = TRUE)
+  }
+  
+  invisible(TRUE)
+  
+  # Approach using magick to create icon from PNG
+  # icon_filename <- "streamfind.ico"
+  # icon_path <- file.path(sf_root, icon_filename)
+  # create_icon_from_png <- function(path) {
+  #   if (!requireNamespace("magick", quietly = TRUE)) return(invisible(FALSE))
+  #   icon_candidates <- c(
+  #     system.file("app/www/sf_icon.png", package = "StreamFind", mustWork = FALSE),
+  #     file.path(getwd(), "inst", "app", "www", "sf_icon.png")
+  #   )
+  #   icon_candidates <- icon_candidates[file.exists(icon_candidates)]
+  #   if (length(icon_candidates) == 0) return(invisible(FALSE))
+  #   fav <- icon_candidates[[1]]
+  #   img <- try(magick::image_read(fav), silent = TRUE)
+  #   if (inherits(img, "try-error")) return(invisible(FALSE))
+  #   sizes <- c(16, 20, 24, 32, 48, 64, 128, 256, 512)
+  #   frames <- lapply(sizes, function(px) try(magick::image_scale(img, sprintf("%dx%d", px, px)), silent = TRUE))
+  #   frames <- frames[!vapply(frames, inherits, logical(1), "try-error")]
+  #   if (length(frames) == 0) return(invisible(FALSE))
+  #   icon_stack <- do.call(c, frames)
+  #   ok <- try(magick::image_write(icon_stack, path = path, format = "ico"), silent = TRUE)
+  #   if (inherits(ok, "try-error")) return(invisible(FALSE))
+  #   invisible(TRUE)
+  # }
 }

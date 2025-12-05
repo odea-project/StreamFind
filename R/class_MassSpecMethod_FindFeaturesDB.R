@@ -95,6 +95,19 @@ run.MassSpecMethod_FindFeaturesDB_native <- function(x, engine = NULL) {
   headers_list <- split(headers, headers$analysis)
   parameters <- x$parameters
 
+  cache_manager <- engine$Cache
+  if (!is.null(cache_manager)) {
+    hash <- .make_hash(x, analyses, parameters)
+    cache_info <- get_cache_info(cache_manager)
+    fts <- load_cache(cache_manager, hash = hash)
+    if (nrow(fts) > 0) {
+      message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+      db <- file.path(engine$sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
+      MassSpecResults_NonTargetAnalysisDB(db, analyses, headers, fts)
+      return(invisible(TRUE))
+    }
+  }
+
   fts <- rcpp_nts_find_features2(
     info = analyses,
     spectra_headers = headers_list,
@@ -118,12 +131,16 @@ run.MassSpecMethod_FindFeaturesDB_native <- function(x, engine = NULL) {
   names(fts) <- analyses$analysis
   fts <- data.table::rbindlist(fts, fill = TRUE, idcol = "analysis")
   fts$group <- NULL
+
+  save_cache(
+    cache_manager,
+    name = paste0("FindFeaturesDB_native"),
+    hash = .make_hash(x, analyses, parameters),
+    description = "Features found with FindFeaturesDB_native method.",
+    data = fts
+  )
+  message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
   db <- file.path(engine$sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
-  MassSpecResults_NonTargetAnalysisDB(db, analyses, headers, fts)
-  # if (is.null(validate_object(nts))) {
-  #   engine$Analyses$results[["MassSpecResults_NonTargetAnalysis2"]] <- nts
-  #   TRUE
-  # } else {
-  #   FALSE
-  # }
+  invisible(MassSpecResults_NonTargetAnalysisDB(db, analyses, headers, fts))
+  invisible(TRUE)
 }
