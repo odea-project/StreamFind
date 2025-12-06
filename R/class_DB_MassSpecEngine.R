@@ -1,6 +1,6 @@
-## MARK: MassSpecEngineDB
-#' @title EngineDB dedicated to Mass Spectrometry (MS) data
-#' @description R6 child of EngineDB for MassSpec data that uses MassSpecAnalysesDB for on-disk storage.
+## MARK: DB_MassSpecEngine
+#' @title DB_Engine dedicated to Mass Spectrometry (MS) data
+#' @description R6 child of DB_Engine for MassSpec data that uses DB_MassSpecAnalyses for on-disk storage.
 #' @template arg-core-project-dir
 #' @template arg-core-metadata
 #' @template arg-core-workflow
@@ -14,49 +14,49 @@
 #' @template arg-sql-params
 #' @export
 #' 
-MassSpecEngineDB <- R6::R6Class(
-  "MassSpecEngineDB",
-  inherit = EngineDB,
+DB_MassSpecEngine <- R6::R6Class(
+  "DB_MassSpecEngine",
+  inherit = DB_Engine,
 
   private = list(
-    .data_type = "MassSpec",
+    .data_type = "DB_MassSpec",
     .Analyses = NULL,
     .Results = list()
   ),
 
   active = list(
-    #' @field Analyses A MassSpecAnalysesDB object backed by DuckDB.
+    #' @field Analyses A DB_MassSpecAnalyses object backed by DuckDB.
     Analyses = function(value) {
       if (missing(value)) {
         if (is.null(private$.Analyses)) {
-          private$.Analyses <- MassSpecAnalysesDB(db = file.path(private$.sf_root, "MassSpecAnalyses.duckdb"))
+          private$.Analyses <- DB_MassSpecAnalyses(db = file.path(private$.sf_root, "MassSpecAnalyses.duckdb"))
         }
         return(private$.Analyses)
       }
-      if (is(value, "MassSpecAnalysesDB")) {
+      if (is(value, "DB_MassSpecAnalyses")) {
         if (!is.null(validate_object(value))) {
-          warning("Invalid MassSpecAnalysesDB object! Not added.")
+          warning("Invalid DB_MassSpecAnalyses object! Not added.")
           return(invisible(self))
         }
         private$.Analyses <- value
       } else {
-        warning("Analyses must be a MassSpecAnalysesDB object! Not added.")
+        warning("Analyses must be a DB_MassSpecAnalyses object! Not added.")
       }
       invisible(self)
     },
-    #' @field NonTargetAnalysis A MassSpecResults_NonTargetAnalysisDB object backed by DuckDB.
+    #' @field NonTargetAnalysis A DB_MassSpecResults_NonTargetAnalysis object backed by DuckDB.
     NonTargetAnalysis = function() {
       nts_db_path <- file.path(private$.sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
       if (!file.exists(nts_db_path)) {
         NULL
       } else {
-        MassSpecResults_NonTargetAnalysisDB(db = nts_db_path)
+        DB_MassSpecResults_NonTargetAnalysis(db = nts_db_path)
       }
     }
   ),
 
   public = list(
-    #' @description Initialize MassSpecEngineDB
+    #' @description Initialize DB_MassSpecEngine
     initialize = function(project_dir = "data.sf",
                           metadata = NULL,
                           workflow = NULL,
@@ -69,9 +69,9 @@ MassSpecEngineDB <- R6::R6Class(
         metadata = metadata,
         workflow = workflow,
         configuration = configuration,
-        data_type = "MassSpec"
+        data_type = "DB_MassSpec"
       )
-      private$.Analyses <- MassSpecAnalysesDB(
+      private$.Analyses <- DB_MassSpecAnalyses(
         db = file.path(private$.sf_root, "MassSpecAnalyses.duckdb"),
         files = files,
         centroid = centroid,
@@ -109,3 +109,4 @@ MassSpecEngineDB <- R6::R6Class(
     get_chromatograms_headers = function(analyses = NULL) get_chromatograms_headers(self$Analyses, analyses)
   )
 )
+

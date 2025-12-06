@@ -1,13 +1,13 @@
-# MARK: AnalysesDB
+# MARK: DB_Analyses
 #' @title Base class for database-backed Analyses
 #' @description Minimal base class to represent analyses stored in a DuckDB file.
 #' Requires a `db` path and a `type` identifier.
 #' @param db Path to DuckDB file.
 #' @param data_type Data type string (e.g., "MassSpec").
-#' @return An object of class `AnalysesDB`.
+#' @return An object of class `DB_Analyses`.
 #' @export
 #' 
-AnalysesDB <- function(db, data_type) {
+DB_Analyses <- function(db, data_type) {
   checkmate::assert_character(db, len = 1, null.ok = FALSE)
   checkmate::assert_character(data_type, len = 1, null.ok = FALSE)
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
@@ -16,21 +16,21 @@ AnalysesDB <- function(db, data_type) {
       db = db,
       data_type = data_type
     ),
-    class = "AnalysesDB"
+    class = "DB_Analyses"
   )
 }
 
-#' @describeIn AnalysesDB Validate the AnalysesDB object.
-#' @param x AnalysesDB object.
+#' @describeIn DB_Analyses Validate the DB_Analyses object.
+#' @param x DB_Analyses object.
 #' @export
 #' 
-validate_object.AnalysesDB <- function(x) {
-  checkmate::assert_class(x, "AnalysesDB")
+validate_object.DB_Analyses <- function(x) {
+  checkmate::assert_class(x, "DB_Analyses")
   checkmate::assert_names(names(x), must.include = c("db", "data_type"))
   checkmate::assert_character(x$data_type, len = 1, null.ok = FALSE)
   checkmate::assert_character(x$db, len = 1, null.ok = FALSE)
   if (!file.exists(x$db)) {
-    stop("AnalysesDB file not found: ", x$db)
+    stop("DB_Analyses file not found: ", x$db)
   }
   NULL
 }

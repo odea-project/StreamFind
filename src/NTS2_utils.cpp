@@ -38,7 +38,7 @@ void NTS2::NTS_DATA::find_features(
                 << " -> threshold " << std::fixed << std::setprecision(6) << mzThreshold << " Da" << std::endl;
   }
 
-  bool debug = false;
+  // bool debug = false;
 
   for (size_t a = 0; a < analyses.size(); ++a)
   {

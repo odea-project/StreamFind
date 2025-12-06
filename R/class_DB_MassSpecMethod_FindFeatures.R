@@ -2,7 +2,7 @@
 # MARK: Native
 # Native ------
 
-#' @title MassSpecMethod_FindFeaturesDB_native class
+#' @title DB_MassSpecMethod_FindFeatures_native class
 #' @description Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.
 #' @param rtWindows data.frame with rtmin and rtmax columns for retention time windows for data inclusion.
 #' @param resolution_profile integer(3) vector defining mass resolution at 100, 400, and 1000 Da for calculating m/z clustering thresholds via linear model.
@@ -14,7 +14,7 @@
 #' @param base_quantile numeric(1) quantile to estimate the baseline in a mass cluster.
 #' @export
 #'
-MassSpecMethod_FindFeaturesDB_native <- function(
+DB_MassSpecMethod_FindFeatures_native <- function(
   rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
   resolution_profile = c(35000L, 35000L, 35000L),
   noiseThreshold = 250,
@@ -26,12 +26,12 @@ MassSpecMethod_FindFeaturesDB_native <- function(
   debug_mz = 0
 ) {
   x <- ProcessingStep(
-    type = "MassSpec",
-    method = "FindFeaturesDB",
+    type = "DB_MassSpec",
+    method = "FindFeatures",
     required = NA_character_,
     algorithm = "native",
-    input_class = "MassSpecAnalysesDB",
-    output_class = "MassSpecResults_NonTargetAnalysisDB",
+    input_class = "DB_MassSpecAnalyses",
+    output_class = "DB_MassSpecResults_NonTargetAnalysis",
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
@@ -54,15 +54,15 @@ MassSpecMethod_FindFeaturesDB_native <- function(
   if (is.null(validate_object(x))) {
     x
   } else {
-    stop("Invalid parameters for MassSpecMethod_FindFeaturesDB_native.")
+    stop("Invalid parameters for DB_MassSpecMethod_FindFeatures_native.")
   }
 }
 
 #' @export
 #' @noRd
-validate_object.MassSpecMethod_FindFeaturesDB_native <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "FindFeaturesDB")
+validate_object.DB_MassSpecMethod_FindFeatures_native <- function(x) {
+  checkmate::assert_choice(x$type, "DB_MassSpec")
+  checkmate::assert_choice(x$method, "FindFeatures")
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_data_table(data.table::as.data.table(x$parameters$rtWindows))
   checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
@@ -78,16 +78,16 @@ validate_object.MassSpecMethod_FindFeaturesDB_native <- function(x) {
 
 #' @export
 #' @noRd
-run.MassSpecMethod_FindFeaturesDB_native <- function(x, engine = NULL) {
-  if (!"MassSpecAnalysesDB" %in% class(engine$Analyses)) {
-    warning("Engine does not contain MassSpecAnalysesDB.")
+run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
+  if (!"DB_MassSpecAnalyses" %in% class(engine$Analyses)) {
+    warning("Engine does not contain DB_MassSpecAnalyses.")
     return(FALSE)
   }
 
   analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
 
   if (nrow(analyses) == 0) {
-    warning("No analyses found in the MassSpecAnalysesDB.")
+    warning("No analyses found in the DB_MassSpecAnalyses.")
     return(FALSE)
   }
 
@@ -103,7 +103,7 @@ run.MassSpecMethod_FindFeaturesDB_native <- function(x, engine = NULL) {
     if (nrow(fts) > 0) {
       message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
       db <- file.path(engine$sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
-      MassSpecResults_NonTargetAnalysisDB(db, analyses, headers, fts)
+      DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts)
       return(invisible(TRUE))
     }
   }
@@ -134,13 +134,13 @@ run.MassSpecMethod_FindFeaturesDB_native <- function(x, engine = NULL) {
 
   save_cache(
     cache_manager,
-    name = paste0("FindFeaturesDB_native"),
+    name = paste0("DB_FindFeatures_native"),
     hash = .make_hash(x, analyses, parameters),
-    description = "Features found with FindFeaturesDB_native method.",
+    description = "Features found with DB_FindFeatures_native method.",
     data = fts
   )
   message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
   db <- file.path(engine$sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
-  invisible(MassSpecResults_NonTargetAnalysisDB(db, analyses, headers, fts))
+  invisible(DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts))
   invisible(TRUE)
 }

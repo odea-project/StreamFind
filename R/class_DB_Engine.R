@@ -1,7 +1,7 @@
-# MARK: EngineDB
-# EngineDB -----
+# MARK: DB_Engine
+# DB_Engine -----
 #' @title File-based Database Engine for StreamFind
-#' @description The [StreamFind::EngineDB] R6 class provides file-based storage for StreamFind Engine data using DuckDB.
+#' @description The [StreamFind::DB_Engine] R6 class provides file-based storage for StreamFind Engine data using DuckDB.
 #' @template arg-core-project-dir
 #' @template arg-core-metadata
 #' @template arg-core-workflow
@@ -15,8 +15,8 @@
 #' @template arg-sql-params
 #' @export
 #'
-EngineDB <- R6::R6Class(
-  classname = "EngineDB",
+DB_Engine <- R6::R6Class(
+  classname = "DB_Engine",
 
   # MARK: private
   # private -----
@@ -32,13 +32,13 @@ EngineDB <- R6::R6Class(
   active = list(
 
     # MARK: sf_root
-    #' @field sf_root Path to the StreamFind (.sf) project directory
+    #' @field sf_root Path to the StreamFind (.sf) project directory.
     sf_root = function() {
       private$.sf_root
     },
 
     # MARK: Metadata
-    #' @field Metadata A [StreamFind::Metadata] object loaded from database
+    #' @field Metadata A [StreamFind::Metadata] object loaded from database.
     Metadata = function(value) {
       if (missing(value)) {
         return(self$get_metadata())
@@ -48,7 +48,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: Workflow
-    #' @field Workflow A [StreamFind::Workflow] object loaded from database
+    #' @field Workflow A [StreamFind::Workflow] object loaded from database.
     Workflow = function(value) {
       if (missing(value)) {
         return(self$get_workflow())
@@ -57,14 +57,20 @@ EngineDB <- R6::R6Class(
       invisible(self)
     },
 
+    # MARK: Analyses
+    #' @field Analyses A [StreamFind::DB_Analyses] child object.
+    Analyses = function() {
+      NULL
+    },
+
     # MARK: AuditTrail
-    #' @field AuditTrail Audit trail from database (read-only)
+    #' @field AuditTrail Audit trail from database (read-only).
     AuditTrail = function() {
       self$get_audit_trail()
     },
 
     # MARK: Cache
-    #' @field Cache A [StreamFind::CacheManager] object for managing cached data
+    #' @field Cache A [StreamFind::CacheManager] object for managing cached data.
     Cache = function() {
       CacheManager(db = private$.db_cache)
     }
@@ -75,8 +81,8 @@ EngineDB <- R6::R6Class(
   public = list(
 
     # MARK: initialize
-    #' @description Initialize EngineDB
-    #' @param data_type Engine data type (internal; defaults to "Unknown")
+    #' @description Initialize DB_Engine.
+    #' @param data_type Engine data type (internal; defaults to "Unknown").
     initialize = function(
       project_dir = "data.sf",
       metadata = NULL,
@@ -84,7 +90,7 @@ EngineDB <- R6::R6Class(
       configuration = NULL,
       data_type = "Unknown") {
       if (!requireNamespace("duckdb", quietly = TRUE)) {
-        stop("duckdb package is required for EngineDB")
+        stop("duckdb package is required for DB_Engine")
       }
       checkmate::assert_character(project_dir, len = 1)
       checkmate::assert_character(data_type, len = 1)
@@ -106,8 +112,8 @@ EngineDB <- R6::R6Class(
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       conn_cache <- DBI::dbConnect(duckdb::duckdb(), private$.db_cache)
       on.exit(DBI::dbDisconnect(conn_cache), add = TRUE)
-      .create_EngineDB_db_schema(conn, private$.data_type)
-      .validate_EngineDB_db_schema(conn)
+      .create_DB_Engine_db_schema(conn, private$.data_type)
+      .validate_DB_Engine_db_schema(conn)
       .create_Cache_db_schema(conn_cache)
       .validate_Cache_db_schema(conn_cache)
       if (!is.null(metadata)) {
@@ -128,13 +134,22 @@ EngineDB <- R6::R6Class(
       cat("Metadata\n")
       show(self$Metadata)
       cat("\n")
-      # cat("Workflow\n")
-      # show(self$Workflow)
+      wf <- self$Workflow
+      if (!is.null(wf)) {
+        cat("Workflow\n")
+        show(self$Workflow)
+      }
+      anas <- self$Analyses
+      if (!is.null(anas)) {
+        cat("\n")
+        cat("Analyses\n")
+        print(info(anas))
+      }
     },
 
     # MARK: get_metadata
-    #' @description Get metadata from database
-    #' @return A Metadata object or NULL
+    #' @description Get metadata from database.
+    #' @return A Metadata object or NULL.
     get_metadata = function() {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -152,7 +167,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: add_metadata
-    #' @description Set metadata in database
+    #' @description Set metadata in database.
     add_metadata = function(metadata) {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -168,7 +183,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: get_workflow
-    #' @description Get workflow from database
+    #' @description Get workflow from database.
     get_workflow = function() {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -191,7 +206,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: add_workflow
-    #' @description Set workflow in database
+    #' @description Set workflow in database.
     add_workflow = function(workflow) {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -288,7 +303,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: get_audit_trail
-    #' @description Get audit trail from database
+    #' @description Get audit trail from database.
     get_audit_trail = function() {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -297,7 +312,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: add_audit_entry
-    #' @description Add entry to audit trail
+    #' @description Add entry to audit trail.
     add_audit_entry = function(operation_type, object_type, details = NULL) {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -323,8 +338,41 @@ EngineDB <- R6::R6Class(
       invisible(self)
     },
 
+    # MARK: clear_cache
+    #' @description Clear all cached data.
+    get_cache_info = function() {
+      get_cache_info(self$Cache)
+    },
+
+    # MARK: get_cache_size
+    #' @description Get size of cache in bytes.
+    get_cache_size = function() {
+      size(self$Cache)
+    },
+
+    # MARK: clear_cache
+    #' @description Clear all cached data.
+    clear_cache = function() {
+      clear_cache(self$Cache)
+      invisible(self)
+    },
+
+    # MARK: clear_result_databases
+    #' @description Remove all result database files from the project directory.
+    clear_result_databases = function() {
+      results_files <- list.files(private$.sf_root, pattern = "Results.*\\.duckdb$", full.names = TRUE)
+      if (length(results_files) > 0) {
+        message("\U1F5D1 Removing existing results database files...", appendLF = FALSE)
+        file.remove(results_files)
+        message("Done.")
+      } else {
+        message("No results database files found.")
+      }
+      invisible(self)
+    },
+
     # MARK: get_engine_info
-    #' @description Get basic engine information
+    #' @description Get basic engine information.
     get_engine_info = function() {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -336,7 +384,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: query_db
-    #' @description Execute SQL query on the database
+    #' @description Execute SQL query on the database.
     query_db = function(sql, params = NULL) {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -344,7 +392,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: list_db_tables
-    #' @description List all tables in the database
+    #' @description List all tables in the database.
     list_db_tables = function() {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -352,7 +400,7 @@ EngineDB <- R6::R6Class(
     },
 
     # MARK: get_db_table_info
-    #' @description Get information about a specific table
+    #' @description Get information about a specific table.
     get_db_table_info = function(tableName) {
       conn <- DBI::dbConnect(duckdb::duckdb(), private$.db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -361,9 +409,9 @@ EngineDB <- R6::R6Class(
   )
 )
 
-# MARK: .create_EngineDB_db_schema
+# MARK: .create_DB_Engine_db_schema
 #' @noRd
-.create_EngineDB_db_schema <- function(conn, data_type) {
+.create_DB_Engine_db_schema <- function(conn, data_type) {
   tryCatch({
     DBI::dbExecute(conn, "INSTALL json")
     DBI::dbExecute(conn, "LOAD json")
@@ -421,9 +469,9 @@ EngineDB <- R6::R6Class(
   invisible(TRUE)
 }
 
-# MARK: .validate_EngineDB_db_schema
+# MARK: .validate_DB_Engine_db_schema
 #' @noRd
-.validate_EngineDB_db_schema <- function(conn) {
+.validate_DB_Engine_db_schema <- function(conn) {
   tryCatch({
     table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Engine)")
     required <- list(
@@ -538,3 +586,4 @@ EngineDB <- R6::R6Class(
   #   invisible(TRUE)
   # }
 }
+

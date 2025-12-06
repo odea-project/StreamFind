@@ -1,4 +1,4 @@
-# MARK: MassSpecResults_NonTargetAnalysisDB
+# MARK: DB_MassSpecResults_NonTargetAnalysis
 #' @title Constructor and methods to handle non-target analysis results for mass spectrometry data
 #' @description The `MassSpecResults_NonTargetAnalysis2` class is a child of the [StreamFind::Results] class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec"). It is specifically designed to handle the output from `rcpp_nts_find_features2()`.
 #' @param info A data frame containing information about the analyses.
@@ -27,7 +27,7 @@
 #' }
 #' @export
 #'
-MassSpecResults_NonTargetAnalysisDB <- function(
+DB_MassSpecResults_NonTargetAnalysis <- function(
   db = file.path("data.sf", "MassSpecResults_NonTargetAnalysis.duckdb"),
   analyses = data.table::data.table(),
   headers = data.table::data.table(),
@@ -38,13 +38,13 @@ MassSpecResults_NonTargetAnalysisDB <- function(
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
   conn <- DBI::dbConnect(duckdb::duckdb(), db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .create_MassSpecAnalysesDB_Analyses_db_schema(conn)
-  .validate_MassSpecAnalysesDB_Analyses_db_schema(conn)
-  .create_MassSpecResults_NonTargetAnalysisDB_Features_db_schema(conn)
-  .validate_MassSpecResults_NonTargetAnalysisDB_Features_db_schema(conn)
+  .create_DB_MassSpecAnalyses_Analyses_db_schema(conn)
+  .validate_DB_MassSpecAnalyses_Analyses_db_schema(conn)
+  .create_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
+  .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
 
   insert_analyses <- function(analyses) {
-    .validate_MassSpecAnalysesDB_analyses_dt(analyses)
+    .validate_DB_MassSpecAnalyses_analyses_dt(analyses)
     DBI::dbExecute(conn, "DELETE FROM Analyses")
     DBI::dbWriteTable(conn, "Analyses", analyses, overwrite = TRUE)
   }
@@ -55,7 +55,7 @@ MassSpecResults_NonTargetAnalysisDB <- function(
   }
 
   insert_features <- function(features) {
-    .validate_MassSpecResults_NonTargetAnalysisDB_features_dt(features)
+    .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt(features)
     DBI::dbExecute(conn, "DELETE FROM Features")
     DBI::dbWriteTable(conn, "Features", features, overwrite = TRUE)
   }
@@ -67,41 +67,41 @@ MassSpecResults_NonTargetAnalysisDB <- function(
   x <- structure(
     list(
       db = db,
-      data_type = "MassSpec"
+      data_type = "DB_MassSpec"
     ),
-    class = c("MassSpecResults_NonTargetAnalysisDB", "ResultsDB")
+    class = c("DB_MassSpecResults_NonTargetAnalysis", "DB_Results")
   )
   if (is.null(validate_object(x))) {
     x
   } else {
-    stop("Invalid MassSpecResults_NonTargetAnalysisDB object.")
+    stop("Invalid DB_MassSpecResults_NonTargetAnalysis object.")
   }
 }
 
-#' @describeIn MassSpecResults_NonTargetAnalysisDB Validates the MassSpecResults_NonTargetAnalysisDB object, returning NULL if valid.
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Validates the DB_MassSpecResults_NonTargetAnalysis object, returning NULL if valid.
 #' @template arg-ntsdb-x
 #' @export
 #'
-validate_object.MassSpecResults_NonTargetAnalysisDB <- function(x) {
-  checkmate::assert_class(x, "MassSpecResults_NonTargetAnalysisDB")
+validate_object.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
+  checkmate::assert_class(x, "DB_MassSpecResults_NonTargetAnalysis")
   checkmate::assert_true(identical(x$data_type, "MassSpec"))
-  if (!file.exists(x$db)) stop("MassSpecResults_NonTargetAnalysisDB file not found: ", x$db)
+  if (!file.exists(x$db)) stop("DB_MassSpecResults_NonTargetAnalysis file not found: ", x$db)
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   required_tables <- c("Analyses", "SpectraHeaders", "Features")
   present <- DBI::dbListTables(conn)
-  if (!all(required_tables %in% present)) stop("Missing required tables in MassSpecResults_NonTargetAnalysisDB")
-  .validate_MassSpecAnalysesDB_Analyses_db_schema(conn)
-  .validate_MassSpecResults_NonTargetAnalysisDB_Features_db_schema(conn)
+  if (!all(required_tables %in% present)) stop("Missing required tables in DB_MassSpecResults_NonTargetAnalysis")
+  .validate_DB_MassSpecAnalyses_Analyses_db_schema(conn)
+  .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
   NextMethod()
 }
 
 # MARK: show
-#' @describeIn MassSpecResults_NonTargetAnalysisDB Prints a summary of the MassSpecResults_NonTargetAnalysisDB object.
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Prints a summary of the DB_MassSpecResults_NonTargetAnalysis object.
 #' @template arg-ntsdb-x
 #' @export
 #' 
-show.MassSpecResults_NonTargetAnalysisDB <- function(x) {
+show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   cat("\n")
@@ -135,7 +135,7 @@ show.MassSpecResults_NonTargetAnalysisDB <- function(x) {
 }
 
 # MARK: get_features
-#' @describeIn MassSpecResults_NonTargetAnalysisDB Retrieves features from the MassSpecResults_NonTargetAnalysisDB object based on specified criteria.
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Retrieves features from the DB_MassSpecResults_NonTargetAnalysis object based on specified criteria.
 #' @template arg-ntsdb-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -149,7 +149,7 @@ show.MassSpecResults_NonTargetAnalysisDB <- function(x) {
 #' @template arg-ms-filtered
 #' @export
 #' 
-get_features.MassSpecResults_NonTargetAnalysisDB <- function(
+get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -240,7 +240,7 @@ get_features.MassSpecResults_NonTargetAnalysisDB <- function(
 }
 
 # MARK: plot_features
-#' @describeIn MassSpecResults_NonTargetAnalysisDB Plots features from the MassSpecResults_NonTargetAnalysisDB object according to the specified parameters.
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plots features from the DB_MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-ntsdb-x
 #' @template arg-analyses
 #' @template arg-ms-features
@@ -261,7 +261,7 @@ get_features.MassSpecResults_NonTargetAnalysisDB <- function(
 #' @template arg-renderEngine
 #' @export
 #'
-plot_features.MassSpecResults_NonTargetAnalysisDB <- function(
+plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
   features = NULL,
@@ -482,9 +482,9 @@ plot_features.MassSpecResults_NonTargetAnalysisDB <- function(
   }
 }
 
-# MARK: .validate_MassSpecResults_NonTargetAnalysisDB_features_dt
+# MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt
 #' @noRd
-.validate_MassSpecResults_NonTargetAnalysisDB_features_dt <- function(x) {
+.validate_DB_MassSpecResults_NonTargetAnalysis_features_dt <- function(x) {
   cols <- c(
     "feature", "component", "adduct", "rt", "mz", "mass", "intensity",
     "noise", "sn", "area", "rtmin", "rtmax", "width", "mzmin", "mzmax", "ppm",
@@ -501,9 +501,9 @@ plot_features.MassSpecResults_NonTargetAnalysisDB <- function(
   invisible(TRUE)
 }
 
-# MARK: .create_MassSpecResults_NonTargetAnalysisDB_Features_db_schema
+# MARK: .create_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema
 #' @noRd
-.create_MassSpecResults_NonTargetAnalysisDB_Features_db_schema <- function(conn) {
+.create_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema <- function(conn) {
   DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS Features (
     analysis VARCHAR PRIMARY KEY,
     feature VARCHAR,
@@ -551,9 +551,9 @@ plot_features.MassSpecResults_NonTargetAnalysisDB <- function(
 }
 
 
-# MARK: .validate_MassSpecResults_NonTargetAnalysisDB_Features_db_schema
+# MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema
 #' @noRd
-.validate_MassSpecResults_NonTargetAnalysisDB_Features_db_schema <- function(conn) {
+.validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema <- function(conn) {
   tryCatch({
     table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Features)")
     required <- list(
@@ -608,3 +608,4 @@ plot_features.MassSpecResults_NonTargetAnalysisDB <- function(
   })
   invisible(TRUE)
 }
+
