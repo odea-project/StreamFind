@@ -7,8 +7,20 @@
 PKG_CPPFLAGS += -Isimdutf
 PKG_CXXFLAGS += -std=c++17
 
+# Source files from different directories
+SOURCES = $(wildcard *.cpp)
+SOURCES += $(wildcard simdutf/*.cpp)
+SOURCES += $(wildcard streamcraft/*.cpp)
+SOURCES += $(wildcard nts/*.cpp)
+
 # Exclude simdutf source files from compilation (they're included via simdutf_wrapper.cpp)
-SOURCES = $(filter-out simdutf/simdutf.cpp simdutf/amalgamation_demo.cpp, $(wildcard *.cpp) $(wildcard simdutf/*.cpp))
+SOURCES := $(filter-out simdutf/simdutf.cpp simdutf/amalgamation_demo.cpp, $(SOURCES))
+
+OBJECTS = $(SOURCES:.cpp=.o)
+
+# Compile simdutf_wrapper without pedantic warnings (third-party code)
+#simdutf_wrapper.o: simdutf_wrapper.cpp
+#	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) -Wno-pedantic -c $< -o $@
 
 RHDF5_LIBS = $(shell "$(R_HOME)/bin${R_ARCH_BIN}/Rscript" -e 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")')
 PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS)

@@ -126,6 +126,7 @@ Collate:
     'class_DB_Analyses.R'
     'class_DB_MassSpecAnalyses.R'
     'class_DB_MassSpecMethod_FindFeatures.R'
+    'class_DB_MassSpecMethod_FeatureBlankSubtraction.R'
     'class_MassSpecMethod_AnnotateFeatures.R'
     'class_MassSpecMethod_AverageSpectra.R'
     'class_MassSpecMethod_BinSpectra.R'

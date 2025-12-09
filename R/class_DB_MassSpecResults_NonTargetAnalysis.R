@@ -28,7 +28,7 @@
 #' @export
 #'
 DB_MassSpecResults_NonTargetAnalysis <- function(
-  db = file.path("data.sf", "MassSpecResults_NonTargetAnalysis.duckdb"),
+  db = file.path("data.sf", "DB_MassSpecResults_NonTargetAnalysis.duckdb"),
   analyses = data.table::data.table(),
   headers = data.table::data.table(),
   features = data.table::data.table()
@@ -60,9 +60,9 @@ DB_MassSpecResults_NonTargetAnalysis <- function(
     DBI::dbWriteTable(conn, "Features", features, overwrite = TRUE)
   }
 
-  if (nrow(analyses) > 0) insert_analyses(analyses)
-  if (nrow(headers) > 0) insert_headers(headers)
-  if (nrow(features) > 0) insert_features(features)
+  if (!is.null(analyses)) if (nrow(analyses) > 0) insert_analyses(analyses)
+  if (!is.null(headers)) if (nrow(headers) > 0) insert_headers(headers)
+  if (!is.null(features)) if (nrow(features) > 0) insert_features(features)
 
   x <- structure(
     list(
@@ -78,13 +78,14 @@ DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 }
 
+# MARK: validate_object
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Validates the DB_MassSpecResults_NonTargetAnalysis object, returning NULL if valid.
 #' @template arg-ntsdb-x
 #' @export
 #'
 validate_object.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
   checkmate::assert_class(x, "DB_MassSpecResults_NonTargetAnalysis")
-  checkmate::assert_true(identical(x$data_type, "MassSpec"))
+  checkmate::assert_true(identical(x$data_type, "DB_MassSpec"))
   if (!file.exists(x$db)) stop("DB_MassSpecResults_NonTargetAnalysis file not found: ", x$db)
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -116,20 +117,21 @@ show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
     FROM Features
     GROUP BY analysis
   ")
-  # groups <- DBI::dbGetQuery(conn, "
-  #   SELECT analysis, COUNT(DISTINCT [group]) AS groups
-  #   FROM Features
-  #   WHERE NOT filtered
-  #   GROUP BY analysis
-  # ")
+  groups <- DBI::dbGetQuery(conn, "
+    SELECT analysis, COUNT(DISTINCT [feature_group]) AS groups
+    FROM Features
+    WHERE NOT filtered AND feature_group != ''
+    GROUP BY analysis
+  ")
+  groups$groups[is.na(groups$groups)] <- 0
   info <- data.table::data.table(
     "analysis" = analyses$analysis,
     "replicate" = analyses$replicate,
     "blank" = analyses$blank,
     "polarity" = analyses$polarity,
     "features" = features$not_filtered[match(analyses$analysis, features$analysis)],
-    "filtered" = features$filtered[match(analyses$analysis, features$analysis)]
-    # "groups" = groups$groups[match(analyses$analysis, groups$analysis)],
+    "filtered" = features$filtered[match(analyses$analysis, features$analysis)],
+    "feature_groups" = groups$groups[match(analyses$analysis, groups$analysis)]
   )
   print(info)
 }
@@ -308,16 +310,15 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   for (i in seq_len(nrow(fts))) {
     ft <- fts[i, ]
 
-    # Decode EIC data using the new rcpp_decode_eic_data function
     if (!is.na(ft$eic_rt) && !is.na(ft$eic_intensity) &&
       nchar(ft$eic_rt) > 0 && nchar(ft$eic_intensity) > 0) {
-      rt_decoded <- rcpp_decode_eic_data(ft$eic_rt)
-      intensity_decoded <- rcpp_decode_eic_data(ft$eic_intensity)
+      rt_decoded <- rcpp_streamcraft_decode_string(ft$eic_rt)
+      intensity_decoded <- rcpp_streamcraft_decode_string(ft$eic_intensity)
 
       # Decode baseline if available
       baseline_decoded <- NULL
       if (!is.na(ft$eic_baseline) && nchar(ft$eic_baseline) > 0) {
-        baseline_decoded <- rcpp_decode_eic_data(ft$eic_baseline)
+        baseline_decoded <- rcpp_streamcraft_decode_string(ft$eic_baseline)
       }
 
       if (length(rt_decoded) > 0 && length(intensity_decoded) > 0 &&
@@ -486,7 +487,7 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @noRd
 .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt <- function(x) {
   cols <- c(
-    "feature", "component", "adduct", "rt", "mz", "mass", "intensity",
+    "feature", "feature_component", "feature_group", "adduct", "rt", "mz", "mass", "intensity",
     "noise", "sn", "area", "rtmin", "rtmax", "width", "mzmin", "mzmax", "ppm",
     "fwhm_rt", "fwhm_mz", "gaussian_A", "gaussian_mu", "gaussian_sigma",
     "gaussian_r2", "polarity", "filtered", "filter", "filled", "correction",
@@ -507,7 +508,8 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS Features (
     analysis VARCHAR PRIMARY KEY,
     feature VARCHAR,
-    component VARCHAR,
+    feature_component VARCHAR,
+    feature_group VARCHAR,
     adduct VARCHAR,
     rt DOUBLE,
     mz DOUBLE,
@@ -558,7 +560,8 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Features)")
     required <- list(
       feature = "VARCHAR",
-      component = "VARCHAR",
+      feature_component = "VARCHAR",
+      feature_group = "VARCHAR",
       adduct = "VARCHAR",
       rt = "DOUBLE",
       mz = "DOUBLE",

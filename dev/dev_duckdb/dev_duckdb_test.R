@@ -51,77 +51,99 @@ dbsus <- db[!grepl("IS", db$tag), ]
 # MARK: EngineDB with MassSpec tests
 # EngineDB with MassSpec tests -----
 
-# sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
-# ms_files <- StreamFindData::get_ms_file_paths()[1]
+sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
+#ms_files <- StreamFindData::get_ms_file_paths()[1]
+source(file.path("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding\\dev_resources.R"))
+examples <- unique(files_merck_ex$example)
+files_merck_ex[, 1:3]
 
-# engine_ms <- DB_MassSpecEngine$new(
-#   project_dir = sf_root,
-#   files = ms_files
-# )
 
-# engine_ms$Metadata[["project"]] <- "ms-demo"
-# engine_ms
+ms <- DB_MassSpecEngine$new(
+  project_dir = sf_root,
+  files = files_merck_ex$file_path[1:2]
+)
 
-# engine_ms$clear_result_databases()
+ms$Metadata[["project"]] <- "ms-demo"
 
-# engine_ms$info_analyses()
-# engine_ms$list_db_tables()
-# engine_ms$get_db_table_info("SpectraHeaders")
+set_replicate_names(ms$Analyses, c("sample", "blank"))
+set_blank_names(ms$Analyses, c("blank", "blank"))
 
-# head(get_spectra_headers(engine_ms$Analyses))
-# head(get_spectra_bpc(engine_ms$Analyses))
-# head(get_spectra_tic(engine_ms$Analyses))
-# plot_spectra_tic(engine_ms$Analyses, levels = 1, downsize = 2)
-# plot_spectra_bpc(engine_ms$Analyses, levels = 1, downsize = 2)
+# ms
+# ms$clear_result_databases()
 
-# get_raw_spectra(engine_ms$Analyses, levels = 1, mass = dbis[7, ], ppm = 20, sec = 30)
-# get_spectra_eic(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
-# get_spectra_ms1(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
-# get_spectra_ms2(engine_ms$Analyses, mass = dbis[7, ], ppm = 20)
+# ms$info_analyses()
+# ms$list_db_tables()
+# ms$get_db_table_info("SpectraHeaders")
 
-# ps_ff <- MassSpecMethod_FindFeaturesDB_native(
-#   rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
-#   resolution_profile = c(35000L, 35000L, 35000L),
-#   noiseThreshold = 250,
-#   minSNR = 3,
-#   minTraces = 3,
-#   baselineWindow = 200,
-#   maxWidth = 100,
-#   base_quantile = 0.1,
-#   debug_mz = dbis$mass[1] + 1.007276
-# )
+# head(get_spectra_headers(ms$Analyses))
+# head(get_spectra_bpc(ms$Analyses))
+# head(get_spectra_tic(ms$Analyses))
+# plot_spectra_tic(ms$Analyses, levels = 1, downsize = 2)
+# plot_spectra_bpc(ms$Analyses, levels = 1, downsize = 2)
 
-# wf <- Workflow(list(ps_ff))
-# engine_ms$Workflow <- wf
+# get_raw_spectra(ms$Analyses, levels = 1, mass = dbis[7, ], ppm = 20, sec = 30)
+# get_spectra_eic(ms$Analyses, mass = dbis[7, ], ppm = 20)
+# get_spectra_ms1(ms$Analyses, mass = dbis[7, ], ppm = 20)
+# get_spectra_ms2(ms$Analyses, mass = dbis[7, ], ppm = 20)
 
-# info(engine_ms$NonTargetAnalysis)
+ps_ff <- DB_MassSpecMethod_FindFeatures_native(
+  # rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
+  # resolution_profile = c(35000L, 35000L, 35000L),
+  # noiseThreshold = 250,
+  # minSNR = 3,
+  # minTraces = 3,
+  # baselineWindow = 200,
+  # maxWidth = 100,
+  # base_quantile = 0.1,
+  # debug_mz = dbis$mass[1] + 1.007276
+  rtWindows = data.frame(rtmin = 300, rtmax = 3400),
+  resolution_profile = c(25000L, 55000L, 80000L),
+  noiseThreshold = 15,
+  minSNR = 3,
+  minTraces = 3,
+  baselineWindow = 200,
+  maxWidth = 250, #100
+  base_quantile = 0.99,
+  debug_mz = 0
+)
 
-# engine_ms$get_audit_trail()
-# show(engine_ms$Workflow)
+wf <- Workflow(list(ps_ff))
+ms$Workflow <- wf
+ms$run_workflow()
+show(ms$NonTargetAnalysis)
 
-# clear_cache(engine_ms$Cache)
-# engine_ms$run_workflow()
+run.DB_MassSpecMethod_FeatureBlankSubtraction_native(
+  DB_MassSpecMethod_FeatureBlankSubtraction_native(
+    blankThreshold = 10
+  ),
+  engine = ms
+)
 
-# run(ps_ff, engine = engine_ms)
+get_features(
+  ms$NonTargetAnalysis,
+  analyses = 2
+)
 
-# size(engine_ms$Cache)
-# get_cache_info(engine_ms$Cache)
-# show(engine_ms$Workflow)
-# show(engine_ms$NonTargetAnalysis)
+# run(ps_ff, engine = ms)
 
-# get_features(
-#   engine_ms$NonTargetAnalysis,
-#   analyses = 1,
-#   mass = dbis, ppm = 20
-# )
+# size(ms$Cache)
+# get_cache_info(ms$Cache)
+# show(ms$Workflow)
+# show(ms$NonTargetAnalysis)
 
-# plot_features(
-#   engine_ms$NonTargetAnalysis,
-#   analyses = 1,
-#   mass = dbis,
-#   ppm = 20,
-#   legendNames = TRUE
-# )
+get_features(
+  ms$NonTargetAnalysis,
+  analyses = 1,
+  mass = dbis, ppm = 20
+)
+
+plot_features(
+  ms$NonTargetAnalysis,
+  analyses = 1,
+  mass = dbis,
+  ppm = 20,
+  legendNames = TRUE
+)
 
 # sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
 # nts_db_path <- file.path(sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
@@ -142,6 +164,7 @@ ms <- DB_MassSpecEngine$new(
   files = ms_files
 )
 ms$Metadata[["project"]] <- "chromatograms-demo"
+ms
 
 #head(ms$get_chromatograms_headers(analyses = 1))
 #get_chromatograms(ms$Analyses, chromatograms = c(0, 1))
@@ -149,8 +172,9 @@ ms$Metadata[["project"]] <- "chromatograms-demo"
 
 plot_chromatograms(
   ms$Analyses,
-  analyses = 1,
+  #analyses = 2,
   chromatograms = c(0, 1),
+  groupBy = c("analysis", "id"),
   downsize = 3
 )
 

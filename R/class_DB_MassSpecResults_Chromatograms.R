@@ -9,7 +9,7 @@
 #' @export
 #'
 DB_MassSpecResults_Chromatograms <- function(
-  db = file.path("data.sf", "MassSpecResults_Chromatograms.duckdb"),
+  db = file.path("data.sf", "DB_MassSpecResults_Chromatograms.duckdb"),
   analyses = data.table::data.table(),
   chromatograms = data.table::data.table(),
   peaks = data.table::data.table()

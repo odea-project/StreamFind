@@ -12,6 +12,7 @@
 \alias{get_concentrations.DB_MassSpecAnalyses}
 \alias{set_concentrations.DB_MassSpecAnalyses}
 \alias{info.DB_MassSpecAnalyses}
+\alias{show.DB_MassSpecAnalyses}
 \alias{get_spectra_headers.DB_MassSpecAnalyses}
 \alias{get_spectra_tic.DB_MassSpecAnalyses}
 \alias{plot_spectra_tic.DB_MassSpecAnalyses}
@@ -30,7 +31,7 @@
 \title{Database-backed Mass Spectrometry Analyses}
 \usage{
 DB_MassSpecAnalyses(
-  db = file.path("data.sf", "MassSpecAnalyses.duckdb"),
+  db = file.path("data.sf", "DB_MassSpecAnalyses.duckdb"),
   files = NULL,
   centroid = FALSE,
   levels = c(1, 2)
@@ -55,6 +56,8 @@ DB_MassSpecAnalyses(
 \method{set_concentrations}{DB_MassSpecAnalyses}(x, value)
 
 \method{info}{DB_MassSpecAnalyses}(x)
+
+\method{show}{DB_MassSpecAnalyses}(x, ...)
 
 \method{get_spectra_headers}{DB_MassSpecAnalyses}(x, analyses = NULL)
 
@@ -321,6 +324,8 @@ The \code{DB_MassSpecAnalyses} class stores MassSpec analyses metadata and heade
 \item \code{set_concentrations(DB_MassSpecAnalyses)}: Set concentrations.
 
 \item \code{info(DB_MassSpecAnalyses)}: Get a summary table.
+
+\item \code{show(DB_MassSpecAnalyses)}: Show method for DB_MassSpecAnalyses objects.
 
 \item \code{get_spectra_headers(DB_MassSpecAnalyses)}: Fetch spectra headers for a given analysis.
 

@@ -30,10 +30,29 @@
   if (is.null(title)) title <- paste(yvar, "vs", xvar)
 
   # Color assignment
-  if (!is.null(groupBy) && groupBy %in% colnames(data)) {
-    groups <- unique(data[[groupBy]])
-    colors <- if (!is.null(colorPalette)) colorPalette else .get_colors(groups)
-    data$color_group <- data[[groupBy]]
+  if (!is.null(groupBy)) {
+    # Handle multiple groupBy columns
+    if (length(groupBy) > 1) {
+      # Check all columns exist
+      missing_cols <- setdiff(groupBy, colnames(data))
+      if (length(missing_cols) > 0) {
+        stop("groupBy columns not found in data: ", paste(missing_cols, collapse = ", "))
+      } else {
+        # Create combined group_uid by pasting columns together
+        group_values <- lapply(groupBy, function(col) as.character(data[[col]]))
+        data$color_group <- do.call(paste, c(group_values, sep = "-"))
+        groups <- unique(data$color_group)
+        colors <- if (!is.null(colorPalette)) colorPalette else .get_colors(groups)
+      }
+    } else if (groupBy %in% colnames(data)) {
+      groups <- unique(data[[groupBy]])
+      colors <- if (!is.null(colorPalette)) colorPalette else .get_colors(groups)
+      data$color_group <- data[[groupBy]]
+    } else {
+      warning("groupBy column '", groupBy, "' not found in data")
+      data$color_group <- "all"
+      colors <- .get_colors("all")
+    }
   } else {
     data$color_group <- "all"
     colors <- .get_colors("all")

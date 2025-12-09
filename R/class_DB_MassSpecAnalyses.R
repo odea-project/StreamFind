@@ -10,7 +10,7 @@
 #' @export
 #' 
 DB_MassSpecAnalyses <- function(
-  db = file.path("data.sf", "MassSpecAnalyses.duckdb"),
+  db = file.path("data.sf", "DB_MassSpecAnalyses.duckdb"),
   files = NULL,
   centroid = FALSE,
   levels = c(1, 2)
@@ -21,7 +21,7 @@ DB_MassSpecAnalyses <- function(
   .create_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   .validate_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   if (!is.null(files)) {
-    analyses <- .get_MassSpecAnalysis_from_files(files, centroid = centroid, levels = levels)
+    analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels)
     if (is.null(analyses) || length(analyses) == 0) {
       stop("No analyses parsed from files.")
     }
@@ -63,7 +63,7 @@ validate_object.DB_MassSpecAnalyses <- function(x) {
 #' @template arg-ms-levels
 #' @export
 add_analyses.DB_MassSpecAnalyses <- function(x, files, centroid = FALSE, levels = c(1, 2)) {
-  analyses <- .get_MassSpecAnalysis_from_files(files, centroid = centroid, levels = levels)
+  analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels)
   if (is.null(analyses) || length(analyses) == 0) {
     stop("No analyses parsed from files.")
   }
@@ -234,6 +234,20 @@ info.DB_MassSpecAnalyses <- function(x) {
     FROM Analyses
     ORDER BY analysis
   ")
+}
+
+# MARK: show
+#' @describeIn DB_MassSpecAnalyses Show method for DB_MassSpecAnalyses objects.
+#' @template arg-x-DB_MassSpecAnalyses
+#' @export
+#' 
+show.DB_MassSpecAnalyses <- function(x, ...) {
+  cat("\n")
+  cat("DB_MassSpecAnalyses (", nrow(info(x)), ")\n")
+  info_table <- info(x)
+  if (nrow(info_table) > 0) {
+    print(info_table)
+  }
 }
 
 # MARK: get_spectra_headers
@@ -560,7 +574,7 @@ get_raw_spectra.DB_MassSpecAnalyses <- function(
     hd_a <- hd[hd$analysis == a, ]
     message("\U2699 Parsing spectra from ", basename(a_info$file), "...", appendLF = FALSE)
     if (.is_targets_empty(targets)) targets <- targets[0, ]
-    spec <- rcpp_parse_ms_spectra(
+    spec <- rcpp_streamcraft_parse_ms_spectra(
       list(
         file = a_info$file,
         spectra_headers = hd_a
@@ -897,7 +911,7 @@ get_chromatograms.DB_MassSpecAnalyses <- function(
   chrom_hd_list <- split(chrom_hd, chrom_hd$analysis)
   chrom_list <- lapply(sel_analyses, function(aname) {
     message("\U2699 Parsing chromatograms from ", aname, "...", appendLF = FALSE)
-    chrom <- rcpp_parse_ms_chromatograms(
+    chrom <- rcpp_streamcraft_parse_ms_chromatograms(
       list(
         file = analyses_info$file[analyses_info$analysis == aname],
         chromatograms_headers = chrom_hd_list[[aname]]
@@ -1054,7 +1068,7 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
       blank VARCHAR,
       file VARCHAR NOT NULL,
       format VARCHAR,
-      type VARCHAR,
+      type VARCHAR, 
       polarity VARCHAR,
       spectra_number INTEGER,
       chromatograms_number INTEGER,
@@ -1193,3 +1207,313 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
   rollback_needed <- FALSE
 }
 
+# MARK: .parse_ms_from_files
+#' @noRd
+.parse_ms_from_files <- function(
+  files = NULL,
+  centroid = FALSE,
+  levels = c(1, 2)
+) {
+  if (!is.null(files)) {
+    if (is.data.frame(files)) {
+      if (all(c("path", "analysis") %in% colnames(files))) {
+        files$file <- vapply(
+          seq_len(nrow(files)),
+          function(x) {
+            list.files(
+              files$path[x],
+              pattern = files$analysis[x],
+              full.names = TRUE,
+              recursive = FALSE
+            )
+          },
+          ""
+        )
+      }
+
+      if ("file" %in% colnames(files)) {
+        if ("replicate" %in% colnames(files)) {
+          replicates <- as.character(files$replicate)
+        } else if ("group" %in% colnames(files)) {
+          replicates <- as.character(files$group)
+        } else {
+          replicates <- rep(NA_character_, nrow(files))
+        }
+
+        if ("blank" %in% colnames(files)) {
+          blanks <- as.character(files$blank)
+        } else {
+          blanks <- rep(NA_character_, nrow(files))
+        }
+
+        files <- files$file
+      } else {
+        files <- NA_character_
+      }
+    } else {
+      replicates <- rep(NA_character_, length(files))
+      blanks <- rep(NA_character_, length(files))
+    }
+
+    possible_ms_file_formats <- ".mzML$|.mzXML$|.d$|.raw$|.wiff$"
+
+    valid_files <- vapply(
+      files,
+      FUN.VALUE = FALSE,
+      function(x, possible_ms_file_formats) {
+        if (!file.exists(x)) {
+          return(FALSE)
+        }
+        if (FALSE %in% grepl(possible_ms_file_formats, x)) {
+          return(FALSE)
+        }
+        TRUE
+      },
+      possible_ms_file_formats = possible_ms_file_formats
+    )
+
+    if (!all(valid_files)) {
+      warning("File/s not valid!")
+      return(NULL)
+    }
+
+    names(replicates) <- as.character(files)
+    names(blanks) <- as.character(files)
+
+    files_to_convert <- vapply(
+      files,
+      function(x) grepl("d|raw|wiff", tools::file_ext(x)),
+      FALSE
+    )
+
+    if (any(files_to_convert)) {
+      files_to_convert <- files[files_to_convert]
+      files_converted <- gsub(".d$", ".mzML", files_to_convert)
+      files_converted <- gsub(".raw$", ".mzML", files_converted)
+      files_converted <- gsub(".wiff$", ".mzML", files_converted)
+
+      for (i in seq_along(files_converted)) {
+        if (file.exists(files_converted[i])) {
+          if (files_converted[i] %in% files) {
+            files <- files[!files %in% files_to_convert[i]]
+          } else {
+            files[files == files_to_convert[i]] <- files_converted[i]
+          }
+        } else {
+          dir_search <- dirname(files_converted[i])
+
+          fl_already_converted <- list.files(
+            dir_search,
+            pattern = paste0(
+              "^",
+              basename(tools::file_path_sans_ext(files_converted[i])),
+              "-.*\\.mzML$"
+            ),
+            full.names = TRUE
+          )
+
+          if (length(fl_already_converted) == 1) {
+            files_converted[i] <- fl_already_converted
+            files <- files[!files %in% fl_already_converted]
+            files[files == files_to_convert[i]] <- fl_already_converted
+          } else if (length(fl_already_converted) > 1) {
+            warning(paste0(
+              "Multiple converted files found for: ",
+              basename(tools::file_path_sans_ext(files_to_convert[i])),
+              ". Please check the files!"
+            ))
+            return(NULL)
+          }
+        }
+      }
+
+      files_to_convert_sel <- vapply(
+        files,
+        function(x) {
+          grepl("d|raw|wiff", tools::file_ext(x))
+        },
+        FALSE
+      )
+
+      files_to_convert <- files[files_to_convert_sel]
+
+      if (length(files_to_convert) > 0) {
+        filter <- ""
+
+        if (centroid) {
+          filter <- "peakPicking vendor"
+        }
+
+        if (centroid && is.numeric(levels) && length(levels) > 0) {
+          levels <- paste(levels, collapse = "-")
+          levels <- paste("msLevel=", levels, collapse = "", sep = "")
+          if (filter != "") {
+            filter <- paste(filter, levels, sep = " ")
+          } else {
+            filter <- levels
+          }
+        }
+
+        optList <- list()
+        if (filter != "") {
+          optList <- list(filter = filter)
+        }
+
+        tryCatch(
+          {
+            StreamFind::convert_ms_files(
+              files = files_to_convert,
+              outputFormat = "mzML",
+              outputPath = NULL,
+              optList = optList
+            )
+
+            files <- files[!files %in% files_to_convert]
+
+            for (i in seq_along(files_to_convert)) {
+              dir_search <- dirname(files_to_convert[i])
+
+              fl_converted_as_is <- list.files(
+                dir_search,
+                pattern = paste0(
+                  basename(tools::file_path_sans_ext(files_to_convert[i])),
+                  ".mzML$"
+                ),
+                full.names = TRUE
+              )
+
+              if (length(fl_converted_as_is) == 1) {
+                files <- c(files, fl_converted_as_is)
+              } else if (length(fl_converted_as_is) > 1) {
+                warning(paste0(
+                  "Multiple converted files found for: ",
+                  basename(tools::file_path_sans_ext(files_to_convert[i])),
+                  ". Please check the files!"
+                ))
+              } else if (length(fl_converted_as_is) == 0) {
+                fl_converted <- list.files(
+                  dir_search,
+                  pattern = paste0(
+                    "^",
+                    basename(tools::file_path_sans_ext(files_to_convert[i])),
+                    "-.*\\.mzML$"
+                  ),
+                  full.names = TRUE
+                )
+
+                if (length(fl_converted) == 1) {
+                  files <- c(files, fl_converted)
+                } else if (length(fl_converted) > 1) {
+                  warning(paste0(
+                    "Multiple converted files found for: ",
+                    basename(tools::file_path_sans_ext(files_to_convert[i])),
+                    ". Please check the files!"
+                  ))
+                }
+              }
+            }
+
+            exist_files <- vapply(files, function(x) file.exists(x), FALSE)
+            files <- files[exist_files]
+          },
+          error = function(e) {
+            warning("Error converting files!")
+            files <- files[!files %in% files_to_convert]
+          },
+          warning = function(w) {
+            warning("Warning converting files!")
+            files <- files[!files %in% files_to_convert]
+          }
+        )
+      }
+    }
+
+    analyses <- lapply(files, function(x) {
+      cache <- .load_chache_rds("parsed_ms_analyses", x)
+      # cache <- .load_cache_sqlite("parsed_ms_analyses", x)
+      if (!is.null(cache$data)) {
+        message("\U2139 ", basename(x), " analysis loaded from cache!")
+        cache$data
+      } else {
+        message("\U2699 Parsing ", basename(x), "...", appendLF = FALSE)
+        ana <- rcpp_streamcraft_parse_ms_analysis_from_files(x)
+        class_ana <- class(ana)[1]
+
+        if (!class_ana %in% "MassSpecAnalysis") {
+          message(" Not Done!")
+          return(NULL)
+        }
+
+        ana$polarity <- unique(ana$spectra_headers$polarity)
+
+        if (!is.null(ana$polarity)) {
+          if (length(ana$polarity) > 1) {
+            if (all(ana$polarity %in% c(-1, 1))) {
+              ana$polarity <- paste(unique(ana$polarity), collapse = ", ")
+              ana$polarity <- gsub("-1", "negative", ana$polarity)
+              ana$polarity <- gsub("1", "positive", ana$polarity)
+            } else {
+              ana$polarity <- "unknown"
+            }
+          }
+          if (ana$polarity == 1) {
+            ana$polarity <- "positive"
+          } else if (ana$polarity == -1) {
+            ana$polarity <- "negative"
+          } else {
+            ana$polarity <- "unknown"
+          }
+        } else {
+          ana$polarity <- "unknown"
+        }
+
+        message(" Done!")
+
+        rpl <- replicates[x]
+
+        if (is.na(rpl)) {
+          rpl <- ana$name
+          rpl <- sub("-[^-]+$", "", rpl)
+        }
+
+        ana$replicate <- rpl
+        blk <- blanks[x]
+
+        if (!is.na(blk)) {
+          ana$blank <- blk
+        }
+
+        ana$blank <- blk
+
+        concentration <- suppressWarnings(as.numeric(ana$name))
+
+        if (is.na(concentration)) {
+          ana$concentration <- NA_real_
+        } else {
+          ana$concentration <- concentration
+        }
+
+        if (!is.null(cache$hash)) {
+          .save_cache_rds("parsed_ms_analyses", ana, cache$hash)
+          # .save_cache_sqlite("parsed_ms_analyses", ana, cache$hash)
+          message("\U1f5ab Parsed analysis cached!")
+        }
+
+        ana
+      }
+    })
+
+    names(analyses) <- vapply(analyses, function(x) x[["name"]], "")
+    analyses <- analyses[order(names(analyses))]
+
+    if (
+      all(vapply(analyses, function(x) "MassSpecAnalysis" %in% is(x), FALSE))
+    ) {
+      analyses
+    } else {
+      list()
+    }
+  } else {
+    list()
+  }
+}

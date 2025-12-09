@@ -10,6 +10,28 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// rcpp_nts_find_features2
+Rcpp::List rcpp_nts_find_features2(Rcpp::List info, Rcpp::List spectra_headers, std::vector<float> rtWindowsMin, std::vector<float> rtWindowsMax, std::vector<int> resolution_profile, float noiseThreshold, float minSNR, int minTraces, float baselineWindow, float maxWidth, float base_quantile, float debug_mz);
+RcppExport SEXP _StreamFind_rcpp_nts_find_features2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP rtWindowsMinSEXP, SEXP rtWindowsMaxSEXP, SEXP resolution_profileSEXP, SEXP noiseThresholdSEXP, SEXP minSNRSEXP, SEXP minTracesSEXP, SEXP baselineWindowSEXP, SEXP maxWidthSEXP, SEXP base_quantileSEXP, SEXP debug_mzSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< std::vector<float> >::type rtWindowsMin(rtWindowsMinSEXP);
+    Rcpp::traits::input_parameter< std::vector<float> >::type rtWindowsMax(rtWindowsMaxSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type resolution_profile(resolution_profileSEXP);
+    Rcpp::traits::input_parameter< float >::type noiseThreshold(noiseThresholdSEXP);
+    Rcpp::traits::input_parameter< float >::type minSNR(minSNRSEXP);
+    Rcpp::traits::input_parameter< int >::type minTraces(minTracesSEXP);
+    Rcpp::traits::input_parameter< float >::type baselineWindow(baselineWindowSEXP);
+    Rcpp::traits::input_parameter< float >::type maxWidth(maxWidthSEXP);
+    Rcpp::traits::input_parameter< float >::type base_quantile(base_quantileSEXP);
+    Rcpp::traits::input_parameter< float >::type debug_mz(debug_mzSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_find_features2(info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth, base_quantile, debug_mz));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_fill_bin_spectra
 std::vector<double> rcpp_fill_bin_spectra(Rcpp::DataFrame spectra, Rcpp::DataFrame bin_mat, Rcpp::List bins, double overlap, std::string summaryFunction);
 RcppExport SEXP _StreamFind_rcpp_fill_bin_spectra(SEXP spectraSEXP, SEXP bin_matSEXP, SEXP binsSEXP, SEXP overlapSEXP, SEXP summaryFunctionSEXP) {
@@ -318,28 +340,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_nts_find_features2
-Rcpp::List rcpp_nts_find_features2(Rcpp::List info, Rcpp::List spectra_headers, std::vector<float> rtWindowsMin, std::vector<float> rtWindowsMax, std::vector<int> resolution_profile, float noiseThreshold, float minSNR, int minTraces, float baselineWindow, float maxWidth, float base_quantile, float debug_mz);
-RcppExport SEXP _StreamFind_rcpp_nts_find_features2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP rtWindowsMinSEXP, SEXP rtWindowsMaxSEXP, SEXP resolution_profileSEXP, SEXP noiseThresholdSEXP, SEXP minSNRSEXP, SEXP minTracesSEXP, SEXP baselineWindowSEXP, SEXP maxWidthSEXP, SEXP base_quantileSEXP, SEXP debug_mzSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
-    Rcpp::traits::input_parameter< std::vector<float> >::type rtWindowsMin(rtWindowsMinSEXP);
-    Rcpp::traits::input_parameter< std::vector<float> >::type rtWindowsMax(rtWindowsMaxSEXP);
-    Rcpp::traits::input_parameter< std::vector<int> >::type resolution_profile(resolution_profileSEXP);
-    Rcpp::traits::input_parameter< float >::type noiseThreshold(noiseThresholdSEXP);
-    Rcpp::traits::input_parameter< float >::type minSNR(minSNRSEXP);
-    Rcpp::traits::input_parameter< int >::type minTraces(minTracesSEXP);
-    Rcpp::traits::input_parameter< float >::type baselineWindow(baselineWindowSEXP);
-    Rcpp::traits::input_parameter< float >::type maxWidth(maxWidthSEXP);
-    Rcpp::traits::input_parameter< float >::type base_quantile(base_quantileSEXP);
-    Rcpp::traits::input_parameter< float >::type debug_mz(debug_mzSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_nts_find_features2(info, spectra_headers, rtWindowsMin, rtWindowsMax, resolution_profile, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth, base_quantile, debug_mz));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_decode_eic_data
 std::vector<float> rcpp_decode_eic_data(std::string base64_encoded);
 RcppExport SEXP _StreamFind_rcpp_decode_eic_data(SEXP base64_encodedSEXP) {
@@ -486,8 +486,58 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_streamcraft_decode_string
+std::vector<float> rcpp_streamcraft_decode_string(std::string base64_encoded);
+RcppExport SEXP _StreamFind_rcpp_streamcraft_decode_string(SEXP base64_encodedSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type base64_encoded(base64_encodedSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_streamcraft_decode_string(base64_encoded));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_streamcraft_parse_ms_analysis_from_files
+Rcpp::List rcpp_streamcraft_parse_ms_analysis_from_files(std::string file_path);
+RcppExport SEXP _StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files(SEXP file_pathSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< std::string >::type file_path(file_pathSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_streamcraft_parse_ms_analysis_from_files(file_path));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_streamcraft_parse_ms_spectra
+Rcpp::List rcpp_streamcraft_parse_ms_spectra(Rcpp::List analysis, std::vector<int> levels, Rcpp::DataFrame targets, float minIntensityMS1, float minIntensityMS2);
+RcppExport SEXP _StreamFind_rcpp_streamcraft_parse_ms_spectra(SEXP analysisSEXP, SEXP levelsSEXP, SEXP targetsSEXP, SEXP minIntensityMS1SEXP, SEXP minIntensityMS2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type analysis(analysisSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type levels(levelsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type targets(targetsSEXP);
+    Rcpp::traits::input_parameter< float >::type minIntensityMS1(minIntensityMS1SEXP);
+    Rcpp::traits::input_parameter< float >::type minIntensityMS2(minIntensityMS2SEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_streamcraft_parse_ms_spectra(analysis, levels, targets, minIntensityMS1, minIntensityMS2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_streamcraft_parse_ms_chromatograms
+Rcpp::List rcpp_streamcraft_parse_ms_chromatograms(Rcpp::List analysis, std::vector<int> idx);
+RcppExport SEXP _StreamFind_rcpp_streamcraft_parse_ms_chromatograms(SEXP analysisSEXP, SEXP idxSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type analysis(analysisSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type idx(idxSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_streamcraft_parse_ms_chromatograms(analysis, idx));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_StreamFind_rcpp_nts_find_features2", (DL_FUNC) &_StreamFind_rcpp_nts_find_features2, 12},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_test_hdf5_mixed_performance", (DL_FUNC) &_StreamFind_test_hdf5_mixed_performance, 4},
     {"_StreamFind_test_hdf5_mixed_read_performance", (DL_FUNC) &_StreamFind_test_hdf5_mixed_read_performance, 2},
@@ -507,7 +557,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_annotate_features", (DL_FUNC) &_StreamFind_rcpp_nts_annotate_features, 5},
     {"_StreamFind_rcpp_nts_fill_features", (DL_FUNC) &_StreamFind_rcpp_nts_fill_features, 16},
     {"_StreamFind_rcpp_nts_find_features", (DL_FUNC) &_StreamFind_rcpp_nts_find_features, 10},
-    {"_StreamFind_rcpp_nts_find_features2", (DL_FUNC) &_StreamFind_rcpp_nts_find_features2, 12},
     {"_StreamFind_rcpp_decode_eic_data", (DL_FUNC) &_StreamFind_rcpp_decode_eic_data, 1},
     {"_StreamFind_rcpp_ms_group_features", (DL_FUNC) &_StreamFind_rcpp_ms_group_features, 3},
     {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
@@ -520,6 +569,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_test_hdf5_performance", (DL_FUNC) &_StreamFind_test_hdf5_performance, 4},
     {"_StreamFind_test_hdf5_read_performance", (DL_FUNC) &_StreamFind_test_hdf5_read_performance, 2},
     {"_StreamFind_test_simdutf", (DL_FUNC) &_StreamFind_test_simdutf, 0},
+    {"_StreamFind_rcpp_streamcraft_decode_string", (DL_FUNC) &_StreamFind_rcpp_streamcraft_decode_string, 1},
+    {"_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files, 1},
+    {"_StreamFind_rcpp_streamcraft_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_spectra, 5},
+    {"_StreamFind_rcpp_streamcraft_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_chromatograms, 2},
     {NULL, NULL, 0}
 };
 

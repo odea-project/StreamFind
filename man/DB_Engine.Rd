@@ -9,8 +9,6 @@ The \link{DB_Engine} R6 class provides file-based storage for StreamFind Engine 
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{sf_root}}{Path to the StreamFind (.sf) project directory.}
-
 \item{\code{Metadata}}{A \link{Metadata} object loaded from database.}
 
 \item{\code{Workflow}}{A \link{Workflow} object loaded from database.}
@@ -27,6 +25,7 @@ The \link{DB_Engine} R6 class provides file-based storage for StreamFind Engine 
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-DB_Engine-new}{\code{DB_Engine$new()}}
+\item \href{#method-DB_Engine-project_path}{\code{DB_Engine$project_path()}}
 \item \href{#method-DB_Engine-print}{\code{DB_Engine$print()}}
 \item \href{#method-DB_Engine-get_metadata}{\code{DB_Engine$get_metadata()}}
 \item \href{#method-DB_Engine-add_metadata}{\code{DB_Engine$add_metadata()}}
@@ -80,6 +79,19 @@ with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow
 \item{\code{data_type}}{Engine data type (internal; defaults to "Unknown").}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DB_Engine-project_path"></a>}}
+\if{latex}{\out{\hypertarget{method-DB_Engine-project_path}{}}}
+\subsection{Method \code{project_path()}}{
+Get the project path.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DB_Engine$project_path()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+Character string with the path to the StreamFind (.sf) project directory.
 }
 }
 \if{html}{\out{<hr>}}

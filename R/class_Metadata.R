@@ -219,6 +219,8 @@ read.Metadata <- function(x, file) {
 #' @export
 #'
 show.Metadata <- function(x) {
+  cat("\n")
+  cat("Metadata (", length(x), ")\n")
   if (length(x) > 0) {
     str <- NULL
     for (n in seq_len(length(x))) {

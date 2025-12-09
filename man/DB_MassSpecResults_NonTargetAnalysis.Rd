@@ -9,7 +9,7 @@
 \title{Constructor and methods to handle non-target analysis results for mass spectrometry data}
 \usage{
 DB_MassSpecResults_NonTargetAnalysis(
-  db = file.path("data.sf", "MassSpecResults_NonTargetAnalysis.duckdb"),
+  db = file.path("data.sf", "DB_MassSpecResults_NonTargetAnalysis.duckdb"),
   analyses = data.table::data.table(),
   headers = data.table::data.table(),
   features = data.table::data.table()

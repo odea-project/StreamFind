@@ -13,7 +13,7 @@
 #include <cmath>
 #include <filesystem>
 #include <limits>
-#include "StreamCraft_lib.h"
+#include "streamcraft/streamcraft.h"
 
 namespace MassSpecResults_NonTargetAnalysis
 {

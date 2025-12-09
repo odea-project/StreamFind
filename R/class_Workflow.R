@@ -227,6 +227,8 @@ read.Workflow <- function(x, file) {
 #' @export
 #' 
 show.Workflow <- function(x, ...) {
+  cat("\n")
+  cat("Workflow (", length(x), ")\n")
   if (length(x) > 0) {
     names_processing_steps <- vapply(x, function(z) z$method, "")
     algorithms <- vapply(x, function(z) z$algorithm, "")
@@ -241,7 +243,5 @@ show.Workflow <- function(x, ...) {
       ),
       sep = "\n"
     )
-  } else {
-    cat("empty")
   }
 }

@@ -21,7 +21,7 @@ DB_MassSpecEngine <- R6::R6Class(
   private = list(
     .data_type = "DB_MassSpec",
     .Analyses = NULL,
-    .Results = list()
+    .NonTargetAnalysis = NULL
   ),
 
   active = list(
@@ -29,7 +29,9 @@ DB_MassSpecEngine <- R6::R6Class(
     Analyses = function(value) {
       if (missing(value)) {
         if (is.null(private$.Analyses)) {
-          private$.Analyses <- DB_MassSpecAnalyses(db = file.path(private$.sf_root, "MassSpecAnalyses.duckdb"))
+          private$.Analyses <- DB_MassSpecAnalyses(
+            db = file.path(private$.project_path, "DB_MassSpecAnalyses.duckdb")
+          )
         }
         return(private$.Analyses)
       }
@@ -45,12 +47,29 @@ DB_MassSpecEngine <- R6::R6Class(
       invisible(self)
     },
     #' @field NonTargetAnalysis A DB_MassSpecResults_NonTargetAnalysis object backed by DuckDB.
-    NonTargetAnalysis = function() {
-      nts_db_path <- file.path(private$.sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
-      if (!file.exists(nts_db_path)) {
-        NULL
+    NonTargetAnalysis = function(value) {
+      if (missing(value)) {
+        if (is.null(private$.NonTargetAnalysis)) {
+          nts_db_path <- file.path(private$.project_path, "DB_MassSpecResults_NonTargetAnalysis.duckdb")
+          if (!file.exists(nts_db_path)) {
+            private$.NonTargetAnalysis <- DB_MassSpecResults_NonTargetAnalysis(
+              db = nts_db_path,
+              analyses = query_db(self$Analyses, "SELECT * FROM Analyses")
+            )
+          } else {
+            private$.NonTargetAnalysis <- DB_MassSpecResults_NonTargetAnalysis(db = nts_db_path)
+          }
+        }
+        return(private$.NonTargetAnalysis)
+      }
+      if (is(value, "DB_MassSpecResults_NonTargetAnalysis")) {
+        if (!is.null(validate_object(value))) {
+          warning("Invalid DB_MassSpecResults_NonTargetAnalysis object! Not added.")
+          return(invisible(self))
+        }
+        private$.NonTargetAnalysis <- value
       } else {
-        DB_MassSpecResults_NonTargetAnalysis(db = nts_db_path)
+        warning("NonTargetAnalysis must be a DB_MassSpecResults_NonTargetAnalysis object! Not added.")
       }
     }
   ),
@@ -72,41 +91,11 @@ DB_MassSpecEngine <- R6::R6Class(
         data_type = "DB_MassSpec"
       )
       private$.Analyses <- DB_MassSpecAnalyses(
-        db = file.path(private$.sf_root, "MassSpecAnalyses.duckdb"),
+        db = file.path(private$.project_path, "DB_MassSpecAnalyses.duckdb"),
         files = files,
         centroid = centroid,
         levels = levels
       )
-    },
-
-    #' @description Add analyses (append; overwrites duplicates)
-    add_analyses = function(files, centroid = FALSE, levels = c(1, 2)) {
-      self$Analyses <- add_analyses(self$Analyses, files = files, centroid = centroid, levels = levels)
-      invisible(self)
-    },
-    #' @description Get analysis names
-    get_analysis_names = function() get_analysis_names(self$Analyses),
-    #' @description Get replicate names
-    get_replicate_names = function() get_replicate_names(self$Analyses),
-    #' @description Get blank names
-    get_blank_names = function() get_blank_names(self$Analyses),
-    #' @description Get concentrations
-    get_concentrations = function() get_concentrations(self$Analyses),
-    #' @description Set replicate names
-    #' @param value Character vector of replicate names matching analyses.
-    set_replicate_names = function(value) { set_replicate_names(self$Analyses, value); invisible(self) },
-    #' @description Set blank names
-    #' @param value Character vector of blank names matching analyses.
-    set_blank_names = function(value) { set_blank_names(self$Analyses, value); invisible(self) },
-    #' @description Set concentrations
-    #' @param value Numeric vector of concentrations matching analyses.
-    set_concentrations = function(value) { set_concentrations(self$Analyses, value); invisible(self) },
-    #' @description Get info summary
-    info_analyses = function() info(self$Analyses),
-    #' @description Get spectra headers for an analysis
-    get_spectra_headers = function(analyses = NULL) get_spectra_headers(self$Analyses, analyses),
-    #' @description Get chromatograms headers for an analysis
-    get_chromatograms_headers = function(analyses = NULL) get_chromatograms_headers(self$Analyses, analyses)
+    }
   )
 )
-

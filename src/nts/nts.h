@@ -1,21 +1,19 @@
-#ifndef NTS2_UTILS_H
-#define NTS2_UTILS_H
+#ifndef NTS_H
+#define NTS_H
 
 #include <Rcpp.h>
-#include "sf_utility_functions.h"
-#include "streamcraft/streamcraft.h"
+#include "utils.h"
+#include "../streamcraft/streamcraft.h"
 
-namespace NTS2
+namespace nts
 {
-  // MARK: STRUCTS
-
   // MARK: FEATURE
   struct FEATURE
   {
     std::string analysis;
     std::string feature;
-    std::string group;
-    std::string component;
+    std::string feature_component;
+    std::string feature_group;
     std::string adduct;
     float rt;
     float mz;
@@ -60,8 +58,8 @@ namespace NTS2
   {
     std::string analysis;
     std::vector<std::string> feature;
-    std::vector<std::string> group;
-    std::vector<std::string> component;
+    std::vector<std::string> feature_group;
+    std::vector<std::string> feature_component;
     std::vector<std::string> adduct;
     std::vector<float> rt;
     std::vector<float> mz;
@@ -110,8 +108,8 @@ namespace NTS2
       FEATURE feature_i;
       feature_i.analysis = analysis;
       feature_i.feature = feature[i];
-      feature_i.group = group[i];
-      feature_i.component = component[i];
+      feature_i.feature_group = feature_group[i];
+      feature_i.feature_component = feature_component[i];
       feature_i.adduct = adduct[i];
       feature_i.rt = rt[i];
       feature_i.mz = mz[i];
@@ -155,8 +153,8 @@ namespace NTS2
     void set_feature(const int &i, const FEATURE &feature_i)
     {
       feature[i] = feature_i.feature;
-      group[i] = feature_i.group;
-      component[i] = feature_i.component;
+      feature_group[i] = feature_i.feature_group;
+      feature_component[i] = feature_i.feature_component;
       adduct[i] = feature_i.adduct;
       rt[i] = feature_i.rt;
       mz[i] = feature_i.mz;
@@ -199,8 +197,8 @@ namespace NTS2
     void append_feature(const FEATURE &feature_i)
     {
       feature.push_back(feature_i.feature);
-      group.push_back(feature_i.group);
-      component.push_back(feature_i.component);
+      feature_group.push_back(feature_i.feature_group);
+      feature_component.push_back(feature_i.feature_component);
       adduct.push_back(feature_i.adduct);
       rt.push_back(feature_i.rt);
       mz.push_back(feature_i.mz);
@@ -250,7 +248,7 @@ namespace NTS2
       }
 
       std::vector<std::string> must_have_names = {
-          "feature", "group", "component", "adduct", "rt", "mz", "mass",
+          "feature", "feature_group", "feature_component", "adduct", "rt", "mz", "mass",
           "intensity", "noise", "sn", "area",
           "rtmin", "rtmax", "width",
           "mzmin", "mzmax", "ppm",
@@ -261,15 +259,15 @@ namespace NTS2
           "ms1_size", "ms1_mz", "ms1_intensity",
           "ms2_size", "ms2_mz", "ms2_intensity"};
 
-      if (!SF_UTILITY::check_list_must_have_names(fts, must_have_names))
+      if (!utils::check_list_must_have_names(fts, must_have_names))
       {
         Rcpp::Rcout << "Error: FEATURES::import_from_list() - missing required names in the list." << std::endl;
         return;
       }
 
       feature = Rcpp::as<std::vector<std::string>>(fts["feature"]);
-      group = Rcpp::as<std::vector<std::string>>(fts["group"]);
-      component = Rcpp::as<std::vector<std::string>>(fts["component"]);
+      feature_group = Rcpp::as<std::vector<std::string>>(fts["feature_group"]);
+      feature_component = Rcpp::as<std::vector<std::string>>(fts["feature_component"]);
       adduct = Rcpp::as<std::vector<std::string>>(fts["adduct"]);
       rt = Rcpp::as<std::vector<float>>(fts["rt"]);
       mz = Rcpp::as<std::vector<float>>(fts["mz"]);
@@ -314,13 +312,13 @@ namespace NTS2
       int n = feature.size();
       if (n == 0)
       {
-        return SF_UTILITY::get_empty_dt();
+        return utils::get_empty_dt();
       }
 
       Rcpp::List out = Rcpp::List::create(
           Rcpp::Named("feature") = feature,
-          Rcpp::Named("group") = group,
-          Rcpp::Named("component") = component,
+          Rcpp::Named("feature_group") = feature_group,
+          Rcpp::Named("feature_component") = feature_component,
           Rcpp::Named("adduct") = adduct,
           Rcpp::Named("rt") = rt,
           Rcpp::Named("mz") = mz,
@@ -382,7 +380,7 @@ namespace NTS2
       std::vector<std::string> info_must_have_names = {
           "analysis", "replicate", "blank", "file"};
 
-      if (!SF_UTILITY::check_list_must_have_names(info, info_must_have_names))
+      if (!utils::check_list_must_have_names(info, info_must_have_names))
       {
         Rcpp::Rcout << "Error: NTS_DATA() - missing required names in the info list." << std::endl;
         return;
@@ -416,7 +414,7 @@ namespace NTS2
         for (int i = 0; i < number_analyses; i++)
         {
           const Rcpp::List &header_ref = Rcpp::as<Rcpp::List>(spectra_headers[i]);
-          headers[i] = SF_UTILITY::as_MS_SPECTRA_HEADERS(header_ref);
+          headers[i] = utils::as_MS_SPECTRA_HEADERS(header_ref);
         }
       }
 
@@ -475,6 +473,6 @@ namespace NTS2
         const float &debug_mz = 0.0f);
 
   };
-}; // namespace NTS2
+}; // namespace nts
 
 #endif

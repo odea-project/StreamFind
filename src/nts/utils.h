@@ -2,15 +2,15 @@
 #define SF_UTILITY_FUNCTIONS_H
 
 #include <Rcpp.h>
-#include "streamcraft/streamcraft.h"
+#include "../streamcraft/streamcraft.h"
 #include <vector>
 
-// Forward declaration to avoid circular dependency
-namespace NTS2 {
+// Forward declaration of nts::FEATURE
+namespace nts {
   struct FEATURE;
-}
+};
 
-namespace SF_UTILITY
+namespace nts::utils
 {
   // MARK: DATA STRUCTURES
 
@@ -293,7 +293,7 @@ namespace SF_UTILITY
   // MARK: POLARITY-SPECIFIC PROCESSING FUNCTIONS
   
   // Process clusters for a specific polarity and return features
-  std::vector<NTS2::FEATURE> process_polarity_clusters(
+  std::vector<nts::FEATURE> process_polarity_clusters(
       const std::vector<float> &clust_rt,
       const std::vector<float> &clust_mz, 
       const std::vector<float> &clust_intensity,
@@ -310,6 +310,5 @@ namespace SF_UTILITY
       const std::string &analysis_name,
       float debug_mz = 0.0f);
 
-}; // namespace SF_UTILITY
-
+}; // namespace nts::utils
 #endif

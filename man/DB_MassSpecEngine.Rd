@@ -22,17 +22,6 @@ R6 child of DB_Engine for MassSpec data that uses DB_MassSpecAnalyses for on-dis
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-DB_MassSpecEngine-new}{\code{DB_MassSpecEngine$new()}}
-\item \href{#method-DB_MassSpecEngine-add_analyses}{\code{DB_MassSpecEngine$add_analyses()}}
-\item \href{#method-DB_MassSpecEngine-get_analysis_names}{\code{DB_MassSpecEngine$get_analysis_names()}}
-\item \href{#method-DB_MassSpecEngine-get_replicate_names}{\code{DB_MassSpecEngine$get_replicate_names()}}
-\item \href{#method-DB_MassSpecEngine-get_blank_names}{\code{DB_MassSpecEngine$get_blank_names()}}
-\item \href{#method-DB_MassSpecEngine-get_concentrations}{\code{DB_MassSpecEngine$get_concentrations()}}
-\item \href{#method-DB_MassSpecEngine-set_replicate_names}{\code{DB_MassSpecEngine$set_replicate_names()}}
-\item \href{#method-DB_MassSpecEngine-set_blank_names}{\code{DB_MassSpecEngine$set_blank_names()}}
-\item \href{#method-DB_MassSpecEngine-set_concentrations}{\code{DB_MassSpecEngine$set_concentrations()}}
-\item \href{#method-DB_MassSpecEngine-info_analyses}{\code{DB_MassSpecEngine$info_analyses()}}
-\item \href{#method-DB_MassSpecEngine-get_spectra_headers}{\code{DB_MassSpecEngine$get_spectra_headers()}}
-\item \href{#method-DB_MassSpecEngine-get_chromatograms_headers}{\code{DB_MassSpecEngine$get_chromatograms_headers()}}
 \item \href{#method-DB_MassSpecEngine-clone}{\code{DB_MassSpecEngine$clone()}}
 }
 }
@@ -53,6 +42,7 @@ R6 child of DB_Engine for MassSpec data that uses DB_MassSpecAnalyses for on-dis
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="get_workflow"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-get_workflow'><code>StreamFind::DB_Engine$get_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="list_db_tables"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-list_db_tables'><code>StreamFind::DB_Engine$list_db_tables()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="print"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-print'><code>StreamFind::DB_Engine$print()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="project_path"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-project_path'><code>StreamFind::DB_Engine$project_path()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="query_db"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-query_db'><code>StreamFind::DB_Engine$query_db()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="run"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-run'><code>StreamFind::DB_Engine$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="run_workflow"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-run_workflow'><code>StreamFind::DB_Engine$run_workflow()</code></a></span></li>
@@ -101,169 +91,6 @@ replicate group name (character). Note the file paths must have the extension
 \item{\code{levels}}{Integer vector with the levels of MS data.}
 
 \item{\code{configuration}}{A list of configuration parameters to persist or use for the engine/database.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-add_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-add_analyses}{}}}
-\subsection{Method \code{add_analyses()}}{
-Add analyses (append; overwrites duplicates)
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$add_analyses(files, centroid = FALSE, levels = c(1, 2))}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{files}}{A character vector with full file path/s of \emph{mzML}
-or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
-and \emph{blank} with the full file path of \emph{mzML} or \emph{mzXML} file/s
-(character), the replicate group name (character) and the associated blank
-replicate group name (character). Note the file paths must have the extension
-\emph{.mzML} or \emph{.mzXML}.}
-
-\item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
-
-\item{\code{levels}}{Integer vector with the levels of MS data.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-get_analysis_names"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-get_analysis_names}{}}}
-\subsection{Method \code{get_analysis_names()}}{
-Get analysis names
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$get_analysis_names()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-get_replicate_names"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-get_replicate_names}{}}}
-\subsection{Method \code{get_replicate_names()}}{
-Get replicate names
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$get_replicate_names()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-get_blank_names"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-get_blank_names}{}}}
-\subsection{Method \code{get_blank_names()}}{
-Get blank names
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$get_blank_names()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-get_concentrations"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-get_concentrations}{}}}
-\subsection{Method \code{get_concentrations()}}{
-Get concentrations
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$get_concentrations()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-set_replicate_names"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-set_replicate_names}{}}}
-\subsection{Method \code{set_replicate_names()}}{
-Set replicate names
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$set_replicate_names(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character vector of replicate names matching analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-set_blank_names"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-set_blank_names}{}}}
-\subsection{Method \code{set_blank_names()}}{
-Set blank names
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$set_blank_names(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Character vector of blank names matching analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-set_concentrations"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-set_concentrations}{}}}
-\subsection{Method \code{set_concentrations()}}{
-Set concentrations
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$set_concentrations(value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{Numeric vector of concentrations matching analyses.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-info_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-info_analyses}{}}}
-\subsection{Method \code{info_analyses()}}{
-Get info summary
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$info_analyses()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-get_spectra_headers"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-get_spectra_headers}{}}}
-\subsection{Method \code{get_spectra_headers()}}{
-Get spectra headers for an analysis
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$get_spectra_headers(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_MassSpecEngine-get_chromatograms_headers"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_MassSpecEngine-get_chromatograms_headers}{}}}
-\subsection{Method \code{get_chromatograms_headers()}}{
-Get chromatograms headers for an analysis
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$get_chromatograms_headers(analyses = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{analyses}}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
 }
 \if{html}{\out{</div>}}
 }

@@ -12,7 +12,7 @@
 \title{Constructor and methods to handle Mass Spectrometry chromatograms results using DuckDB}
 \usage{
 DB_MassSpecResults_Chromatograms(
-  db = file.path("data.sf", "MassSpecResults_Chromatograms.duckdb"),
+  db = file.path("data.sf", "DB_MassSpecResults_Chromatograms.duckdb"),
   analyses = data.table::data.table(),
   chromatograms = data.table::data.table(),
   peaks = data.table::data.table()
