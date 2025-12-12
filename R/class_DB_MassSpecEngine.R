@@ -1,7 +1,7 @@
 ## MARK: DB_MassSpecEngine
 #' @title DB_Engine dedicated to Mass Spectrometry (MS) data
 #' @description R6 child of DB_Engine for MassSpec data that uses DB_MassSpecAnalyses for on-disk storage.
-#' @template arg-core-project-dir
+#' @template arg-core-project-path
 #' @template arg-core-metadata
 #' @template arg-core-workflow
 #' @template arg-ms-files
@@ -76,7 +76,7 @@ DB_MassSpecEngine <- R6::R6Class(
 
   public = list(
     #' @description Initialize DB_MassSpecEngine
-    initialize = function(project_dir = "data.sf",
+    initialize = function(project_path = "data",
                           metadata = NULL,
                           workflow = NULL,
                           files = NULL,
@@ -84,7 +84,7 @@ DB_MassSpecEngine <- R6::R6Class(
                           levels = c(1, 2),
                           configuration = NULL) {
       super$initialize(
-        project_dir = project_dir,
+        project_path = project_path,
         metadata = metadata,
         workflow = workflow,
         configuration = configuration,

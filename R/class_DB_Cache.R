@@ -21,7 +21,7 @@ CacheManager <- function(db) {
 #' @param name Name of cache entry
 #' @param hash Hash string for cache table
 #' @param description Description of cache entry
-#' @param data Data.frame to cache
+#' @param data Any R object to cache (will be serialized)
 #' @export
 #' 
 save_cache.CacheManager <- function(x, name, hash, description, data, ...) {
@@ -30,10 +30,10 @@ save_cache.CacheManager <- function(x, name, hash, description, data, ...) {
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   if (missing(name) || is.null(name)) name <- hash
   if (missing(description) || is.null(description)) description <- "cache entry"
-  DBI::dbWriteTable(conn, hash, data, overwrite = TRUE)
+  serialized_data <- serialize(data, connection = NULL)
   DBI::dbExecute(conn, sprintf("DELETE FROM CacheManager WHERE hash = '%s'", hash))
-  sql <- "INSERT INTO CacheManager (name, description, hash, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)"
-  DBI::dbExecute(conn, sql, list(name, description, hash))
+  sql <- "INSERT INTO CacheManager (name, description, hash, data, created_at) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)"
+  DBI::dbExecute(conn, sql, list(name, description, hash, list(serialized_data)))
   invisible(TRUE)
 }
 
@@ -42,25 +42,22 @@ save_cache.CacheManager <- function(x, name, hash, description, data, ...) {
 #' @param x CacheManager object
 #' @param name Name of cache entry (not used, for consistency)
 #' @param hash Hash string for cache table
-#' @return Data.frame
+#' @return Cached R object (deserialized)
 #' @export
 #' 
 load_cache.CacheManager <- function(x, name, hash, ...) {
   stopifnot(inherits(x, "CacheManager"))
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  cache_info <- get_cache_info(x)
-  if (hash %in% cache_info$hash) {
-    data.table::as.data.table(DBI::dbReadTable(conn, hash))
-  } else {
-    data.table::data.table()
-  }
+  result <- DBI::dbGetQuery(conn, "SELECT data FROM CacheManager WHERE hash = ?", list(hash))
+  if (nrow(result) == 0) return(NULL)
+  unserialize(result$data[[1]])
 }
 
 # MARK: get_cache_info
 #' @describeIn CacheManager Get cache information table.
 #' @param x CacheManager object
-#' @return Integer
+#' @return Data.frame with cache metadata
 #' @export
 #' 
 get_cache_info.CacheManager <- function(x, ...) {
@@ -71,7 +68,7 @@ get_cache_info.CacheManager <- function(x, ...) {
 }
 
 # MARK: clear_cache
-#' @describeIn CacheManager Reset cache (drop all cache tables and clear CacheManager)
+#' @describeIn CacheManager Reset cache (delete all cache entries)
 #' @param x CacheManager object
 #' @export
 #' 
@@ -79,10 +76,6 @@ clear_cache.CacheManager <- function(x, ...) {
   stopifnot(inherits(x, "CacheManager"))
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  hashes <- DBI::dbGetQuery(conn, "SELECT hash FROM CacheManager")$hash
-  for (tbl in hashes) {
-    DBI::dbExecute(conn, sprintf('DROP TABLE IF EXISTS "%s"', tbl))
-  }
   DBI::dbExecute(conn, "DELETE FROM CacheManager")
   invisible(TRUE)
 }
@@ -158,7 +151,8 @@ get_db_table_info.CacheManager <- function(x, tableName) {
     CREATE TABLE IF NOT EXISTS CacheManager (
       name VARCHAR NOT NULL,
       description VARCHAR NOT NULL,
-      hash VARCHAR NOT NULL, -- hash string used as table name
+      hash VARCHAR NOT NULL UNIQUE, -- hash string used as unique identifier
+      data BLOB NOT NULL, -- serialized R object
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   ")
@@ -174,6 +168,7 @@ get_db_table_info.CacheManager <- function(x, tableName) {
       name = "VARCHAR NOT NULL",
       description = "VARCHAR NOT NULL",
       hash = "VARCHAR NOT NULL",
+      data = "BLOB NOT NULL",
       created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
     )
     for (col in names(required)) {

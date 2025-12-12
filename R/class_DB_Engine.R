@@ -2,7 +2,7 @@
 # DB_Engine -----
 #' @title File-based Database Engine for StreamFind
 #' @description The [StreamFind::DB_Engine] R6 class provides file-based storage for StreamFind Engine data using DuckDB.
-#' @template arg-core-project-dir
+#' @template arg-core-project-path
 #' @template arg-core-metadata
 #' @template arg-core-workflow
 #' @template arg-core-configuration
@@ -76,7 +76,7 @@ DB_Engine <- R6::R6Class(
     #' @description Initialize DB_Engine.
     #' @param data_type Engine data type (internal; defaults to "Unknown").
     initialize = function(
-      project_dir = "data.sf",
+      project_path = "data",
       metadata = NULL,
       workflow = NULL,
       configuration = NULL,
@@ -84,13 +84,13 @@ DB_Engine <- R6::R6Class(
       if (!requireNamespace("duckdb", quietly = TRUE)) {
         stop("duckdb package is required for DB_Engine")
       }
-      checkmate::assert_character(project_dir, len = 1)
+      checkmate::assert_character(project_path, len = 1)
       checkmate::assert_character(data_type, len = 1)
-      sf_root <- project_dir
-      engine_db <- project_dir
+      sf_root <- project_path
+      engine_db <- project_path
       if (tolower(tools::file_ext(sf_root)) == "duckdb") {
         sf_root <- dirname(sf_root)
-        engine_db <- project_dir
+        engine_db <- project_path
       } else {
         engine_db <- file.path(sf_root, "Engine.duckdb")
       }

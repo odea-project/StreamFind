@@ -10,6 +10,8 @@
 #include <iomanip>
 #include <fstream>
 
+// MARK: DEBUG
+
 // Debug log file stream (global for debugging)
 static std::ofstream debug_log;
 
@@ -822,8 +824,14 @@ void nts::utils::denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, cons
   }
 }
 
+
+
+
 // MARK: PEAK DETECTION
 
+
+
+// MARK: calculate_baseline
 std::vector<float> nts::utils::calculate_baseline(const std::vector<float> &intensity, int window_size)
 {
   const size_t n = intensity.size();
@@ -856,6 +864,111 @@ std::vector<float> nts::utils::calculate_baseline(const std::vector<float> &inte
   return baseline;
 }
 
+// MARK: smooth_intensity_savitzky_golay
+std::vector<float> nts::utils::smooth_intensity_savitzky_golay(
+  const std::vector<float> &intensity,
+  int window_size,
+  int poly_order)
+{
+  const size_t n = intensity.size();
+  std::vector<float> smoothed(n, 0.0f);
+
+  if (window_size < 3 || window_size % 2 == 0 || poly_order < 1 || poly_order >= window_size) {
+    // Fallback to simple smoothing if parameters are invalid
+    return smooth_intensity(intensity, window_size);
+  }
+
+  int half_window = window_size / 2;
+
+  // Precompute the Savitzky-Golay convolution coefficients (for uniform spacing)
+  // Use least-squares fit to a polynomial of given order
+  // Reference: Numerical Recipes, or https://en.wikipedia.org/wiki/Savitzky–Golay_filter
+  std::vector<float> coeffs(window_size, 0.0f);
+  {
+    // Build the design matrix
+    std::vector<std::vector<float>> A(window_size, std::vector<float>(poly_order + 1, 0.0f));
+    for (int i = -half_window; i <= half_window; ++i) {
+      for (int j = 0; j <= poly_order; ++j) {
+        A[i + half_window][j] = std::pow(static_cast<float>(i), j);
+      }
+    }
+    // Compute (A^T A)^{-1} A^T for the center point (convolution coefficients)
+    // Only need the first row of the pseudoinverse for smoothing
+    std::vector<float> AtA(poly_order + 1, 0.0f);
+    std::vector<std::vector<float>> ATA(poly_order + 1, std::vector<float>(poly_order + 1, 0.0f));
+    for (int i = 0; i <= poly_order; ++i) {
+      for (int j = 0; j <= poly_order; ++j) {
+        float sum = 0.0f;
+        for (int k = 0; k < window_size; ++k) {
+          sum += A[k][i] * A[k][j];
+        }
+        ATA[i][j] = sum;
+      }
+    }
+    // Invert ATA (small matrix, use Gaussian elimination)
+    std::vector<std::vector<float>> inv_ATA = ATA;
+    int m = poly_order + 1;
+    // Augment with identity
+    for (int i = 0; i < m; ++i) {
+      inv_ATA[i].resize(2 * m, 0.0f);
+      inv_ATA[i][m + i] = 1.0f;
+    }
+    // Gaussian elimination
+    for (int i = 0; i < m; ++i) {
+      float diag = inv_ATA[i][i];
+      if (std::abs(diag) < 1e-12f) continue;
+      for (int j = 0; j < 2 * m; ++j) inv_ATA[i][j] /= diag;
+      for (int k = 0; k < m; ++k) {
+        if (k == i) continue;
+        float factor = inv_ATA[k][i];
+        for (int j = 0; j < 2 * m; ++j) {
+          inv_ATA[k][j] -= factor * inv_ATA[i][j];
+        }
+      }
+    }
+    // Extract inverse
+    std::vector<std::vector<float>> ATA_inv(m, std::vector<float>(m, 0.0f));
+    for (int i = 0; i < m; ++i)
+      for (int j = 0; j < m; ++j)
+        ATA_inv[i][j] = inv_ATA[i][m + j];
+
+    // Compute convolution coefficients for smoothing (center point)
+    std::vector<float> B(m, 0.0f);
+    for (int i = 0; i < window_size; ++i) {
+      B[0] += A[i][0];
+    }
+    for (int i = 0; i < window_size; ++i) {
+      for (int j = 0; j < m; ++j) {
+        B[j] += A[i][j];
+      }
+    }
+    // The smoothing coefficients are the first row of (ATA_inv * A^T) at the center
+    for (int k = 0; k < window_size; ++k) {
+      float c = 0.0f;
+      for (int j = 0; j < m; ++j) {
+        c += ATA_inv[0][j] * A[k][j];
+      }
+      coeffs[k] = c;
+    }
+  }
+
+  // Apply convolution (handle edges by reflecting)
+  for (size_t i = 0; i < n; ++i) {
+    float sum = 0.0f;
+    for (int j = -half_window; j <= half_window; ++j) {
+      int idx = static_cast<int>(i) + j;
+      // Reflect at boundaries
+      if (idx < 0) idx = -idx;
+      if (idx >= static_cast<int>(n)) idx = 2 * static_cast<int>(n) - idx - 2;
+      sum += coeffs[j + half_window] * intensity[idx];
+    }
+    smoothed[i] = sum;
+  }
+
+  return smoothed;
+};
+
+// MARK: smooth_intensity
 std::vector<float> nts::utils::smooth_intensity(const std::vector<float> &intensity, int window_size)
 {
   const size_t n = intensity.size();
@@ -880,6 +993,7 @@ std::vector<float> nts::utils::smooth_intensity(const std::vector<float> &intens
   return smoothed;
 }
 
+// MARK: calculate_derivatives
 void nts::utils::calculate_derivatives(const std::vector<float> &smoothed_intensity,
                                       std::vector<float> &first_derivative,
                                       std::vector<float> &second_derivative)
@@ -903,6 +1017,7 @@ void nts::utils::calculate_derivatives(const std::vector<float> &smoothed_intens
   }
 }
 
+// MARK: find_peak_candidates
 std::vector<int> nts::utils::find_peak_candidates(const std::vector<float> &first_derivative,
                                                   const std::vector<float> &raw_intensity,
                                                   int refine_window)
@@ -930,6 +1045,7 @@ std::vector<int> nts::utils::find_peak_candidates(const std::vector<float> &firs
   return candidates;
 }
 
+// MARK: validate_peak_candidates
 std::vector<int> nts::utils::validate_peak_candidates(const std::vector<int> &candidates,
                                                      const std::vector<float> &first_derivative,
                                                      const std::vector<float> &second_derivative,
@@ -1078,6 +1194,7 @@ std::vector<int> nts::utils::validate_peak_candidates(const std::vector<int> &ca
   return valid_peaks;
 }
 
+// MARK: calculate_peak_boundaries
 std::pair<int, int> nts::utils::calculate_peak_boundaries(int peak_idx,
                                                          const std::vector<float> &rt,
                                                          const std::vector<float> &smoothed_intensity,
@@ -1101,9 +1218,9 @@ std::pair<int, int> nts::utils::calculate_peak_boundaries(int peak_idx,
   for (int i = peak_idx - 1; i >= 0; --i)
   {
     // Stop if there is a large RT gap (likely a break in the trace)
-    if (i < peak_idx - 1 && rt[i + 1] - rt[i] > cycle_time * 3.0f) {
+    if (i < peak_idx - 1 && rt[i + 1] - rt[i] > cycle_time * 10.0f) {
       left_idx = i + 1; // Stop at the trace closest to the apex
-      left_stop_reason = "gap > 3x cycle_time";
+      left_stop_reason = "gap > 10x cycle_time";
       break;
     }
     // Check max_half_width constraint
@@ -1136,40 +1253,27 @@ std::pair<int, int> nts::utils::calculate_peak_boundaries(int peak_idx,
       break;
     }
     
-    // Detect valley: local minimum with sustained rising trend afterwards
-    // A true valley should show 3 consecutive rising points with >20% increase from valley
-    if (i > 0 && i < peak_idx - 1)
+    // Check for sustained rising trend (without requiring a valley)
+    // This detects when we're entering another peak's right side while moving left
+    if (i >= 4 && i < peak_idx - 1)
     {
-      bool is_local_minimum = (smoothed_intensity[i] < smoothed_intensity[i-1]) &&
-                              (smoothed_intensity[i] < smoothed_intensity[i+1]);
+      // Look at 4 consecutive points starting from current position
+      float pt1 = smoothed_intensity[i]; // Current position
+      float pt2 = smoothed_intensity[i - 1];
+      float pt3 = smoothed_intensity[i - 2];
+      float pt4 = smoothed_intensity[i - 3];     // Furthest left
       
-      if (is_local_minimum)
+      // Check for consistent rising trend over 4 points after current position
+      // If all 4 points are consecutively increasing, we're likely on another peak's ascending edge
+      bool is_rising = (pt2 > pt1) && (pt3 > pt2) && (pt4 > pt3);
+      
+      if (is_rising)
       {
-        // Check for sustained upward trend: 3 consecutive points rising with >20% increase
-        float valley_intensity = smoothed_intensity[i];
-        float threshold_20pct = valley_intensity * 1.2f;
-        bool sustained_rise = false;
-        
-        // Need at least 3 points after valley to check trend
-        if (i + 3 < static_cast<int>(smoothed_intensity.size()))
-        {
-          float pt1 = smoothed_intensity[i + 1];
-          float pt2 = smoothed_intensity[i + 2];
-          float pt3 = smoothed_intensity[i + 3];
-          
-          // Check: all 3 points exceed 20% increase AND each point is higher than previous
-          bool all_above_threshold = (pt1 > threshold_20pct) && 
-                                     (pt2 > threshold_20pct) && 
-                                     (pt3 > threshold_20pct);
-          bool all_rising = (pt2 > pt1) && (pt3 > pt2);
-          
-          sustained_rise = all_above_threshold && all_rising;
-        }
-        
-        if (sustained_rise)
-        {
+        // is the valey detected in pt1 at least below half of the apex intensity?
+        bool valley_below_half_apex = pt1 < (apex_intensity * 0.5f);
+        if (valley_below_half_apex) {
           left_idx = i;
-          left_stop_reason = "valley found (sustained rising trend)";
+          left_stop_reason = "sustained left rising trend (entering another peak), pt1=" + std::to_string(pt1);
           break;
         }
       }
@@ -1188,9 +1292,9 @@ std::pair<int, int> nts::utils::calculate_peak_boundaries(int peak_idx,
   for (int i = peak_idx + 1; i < n; ++i)
   {
     // Stop if there is a large RT gap (likely a break in the trace)
-    if (i > peak_idx + 1 && rt[i] - rt[i - 1] > cycle_time * 3.0f) {
+    if (i > peak_idx + 1 && rt[i] - rt[i - 1] > cycle_time * 10.0f) {
       right_idx = i - 1;
-      right_stop_reason = "gap > 3x cycle_time";
+      right_stop_reason = "gap > 10x cycle_time";
       break;
     }
     // Check max_half_width constraint
@@ -1223,40 +1327,27 @@ std::pair<int, int> nts::utils::calculate_peak_boundaries(int peak_idx,
       break;
     }
     
-    // Detect valley: local minimum with sustained rising trend afterwards
-    // A true valley should show 3 consecutive rising points with >20% increase from valley
-    if (i > peak_idx + 1 && i < n - 1)
+    // Check for sustained rising trend (without requiring a valley)
+    // This detects when we're entering another peak's left side while moving right
+    if (i + 3 < n && i > peak_idx + 1)
     {
-      bool is_local_minimum = (smoothed_intensity[i] < smoothed_intensity[i-1]) &&
-                              (smoothed_intensity[i] < smoothed_intensity[i+1]);
+      // Look at 4 consecutive points starting from current position
+      float pt1 = smoothed_intensity[i];     // Current position
+      float pt2 = smoothed_intensity[i + 1];
+      float pt3 = smoothed_intensity[i + 2];
+      float pt4 = smoothed_intensity[i + 3]; // Furthest ahead
       
-      if (is_local_minimum)
+      // Check for consistent rising trend over 4 points
+      // If all 4 points are consecutively increasing, we're likely on another peak's ascending edge
+      bool is_rising = (pt2 > pt1) && (pt3 > pt2) && (pt4 > pt3);
+      
+      if (is_rising)
       {
-        // Check for sustained upward trend: 3 consecutive points rising with >20% increase
-        float valley_intensity = smoothed_intensity[i];
-        float threshold_20pct = valley_intensity * 1.2f;
-        bool sustained_rise = false;
-        
-        // Need at least 3 points after valley to check trend
-        if (i + 3 < static_cast<int>(smoothed_intensity.size()))
-        {
-          float pt1 = smoothed_intensity[i + 1];
-          float pt2 = smoothed_intensity[i + 2];
-          float pt3 = smoothed_intensity[i + 3];
-          
-          // Check: all 3 points exceed 20% increase AND each point is higher than previous
-          bool all_above_threshold = (pt1 > threshold_20pct) && 
-                                     (pt2 > threshold_20pct) && 
-                                     (pt3 > threshold_20pct);
-          bool all_rising = (pt2 > pt1) && (pt3 > pt2);
-          
-          sustained_rise = all_above_threshold && all_rising;
-        }
-        
-        if (sustained_rise)
-        {
+        // is the valey detected in pt1 at least below half of the apex intensity?
+        bool valley_below_half_apex = (pt1 < (apex_intensity * 0.5f));
+        if (valley_below_half_apex) {
           right_idx = i;
-          right_stop_reason = "valley found (sustained rising trend)";
+          right_stop_reason = "sustained right rising trend (entering another peak), pt1=" + std::to_string(pt1);
           break;
         }
       }
@@ -1283,6 +1374,7 @@ std::pair<int, int> nts::utils::calculate_peak_boundaries(int peak_idx,
   return std::make_pair(left_idx, right_idx);
 }
 
+// MARK: calculate_fwhm_boundaries
 std::pair<int, int> nts::utils::calculate_fwhm_boundaries(int peak_idx,
                                                          const std::vector<float> &rt,
                                                          const std::vector<float> &intensity,
@@ -1330,6 +1422,7 @@ std::pair<int, int> nts::utils::calculate_fwhm_boundaries(int peak_idx,
   return std::make_pair(fwhm_left_idx, fwhm_right_idx);
 }
 
+// MARK: calculate_peak_area
 float nts::utils::calculate_peak_area(const std::vector<float> &rt, const std::vector<float> &intensity)
 {
   if (rt.size() < 2 || rt.size() != intensity.size())
@@ -1346,6 +1439,7 @@ float nts::utils::calculate_peak_area(const std::vector<float> &rt, const std::v
   return std::max(0.0f, area);
 }
 
+// MARK: calculate_fwhm_combined
 std::tuple<float, float, float> nts::utils::calculate_fwhm_combined(const std::vector<float> &rt,
                                                                       const std::vector<float> &mz,
                                                                       const std::vector<float> &intensity)
@@ -1422,6 +1516,7 @@ std::tuple<float, float, float> nts::utils::calculate_fwhm_combined(const std::v
   return std::make_tuple(fwhm_rt, fwhm_mz, mean_mz_fwhm);
 }
 
+// MARK: calculate_fwhm_rt
 // Simple FWHM calculation for RT dimension only
 float nts::utils::calculate_fwhm_rt(const std::vector<float> &rt, const std::vector<float> &intensity)
 {
@@ -1453,6 +1548,7 @@ float nts::utils::calculate_fwhm_rt(const std::vector<float> &rt, const std::vec
     return rt.back() - rt.front(); // fallback to total RT width
 }
 
+// MARK: fit_gaussian
 void nts::utils::fit_gaussian(const std::vector<float> &x, const std::vector<float> &y,
                              float &A, float &mu, float &sigma, float &baseline)
 {
@@ -1516,6 +1612,7 @@ void nts::utils::fit_gaussian(const std::vector<float> &x, const std::vector<flo
   }
 }
 
+// MARK: calculate_gaussian_rsquared
 float nts::utils::calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y,
                                              float A, float mu, float sigma, float baseline)
 {
@@ -1541,6 +1638,7 @@ float nts::utils::calculate_gaussian_rsquared(const std::vector<float> &x, const
   return r2;
 }
 
+// MARK: fit_emg
 // Fit EMG (Exponentially Modified Gaussian) using Adam optimizer
 // Optimizes A, mu, sigma, lambda, baseline
 void nts::utils::fit_emg(const std::vector<float> &t, const std::vector<float> &y,
@@ -1629,6 +1727,7 @@ void nts::utils::fit_emg(const std::vector<float> &t, const std::vector<float> &
   }
 }
 
+// MARK: calculate_emg_rsquared
 // Calculate R² for EMG fit
 float nts::utils::calculate_emg_rsquared(const std::vector<float> &t, const std::vector<float> &y,
                                         float A, float mu, float sigma, float lambda, float baseline)
@@ -1655,6 +1754,7 @@ float nts::utils::calculate_emg_rsquared(const std::vector<float> &t, const std:
   return r2;
 }
 
+// MARK: fit_skew_gaussian
 // Fit skew-Gaussian using Levenberg-Marquardt-like optimization
 // Starting from initial guesses, optimizes A, xi, omega, alpha
 void nts::utils::fit_skew_gaussian(const std::vector<float> &t, const std::vector<float> &y,
@@ -1734,6 +1834,7 @@ void nts::utils::fit_skew_gaussian(const std::vector<float> &t, const std::vecto
   }
 }
 
+// MARK: calculate_skew_gaussian_rsquared
 // Calculate R² for skew-Gaussian fit
 float nts::utils::calculate_skew_gaussian_rsquared(const std::vector<float> &t, const std::vector<float> &y,
                                                    float A, float xi, float omega, float alpha)
@@ -1760,8 +1861,14 @@ float nts::utils::calculate_skew_gaussian_rsquared(const std::vector<float> &t, 
   return 1.0f - (ss_residual / ss_total);
 }
 
+
+
+
 // MARK: POLARITY-SPECIFIC PROCESSING FUNCTIONS
 
+
+
+// MARK: process_polarity_clusters
 std::vector<nts::FEATURE> nts::utils::process_polarity_clusters(
     const std::vector<float> &clust_rt,
     const std::vector<float> &clust_mz, 
@@ -1901,12 +2008,23 @@ std::vector<nts::FEATURE> nts::utils::process_polarity_clusters(
     float cycle_time = rt_diffs[rt_diffs.size() / 2]; // median
 
     int baseline_window_size = std::max(minTraces, static_cast<int>(std::floor(baselineWindow / cycle_time))) / 2;
-    int derivative_window_size = std::max(minTraces, static_cast<int>(std::floor(4.0f / cycle_time)));
+    int derivative_window_size = std::max(minTraces, static_cast<int>(std::floor(30.0f / cycle_time)));
+
+    // Check if debug_mz falls within the cluster's m/z range
+    if (cluster_matches_debug_mz)
+    {
+      DEBUG_LOG("      Calculated parameters:" << std::endl);
+      DEBUG_LOG("      cycle_time: " << std::fixed << std::setprecision(4) << cycle_time << " sec" << std::endl);
+      DEBUG_LOG("      baseline_window_size: " << baseline_window_size << " points" << std::endl);
+      DEBUG_LOG("      derivative_window_size: " << derivative_window_size << " points" << std::endl);
+    }
 
     auto baseline = calculate_baseline(cluster_intensity, baseline_window_size);
     // Use gentle smoothing for derivatives (window_size=2 means averaging 3 points: [i-1, i, i+1])
     // This reduces noise while preserving sharp peaks
-    auto smoothed_intensity = smooth_intensity(cluster_intensity, 3);
+
+    auto smoothed_intensity = smooth_intensity_savitzky_golay(cluster_intensity, 4, 2);
+    // auto smoothed_intensity = smooth_intensity(cluster_intensity, 4);
     
     // DEBUG: Log smoothed and baseline data for inspection
     if (cluster_matches_debug_mz)

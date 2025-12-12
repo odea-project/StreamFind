@@ -208,6 +208,11 @@ namespace nts::utils
   // Baseline calculation using moving minimum
   std::vector<float> calculate_baseline(const std::vector<float> &intensity, int window_size);
 
+  // smoothing using savitzky-golay
+  std::vector<float> smooth_intensity_savitzky_golay(const std::vector<float> &intensity,
+                                                     int window_size,
+                                                     int poly_order);
+
   // Smooth intensity data
   std::vector<float> smooth_intensity(const std::vector<float> &intensity, int window_size);
 

@@ -53,7 +53,7 @@ The \link{DB_Engine} R6 class provides file-based storage for StreamFind Engine 
 Initialize DB_Engine.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DB_Engine$new(
-  project_dir = "data.sf",
+  project_path = "data",
   metadata = NULL,
   workflow = NULL,
   configuration = NULL,
@@ -64,7 +64,7 @@ Initialize DB_Engine.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{project_dir}}{Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing project_dir, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the project_dir does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.}
+\item{\code{project_path}}{Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing project_path, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the project_path does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.}
 
 \item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
 There is no type restrictions except for name (must be type character), author (must be type

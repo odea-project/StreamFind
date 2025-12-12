@@ -110,7 +110,11 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
 wf <- Workflow(list(ps_ff))
 ms$Workflow <- wf
 ms$run_workflow()
+
+
 show(ms$NonTargetAnalysis)
+
+
 
 run.DB_MassSpecMethod_FeatureBlankSubtraction_native(
   DB_MassSpecMethod_FeatureBlankSubtraction_native(
@@ -157,26 +161,26 @@ plot_features(
 
 #file.remove(list.files(sf_root, full.names = TRUE))
 
-sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
-ms_files <- StreamFindData::get_ms_file_paths()[29:30]
-ms <- DB_MassSpecEngine$new(
-  project_dir = sf_root,
-  files = ms_files
-)
-ms$Metadata[["project"]] <- "chromatograms-demo"
-ms
+# sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
+# ms_files <- StreamFindData::get_ms_file_paths()[29:30]
+# ms <- DB_MassSpecEngine$new(
+#   project_dir = sf_root,
+#   files = ms_files
+# )
+# ms$Metadata[["project"]] <- "chromatograms-demo"
+# ms
 
 #head(ms$get_chromatograms_headers(analyses = 1))
 #get_chromatograms(ms$Analyses, chromatograms = c(0, 1))
 #plot_chromatograms(ms$Analyses, chromatograms = c(0, 1), interactive = FALSE)
 
-plot_chromatograms(
-  ms$Analyses,
-  #analyses = 2,
-  chromatograms = c(0, 1),
-  groupBy = c("analysis", "id"),
-  downsize = 3
-)
+# plot_chromatograms(
+#   ms$Analyses,
+#   #analyses = 2,
+#   chromatograms = c(0, 1),
+#   groupBy = c("analysis", "id"),
+#   downsize = 3
+# )
 
 
 

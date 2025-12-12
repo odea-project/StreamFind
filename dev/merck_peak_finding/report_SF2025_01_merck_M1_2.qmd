@@ -1,0 +1,259 @@
+---
+title: "SF2025_01 - Report Peak Finding Merck (Milestone 1, part 2/2)"
+subtitle: "C++ Implementation and Integration in StreamFind"
+author: "Ricardo Cunha"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+toc: true
+format:
+  html:
+    grid:
+      sidebar-width: 300px
+      body-width: 1200px
+      margin-width: 300px
+      gutter-width: 1.5rem
+    other-links:
+      - text: StreamFind
+        href: https://odea-project.github.io/StreamFind/
+        icon: github
+    html-math-method: katex
+    theme: journal
+    code-tools: true
+    anchor-sections: true
+    code-fold: true
+    code-overflow: scroll
+    code-line-numbers: false
+    code-copy: true
+    cap-location: top
+    self-contained: true
+    embed-resources: true
+    toc: true
+    toc-location: left
+execute:
+  warning: false
+---
+
+```{r}
+#| include: false
+
+options(DT.options = list(
+  dom = "lfrtip",
+  autoWidth = TRUE,
+  pageLength = 10,
+  lengthMenu = c(10, 20, 50, 75, 100),
+  initComplete = htmlwidgets::JS(
+    "function(settings, json) {",
+    "$(this.api().table().body()).css({'font-size': '12px'});",
+    "$(this.api().table().body()).css({'white-space': 'nowrap'});",
+    "}"
+  )
+))
+
+simple_table_opt <- list(
+  dom = 't',
+  paging = FALSE,
+  searching = FALSE,
+  info = FALSE
+)
+
+library(knitr)
+library(kableExtra)
+library(data.table)
+library(DT)
+library(magrittr)
+library(ggplot2)
+library(plotly)
+library(StreamFind)
+
+devtools::load_all()
+
+source(file.path("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding\\dev_resources.R"))
+
+examples <- unique(merck2_files_ex$example)
+```
+
+# Files
+
+```{r}
+#| label: all-files
+
+DT::datatable(
+  merck2_files_ex[, 1:3],
+  options = simple_table_opt
+)
+```
+
+# Targets
+
+```{r}
+#| label: targets-merck
+
+DT::datatable(merck2_db_ex)
+```
+
+# Peak Finding Targets
+
+```{r}
+#| label: peak-finding-targets-merck-function
+#| include: false
+
+run_peak_finding_debug_targets <- function(example_name) {
+  merck2_db_ex1 <- merck2_db_ex[merck2_db_ex$example %in% example_name, ]
+  files <- merck2_files_ex$file_path[merck2_files_ex$example %in% example_name & !merck2_files_ex$blank]
+  
+  for (i in seq_len(nrow(merck2_db_ex1))) {
+    cat(
+      "Target ", i, ": ", merck2_db_ex1$name[i],
+      " - m/z: ", merck2_db_ex1$mz[i],
+      " - rt: ", merck2_db_ex1$rt[i], "\n"
+    )
+    ps_ff <- DB_MassSpecMethod_FindFeatures_native(
+      rtWindows = data.frame(rtmin = 300, rtmax = 3400),
+      resolution_profile = c(25000L, 55000L, 80000L),
+      noiseThreshold = 15,
+      minSNR = 3,
+      minTraces = 3,
+      baselineWindow = 400,
+      maxWidth = 250,
+      base_quantile = 0.99,
+      debug_mz = merck2_db_ex1$mz[i]
+    )
+    clear_cache("all")
+    prj <- file.path("dev", "merck_peak_finding", "data")
+    ms <- DB_MassSpecEngine$new(
+      project_path = prj,
+      files = files
+    )
+    ms$clear_cache()
+    ms$Workflow = list(ps_ff)
+    ms$run_workflow()
+  }
+  log_path <- "C:\\Users\\apoli\\Documents\\github\\StreamFind\\log"
+  log_files <- list.files(log_path, pattern = "peak_detection", full.names = TRUE)
+  folder_ex1 <- file.path(log_path, paste0("example_", example_name))
+  if (!dir.exists(folder_ex1)) {
+    dir.create(folder_ex1)
+  }
+  for (log_file in log_files) {
+    file.copy(log_file, folder_ex1, overwrite = TRUE)
+  }
+  if (all(file.exists(log_files))) {
+    cat("All log files copied successfully to", folder_ex1, "\n")
+  } else {
+    cat("Some log files were not copied successfully.\n")
+  }
+  for (log_file in log_files) {
+    file.remove(log_file)
+  }
+  file.remove(list.files(prj, full.names = TRUE))
+}
+```
+
+```{r}
+#| label: run-peak-finding-debug-merck
+#| include: false
+
+#temp <- lapply(examples[8], run_peak_finding_debug_targets)
+```
+
+```{r}
+#| label: debug-plots
+#| results: hide
+#| include: false
+
+source("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding\\dev_log_plot.R")
+log_path <- "C:\\Users\\apoli\\Documents\\github\\StreamFind\\log"
+log_example_folders <- list.dirs(log_path, recursive = FALSE, full.names = TRUE)
+log_example_folders <- log_example_folders[grepl("example_", log_example_folders)]
+log_example_folders <- log_example_folders[
+  sub("example_", "", basename(log_example_folders)) %in% examples[8]
+]
+
+
+
+plot_list <- list()
+
+for (folder in log_example_folders) {
+  log_files <- list.files(folder, pattern = "peak_detection", full.names = TRUE)
+  example <- gsub(basename(folder), pattern = "example_", replacement = "")
+  plot_list[[example]] <- list()
+  for (log_file in log_files) {
+    tryCatch({
+      plot_temp <- plot_cluster_data(plot3D = FALSE, log_file = log_file)
+      log_file_name <- basename(log_file)
+      plot_list[[example]][[log_file_name]] <- plot_temp
+    }, error = function(e) {
+      cat("Error processing", log_file, ":", conditionMessage(e), "\n")
+    })
+  }
+}
+```
+
+## Example `r examples[8]`
+
+::: {.panel-tabset}
+
+```{r}
+#| label: plot-debug-example-8
+#| output: asis
+#| echo: false
+
+example <- examples[8]
+plot_list_example <- plot_list[[example]]
+# Generate tabs with plotly plots using knitr::knit_child
+for (i in seq_along(plot_list_example)) {
+  log_file <- names(plot_list_example)[i]
+  mz_value <- sub(".*peak_detection_(.*)\\.log", "\\1", log_file)
+  # Generate tab header
+  cat(sprintf("\n## m/z %s\n\n", mz_value))
+  plot_list_temp <- plot_list_example[[i]]
+  # Generate chunk with plot using knit_child
+  plot_chunk <- knitr::knit_child(
+    text = c(
+      "```{r}",
+      "#| echo: false",
+      "#| fig-height: 7",
+      sprintf("plot_list_temp"),
+      "```"
+    ),
+    envir = environment(),
+    quiet = TRUE
+  ) 
+  cat(plot_chunk, sep = "\n")
+  cat("\n")
+}
+```
+
+:::
+
+```{r}
+#| include: false
+
+ps_ff <- DB_MassSpecMethod_FindFeatures_native(
+  rtWindows = data.frame(rtmin = 300, rtmax = 3400),
+  resolution_profile = c(25000L, 55000L, 80000L),
+  noiseThreshold = 15,
+  minSNR = 3,
+  minTraces = 3,
+  baselineWindow = 400,
+  maxWidth = 250,
+  base_quantile = 0.99,
+  debug_mz = 0
+)
+
+clear_cache("all")
+prj <- file.path("dev", "merck_peak_finding", "data")
+
+ms <- DB_MassSpecEngine$new(
+  project_path = prj,
+  files = merck2_files_ex$file_path[merck2_files_ex$example %in% examples[8] & !merck2_files_ex$blank]
+)
+
+ms$clear_cache()
+ms$Workflow = list(ps_ff)
+ms$run_workflow()
+
+plot_features(
+  ms$NonTargetAnalysis,
+  mz = data.frame(mzmin = 790, mzmax = 820, rtmin = 20 * 60, rtmax = 22 * 60)
+)
+```

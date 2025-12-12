@@ -41,7 +41,7 @@ CacheManager(db)
 
 \item{description}{Description of cache entry}
 
-\item{data}{Data.frame to cache}
+\item{data}{Any R object to cache (will be serialized)}
 
 \item{unit}{Optional unit for size, possible values: "bytes", "KB", "MB", "GB" or "auto" (default).}
 
@@ -54,9 +54,9 @@ CacheManager(db)
 \value{
 An object of class 'CacheManager'
 
-Data.frame
+Cached R object (deserialized)
 
-Integer
+Data.frame with cache metadata
 
 Integer
 }
@@ -71,7 +71,7 @@ S3 class to manage Cache.duckdb file for caching and loading data
 
 \item \code{get_cache_info(CacheManager)}: Get cache information table.
 
-\item \code{clear_cache(CacheManager)}: Reset cache (drop all cache tables and clear CacheManager)
+\item \code{clear_cache(CacheManager)}: Reset cache (delete all cache entries)
 
 \item \code{size(CacheManager)}: Get size of Cache.duckdb file in bytes.
 

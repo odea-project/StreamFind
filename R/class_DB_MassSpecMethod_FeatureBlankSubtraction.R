@@ -1,13 +1,19 @@
 
-# MARK: Native
-# Native ------
+# MARK: native
+# native ------
 
 #' @title DB_MassSpecMethod_FeatureBlankSubtraction_native class
 #' @description Native StreamFind method for blank subtraction of features.
 #' @param blankThreshold numeric(1) threshold multiplier for blank feature intensities to consider a feature as present in blanks. To be present a features must be at least blankThreshold times more intense in samples than in blanks.
+#' @param rtExpand numeric(1) retention time expansion window in seconds around feature RT for EIC extraction.
+#' @param mzExpand numeric(1) m/z expansion window in Da around feature m/z for EIC extraction.
 #' @export
 #'
-DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(blankThreshold = 5) {
+DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(
+  blankThreshold = 5,
+  rtExpand = 10,
+  mzExpand = 0.005
+) {
   x <- ProcessingStep(
     type = "DB_MassSpec",
     method = "FeatureBlankSubtraction",
@@ -23,7 +29,9 @@ DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(blankThreshold = 5)
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_,
     parameters = list(
-      blankThreshold = 5
+      blankThreshold = 5,
+      rtExpand = rtExpand,
+      mzExpand = mzExpand
     )
   )
   if (is.null(validate_object(x))) {
@@ -83,10 +91,10 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
     ana <- x$analysis[1]
     blk_analyses <- analyses$analysis[analyses$replicate == analyses$blank[analyses$analysis == ana]]
     targets <- x[, c("feature", "mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity")]
-    targets$rtmin <- targets$rtmin - 5
-    targets$rtmax <- targets$rtmax + 5
-    targets$mzmin <- targets$mzmin - 0.01
-    targets$mzmax <- targets$mzmax + 0.01
+    targets$rtmin <- targets$rtmin - parameters$rtExpand
+    targets$rtmax <- targets$rtmax + parameters$rtExpand
+    targets$mzmin <- targets$mzmin - parameters$mzExpand
+    targets$mzmax <- targets$mzmax + parameters$mzExpand
     data.table::setnames(targets, "feature", "id")
     eic_blks <- lapply(blk_analyses, function(blk) {
       get_spectra_eic(engine$Analyses, analyses = blk, mz = targets)
@@ -114,7 +122,7 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
   #   description = "Features found with DB_FeatureBlankSubtraction_native method.",
   #   data = fts
   # )
-  message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
+  # message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
   db <- file.path(engine$project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
   invisible(DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts))
   invisible(TRUE)
