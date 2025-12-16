@@ -6,7 +6,8 @@
 #include <vector>
 
 // Forward declaration of nts::FEATURE
-namespace nts {
+namespace nts
+{
   struct FEATURE;
 };
 
@@ -81,26 +82,26 @@ namespace nts::utils
 
   float gaussian_function(const float &A, const float &mu,
                           const float &sigma, const float &x);
-  
+
   float gaussian_function_with_baseline(const float &A, const float &mu,
                                         const float &sigma, const float &baseline,
                                         const float &x);
-  
+
   // Skew-Gaussian (Azzalini skew-normal) functions
   float standard_normal_pdf(const float &z);
   float standard_normal_cdf(const float &z);
   float skew_gaussian_function(const float &A, const float &xi,
                                const float &omega, const float &alpha,
                                const float &t);
-  
+
   // EMG (Exponentially Modified Gaussian) function for chromatographic tailing
   float emg_function(const float &A, const float &mu, const float &sigma,
-                    const float &lambda, const float &baseline, const float &t);
+                     const float &lambda, const float &baseline, const float &t);
 
   sc::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd);
 
   float calculate_mz_threshold_linear(float mz, float slope, float intercept);
-  std::pair<float, float> calculate_linear_model_params(const std::vector<int>& resolution_profile);
+  std::pair<float, float> calculate_linear_model_params(const std::vector<int> &resolution_profile);
 
   // Sorting indices for float data
   std::vector<size_t> get_sort_indices_float(const std::vector<float> &data);
@@ -218,40 +219,39 @@ namespace nts::utils
 
   // Calculate derivatives for peak detection
   void calculate_derivatives(const std::vector<float> &smoothed_intensity,
-                            std::vector<float> &first_derivative,
-                            std::vector<float> &second_derivative);
+                             std::vector<float> &first_derivative,
+                             std::vector<float> &second_derivative);
 
   // Find peak candidates based on derivative zero-crossings (positive to negative)
   std::vector<int> find_peak_candidates(const std::vector<float> &first_derivative,
-                                       const std::vector<float> &raw_intensity = std::vector<float>(),
-                                       int refine_window = 0);
+                                        const std::vector<float> &raw_intensity = std::vector<float>(),
+                                        int refine_window = 0);
 
   // Validate peak candidates using derivative criteria
   std::vector<int> validate_peak_candidates(const std::vector<int> &candidates,
-                                           const std::vector<float> &first_derivative,
-                                           const std::vector<float> &second_derivative,
-                                           const std::vector<float> &smoothed_intensity,
-                                           int derivative_window_size, int min_traces,
-                                           bool debug = false,
-                                           const std::vector<float> &rt = std::vector<float>(),
-                                           const std::vector<float> &intensity = std::vector<float>());
+                                            const std::vector<float> &first_derivative,
+                                            const std::vector<float> &second_derivative,
+                                            const std::vector<float> &smoothed_intensity,
+                                            const std::vector<float> &rt = std::vector<float>(),
+                                            const std::vector<float> &intensity = std::vector<float>(),
+                                            bool debug = false);
 
   // Calculate peak boundaries
   std::pair<int, int> calculate_peak_boundaries(int peak_idx,
-                                               const std::vector<float> &rt,
-                                               const std::vector<float> &smoothed_intensity,
-                                               const std::vector<float> &baseline,
-                                               float max_half_width,
-                                               int min_traces,
-                                               float cycle_time,
-                                               bool debug = false,
-                                               float debug_mz = 0.0f);
+                                                const std::vector<float> &rt,
+                                                const std::vector<float> &smoothed_intensity,
+                                                const std::vector<float> &baseline,
+                                                float max_half_width,
+                                                int min_traces,
+                                                float cycle_time,
+                                                bool debug = false,
+                                                float debug_mz = 0.0f);
 
   // Calculate FWHM boundaries
   std::pair<int, int> calculate_fwhm_boundaries(int peak_idx,
-                                               const std::vector<float> &rt,
-                                               const std::vector<float> &intensity,
-                                               int left_boundary, int right_boundary);
+                                                const std::vector<float> &rt,
+                                                const std::vector<float> &intensity,
+                                                int left_boundary, int right_boundary);
 
   // Calculate peak area using trapezoidal integration
   float calculate_peak_area(const std::vector<float> &rt, const std::vector<float> &intensity);
@@ -265,42 +265,42 @@ namespace nts::utils
   // Combined FWHM calculation for both RT and MZ dimensions
   // Returns: {fwhm_rt, fwhm_mz, mean_mz_in_fwhm}
   std::tuple<float, float, float> calculate_fwhm_combined(const std::vector<float> &rt,
-                                                           const std::vector<float> &mz,
-                                                           const std::vector<float> &intensity);
+                                                          const std::vector<float> &mz,
+                                                          const std::vector<float> &intensity);
 
   // Simple FWHM calculation for RT dimension only
   float calculate_fwhm_rt(const std::vector<float> &rt, const std::vector<float> &intensity);
 
   // Gaussian fitting functions
   float gaussian_cost_function(const std::vector<float> &x, const std::vector<float> &y,
-                              float A, float mu, float sigma);
+                               float A, float mu, float sigma);
 
   void fit_gaussian(const std::vector<float> &x, const std::vector<float> &y,
-                   float &A, float &mu, float &sigma, float &baseline);
+                    float &A, float &mu, float &sigma, float &baseline);
 
   float calculate_gaussian_rsquared(const std::vector<float> &x, const std::vector<float> &y,
-                                   float A, float mu, float sigma, float baseline);
-  
+                                    float A, float mu, float sigma, float baseline);
+
   // Skew-Gaussian fitting functions
   void fit_skew_gaussian(const std::vector<float> &t, const std::vector<float> &y,
-                        float &A, float &xi, float &omega, float &alpha);
-  
+                         float &A, float &xi, float &omega, float &alpha);
+
   float calculate_skew_gaussian_rsquared(const std::vector<float> &t, const std::vector<float> &y,
-                                        float A, float xi, float omega, float alpha);
-  
+                                         float A, float xi, float omega, float alpha);
+
   // EMG fitting functions (Exponentially Modified Gaussian)
   void fit_emg(const std::vector<float> &t, const std::vector<float> &y,
-              float &A, float &mu, float &sigma, float &lambda, float &baseline);
-  
+               float &A, float &mu, float &sigma, float &lambda, float &baseline);
+
   float calculate_emg_rsquared(const std::vector<float> &t, const std::vector<float> &y,
-                              float A, float mu, float sigma, float lambda, float baseline);
+                               float A, float mu, float sigma, float lambda, float baseline);
 
   // MARK: POLARITY-SPECIFIC PROCESSING FUNCTIONS
-  
+
   // Process clusters for a specific polarity and return features
   std::vector<nts::FEATURE> process_polarity_clusters(
       const std::vector<float> &clust_rt,
-      const std::vector<float> &clust_mz, 
+      const std::vector<float> &clust_mz,
       const std::vector<float> &clust_intensity,
       const std::vector<float> &clust_noise,
       const std::vector<int> &clust_cluster,

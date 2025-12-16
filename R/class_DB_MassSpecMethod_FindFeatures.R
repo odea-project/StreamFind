@@ -137,7 +137,7 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     cache_manager,
     name = paste0("DB_FindFeatures_native"),
     hash = .make_hash(x, analyses, parameters),
-    description = "Features found with DB_FindFeatures_native method.",
+    description = "Features found with DB_FindFeatures_native method",
     data = as.data.frame(fts)
   )
   message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")

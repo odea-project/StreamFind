@@ -23,7 +23,7 @@ CacheManager <- function(db) {
 #' @param description Description of cache entry
 #' @param data Any R object to cache (will be serialized)
 #' @export
-#' 
+#'
 save_cache.CacheManager <- function(x, name, hash, description, data, ...) {
   stopifnot(inherits(x, "CacheManager"))
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
@@ -44,13 +44,15 @@ save_cache.CacheManager <- function(x, name, hash, description, data, ...) {
 #' @param hash Hash string for cache table
 #' @return Cached R object (deserialized)
 #' @export
-#' 
+#'
 load_cache.CacheManager <- function(x, name, hash, ...) {
   stopifnot(inherits(x, "CacheManager"))
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   result <- DBI::dbGetQuery(conn, "SELECT data FROM CacheManager WHERE hash = ?", list(hash))
-  if (nrow(result) == 0) return(NULL)
+  if (nrow(result) == 0) {
+    return(NULL)
+  }
   unserialize(result$data[[1]])
 }
 
@@ -59,7 +61,7 @@ load_cache.CacheManager <- function(x, name, hash, ...) {
 #' @param x CacheManager object
 #' @return Data.frame with cache metadata
 #' @export
-#' 
+#'
 get_cache_info.CacheManager <- function(x, ...) {
   stopifnot(inherits(x, "CacheManager"))
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
@@ -71,7 +73,7 @@ get_cache_info.CacheManager <- function(x, ...) {
 #' @describeIn CacheManager Reset cache (delete all cache entries)
 #' @param x CacheManager object
 #' @export
-#' 
+#'
 clear_cache.CacheManager <- function(x, ...) {
   stopifnot(inherits(x, "CacheManager"))
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
@@ -86,12 +88,11 @@ clear_cache.CacheManager <- function(x, ...) {
 #' @param unit Optional unit for size, possible values: "bytes", "KB", "MB", "GB" or "auto" (default).
 #' @return Integer
 #' @export
-#' 
+#'
 size.CacheManager <- function(x, unit = "auto", ...) {
   stopifnot(inherits(x, "CacheManager"))
   db_size <- file.info(x$db)$size
-  switch(
-    tolower(unit),
+  switch(tolower(unit),
     "bytes" = db_size,
     "kb" = db_size / 1024,
     "mb" = db_size / (1024^2),
@@ -162,23 +163,26 @@ get_db_table_info.CacheManager <- function(x, tableName) {
 # MARK: .validate_Cache_db_schema
 #' @noRd
 .validate_Cache_db_schema <- function(conn) {
-  tryCatch({
-    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(CacheManager)")
-    required <- list(
-      name = "VARCHAR NOT NULL",
-      description = "VARCHAR NOT NULL",
-      hash = "VARCHAR NOT NULL",
-      data = "BLOB NOT NULL",
-      created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-    )
-    for (col in names(required)) {
-      if (!(col %in% table_info$name)) {
-        message(sprintf("Adding missing %s column to CacheManager table...", col))
-        DBI::dbExecute(conn, sprintf("ALTER TABLE CacheManager ADD COLUMN %s %s", col, required[[col]]))
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(CacheManager)")
+      required <- list(
+        name = "VARCHAR NOT NULL",
+        description = "VARCHAR NOT NULL",
+        hash = "VARCHAR NOT NULL",
+        data = "BLOB NOT NULL",
+        created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to CacheManager table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE CacheManager ADD COLUMN %s %s", col, required[[col]]))
+        }
       }
+    },
+    error = function(e) {
+      stop("Schema migration check (CacheManager): ", e$message)
     }
-  }, error = function(e) {
-    stop("Schema migration check (CacheManager): ", e$message)
-  })
+  )
   invisible(TRUE)
 }

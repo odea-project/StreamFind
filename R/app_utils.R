@@ -1,16 +1,18 @@
+# MARK: Notifications
 #' @noRd
 .app_util_add_notifications <- function(warnings, name_msg, msg) {
   shiny::showNotification(msg, duration = 5, type = "warning")
   warnings[[name_msg]] <- msg
-  return(warnings)
+  warnings
 }
 
 #' @noRd
 .app_util_remove_notifications <- function(warnings, name_msgs) {
   warnings[name_msgs] <- NULL
-  return(warnings)
+  warnings
 }
 
+# MARK: Volumes for shinyFiles
 #' @noRd
 .app_util_get_volumes <- function() {
   os_type <- Sys.info()["sysname"]
@@ -36,10 +38,12 @@
   c("wd" = getwd(), drives)
 }
 
+# MARK: Initial Modal
 #' @noRd
 .app_util_use_initial_modal <- function(reactive_app_mode,
                                         reactive_engine_type,
                                         reactive_engine_save_file,
+                                        reactive_project_path,
                                         reactive_clean_start,
                                         reactive_show_init_modal,
                                         volumes,
@@ -54,27 +58,56 @@
   model_elements[[1]] <- shiny::img(
     src = "www/logo_StreamFind.png",
     width = 250,
-    style = "display: block; margin-left: auto; margin-right: auto;"
+    style = "display: block; margin-left: auto; margin-right: auto; margin-bottom: 30px;"
   )
 
-  model_elements[[2]] <- shiny::fluidRow(
-    shiny::p(
-      "Select an engine to start a new project: ",
-      style = "text-align: center;margin-top: 40px;"
+  # Color palette for tiles based on StreamFind logo (green and blue theme)
+  tile_colors <- c(
+    "#1e7e34", "#0066cc", "#2d9f4f", "#0052a3",
+    "#27ae60", "#2874a6", "#229954", "#1f618d",
+    "#16a085", "#004d99", "#0d7c2b", "#00ff99"
+  )
+
+  # Create tile container with grid layout
+  tiles_content <- lapply(seq_along(available_engines), function(i) {
+    obj <- available_engines[i]
+    color <- tile_colors[(i - 1) %% length(tile_colors) + 1]
+    btn_label <- obj
+    if (grepl("DB", obj)) {
+      btn_label <- gsub("DB_", "", obj)
+      btn_label <- shiny::HTML(paste0(btn_label, "<br>(Database Backend)"))
+    }
+    shiny::column(
+      4,
+      shiny::div(
+        shiny::actionButton(
+          inputId = paste0(time_var, "_select_", obj),
+          label = btn_label,
+          style = paste0(
+            "width: 100%; height: 120px; ",
+            "background-color: ", color, "; ",
+            "border: none; color: white; font-weight: bold; ",
+            "font-size: 14px; border-radius: 8px; ",
+            "display: flex; align-items: center; justify-content: center; ",
+            "text-align: center; padding: 10px; ",
+            "transition: all 0.3s ease; ",
+            "box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+          ),
+          onmouseover = paste0(
+            "this.style.boxShadow='0 4px 8px rgba(0,0,0,0.3)'; ",
+            "this.style.transform='translateY(-2px)';"
+          ),
+          onmouseout = paste0(
+            "this.style.boxShadow='0 2px 4px rgba(0,0,0,0.2)'; ",
+            "this.style.transform='translateY(0)';"
+          )
+        ),
+        style = "margin-bottom: 15px;"
+      )
     )
-  )
+  })
 
-  model_elements[[3]] <- htmltools::div(
-    lapply(available_engines, function(obj) {
-      shiny::actionButton(inputId = paste0(time_var, "_select_", obj), label = obj)
-    }),
-    style = "text-align: center;"
-  )
-
-  model_elements[[4]] <- shiny::fluidRow(
-    shiny::p("Load an existing engine: ", style = "text-align: center;margin-top: 40px;")
-  )
-
+  # Setup shinyFiles for LoadEngine
   shinyFiles::shinyFileChoose(
     input,
     paste0(time_var, "_select_LoadEngine"),
@@ -84,28 +117,59 @@
     filetypes = list(sqlite = "sqlite", rds = "rds")
   )
 
-  model_elements[[5]] <- htmltools::div(
+  tiles_content_length <- length(tiles_content)
+
+  tiles_content[[tiles_content_length + 1]] <- shiny::column(
+    4,
     shinyFiles::shinyFilesButton(
       paste0(time_var, "_select_LoadEngine"),
-      "Load Engine (.sqlite or .rds)",
+      shiny::HTML("Load Engine<br>(.sqlite/.rds)"),
       "Load Engine from .sqlite or .rds file",
-      multiple = FALSE
+      multiple = FALSE,
+      style = paste0(
+        "width: 100%; height: 120px; ",
+        "background-color: #95a5a6; ",
+        "border: none; color: white; font-weight: bold; ",
+        "font-size: 14px; border-radius: 8px; ",
+        "display: flex; align-items: center; justify-content: center; ",
+        "text-align: center; padding: 10px; ",
+        "transition: all 0.3s ease; ",
+        "box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+      )
     ),
-    style = "text-align: center;"
+    style = "margin-bottom: 15px;"
   )
 
-  model_elements[[6]] <- shiny::fluidRow(
-    shiny::p("Try a demo: ", style = "text-align: center;margin-top: 40px;")
-  )
-
-  model_elements[[7]] <- htmltools::div(
+  tiles_content[[tiles_content_length + 2]] <- shiny::column(
+    4,
     shiny::actionButton(
       inputId = paste0(time_var, "_select_MassSpecDemo"),
-      label = "MassSpec Demo",
-      class = "btn-info",
-      style = "margin-bottom: 20px;"
+      label = shiny::HTML("MassSpec<br>Demo Project"),
+      style = paste0(
+        "width: 100%; height: 120px; ",
+        "background-color: #d35400; ",
+        "border: none; color: white; font-weight: bold; ",
+        "font-size: 14px; border-radius: 8px; ",
+        "display: flex; align-items: center; justify-content: center; ",
+        "text-align: center; padding: 10px; ",
+        "transition: all 0.3s ease; ",
+        "box-shadow: 0 2px 4px rgba(0,0,0,0.2);"
+      ),
+      onmouseover = paste0(
+        "this.style.boxShadow='0 4px 8px rgba(0,0,0,0.3)'; ",
+        "this.style.transform='translateY(-2px)';"
+      ),
+      onmouseout = paste0(
+        "this.style.boxShadow='0 2px 4px rgba(0,0,0,0.2)'; ",
+        "this.style.transform='translateY(0)';"
+      )
     ),
-    style = "text-align: center;"
+    style = "margin-bottom: 15px;"
+  )
+
+  model_elements[[2]] <- shiny::fluidRow(
+    do.call(shiny::tagList, tiles_content),
+    style = "margin-top: 20px;"
   )
 
   shiny::showModal(shiny::modalDialog(
@@ -120,7 +184,9 @@
   lapply(available_engines, function(obj) {
 
     shiny::observeEvent(input[[paste0(time_var, "_select_", obj)]], {
-      if (paste0(time_var, "_select_LoadEngine") %in% paste0(time_var, "_select_", obj) ) {
+
+      # MARK: Load Engine from file
+      if (paste0(time_var, "_select_LoadEngine") %in% paste0(time_var, "_select_", obj)) {
         input_name <- paste0(time_var, "_select_LoadEngine")
         shiny::req(input[[input_name]])
         fileinfo <- shinyFiles::parseFilePaths(volumes, input[[input_name]])
@@ -186,8 +252,7 @@
         }
       } else {
         reactive_engine_save_file(NA_character_)
-        
-        # Handle MassSpec Demo case
+        # MARK: MassSpec Demo case
         if (obj == "MassSpecDemo") {
           # Show loading modal with spinner
           shiny::showModal(shiny::modalDialog(
@@ -210,7 +275,6 @@
             footer = NULL,
             easyClose = FALSE
           ))
-          
           # Process demo loading with progress
           tryCatch({
             demo_engine <- .app_MassSpecDemo()
@@ -218,16 +282,14 @@
               # Save the demo engine to a temporary file
               temp_file <- file.path(tempdir(), "ms_demo_ww_ozone.rds")
               demo_engine$save(temp_file)
-              
               reactive_engine_type("MassSpecEngine")
               reactive_engine_save_file(temp_file)
               reactive_app_mode("WorkflowAssembler")
               reactive_clean_start(TRUE)
               reactive_show_init_modal(FALSE)
               shiny::removeModal()
-              
               shiny::showNotification(
-                "MassSpec Demo loaded successfully!", 
+                "MassSpec Demo loaded successfully!",
                 duration = 5, 
                 type = "message"
               )
@@ -243,19 +305,98 @@
           }, error = function(e) {
             shiny::removeModal()
             shiny::showNotification(
-              paste("Error loading MassSpec Demo:", e$message), 
-              duration = 10, 
+              paste("Error loading MassSpec Demo:", e$message),
+              duration = 10,
               type = "error"
             )
             reactive_show_init_modal(TRUE)
           })
+        
+        # MARK: Other engine types
         } else {
           reactive_engine_type(obj)
           shiny::removeModal()
           if (!obj %in% "Engine") {
             reactive_show_init_modal(FALSE)
-            reactive_app_mode("WorkflowAssembler")
-            reactive_clean_start(TRUE)
+            if (grepl("DB_", obj)) {
+              # Setup shinyFiles for project directory selection
+              project_dir_var <- paste0(time_var, "_select_ProjectDir")
+              shinyFiles::shinyDirChoose(
+                input,
+                project_dir_var,
+                roots = volumes,
+                defaultRoot = "wd",
+                session = session
+              )
+
+              # Create a modal to ask for project path
+              shiny::showModal(shiny::modalDialog(
+                title = "Select Project Directory",
+                shiny::p("Please select a directory for your project:"),
+                shiny::div(
+                  shinyFiles::shinyDirButton(
+                    project_dir_var,
+                    "Choose Directory",
+                    "Select a folder for the project",
+                    class = "btn btn-primary"
+                  ),
+                  style = "text-align: center; margin: 20px 0;"
+                ),
+                shiny::div(
+                  id = paste0(project_dir_var, "_display"),
+                  style = "margin-top: 15px; padding: 10px; background-color: #f5f5f5; border-radius: 4px; min-height: 30px;",
+                  shiny::p("No directory selected", style = "margin: 0; color: #999;")
+                ),
+                footer = shiny::tagList(
+                  shiny::actionButton(
+                    paste0(project_dir_var, "_confirm"),
+                    "Confirm",
+                    class = "btn btn-success",
+                    disabled = "disabled"
+                  ),
+                  shiny::modalButton("Cancel")
+                ),
+                easyClose = FALSE
+              ))
+
+              # Handle directory selection
+              shiny::observeEvent(input[[project_dir_var]], {
+                shiny::req(input[[project_dir_var]])
+                dirinfo <- shinyFiles::parseDirPath(volumes, input[[project_dir_var]])
+                if (length(dirinfo) > 0) {
+                  project_path <- dirinfo
+                  # Update display
+                  shiny::removeUI(selector = paste0("#", project_dir_var, "_display > *"))
+                  shiny::insertUI(
+                    selector = paste0("#", project_dir_var, "_display"),
+                    where = "afterBegin",
+                    shiny::p(project_path, style = "margin: 0; color: #333; word-break: break-all;")
+                  )
+                  # Enable confirm button
+                  shinyjs::removeClass(paste0(project_dir_var, "_confirm"), "disabled")
+                  shinyjs::runjs(paste0("document.getElementById('", paste0(project_dir_var, "_confirm"), "').disabled = false;"))
+                }
+              })
+
+              # Handle confirmation
+              shiny::observeEvent(input[[paste0(project_dir_var, "_confirm")]], {
+                dirinfo <- shinyFiles::parseDirPath(volumes, input[[project_dir_var]])
+                if (length(dirinfo) > 0) {
+                  reactive_project_path(dirinfo)
+                  reactive_app_mode("WADB")
+                  shiny::removeModal()
+                } else {
+                  shiny::showNotification(
+                    "Please select a valid directory",
+                    duration = 5,
+                    type = "warning"
+                  )
+                }
+              })
+            } else {
+              reactive_app_mode("WorkflowAssembler")
+              reactive_clean_start(TRUE)
+            }
           } else {
             reactive_show_init_modal(TRUE)
           }

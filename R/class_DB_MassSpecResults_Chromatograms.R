@@ -19,7 +19,7 @@ DB_MassSpecResults_Chromatograms <- function(
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
   conn <- DBI::dbConnect(duckdb::duckdb(), db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  
+
   .create_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   .validate_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   .create_DB_MassSpecResults_Chromatograms_Chromatograms_db_schema(conn)
@@ -149,14 +149,11 @@ get_chromatograms.DB_MassSpecResults_Chromatograms <- function(
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  
   sel_names <- .resolve_analyses_selection(analyses, all_names)
   if (length(sel_names) == 0) return(list())
-  
   query <- "SELECT * FROM Chromatograms"
   conditions <- c()
   conditions <- c(conditions, sprintf("analysis IN ('%s')", paste(sel_names, collapse = "','")))
-  
   if (!is.null(chromatograms)) {
     if (is.numeric(chromatograms)) {
       conditions <- c(conditions, sprintf("\"index\" IN (%s)", paste(chromatograms, collapse = ",")))
@@ -164,15 +161,12 @@ get_chromatograms.DB_MassSpecResults_Chromatograms <- function(
       conditions <- c(conditions, sprintf("id IN ('%s')", paste(chromatograms, collapse = "','")))
     }
   }
-  
   if (!is.null(minIntensity) && is.numeric(minIntensity)) {
     conditions <- c(conditions, sprintf("intensity > %f", minIntensity))
   }
-  
   if (is.numeric(rtmin) && is.numeric(rtmax) && rtmax > 0) {
     conditions <- c(conditions, sprintf("rt >= %f AND rt <= %f", rtmin, rtmax))
   }
-  
   query <- paste0(query, " WHERE ", paste(conditions, collapse = " AND "))
   chroms <- DBI::dbGetQuery(conn, query)
   

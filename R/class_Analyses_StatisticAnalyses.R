@@ -50,7 +50,7 @@ StatisticAnalyses <- function(
       concentrations = concentrations,
       results = list(),
       type = "Statistic",
-      formats = DataTypes()$file_formats$Statistic
+      formats = DataTypeObjects("Statistic")[["formats"]]
     ),
     class = c("StatisticAnalyses", "Analyses")
   )
@@ -68,7 +68,7 @@ StatisticAnalyses <- function(
 validate_object.StatisticAnalyses = function(x) {
   checkmate::assert_true(identical(
     x$formats,
-    DataTypes()$file_formats$Statistic
+    DataTypeObjects("Statistic")[["formats"]]
   ))
   checkmate::assert_data_frame(x$analyses)
   checkmate::assert_character(rownames(x$analyses), len = nrow(x$analyses))

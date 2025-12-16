@@ -75,12 +75,11 @@ DB_Engine <- R6::R6Class(
     # MARK: initialize
     #' @description Initialize DB_Engine.
     #' @param data_type Engine data type (internal; defaults to "Unknown").
-    initialize = function(
-      project_path = "data",
-      metadata = NULL,
-      workflow = NULL,
-      configuration = NULL,
-      data_type = "Unknown") {
+    initialize = function(project_path = "data",
+                          metadata = NULL,
+                          workflow = NULL,
+                          configuration = NULL,
+                          data_type = "Unknown") {
       if (!requireNamespace("duckdb", quietly = TRUE)) {
         stop("duckdb package is required for DB_Engine")
       }
@@ -151,15 +150,22 @@ DB_Engine <- R6::R6Class(
       conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       metadata_df <- DBI::dbGetQuery(conn, "SELECT metadata FROM Engine LIMIT 1")
-      if (nrow(metadata_df) == 0) return(NULL)
+      if (nrow(metadata_df) == 0) {
+        return(NULL)
+      }
       json_data <- metadata_df$metadata[1]
-      if (is.na(json_data) || is.null(json_data)) return(NULL)
-      mtd <- tryCatch({
-        Metadata(jsonlite::fromJSON(json_data))
-      }, error = function(e) {
-        warning("Could not parse metadata JSON: ", e$message)
-        NULL
-      })
+      if (is.na(json_data) || is.null(json_data)) {
+        return(NULL)
+      }
+      mtd <- tryCatch(
+        {
+          Metadata(jsonlite::fromJSON(json_data))
+        },
+        error = function(e) {
+          warning("Could not parse metadata JSON: ", e$message)
+          NULL
+        }
+      )
       mtd
     },
 
@@ -191,14 +197,19 @@ DB_Engine <- R6::R6Class(
         return(wf_obj)
       }
       methods_json <- workflow_info$methods[1]
-      if (is.na(methods_json) || is.null(methods_json)) return(NULL)
-      wf_obj <- tryCatch({
-        Workflow(jsonlite::fromJSON(methods_json))
-      }, error = function(e) {
-        warning("Could not reconstruct workflow: ", e$message)
-        wf_obj <- Workflow()
-        attr(wf_obj, "type") <- private$.data_type
-      })
+      if (is.na(methods_json) || is.null(methods_json)) {
+        return(NULL)
+      }
+      wf_obj <- tryCatch(
+        {
+          Workflow(jsonlite::fromJSON(methods_json))
+        },
+        error = function(e) {
+          warning("Could not reconstruct workflow: ", e$message)
+          wf_obj <- Workflow()
+          attr(wf_obj, "type") <- private$.data_type
+        }
+      )
       wf_obj
     },
 
@@ -409,12 +420,15 @@ DB_Engine <- R6::R6Class(
 # MARK: .create_DB_Engine_db_schema
 #' @noRd
 .create_DB_Engine_db_schema <- function(conn, data_type) {
-  tryCatch({
-    DBI::dbExecute(conn, "INSTALL json")
-    DBI::dbExecute(conn, "LOAD json")
-  }, error = function(e) {
-    warning("Could not load JSON extension: ", e$message)
-  })
+  tryCatch(
+    {
+      DBI::dbExecute(conn, "INSTALL json")
+      DBI::dbExecute(conn, "LOAD json")
+    },
+    error = function(e) {
+      warning("Could not load JSON extension: ", e$message)
+    }
+  )
 
   DBI::dbExecute(conn, "
     CREATE TABLE IF NOT EXISTS Engine (
@@ -463,56 +477,65 @@ DB_Engine <- R6::R6Class(
 # MARK: .validate_DB_Engine_db_schema
 #' @noRd
 .validate_DB_Engine_db_schema <- function(conn) {
-  tryCatch({
-    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Engine)")
-    required <- list(
-      metadata = "JSON",
-      configuration = "JSON",
-      created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-    )
-    for (col in names(required)) {
-      if (!(col %in% table_info$name)) {
-        message(sprintf("Adding missing %s column to Engine table...", col))
-        DBI::dbExecute(conn, sprintf("ALTER TABLE Engine ADD COLUMN %s %s", col, required[[col]]))
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Engine)")
+      required <- list(
+        metadata = "JSON",
+        configuration = "JSON",
+        created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Engine table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Engine ADD COLUMN %s %s", col, required[[col]]))
+        }
       }
+    },
+    error = function(e) {
+      stop("Schema migration check (Engine): ", e$message)
     }
-  }, error = function(e) {
-    stop("Schema migration check (Engine): ", e$message)
-  })
+  )
 
-  tryCatch({
-    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Workflow)")
-    required <- list(
-      data_type = "VARCHAR NOT NULL",
-      methods = "JSON"
-    )
-    for (col in names(required)) {
-      if (!(col %in% table_info$name)) {
-        message(sprintf("Adding missing %s column to Workflow table...", col))
-        DBI::dbExecute(conn, sprintf("ALTER TABLE Workflow ADD COLUMN %s %s", col, required[[col]]))
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Workflow)")
+      required <- list(
+        data_type = "VARCHAR NOT NULL",
+        methods = "JSON"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Workflow table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Workflow ADD COLUMN %s %s", col, required[[col]]))
+        }
       }
+    },
+    error = function(e) {
+      stop("Schema migration check (Workflow): ", e$message)
     }
-  }, error = function(e) {
-    stop("Schema migration check (Workflow): ", e$message)
-  })
+  )
 
-  tryCatch({
-    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(AuditTrail)")
-    required <- list(
-      operation_type = "VARCHAR NOT NULL",
-      object_type = "VARCHAR NOT NULL",
-      operation_details = "VARCHAR",
-      timestamp = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
-    )
-    for (col in names(required)) {
-      if (!(col %in% table_info$name)) {
-        message(sprintf("Adding missing %s column to AuditTrail table...", col))
-        DBI::dbExecute(conn, sprintf("ALTER TABLE AuditTrails ADD COLUMN %s %s", col, required[[col]]))
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(AuditTrail)")
+      required <- list(
+        operation_type = "VARCHAR NOT NULL",
+        object_type = "VARCHAR NOT NULL",
+        operation_details = "VARCHAR",
+        timestamp = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to AuditTrail table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE AuditTrails ADD COLUMN %s %s", col, required[[col]]))
+        }
       }
+    },
+    error = function(e) {
+      stop("Schema migration check (AuditTrail): ", e$message)
     }
-  }, error = function(e) {
-    stop("Schema migration check (AuditTrail): ", e$message)
-  })
+  )
 
   invisible(TRUE)
 }
@@ -520,8 +543,10 @@ DB_Engine <- R6::R6Class(
 # MARK: .create_sf_data_project_icon
 #' @noRd
 .create_sf_data_project_icon <- function(sf_root) {
-  if (.Platform$OS.type != "windows") return(invisible(FALSE))
-  
+  if (.Platform$OS.type != "windows") {
+    return(invisible(FALSE))
+  }
+
   icon_path <- file.path(sf_root, "streamfind.ico")
   if (!file.exists(icon_path)) {
     sf_icon <- c(
@@ -529,16 +554,20 @@ DB_Engine <- R6::R6Class(
       file.path(getwd(), "inst", "app", "www", "streamfind.ico")
     )
     sf_icon <- sf_icon[file.exists(sf_icon)]
-    if (length(sf_icon) == 0) return(invisible(FALSE))
+    if (length(sf_icon) == 0) {
+      return(invisible(FALSE))
+    }
     sf_icon <- sf_icon[[1]]
     icon_path <- file.path(sf_root, basename(sf_icon))
     if (!file.exists(icon_path)) {
       file.copy(sf_icon, icon_path, overwrite = TRUE)
-      if (!file.exists(icon_path)) return(invisible(FALSE))
+      if (!file.exists(icon_path)) {
+        return(invisible(FALSE))
+      }
     }
     try(system2("attrib", c("+h", shQuote(icon_path))), silent = TRUE)
   }
-  
+
   ini_path <- file.path(sf_root, "desktop.ini")
   if (!file.exists(ini_path)) {
     ini <- c(
@@ -550,9 +579,9 @@ DB_Engine <- R6::R6Class(
     try(system2("attrib", c("+s", shQuote(sf_root))), silent = TRUE)
     try(system2("attrib", c("+h", shQuote(ini_path))), silent = TRUE)
   }
-  
+
   invisible(TRUE)
-  
+
   # Approach using magick to create icon from PNG
   # icon_filename <- "streamfind.ico"
   # icon_path <- file.path(sf_root, icon_filename)
@@ -577,4 +606,3 @@ DB_Engine <- R6::R6Class(
   #   invisible(TRUE)
   # }
 }
-

@@ -1,10 +1,10 @@
 # MARK: DB_MassSpecResults_NonTargetAnalysis
-#' @title Constructor and methods to handle non-target analysis results for mass spectrometry data
-#' @description The `MassSpecResults_NonTargetAnalysis2` class is a child of the [StreamFind::Results] class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec"). It is specifically designed to handle the output from `rcpp_nts_find_features2()`.
-#' @param info A data frame containing information about the analyses.
+#' @title Constructor and methods to handle non-target analysis for mass spectrometry data
+#' @description The `DB_MassSpecResults_NonTargetAnalysis` class is a child of the [StreamFind::DB_Results] class and is used to store results from non-target analysis (NTA) results from mass spectrometry data ("DB_MassSpec").
+#' @param analyses A data frame containing information about the analyses.
 #' @param headers A list of data frames containing information about the spectra headers.
-#' @param features A list of data frames containing information about the features detected by `rcpp_nts_find_features2()`.
-#' @return An object of class `MassSpecResults_NonTargetAnalysis2` with the following structure:
+#' @param features A list of data frames containing information about the features detected.
+#' @return An object of class `DB_MassSpecResults_NonTargetAnalysis` with the following structure:
 #' \itemize{
 #'   \item `type`: The type of the results, which is "MassSpec".
 #'   \item `name`: The name of the results, which is "MassSpecResults_NonTargetAnalysis2".
@@ -28,11 +28,10 @@
 #' @export
 #'
 DB_MassSpecResults_NonTargetAnalysis <- function(
-  db = file.path("data.sf", "DB_MassSpecResults_NonTargetAnalysis.duckdb"),
-  analyses = data.table::data.table(),
-  headers = data.table::data.table(),
-  features = data.table::data.table()
-) {
+    db = file.path("data.sf", "DB_MassSpecResults_NonTargetAnalysis.duckdb"),
+    analyses = data.table::data.table(),
+    headers = data.table::data.table(),
+    features = data.table::data.table()) {
   if (!requireNamespace("DBI", quietly = TRUE)) stop("DBI package required.")
   if (!requireNamespace("duckdb", quietly = TRUE)) stop("duckdb package required.")
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
@@ -101,7 +100,7 @@ validate_object.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Prints a summary of the DB_MassSpecResults_NonTargetAnalysis object.
 #' @template arg-ntsdb-x
 #' @export
-#' 
+#'
 show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -150,20 +149,19 @@ show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
 #' @template arg-ms-millisec
 #' @template arg-ms-filtered
 #' @export
-#' 
+#'
 get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  filtered = FALSE
-) {
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
@@ -190,7 +188,9 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   sel_names <- .resolve_analyses_selection(analyses, all_names)
   rpls <- rpls[sel_names]
   pols <- pols[sel_names]
-  if (length(sel_names) == 0) return(data.table::data.table())
+  if (length(sel_names) == 0) {
+    return(data.table::data.table())
+  }
   query <- "SELECT * FROM Features"
   conditions <- c()
   conditions <- c(conditions, sprintf("filtered = %s", ifelse(filtered, "TRUE", "FALSE")))
@@ -229,7 +229,7 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       features$name[
         features$analysis %in% tgt$analysis &
           features$mz >= tgt$mzmin & features$mz <= tgt$mzmax &
-            features$rt >= tgt$rtmin & features$rt <= tgt$rtmax
+          features$rt >= tgt$rtmin & features$rt <= tgt$rtmax
       ] <- tgt$id
     }
     return(data.table::as.data.table(features))
@@ -264,28 +264,27 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
-  x,
-  analyses = NULL,
-  features = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  rtExpand = 120,
-  mzExpand = 0.001,
-  useLoadedData = TRUE,
-  filtered = FALSE,
-  legendNames = NULL,
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  colorBy = "targets",
-  interactive = TRUE,
-  renderEngine = "webgl") {
-
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    rtExpand = 120,
+    mzExpand = 0.001,
+    useLoadedData = TRUE,
+    filtered = FALSE,
+    legendNames = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    colorBy = "targets",
+    interactive = TRUE,
+    renderEngine = "webgl") {
   fts <- get_features(
     x,
     analyses,
@@ -309,35 +308,29 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   eic_list <- list()
   for (i in seq_len(nrow(fts))) {
     ft <- fts[i, ]
-
-    if (!is.na(ft$eic_rt) && !is.na(ft$eic_intensity) &&
-      nchar(ft$eic_rt) > 0 && nchar(ft$eic_intensity) > 0) {
+    sel <- !is.na(ft$eic_rt) && !is.na(ft$eic_intensity)
+    sel <- sel && nchar(ft$eic_rt) > 0 && nchar(ft$eic_intensity) > 0
+    if (sel) {
       rt_decoded <- rcpp_streamcraft_decode_string(ft$eic_rt)
       intensity_decoded <- rcpp_streamcraft_decode_string(ft$eic_intensity)
-
-      # Decode baseline if available
       baseline_decoded <- NULL
       if (!is.na(ft$eic_baseline) && nchar(ft$eic_baseline) > 0) {
         baseline_decoded <- rcpp_streamcraft_decode_string(ft$eic_baseline)
       }
-
-      if (length(rt_decoded) > 0 && length(intensity_decoded) > 0 &&
-        length(rt_decoded) == length(intensity_decoded)) {
-        # Create EIC data with baseline if available
+      sel2 <- length(rt_decoded) > 0 && length(intensity_decoded) > 0
+      sel2 <- sel2 && length(rt_decoded) == length(intensity_decoded)
+      if (sel2) {
         eic_data <- data.table::data.table(
           analysis = ft$analysis,
           feature = ft$feature,
           rt = rt_decoded,
           intensity = intensity_decoded
         )
-
-        # Add baseline column if decoded successfully
         if (!is.null(baseline_decoded) && length(baseline_decoded) == length(rt_decoded)) {
           eic_data$baseline <- baseline_decoded
         } else {
           eic_data$baseline <- 0 # Default to 0 if no baseline available
         }
-
         eic_list[[i]] <- eic_data
       }
     }
@@ -492,7 +485,7 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     "fwhm_rt", "fwhm_mz", "gaussian_A", "gaussian_mu", "gaussian_sigma",
     "gaussian_r2", "polarity", "filtered", "filter", "filled", "correction",
     "eic_size", "eic_rt", "eic_mz", "eic_intensity", "eic_baseline",
-    "eic_smoothed",  "ms1_size", "ms1_mz", "ms1_intensity", "ms2_size",
+    "eic_smoothed", "ms1_size", "ms1_mz", "ms1_intensity", "ms2_size",
     "ms2_mz", "ms2_intensity"
   )
   missing_cols <- setdiff(cols, colnames(x))
@@ -556,59 +549,61 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 # MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema
 #' @noRd
 .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema <- function(conn) {
-  tryCatch({
-    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Features)")
-    required <- list(
-      feature = "VARCHAR",
-      feature_component = "VARCHAR",
-      feature_group = "VARCHAR",
-      adduct = "VARCHAR",
-      rt = "DOUBLE",
-      mz = "DOUBLE",
-      mass = "DOUBLE",
-      intensity = "DOUBLE",
-      noise = "DOUBLE",
-      sn = "DOUBLE",
-      area = "DOUBLE",
-      rtmin = "DOUBLE",
-      rtmax = "DOUBLE",
-      width = "DOUBLE",
-      mzmin = "DOUBLE",
-      mzmax = "DOUBLE",
-      ppm = "DOUBLE",
-      fwhm_rt = "DOUBLE",
-      fwhm_mz = "DOUBLE",
-      gaussian_A = "DOUBLE",
-      gaussian_mu = "DOUBLE",
-      gaussian_sigma = "DOUBLE",
-      gaussian_r2 = "DOUBLE",
-      polarity = "INTEGER",
-      filtered = "BOOLEAN",
-      filter = "VARCHAR",
-      filled = "BOOLEAN",
-      correction = "DOUBLE",
-      eic_size = "INTEGER",
-      eic_rt = "VARCHAR",
-      eic_mz = "VARCHAR",
-      eic_intensity = "VARCHAR",
-      eic_baseline = "VARCHAR",
-      eic_smoothed = "VARCHAR",
-      ms1_size = "INTEGER",
-      ms1_mz = "VARCHAR",
-      ms1_intensity = "VARCHAR",
-      ms2_size = "INTEGER",
-      ms2_mz = "VARCHAR",
-      ms2_intensity = "VARCHAR"
-    )
-    for (col in names(required)) {
-      if (!(col %in% table_info$name)) {
-        message(sprintf("Adding missing %s column to Features table...", col))
-        DBI::dbExecute(conn, sprintf("ALTER TABLE Features ADD COLUMN %s %s", col, required[[col]]))
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Features)")
+      required <- list(
+        feature = "VARCHAR",
+        feature_component = "VARCHAR",
+        feature_group = "VARCHAR",
+        adduct = "VARCHAR",
+        rt = "DOUBLE",
+        mz = "DOUBLE",
+        mass = "DOUBLE",
+        intensity = "DOUBLE",
+        noise = "DOUBLE",
+        sn = "DOUBLE",
+        area = "DOUBLE",
+        rtmin = "DOUBLE",
+        rtmax = "DOUBLE",
+        width = "DOUBLE",
+        mzmin = "DOUBLE",
+        mzmax = "DOUBLE",
+        ppm = "DOUBLE",
+        fwhm_rt = "DOUBLE",
+        fwhm_mz = "DOUBLE",
+        gaussian_A = "DOUBLE",
+        gaussian_mu = "DOUBLE",
+        gaussian_sigma = "DOUBLE",
+        gaussian_r2 = "DOUBLE",
+        polarity = "INTEGER",
+        filtered = "BOOLEAN",
+        filter = "VARCHAR",
+        filled = "BOOLEAN",
+        correction = "DOUBLE",
+        eic_size = "INTEGER",
+        eic_rt = "VARCHAR",
+        eic_mz = "VARCHAR",
+        eic_intensity = "VARCHAR",
+        eic_baseline = "VARCHAR",
+        eic_smoothed = "VARCHAR",
+        ms1_size = "INTEGER",
+        ms1_mz = "VARCHAR",
+        ms1_intensity = "VARCHAR",
+        ms2_size = "INTEGER",
+        ms2_mz = "VARCHAR",
+        ms2_intensity = "VARCHAR"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Features table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Features ADD COLUMN %s %s", col, required[[col]]))
+        }
       }
+    },
+    error = function(e) {
+      stop("Schema migration check (Features): ", e$message)
     }
-  }, error = function(e) {
-    stop("Schema migration check (Features): ", e$message)
-  })
+  )
   invisible(TRUE)
 }
-

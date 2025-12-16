@@ -36,7 +36,7 @@ MassSpecAnalyses <- function(files = NULL, centroid = FALSE, levels = c(1, 2)) {
       analyses = analyses,
       results = list(),
       type = "MassSpec",
-      formats = DataTypes()$file_formats$MassSpec
+      formats = DataTypeObjects("MassSpec")[["formats"]]
     ),
     class = c("MassSpecAnalyses", "Analyses")
   )
@@ -55,7 +55,7 @@ validate_object.MassSpecAnalyses = function(x) {
   checkmate::assert_class(x, "MassSpecAnalyses")
   checkmate::assert_true(identical(
     x$formats,
-    DataTypes()$file_formats$MassSpec
+    DataTypeObjects("MassSpec")[["formats"]]
   ))
   if (length(x$analyses) > 0) {
     lapply(x$analyses, function(a) {
@@ -400,7 +400,7 @@ as.MassSpecAnalyses <- function(value) {
       }
     )
     if (length(value$results) > 0) {
-      possible_results <- DataTypes()$results$MassSpec
+      possible_results <- DataTypeObjects("MassSpec")[["results"]]
       if (!all(names(value$results) %in% possible_results)) {
         stop(paste("Invalid results in MassSpecAnalyses:", paste(names(value$results), collapse = ", ")))
       }

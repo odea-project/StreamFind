@@ -37,19 +37,31 @@ app_server <- function(input, output, session) {
   # Global Reactive Variables -----
   reactive_app_mode <- shiny::reactiveVal(NA_character_)
   reactive_engine_type <- shiny::reactiveVal(NA_character_)
+  # For memory engines
   reactive_engine_save_file <- shiny::reactiveVal(NA_character_)
   reactive_clean_start <- shiny::reactiveVal(TRUE)
+  # For DB engines
+  reactive_project_path <- shiny::reactiveVal(NA_character_)
+
   reactive_show_init_modal <- shiny::reactiveVal(FALSE)
   reactive_warnings <- shiny::reactiveVal(list())
 
-  # MARK: Engine Type and Save File
+  # MARK: Engine Type
   # Init Engine Type -----
   init_engine_type <- golem::get_golem_options("engine_type")
   if (!is.null(init_engine_type)) {
     if (init_engine_type %in% .get_available_engines()) {
       reactive_engine_type(init_engine_type)
-      if (!init_engine_type %in% "Engine") {
-        reactive_app_mode("WorkflowAssembler")
+      if (grepl("Engine$", init_engine_type)) {
+        if (grepl("DB_", init_engine_type)) {
+          init_engine_project_path <- golem::get_golem_options("project_path")
+          if (!is.null(init_engine_project_path)) {
+            reactive_project_path(init_engine_project_path)
+          }
+          reactive_app_mode("WADB")
+        } else {
+          reactive_app_mode("WorkflowAssembler")
+        }
       }
     } else {
       init_engine_type <- "Engine"
@@ -119,15 +131,13 @@ app_server <- function(input, output, session) {
     }
   })
 
-
   # MARK: out App Mode UI
   # out App Mode UI -----
   output$app_mode_ui <- shiny::renderUI({
     if (reactive_app_mode() %in% "WorkflowAssembler") {
       shiny::tags$span("StreamFind")
-      # shiny::tags$span(reactive_engine_type())
-    } else if (is.na(reactive_app_mode())) {
-      shiny::tags$span("StreamFind")
+    } else if (reactive_app_mode() %in% "WADB") {
+      shiny::tags$span("StreamFind (DB)")
     } else {
       shiny::tags$span(reactive_app_mode())
     }
@@ -136,6 +146,8 @@ app_server <- function(input, output, session) {
   # MARK: out App Sidebar UI
   # out App Sidebar UI -----
   output$sidebar_ui <- shinydashboard::renderMenu({
+
+    # MARK: WorkflowAssembler
     if (reactive_app_mode() %in% "WorkflowAssembler") {
       shinydashboard::sidebarMenu(
         shiny::actionButton("restart_app", "Restart", width = "90%"),
@@ -199,6 +211,73 @@ app_server <- function(input, output, session) {
           )
         )
       )
+
+    # MARK: WADB
+    } else if (reactive_app_mode() %in% "WADB") {
+      shinydashboard::sidebarMenu(
+        shiny::actionButton("restart_app", "Restart", width = "90%"),
+        shinydashboard::menuItem(
+          "Project",
+          tabName = "WADB-project",
+          icon = NULL,
+          selected = TRUE
+        ),
+        shinydashboard::menuItem(
+          "Analyses",
+          tabName = "WADB-analyses",
+          icon = NULL
+        ),
+        shinydashboard::menuItem(
+          "Explorer",
+          tabName = "WADB-explorer",
+          icon = NULL
+        ),
+        shinydashboard::menuItem(
+          "Workflow",
+          tabName = "WADB-workflow",
+          icon = NULL
+        ),
+        shinydashboard::menuItem(
+          "Results",
+          tabName = "WADB-results",
+          icon = NULL
+        ),
+        shinydashboard::menuItem(
+          "Report",
+          tabName = "WADB-report",
+          icon = NULL
+        ),
+        shinydashboard::menuItem(
+          "Audit Trail",
+          tabName = "WADB-audit",
+          icon = NULL
+        ),
+        shinydashboard::menuItem(
+          "Configuration",
+          tabName = "WADB-config",
+          icon = NULL
+        ),
+        shiny::div(
+          style = "position: absolute; bottom: 10px; left: 10px; right: 10px;",
+          shiny::div(
+            style = "color: #b8c7ce; font-size: 12px; margin-bottom: 8px;",
+            shiny::strong("CACHE INFORMATION")
+          ),
+          shiny::div(
+            style = "color: #b8c7ce; font-size: 11px; margin-bottom: 8px;",
+            "Cache Size: ",
+            shiny::textOutput("WADB-cache_size", inline = TRUE)
+          ),
+          shiny::actionButton(
+            "WADB-clear_cache_button",
+            "Clear Cache",
+            icon = shiny::icon("trash"),
+            style = "width: 90%; background-color: #3c8dbc; border-color: #367fa9; color: white;"
+          )
+        )
+      )
+    
+    # MARK: Not Selected
     } else {
       shinydashboard::sidebarMenu(shiny::actionButton(
         "restart_app",
@@ -230,6 +309,14 @@ app_server <- function(input, output, session) {
         reactive_warnings
       )
       .mod_WorkflowAssembler_UI("WorkflowAssembler")
+    } else if (reactive_app_mode() %in% "WADB") {
+      .mod_WADB_Server(
+        "WADB",
+        reactive_engine_type,
+        reactive_project_path,
+        reactive_warnings
+      )
+      .mod_WADB_UI("WADB")
     } else {
       shinydashboard::tabItems()
     }
@@ -244,6 +331,12 @@ app_server <- function(input, output, session) {
         "WorkflowAssembler-tabs",
         selected = "WorkflowAssembler-project"
       )
+    } else if (reactive_app_mode() %in% "WADB") {
+      shinydashboard::updateTabItems(
+        session,
+        "WADB-tabs",
+        selected = "WADB-project"
+      )
     }
   })
 
@@ -256,6 +349,7 @@ app_server <- function(input, output, session) {
         reactive_app_mode,
         reactive_engine_type,
         reactive_engine_save_file,
+        reactive_project_path,
         reactive_clean_start,
         reactive_show_init_modal,
         .app_util_get_volumes(),

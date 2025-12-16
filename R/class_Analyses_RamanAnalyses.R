@@ -24,7 +24,7 @@ RamanAnalyses <- function(files = NULL) {
       analyses = analyses,
       results = list(),
       type = "Raman",
-      formats = DataTypes()$file_formats$Raman
+      formats = DataTypeObjects("Raman")[["formats"]]
     ),
     class = c("RamanAnalyses", "Analyses")
   )
@@ -42,7 +42,7 @@ RamanAnalyses <- function(files = NULL) {
 #'
 validate_object.RamanAnalyses <- function(x) {
   checkmate::assert_true(identical(class(x), c("RamanAnalyses", "Analyses")))
-  checkmate::assert_true(identical(x$formats, DataTypes()$file_formats$Raman))
+  checkmate::assert_true(identical(x$formats, DataTypeObjects("Raman")[["formats"]]))
   if (length(x$analyses) > 0) {
     lapply(x$analyses, function(a) {
       if (!is.list(a)) {

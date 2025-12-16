@@ -71,7 +71,88 @@ source(file.path("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_pe
 examples <- unique(files_merck_ex$example)
 ```
 
-# Files
+# Merck Peak Finding - Milestone 1
+
+This report described the results of the first phase of the low intenisty peak algorithm for Merck. This phase focused on the development of an algorithm for detecting low-intensity peaks using deterministic approaches and machine learning methods. No clear advantage of machine learning methods was observed in this phase, and therefore the focus shifted to optimizing the deterministic C++ implementation integrated into StreamFind. The report includes the overview of the algorithm logic, demonstration of the C++ implementation using four curated datasets from Merck, and a comparative analysis of its performance against other established algorithms such as OpenMS and XCMS3 (centWave). The evaluation is based on precision and recall metrics using manually curated peak lists from Merck as a reference. The second part of the report includes additional tests based on another curated datasets from Merck.
+
+## Algorithm Logic
+
+### Overview
+
+The algorithm was first developed in R and then implemented in C++ for better performance and integration into StreamFind. The  `nts::NTS_DATA::find_features()` function implements a comprehensive, deterministic peak detection algorithm optimized for low-intensity (i.e., 200 to 1000 counts) mass spectrometry data. Yet, high-intensity peaks (i.e., above 8M counts) are also detected effectively. The algorithm processes liquid chromatography-mass spectrometry (LC-MS) data through a sequential pipeline of noise reduction, m/z clustering, baseline estimation, and derivative-based peak detection, with separate processing for positive and negative ion modes. The raw code can be found in the `src/nts/nts.cpp` and `src/nts/utils.cpp` files of the branch file_system of the StreamFind repository.
+
+### Algorithm Steps
+
+#### Step 1: Input Validation and Linear Model Calibration
+- Validates resolution profile (3 parameters for linear m/z-dependent resolution model);
+- Validates retention time (RT) window consistency;
+- Calculates linear resolution model parameters for m/z-dependent clustering thresholds;
+- Displays reference thresholds at key m/z values (100, 200, 400, 600, 1000 Da);
+
+#### Step 2: Data Filtering and Loading (optional RT windows)
+- Selects spectra matching specified RT windows (if provided);
+- Filters to MS level 1 spectra only to avoid fragmentation data;
+- Separates data by ion polarity (+1 for positive, -1 for negative mode) for independent processing;
+- Tracking: `pos_count` and `neg_count` monitor polarity distribution;
+ 
+#### Step 3: Adaptive Noise Estimation and Denoising
+**Purpose**: Removal of chemical noise and low-intensity artifacts while preserving true signals.
+
+- Calculates intensity statistics from non-zero traces for unbiased noise level estimation;
+- Computes adaptive noise parameters (quantile binning based on intensity distribution);
+- Uses intensity-dependent noise thresholds: higher intensities use higher thresholds;
+- Bins data adaptively based on signal/noise ratio and intensity distribution;
+- Removes traces below the noise threshold for each intensity bin;
+
+#### Step 4: m/z-Based Clustering
+**Purpose**: Grouping of traces originating from the same molecular traces (i.e., *m/z*) across the retention time dimension. This approach accounts for instrument resolution variation across m/z range, improving clustering accuracy at both low and high m/z values.
+
+- Clusters traces using linear m/z-dependent threshold (slope × m/z + intercept);
+- Merges multiple traces within the same cluster and RT with identical intensity (keeping maximum);
+- Filters clusters by minimum trace count (`minTraces`) and minimum signal-to-noise ratio (`minSNR`);
+
+#### Step 5: Baseline Estimation and Smoothing
+**Purpose**: Establishing a local intensity baseline to differentiate true peaks from background noise and smoothing intensity profiles for better derivative calculation.
+
+- Calculates local minimum baseline using sliding window (size adapted to RT cycle time);
+- Applies Savitzky-Golay filtering (window size 4, polynomial order 2) for gentle smoothing;
+
+#### Step 6: Derivative Calculation
+**Purpose**: Peak detection based on changes in intensity slope (i.e., first derivative) and curvature (i.e., second derivative).
+
+- Computes first and second derivatives for peak localization;
+- Identifies zero-crossings in the first derivative (transition from positive to negative slope);
+- Each zero-crossing indicates a local maximum in the intensity profile;
+
+#### Step 8: Peak Candidate Validation
+- **Edge proximity check**: Requires minimum 2 points from cluster edges to avoid boundary artifacts;
+- **Derivative validation**:
+  - Pre-peak derivative (ascending slope): Averages first derivative from cluster edge until below 50% peak intensity;
+  - Post-peak derivative (descending slope): Averages first derivative from peak apex until below 50% peak intensity;
+  - **Dynamic window advantage**: Adapts to peak width automatically, preventing false rejections from nearby smaller peaks;
+- **Local maximum check**: Ensures candidate is the highest point in its intensity range (no higher peaks on either side);
+- **Criteria**: All checks must pass for acceptance (positive pre-slope, negative post-slope, confirmed local maximum);
+
+#### Step 9: Peak Boundary Detection
+- Identifies left boundary: walks backward from apex detecting valleys and intensity minima;
+- Identifies right boundary: walks forward from apex detecting valleys and intensity minima;
+- Enforces maximum peak width constraint to prevent merging of closely-eluting compounds;
+
+#### Step 10: Feature Extraction and Reporting
+- Consolidates all features from both ion modes;
+- Compiles final feature table with RT, m/z, intensity, and quality metrics;
+- Reports processing statistics: total features, polarity distribution, denoising efficiency;
+
+### Key Implemention Aspects of the Algorithm
+
+1. **Adaptive Noise Modeling**: Intensity-dependent noise thresholds prevent both false positives (noise spikes) and false negatives (low-intensity true signals);
+2. **m/z-Aware Clustering**: Linear model-based clustering accounts for mass spectrometer resolution characteristics, improving accuracy across the m/z range;
+3. **Dynamic Peak Window Detection**: Uses half-peak intensity thresholds instead of fixed windows, making the algorithm robust to peak width variation and nearby peak interference;
+4. **Polarity-Separate Processing**: Processes positive and negative ion modes independently, avoiding cross-modal interference;
+5. **Multi-Criterion Validation**: Requires derivative slopes, local maximum status, and edge proximity checks, reducing false positive rate while maintaining sensitivity;
+6. **Derivative-Based Peak Localization**: First and second derivative analysis provides sub-sample peak localization precision and robustness to baseline variation;
+
+## Example Datasets for Demonstration
 
 ```{r}
 #| label: all-files
@@ -82,15 +163,13 @@ DT::datatable(
 )
 ```
 
-# Targets
+### Curated Targets
 
 ```{r}
 #| label: targets-merck
 
 DT::datatable(db_merck_ex)
 ```
-
-# Peak Finding Targets
 
 ```{r}
 #| label: peak-finding-targets-merck-function
@@ -153,31 +232,6 @@ run_peak_finding_debug_targets <- function(example_name) {
 #| include: false
 
 #temp <- lapply(examples, run_peak_finding_debug_targets)
-#run_peak_finding_debug_targets(examples[2])
-```
-
-```{r}
-#| label: run-peak-finding-debug-merck-single
-#| include: false
-
-# example_name <- examples[2]
-# db_merck_ex1 <- db_merck_ex[db_merck_ex$example %in% example_name, ]
-# files <- files_merck_ex$file_path[files_merck_ex$example %in% example_name & !files_merck_ex$blank]
-# ps_ff <- MassSpecMethod_FindFeatures_native(
-#   rtWindows = data.frame(rtmin = 300, rtmax = 3400),
-#   resolution_profile = c(25000L, 55000L, 80000L),
-#   noiseThreshold = 15,
-#   minSNR = 3,
-#   minTraces = 3,
-#   baselineWindow = 200,
-#   maxWidth = 250, #100
-#   base_quantile = 0.99,
-#   debug_mz = db_merck_ex1$mz[4]
-# )
-# clear_cache("all")
-# ms <- MassSpecEngine$new(analyses = files)
-# ms$Workflow = list(ps_ff)
-# ms$run_workflow()
 ```
 
 ```{r}
@@ -186,7 +240,7 @@ run_peak_finding_debug_targets <- function(example_name) {
 #| include: false
 
 source("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding\\dev_log_plot.R")
-log_path <- "C:\\Users\\apoli\\Documents\\github\\StreamFind\\log"
+log_path <- "C:\\Users\\apoli\\Documents\\github\\StreamFind\\log\\report_01"
 log_example_folders <- list.dirs(log_path, recursive = FALSE, full.names = TRUE)
 log_example_folders <- log_example_folders[grepl("example_", log_example_folders)]
 
@@ -208,7 +262,7 @@ for (folder in log_example_folders) {
 }
 ```
 
-## Example `r examples[1]`
+### Dataset `r examples[1]`
 
 ::: {.panel-tabset}
 
@@ -245,7 +299,7 @@ for (i in seq_along(plot_list_example)) {
 
 :::
 
-## Example `r examples[2]`
+### Dataset `r examples[2]`
 
 ::: {.panel-tabset}
 
@@ -282,7 +336,7 @@ for (i in seq_along(plot_list_example)) {
 
 :::
 
-## Example `r examples[3]`
+### Dataset `r examples[3]`
 
 ::: {.panel-tabset}
 
@@ -319,7 +373,7 @@ for (i in seq_along(plot_list_example)) {
 
 :::
 
-## Example `r examples[4]`
+### Dataset `r examples[4]`
 
 ::: {.panel-tabset}
 
@@ -356,7 +410,7 @@ for (i in seq_along(plot_list_example)) {
 
 :::
 
-# Comparison with Other Algorithms
+## Comparison with Other Algorithms
 
 The C++ native peak finding is compared against OpenMS and XCMS3 (centWave).
 
@@ -371,7 +425,7 @@ engine <- MassSpecEngine$new(
 engine
 ```
 
-## Algorithms
+### Algorithms
 
 ```{r}
 #| label: ps-ff-definitions
@@ -442,7 +496,7 @@ all_intensity_data <- fread(file.path(results_dir, "speed_test_intensity_data.cs
 intensity_summary <- fread(file.path(results_dir, "speed_test_intensity_summary.csv"))
 ```
 
-## Speed Test Summary
+### Speed Test Summary
 
 ```{r}
 #| label: display-speed-test-summary
@@ -460,7 +514,7 @@ DT::datatable(
   DT::formatRound(columns = c("mean_features"), digits = 0)
 ```
 
-## Intensity Distribution Comparison
+### Intensity Distribution Comparison
 
 ```{r}
 #| label: intensity-distribution-histograms
@@ -632,7 +686,7 @@ if (!is.null(intensity_summary) && nrow(intensity_summary) > 0) {
 }
 ```
 
-# StreamFind Workflow
+## Preliminary StreamFind Workflow
 
 ```{r}
 #| label: create-demo-engine
@@ -648,7 +702,7 @@ set_blank_names(demo$Analyses, rep("blank", 2))
 demo
 ```
 
-## Inspect TIC
+### Inspect TIC
 
 ```{r}
 #| label: plot-demo-tic
@@ -656,7 +710,7 @@ demo
 plot_spectra_tic(demo$Analyses, downsize = 5, levels = 1)
 ```
 
-## Workflow
+### Workflow
 
 ```{r}
 #| label: run-demo-workflow
@@ -686,7 +740,7 @@ demo
 demo$run_workflow()
 ```
 
-## Results
+### Results
 
 ```{r}
 #| label: show-demo-results

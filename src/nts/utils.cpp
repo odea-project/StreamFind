@@ -1047,17 +1047,21 @@ std::vector<int> nts::utils::find_peak_candidates(const std::vector<float> &firs
 
 // MARK: validate_peak_candidates
 std::vector<int> nts::utils::validate_peak_candidates(const std::vector<int> &candidates,
-                                                     const std::vector<float> &first_derivative,
-                                                     const std::vector<float> &second_derivative,
-                                                     const std::vector<float> &smoothed_intensity,
-                                                     int derivative_window_size, int min_traces,
-                                                     bool debug,
-                                                     const std::vector<float> &rt,
-                                                     const std::vector<float> &intensity)
+                                                      const std::vector<float> &first_derivative,
+                                                      const std::vector<float> &second_derivative,
+                                                      const std::vector<float> &smoothed_intensity,
+                                                      const std::vector<float> &rt,
+                                                      const std::vector<float> &intensity,
+                                                      bool debug)
 {
   std::vector<int> valid_peaks;
   valid_peaks.reserve(candidates.size());
   const int n = static_cast<int>(smoothed_intensity.size());
+
+  if (debug)
+  {
+    DEBUG_LOG("    Validating " << candidates.size() << " peak candidates..." << std::endl);
+  }
 
   for (int idx : candidates)
   {
@@ -1069,16 +1073,24 @@ std::vector<int> nts::utils::validate_peak_candidates(const std::vector<int> &ca
     {
       if (debug && !rt.empty() && idx < static_cast<int>(rt.size()))
       {
-        DEBUG_LOG("        × REJECTED (too close to edge): RT=" << std::fixed << std::setprecision(2) << rt[idx]
-                   << ", intensity=" << std::setprecision(0) << intensity[idx] << std::endl);
+        reject_reason = "too close to edge";
       }
       continue;
     }
 
     // Check first derivative before peak (should be positive)
+    // Extend to left until reaching below half peak intensity
+    float apex_intensity = smoothed_intensity[idx];
+    float half_apex = 0.5f * apex_intensity;
+    int pre_start = idx - 1;
+    while (pre_start >= 0 && smoothed_intensity[pre_start] >= half_apex)
+    {
+      pre_start--;
+    }
+    
     float pre_avg = 0.0f;
     int pre_count = 0;
-    for (int i = std::max(0, idx - derivative_window_size); i < idx - 1; ++i)
+    for (int i = pre_start; i < idx; ++i)
     {
       if (i >= 0 && i < static_cast<int>(first_derivative.size()))
       {
@@ -1089,9 +1101,16 @@ std::vector<int> nts::utils::validate_peak_candidates(const std::vector<int> &ca
     if (pre_count > 0) pre_avg /= pre_count;
 
     // Check first derivative after peak (should be negative)
+    // Extend to right until reaching below half peak intensity
+    int post_end = idx + 1;
+    while (post_end < n && smoothed_intensity[post_end] >= half_apex)
+    {
+      post_end++;
+    }
+    
     float post_avg = 0.0f;
     int post_count = 0;
-    for (int i = idx; i < std::min(n - 1, idx + derivative_window_size); ++i)
+    for (int i = idx; i <= post_end; ++i)
     {
       if (i >= 0 && i < static_cast<int>(first_derivative.size()))
       {
@@ -1110,35 +1129,30 @@ std::vector<int> nts::utils::validate_peak_candidates(const std::vector<int> &ca
 
     // Check for higher apex in preceding or following traces (matching R implementation)
     // A peak candidate is only kept if it's a local maximum among ALL nearby points
-    // This ensures only the highest point in a cluster of close peaks is retained
+    // Only points with strictly HIGHER intensity cause rejection; equal peaks are both kept
     bool pre_apex = false;
     bool post_apex = false;
-    float apex_intensity = smoothed_intensity[idx];
-    int higher_idx_pre = -1;
-    int higher_idx_post = -1;
     
-    // Check pre_range: any point with intensity >= current peak
-    int pre_start = std::max(0, idx - derivative_window_size);
+    // Check pre_range: any point with intensity > current peak (strictly greater)
+    // Equal intensity peaks will both be kept and merged in the merging step
     int pre_end = idx - 1;
     for (int i = pre_start; i <= pre_end; ++i)
     {
-      if (i >= 0 && i < n && smoothed_intensity[i] >= apex_intensity)
+      if (i >= 0 && i < n && smoothed_intensity[i] > apex_intensity)
       {
         pre_apex = true;
-        higher_idx_pre = i;
         break;
       }
     }
     
-    // Check post_range: any point with intensity >= current peak
+    // Check post_range: any point with intensity > current peak (strictly greater)
+    // Equal intensity peaks will both be kept and merged in the merging step
     int post_start = idx + 1;
-    int post_end = std::min(n - 1, idx + derivative_window_size);
     for (int i = post_start; i <= post_end; ++i)
     {
-      if (i >= 0 && i < n && smoothed_intensity[i] >= apex_intensity)
+      if (i >= 0 && i < n && smoothed_intensity[i] > apex_intensity)
       {
         post_apex = true;
-        higher_idx_post = i;
         break;
       }
     }
@@ -1146,48 +1160,31 @@ std::vector<int> nts::utils::validate_peak_candidates(const std::vector<int> &ca
     // Build rejection reason if validation fails
     bool pre_valid = pre_avg > 0;
     bool post_valid = post_avg < 0;
-    // NOTE: Second derivative (d2) check removed - it's unreliable for sharp peaks
-    // The first derivative checks (positive before, negative after) are sufficient
     bool is_local_max = !pre_apex && !post_apex;
-    
-    if (!is_local_max) 
-    {
-      reject_reason = "not a local maximum";
-      if (debug && !rt.empty())
-      {
-        if (pre_apex && higher_idx_pre >= 0 && higher_idx_pre < static_cast<int>(rt.size()))
-        {
-          // Show SMOOTHED intensity (what's actually compared) not raw
-          reject_reason += " (higher SMOOTHED before at idx=" + std::to_string(higher_idx_pre) + 
-                          ", RT=" + std::to_string(rt[higher_idx_pre]) + 
-                          ", smoothed=" + std::to_string(smoothed_intensity[higher_idx_pre]) + 
-                          ", apex_smoothed=" + std::to_string(apex_intensity) + ")";
-        }
-        if (post_apex && higher_idx_post >= 0 && higher_idx_post < static_cast<int>(rt.size()))
-        {
-          // Show SMOOTHED intensity (what's actually compared) not raw
-          reject_reason += " (higher SMOOTHED after at idx=" + std::to_string(higher_idx_post) + 
-                          ", RT=" + std::to_string(rt[higher_idx_post]) + 
-                          ", smoothed=" + std::to_string(smoothed_intensity[higher_idx_post]) + 
-                          ", apex_smoothed=" + std::to_string(apex_intensity) + ")";
-        }
-      }
-    }
+    if (!is_local_max) reject_reason = "not a local maximum";
     else if (!pre_valid) reject_reason = "d1_before not positive";
     else if (!post_valid) reject_reason = "d1_after not negative";
 
-    // Validate criteria: first derivatives + local maximum check (d2 removed - unreliable for sharp peaks)
     if (pre_count > 0 && post_count > 0 && pre_valid && post_valid && is_local_max)
     {
       valid_peaks.push_back(idx);
+      if (debug && !rt.empty() && idx < static_cast<int>(rt.size()))
+      {
+        DEBUG_LOG("        ✓ ACCEPTED: RT=" << std::fixed << std::setprecision(2) << rt[idx]
+                   << ", intensity=" << std::setprecision(0) << intensity[idx]
+                   << " | d1_before=" << std::setprecision(1) << pre_avg
+                   << ", d1_after=" << post_avg
+                   << ", d2=" << d2_at_peak << std::endl);
+      }
     }
     else if (debug && !rt.empty() && idx < static_cast<int>(rt.size()))
     {
-      DEBUG_LOG("        × REJECTED (" << reject_reason << "): RT=" << std::fixed << std::setprecision(2) << rt[idx]
+      DEBUG_LOG("        × REJECTED: RT=" << std::fixed << std::setprecision(2) << rt[idx]
                  << ", intensity=" << std::setprecision(0) << intensity[idx]
                  << " | d1_before=" << std::setprecision(1) << pre_avg
                  << ", d1_after=" << post_avg
-                 << ", d2=" << d2_at_peak << std::endl);
+                 << ", d2=" << d2_at_peak << ", "
+                 << "REASON: " << reject_reason << std::endl);
     }
   }
 
@@ -1218,9 +1215,9 @@ std::pair<int, int> nts::utils::calculate_peak_boundaries(int peak_idx,
   for (int i = peak_idx - 1; i >= 0; --i)
   {
     // Stop if there is a large RT gap (likely a break in the trace)
-    if (i < peak_idx - 1 && rt[i + 1] - rt[i] > cycle_time * 10.0f) {
+    if (i < peak_idx - 1 && rt[i + 1] - rt[i] > max_half_width) {
       left_idx = i + 1; // Stop at the trace closest to the apex
-      left_stop_reason = "gap > 10x cycle_time";
+      left_stop_reason = "gap > max_half_width";
       break;
     }
     // Check max_half_width constraint
@@ -1292,9 +1289,9 @@ std::pair<int, int> nts::utils::calculate_peak_boundaries(int peak_idx,
   for (int i = peak_idx + 1; i < n; ++i)
   {
     // Stop if there is a large RT gap (likely a break in the trace)
-    if (i > peak_idx + 1 && rt[i] - rt[i - 1] > cycle_time * 10.0f) {
+    if (i > peak_idx + 1 && rt[i] - rt[i - 1] > max_half_width) {
       right_idx = i - 1;
-      right_stop_reason = "gap > 10x cycle_time";
+      right_stop_reason = "gap > max_half_width";
       break;
     }
     // Check max_half_width constraint
@@ -2008,7 +2005,6 @@ std::vector<nts::FEATURE> nts::utils::process_polarity_clusters(
     float cycle_time = rt_diffs[rt_diffs.size() / 2]; // median
 
     int baseline_window_size = std::max(minTraces, static_cast<int>(std::floor(baselineWindow / cycle_time))) / 2;
-    int derivative_window_size = std::max(minTraces, static_cast<int>(std::floor(30.0f / cycle_time)));
 
     // Check if debug_mz falls within the cluster's m/z range
     if (cluster_matches_debug_mz)
@@ -2016,7 +2012,6 @@ std::vector<nts::FEATURE> nts::utils::process_polarity_clusters(
       DEBUG_LOG("      Calculated parameters:" << std::endl);
       DEBUG_LOG("      cycle_time: " << std::fixed << std::setprecision(4) << cycle_time << " sec" << std::endl);
       DEBUG_LOG("      baseline_window_size: " << baseline_window_size << " points" << std::endl);
-      DEBUG_LOG("      derivative_window_size: " << derivative_window_size << " points" << std::endl);
     }
 
     auto baseline = calculate_baseline(cluster_intensity, baseline_window_size);
@@ -2073,11 +2068,9 @@ std::vector<nts::FEATURE> nts::utils::process_polarity_clusters(
       first_derivative,
       second_derivative,
       smoothed_intensity,
-      derivative_window_size,
-      minTraces,
-      cluster_matches_debug_mz,
       cluster_rt,
-      cluster_intensity
+      cluster_intensity,
+      cluster_matches_debug_mz
     );
     
     if (cluster_matches_debug_mz)

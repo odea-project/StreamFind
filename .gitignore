@@ -32,3 +32,5 @@
 /.quarto/
 **/*.quarto_ipynb
 *.sf
+*.zip
+*.tar.gz

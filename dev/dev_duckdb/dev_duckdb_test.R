@@ -7,7 +7,9 @@ dbsus <- db[!grepl("IS", db$tag), ]
 # DataTypes -----
 
 # TODO export object and make documentation
-# DataTypeObjects("DB_MassSpec")
+
+# DataTypeObjects()
+# DataTypeObjects("DB_MassSpec", showProcessingMethods = TRUE)
 # .list_processing_steps_metadata(data_type = "DB_MassSpec")
 # .list_processing_steps_metadata(data_type = "MassSpec")[, 1:4]
 
@@ -15,21 +17,22 @@ dbsus <- db[!grepl("IS", db$tag), ]
 # EngineDB tests -----
 
 # Path to the StreamFind data folder (.sf). EngineDB will create/use main.duckdb inside it.
-# sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
-# main_db <- file.path(sf_root, "main.duckdb")
-# engine <- EngineDB$new(project_dir = sf_root, data_type = "Unknown")
-# engine$set_metadata(list(project = "dev-demo", user = Sys.info()["user"]))
-# engine$set_configuration(list(dummy_param = 1L))
-# engine$set_workflow(list(
-#   data_type = list(kind = "demo"),
-#   methods = list(step = "noop")
-# ))
-# engine$set_workflow(list(MassSpecMethod_FindFeatures_native()))
-# engine$get_engine_info()
-# engine$list_db_tables()
-# engine$get_audit_trail()
-# engine$Metadata
-# engine$Workflow
+sf_root <- file.path("dev", "dev_duckdb", "dummy_data")
+file.remove(list.files(sf_root, full.names = TRUE))
+
+engine <- DB_Engine$new(project_path = sf_root, data_type = "Unknown")
+engine$set_metadata(list(project = "dev-demo", user = Sys.info()["user"]))
+engine$set_configuration(list(dummy_param = 1L))
+engine$set_workflow(list(
+  data_type = list(kind = "demo"),
+  methods = list(step = "noop")
+))
+engine$set_workflow(list(MassSpecMethod_FindFeatures_native()))
+engine$get_engine_info()
+engine$list_db_tables()
+engine$get_audit_trail()
+engine$Metadata
+engine$Workflow
 
 # MARK: MassSpecAnalysesDB tests
 # MassSpecAnalysesDB tests -----
@@ -48,139 +51,6 @@ dbsus <- db[!grepl("IS", db$tag), ]
 # get_db_table_info(ms_db_obj, "ChromatogramsHeaders")
 # get_db_table_info(ms_db_obj, "SpectraHeaders")
 
-# MARK: EngineDB with MassSpec tests
-# EngineDB with MassSpec tests -----
-
-sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
-#ms_files <- StreamFindData::get_ms_file_paths()[1]
-source(file.path("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding\\dev_resources.R"))
-examples <- unique(files_merck_ex$example)
-files_merck_ex[, 1:3]
-
-
-ms <- DB_MassSpecEngine$new(
-  project_dir = sf_root,
-  files = files_merck_ex$file_path[1:2]
-)
-
-ms$Metadata[["project"]] <- "ms-demo"
-
-set_replicate_names(ms$Analyses, c("sample", "blank"))
-set_blank_names(ms$Analyses, c("blank", "blank"))
-
-# ms
-# ms$clear_result_databases()
-
-# ms$info_analyses()
-# ms$list_db_tables()
-# ms$get_db_table_info("SpectraHeaders")
-
-# head(get_spectra_headers(ms$Analyses))
-# head(get_spectra_bpc(ms$Analyses))
-# head(get_spectra_tic(ms$Analyses))
-# plot_spectra_tic(ms$Analyses, levels = 1, downsize = 2)
-# plot_spectra_bpc(ms$Analyses, levels = 1, downsize = 2)
-
-# get_raw_spectra(ms$Analyses, levels = 1, mass = dbis[7, ], ppm = 20, sec = 30)
-# get_spectra_eic(ms$Analyses, mass = dbis[7, ], ppm = 20)
-# get_spectra_ms1(ms$Analyses, mass = dbis[7, ], ppm = 20)
-# get_spectra_ms2(ms$Analyses, mass = dbis[7, ], ppm = 20)
-
-ps_ff <- DB_MassSpecMethod_FindFeatures_native(
-  # rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
-  # resolution_profile = c(35000L, 35000L, 35000L),
-  # noiseThreshold = 250,
-  # minSNR = 3,
-  # minTraces = 3,
-  # baselineWindow = 200,
-  # maxWidth = 100,
-  # base_quantile = 0.1,
-  # debug_mz = dbis$mass[1] + 1.007276
-  rtWindows = data.frame(rtmin = 300, rtmax = 3400),
-  resolution_profile = c(25000L, 55000L, 80000L),
-  noiseThreshold = 15,
-  minSNR = 3,
-  minTraces = 3,
-  baselineWindow = 200,
-  maxWidth = 250, #100
-  base_quantile = 0.99,
-  debug_mz = 0
-)
-
-wf <- Workflow(list(ps_ff))
-ms$Workflow <- wf
-ms$run_workflow()
-
-
-show(ms$NonTargetAnalysis)
-
-
-
-run.DB_MassSpecMethod_FeatureBlankSubtraction_native(
-  DB_MassSpecMethod_FeatureBlankSubtraction_native(
-    blankThreshold = 10
-  ),
-  engine = ms
-)
-
-get_features(
-  ms$NonTargetAnalysis,
-  analyses = 2
-)
-
-# run(ps_ff, engine = ms)
-
-# size(ms$Cache)
-# get_cache_info(ms$Cache)
-# show(ms$Workflow)
-# show(ms$NonTargetAnalysis)
-
-get_features(
-  ms$NonTargetAnalysis,
-  analyses = 1,
-  mass = dbis, ppm = 20
-)
-
-plot_features(
-  ms$NonTargetAnalysis,
-  analyses = 1,
-  mass = dbis,
-  ppm = 20,
-  legendNames = TRUE
-)
-
-# sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
-# nts_db_path <- file.path(sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")
-# nts <- DB_MassSpecResults_NonTargetAnalysis(db = nts_db_path)
-# show(nts)
-# list_db_tables(nts)
-
-
-# MARK: MS Chromatograms
-# MS Chromatograms -----
-
-#file.remove(list.files(sf_root, full.names = TRUE))
-
-# sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
-# ms_files <- StreamFindData::get_ms_file_paths()[29:30]
-# ms <- DB_MassSpecEngine$new(
-#   project_dir = sf_root,
-#   files = ms_files
-# )
-# ms$Metadata[["project"]] <- "chromatograms-demo"
-# ms
-
-#head(ms$get_chromatograms_headers(analyses = 1))
-#get_chromatograms(ms$Analyses, chromatograms = c(0, 1))
-#plot_chromatograms(ms$Analyses, chromatograms = c(0, 1), interactive = FALSE)
-
-# plot_chromatograms(
-#   ms$Analyses,
-#   #analyses = 2,
-#   chromatograms = c(0, 1),
-#   groupBy = c("analysis", "id"),
-#   downsize = 3
-# )
 
 
 
