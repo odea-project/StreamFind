@@ -19,6 +19,8 @@ DB_MassSpecAnalyses <- function(
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   .create_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   .validate_DB_MassSpecAnalyses_Analyses_db_schema(conn)
+  .validate_DB_MassSpecAnalyses_Spectra_db_schema(conn)
+  .validate_DB_MassSpecAnalyses_Chromatograms_db_schema(conn)
   if (!is.null(files)) {
     cache_db <- file.path(dirname(db), "Cache.duckdb")
     analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels, cache_db = cache_db)
@@ -1133,13 +1135,41 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
   ")
   DBI::dbExecute(conn, "
     CREATE TABLE IF NOT EXISTS SpectraHeaders (
-      analysis VARCHAR
+      analysis VARCHAR,
+      index INTEGER,
+      scan INTEGER,
+      array_length INTEGER,
+      level INTEGER,
+      mode INTEGER,
+      polarity INTEGER,
+      configuration INTEGER,
+      lowmz DOUBLE,
+      highmz DOUBLE,
+      bpmz DOUBLE,
+      bpint DOUBLE,
+      tic DOUBLE,
+      rt DOUBLE,
+      mobility DOUBLE,
+      window_mz DOUBLE,
+      pre_mzlow DOUBLE,
+      pre_mzhigh DOUBLE,
+      pre_mz DOUBLE,
+      pre_charge INTEGER,
+      pre_intensity DOUBLE,
+      pre_ce DOUBLE
     )
   ")
 
   DBI::dbExecute(conn, "
     CREATE TABLE IF NOT EXISTS ChromatogramsHeaders (
-      analysis VARCHAR
+      analysis VARCHAR,
+      index INTEGER,
+      id VARCHAR,
+      array_length INTEGER,
+      polarity INTEGER,
+      pre_mz DOUBLE,
+      pro_mz DOUBLE,
+      pre_ce DOUBLE
     )
   ")
   invisible(TRUE)
@@ -1177,6 +1207,74 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
   invisible(TRUE)
 }
 
+# MARK: .validate_DB_MassSpecAnalyses_Spectra_db_schema
+#' @noRd
+.validate_DB_MassSpecAnalyses_Spectra_db_schema <- function(conn) {
+  tryCatch({
+    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(SpectraHeaders)")
+    required <- list(
+      index = "INTEGER",
+      scan = "INTEGER",
+      array_length = "INTEGER",
+      level = "INTEGER",
+      mode = "INTEGER",
+      polarity = "INTEGER",
+      configuration = "INTEGER",
+      lowmz = "DOUBLE",
+      highmz = "DOUBLE",
+      bpmz = "DOUBLE",
+      bpint = "DOUBLE",
+      tic = "DOUBLE",
+      rt = "DOUBLE",
+      mobility = "DOUBLE",
+      window_mz = "DOUBLE",
+      pre_mzlow = "DOUBLE",
+      pre_mzhigh = "DOUBLE",
+      pre_mz = "DOUBLE",
+      pre_charge = "INTEGER",
+      pre_intensity = "DOUBLE",
+      pre_ce = "DOUBLE",
+      analysis = "VARCHAR"
+    )
+    for (col in names(required)) {
+      if (!(col %in% table_info$name)) {
+        message(sprintf("Adding missing %s column to SpectraHeaders table...", col))
+        DBI::dbExecute(conn, sprintf("ALTER TABLE SpectraHeaders ADD COLUMN %s %s", col, required[[col]]))
+      }
+    }
+  }, error = function(e) {
+    stop("Schema migration check (SpectraHeaders): ", e$message)
+  })
+  invisible(TRUE)
+}
+
+# MARK: .validate_DB_MassSpecAnalyses_Chromatograms_db_schema
+#' @noRd
+.validate_DB_MassSpecAnalyses_Chromatograms_db_schema <- function(conn) {
+  tryCatch({
+    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(ChromatogramsHeaders)")
+    required <- list(
+      index = "INTEGER",
+      id = "VARCHAR",
+      array_length = "INTEGER",
+      polarity = "INTEGER",
+      pre_mz = "DOUBLE",
+      pro_mz = "DOUBLE",
+      pre_ce = "DOUBLE",
+      analysis = "VARCHAR"
+    )
+    for (col in names(required)) {
+      if (!(col %in% table_info$name)) {
+        message(sprintf("Adding missing %s column to ChromatogramsHeaders table...", col))
+        DBI::dbExecute(conn, sprintf("ALTER TABLE ChromatogramsHeaders ADD COLUMN %s %s", col, required[[col]]))
+      }
+    }
+  }, error = function(e) {
+    stop("Schema migration check (ChromatogramsHeaders): ", e$message)
+  })
+  invisible(TRUE)
+}
+
 # MARK: .write_massspec_analyses_to_db
 #' @noRd
 .write_massspec_analyses_to_db <- function(conn, analyses, truncate = FALSE) {
@@ -1190,9 +1288,10 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
   on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
 
   if (truncate) {
-    DBI::dbExecute(conn, "DROP TABLE IF EXISTS SpectraHeaders")
-    DBI::dbExecute(conn, "DROP TABLE IF EXISTS ChromatogramsHeaders")
     DBI::dbExecute(conn, "DELETE FROM Analyses")
+    DBI::dbExecute(conn, "DELETE FROM SpectraHeaders")
+    DBI::dbExecute(conn, "DELETE FROM ChromatogramsHeaders")
+    .create_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   } else {
     # Overwrite duplicates only
     if ("Analyses" %in% DBI::dbListTables(conn)) {
@@ -1235,6 +1334,7 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
     df$analysis <- a$name
     df
   })
+
   chrom_rows <- lapply(analyses, function(a) {
     if (is.null(a$chromatograms_headers)) {
       return(NULL)
@@ -1252,22 +1352,12 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
 
   if (length(spectra_rows) > 0) {
     spectra_df <- data.table::rbindlist(spectra_rows, fill = TRUE)
-    if (!DBI::dbExistsTable(conn, "SpectraHeaders")) {
-      DBI::dbWriteTable(conn, "SpectraHeaders", spectra_df[0, ], append = FALSE)
-    }
     DBI::dbWriteTable(conn, "SpectraHeaders", spectra_df, append = TRUE)
-  } else if (!DBI::dbExistsTable(conn, "SpectraHeaders")) {
-    DBI::dbWriteTable(conn, "SpectraHeaders", data.frame(analysis = character()), append = FALSE)
   }
 
   if (length(chrom_rows) > 0) {
     chrom_df <- data.table::rbindlist(chrom_rows, fill = TRUE)
-    if (!DBI::dbExistsTable(conn, "ChromatogramsHeaders")) {
-      DBI::dbWriteTable(conn, "ChromatogramsHeaders", chrom_df[0, ], append = FALSE)
-    }
     DBI::dbWriteTable(conn, "ChromatogramsHeaders", chrom_df, append = TRUE)
-  } else if (!DBI::dbExistsTable(conn, "ChromatogramsHeaders")) {
-    DBI::dbWriteTable(conn, "ChromatogramsHeaders", data.frame(analysis = character()), append = FALSE)
   }
 
   DBI::dbExecute(conn, "COMMIT")

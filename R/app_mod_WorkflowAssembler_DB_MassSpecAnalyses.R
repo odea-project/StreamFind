@@ -37,22 +37,6 @@
         blocked_columns <- seq_len(ncol(analyses_info)) - 1
         blocked_columns <- blocked_columns[!colnames(analyses_info) %in% c("replicate", "blank", "concentration")]
 
-        # if (length(analyses) == 0) {
-        #   analyses_info <- data.frame()
-        #   edits <- FALSE
-        # } else if ("replicate" %in% colnames(analyses_info)) {
-        #   edits <- list(
-        #     target = "column",
-        #     disable = list(
-        #       columns = which(
-        #         !colnames(analyses_info) %in% c("replicate", "blank")
-        #       )
-        #     )
-        #   )
-        # } else {
-        #   analyses_info <- data.frame()
-        #   edits <- FALSE
-        # }
         DT::datatable(
           analyses_info,
           rownames = FALSE,
@@ -88,28 +72,6 @@
           ),
           class = "cell-border stripe"
         )
-        # DT::datatable(
-        #   analyses_info,
-        #   selection = list(
-        #     mode = "multiple",
-        #     selected = NULL,
-        #     target = "cell",
-        #     selectable = matrix(
-        #       c(seq_len(nrow(analyses_info)), rep(1, nrow(analyses_info))),
-        #       ncol = 2
-        #     )
-        #   ),
-        #   editable = edits,
-        #   extensions = c("Scroller", "Buttons"),
-        #   options = list(
-        #     pageLength = 10,
-        #     deferRender = TRUE,
-        #     scrollY = 700,
-        #     scroller = TRUE,
-        #     dom = "Bfrtip",
-        #     buttons = c("copy", "csv", "pdf", "print")
-        #   )
-        # )
       },
       server = TRUE
     )
@@ -349,22 +311,6 @@
             )
           )
         )
-        # shiny::tagList(
-        #   shiny::tags$ul(
-        #     shiny::tags$li(
-        #       sprintf(
-        #         "Analyses can be added in the following formats: %s.",
-        #         paste(reactive_analyses()$formats, collapse = ", ")
-        #       )
-        #     ),
-        #     shiny::tags$li(
-        #       "Replicate and blank names can be edited in the table by double clicking the cell."
-        #     ),
-        #     shiny::tags$li(
-        #       "Note that blank names must be in the replicate column otherwise are not considered as blanks."
-        #     )
-        #   )
-        # )
       )
     })
   })
