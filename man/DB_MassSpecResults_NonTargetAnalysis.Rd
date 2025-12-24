@@ -6,7 +6,7 @@
 \alias{show.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features.DB_MassSpecResults_NonTargetAnalysis}
-\title{Constructor and methods to handle non-target analysis results for mass spectrometry data}
+\title{Constructor and methods to handle non-target analysis for mass spectrometry data}
 \usage{
 DB_MassSpecResults_NonTargetAnalysis(
   db = file.path("data.sf", "DB_MassSpecResults_NonTargetAnalysis.duckdb"),
@@ -123,11 +123,9 @@ the added targets as legend of the plot.}
 \item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 
 \item{renderEngine}{The engine to render the data. The default is "webgl".}
-
-\item{info}{A data frame containing information about the analyses.}
 }
 \value{
-An object of class \code{MassSpecResults_NonTargetAnalysis2} with the following structure:
+An object of class \code{DB_MassSpecResults_NonTargetAnalysis} with the following structure:
 \itemize{
 \item \code{type}: The type of the results, which is "MassSpec".
 \item \code{name}: The name of the results, which is "MassSpecResults_NonTargetAnalysis2".
@@ -149,7 +147,7 @@ The \code{info} data.table contains the following columns: analysis, replicate, 
 }
 }
 \description{
-The \code{MassSpecResults_NonTargetAnalysis2} class is a child of the \link{Results} class and is used to store results from non-target analysis (NTA) workflows for mass spectrometry data ("MassSpec"). It is specifically designed to handle the output from \code{rcpp_nts_find_features2()}.
+The \code{DB_MassSpecResults_NonTargetAnalysis} class is a child of the \link{DB_Results} class and is used to store results from non-target analysis (NTA) results from mass spectrometry data ("DB_MassSpec").
 }
 \section{Methods (by generic)}{
 \itemize{

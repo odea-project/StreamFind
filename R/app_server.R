@@ -252,11 +252,6 @@ app_server <- function(input, output, session) {
           tabName = "WADB-audit",
           icon = NULL
         ),
-        shinydashboard::menuItem(
-          "Configuration",
-          tabName = "WADB-config",
-          icon = NULL
-        ),
         shiny::div(
           style = "position: absolute; bottom: 10px; left: 10px; right: 10px;",
           shiny::div(

@@ -23,7 +23,8 @@ dbsus <- db[!grepl("IS", db$tag), ]
 # MARK: EngineDB with MassSpec tests
 # EngineDB with MassSpec tests -----
 
-sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
+sf_root <- file.path("dev", "dev_duckdb", "data")
+#file.remove(list.files(sf_root, full.names = TRUE))
 #ms_files <- StreamFindData::get_ms_file_paths()[1]
 source(file.path("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding\\dev_resources.R"))
 examples <- unique(files_merck_ex$example)

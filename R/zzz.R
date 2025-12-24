@@ -1,18 +1,18 @@
 .onLoad <- function(libname, pkgname) {
   if (is.null(getOption("StreamFind_cache_mode"))) {
     options("StreamFind_cache_mode" = "rds")
-    message("Caching mode set to 'rds'!")
+    #message("Caching mode set to 'rds'!")
   }
   if (is.null(getOption("StreamFind_cache_path"))) {
     if (getOption("StreamFind_cache_mode") %in% "rds") {
       options("StreamFind_cache_path" = "cache")
-      message("Caching directory set to 'cache'!")
+      #message("Caching directory set to 'cache'!")
     }
   }
   if (is.null(getOption("StreamFind_cache_path"))) {
     if (getOption("StreamFind_cache_mode") %in% "sqlite") {
       options("StreamFind_cache_path" = "cache.sqlite")
-      message("Caching file set to 'cache.sqlite'!")
+      #message("Caching file set to 'cache.sqlite'!")
     }
   }
   # Setup Python environment only if not already configured

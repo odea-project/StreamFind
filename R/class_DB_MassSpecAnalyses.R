@@ -63,12 +63,44 @@ validate_object.DB_MassSpecAnalyses <- function(x) {
 #' @template arg-ms-levels
 #' @export
 add_analyses.DB_MassSpecAnalyses <- function(x, files, centroid = FALSE, levels = c(1, 2)) {
-  analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels)
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  cache_db <- file.path(dirname(x$db), "Cache.duckdb")
+  analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels, cache_db = cache_db)
   if (is.null(analyses) || length(analyses) == 0) {
     stop("No analyses parsed from files.")
   }
-  .write_massspec_analyses_to_db(x$db, analyses, truncate = FALSE)
+  .write_massspec_analyses_to_db(conn, analyses, truncate = FALSE)
   message("Analyses added to DB.")
+  invisible(x)
+}
+
+#' MARK: remove_analyses
+#' @describeIn DB_MassSpecAnalyses Remove analyses from the DB.
+#' @template arg-x-DB_MassSpecAnalyses
+#' @template arg-analyses
+#' @export
+#' 
+remove_analyses.DB_MassSpecAnalyses <- function(x, analyses) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
+  sel_names <- .resolve_analyses_selection(analyses, all_names)
+  if (length(sel_names) == 0) {
+    message("No analyses to remove.")
+    return(invisible(x))
+  }
+  DBI::dbExecute(conn, "BEGIN")
+  rollback_needed <- TRUE
+  on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
+  for (aname in sel_names) {
+    DBI::dbExecute(conn, "DELETE FROM Analyses WHERE analysis = ?", params = list(aname))
+    DBI::dbExecute(conn, "DELETE FROM SpectraHeaders WHERE analysis = ?", params = list(aname))
+    DBI::dbExecute(conn, "DELETE FROM ChromatogramsHeaders WHERE analysis = ?", params = list(aname))
+  }
+  DBI::dbExecute(conn, "COMMIT")
+  rollback_needed <- FALSE
+  message("Analyses removed from DB.")
   invisible(x)
 }
 

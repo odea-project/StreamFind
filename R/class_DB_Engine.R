@@ -413,6 +413,42 @@ DB_Engine <- R6::R6Class(
       conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       .get_db_table_info(conn, tableName)
+    },
+
+    # MARK: run_app
+    #' @description Runs the StreamFind Shiny app to explore, process and manage the engine data.
+    #'
+    #' @note The engine data is saved in an **rds** file and loaded in the app. If save file is
+    #' defined in the engine it is used, otherwise the save file name is automatically set to the
+    #' engine class name and the date in the format **rds**. Changes made in the app can be saved
+    #' in the **rds** file and then loaded to continue working on the engine by scripting.
+    #'
+    run_app = function() {
+      if (!requireNamespace("shiny", quietly = TRUE)) {
+        warning("Shiny package not installed!")
+        return(invisible(self))
+      }
+      if (!requireNamespace("htmltools", quietly = TRUE)) {
+        warning("htmltools package not installed!")
+        return(invisible(self))
+      }
+      if (!requireNamespace("shinydashboard", quietly = TRUE)) {
+        warning("shinydashboard package not installed!")
+        return(invisible(self))
+      }
+      if (!requireNamespace("shinycssloaders", quietly = TRUE)) {
+        warning("shinycssloaders package not installed!")
+        return(invisible(self))
+      }
+      if (!requireNamespace("shinyFiles", quietly = TRUE)) {
+        warning("shinyFiles package not installed!")
+        return(invisible(self))
+      }
+      if (!requireNamespace("sortable", quietly = TRUE)) {
+        warning("sortable package not installed!")
+        return(invisible(self))
+      }
+      run_app(project_path = private$.project_path, engine_type = is(self))
     }
   )
 )

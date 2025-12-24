@@ -45,6 +45,7 @@ R6 child of DB_Engine for MassSpec data that uses DB_MassSpecAnalyses for on-dis
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="project_path"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-project_path'><code>StreamFind::DB_Engine$project_path()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="query_db"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-query_db'><code>StreamFind::DB_Engine$query_db()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="run"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-run'><code>StreamFind::DB_Engine$run()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="run_app"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-run_app'><code>StreamFind::DB_Engine$run_app()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="run_workflow"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-run_workflow'><code>StreamFind::DB_Engine$run_workflow()</code></a></span></li>
 </ul>
 </details>

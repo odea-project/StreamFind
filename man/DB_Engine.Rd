@@ -6,6 +6,12 @@
 \description{
 The \link{DB_Engine} R6 class provides file-based storage for StreamFind Engine data using DuckDB.
 }
+\note{
+The engine data is saved in an \strong{rds} file and loaded in the app. If save file is
+defined in the engine it is used, otherwise the save file name is automatically set to the
+engine class name and the date in the format \strong{rds}. Changes made in the app can be saved
+in the \strong{rds} file and then loaded to continue working on the engine by scripting.
+}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -43,6 +49,7 @@ The \link{DB_Engine} R6 class provides file-based storage for StreamFind Engine 
 \item \href{#method-DB_Engine-query_db}{\code{DB_Engine$query_db()}}
 \item \href{#method-DB_Engine-list_db_tables}{\code{DB_Engine$list_db_tables()}}
 \item \href{#method-DB_Engine-get_db_table_info}{\code{DB_Engine$get_db_table_info()}}
+\item \href{#method-DB_Engine-run_app}{\code{DB_Engine$run_app()}}
 \item \href{#method-DB_Engine-clone}{\code{DB_Engine$clone()}}
 }
 }
@@ -318,6 +325,16 @@ Get information about a specific table.
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DB_Engine-run_app"></a>}}
+\if{latex}{\out{\hypertarget{method-DB_Engine-run_app}{}}}
+\subsection{Method \code{run_app()}}{
+Runs the StreamFind Shiny app to explore, process and manage the engine data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DB_Engine$run_app()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-DB_Engine-clone"></a>}}

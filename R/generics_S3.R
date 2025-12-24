@@ -1136,6 +1136,17 @@ remove <- function(x, ...) {
   UseMethod("remove")
 }
 
+#' @title Generic `remove_analyses`
+#' @description S3 generic to remove analyses from `x`.
+#' @param x An object from which the analyses will be removed.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+remove_analyses <- function(x, ...) {
+  UseMethod("remove_analyses")
+}
+
 #' @title Generic `report`
 #' @description S3 generic to generate a report from `x`.
 #' @param x An object from which the report will be generated.
@@ -1320,4 +1331,16 @@ validate_object <- function(x, ...) {
 #' @noRd
 .mod_WorkflowAssembler_Result_Server <- function(x, ...) {
   UseMethod(".mod_WorkflowAssembler_Result_Server")
+}
+
+#' @export
+#' @noRd
+.mod_WADB_Analyses_UI <- function(x, ...) {
+  UseMethod(".mod_WADB_Analyses_UI")
+}
+
+#' @export
+#' @noRd
+.mod_WADB_Analyses_Server <- function(x, ...) {
+  UseMethod(".mod_WADB_Analyses_Server")
 }

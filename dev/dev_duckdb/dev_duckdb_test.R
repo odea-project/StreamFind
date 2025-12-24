@@ -17,12 +17,11 @@ dbsus <- db[!grepl("IS", db$tag), ]
 # EngineDB tests -----
 
 # Path to the StreamFind data folder (.sf). EngineDB will create/use main.duckdb inside it.
-sf_root <- file.path("dev", "dev_duckdb", "dummy_data")
+sf_root <- file.path("dev", "dev_duckdb", "data")
 file.remove(list.files(sf_root, full.names = TRUE))
 
 engine <- DB_Engine$new(project_path = sf_root, data_type = "Unknown")
 engine$set_metadata(list(project = "dev-demo", user = Sys.info()["user"]))
-engine$set_configuration(list(dummy_param = 1L))
 engine$set_workflow(list(
   data_type = list(kind = "demo"),
   methods = list(step = "noop")

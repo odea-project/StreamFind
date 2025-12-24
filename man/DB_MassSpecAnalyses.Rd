@@ -4,6 +4,7 @@
 \alias{DB_MassSpecAnalyses}
 \alias{validate_object.DB_MassSpecAnalyses}
 \alias{add_analyses.DB_MassSpecAnalyses}
+\alias{remove_analyses.DB_MassSpecAnalyses}
 \alias{get_analysis_names.DB_MassSpecAnalyses}
 \alias{get_replicate_names.DB_MassSpecAnalyses}
 \alias{get_blank_names.DB_MassSpecAnalyses}
@@ -40,6 +41,8 @@ DB_MassSpecAnalyses(
 \method{validate_object}{DB_MassSpecAnalyses}(x)
 
 \method{add_analyses}{DB_MassSpecAnalyses}(x, files, centroid = FALSE, levels = c(1, 2))
+
+\method{remove_analyses}{DB_MassSpecAnalyses}(x, analyses)
 
 \method{get_analysis_names}{DB_MassSpecAnalyses}(x)
 
@@ -206,10 +209,10 @@ replicate group name (character). Note the file paths must have the extension
 
 \item{x}{MassSpecAnalysesDB object.}
 
-\item{value}{Numeric vector of concentrations matching the number of analyses.}
-
 \item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
+
+\item{value}{Numeric vector of concentrations matching the number of analyses.}
 
 \item{rt}{A vector with target retention time values (in seconds) or
 a two columns data.table or data.frame with minimum and maximum retention
@@ -308,6 +311,8 @@ The \code{DB_MassSpecAnalyses} class stores MassSpec analyses metadata and heade
 \item \code{validate_object(DB_MassSpecAnalyses)}: Validate the DB_MassSpecAnalyses object (schema + type).
 
 \item \code{add_analyses(DB_MassSpecAnalyses)}: Add analyses to the DB (append; overwrites only duplicates)
+
+\item \code{remove_analyses(DB_MassSpecAnalyses)}: Remove analyses from the DB.
 
 \item \code{get_analysis_names(DB_MassSpecAnalyses)}: Get analysis names.
 

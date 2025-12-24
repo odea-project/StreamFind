@@ -48,16 +48,6 @@
             DT::dataTableOutput(ns("audit_ui"), height = "calc(100vh - 50px - 30px - 50px)")
           )
         )
-      ),
-      shinydashboard::tabItem(
-        tabName = ns("config"),
-        shiny::fluidRow(
-          shinydashboard::box(
-            width = 12,
-            solidHeader = TRUE,
-            DT::dataTableOutput(ns("config_ui"), height = "calc(100vh - 50px - 30px - 50px)")
-          )
-        )
       )
     )
   )
@@ -128,7 +118,7 @@
         shinydashboard::box(
           width = 12,
           height = "300px",
-          title = "Project Management",
+          title = "Project Database Files",
           solidHeader = TRUE,
           style = "padding: 0px; box-sizing: border-box; overflow-y: auto; display: block; margin: 0;",
           shiny::uiOutput(ns("project_control_ui"))
@@ -386,36 +376,19 @@
 
     # MARK: Analyses
     # Analyses -----
-    # output$analyses_ui <- shiny::renderUI({
-    #   engine_type <- reactive_engine_type()
-    #   if (engine_type %in% "Engine") {
-    #     shiny::showNotification(
-    #       "Analyses not implemented for Engine without an assigned data type!",
-    #       duration = 5,
-    #       type = "warning"
-    #     )
-    #     return(htmltools::div(" "))
-    #   }
-    #   engine_data_type <- gsub("Engine", "", engine_type)
-    #   analyses_dummy_call <- get(
-    #     paste0(engine_data_type, "Analyses"),
-    #     envir = asNamespace("StreamFind")
-    #   )
-    #   analyses_class_dummy <<- suppressMessages(do.call(
-    #     analyses_dummy_call,
-    #     list()
-    #   ))
-    #   .mod_WorkflowAssembler_Analyses_Server(
-    #     analyses_class_dummy,
-    #     "analyses",
-    #     ns,
-    #     reactive_analyses,
-    #     reactive_warnings,
-    #     reactive_volumes,
-    #     reactive_config
-    #   )
-    #   .mod_WorkflowAssembler_Analyses_UI(analyses_class_dummy, "analyses", ns)
-    # })
+    output$analyses_ui <- shiny::renderUI({
+      
+      analyses <- reactive_analyses()
+      .mod_WADB_Analyses_Server(
+        analyses,
+        "analyses",
+        ns,
+        reactive_analyses,
+        reactive_warnings,
+        reactive_volumes
+      )
+      .mod_WADB_Analyses_UI(analyses, "analyses", ns)
+    })
 
     # MARK: Explorer
     # Explorer -----
@@ -593,136 +566,40 @@
     #   }
     # })
 
-    # TODO update configuration based on the golem-config.yml?
-    # reactive_config_change_trigger <- shiny::reactiveVal(0)
-
-    # MARK: Config
-    # Config -----
-    # output$config_ui <- DT::renderDT({
-    #   config <- reactive_config()
-    #   modified_variable_trigger <- reactive_config_change_trigger()
-    #   DT::datatable(
-    #     as.data.table(config),
-    #     filter = "top",
-    #     selection = list(mode = "single", selected = 1, target = "row"),
-    #     options = list(
-    #       dom = "ft",
-    #       paging = FALSE,
-    #       scrollX = TRUE,
-    #       scrollY = "calc(100vh - 50px - 30px - 20px - 170px)",
-    #       scrollCollapse = TRUE
-    #     ),
-    #     escape = FALSE,
-    #     editable = list(target = "cell", columns = c("value"))
-    #   )
-    # })
-
-    # MARK: obs Config Table Editing
-    ## obs Config Table Editing -----
-    # shiny::observeEvent(input$config_ui_cell_edit, {
-    #   info <- input$config_ui_cell_edit
-    #   info_index <- info$row
-    #   info_value <- info$value
-    #   config <- reactive_config()
-    #   name_value <- config[[info_index]]$name
-    #   tryCatch(
-    #     {
-    #       config_call <- names(config[info_index])[1]
-    #       config[[config_call]] <- do.call(config_call, list(info_value))
-    #       reactive_config(config)
-    #     },
-    #     error = function(e) {
-    #       msg <- paste(
-    #         "Error in modifying ",
-    #         name_value,
-    #         ":",
-    #         conditionMessage(e)
-    #       )
-    #       shiny::showNotification(msg, duration = 10, type = "error")
-    #       reactive_config_change_trigger(reactive_config_change_trigger() + 1)
-    #     },
-    #     warning = function(w) {
-    #       msg <- paste(
-    #         "Warning in modifying ",
-    #         name_value,
-    #         ":",
-    #         conditionMessage(w)
-    #       )
-    #       shiny::showNotification(msg, duration = 10, type = "warning")
-    #       reactive_config_change_trigger(reactive_config_change_trigger() + 1)
-    #     }
-    #   )
-    # })
-
     # MARK: out Cache Size
     # out Cache Size -----
-    # output$cache_size <- shiny::renderText({
-    #   tryCatch(
-    #     {
-    #       config <- reactive_engine_config()
-    #       audit <- reactive_audit()
-    #       cache_config <- config[["ConfigCache"]]
-    #       # Check if cache exists based on mode
-    #       cache_exists <- FALSE
-    #       if ("sqlite" %in% cache_config$mode && !is.null(cache_config$file)) {
-    #         cache_exists <- file.exists(cache_config$file)
-    #       } else if ("rds" %in% cache_config$mode && !is.null(cache_config$folder)) {
-    #         cache_exists <- dir.exists(cache_config$folder)
-    #       }
+    output$cache_size <- shiny::renderText({
+      tryCatch(
+        {
+          audit <- reactive_audit()
+          engine$get_cache_size()
+        },
+        error = function(e) {
+          shiny::showNotification(
+            paste("Error calculating cache size:", e$message),
+            duration = 5,
+            type = "error"
+          )
+          "Error"
+        }
+      )
+    })
 
-    #       if (cache_exists) {
-    #         cache_size_result <- size(cache_config)
-    #         if (is.numeric(cache_size_result) && !is.na(cache_size_result)) {
-    #           # size() returns a named numeric vector with unit as name
-    #           unit <- names(cache_size_result)
-    #           value <- round(as.numeric(cache_size_result), 2)
-    #           paste0(value, " ", unit)
-    #         } else {
-    #           "Unknown"
-    #         }
-    #       } else {
-    #         "0 bytes"
-    #       }
-    #     },
-    #     error = function(e) {
-    #       shiny::showNotification(
-    #         paste("Error calculating cache size:", e$message),
-    #         duration = 5,
-    #         type = "error"
-    #       )
-    #       "Error"
-    #     }
-    #   )
-    # })
-
-    # MARK: obs Cache Size
+    # MARK: obs Clear Cache
     # obs Clear Cache -----
-    # shiny::observeEvent(input$clear_cache_button, {
-    #   tryCatch(
-    #     {
-    #       config <- reactive_engine_config()
-    #       if (size(config[["ConfigCache"]]) == 0) {
-    #         shiny::showNotification(
-    #           "Cache is already empty!",
-    #           duration = 3
-    #         )
-    #         return()
-    #       }
-    #       clear_cache(config[["ConfigCache"]], "all")
-    #       shiny::showNotification(
-    #         "Cache cleared successfully!",
-    #         duration = 3
-    #       )
-    #       reactive_engine_config(config)
-    #     },
-    #     error = function(e) {
-    #       shiny::showNotification(
-    #         paste("Error clearing cache:", e$message),
-    #         duration = 5
-    #       )
-    #     }
-    #   )
-    # })
+    shiny::observeEvent(input$clear_cache_button, {
+      tryCatch(
+        {
+          engine$clear_cache()
+        },
+        error = function(e) {
+          shiny::showNotification(
+            paste("Error clearing cache:", e$message),
+            duration = 5
+          )
+        }
+      )
+    })
 
     # MARK: Report
     # Report -----
