@@ -42,13 +42,19 @@
       shinydashboard::tabItem(
         tabName = ns("audit"),
         shiny::fluidRow(
-          shinydashboard::box(
-            width = 12,
-            solidHeader = TRUE,
-            DT::dataTableOutput(ns("audit_ui"), height = "calc(100vh - 50px - 30px - 50px)")
-          )
+          shiny::uiOutput(ns("audit_ui"))
         )
       )
+      # shinydashboard::tabItem(
+      #   tabName = ns("audit"),
+      #   shiny::fluidRow(
+      #     shinydashboard::box(
+      #       width = 12,
+      #       solidHeader = TRUE,
+      #       DT::dataTableOutput(ns("audit_ui"), height = "calc(100vh - 50px - 30px - 50px)")
+      #     )
+      #   )
+      # )
     )
   )
 }
@@ -76,6 +82,7 @@
     reactive_workflow <- shiny::reactiveVal(NULL)
     reactive_results <- shiny::reactiveVal(NULL)
     reactive_audit <- shiny::reactiveVal(NULL)
+    reactive_update_cache_size <- shiny::reactiveVal(0)
     reactive_update_trigger <- shiny::reactiveVal(0)
 
     # MARK: obs Start/Load
@@ -89,7 +96,6 @@
       reactive_metadata(engine$Metadata)
       reactive_analyses(engine$Analyses)
       reactive_workflow(engine$Workflow)
-      reactive_results(engine$Analyses$results)
       reactive_audit(engine$AuditTrail)
     })
 
@@ -100,7 +106,6 @@
         reactive_metadata(engine$Metadata)
         reactive_analyses(engine$Analyses)
         reactive_workflow(engine$Workflow)
-        reactive_results(engine$Analyses$results)
         reactive_audit(engine$AuditTrail)
       }
     })
@@ -156,6 +161,8 @@
     # out Project Files List -----
     output$project_files_list <- shiny::renderUI({
       project_path <- reactive_project_path()
+      reactive_update_trigger()
+      reactive_update_cache_size()
       if (is.na(project_path) || !dir.exists(project_path)) {
         return(htmltools::div("No valid project path"))
       }
@@ -359,7 +366,7 @@
           dt <- dt[!dt$name %in% c("place_holder"), ]
           new_metadata <- as.Metadata(dt)
           engine$Metadata <- new_metadata
-          reactive_update_trigger(reactive_update_trigger() + 1)
+          reactive_metadata(engine$Metadata)
         },
         error = function(e) {
           message("Error updating Metadata: ", e)
@@ -377,12 +384,12 @@
     # MARK: Analyses
     # Analyses -----
     output$analyses_ui <- shiny::renderUI({
-      
       analyses <- reactive_analyses()
       .mod_WADB_Analyses_Server(
         analyses,
         "analyses",
         ns,
+        reactive_update_cache_size,
         reactive_analyses,
         reactive_warnings,
         reactive_volumes
@@ -532,46 +539,59 @@
 
     # MARK: AuditTrail
     # AuditTrail -----
-    # output$audit_ui <- DT::renderDT({
-    #   audit_trail <- reactive_audit()
-    #   if (length(audit_trail) > 0) {
-    #     audit_trail <- as.data.table(audit_trail)
-    #     audit_trail$value <- gsub("\n", "<br>", audit_trail$value)
-    #     DT::datatable(
-    #       audit_trail,
-    #       filter = "top",
-    #       selection = list(mode = "single", selected = 1, target = "row"),
-    #       options = list(
-    #         dom = "ft",
-    #         paging = FALSE,
-    #         scrollX = TRUE,
-    #         scrollY = "calc(100vh - 50px - 30px - 20px - 170px)",
-    #         scrollCollapse = TRUE,
-    #         columnDefs = list(
-    #           list(
-    #             targets = which(names(audit_trail) == "value"),
-    #             createdCell = DT::JS(
-    #               "function(td, cellData, rowData, row, col) {",
-    #               "  td.style.fontFamily = 'Courier, monospace';",
-    #               "  td.style.whiteSpace = 'pre';",
-    #               "}"
-    #             )
-    #           )
-    #         )
-    #       ),
-    #       escape = FALSE
-    #     )
-    #   } else {
-    #     DT::datatable(data.table::data.table())
-    #   }
-    # })
+    output$audit_ui <- shiny::renderUI({
+      
+      shinydashboard::box(
+        width = 12,
+        height = "calc(100vh - 60px)",
+        title = NULL,
+        solidHeader = TRUE,
+        style = "padding: 0px; box-sizing: border-box; overflow-y: auto; display: block; margin: 0;",
+        htmltools::div(
+          style = "padding: 0px; box-sizing: border-box; height: calc(100vh - 60px); overflow-y: auto;",
+          DT::DTOutput(ns("audit_ui_dt"))
+        )
+      )
+    })
+
+    # MARK: out AuditTrail DT
+    # out AuditTrail DT -----
+    output$audit_ui_dt <- DT::renderDT({
+      audit_trail <- reactive_audit()
+      audit_trail <- as.data.table(audit_trail)
+      # audit_trail$value <- gsub("\n", "<br>", audit_trail$value)
+      DT::datatable(
+        audit_trail,
+        filter = "top",
+        selection = list(mode = "single", selected = 1, target = "row"),
+        options = list(
+          dom = "ft",
+          paging = FALSE,
+          scrollX = TRUE,
+          scrollY = "calc(100vh - 60px - 10px - 170px)",
+          scrollCollapse = TRUE,
+          columnDefs = list(
+            list(
+              targets = which(names(audit_trail) == "value"),
+              createdCell = DT::JS(
+                "function(td, cellData, rowData, row, col) {",
+                "  td.style.fontFamily = 'Courier, monospace';",
+                "  td.style.whiteSpace = 'pre';",
+                "}"
+              )
+            )
+          )
+        ),
+        escape = FALSE
+      )
+    })
 
     # MARK: out Cache Size
     # out Cache Size -----
     output$cache_size <- shiny::renderText({
       tryCatch(
         {
-          audit <- reactive_audit()
+          reactive_update_cache_size()
           engine$get_cache_size()
         },
         error = function(e) {
@@ -591,6 +611,7 @@
       tryCatch(
         {
           engine$clear_cache()
+          reactive_update_cache_size(reactive_update_cache_size() + 1)
         },
         error = function(e) {
           shiny::showNotification(

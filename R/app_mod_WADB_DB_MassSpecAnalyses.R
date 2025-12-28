@@ -4,10 +4,11 @@
   shinydashboard::box(
     title = NULL,
     width = 12,
+    height = "calc(100vh - 60px)",
     solidHeader = TRUE,
     shiny::column(12, shiny::uiOutput(ns(ns2("analyses_overview_buttons")))),
     shiny::column(12, shiny::uiOutput(ns(ns2("notes_analyses")))),
-    shiny::column(12, DT::dataTableOutput(ns(ns2("AnalysesTable"))), height = "calc(100vh - 50px - 30px - 20px - 54px - 96px)")
+    shiny::column(12, DT::dataTableOutput(ns(ns2("AnalysesTable"))), height = "calc(100vh - 60px - 20px - 54px - 96px)")
   )
 }
 
@@ -16,6 +17,7 @@
     x,
     id,
     ns,
+    reactive_update_cache_size,
     reactive_analyses,
     reactive_warnings,
     reactive_volumes) {
@@ -59,7 +61,7 @@
           options = list(
             searching = TRUE,
             processing = TRUE,
-            scrollY = "calc(100vh - 50px - 30px - 20px - 54px - 96px - 100px)",
+            scrollY = "calc(100vh - 60px - 20px - 54px - 96px - 80px)",
             scrollCollapse = TRUE,
             paging = FALSE,
             dom = "Bfrt",
@@ -87,6 +89,7 @@
           analyses_to_remove <- analyses_info$analysis[row_to_delete]
           analyses <- remove_analyses(analyses, analyses_to_remove)
           reactive_analyses_info(info(analyses))
+          reactive_update_cache_size(reactive_update_cache_size() + 1)
         }
       },
       ignoreInit = TRUE
@@ -257,6 +260,7 @@
             })
 
             reactive_analyses_info(info(analyses))
+            reactive_update_cache_size(reactive_update_cache_size() + 1)
           } else {
             shiny::showNotification(
               "Invalid file/s format/s!",

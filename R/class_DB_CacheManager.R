@@ -76,10 +76,13 @@ get_cache_info.CacheManager <- function(x, ...) {
 #'
 clear_cache.CacheManager <- function(x, ...) {
   stopifnot(inherits(x, "CacheManager"))
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  DBI::dbExecute(conn, "DELETE FROM CacheManager")
-  invisible(TRUE)
+  if (file.remove(x$db)) {
+    new_manager <- CacheManager(x$db)
+    invisible(TRUE)
+  } else {
+    warning("Failed to delete cache file.")
+    invisible(FALSE)
+  }
 }
 
 # MARK: size
