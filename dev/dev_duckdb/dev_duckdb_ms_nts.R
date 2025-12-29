@@ -32,7 +32,7 @@ files_merck_ex[, 1:3]
 
 
 ms <- DB_MassSpecEngine$new(
-  project_path = sf_root,
+   = sf_root,
   files = files_merck_ex$file_path[1:2]
 )
 
@@ -167,9 +167,9 @@ plot_features(
 # Custom ProcessingSteps -----
 
 # .get_available_engines()
-# length(.get_available_processing_methods(data_type = "MassSpec"))
-# length(.get_available_methods(data_type = "MassSpec"))
-# .list_processing_steps_metadata(data_type = "MassSpec")[, 1:4]
+# length(.get_available_processing_methods(dataType = "MassSpec"))
+# length(.get_available_methods(dataType = "MassSpec"))
+# .list_processing_steps_metadata(dataType = "MassSpec")[, 1:4]
 
 # # Dummy ProcessingStep S3 child for testing
 # MassSpecMethod_TestStep <- function() {
@@ -209,7 +209,7 @@ plot_features(
 # dummy_ps <- MassSpecMethod_TestStep()
 # run.MassSpecMethod_TestStep(dummy_ps)
 
-# .list_processing_steps_metadata(data_type = "MassSpec")[, 1:4]
+# .list_processing_steps_metadata(dataType = "MassSpec")[, 1:4]
 
 # sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
 # nts_db_path <- file.path(sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")

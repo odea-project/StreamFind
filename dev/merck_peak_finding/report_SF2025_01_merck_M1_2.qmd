@@ -119,7 +119,7 @@ run_peak_finding_debug_targets <- function(example_name) {
     clear_cache("all")
     prj <- file.path("dev", "merck_peak_finding", "data")
     ms <- DB_MassSpecEngine$new(
-      project_path = prj,
+       = prj,
       files = files
     )
     ms$clear_cache()
@@ -571,7 +571,7 @@ for (i in seq_along(plot_list_example)) {
 # prj <- file.path("dev", "merck_peak_finding", "data")
 
 # ms <- DB_MassSpecEngine$new(
-#   project_path = prj,
+#    = prj,
 #   files = merck2_files_ex$file_path[merck2_files_ex$example %in% examples[8] & !merck2_files_ex$blank]
 # )
 

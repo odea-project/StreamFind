@@ -284,7 +284,7 @@ Engine <- R6::R6Class(
       }
       dots[["type"]] <- NULL
       checkmate::assert_character(type, len = 1, null.ok = TRUE)
-      checkmate::assert_true(type %in% c(NA_character_, DataTypeObjects()$data_type[1:3]))
+      checkmate::assert_true(type %in% c(NA_character_, DataTypeObjects()$dataType[1:3]))
       if (is.na(type) && !is.null(analyses)) {
         if (grepl("Analyses", class(analyses)[1])) {
           type <- gsub("Analyses", "", class(analyses)[1])

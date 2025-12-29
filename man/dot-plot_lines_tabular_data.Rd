@@ -9,6 +9,7 @@
   xvar,
   yvar,
   groupBy = NULL,
+  basicGroupBy = NULL,
   interactive = TRUE,
   title = NULL,
   xLab = NULL,
@@ -24,6 +25,12 @@
 \item{yvar}{Name of column for y axis.}
 
 \item{groupBy}{Name of column for color grouping (optional, default: NULL).}
+
+\item{basicGroupBy}{Name of column(s) to define individual traces (optional).
+Traces will be created for each unique value of \code{basicGroupBy}, while
+\code{groupBy} controls color mapping. Example: \code{basicGroupBy = "analysis"},
+\code{groupBy = "replicate"} will draw one trace per \code{analysis} and color
+traces according to their \code{replicate} value.}
 
 \item{interactive}{Logical, use plotly if TRUE, ggplot2 if FALSE.}
 

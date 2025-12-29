@@ -167,7 +167,7 @@ CoreEngine <- R6::R6Class(
         return(private$.Analyses@results)
       }
       if (is(value, "StreamFind::Results")) {
-        if (grepl(value[[i]]@data_type, is(self))) {
+        if (grepl(value[[i]]@dataType, is(self))) {
           private$.Analyses@results[[gsub("StreamFind::", "", is(value)[1])]] <- value
           if (!is.null(private$.AuditTrail)) {
             private$.AuditTrail <- add(private$.AuditTrail, value)
@@ -178,7 +178,7 @@ CoreEngine <- R6::R6Class(
           {
             for (i in seq_along(value)) {
               if (is(value[[i]], "StreamFind::Results")) {
-                if (grepl(value[[i]]@data_type, is(self))) {
+                if (grepl(value[[i]]@dataType, is(self))) {
                   private$.Analyses@results[[gsub("StreamFind::", "", is(value)[1])]] <- value[[i]]
                   if (!is.null(private$.AuditTrail)) {
                     private$.AuditTrail <- add(private$.AuditTrail, value[[i]])
@@ -555,13 +555,13 @@ CoreEngine <- R6::R6Class(
         warning("ProcessingStep not valid!")
         return(invisible(self))
       }
-      data_type <- step@data_type
-      if (!checkmate::test_choice(paste0(data_type, "Engine"), is(self))) {
-        warning("Data type ", data_type, " not matching with current engine! Not done.")
+      dataType <- step@dataType
+      if (!checkmate::test_choice(paste0(dataType, "Engine"), is(self))) {
+        warning("Data type ", dataType, " not matching with current engine! Not done.")
         return(invisible(self))
       }
       call <- step@call
-      available_processing_steps <- .get_available_processing_methods(step@data_type)
+      available_processing_steps <- .get_available_processing_methods(step@dataType)
       if (!call %in% available_processing_steps) {
         warning(paste0(call, " not available!"))
         return(invisible(self))

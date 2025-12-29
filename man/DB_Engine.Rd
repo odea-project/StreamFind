@@ -31,7 +31,7 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-DB_Engine-new}{\code{DB_Engine$new()}}
-\item \href{#method-DB_Engine-project_path}{\code{DB_Engine$project_path()}}
+\item \href{#method-DB_Engine-get_project_path}{\code{DB_Engine$get_project_path()}}
 \item \href{#method-DB_Engine-print}{\code{DB_Engine$print()}}
 \item \href{#method-DB_Engine-get_metadata}{\code{DB_Engine$get_metadata()}}
 \item \href{#method-DB_Engine-add_metadata}{\code{DB_Engine$add_metadata()}}
@@ -60,18 +60,17 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 Initialize DB_Engine.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DB_Engine$new(
-  project_path = "data",
+  projectPath = "data",
   metadata = NULL,
   workflow = NULL,
-  configuration = NULL,
-  data_type = "Unknown"
+  dataType = "Unknown"
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{project_path}}{Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing project_path, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the project_path does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.}
+\item{\code{projectPath}}{Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing projectPath, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the projectPath does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.}
 
 \item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
 There is no type restrictions except for name (must be type character), author (must be type
@@ -81,20 +80,18 @@ with a full path to a file.}
 \item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
 with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
-\item{\code{configuration}}{A list of configuration parameters to persist or use for the engine/database.}
-
-\item{\code{data_type}}{Engine data type (internal; defaults to "Unknown").}
+\item{\code{dataType}}{Engine data type (internal; defaults to "Unknown").}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-DB_Engine-project_path"></a>}}
-\if{latex}{\out{\hypertarget{method-DB_Engine-project_path}{}}}
-\subsection{Method \code{project_path()}}{
+\if{html}{\out{<a id="method-DB_Engine-get_project_path"></a>}}
+\if{latex}{\out{\hypertarget{method-DB_Engine-get_project_path}{}}}
+\subsection{Method \code{get_project_path()}}{
 Get the project path.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{DB_Engine$project_path()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{DB_Engine$get_project_path()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{

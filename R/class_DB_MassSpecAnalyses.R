@@ -32,7 +32,7 @@ DB_MassSpecAnalyses <- function(
   obj <- structure(
     list(
       db = db,
-      data_type = "DB_MassSpec"
+      dataType = "DB_MassSpec"
     ),
     class = c("DB_MassSpecAnalyses", "DB_Analyses")
   )
@@ -47,7 +47,7 @@ DB_MassSpecAnalyses <- function(
 #'
 validate_object.DB_MassSpecAnalyses <- function(x) {
   checkmate::assert_class(x, "DB_MassSpecAnalyses")
-  checkmate::assert_true(identical(x$data_type, "DB_MassSpec"))
+  checkmate::assert_true(identical(x$dataType, "DB_MassSpec"))
   if (!file.exists(x$db)) stop("DB_MassSpecAnalyses file not found: ", x$db)
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)

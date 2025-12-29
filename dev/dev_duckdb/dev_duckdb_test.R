@@ -10,8 +10,8 @@ dbsus <- db[!grepl("IS", db$tag), ]
 
 # DataTypeObjects()
 # DataTypeObjects("DB_MassSpec", showProcessingMethods = TRUE)
-# .list_processing_steps_metadata(data_type = "DB_MassSpec")
-# .list_processing_steps_metadata(data_type = "MassSpec")[, 1:4]
+# .list_processing_steps_metadata(dataType = "DB_MassSpec")
+# .list_processing_steps_metadata(dataType = "MassSpec")[, 1:4]
 
 # MARK: EngineDB tests
 # EngineDB tests -----
@@ -19,14 +19,12 @@ dbsus <- db[!grepl("IS", db$tag), ]
 # Path to the StreamFind data folder (.sf). EngineDB will create/use main.duckdb inside it.
 sf_root <- file.path("dev", "dev_duckdb", "data")
 file.remove(list.files(sf_root, full.names = TRUE))
+fs::dir_delete(sf_root)
+!dir.exists(sf_root)
 
-engine <- DB_Engine$new(project_path = sf_root, data_type = "Unknown")
-engine$set_metadata(list(project = "dev-demo", user = Sys.info()["user"]))
-engine$set_workflow(list(
-  data_type = list(kind = "demo"),
-  methods = list(step = "noop")
-))
-engine$set_workflow(list(MassSpecMethod_FindFeatures_native()))
+engine <- DB_Engine$new(projectPath = sf_root, dataType = "Unknown")
+engine$add_metadata(list(project = "dev-demo", user = Sys.info()["user"]))
+engine$add_workflow(list(MassSpecMethod_FindFeatures_native()))
 engine$get_engine_info()
 engine$list_db_tables()
 engine$get_audit_trail()
@@ -60,9 +58,9 @@ engine$Workflow
 # Custom ProcessingSteps -----
 
 # .get_available_engines()
-# length(.get_available_processing_methods(data_type = "MassSpec"))
-# length(.get_available_methods(data_type = "MassSpec"))
-# .list_processing_steps_metadata(data_type = "MassSpec")[, 1:4]
+# length(.get_available_processing_methods(dataType = "MassSpec"))
+# length(.get_available_methods(dataType = "MassSpec"))
+# .list_processing_steps_metadata(dataType = "MassSpec")[, 1:4]
 
 # # Dummy ProcessingStep S3 child for testing
 # MassSpecMethod_TestStep <- function() {
@@ -102,7 +100,7 @@ engine$Workflow
 # dummy_ps <- MassSpecMethod_TestStep()
 # run.MassSpecMethod_TestStep(dummy_ps)
 
-# .list_processing_steps_metadata(data_type = "MassSpec")[, 1:4]
+# .list_processing_steps_metadata(dataType = "MassSpec")[, 1:4]
 
 # sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
 # nts_db_path <- file.path(sf_root, "MassSpecResults_NonTargetAnalysis.duckdb")

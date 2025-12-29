@@ -8,7 +8,7 @@
 \alias{get_db_table_info.DB_Results}
 \title{Base class for database-backed Results}
 \usage{
-DB_Results(db, data_type)
+DB_Results(db, dataType)
 
 \method{validate_object}{DB_Results}(x)
 
@@ -21,7 +21,7 @@ DB_Results(db, data_type)
 \arguments{
 \item{db}{Path to DuckDB file.}
 
-\item{data_type}{Data type string (e.g., "DB_MassSpec").}
+\item{dataType}{Data type string (e.g., "DB_MassSpec").}
 
 \item{x}{ResultsDB object.}
 
@@ -36,7 +36,7 @@ An object of class \code{DB_Results}.
 }
 \description{
 Minimal base class to represent results stored in a DuckDB file.
-Requires a \code{db} path and a \code{data_type} identifier.
+Requires a \code{db} path and a \code{dataType} identifier.
 }
 \section{Methods (by generic)}{
 \itemize{

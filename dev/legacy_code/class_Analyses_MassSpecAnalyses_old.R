@@ -572,7 +572,7 @@ MassSpecAnalyses <- S7::new_class(
     analyses <- .get_MassSpecAnalysis_from_files(files, centroid, levels)
     S7::new_object(
       Analyses(),
-      data_type = "MassSpec",
+      dataType = "MassSpec",
       possible_formats = c("mzML", "mzXML", "d", "raw"),
       analyses = analyses
     )

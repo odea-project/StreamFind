@@ -17,7 +17,7 @@ StatisticMethod_Quantify_mcrals <- S7::new_class(
   constructor = function(regression = "linear", concentrations = NA_real_) {
     S7::new_object(
       ProcessingStep(
-        data_type = "Statistic",
+        dataType = "Statistic",
         method = "Quantify",
         required = "MakeModel",
         algorithm = "mcrals",
@@ -36,7 +36,7 @@ StatisticMethod_Quantify_mcrals <- S7::new_class(
     )
   },
   validator = function(self) {
-    checkmate::assert_choice(self@data_type, "Statistic")
+    checkmate::assert_choice(self@dataType, "Statistic")
     checkmate::assert_choice(self@method, "Quantify")
     checkmate::assert_choice(self@algorithm, "mcrals")
     checkmate::assert_choice(self@required, "MakeModel")

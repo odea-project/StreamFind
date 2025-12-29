@@ -2,10 +2,9 @@
 # DB_Engine -----
 #' @title File-based Database Engine for StreamFind
 #' @description The [StreamFind::DB_Engine] R6 class provides file-based storage for StreamFind Engine data using DuckDB.
-#' @template arg-core-project-path
+#' @template arg-core-projectPath
 #' @template arg-core-metadata
 #' @template arg-core-workflow
-#' @template arg-core-configuration
 #' @template arg-core-audit-trail-operation_type
 #' @template arg-core-audit-trail-object_type
 #' @template arg-core-audit-trail-object_id
@@ -21,8 +20,8 @@ DB_Engine <- R6::R6Class(
   # MARK: private
   # private -----
   private = list(
-    .project_path = NULL,
-    .data_type = NULL
+    .projectPath = NULL,
+    .dataType = NULL
   ),
 
   # MARK: active bindings
@@ -64,7 +63,7 @@ DB_Engine <- R6::R6Class(
     # MARK: Cache
     #' @field Cache A [StreamFind::CacheManager] object for managing cached data.
     Cache = function() {
-      CacheManager(db = file.path(private$.project_path, "Cache.duckdb"))
+      CacheManager(db = file.path(private$.projectPath, "Cache.duckdb"))
     }
   ),
 
@@ -74,34 +73,33 @@ DB_Engine <- R6::R6Class(
 
     # MARK: initialize
     #' @description Initialize DB_Engine.
-    #' @param data_type Engine data type (internal; defaults to "Unknown").
-    initialize = function(project_path = "data",
+    #' @param dataType Engine data type (internal; defaults to "Unknown").
+    initialize = function(projectPath = "data",
                           metadata = NULL,
                           workflow = NULL,
-                          configuration = NULL,
-                          data_type = "Unknown") {
+                          dataType = "Unknown") {
       if (!requireNamespace("duckdb", quietly = TRUE)) {
         stop("duckdb package is required for DB_Engine")
       }
-      checkmate::assert_character(project_path, len = 1)
-      checkmate::assert_character(data_type, len = 1)
-      sf_root <- project_path
-      engine_db <- project_path
+      checkmate::assert_character(projectPath, len = 1)
+      checkmate::assert_character(dataType, len = 1)
+      sf_root <- projectPath
+      engine_db <- projectPath
       if (tolower(tools::file_ext(sf_root)) == "duckdb") {
         sf_root <- dirname(sf_root)
-        engine_db <- project_path
+        engine_db <- projectPath
       } else {
         engine_db <- file.path(sf_root, "Engine.duckdb")
       }
       dir.create(sf_root, recursive = TRUE, showWarnings = FALSE)
       .create_sf_data_project_icon(sf_root)
-      private$.project_path <- sf_root
-      private$.data_type <- data_type
+      private$.projectPath <- sf_root
+      private$.dataType <- dataType
       conn <- DBI::dbConnect(duckdb::duckdb(), engine_db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       conn_cache <- DBI::dbConnect(duckdb::duckdb(), file.path(sf_root, "Cache.duckdb"))
       on.exit(DBI::dbDisconnect(conn_cache), add = TRUE)
-      .create_DB_Engine_db_schema(conn, private$.data_type)
+      .create_DB_Engine_db_schema(conn, private$.dataType)
       .validate_DB_Engine_db_schema(conn)
       .create_Cache_db_schema(conn_cache)
       .validate_Cache_db_schema(conn_cache)
@@ -111,27 +109,27 @@ DB_Engine <- R6::R6Class(
       if (!is.null(workflow)) {
         try(self$add_workflow(workflow), silent = TRUE)
       }
-      message(private$.data_type, " engine initialized on ", private$.project_path)
+      message(private$.dataType, " engine initialized on ", private$.projectPath)
     },
 
-    # MARK: project_path
+    # MARK: get_project_path
     #' @description Get the project path.
     #' @return Character string with the path to the StreamFind (.sf) project directory.
-    project_path = function() {
-      private$.project_path
+    get_project_path = function() {
+      private$.projectPath
     },
 
     # MARK: print
     #' @description Prints a summary to the console.
     print = function() {
       cat("\n")
-      cat(paste0(private$.data_type, " Engine Overview\n"))
+      cat(paste0(private$.dataType, " Engine Overview\n"))
       show(self$Metadata)
       wf <- self$Workflow
       show(wf)
       anas <- self$Analyses
-      show(anas)
-      db_files <- list.files(private$.project_path, pattern = "\\.duckdb$", full.names = TRUE)
+      if (!is.null(anas)) show(anas)
+      db_files <- list.files(private$.projectPath, pattern = "\\.duckdb$", full.names = TRUE)
       cat("\n")
       cat("Database files (", length(db_files), ")\n")
       if (length(db_files) > 0) {
@@ -147,7 +145,7 @@ DB_Engine <- R6::R6Class(
     #' @description Get metadata from database.
     #' @return A Metadata object or NULL.
     get_metadata = function() {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       metadata_df <- DBI::dbGetQuery(conn, "SELECT metadata FROM Engine LIMIT 1")
       if (nrow(metadata_df) == 0) {
@@ -172,7 +170,7 @@ DB_Engine <- R6::R6Class(
     # MARK: add_metadata
     #' @description Set metadata in database.
     add_metadata = function(metadata) {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       DBI::dbExecute(conn, "BEGIN")
       rollback_needed <- TRUE
@@ -188,12 +186,12 @@ DB_Engine <- R6::R6Class(
     # MARK: get_workflow
     #' @description Get workflow from database.
     get_workflow = function() {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       workflow_info <- DBI::dbGetQuery(conn, "SELECT methods FROM Workflow LIMIT 1")
       if (nrow(workflow_info) == 0) {
         wf_obj <- Workflow()
-        attr(wf_obj, "type") <- private$.data_type
+        attr(wf_obj, "type") <- private$.dataType
         return(wf_obj)
       }
       methods_json <- workflow_info$methods[1]
@@ -207,7 +205,7 @@ DB_Engine <- R6::R6Class(
         error = function(e) {
           warning("Could not reconstruct workflow: ", e$message)
           wf_obj <- Workflow()
-          attr(wf_obj, "type") <- private$.data_type
+          attr(wf_obj, "type") <- private$.dataType
         }
       )
       wf_obj
@@ -216,12 +214,17 @@ DB_Engine <- R6::R6Class(
     # MARK: add_workflow
     #' @description Set workflow in database.
     add_workflow = function(workflow) {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       DBI::dbExecute(conn, "BEGIN")
       rollback_needed <- TRUE
       on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
       wf_obj <- Workflow(workflow)
+      wf_dataType <- attr(wf_obj, "type")
+      if (is.null(wf_dataType) || wf_dataType != private$.dataType) {
+        warning("Workflow data type (", wf_dataType, ") does not match engine data type (", private$.dataType, ")! Not added.")
+        return(invisible(self))
+      }
       processing_steps <- lapply(wf_obj, function(s) unclass(s))
       names(processing_steps) <- names(wf_obj)
       json_processing_steps <- .convert_to_json(processing_steps)
@@ -250,7 +253,7 @@ DB_Engine <- R6::R6Class(
         return(invisible(self))
       }
       type <- step$type
-      if (!checkmate::test_true(type %in% private$.data_type)) {
+      if (!checkmate::test_true(type %in% private$.dataType)) {
         warning("Data type ", type, " not matching with current engine! Not done.")
         return(invisible(self))
       }
@@ -296,7 +299,7 @@ DB_Engine <- R6::R6Class(
     run_workflow = function() {
       if (length(self$Workflow) > 0) {
         steps <- self$Workflow
-        results_files <- list.files(private$.project_path, pattern = "^Results.*\\.duckdb$", full.names = TRUE)
+        results_files <- list.files(private$.projectPath, pattern = "^Results.*\\.duckdb$", full.names = TRUE)
         if (length(results_files) > 0) {
           message("\U1F5D1 Removing existing results database files...", appendLF = FALSE)
           file.remove(results_files)
@@ -313,7 +316,7 @@ DB_Engine <- R6::R6Class(
     # MARK: get_audit_trail
     #' @description Get audit trail from database.
     get_audit_trail = function() {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       audit_df <- DBI::dbGetQuery(conn, "SELECT * FROM AuditTrail ORDER BY timestamp DESC")
       audit_df
@@ -322,7 +325,7 @@ DB_Engine <- R6::R6Class(
     # MARK: add_audit_entry
     #' @description Add entry to audit trail.
     add_audit_entry = function(operation_type, object_type, details = NULL) {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       DBI::dbExecute(conn, "BEGIN")
       rollback_needed <- TRUE
@@ -368,7 +371,7 @@ DB_Engine <- R6::R6Class(
     # MARK: clear_result_databases
     #' @description Remove all result database files from the project directory.
     clear_result_databases = function() {
-      results_files <- list.files(private$.project_path, pattern = "Results.*\\.duckdb$", full.names = TRUE)
+      results_files <- list.files(private$.projectPath, pattern = "Results.*\\.duckdb$", full.names = TRUE)
       if (length(results_files) > 0) {
         message("\U1F5D1 Removing existing results database files...", appendLF = FALSE)
         file.remove(results_files)
@@ -382,7 +385,7 @@ DB_Engine <- R6::R6Class(
     # MARK: get_engine_info
     #' @description Get basic engine information.
     get_engine_info = function() {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       engine_info <- DBI::dbGetQuery(conn, "SELECT * FROM Engine LIMIT 1")
       if (nrow(engine_info) == 0) {
@@ -394,7 +397,7 @@ DB_Engine <- R6::R6Class(
     # MARK: query_db
     #' @description Execute SQL query on the database.
     query_db = function(sql, params = NULL) {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       .query_db(conn, sql, params)
     },
@@ -402,7 +405,7 @@ DB_Engine <- R6::R6Class(
     # MARK: list_db_tables
     #' @description List all tables in the database.
     list_db_tables = function() {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       .list_db_tables(conn)
     },
@@ -410,7 +413,7 @@ DB_Engine <- R6::R6Class(
     # MARK: get_db_table_info
     #' @description Get information about a specific table.
     get_db_table_info = function(tableName) {
-      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.project_path, "Engine.duckdb"))
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
       .get_db_table_info(conn, tableName)
     },
@@ -448,14 +451,14 @@ DB_Engine <- R6::R6Class(
         warning("sortable package not installed!")
         return(invisible(self))
       }
-      run_app(project_path = private$.project_path, engine_type = is(self))
+      run_app(projectPath = private$.projectPath, engine_type = is(self))
     }
   )
 )
 
 # MARK: .create_DB_Engine_db_schema
 #' @noRd
-.create_DB_Engine_db_schema <- function(conn, data_type) {
+.create_DB_Engine_db_schema <- function(conn, dataType) {
   tryCatch(
     {
       DBI::dbExecute(conn, "INSTALL json")
@@ -468,7 +471,7 @@ DB_Engine <- R6::R6Class(
 
   DBI::dbExecute(conn, "
     CREATE TABLE IF NOT EXISTS Engine (
-      data_type VARCHAR NOT NULL,
+      dataType VARCHAR NOT NULL,
       metadata JSON,
       configuration JSON,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -477,7 +480,7 @@ DB_Engine <- R6::R6Class(
 
   DBI::dbExecute(conn, "
     CREATE TABLE IF NOT EXISTS Workflow (
-      data_type VARCHAR NOT NULL,
+      dataType VARCHAR NOT NULL,
       methods JSON
     )
   ")
@@ -492,20 +495,20 @@ DB_Engine <- R6::R6Class(
   ")
 
   # Engine table initialization
-  existing <- DBI::dbGetQuery(conn, "SELECT rowid, data_type FROM Engine")
+  existing <- DBI::dbGetQuery(conn, "SELECT rowid, dataType FROM Engine")
   if (nrow(existing) > 0) {
-    sql <- "UPDATE Engine SET data_type = ? WHERE rowid = ?"
-    DBI::dbExecute(conn, sql, list(data_type, existing$rowid[1]))
+    sql <- "UPDATE Engine SET dataType = ? WHERE rowid = ?"
+    DBI::dbExecute(conn, sql, list(dataType, existing$rowid[1]))
   } else {
     metadata <- Metadata()
     workflow <- Workflow()
-    attr(workflow, "type") <- data_type
+    attr(workflow, "type") <- dataType
     json_metadata <- .convert_to_json(metadata)
-    sql <- "INSERT INTO Engine (data_type, metadata) VALUES (?, ?)"
-    DBI::dbExecute(conn, sql, list(data_type, json_metadata))
+    sql <- "INSERT INTO Engine (dataType, metadata) VALUES (?, ?)"
+    DBI::dbExecute(conn, sql, list(dataType, json_metadata))
     json_workflow <- .convert_to_json(workflow)
-    sql_wf <- "INSERT INTO Workflow (data_type, methods) VALUES (?, ?)"
-    DBI::dbExecute(conn, sql_wf, list(data_type, json_workflow))
+    sql_wf <- "INSERT INTO Workflow (dataType, methods) VALUES (?, ?)"
+    DBI::dbExecute(conn, sql_wf, list(dataType, json_workflow))
   }
   invisible(TRUE)
 }
@@ -537,7 +540,7 @@ DB_Engine <- R6::R6Class(
     {
       table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Workflow)")
       required <- list(
-        data_type = "VARCHAR NOT NULL",
+        dataType = "VARCHAR NOT NULL",
         methods = "JSON"
       )
       for (col in names(required)) {

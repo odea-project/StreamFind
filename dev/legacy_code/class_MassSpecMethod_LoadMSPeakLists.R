@@ -58,7 +58,7 @@ MassSpecMethod_LoadMSPeakLists_patRoon <- S7::new_class(
     
     S7::new_object(
       ProcessingStep(
-        data_type = "MassSpec",
+        dataType = "MassSpec",
         method = "LoadMSPeakLists",
         required = c("FindFeatures", "GroupFeatures"),
         algorithm = "patRoon",
@@ -85,7 +85,7 @@ MassSpecMethod_LoadMSPeakLists_patRoon <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
+    checkmate::assert_choice(self@dataType, "MassSpec")
     checkmate::assert_choice(self@method, "LoadMSPeakLists")
     checkmate::assert_choice(self@algorithm, "patRoon")
     checkmate::assert_numeric(self@parameters$maxMSRtWindow, len = 1)
@@ -206,7 +206,7 @@ MassSpecMethod_LoadMSPeakLists_StreamFind <- S7::new_class(
    
     S7::new_object(
       ProcessingStep(
-        data_type = "MassSpec",
+        dataType = "MassSpec",
         method = "LoadMSPeakLists",
         required = c("FindFeatures", "GroupFeatures", "LoadFeaturesMS1", "LoadFeaturesMS2"),
         algorithm = "StreamFind",
@@ -230,7 +230,7 @@ MassSpecMethod_LoadMSPeakLists_StreamFind <- S7::new_class(
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
+    checkmate::assert_choice(self@dataType, "MassSpec")
     checkmate::assert_choice(self@method, "LoadMSPeakLists")
     checkmate::assert_choice(self@algorithm, "StreamFind")
     checkmate::assert_numeric(self@parameters$clusterMzWindow, len = 1)

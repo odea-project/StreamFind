@@ -1,11 +1,11 @@
 #' @title DataTypeObjects Class
 #' @description Constructor function for DataTypeObjects class, defining data types used in the package, associated file formats, and result classes.
-#' @param data_type Optional; specific data type to retrieve information for. If NULL, returns all data types.
-#' @param showProcessingMethods Logical; if TRUE and data_type is provided, includes available processing methods for that data type.
+#' @param dataType Optional; specific data type to retrieve information for. If NULL, returns all data types.
+#' @param showProcessingMethods Logical; if TRUE and dataType is provided, includes available processing methods for that data type.
 #' @return An object of class DataTypeObjects containing data types, engines, analyses, results, and formats.
 #' @export
 #' 
-DataTypeObjects <- function(data_type = NULL, showProcessingMethods = FALSE) {
+DataTypeObjects <- function(dataType = NULL, showProcessingMethods = FALSE) {
   res <- structure(
     list(
       data_types = c("MassSpec", "Raman", "Statistic", "DB_MassSpec"),
@@ -37,12 +37,12 @@ DataTypeObjects <- function(data_type = NULL, showProcessingMethods = FALSE) {
     class = "DataTypeObjects"
   )
 
-  if (!is.null(data_type)) {
-    if (!(data_type %in% res$data_types)) {
+  if (!is.null(dataType)) {
+    if (!(dataType %in% res$data_types)) {
       stop(
         paste0(
           "Data type '",
-          data_type,
+          dataType,
           "' is not recognized. Available types are: ",
           paste(res$types, collapse = ", "),
            "."
@@ -50,13 +50,13 @@ DataTypeObjects <- function(data_type = NULL, showProcessingMethods = FALSE) {
       )
     }
     res <- list(
-      engine = res$engine[[data_type]],
-      analyses = res$analyses[[data_type]],
-      results = res$results[[data_type]],
-      formats = res$formats[[data_type]]
+      engine = res$engine[[dataType]],
+      analyses = res$analyses[[dataType]],
+      results = res$results[[dataType]],
+      formats = res$formats[[dataType]]
     )
     if (isTRUE(showProcessingMethods)) {
-      processing_methods <- .list_processing_steps_metadata(data_type = data_type)
+      processing_methods <- .list_processing_steps_metadata(dataType = dataType)
       res[["processing_methods"]] <- processing_methods
     }
   }

@@ -1,7 +1,7 @@
 ## MARK: DB_MassSpecEngine
 #' @title DB_Engine dedicated to Mass Spectrometry (MS) data
 #' @description R6 child of DB_Engine for MassSpec data that uses DB_MassSpecAnalyses for on-disk storage.
-#' @template arg-core-project-path
+#' @template arg-core-projectPath
 #' @template arg-core-metadata
 #' @template arg-core-workflow
 #' @template arg-ms-files
@@ -19,7 +19,7 @@ DB_MassSpecEngine <- R6::R6Class(
   inherit = DB_Engine,
 
   private = list(
-    .data_type = "DB_MassSpec",
+    .dataType = "DB_MassSpec",
     .Analyses = NULL,
     .NonTargetAnalysis = NULL
   ),
@@ -30,7 +30,7 @@ DB_MassSpecEngine <- R6::R6Class(
       if (missing(value)) {
         if (is.null(private$.Analyses)) {
           private$.Analyses <- DB_MassSpecAnalyses(
-            db = file.path(private$.project_path, "DB_MassSpecAnalyses.duckdb")
+            db = file.path(private$.projectPath, "DB_MassSpecAnalyses.duckdb")
           )
         }
         return(private$.Analyses)
@@ -50,7 +50,7 @@ DB_MassSpecEngine <- R6::R6Class(
     NonTargetAnalysis = function(value) {
       if (missing(value)) {
         if (is.null(private$.NonTargetAnalysis)) {
-          nts_db_path <- file.path(private$.project_path, "DB_MassSpecResults_NonTargetAnalysis.duckdb")
+          nts_db_path <- file.path(private$.projectPath, "DB_MassSpecResults_NonTargetAnalysis.duckdb")
           if (!file.exists(nts_db_path)) {
             private$.NonTargetAnalysis <- DB_MassSpecResults_NonTargetAnalysis(
               db = nts_db_path,
@@ -76,22 +76,20 @@ DB_MassSpecEngine <- R6::R6Class(
 
   public = list(
     #' @description Initialize DB_MassSpecEngine
-    initialize = function(project_path = "data",
+    initialize = function(projectPath = "data",
                           metadata = NULL,
                           workflow = NULL,
                           files = NULL,
                           centroid = FALSE,
-                          levels = c(1, 2),
-                          configuration = NULL) {
+                          levels = c(1, 2)) {
       super$initialize(
-        project_path = project_path,
+        projectPath = projectPath,
         metadata = metadata,
         workflow = workflow,
-        configuration = configuration,
-        data_type = "DB_MassSpec"
+        dataType = "DB_MassSpec"
       )
       private$.Analyses <- DB_MassSpecAnalyses(
-        db = file.path(private$.project_path, "DB_MassSpecAnalyses.duckdb"),
+        db = file.path(private$.projectPath, "DB_MassSpecAnalyses.duckdb"),
         files = files,
         centroid = centroid,
         levels = levels

@@ -1,0 +1,1 @@
+#' @param projectPath Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing projectPath, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the projectPath does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.

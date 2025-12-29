@@ -39,10 +39,10 @@ R6 child of DB_Engine for MassSpec data that uses DB_MassSpecAnalyses for on-dis
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="get_db_table_info"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-get_db_table_info'><code>StreamFind::DB_Engine$get_db_table_info()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="get_engine_info"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-get_engine_info'><code>StreamFind::DB_Engine$get_engine_info()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="get_metadata"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-get_metadata'><code>StreamFind::DB_Engine$get_metadata()</code></a></span></li>
+<li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="get_project_path"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-get_project_path'><code>StreamFind::DB_Engine$get_project_path()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="get_workflow"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-get_workflow'><code>StreamFind::DB_Engine$get_workflow()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="list_db_tables"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-list_db_tables'><code>StreamFind::DB_Engine$list_db_tables()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="print"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-print'><code>StreamFind::DB_Engine$print()</code></a></span></li>
-<li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="project_path"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-project_path'><code>StreamFind::DB_Engine$project_path()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="query_db"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-query_db'><code>StreamFind::DB_Engine$query_db()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="run"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-run'><code>StreamFind::DB_Engine$run()</code></a></span></li>
 <li><span class="pkg-link" data-pkg="StreamFind" data-topic="DB_Engine" data-id="run_app"><a href='../../StreamFind/html/DB_Engine.html#method-DB_Engine-run_app'><code>StreamFind::DB_Engine$run_app()</code></a></span></li>
@@ -57,20 +57,19 @@ R6 child of DB_Engine for MassSpec data that uses DB_MassSpecAnalyses for on-dis
 Initialize DB_MassSpecEngine
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{DB_MassSpecEngine$new(
-  project_path = "data",
+  projectPath = "data",
   metadata = NULL,
   workflow = NULL,
   files = NULL,
   centroid = FALSE,
-  levels = c(1, 2),
-  configuration = NULL
+  levels = c(1, 2)
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{project_path}}{Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing project_path, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the project_path does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.}
+\item{\code{projectPath}}{Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing projectPath, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the projectPath does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.}
 
 \item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
 There is no type restrictions except for name (must be type character), author (must be type
@@ -90,8 +89,6 @@ replicate group name (character). Note the file paths must have the extension
 \item{\code{centroid}}{Logical (length 1). Set to \code{TRUE} to centroid data when converting from vendor formats to mzML.}
 
 \item{\code{levels}}{Integer vector with the levels of MS data.}
-
-\item{\code{configuration}}{A list of configuration parameters to persist or use for the engine/database.}
 }
 \if{html}{\out{</div>}}
 }

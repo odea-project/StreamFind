@@ -5,14 +5,14 @@
 \alias{validate_object.DB_Analyses}
 \title{Base class for database-backed Analyses}
 \usage{
-DB_Analyses(db, data_type)
+DB_Analyses(db, dataType)
 
 \method{validate_object}{DB_Analyses}(x)
 }
 \arguments{
 \item{db}{Path to DuckDB file.}
 
-\item{data_type}{Data type string (e.g., "MassSpec").}
+\item{dataType}{Data type string (e.g., "MassSpec").}
 
 \item{x}{DB_Analyses object.}
 }

@@ -88,7 +88,7 @@
       engine_type <- reactive_engine_type()
       engine_call <- get(engine_type, envir = envSF)
       engine_call_new <- engine_call[["new"]]
-      engine <<- suppressMessages(do.call(engine_call_new, list(project_path = reactive_project_path())))
+      engine <<- suppressMessages(do.call(engine_call_new, list(projectPath = reactive_project_path())))
       reactive_metadata(engine$Metadata)
       reactive_analyses(engine$Analyses)
       reactive_workflow(engine$Workflow)

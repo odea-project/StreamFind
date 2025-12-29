@@ -440,7 +440,7 @@ NonTargetAnalysisResults <- S7::new_class(
   ) {
     S7::new_object(
       StreamFind::Results(),
-      data_type = "MassSpec",
+      dataType = "MassSpec",
       name = "NonTargetAnalysisResults",
       software = "StreamFind",
       version = as.character(packageVersion("StreamFind")),
@@ -453,7 +453,7 @@ NonTargetAnalysisResults <- S7::new_class(
   # MARK: validator
   ## validator -----
   validator = function(self) {
-    checkmate::assert_choice(self@data_type, "MassSpec")
+    checkmate::assert_choice(self@dataType, "MassSpec")
     checkmate::assert_true(self@name == "NonTargetAnalysisResults")
     checkmate::assert_true(self@software == "StreamFind")
     checkmate::assert_character(self@version, len = 1)

@@ -66,7 +66,7 @@ DB_MassSpecResults_NonTargetAnalysis <- function(
   x <- structure(
     list(
       db = db,
-      data_type = "DB_MassSpec"
+      dataType = "DB_MassSpec"
     ),
     class = c("DB_MassSpecResults_NonTargetAnalysis", "DB_Results")
   )
@@ -84,7 +84,7 @@ DB_MassSpecResults_NonTargetAnalysis <- function(
 #'
 validate_object.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
   checkmate::assert_class(x, "DB_MassSpecResults_NonTargetAnalysis")
-  checkmate::assert_true(identical(x$data_type, "DB_MassSpec"))
+  checkmate::assert_true(identical(x$dataType, "DB_MassSpec"))
   if (!file.exists(x$db)) stop("DB_MassSpecResults_NonTargetAnalysis file not found: ", x$db)
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)

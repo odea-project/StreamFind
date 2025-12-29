@@ -4,12 +4,12 @@
 \alias{DataTypeObjects}
 \title{DataTypeObjects Class}
 \usage{
-DataTypeObjects(data_type = NULL, showProcessingMethods = FALSE)
+DataTypeObjects(dataType = NULL, showProcessingMethods = FALSE)
 }
 \arguments{
-\item{data_type}{Optional; specific data type to retrieve information for. If NULL, returns all data types.}
+\item{dataType}{Optional; specific data type to retrieve information for. If NULL, returns all data types.}
 
-\item{showProcessingMethods}{Logical; if TRUE and data_type is provided, includes available processing methods for that data type.}
+\item{showProcessingMethods}{Logical; if TRUE and dataType is provided, includes available processing methods for that data type.}
 }
 \value{
 An object of class DataTypeObjects containing data types, engines, analyses, results, and formats.

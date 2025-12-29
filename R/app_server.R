@@ -54,7 +54,7 @@ app_server <- function(input, output, session) {
       reactive_engine_type(init_engine_type)
       if (grepl("Engine$", init_engine_type)) {
         if (grepl("DB_", init_engine_type)) {
-          init_engine_project_path <- golem::get_golem_options("project_path")
+          init_engine_project_path <- golem::get_golem_options("projectPath")
           if (!is.null(init_engine_project_path)) {
             reactive_project_path(init_engine_project_path)
           }

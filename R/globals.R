@@ -8,7 +8,7 @@ utils::globalVariables(c(
   "basePeakMZ", "blank", "blanks", "body_ui", "br", "capture.output",
   "clear_workflow", "clear_workflow_ui", "clusterMzWindow", "component_feature",
   "compounds", "concentration", "config_ui", "config_ui_cell_edit", "contact",
-  "correction", "data", "data_type", "datapath", "dd", "details", "developer",
+  "correction", "data", "dataType", "datapath", "dd", "details", "developer",
   "discard_changes", "discard_changes_ui", "div", "dl", "doi", "drift",
   "driftmax", "driftmin", "dt", "eic", "engine", "engine_save_file_ui",
   "explorer_ui", "feature", "file_io", "files", "filled", "filter", "filtered",

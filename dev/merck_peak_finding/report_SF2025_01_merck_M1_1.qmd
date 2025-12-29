@@ -199,7 +199,7 @@ run_peak_finding_debug_targets <- function(example_name) {
     clear_cache("all")
     prj <- file.path("dev", "merck_peak_finding", "data")
     ms <- DB_MassSpecEngine$new(
-      project_path = prj,
+       = prj,
       files = files
     )
     ms$clear_cache()
@@ -692,7 +692,7 @@ if (!is.null(intensity_summary) && nrow(intensity_summary) > 0) {
 #| label: create-demo-engine
 
 demo <- DB_MassSpecEngine$new(
-  project_path = file.path("data"),
+   = file.path("data"),
   files = files_merck_ex$file_path[c(1, 2)]
 )
 

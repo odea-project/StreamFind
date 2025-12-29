@@ -9,7 +9,7 @@ file.remove("engine.duckdb")
 engine_db <- EngineDataBase$new(
   db = "engine.duckdb",
   id = "my_engine",
-  data_type = "MassSpec"
+  dataType = "MassSpec"
 )
 
 # Now try setting metadata

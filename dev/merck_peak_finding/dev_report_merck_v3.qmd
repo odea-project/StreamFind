@@ -76,9 +76,11 @@ examples <- unique(files_merck_ex$example)
 #| include: false
 
 example_name <- examples[1]
+
 db_merck_ex1 <- db_merck_ex[db_merck_ex$example %in% example_name, ]
 files <- files_merck_ex$file_path[files_merck_ex$example %in% example_name & !files_merck_ex$blank]
-ps_ff <- MassSpecMethod_FindFeatures_native(
+
+ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = 300, rtmax = 3400),
   resolution_profile = c(25000L, 55000L, 80000L),
   noiseThreshold = 15,
@@ -87,11 +89,14 @@ ps_ff <- MassSpecMethod_FindFeatures_native(
   baselineWindow = 200,
   maxWidth = 250, #100
   base_quantile = 0.99,
-  debug_mz = db_merck_ex1$mz[4]
+  debug_mz = db_merck_ex1$mz[7]
 )
-clear_cache("all")
-ms <- MassSpecEngine$new(analyses = files)
+
+project_path <- file.path(getwd(), "dev", "merck_peak_finding", "data")
+ms <- DB_MassSpecEngine$new(project_path, files = files)
+
 ms$Workflow = list(ps_ff)
+
 ms$run_workflow()
 ```
 

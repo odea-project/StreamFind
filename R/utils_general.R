@@ -75,10 +75,10 @@
 
 # MARK: .get_available_processing_methods
 #' @noRd
-.get_available_processing_methods <- function(data_type = NA_character_) {
+.get_available_processing_methods <- function(dataType = NA_character_) {
   StreamFind_env <- asNamespace("StreamFind")
-  if (grepl("Engine$", data_type)) data_type <- gsub("Engine", "", data_type)
-  data_type_methods_key <- paste0(data_type, "Method_")
+  if (grepl("Engine$", dataType)) dataType <- gsub("Engine", "", dataType)
+  data_type_methods_key <- paste0(dataType, "Method_")
   ns_methods <- ls(envir = StreamFind_env, pattern = paste0("^", data_type_methods_key))
   global_methods <- ls(envir = .GlobalEnv, pattern = paste0("^", data_type_methods_key))
   unique(c(ns_methods, global_methods))
@@ -86,18 +86,18 @@
 
 # MARK: .get_available_methods
 #' @noRd
-.get_available_methods <- function(data_type = NA_character_) {
-  if (grepl("Engine$", data_type)) data_type <- gsub("Engine", "", data_type)
-  processing_methods <- .get_available_processing_methods(data_type)
-  processing_methods <- gsub(paste0(data_type, "Method_"), "", processing_methods)
+.get_available_methods <- function(dataType = NA_character_) {
+  if (grepl("Engine$", dataType)) dataType <- gsub("Engine", "", dataType)
+  processing_methods <- .get_available_processing_methods(dataType)
+  processing_methods <- gsub(paste0(dataType, "Method_"), "", processing_methods)
   processing_methods <- gsub("_.*", "", processing_methods)
   return(unique(processing_methods))
 }
 
 # MARK: list_processing_steps_metadata
 #' @noRd
-.list_processing_steps_metadata <- function(data_type = NULL) {
-  ps_steps <- .get_available_processing_methods(data_type)
+.list_processing_steps_metadata <- function(dataType = NULL) {
+  ps_steps <- .get_available_processing_methods(dataType)
   ps_steps <- lapply(ps_steps, function(x) do.call(x, list()))
   ps_steps_dt <- data.table::rbindlist(
     lapply(ps_steps, function(x) {

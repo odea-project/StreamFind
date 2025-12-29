@@ -19,7 +19,7 @@ StatisticMethod_PrepareData_autoscale <- S7::new_class("StatisticMethod_PrepareD
     
     S7::new_object(
       ProcessingStep(
-        data_type = "Statistic",
+        dataType = "Statistic",
         method = "PrepareData",
         algorithm = "autoscale",
         parameters = list(
@@ -38,7 +38,7 @@ StatisticMethod_PrepareData_autoscale <- S7::new_class("StatisticMethod_PrepareD
   },
   
   validator = function(self) {
-    checkmate::assert_choice(self@data_type, "Statistic")
+    checkmate::assert_choice(self@dataType, "Statistic")
     checkmate::assert_choice(self@method, "PrepareData")
     checkmate::assert_choice(self@algorithm, "autoscale")
     checkmate::assert_logical(self@parameters$center, max.len = 1)
