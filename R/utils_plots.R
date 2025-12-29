@@ -5,6 +5,11 @@
 #' @param xvar Name of column for x axis.
 #' @param yvar Name of column for y axis.
 #' @param groupBy Name of column for color grouping (optional, default: NULL).
+#' @param basicGroupBy Name of column(s) to define individual traces (optional).
+#'   Traces will be created for each unique value of `basicGroupBy`, while
+#'   `groupBy` controls color mapping. Example: `basicGroupBy = "analysis"`,
+#'   `groupBy = "replicate"` will draw one trace per `analysis` and color
+#'   traces according to their `replicate` value.
 #' @param interactive Logical, use plotly if TRUE, ggplot2 if FALSE.
 #' @param title Plot title.
 #' @param xLab X axis label.
@@ -18,6 +23,7 @@
   xvar,
   yvar,
   groupBy = NULL,
+  basicGroupBy = NULL,
   interactive = TRUE,
   title = NULL,
   xLab = NULL,
@@ -58,8 +64,30 @@
     colors <- .get_colors("all")
   }
 
-  # Hover text: all columns except xvar, yvar, group
-  hover_cols <- setdiff(colnames(data), c(xvar, yvar, "color_group"))
+  # Trace grouping (basicGroupBy): determines the individual traces
+  if (!is.null(basicGroupBy)) {
+    # Handle multiple basicGroupBy columns
+    if (length(basicGroupBy) > 1) {
+      missing_cols <- setdiff(basicGroupBy, colnames(data))
+      if (length(missing_cols) > 0) {
+        stop("basicGroupBy columns not found in data: ", paste(missing_cols, collapse = ", "))
+      } else {
+        basic_values <- lapply(basicGroupBy, function(col) as.character(data[[col]]))
+        data$basic_group <- do.call(paste, c(basic_values, sep = "-"))
+      }
+    } else if (basicGroupBy %in% colnames(data)) {
+      data$basic_group <- as.character(data[[basicGroupBy]])
+    } else {
+      warning("basicGroupBy column '", basicGroupBy, "' not found in data; using color grouping as basic group")
+      data$basic_group <- data$color_group
+    }
+  } else {
+    # Fallback: each color_group acts as a trace if basicGroupBy not provided
+    data$basic_group <- data$color_group
+  }
+
+  # Hover text: all columns except xvar, yvar, and internal grouping cols
+  hover_cols <- setdiff(colnames(data), c(xvar, yvar, "color_group", "basic_group"))
   # Use ..hover_cols for data.table compatibility
   if (inherits(data, "data.table")) {
     hover_data <- data[, ..hover_cols]
@@ -72,7 +100,9 @@
 
   if (!interactive) {
     library(ggplot2)
-    p <- ggplot(data, aes_string(x = xvar, y = yvar, color = "color_group", group = "color_group")) +
+    # For static ggplot: color is controlled by `groupBy` (color_group) but
+    # each trace should be formed by `basic_group` so use that for grouping.
+    p <- ggplot(data, aes_string(x = xvar, y = yvar, color = "color_group", group = "basic_group")) +
       geom_line() +
       scale_color_manual(values = colors) +
       theme_classic() +
@@ -81,25 +111,40 @@
   } else {
     library(plotly)
     p <- plot_ly()
-    group_vals <- unique(data$color_group)
-    for (i in seq_along(group_vals)) {
-      group_data <- data[data$color_group == group_vals[i], ]
-      # Build hover text per point, appending x and y values from the actual plot data
-      group_hover_text <- paste0(
-        hover_text[data$color_group == group_vals[i]],
-        "<br>x: ", group_data[[xvar]],
-        "<br>y: ", group_data[[yvar]]
+    # For interactive plotly: iterate over basic groups (individual traces),
+    # but choose color based on the `color_group` value for that trace.
+    basic_vals <- unique(data$basic_group)
+    # Ensure mapping from color_group value to color index
+    color_groups <- unique(data$color_group)
+    seen_color_groups <- character(0)
+    for (i in seq_along(basic_vals)) {
+      trace_data <- data[data$basic_group == basic_vals[i], ]
+      # Build hover text for this trace
+      trace_hover_text <- paste0(
+        hover_text[data$basic_group == basic_vals[i]],
+        "<br>x: ", trace_data[[xvar]],
+        "<br>y: ", trace_data[[yvar]]
       )
+      # Determine color: use the most common color_group within this basic group
+      cg_vals <- as.character(trace_data$color_group)
+      cg_mode <- cg_vals[which.max(tabulate(match(cg_vals, unique(cg_vals))))]
+      color_idx <- match(cg_mode, color_groups)
+      if (is.na(color_idx) || color_idx > length(colors)) color_val <- colors[1] else color_val <- colors[color_idx]
+      # Determine whether to show legend for this trace: only the first trace of each color_group
+      showlegend_flag <- !(cg_mode %in% seen_color_groups)
+      if (showlegend_flag) seen_color_groups <- c(seen_color_groups, cg_mode)
       p <- add_trace(
         p,
-        x = group_data[[xvar]],
-        y = group_data[[yvar]],
+        x = trace_data[[xvar]],
+        y = trace_data[[yvar]],
         type = "scatter",
         mode = "lines+markers",
-        name = as.character(group_vals[i]),
-        line = list(color = colors[i], width = 0.5),
-        marker = list(size = 2, color = colors[i]),
-        text = group_hover_text,
+        name = as.character(cg_mode),
+        legendgroup = as.character(cg_mode),
+        showlegend = showlegend_flag,
+        line = list(color = color_val, width = 0.5),
+        marker = list(size = 2, color = color_val),
+        text = trace_hover_text,
         hoverinfo = "text"
       )
     }

@@ -1,8 +1,12 @@
 
 library(data.table)
 all_files_dir <- "C:\\Users\\apoli\\Documents\\example_files\\peak_finding_files_ex"
-#all_files_dir <- "D:\\peak_finding_files_ex"
-
+if (!dir.exists(all_files_dir)) {
+  all_files_dir <- "D:\\peak_finding_files_ex"
+}
+if (!dir.exists(all_files_dir)) {
+  stop("Directory with example files not found.")
+}
 all_files <- list.files(all_files_dir, full.names = TRUE, recursive = TRUE)
 
 files_merck <- all_files[grepl("merck/Beispieldaten Routine", all_files) & grepl("\\.mzML$", all_files)]

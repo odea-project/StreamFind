@@ -10,6 +10,12 @@
         .content {
           padding: 5px !important;
         }
+        .nav-tabs-custom {
+          margin-bottom: 0 !important;
+        }
+        .nav-tabs-custom>.tab-content {
+          padding: 5px !important;
+        }
       "))
     ),
     shinydashboard::tabItems(
@@ -45,16 +51,6 @@
           shiny::uiOutput(ns("audit_ui"))
         )
       )
-      # shinydashboard::tabItem(
-      #   tabName = ns("audit"),
-      #   shiny::fluidRow(
-      #     shinydashboard::box(
-      #       width = 12,
-      #       solidHeader = TRUE,
-      #       DT::dataTableOutput(ns("audit_ui"), height = "calc(100vh - 50px - 30px - 50px)")
-      #     )
-      #   )
-      # )
     )
   )
 }
@@ -399,44 +395,44 @@
 
     # MARK: Explorer
     # Explorer -----
-    # output$explorer_ui <- shiny::renderUI({
-    #   if (is.null(analyses_class_dummy)) {
-    #     shiny::showNotification(
-    #       "No analyses class defined!",
-    #       duration = 5,
-    #       type = "warning"
-    #     )
-    #     return(htmltools::div(" "))
-    #   }
-    #   tryCatch(
-    #     {
-    #       .mod_WorkflowAssembler_Explorer_Server(
-    #         analyses_class_dummy,
-    #         "summary",
-    #         ns,
-    #         reactive_analyses,
-    #         reactive_volumes,
-    #         reactive_config
-    #       )
-    #       .mod_WorkflowAssembler_Explorer_UI(
-    #         analyses_class_dummy,
-    #         "summary",
-    #         ns
-    #       )
-    #     },
-    #     error = function(e) {
-    #       msg <- paste(
-    #         "Explorer not rendering for class ",
-    #         class(analyses_class_dummy)[1],
-    #         ":",
-    #         conditionMessage(e),
-    #         collapse = ""
-    #       )
-    #       shiny::showNotification(msg, duration = 10, type = "error")
-    #       shiny::div(style = "color: red;", msg)
-    #     }
-    #   )
-    # })
+    output$explorer_ui <- shiny::renderUI({
+      analyses <- reactive_analyses()
+      if (is.null(analyses)) {
+        shiny::showNotification(
+          "No analyses class defined!",
+          duration = 5,
+          type = "warning"
+        )
+        return(htmltools::div(" "))
+      }
+      tryCatch(
+        {
+          .mod_WADB_Explorer_Server(
+            analyses,
+            "summary",
+            ns,
+            reactive_analyses,
+            reactive_volumes
+          )
+          .mod_WADB_Explorer_UI(
+            analyses,
+            "summary",
+            ns
+          )
+        },
+        error = function(e) {
+          msg <- paste(
+            "Explorer not rendering for class ",
+            class(analyses)[1],
+            ":",
+            conditionMessage(e),
+            collapse = ""
+          )
+          shiny::showNotification(msg, duration = 10, type = "error")
+          shiny::div(style = "color: red;", msg)
+        }
+      )
+    })
 
     # MARK: Workflow
     # Workflow -----

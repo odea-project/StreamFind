@@ -1344,3 +1344,15 @@ validate_object <- function(x, ...) {
 .mod_WADB_Analyses_Server <- function(x, ...) {
   UseMethod(".mod_WADB_Analyses_Server")
 }
+
+#' @export
+#' @noRd
+.mod_WADB_Explorer_UI <- function(x, ...) {
+  UseMethod(".mod_WADB_Explorer_UI")
+}
+
+#' @export
+#' @noRd
+.mod_WADB_Explorer_Server <- function(x, ...) {
+  UseMethod(".mod_WADB_Explorer_Server")
+}
