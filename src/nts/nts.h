@@ -463,7 +463,7 @@ namespace nts
     void find_features(
         const std::vector<float> &rtWindowsMin,
         const std::vector<float> &rtWindowsMax,
-        const std::vector<int> &resolution_profile,
+        const float &ppmThreshold,
         const float &noiseThreshold,
         const float &minSNR,
         const int &minTraces,

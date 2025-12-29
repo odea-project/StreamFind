@@ -505,21 +505,36 @@ std::vector<int> nts::utils::cluster_by_threshold_float(const std::vector<float>
 
 // MARK: SPECTRAL FUNCTIONS
 
-std::vector<int> nts::utils::cluster_by_mz(const std::vector<float> &mz_values,
-                                           const std::vector<int> &resolution_profile)
+// std::vector<int> nts::utils::cluster_by_mz(const std::vector<float> &mz_values,
+//                                            const std::vector<int> &resolution_profile)
+// {
+//   const size_t n = mz_values.size();
+//   if (n == 0)
+//     return std::vector<int>();
+
+//   // Calculate linear model parameters from resolution profile
+//   const auto [slope, intercept] = calculate_linear_model_params(resolution_profile);
+
+//   // Pre-calculate all thresholds using linear model
+//   std::vector<float> thresholds(n);
+//   for (size_t i = 0; i < n; ++i)
+//   {
+//     thresholds[i] = calculate_mz_threshold_linear(mz_values[i], slope, intercept);
+//   }
+//   return cluster_by_threshold_float(mz_values, thresholds);
+// }
+
+std::vector<int> nts::utils::cluster_by_mz(const std::vector<float> &mz_values, const float &ppmThreshold)
 {
   const size_t n = mz_values.size();
   if (n == 0)
     return std::vector<int>();
 
-  // Calculate linear model parameters from resolution profile
-  const auto [slope, intercept] = calculate_linear_model_params(resolution_profile);
-
   // Pre-calculate all thresholds using linear model
   std::vector<float> thresholds(n);
   for (size_t i = 0; i < n; ++i)
   {
-    thresholds[i] = calculate_mz_threshold_linear(mz_values[i], slope, intercept);
+    thresholds[i] = (mz_values[i] * ppmThreshold) / 1e6f;
   }
   return cluster_by_threshold_float(mz_values, thresholds);
 }
@@ -575,7 +590,7 @@ void nts::utils::cluster_spectra_by_mz(const std::vector<float> &spec_rt,
                                        const std::vector<float> &spec_mz,
                                        const std::vector<float> &spec_intensity,
                                        const std::vector<float> &spec_noise,
-                                       const std::vector<int> &resolution_profile,
+                                       const float &ppmThreshold,
                                        int minTraces, float minSNR,
                                        std::vector<float> &final_rt,
                                        std::vector<float> &final_mz,
@@ -594,7 +609,7 @@ void nts::utils::cluster_spectra_by_mz(const std::vector<float> &spec_rt,
   {
     sorted_mz[i] = spec_mz[mz_indices[i]];
   }
-  auto sorted_clusters = cluster_by_mz(sorted_mz, resolution_profile);
+  auto sorted_clusters = cluster_by_mz(sorted_mz, ppmThreshold);
   std::vector<int> clusters(n);
   for (size_t i = 0; i < n; ++i)
   {
@@ -697,7 +712,7 @@ std::vector<float> nts::utils::calculate_noise_levels(const std::vector<float> &
 void nts::utils::filter_and_cluster(const std::vector<float> &raw_mz,
                                     const std::vector<float> &raw_intensity,
                                     const std::vector<float> &raw_noise,
-                                    const std::vector<int> &resolution_profile,
+                                    const float &ppmThreshold,
                                     std::vector<float> &final_mz,
                                     std::vector<float> &final_intensity,
                                     std::vector<float> &final_noise)
@@ -721,7 +736,7 @@ void nts::utils::filter_and_cluster(const std::vector<float> &raw_mz,
 
   auto sort_indices = get_sort_indices_float(filtered_mz);
   reorder_multiple_vectors(sort_indices, filtered_mz, filtered_intensity, filtered_noise);
-  auto clusters = cluster_by_mz(filtered_mz, resolution_profile);
+  auto clusters = cluster_by_mz(filtered_mz, ppmThreshold);
 
   // Aggregate by cluster (keep max intensity per cluster)
   std::unordered_map<int, std::tuple<float, float, float>> cluster_data;
@@ -756,13 +771,21 @@ void nts::utils::filter_and_cluster(const std::vector<float> &raw_mz,
   }
 }
 
-void nts::utils::denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, const float &rt,
-                                 const float &noiseThreshold, const int &minTraces,
-                                 const std::vector<int> &resolution_profile,
-                                 std::vector<float> &spec_rt, std::vector<float> &spec_mz,
-                                 std::vector<float> &spec_intensity, std::vector<float> &spec_noise,
-                                 size_t &total_raw_points, size_t &total_clean_points, const bool &debug,
-                                 const float &base_quantile)
+void nts::utils::denoise_spectra(
+  sc::MS_FILE &ana,
+  const int &spectrum_idx,
+  const float &rt,
+  const float &noiseThreshold,
+  const int &minTraces,
+  const float &ppmThreshold,
+  std::vector<float> &spec_rt,
+  std::vector<float> &spec_mz,
+  std::vector<float> &spec_intensity,
+  std::vector<float> &spec_noise,
+  size_t &total_raw_points,
+  size_t &total_clean_points,
+  const bool &debug,
+  const float &base_quantile)
 {
   std::vector<std::vector<std::vector<float>>> single_spectrum = ana.get_spectra({spectrum_idx});
   std::vector<float> &raw_mz = single_spectrum[0][0];
@@ -808,9 +831,7 @@ void nts::utils::denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, cons
   }
 
   std::vector<float> final_mz, final_intensity, final_noise;
-  filter_and_cluster(raw_mz, raw_intensity, raw_noise,
-                     resolution_profile,
-                     final_mz, final_intensity, final_noise);
+  filter_and_cluster(raw_mz, raw_intensity, raw_noise, ppmThreshold, final_mz, final_intensity, final_noise);
 
   total_clean_points += final_mz.size();
 

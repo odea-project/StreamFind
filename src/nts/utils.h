@@ -152,8 +152,7 @@ namespace nts::utils
   // MARK: SPECIALIZED SPECTRAL FUNCTIONS
 
   // Fast m/z-based clustering using optimized algorithms
-  std::vector<int> cluster_by_mz(const std::vector<float> &mz_values,
-                                 const std::vector<int> &resolution_profile);
+  std::vector<int> cluster_by_mz(const std::vector<float> &mz_values, const float &ppmThreshold);
 
   // Cluster validation and filtering for spectral data
   std::vector<size_t> filter_valid_clusters(const std::vector<SpectraPoint> &data,
@@ -170,7 +169,7 @@ namespace nts::utils
                              const std::vector<float> &spec_mz,
                              const std::vector<float> &spec_intensity,
                              const std::vector<float> &spec_noise,
-                             const std::vector<int> &resolution_profile,
+                             const float &ppmThreshold,
                              int minTraces, float minSNR,
                              std::vector<float> &final_rt,
                              std::vector<float> &final_mz,
@@ -190,19 +189,27 @@ namespace nts::utils
   void filter_and_cluster(const std::vector<float> &raw_mz,
                           const std::vector<float> &raw_intensity,
                           const std::vector<float> &raw_noise,
-                          const std::vector<int> &resolution_profile,
+                          const float &ppmThreshold,
                           std::vector<float> &final_mz,
                           std::vector<float> &final_intensity,
                           std::vector<float> &final_noise);
 
   // Optimized spectral denoising function
-  void denoise_spectra(sc::MS_FILE &ana, const int &spectrum_idx, const float &rt,
-                       const float &noiseThreshold, const int &minTraces,
-                       const std::vector<int> &resolution_profile,
-                       std::vector<float> &spec_rt, std::vector<float> &spec_mz,
-                       std::vector<float> &spec_intensity, std::vector<float> &spec_noise,
-                       size_t &total_raw_points, size_t &total_clean_points, const bool &debug,
-                       const float &base_quantile = 0.10f);
+  void denoise_spectra(
+    sc::MS_FILE &ana,
+    const int &spectrum_idx,
+    const float &rt,
+    const float &noiseThreshold,
+    const int &minTraces,
+    const float &ppmThreshold,
+    std::vector<float> &spec_rt,
+    std::vector<float> &spec_mz,
+    std::vector<float> &spec_intensity,
+    std::vector<float> &spec_noise,
+    size_t &total_raw_points,
+    size_t &total_clean_points,
+    const bool &debug,
+    const float &base_quantile = 0.10f);
 
   // MARK: PEAK DETECTION AND ANALYSIS FUNCTIONS
 

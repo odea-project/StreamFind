@@ -220,6 +220,7 @@ DB_Engine <- R6::R6Class(
       rollback_needed <- TRUE
       on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
       wf_obj <- Workflow(workflow)
+      if (length(wf_obj) == 0) attr(wf_obj, "type") <- private$.dataType
       wf_dataType <- attr(wf_obj, "type")
       if (is.null(wf_dataType) || wf_dataType != private$.dataType) {
         warning("Workflow data type (", wf_dataType, ") does not match engine data type (", private$.dataType, ")! Not added.")
@@ -305,7 +306,8 @@ DB_Engine <- R6::R6Class(
           file.remove(results_files)
           message("Done.")
         }
-        self$Workflow <- Workflow()
+        wf <- Workflow()
+        self$Workflow <- wf
         lapply(steps, function(x) self$run(x))
       } else {
         warning("There are no processing steps to run!")

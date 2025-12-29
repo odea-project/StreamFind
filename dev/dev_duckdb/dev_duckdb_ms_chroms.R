@@ -6,7 +6,7 @@ sf_root <- file.path("dev", "dev_duckdb", "data")
 #file.remove(list.files(sf_root, full.names = TRUE))
 ms_files <- StreamFindData::get_ms_file_paths()[c(1:3, 29:30)]
 ms <- DB_MassSpecEngine$new(
-   = sf_root,
+  projectPath = sf_root,
   files = ms_files,
 )
 ms$Metadata[["project"]] <- "chromatograms-demo"

@@ -6,7 +6,7 @@
 void nts::NTS_DATA::find_features(
     const std::vector<float> &rtWindowsMin,
     const std::vector<float> &rtWindowsMax,
-    const std::vector<int> &resolution_profile,
+    const float &ppmThreshold,
     const float &noiseThreshold,
     const float &minSNR,
     const int &minTraces,
@@ -16,28 +16,10 @@ void nts::NTS_DATA::find_features(
     const float &debug_mz)
 {
 
-  if (resolution_profile.size() != 3)
-  {
-    Rcpp::Rcout << "Error: resolution_profile must have exactly 3 elements!" << std::endl;
-    return;
-  }
   if (rtWindowsMin.size() != rtWindowsMax.size())
   {
     Rcpp::Rcout << "Error: rtWindowsMin and rtWindowsMax must have the same length!" << std::endl;
     return;
-  }
-
-  // Calculate linear model parameters from resolution profile
-  const auto [slope, intercept] = utils::calculate_linear_model_params(resolution_profile);
-
-  Rcpp::Rcout << std::endl;
-  Rcpp::Rcout << "Linear resolution model threshold = " << slope << " * m/z + " << intercept << std::endl;
-  Rcpp::Rcout << "Reference thresholds (Da): " << std::endl;
-  for (float test_mz : {100.0f, 200.0f, 400.0f, 600.0f, 1000.0f})
-  {
-    float mzThreshold = nts::utils::calculate_mz_threshold_linear(test_mz, slope, intercept);
-    Rcpp::Rcout << "  m/z " << std::fixed << std::setprecision(1) << test_mz 
-                << " -> threshold " << std::fixed << std::setprecision(6) << mzThreshold << " Da" << std::endl;
   }
 
   for (size_t a = 0; a < analyses.size(); ++a)
@@ -100,7 +82,7 @@ void nts::NTS_DATA::find_features(
           rt,
           noiseThreshold,
           minTraces,
-          resolution_profile,
+          ppmThreshold,
           spec_pos_rt,
           spec_pos_mz,
           spec_pos_intensity,
@@ -118,7 +100,7 @@ void nts::NTS_DATA::find_features(
           rt,
           noiseThreshold,
           minTraces,
-          resolution_profile,
+          ppmThreshold,
           spec_neg_rt,
           spec_neg_mz,
           spec_neg_intensity,
@@ -153,7 +135,7 @@ void nts::NTS_DATA::find_features(
 
       utils::cluster_spectra_by_mz(
         spec_pos_rt, spec_pos_mz, spec_pos_intensity, spec_pos_noise,
-        resolution_profile, minTraces, minSNR,
+        ppmThreshold, minTraces, minSNR,
         pos_clust_rt, pos_clust_mz, pos_clust_intensity,
         pos_clust_noise, pos_clust_cluster, pos_number_clusters
       );
@@ -178,7 +160,7 @@ void nts::NTS_DATA::find_features(
 
       utils::cluster_spectra_by_mz(
         spec_neg_rt, spec_neg_mz, spec_neg_intensity, spec_neg_noise,
-        resolution_profile, minTraces, minSNR,
+        ppmThreshold, minTraces, minSNR,
         neg_clust_rt, neg_clust_mz, neg_clust_intensity,
         neg_clust_noise, neg_clust_cluster, neg_number_clusters
       );

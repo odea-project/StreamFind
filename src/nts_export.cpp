@@ -1,5 +1,4 @@
 #include <vector>
-#include <string>
 #include <Rcpp.h>
 #include "nts/nts.h"
 
@@ -9,7 +8,7 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
                                    Rcpp::List spectra_headers,
                                    std::vector<float> rtWindowsMin,
                                    std::vector<float> rtWindowsMax,
-                                   std::vector<int> resolution_profile,
+                                   float ppmThreshold = 15.0,
                                    float noiseThreshold = 15.0,
                                    float minSNR = 3.0,
                                    int minTraces = 3,
@@ -22,7 +21,7 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
   nts_data.find_features(
     rtWindowsMin,
     rtWindowsMax,
-    resolution_profile,
+    ppmThreshold,
     noiseThreshold,
     minSNR,
     minTraces,

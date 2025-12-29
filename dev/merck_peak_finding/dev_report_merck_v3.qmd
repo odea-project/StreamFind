@@ -82,17 +82,19 @@ files <- files_merck_ex$file_path[files_merck_ex$example %in% example_name & !fi
 
 ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = 300, rtmax = 3400),
-  resolution_profile = c(25000L, 55000L, 80000L),
+  ppmThreshold = 15,
   noiseThreshold = 15,
   minSNR = 3,
   minTraces = 3,
   baselineWindow = 200,
-  maxWidth = 250, #100
+  maxWidth = 250,
   base_quantile = 0.99,
   debug_mz = db_merck_ex1$mz[7]
 )
 
 project_path <- file.path(getwd(), "dev", "merck_peak_finding", "data")
+# file.remove(list.files(project_path, full.names = TRUE))
+# fs::dir_delete(project_path)
 ms <- DB_MassSpecEngine$new(project_path, files = files)
 
 ms$Workflow = list(ps_ff)
@@ -100,7 +102,16 @@ ms$Workflow = list(ps_ff)
 ms$run_workflow()
 ```
 
+```{r}
 
+plot_features(
+  ms$NonTargetAnalysis,
+  analyses = 1,
+  mz = db_merck_ex[db_merck_ex$example %in% examples[1], ],
+  ppm = 20,
+  sec = 60
+)
+```
 
 # Files
 

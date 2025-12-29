@@ -5,7 +5,7 @@
 #' @title DB_MassSpecMethod_FindFeatures_native class
 #' @description Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.
 #' @param rtWindows data.frame with rtmin and rtmax columns for retention time windows for data inclusion.
-#' @param resolution_profile integer(3) vector defining mass resolution at 100, 400, and 1000 Da for calculating m/z clustering thresholds via linear model.
+#' @param ppmThreshold integer(1) maximum allowed mass error in ppm for considering traces in a mass cluster.
 #' @param minSNR numeric(1) minimum signal-to-noise ratio for considering a trace and chromatographic peak.
 #' @param noiseThreshold numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).
 #' @param minTraces numeric(1) minimum number of traces to consider a mass cluster and chromatographic peak.
@@ -16,7 +16,7 @@
 #'
 DB_MassSpecMethod_FindFeatures_native <- function(
   rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
-  resolution_profile = c(35000L, 35000L, 35000L),
+  ppmThreshold = 15,
   noiseThreshold = 250,
   minSNR = 3,
   minTraces = 3,
@@ -41,7 +41,7 @@ DB_MassSpecMethod_FindFeatures_native <- function(
     doi = NA_character_,
     parameters = list(
       rtWindows = rtWindows,
-      resolution_profile = as.integer(resolution_profile),
+      ppmThreshold = as.numeric(ppmThreshold),
       noiseThreshold = as.numeric(noiseThreshold),
       minSNR = as.numeric(minSNR),
       minTraces = as.numeric(minTraces),
@@ -66,7 +66,7 @@ validate_object.DB_MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_data_table(data.table::as.data.table(x$parameters$rtWindows))
   checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
-  checkmate::assert_integer(x$parameters$resolution_profile, len = 3, lower = 1)
+  checkmate::assert_numeric(x$parameters$ppmThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minSNR, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minTraces, len = 1, lower = 1)
@@ -101,11 +101,13 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     cache_info <- get_cache_info(cache_manager)
     if (nrow(cache_info) > 0) {
       fts <- load_cache(cache_manager, hash = hash)
-      if (nrow(fts) > 0) {
-        message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
-        db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
-        DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts)
-        return(invisible(TRUE))
+      if (!is.null(fts)) {
+        if (nrow(fts) > 0) {
+          message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+          db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
+          DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts)
+          return(invisible(TRUE))
+        }
       }
     }
   }
@@ -115,7 +117,7 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     spectra_headers = headers_list,
     rtWindowsMin = parameters$rtWindows$rtmin,
     rtWindowsMax = parameters$rtWindows$rtmax,
-    resolution_profile = parameters$resolution_profile,
+    ppmThreshold = parameters$ppmThreshold,
     noiseThreshold = parameters$noiseThreshold,
     minSNR = parameters$minSNR,
     minTraces = parameters$minTraces,
