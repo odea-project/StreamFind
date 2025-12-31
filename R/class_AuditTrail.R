@@ -11,28 +11,28 @@
 AuditTrailEntry <- function(time_stamp, value_class, value_parent, value) {
   x <- structure(
     list(
-      time_stamp = as.POSIXct(time_stamp), 
-      value_class = value_class, 
-      value_parent = value_parent, 
+      time_stamp = as.POSIXct(time_stamp),
+      value_class = value_class,
+      value_parent = value_parent,
       value = value
     ),
     class = "AuditTrailEntry"
   )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
+  if (!is.null(validate_object(x))) {
     stop("Invalid AuditTrailEntry object!")
   }
+  x
 }
 
 #' @describeIn AuditTrailEntry Validate the AuditTrailEntry object, returning NULL if valid.
 #' @param x A `AuditTrailEntry` object.
 #' @export
-#' 
+#'
 validate_object.AuditTrailEntry <- function(x) {
   checkmate::assert_class(x, "AuditTrailEntry")
   checkmate::assertNames(
-    names(x), must.include = c("time_stamp", "value_class", "value_parent", "value")
+    names(x),
+    must.include = c("time_stamp", "value_class", "value_parent", "value")
   )
   checkmate::assert_posixct(x$time_stamp)
   checkmate::assert_character(x$value_class)
@@ -44,12 +44,12 @@ validate_object.AuditTrailEntry <- function(x) {
 # MARK: AuditTrail
 # AuditTrail -----
 #' @title Audit Trail Register
-#' 
+#'
 #' @description The [StreamFind::AuditTrail] class is a list of [StreamFind::AuditTrailEntry] class
 #' objects.
-#' 
+#'
 #' @export
-#' 
+#'
 AuditTrail <- function(entries = list()) {
   if (is.list(entries)) {
     if (length(entries) > 0) {
@@ -85,7 +85,7 @@ AuditTrail <- function(entries = list()) {
 #' @describeIn AuditTrail Validate the AuditTrail object, returning NULL if valid.
 #' @param x A `AuditTrail` object.
 #' @export
-#' 
+#'
 validate_object.AuditTrail <- function(x) {
   checkmate::assert_list(x)
   if (length(x) > 0) {
@@ -103,7 +103,7 @@ validate_object.AuditTrail <- function(x) {
 #' @param x An `AuditTrail` object.
 #' @param value An object to be added to the `AuditTrail` as an entry.
 #' @export
-#' 
+#'
 add.AuditTrail <- function(x, value) {
   time_stamp <- as.POSIXct(Sys.time())
   value_classes <- class(value)
@@ -131,9 +131,11 @@ add.AuditTrail <- function(x, value) {
 #' @method as.data.table AuditTrail
 #' @param x An `AuditTrail` object.
 #' @export
-#' 
+#'
 as.data.table.AuditTrail <- function(x, ...) {
-  if (length(x) == 0) return(data.table::data.table())
+  if (length(x) == 0) {
+    return(data.table::data.table())
+  }
   dt_list <- lapply(x, function(z) {
     data.table::data.table(
       time_stamp = z$time_stamp,
@@ -148,7 +150,7 @@ as.data.table.AuditTrail <- function(x, ...) {
 #' @describeIn AuditTrail Show the `AuditTrail` entries in a human-readable format.
 #' @param x An `AuditTrail` object.
 #' @export
-#' 
+#'
 show.AuditTrail <- function(x, ...) {
   names <- names(x)
   for (n in names) {
@@ -174,7 +176,7 @@ show.AuditTrail <- function(x, ...) {
 #' @param file A character string representing the file path where the `AuditTrail` should be saved.
 #' The file format can be either JSON or RDS.
 #' @export
-#' 
+#'
 save.AuditTrail <- function(x, file = "entries.json") {
   format <- tools::file_ext(file)
   if (format %in% "json") {
@@ -192,7 +194,7 @@ save.AuditTrail <- function(x, file = "entries.json") {
 #' @param x An `AuditTrail` object.
 #' @param file A character string representing the file path from which the `AuditTrail` should be read. The possible formats are JSON or RDS.
 #' @export
-#' 
+#'
 read.AuditTrail <- function(x, file) {
   format <- tools::file_ext(file)
   if (format %in% "json") {
