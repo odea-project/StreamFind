@@ -1,10 +1,9 @@
 #PKG_CXXFLAGS += -I"$(R_HOME)/include" $(SHLIB_OPENMP_CXXFLAGS)
 #PKG_LIBS += -L"$(R_HOME)/bin/x64" $(SHLIB_OPENMP_CXXFLAGS) -lz
-#ZLIB_CFLAGS := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_CFLAGS'))")
-#ZLIB_STATIC := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_LIBS_static'))")
+ZLIB_CFLAGS := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_CFLAGS'))")
+ZLIB_LIBDIR := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(system.file('libs/x64', package='zlibbioc'))")
 
-# Add simdutf include path and C++17 standard (required by simdutf)
-PKG_CPPFLAGS += -Isimdutf
+PKG_CPPFLAGS += -Isimdutf $(ZLIB_CFLAGS)
 PKG_CXXFLAGS += -std=c++17
 
 # Source files from different directories
@@ -23,5 +22,6 @@ OBJECTS = $(SOURCES:.cpp=.o)
 #	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) -Wno-pedantic -c $< -o $@
 
 RHDF5_LIBS = $(shell "$(R_HOME)/bin${R_ARCH_BIN}/Rscript" -e 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")')
+
 PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS) -D__USE_MINGW_ANSI_STDIO
-PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) $(RHDF5_LIBS)
+PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) $(RHDF5_LIBS) -L$(ZLIB_LIBDIR) -lzbioc

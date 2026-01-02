@@ -1,11 +1,9 @@
 
 # Development ------------------------------------------------------------------
 
-# Dev packages
+# Packages to install ----
 install.packages(c("devtools", "BiocManager", "remotes"))
-
 BiocManager::install(c("Rhdf5lib"))
-
 remotes::install_github("ricardo-cunha/zlibbioc")
 
 # Updates documentation with roxygen

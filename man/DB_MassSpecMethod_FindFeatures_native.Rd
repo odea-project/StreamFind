@@ -6,7 +6,7 @@
 \usage{
 DB_MassSpecMethod_FindFeatures_native(
   rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
-  resolution_profile = c(35000L, 35000L, 35000L),
+  ppmThreshold = 15,
   noiseThreshold = 250,
   minSNR = 3,
   minTraces = 3,
@@ -19,7 +19,7 @@ DB_MassSpecMethod_FindFeatures_native(
 \arguments{
 \item{rtWindows}{data.frame with rtmin and rtmax columns for retention time windows for data inclusion.}
 
-\item{resolution_profile}{integer(3) vector defining mass resolution at 100, 400, and 1000 Da for calculating m/z clustering thresholds via linear model.}
+\item{ppmThreshold}{integer(1) maximum allowed mass error in ppm for considering traces in a mass cluster.}
 
 \item{noiseThreshold}{numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).}
 

@@ -47,32 +47,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// test_hdf5_mixed_performance
-Rcpp::List test_hdf5_mixed_performance(Rcpp::List data_list, const std::string& file_name, bool enable_compression, bool enable_chunking);
-RcppExport SEXP _StreamFind_test_hdf5_mixed_performance(SEXP data_listSEXP, SEXP file_nameSEXP, SEXP enable_compressionSEXP, SEXP enable_chunkingSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type data_list(data_listSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type file_name(file_nameSEXP);
-    Rcpp::traits::input_parameter< bool >::type enable_compression(enable_compressionSEXP);
-    Rcpp::traits::input_parameter< bool >::type enable_chunking(enable_chunkingSEXP);
-    rcpp_result_gen = Rcpp::wrap(test_hdf5_mixed_performance(data_list, file_name, enable_compression, enable_chunking));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_hdf5_mixed_read_performance
-Rcpp::List test_hdf5_mixed_read_performance(const std::string& file_name, const std::string& group_name);
-RcppExport SEXP _StreamFind_test_hdf5_mixed_read_performance(SEXP file_nameSEXP, SEXP group_nameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type file_name(file_nameSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type group_name(group_nameSEXP);
-    rcpp_result_gen = Rcpp::wrap(test_hdf5_mixed_read_performance(file_name, group_name));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_ms_cluster_spectra
 Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra, double mzClust, double presence, bool verbose);
 RcppExport SEXP _StreamFind_rcpp_ms_cluster_spectra(SEXP spectraSEXP, SEXP mzClustSEXP, SEXP presenceSEXP, SEXP verboseSEXP) {
@@ -351,32 +325,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_ms_group_features
-Rcpp::DataFrame rcpp_ms_group_features(Rcpp::DataFrame features, float rt_dev, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_group_features(SEXP featuresSEXP, SEXP rt_devSEXP, SEXP verboseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
-    Rcpp::traits::input_parameter< float >::type rt_dev(rt_devSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_group_features(features, rt_dev, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
-// rcpp_ms_groups_correspondence
-bool rcpp_ms_groups_correspondence(Rcpp::DataFrame groups, Rcpp::DataFrame features, bool verbose);
-RcppExport SEXP _StreamFind_rcpp_ms_groups_correspondence(SEXP groupsSEXP, SEXP featuresSEXP, SEXP verboseSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type groups(groupsSEXP);
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type features(featuresSEXP);
-    Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_ms_groups_correspondence(groups, features, verbose));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_parse_asc_file
 Rcpp::List rcpp_parse_asc_file(std::string file_path);
 RcppExport SEXP _StreamFind_rcpp_parse_asc_file(SEXP file_pathSEXP) {
@@ -398,92 +346,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::NumericMatrix >::type spectra(spectraSEXP);
     rcpp_write_asc_file(file, metadata_list, spectra);
     return R_NilValue;
-END_RCPP
-}
-// test_read_hdf5
-Rcpp::List test_read_hdf5(const std::string& file_name);
-RcppExport SEXP _StreamFind_test_read_hdf5(SEXP file_nameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type file_name(file_nameSEXP);
-    rcpp_result_gen = Rcpp::wrap(test_read_hdf5(file_name));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_create_hdf5
-Rcpp::List test_create_hdf5();
-RcppExport SEXP _StreamFind_test_create_hdf5() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(test_create_hdf5());
-    return rcpp_result_gen;
-END_RCPP
-}
-// generate_test_data_cpp
-Rcpp::List generate_test_data_cpp(int n_cols, int n_rows, double mean_base, double sd);
-RcppExport SEXP _StreamFind_generate_test_data_cpp(SEXP n_colsSEXP, SEXP n_rowsSEXP, SEXP mean_baseSEXP, SEXP sdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n_cols(n_colsSEXP);
-    Rcpp::traits::input_parameter< int >::type n_rows(n_rowsSEXP);
-    Rcpp::traits::input_parameter< double >::type mean_base(mean_baseSEXP);
-    Rcpp::traits::input_parameter< double >::type sd(sdSEXP);
-    rcpp_result_gen = Rcpp::wrap(generate_test_data_cpp(n_cols, n_rows, mean_base, sd));
-    return rcpp_result_gen;
-END_RCPP
-}
-// generate_mixed_test_data_cpp
-Rcpp::List generate_mixed_test_data_cpp(int n_cols_numeric, int n_cols_string, int n_rows, double mean_base, double sd);
-RcppExport SEXP _StreamFind_generate_mixed_test_data_cpp(SEXP n_cols_numericSEXP, SEXP n_cols_stringSEXP, SEXP n_rowsSEXP, SEXP mean_baseSEXP, SEXP sdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type n_cols_numeric(n_cols_numericSEXP);
-    Rcpp::traits::input_parameter< int >::type n_cols_string(n_cols_stringSEXP);
-    Rcpp::traits::input_parameter< int >::type n_rows(n_rowsSEXP);
-    Rcpp::traits::input_parameter< double >::type mean_base(mean_baseSEXP);
-    Rcpp::traits::input_parameter< double >::type sd(sdSEXP);
-    rcpp_result_gen = Rcpp::wrap(generate_mixed_test_data_cpp(n_cols_numeric, n_cols_string, n_rows, mean_base, sd));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_hdf5_performance
-Rcpp::List test_hdf5_performance(Rcpp::List data_list, const std::string& file_name, bool enable_compression, bool enable_chunking);
-RcppExport SEXP _StreamFind_test_hdf5_performance(SEXP data_listSEXP, SEXP file_nameSEXP, SEXP enable_compressionSEXP, SEXP enable_chunkingSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type data_list(data_listSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type file_name(file_nameSEXP);
-    Rcpp::traits::input_parameter< bool >::type enable_compression(enable_compressionSEXP);
-    Rcpp::traits::input_parameter< bool >::type enable_chunking(enable_chunkingSEXP);
-    rcpp_result_gen = Rcpp::wrap(test_hdf5_performance(data_list, file_name, enable_compression, enable_chunking));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_hdf5_read_performance
-Rcpp::List test_hdf5_read_performance(const std::string& file_name, const std::string& dataset_name);
-RcppExport SEXP _StreamFind_test_hdf5_read_performance(SEXP file_nameSEXP, SEXP dataset_nameSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const std::string& >::type file_name(file_nameSEXP);
-    Rcpp::traits::input_parameter< const std::string& >::type dataset_name(dataset_nameSEXP);
-    rcpp_result_gen = Rcpp::wrap(test_hdf5_read_performance(file_name, dataset_name));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test_simdutf
-Rcpp::List test_simdutf();
-RcppExport SEXP _StreamFind_test_simdutf() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(test_simdutf());
-    return rcpp_result_gen;
 END_RCPP
 }
 // rcpp_streamcraft_decode_string
@@ -539,8 +401,6 @@ END_RCPP
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_find_features2", (DL_FUNC) &_StreamFind_rcpp_nts_find_features2, 12},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
-    {"_StreamFind_test_hdf5_mixed_performance", (DL_FUNC) &_StreamFind_test_hdf5_mixed_performance, 4},
-    {"_StreamFind_test_hdf5_mixed_read_performance", (DL_FUNC) &_StreamFind_test_hdf5_mixed_read_performance, 2},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},
     {"_StreamFind_rcpp_parse_ms_spectra_headers", (DL_FUNC) &_StreamFind_rcpp_parse_ms_spectra_headers, 1},
@@ -558,17 +418,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_fill_features", (DL_FUNC) &_StreamFind_rcpp_nts_fill_features, 16},
     {"_StreamFind_rcpp_nts_find_features", (DL_FUNC) &_StreamFind_rcpp_nts_find_features, 10},
     {"_StreamFind_rcpp_decode_eic_data", (DL_FUNC) &_StreamFind_rcpp_decode_eic_data, 1},
-    {"_StreamFind_rcpp_ms_group_features", (DL_FUNC) &_StreamFind_rcpp_ms_group_features, 3},
-    {"_StreamFind_rcpp_ms_groups_correspondence", (DL_FUNC) &_StreamFind_rcpp_ms_groups_correspondence, 3},
     {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},
     {"_StreamFind_rcpp_write_asc_file", (DL_FUNC) &_StreamFind_rcpp_write_asc_file, 3},
-    {"_StreamFind_test_read_hdf5", (DL_FUNC) &_StreamFind_test_read_hdf5, 1},
-    {"_StreamFind_test_create_hdf5", (DL_FUNC) &_StreamFind_test_create_hdf5, 0},
-    {"_StreamFind_generate_test_data_cpp", (DL_FUNC) &_StreamFind_generate_test_data_cpp, 4},
-    {"_StreamFind_generate_mixed_test_data_cpp", (DL_FUNC) &_StreamFind_generate_mixed_test_data_cpp, 5},
-    {"_StreamFind_test_hdf5_performance", (DL_FUNC) &_StreamFind_test_hdf5_performance, 4},
-    {"_StreamFind_test_hdf5_read_performance", (DL_FUNC) &_StreamFind_test_hdf5_read_performance, 2},
-    {"_StreamFind_test_simdutf", (DL_FUNC) &_StreamFind_test_simdutf, 0},
     {"_StreamFind_rcpp_streamcraft_decode_string", (DL_FUNC) &_StreamFind_rcpp_streamcraft_decode_string, 1},
     {"_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files, 1},
     {"_StreamFind_rcpp_streamcraft_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_spectra, 5},
