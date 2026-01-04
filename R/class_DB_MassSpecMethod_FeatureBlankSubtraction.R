@@ -73,12 +73,16 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
   if (!is.null(cache_manager)) {
     hash <- .make_hash(x, analyses, parameters)
     cache_info <- get_cache_info(cache_manager)
-    fts <- load_cache(cache_manager, hash = hash)
-    if (nrow(fts) > 0) {
-      message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
-      db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
-      DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts)
-      return(invisible(TRUE))
+    if (nrow(cache_info) > 0) {
+      fts <- load_cache(cache_manager, hash = hash)
+      if (!is.null(fts)) {
+        if (nrow(fts) > 0) {
+          message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+          db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
+          DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts)
+          return(invisible(TRUE))
+        }
+      }
     }
   }
 
@@ -115,14 +119,16 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
   names(fts_list) <- analyses$analysis
   fts <- data.table::rbindlist(fts_list, fill = TRUE)
 
-  # save_cache(
-  #   cache_manager,
-  #   name = paste0("DB_FeatureBlankSubtraction_native"),
-  #   hash = .make_hash(x, analyses, parameters),
-  #   description = "Features found with DB_FeatureBlankSubtraction_native method.",
-  #   data = fts
-  # )
-  # message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
+  if (!is.null(cache_manager)) {
+    save_cache(
+      cache_manager,
+      name = paste0("DB_FeatureBlankSubtraction_native"),
+      hash = .make_hash(x, analyses, parameters),
+      description = "Features found with DB_FeatureBlankSubtraction_native method",
+      data = as.data.frame(fts)
+    )
+    message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
+  }
   db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
   invisible(DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts))
   invisible(TRUE)

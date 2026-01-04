@@ -1,17 +1,26 @@
 #' @noRd
-.mod_WorkflowAssembler_workflow_UI <- function(id, ns) {
+#' @export
+.mod_WADB_Workflow_UI.DB_Engine <- function(x, id, ns) {
   ns2 <- shiny::NS(id)
-  htmltools::tagList(
-    shiny::fluidRow(
-      shiny::column(
-        width = 6,
-        class = "workflow-column",
-        shiny::uiOutput(ns(ns2("workflow_settings")))
-      ),
-      shiny::column(
-        width = 6,
-        class = "method-column",
-        shiny::uiOutput(ns(ns2("selected_method_details")))
+  shinydashboard::box(
+    title = NULL,
+    width = 12,
+    height = "calc(100vh - 60px)",
+    solidHeader = TRUE,
+    style = "padding: 0px;",
+    htmltools::div(
+      style = "padding: 10px;",
+      shiny::fluidRow(
+        shiny::column(
+          width = 6,
+          class = "workflow-column",
+          shiny::uiOutput(ns(ns2("workflow_settings")))
+        ),
+        shiny::column(
+          width = 6,
+          class = "method-column",
+          shiny::uiOutput(ns(ns2("selected_method_details")))
+        )
       )
     ),
     htmltools::tags$style(htmltools::HTML(
@@ -103,32 +112,28 @@
 }
 
 #' @noRd
-.mod_WorkflowAssembler_workflow_Server <- function(
-  id,
-  ns,
-  engine,
-  engine_type,
-  reactive_analyses,
-  reactive_workflow,
-  reactive_saved_workflow,
-  reactive_results,
-  reactive_audit,
-  reactive_engine_config,
-  reactive_warnings,
-  reactive_volumes,
-  reactive_config
-) {
+#' @export
+.mod_WADB_Workflow_Server.DB_Engine <- function(
+    x,
+    id,
+    ns,
+    reactive_analyses,
+    reactive_workflow,
+    reactive_results,
+    reactive_audit,
+    reactive_warnings,
+    reactive_volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
+    engine <- x
+    engine_type <- class(engine)[1]
+    param_edit_state <- shiny::reactiveValues()
 
-    # var Available Methods -----
     processing_methods <- .get_available_processing_methods(engine_type)
 
     if (length(processing_methods) == 0) {
       shiny::showNotification(
-        "No settings functions found for ",
-        engine_type,
-        " engine!",
+        paste("No settings functions found for", engine_type, "engine!"),
         duration = 5,
         type = "warning"
       )
@@ -139,12 +144,10 @@
       names(processing_methods) <- processing_methods_short
     }
 
-    # var Reactive variables ----
     reactive_selected_method <- shiny::reactiveVal(NULL)
     reactive_workflow_file <- shiny::reactiveVal(NULL)
-    param_edit_state <- shiny::reactiveValues()
+    reactive_saved_workflow <- shiny::reactiveVal(shiny::isolate(reactive_workflow()))
 
-    # out Load Workflow -----
     output$load_workflow_ui <- shiny::renderUI({
       shinyFiles::shinyFilesButton(
         ns(ns2("load_workflow")),
@@ -155,7 +158,6 @@
       )
     })
 
-    # out Clear Workflow -----
     output$clear_workflow_ui <- shiny::renderUI({
       rw <- reactive_workflow()
       if (length(rw) > 0) {
@@ -167,7 +169,6 @@
       }
     })
 
-    # out Save Workflow -----
     output$save_workflow_ui <- shiny::renderUI({
       rw <- reactive_workflow()
       rw_file <- reactive_workflow_file()
@@ -203,7 +204,18 @@
       }
     })
 
-    # out Discard Changes -----
+    output$persist_workflow_ui <- shiny::renderUI({
+      rw <- reactive_workflow()
+      if (length(rw) > 0) {
+        shiny::actionButton(
+          ns(ns2("persist_workflow")),
+          "Save to DB",
+          class = "btn-success",
+          width = 150
+        )
+      }
+    })
+
     output$discard_changes_ui <- shiny::renderUI({
       rw <- reactive_workflow()
       saved_rw <- reactive_saved_workflow()
@@ -217,7 +229,6 @@
       }
     })
 
-    # out Run Workflow -----
     output$run_workflow_ui <- shiny::renderUI({
       rw <- reactive_workflow()
       if (length(rw) > 0) {
@@ -230,7 +241,6 @@
       }
     })
 
-    # out Show Workflow -----
     output$workflow_settings <- shiny::renderUI({
       rw <- reactive_workflow()
       labels <- lapply(names(rw), function(i) {
@@ -240,8 +250,6 @@
             shiny::actionButton(
               ns(ns2(paste0("workflow_del_", i))),
               label = "X",
-              # TODO check why an error is thrown when using icon
-              # icon = shiny::icon("trash"),
               class = "custom-buttonred",
               style = "margin-right: 10px;"
             ),
@@ -255,7 +263,6 @@
         )
       })
 
-      ## obs Edit Workflow Method -----
       lapply(names(rw), function(i) {
         shiny::observeEvent(
           input[[paste0("workflow_edit_", i)]],
@@ -266,7 +273,6 @@
         )
       })
 
-      # obs Delete Workflow Method -----
       lapply(names(rw), function(i) {
         shiny::observeEvent(
           input[[paste0("workflow_del_", i)]],
@@ -289,39 +295,25 @@
         shiny::column(
           width = 12,
           htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 5px;",
-            htmltools::div(
-              style = "margin-right: 10px;",
-              shiny::uiOutput(ns(ns2("load_workflow_ui")))
-            ),
-            htmltools::div(
-              style = "margin-right: 10px;",
-              shiny::uiOutput(ns(ns2("clear_workflow_ui")))
-            )
+            style = "display: flex; align-items: center; margin-bottom: 5px; gap: 10px;",
+            shiny::uiOutput(ns(ns2("load_workflow_ui"))),
+            shiny::uiOutput(ns(ns2("clear_workflow_ui")))
           )
         ),
         shiny::column(
           width = 12,
           htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 5px;",
-            htmltools::div(
-              style = "margin-right: 10px;",
-              shiny::uiOutput(ns(ns2("save_workflow_ui")))
-            ),
-            htmltools::div(
-              style = "margin-right: 10px;",
-              shiny::uiOutput(ns(ns2("discard_changes_ui")))
-            )
+            style = "display: flex; align-items: center; margin-bottom: 5px; gap: 10px;",
+            shiny::uiOutput(ns(ns2("save_workflow_ui"))),
+            shiny::uiOutput(ns(ns2("persist_workflow_ui"))),
+            shiny::uiOutput(ns(ns2("discard_changes_ui")))
           )
         ),
         shiny::column(
           width = 12,
           htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 5px;",
-            htmltools::div(
-              style = "margin-right: 10px;",
-              shiny::uiOutput(ns(ns2("run_workflow_ui")))
-            )
+            style = "display: flex; align-items: center; margin-bottom: 5px; gap: 10px;",
+            shiny::uiOutput(ns(ns2("run_workflow_ui")))
           )
         ),
         shiny::column(width = 12, htmltools::p("Select Processing Method", style = "margin-bottom: 5px; margin-top: 5px;")),
@@ -359,201 +351,13 @@
       )
     })
 
-    # obs Rank Workflow -----
-    shiny::observeEvent(input$rank_workflow_names, {
-      rw <- reactive_workflow()
-      new_order <- input$rank_workflow_names
-      new_order <- unname(vapply(
-        new_order,
-        function(z) strsplit(z, "\n")[[1]][2],
-        NA_character_
-      ))
-
-      withCallingHandlers(
-        {
-          rw[seq_along(new_order)] <- rw[new_order]
-          reactive_workflow(rw)
-        },
-        error = function(e) {
-          shiny::showNotification(
-            paste("Error ranking workflow:", e$message),
-            duration = 5,
-            type = "error"
-          )
-        },
-        warning = function(w) {
-          shiny::showNotification(
-            paste("Warning ranking workflow:", w$message),
-            duration = 5,
-            type = "warning"
-          )
-        }
-      )
-    })
-
-    # obs Load Workflow -----
-    shinyFiles::shinyFileChoose(
-      input,
-      "load_workflow",
-      roots = reactive_volumes(),
-      defaultRoot = "wd",
-      session = session,
-      filetypes = list(json = "json", rds = "rds")
-    )
-    shiny::observeEvent(input$load_workflow, {
-      rw <- reactive_workflow()
-      fileinfo <- shinyFiles::parseFilePaths(
-        roots = reactive_volumes(),
-        input$load_workflow
-      )
-      if (nrow(fileinfo) > 0) {
-        file <- fileinfo$datapath
-        if (length(file) == 1) {
-          if (file.exists(file)) {
-            tryCatch(
-              {
-                rw <- read(rw, file)
-                reactive_workflow(rw)
-              },
-              error = function(e) {
-                shiny::showNotification(
-                  paste("Error loading workflow:", e$message),
-                  duration = 5,
-                  type = "error"
-                )
-              },
-              warning = function(w) {
-                shiny::showNotification(
-                  paste("Warning loading workflow:", w$message),
-                  duration = 5,
-                  type = "warning"
-                )
-              }
-            )
-          } else {
-            shiny::showNotification(
-              "File does not exist!",
-              duration = 5,
-              type = "warning"
-            )
-          }
-        }
-      }
-    })
-
-    # obs Clear Workflow -----
-    shiny::observeEvent(input$clear_workflow, {
-      reactive_workflow(Workflow())
-    })
-
-    # obs Save Workflow -----
-    shiny::observeEvent(input$save_workflow, {
-      shiny::req(input$save_workflow)
-      file_info <- shinyFiles::parseSavePath(
-        roots = reactive_volumes(),
-        input$save_workflow
-      )
-      if (nrow(file_info) > 0) {
-        file_path <- file_info$datapath
-        tryCatch(
-          {
-            rw <- reactive_workflow()
-            save(rw, file_path)
-            reactive_workflow_file(file_path)
-            shiny::showNotification(
-              paste("Workflow saved successfully as ", file_path),
-              duration = 5,
-              type = "message"
-            )
-          },
-          error = function(e) {
-            shiny::showNotification(
-              paste("Error saving workflow:", e$message),
-              duration = 5,
-              type = "error"
-            )
-          },
-          warning = function(w) {
-            shiny::showNotification(
-              paste("Warning saving workflow:", w$message),
-              duration = 5,
-              type = "warning"
-            )
-          }
-        )
-      }
-    })
-
-    # obs Discard Changes -----
-    shiny::observeEvent(input$discard_changes, {
-      shiny::req(input$discard_changes)
-      reactive_workflow(reactive_saved_workflow())
-    })
-
-    # obs Run Workflow -----
-    shiny::observeEvent(input$run_workflow, {
-      shiny::req(input$run_workflow)
-      shiny::showModal(shiny::modalDialog(
-        title = "Processing",
-        "The workflow is running. Please wait...",
-        footer = NULL # No footer buttons to close the modal manually
-      ))
-      tryCatch(
-        {
-          engine$Workflow <- reactive_workflow()
-          engine$run_workflow()
-          reactive_analyses(engine$Analyses)
-          reactive_workflow(engine$Workflow)
-          reactive_results(engine$Results)
-          reactive_audit(engine$AuditTrail)
-          reactive_engine_config(engine$Config)
-          shiny::removeModal()
-        },
-        error = function(e) {
-          shiny::showNotification(
-            paste("Error running workflow:", e$message),
-            duration = 5,
-            type = "error"
-          )
-          shiny::removeModal()
-        }
-      )
-    })
-
-    # obs Add Workflow Step -----
-    shiny::observeEvent(input$add_workflow_step, {
-      rw <- reactive_workflow()
-      settings_name <- input$settings_selector
-      if (length(settings_name) > 0) {
-        settings <- do.call(processing_methods[settings_name], list())
-        tryCatch(
-          {
-            rw[[length(rw) + 1]] <- settings
-            reactive_workflow(rw)
-          },
-          error = function(e) {
-            shiny::showNotification(
-              paste("Error adding settings:", e$message),
-              duration = 5,
-              type = "error"
-            )
-          },
-          warning = function(w) {
-            shiny::showNotification(
-              paste("Warning adding settings:", w$message),
-              duration = 5,
-              type = "warning"
-            )
-          }
-        )
-      }
-    })
-
-    # out Selected Method Details -----
     output$selected_method_details <- shiny::renderUI({
-      shiny::req(reactive_selected_method())
-      rw <- reactive_workflow()
       selected_method <- reactive_selected_method()
+      rw <- reactive_workflow()
+      if (is.null(selected_method)) {
+        return(htmltools::div("Please select a method to view details!"))
+      }
+
       shiny::req(selected_method %in% names(rw))
       short_selected_method <- gsub("^\\d+_", "", selected_method)
       idx_selected_method <- gsub("^(\\d+)_.*", "\\1", selected_method)
@@ -570,7 +374,7 @@
         short_selected_method
       )
       create_parameter_ui <- function(ns2, param_name, param_value) {
-        # Coerce list-like tables into data.frames so CSV parameters render properly
+        # Coerce list-like tables back to data.frames for CSV params
         if (is.list(param_value) && !is.data.frame(param_value)) {
           possible_df <- tryCatch(
             as.data.frame(param_value, stringsAsFactors = FALSE),
@@ -590,7 +394,6 @@
             width = "100%"
           )
         } else if (is.logical(param_value)) {
-          # Handle NA values in logical parameters
           checkbox_value <- if (is.na(param_value)) FALSE else param_value
           input_element <- shiny::checkboxInput(
             ns(ns2(param_name)),
@@ -598,7 +401,6 @@
             value = checkbox_value
           )
         } else if (is.numeric(param_value)) {
-          # Handle numeric vectors by converting to space-separated string
           display_value <- if (length(param_value) > 1) {
             paste(param_value, collapse = " ")
           } else {
@@ -635,8 +437,6 @@
             )
             for (col_name in names(dt)) {
               col_type <- class(dt[[col_name]])
-              col_values <- head(dt[[col_name]], n)
-              col_values_str <- paste(col_values, collapse = ", ")
               output <- paste0(output, "$ ", col_name, " : ", col_type, "<br>")
             }
             shiny::tags$span(shiny::HTML(output))
@@ -912,7 +712,228 @@
       )
     })
 
-    # obs Help Modal -----
+    shiny::observe({
+      rw <- reactive_workflow()
+      if (length(rw) == 0) {
+        reactive_selected_method(NULL)
+      } else if (is.null(reactive_selected_method()) || !reactive_selected_method() %in% names(rw)) {
+        reactive_selected_method(names(rw)[1])
+      }
+    })
+
+    shiny::observeEvent(input$rank_workflow_names, {
+      rw <- reactive_workflow()
+      new_order <- input$rank_workflow_names
+      new_order <- unname(vapply(
+        new_order,
+        function(z) strsplit(z, "\n")[[1]][2],
+        NA_character_
+      ))
+
+      withCallingHandlers(
+        {
+          rw[seq_along(new_order)] <- rw[new_order]
+          reactive_workflow(rw)
+        },
+        error = function(e) {
+          shiny::showNotification(
+            paste("Error ranking workflow:", e$message),
+            duration = 5,
+            type = "error"
+          )
+        },
+        warning = function(w) {
+          shiny::showNotification(
+            paste("Warning ranking workflow:", w$message),
+            duration = 5,
+            type = "warning"
+          )
+        }
+      )
+    })
+
+    shinyFiles::shinyFileChoose(
+      input,
+      "load_workflow",
+      roots = reactive_volumes(),
+      defaultRoot = "wd",
+      session = session,
+      filetypes = list(json = "json", rds = "rds")
+    )
+    shiny::observeEvent(input$load_workflow, {
+      rw <- reactive_workflow()
+      fileinfo <- shinyFiles::parseFilePaths(
+        roots = reactive_volumes(),
+        input$load_workflow
+      )
+      if (nrow(fileinfo) > 0) {
+        file <- fileinfo$datapath
+        if (length(file) == 1) {
+          if (file.exists(file)) {
+            tryCatch(
+              {
+                rw <- read(rw, file)
+                reactive_workflow(rw)
+              },
+              error = function(e) {
+                shiny::showNotification(
+                  paste("Error loading workflow:", e$message),
+                  duration = 5,
+                  type = "error"
+                )
+              },
+              warning = function(w) {
+                shiny::showNotification(
+                  paste("Warning loading workflow:", w$message),
+                  duration = 5,
+                  type = "warning"
+                )
+              }
+            )
+          } else {
+            shiny::showNotification(
+              "File does not exist!",
+              duration = 5,
+              type = "warning"
+            )
+          }
+        }
+      }
+    })
+
+    shiny::observeEvent(input$clear_workflow, {
+      reactive_workflow(Workflow())
+      reactive_selected_method(NULL)
+    })
+
+    shiny::observeEvent(input$save_workflow, {
+      shiny::req(input$save_workflow)
+      file_info <- shinyFiles::parseSavePath(
+        roots = reactive_volumes(),
+        input$save_workflow
+      )
+      if (nrow(file_info) > 0) {
+        file_path <- file_info$datapath
+        tryCatch(
+          {
+            rw <- reactive_workflow()
+            save(rw, file_path)
+            reactive_workflow_file(file_path)
+            shiny::showNotification(
+              paste("Workflow saved successfully as ", file_path),
+              duration = 5,
+              type = "message"
+            )
+          },
+          error = function(e) {
+            shiny::showNotification(
+              paste("Error saving workflow:", e$message),
+              duration = 5,
+              type = "error"
+            )
+          },
+          warning = function(w) {
+            shiny::showNotification(
+              paste("Warning saving workflow:", w$message),
+              duration = 5,
+              type = "warning"
+            )
+          }
+        )
+      }
+    })
+
+    shiny::observeEvent(input$persist_workflow, {
+      rw <- reactive_workflow()
+      tryCatch(
+        {
+          engine$Workflow <- rw
+          reactive_workflow(engine$Workflow)
+          reactive_saved_workflow(engine$Workflow)
+          reactive_audit(engine$AuditTrail)
+          shiny::showNotification("Workflow saved to database.", type = "message")
+        },
+        error = function(e) {
+          shiny::showNotification(
+            paste("Error saving workflow to database:", e$message),
+            duration = 5,
+            type = "error"
+          )
+        },
+        warning = function(w) {
+          shiny::showNotification(
+            paste("Warning saving workflow to database:", w$message),
+            duration = 5,
+            type = "warning"
+          )
+        }
+      )
+    })
+
+    shiny::observeEvent(input$discard_changes, {
+      shiny::req(input$discard_changes)
+      reactive_workflow(reactive_saved_workflow())
+    })
+
+    shiny::observeEvent(input$run_workflow, {
+      shiny::req(input$run_workflow)
+      shiny::showModal(shiny::modalDialog(
+        title = "Processing",
+        "The workflow is running. Please wait...",
+        footer = NULL
+      ))
+      tryCatch(
+        {
+          engine$Workflow <- reactive_workflow()
+          engine$run_workflow()
+          reactive_analyses(engine$Analyses)
+          reactive_workflow(engine$Workflow)
+          reactive_saved_workflow(engine$Workflow)
+          try(reactive_results(engine$Results), silent = TRUE)
+          reactive_audit(engine$AuditTrail)
+          shiny::removeModal()
+        },
+        error = function(e) {
+          shiny::showNotification(
+            paste("Error running workflow:", e$message),
+            duration = 5,
+            type = "error"
+          )
+          shiny::removeModal()
+        }
+      )
+    })
+
+    shiny::observeEvent(input$add_workflow_step, {
+      rw <- reactive_workflow()
+      settings_name <- input$settings_selector
+      if (length(settings_name) > 0) {
+        settings <- do.call(processing_methods[settings_name], list())
+        tryCatch(
+          {
+            rw[[length(rw) + 1]] <- settings
+            names(rw)[length(rw)] <- paste0(length(rw), "_", settings$method, "_", settings$algorithm)
+            rw <- Workflow(rw)
+            reactive_workflow(rw)
+          },
+          error = function(e) {
+            shiny::showNotification(
+              paste("Error adding workflow step:", e$message),
+              duration = 5,
+              type = "error"
+            )
+          },
+          warning = function(w) {
+            shiny::showNotification(
+              paste("Warning adding workflow step:", w$message),
+              duration = 5,
+              type = "warning"
+            )
+          }
+        )
+      }
+    })
+
     shiny::observeEvent(input$open_help_modal, {
       shiny::req(reactive_selected_method())
       rw <- reactive_workflow()
@@ -925,8 +946,6 @@
       package_path <- find.package(package_name, lib.loc = .libPaths())
       tryCatch(
         {
-          # rd <- tools:::fetchRdDB(paste0(package_path, "/help/StreamFind"), method_name)
-
           rd_list <- tools::Rd_db("StreamFind")
           rd <- NULL
           for (entry in rd_list) {
@@ -994,7 +1013,6 @@
       )
     })
 
-    # obs Update Method -----
     shiny::observeEvent(input$update_method, {
       shiny::req(input$update_method)
       rw <- reactive_workflow()
@@ -1013,14 +1031,12 @@
               }
               settings$parameters[[param_name]] <- as.logical(value)
             } else if ("numeric" %in% param_class) {
-              # Handle numeric vectors from space-separated input
               input_value <- input[[param_name]]
               if (is.null(input_value) || input_value == "") {
                 value <- as.numeric(NA_real_)
               } else {
-                # Split by spaces and convert to numeric
                 value_parts <- trimws(strsplit(input_value, "\\s+")[[1]])
-                value_parts <- value_parts[value_parts != ""]  # Remove empty strings
+                value_parts <- value_parts[value_parts != ""]
                 if (length(value_parts) == 0) {
                   value <- as.numeric(NA_real_)
                 } else {
@@ -1090,7 +1106,6 @@
       )
     })
 
-    # obs Reset Method -----
     shiny::observeEvent(input$reset_method, {
       rw <- reactive_workflow()
       selected_method <- reactive_selected_method()

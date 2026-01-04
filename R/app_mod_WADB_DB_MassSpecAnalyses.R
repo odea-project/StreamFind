@@ -106,7 +106,6 @@
       )
 
       analyses_info$blank[analyses_info$blank %in% ""] <- NA_character_
-      
       set_replicate_names(analyses, analyses_info$replicate)
 
       # Handle concentration updates
@@ -153,6 +152,7 @@
         set_blank_names(analyses, analyses_info$blank)
       }
       reactive_analyses_info(info(analyses))
+      reactive_analyses(analyses)
     })
 
     # out Analyses Overview Buttons -----

@@ -436,35 +436,31 @@
 
     # MARK: Workflow
     # Workflow -----
-    # output$workflow_ui <- shiny::renderUI({
-    #   engine_type <- reactive_engine_type()
-    #   if (engine_type %in% "Engine") {
-    #     shiny::showNotification(
-    #       "Workflow not implemented for Engine without an assigned data type!",
-    #       duration = 5,
-    #       type = "warning"
-    #     )
-    #     return(htmltools::div(" "))
-    #   }
-
-    #   .mod_WorkflowAssembler_workflow_Server(
-    #     "workflow",
-    #     ns,
-    #     engine,
-    #     engine_type,
-    #     reactive_analyses,
-    #     reactive_workflow,
-    #     reactive_saved_workflow,
-    #     reactive_results,
-    #     reactive_audit,
-    #     reactive_engine_config,
-    #     reactive_warnings,
-    #     reactive_volumes,
-    #     reactive_config
-    #   )
-
-    #   .mod_WorkflowAssembler_workflow_UI("workflow", ns)
-    # })
+    output$workflow_ui <- shiny::renderUI({
+      if (is.null(engine)) {
+        return(htmltools::div("Engine not initialized!"))
+      }
+      if (!inherits(engine, "DB_Engine")) {
+        shiny::showNotification(
+          "Workflow not implemented for non-DB engines!",
+          duration = 5,
+          type = "warning"
+        )
+        return(htmltools::div(" "))
+      }
+      .mod_WADB_Workflow_Server(
+        engine,
+        "workflow",
+        ns,
+        reactive_analyses,
+        reactive_workflow,
+        reactive_results,
+        reactive_audit,
+        reactive_warnings,
+        reactive_volumes
+      )
+      .mod_WADB_Workflow_UI(engine, "workflow", ns)
+    })
 
     # # MARK: Results
     # # Results -----
@@ -536,16 +532,32 @@
     # MARK: AuditTrail
     # AuditTrail -----
     output$audit_ui <- shiny::renderUI({
-      
       shinydashboard::box(
         width = 12,
         height = "calc(100vh - 60px)",
         title = NULL,
         solidHeader = TRUE,
         style = "padding: 0px; box-sizing: border-box; overflow-y: auto; display: block; margin: 0;",
-        htmltools::div(
-          style = "padding: 0px; box-sizing: border-box; height: calc(100vh - 60px); overflow-y: auto;",
-          DT::DTOutput(ns("audit_ui_dt"))
+        htmltools::tagList(
+          htmltools::tags$style(htmltools::HTML(
+            "
+            .audit-table .dataTables_wrapper {
+              width: 100% !important;
+            }
+            .audit-table table.dataTable {
+              width: 100% !important;
+            }
+            .audit-table table.dataTable th,
+            .audit-table table.dataTable td {
+              text-align: left !important;
+            }
+            "
+          )),
+          htmltools::div(
+            class = "audit-table",
+            style = "padding: 0px; box-sizing: border-box; height: calc(100vh - 60px); overflow-y: auto;",
+            DT::DTOutput(ns("audit_ui_dt"), width = "100%")
+          )
         )
       )
     })
@@ -558,6 +570,7 @@
       # audit_trail$value <- gsub("\n", "<br>", audit_trail$value)
       DT::datatable(
         audit_trail,
+        width = "100%",
         filter = "top",
         selection = list(mode = "single", selected = 1, target = "row"),
         options = list(
@@ -566,7 +579,9 @@
           scrollX = TRUE,
           scrollY = "calc(100vh - 60px - 10px - 170px)",
           scrollCollapse = TRUE,
+          autoWidth = TRUE,
           columnDefs = list(
+            list(className = "dt-left", targets = "_all"),
             list(
               targets = which(names(audit_trail) == "value"),
               createdCell = DT::JS(
