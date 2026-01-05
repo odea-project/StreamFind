@@ -66,6 +66,8 @@ validate_object.DB_MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_data_table(data.table::as.data.table(x$parameters$rtWindows))
   checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
+  checkmate::assert_numeric(x$parameters$rtWindows$rtmin, lower = 0)
+  checkmate::assert_numeric(x$parameters$rtWindows$rtmax, lower = 0)
   checkmate::assert_numeric(x$parameters$ppmThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minSNR, len = 1, lower = 0)

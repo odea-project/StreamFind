@@ -351,8 +351,7 @@
                   shiny::actionButton(
                     paste0(project_dir_var, "_confirm"),
                     "Confirm",
-                    class = "btn btn-success",
-                    disabled = "disabled"
+                    class = "btn btn-success"
                   ),
                   shiny::modalButton("Cancel")
                 ),
@@ -372,9 +371,6 @@
                     where = "afterBegin",
                     shiny::p(project_path, style = "margin: 0; color: #333; word-break: break-all;")
                   )
-                  # Enable confirm button
-                  shinyjs::removeClass(paste0(project_dir_var, "_confirm"), "disabled")
-                  shinyjs::runjs(paste0("document.getElementById('", paste0(project_dir_var, "_confirm"), "').disabled = false;"))
                 }
               })
 

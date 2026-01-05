@@ -67,6 +67,12 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
     return(FALSE)
   }
 
+  blks <- unique(analyses$blank)
+  if (length(blks) == 0 || all(is.na(blks))) {
+    warning("No blanks defined in the DB_MassSpecResults_NonTargetAnalysis.")
+    return(FALSE)
+  }
+
   parameters <- x$parameters
 
   cache_manager <- engine$Cache

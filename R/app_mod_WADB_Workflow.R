@@ -9,7 +9,7 @@
     solidHeader = TRUE,
     style = "padding: 0px;",
     htmltools::div(
-      style = "padding: 10px;",
+      style = "padding: 0px;",
       shiny::fluidRow(
         shiny::column(
           width = 6,
@@ -72,7 +72,21 @@
         background-color: white;
         border-radius: 4px;
         padding: 10px;
-        margin-bottom: 10px;
+        margin-bottom: 0px;
+        border: none;
+        box-shadow: none;
+      }
+      .box.workflow-box {
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .box.workflow-box > .box-body {
+        border: none !important;
+        box-shadow: none !important;
+      }
+      .col-sm-12 {
+        padding-left: 10px;
+        padding-right: 10px;
       }
       .method-details dt {
         font-weight: bold;
@@ -196,7 +210,6 @@
           ns(ns2("save_workflow")),
           label = "Save Workflow",
           title = "Save the workflow as .json or .rds",
-          class = "btn-success",
           filename = gsub(".sqlite|.rds", "", basename(rw_file)),
           filetype = extensions,
           style = "width: 150px;"
@@ -206,7 +219,8 @@
 
     output$persist_workflow_ui <- shiny::renderUI({
       rw <- reactive_workflow()
-      if (length(rw) > 0) {
+      saved_rw <- reactive_saved_workflow()
+      if (!identical(rw, saved_rw)) {
         shiny::actionButton(
           ns(ns2("persist_workflow")),
           "Save to DB",
@@ -235,7 +249,8 @@
         shiny::actionButton(
           ns(ns2("run_workflow")),
           "Run Workflow",
-          class = "btn-info",
+          class = "btn-primary",
+          style = "color: white;",
           width = 150
         )
       }
@@ -249,15 +264,16 @@
             class = "workflow-item",
             shiny::actionButton(
               ns(ns2(paste0("workflow_del_", i))),
-              label = "X",
-              class = "custom-buttonred",
+              label = shiny::HTML('<i class="fa fa-trash" style="color: white;"></i>'),
+              class = "btn btn-danger btn-sm",
               style = "margin-right: 10px;"
             ),
             shiny::span(i),
             shiny::actionButton(
               ns(ns2(paste0("workflow_edit_", i))),
               "Details",
-              class = "custom-button"
+              class = "btn-primary",
+              style = "color: white;"
             )
           )
         )
@@ -288,63 +304,60 @@
 
       shinydashboard::box(
         width = 12,
-        height = "calc(100vh - 50px - 30px - 20px)",
+        height = "calc(100vh - 60px - 10px)",
         title = NULL,
         solidHeader = TRUE,
         class = "workflow-box",
-        shiny::column(
-          width = 12,
-          htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 5px; gap: 10px;",
-            shiny::uiOutput(ns(ns2("load_workflow_ui"))),
-            shiny::uiOutput(ns(ns2("clear_workflow_ui")))
-          )
-        ),
-        shiny::column(
-          width = 12,
-          htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 5px; gap: 10px;",
-            shiny::uiOutput(ns(ns2("save_workflow_ui"))),
-            shiny::uiOutput(ns(ns2("persist_workflow_ui"))),
-            shiny::uiOutput(ns(ns2("discard_changes_ui")))
-          )
-        ),
-        shiny::column(
-          width = 12,
-          htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 5px; gap: 10px;",
-            shiny::uiOutput(ns(ns2("run_workflow_ui")))
-          )
-        ),
-        shiny::column(width = 12, htmltools::p("Select Processing Method", style = "margin-bottom: 5px; margin-top: 5px;")),
-        shiny::column(
-          width = 12,
-          shiny::selectInput(
-            ns(ns2("settings_selector")),
-            label = NULL,
-            choices = processing_methods_short,
-            multiple = FALSE
-          )
-        ),
-        shiny::column(
-          width = 12,
-          htmltools::div(
-            style = "display: flex; align-items: center; margin-bottom: 5px;",
-            shiny::actionButton(
-              ns(ns2("add_workflow_step")),
-              "Add Workflow Step"
+        htmltools::div(
+          style = "display: flex; flex-direction: column; height: 100%;",
+          shiny::column(
+            width = 12,
+            htmltools::div(
+              style = "display: flex; align-items: center; margin-bottom: 5px; gap: 10px; flex-wrap: wrap;",
+              shiny::uiOutput(ns(ns2("load_workflow_ui"))),
+              shiny::uiOutput(ns(ns2("save_workflow_ui"))),
+              shiny::uiOutput(ns(ns2("clear_workflow_ui"))),
+              shiny::uiOutput(ns(ns2("persist_workflow_ui"))),
+              shiny::uiOutput(ns(ns2("discard_changes_ui")))
             )
-          )
-        ),
-        shiny::column(width = 12, htmltools::h3("Workflow", style = "margin-bottom: 5px; margin-top: 5px;")),
-        shiny::column(
+          ),
+          shiny::column(
+            width = 12,
+            htmltools::div(
+              style = "display: flex; align-items: center; margin-bottom: 5px; gap: 10px;",
+              shiny::uiOutput(ns(ns2("run_workflow_ui")))
+            )
+          ),
+          shiny::column(width = 12, htmltools::p("Select Processing Method", style = "margin-bottom: 5px; margin-top: 5px;")),
+          shiny::column(
+            width = 12,
+            shiny::selectInput(
+              ns(ns2("settings_selector")),
+              label = NULL,
+              choices = processing_methods_short,
+              multiple = FALSE
+            )
+          ),
+          shiny::column(
+            width = 12,
+            htmltools::div(
+              style = "display: flex; align-items: center; margin-bottom: 5px;",
+              shiny::actionButton(
+                ns(ns2("add_workflow_step")),
+                "Add Workflow Step"
+              )
+            )
+          ),
+          shiny::column(width = 12, htmltools::h3("Workflow", style = "margin-bottom: 5px; margin-top: 5px;")),
+          shiny::column(
           width = 12,
           htmltools::div(
-            style = "height: calc(100vh - 50px - 30px - 30px - 54px - 54px - 10px - 30px - 50px - 54px - 40px); overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; padding: 0; margin: 0;",
+            style = "flex: 1; overflow-y: auto; padding: 0 10px 0 0; margin: 0;",
             sortable::rank_list(
               text = "Drag to order",
               labels = labels,
               input_id = ns(ns2("rank_workflow_names"))
+            )
             )
           )
         )
@@ -426,6 +439,8 @@
           pram_edit_name <- paste0(selected_method, "_edit_", param_name)
           pram_table_id <- paste0(pram_edit_name, "_table")
           pram_save_edit <- paste0(pram_edit_name, "_save")
+          pram_add_row <- paste0(pram_edit_name, "_add_row")
+          pram_types <- paste0(pram_edit_name, "_types")
 
           custom_datatable_str_out <- function(dt, n = 5) {
             output <- paste0(
@@ -479,7 +494,7 @@
               ns(ns2(pram_edit_name)),
               "Edit",
               class = "btn-primary",
-              style = "margin-bottom: 12px; margin-left: 5px;"
+              style = "margin-bottom: 12px; margin-left: 5px; color: white;"
             ),
             shiny::tags$br(),
             custom_datatable_str_out(param_value, 5)
@@ -564,8 +579,15 @@
 
           shiny::observeEvent(input[[pram_edit_name]], {
             param_edit_state[[pram_edit_name]] <- param_value
+            param_edit_state[[pram_types]] <- vapply(
+              param_value,
+              function(col) class(col)[1],
+              character(1)
+            )
             local_table_id <- pram_table_id
             local_save_id <- pram_save_edit
+            local_add_row <- pram_add_row
+            local_types_id <- pram_types
 
             output[[local_table_id]] <- DT::renderDT(
               param_edit_state[[pram_edit_name]],
@@ -591,6 +613,10 @@
                     "Save changes",
                     class = "btn-primary"
                   ),
+                  shiny::actionButton(
+                    ns(ns2(local_add_row)),
+                    "Add row"
+                  ),
                   shiny::modalButton("Cancel")
                 ),
                 size = "l",
@@ -599,8 +625,40 @@
             )
           }, ignoreInit = TRUE)
 
+          shiny::observeEvent(input[[pram_add_row]], {
+            df <- param_edit_state[[pram_edit_name]]
+            if (is.null(df)) {
+              return()
+            }
+            df[nrow(df) + 1, names(df)] <- NA
+            param_edit_state[[pram_edit_name]] <- df
+          }, ignoreInit = TRUE)
+
           shiny::observeEvent(input[[pram_save_edit]], {
             df <- param_edit_state[[pram_edit_name]]
+            col_types <- param_edit_state[[pram_types]]
+            if (!is.null(col_types)) {
+              for (col_name in names(df)) {
+                target_type <- col_types[[col_name]]
+                if (is.null(target_type)) next
+                df[[col_name]] <- switch(target_type,
+                  integer = suppressWarnings(as.integer(df[[col_name]])),
+                  numeric = suppressWarnings(as.numeric(df[[col_name]])),
+                  double = suppressWarnings(as.numeric(df[[col_name]])),
+                  logical = suppressWarnings(as.logical(df[[col_name]])),
+                  character = as.character(df[[col_name]]),
+                  factor = {
+                    lvls <- levels(param_value[[col_name]])
+                    factor(as.character(df[[col_name]]), levels = lvls)
+                  },
+                  ordered = {
+                    lvls <- levels(param_value[[col_name]])
+                    factor(as.character(df[[col_name]]), levels = lvls, ordered = TRUE)
+                  },
+                  df[[col_name]]
+                )
+              }
+            }
             settings$parameters[[param_name]] <- df
             validation_issue <- tryCatch(
               {
@@ -641,12 +699,12 @@
 
       shinydashboard::box(
         width = 12,
-        height = "calc(100vh - 50px - 30px - 20px)",
+        height = "calc(100vh - 60px - 10px)",
         title = NULL,
         solidHeader = TRUE,
         class = "method-box",
         htmltools::div(
-          style = "height: calc(100vh - 50px - 30px - 10px - 40px); overflow-y: auto; padding: 10px;",
+          style = "height: calc(100vh - 60px - 20px); overflow-y: auto; padding: 5px;",
           shiny::tags$div(
             class = "method-details",
             shiny::h3(method_editor_title, style = "margin-bottom: 10px;"),
@@ -726,9 +784,29 @@
       new_order <- input$rank_workflow_names
       new_order <- unname(vapply(
         new_order,
-        function(z) strsplit(z, "\n")[[1]][2],
-        NA_character_
+        function(z) {
+          res <- tryCatch({
+            parts <- as.character(z)
+            parts <- unlist(strsplit(parts, "\n"))
+            parts <- parts[nzchar(parts)] # drop empty lines to avoid zero-length
+            if (length(parts) >= 2) {
+              parts[2]
+            } else if (length(parts) >= 1) {
+              parts[1]
+            } else {
+              NA_character_
+            }
+          }, error = function(...) NA_character_)
+          if (length(res) == 0) NA_character_ else res[[1]]
+        },
+        character(1),
+        USE.NAMES = FALSE
       ))
+      new_order <- new_order[!is.na(new_order) & nzchar(new_order)]
+      new_order <- new_order[new_order %in% names(rw)]
+      if (length(new_order) == 0) {
+        return()
+      }
 
       withCallingHandlers(
         {

@@ -1,4 +1,3 @@
-
 # Development ------------------------------------------------------------------
 
 # Packages to install ----
@@ -24,13 +23,13 @@ pkgdown::build_reference()
 devtools::check()
 
 # Loads all dependencies
-devtools::load_all() #Ctrl+Shift+L
+devtools::load_all() # Ctrl+Shift+L
 
 # Lists TODOs
 todor::todor()
 
 
-#chattr::chattr_use("copilot")
+# chattr::chattr_use("copilot")
 chattr::chattr_app()
 
 zlibbioc::pkgconfig()
@@ -49,8 +48,7 @@ zlibbioc::pkgconfig()
 # \U1f5f9 check in a box
 
 
-
-#gsub(".*M(.*)\\].*", "\\1", adduct_ion)
+# gsub(".*M(.*)\\].*", "\\1", adduct_ion)
 
 file_path <- "R/fct_ProcessingStep.R"
 file_content <- readLines(file_path, encoding = "UTF-8")

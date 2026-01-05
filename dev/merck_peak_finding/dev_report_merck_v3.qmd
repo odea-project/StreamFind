@@ -66,8 +66,7 @@ library(StreamFind)
 
 devtools::load_all()
 
-source(file.path("C:\\Users\\apoli\\Documents\\github\\StreamFind\\dev\\merck_peak_finding\\dev_resources.R"))
-
+source(file.path(getwd(), "dev/merck_peak_finding/dev_resources.R"))
 examples <- unique(files_merck_ex$example)
 ```
 

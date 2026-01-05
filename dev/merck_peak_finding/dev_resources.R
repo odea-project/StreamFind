@@ -5,6 +5,9 @@ if (!dir.exists(all_files_dir)) {
   all_files_dir <- "D:\\peak_finding_files_ex"
 }
 if (!dir.exists(all_files_dir)) {
+  all_files_dir <- "E:\\example_ms_files\\peak_finding_files_ex"
+}
+if (!dir.exists(all_files_dir)) {
   stop("Directory with example files not found.")
 }
 all_files <- list.files(all_files_dir, full.names = TRUE, recursive = TRUE)
@@ -74,7 +77,7 @@ merck2_ex <- lapply(acc_ids_merck_2, function(acc_id) {
   db_ex$name <- paste0("Peak ", db_ex$MW, " ", db_ex$rt)
   db_ex$example <- acc_id
   setcolorder(db_ex, c("example", "name", "MW", "rt", "mz", "formula", "ppm"))
-  
+
   files_dt <- data.table(
     example = rep(acc_id, length(files_ex)),
     blank = FALSE,
@@ -82,7 +85,7 @@ merck2_ex <- lapply(acc_ids_merck_2, function(acc_id) {
     file_path = files_ex
   )
   files_dt$blank <- grepl("blank", files_dt$file_name)
-  
+
   list(files = files_dt, db = db_ex)
 })
 
