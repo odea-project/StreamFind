@@ -32,3 +32,47 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
   );
   return(nts_data.features_as_list_of_dt());
 };
+
+// MARK: rcpp_nts_load_features_ms1_2
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_load_features_ms1_2(Rcpp::List info,
+                                        Rcpp::List spectra_headers,
+                                        Rcpp::List feature_list,
+                                        bool filtered,
+                                        std::vector<float> rtWindow,
+                                        std::vector<float> mzWindow,
+                                        float minTracesIntensity,
+                                        float mzClust,
+                                        float presence)
+{
+  nts::NTS_DATA nts_data(info, spectra_headers, feature_list);
+  nts_data.load_features_ms1(
+      filtered,
+      rtWindow,
+      mzWindow,
+      minTracesIntensity,
+      mzClust,
+      presence);
+  return nts_data.features_as_list_of_dt();
+};
+
+// MARK: rcpp_nts_load_features_ms2_2
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_load_features_ms2_2(Rcpp::List info,
+                                        Rcpp::List spectra_headers,
+                                        Rcpp::List feature_list,
+                                        bool filtered,
+                                        float minTracesIntensity,
+                                        float isolationWindow,
+                                        float mzClust,
+                                        float presence)
+{
+  nts::NTS_DATA nts_data(info, spectra_headers, feature_list);
+  nts_data.load_features_ms2(
+      filtered,
+      minTracesIntensity,
+      isolationWindow,
+      mzClust,
+      presence);
+  return nts_data.features_as_list_of_dt();
+};

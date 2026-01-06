@@ -157,6 +157,9 @@ as.ProcessingStep <- function(value) {
     if (is.na(value$version)) {
       value$version <- as.character(packageVersion("StreamFind"))
     }
+    if (is.na(value$doi)) {
+      value$doi <- NA_character_
+    }
   }
   settings_constructor <- paste0(
     value$type,
@@ -170,7 +173,7 @@ as.ProcessingStep <- function(value) {
     warning(paste0(settings_constructor, " not available!"))
     return(NULL)
   }
-  return(do.call(settings_constructor, value$parameters))
+  do.call(settings_constructor, value$parameters)
 }
 
 # MARK: as.json

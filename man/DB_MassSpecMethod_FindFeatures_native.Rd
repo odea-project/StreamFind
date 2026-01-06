@@ -5,7 +5,7 @@
 \title{DB_MassSpecMethod_FindFeatures_native class}
 \usage{
 DB_MassSpecMethod_FindFeatures_native(
-  rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
+  rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
   ppmThreshold = 15,
   noiseThreshold = 250,
   minSNR = 3,

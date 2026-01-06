@@ -132,6 +132,7 @@ show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
     "filtered" = features$filtered[match(analyses$analysis, features$analysis)],
     "feature_groups" = groups$groups[match(analyses$analysis, groups$analysis)]
   )
+  info <- info[order(tolower(info$analysis), info$analysis), ]
   print(info)
 }
 
@@ -200,6 +201,10 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     query <- paste0(query, " WHERE ", paste(conditions, collapse = " AND "))
     features <- DBI::dbGetQuery(conn, query)
     if (!is.null(ids)) features$name <- ids[features$feature]
+    if ("analysis" %in% colnames(features)) {
+      rep_map <- data.table::data.table(analysis = all_names, replicate = rpls)
+      features <- merge(features, rep_map, by = "analysis", all.x = TRUE)
+    }
     return(data.table::as.data.table(features))
   } else if (any(!(is.null(mass) && is.null(mz) && is.null(rt) && is.null(mobility)))) {
     targets <- MassSpecTargets(
@@ -216,14 +221,19 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     )
     conditions <- apply(targets, 1, function(tgt) {
       sprintf(
-        "(mz >= %f AND mz <= %f AND rt >= %f AND rt <= %f AND analysis = '%s' AND polarity = %d)",
+        "(mz >= %f AND mz <= %f AND rt >= %f AND rt <= %f AND analysis = '%s' AND polarity = %d AND filtered = %s)",
         as.numeric(tgt["mzmin"]), as.numeric(tgt["mzmax"]),
         as.numeric(tgt["rtmin"]), as.numeric(tgt["rtmax"]),
-        tgt["analysis"], as.integer(tgt["polarity"])
+        tgt["analysis"], as.integer(tgt["polarity"]),
+        ifelse(filtered, "TRUE", "FALSE")
       )
     })
     query <- sprintf("SELECT * FROM Features WHERE %s", paste(conditions, collapse = " OR "))
     features <- DBI::dbGetQuery(conn, query)
+    if ("analysis" %in% colnames(features)) {
+      rep_map <- data.table::data.table(analysis = all_names, replicate = rpls)
+      features <- merge(features, rep_map, by = "analysis", all.x = TRUE)
+    }
     for (i in seq_len(nrow(targets))) {
       tgt <- targets[i, ]
       features$name[
@@ -237,6 +247,10 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     query <- paste0(query, " WHERE ", paste(conditions, collapse = " AND "))
     features <- DBI::dbGetQuery(conn, query)
     if (!is.null(ids)) features$name <- ids[features$feature]
+    if ("analysis" %in% colnames(features)) {
+      rep_map <- data.table::data.table(analysis = all_names, replicate = rpls)
+      features <- merge(features, rep_map, by = "analysis", all.x = TRUE)
+    }
     return(data.table::as.data.table(features))
   }
 }
@@ -256,11 +270,10 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @template arg-ms-rtExpand
 #' @template arg-ms-mzExpand
 #' @template arg-ms-filtered
-#' @template arg-legendNames
 #' @template arg-labs
-#' @template arg-colorBy
+#' @template arg-plot-groupBy
 #' @template arg-interactive
-#' @template arg-renderEngine
+#' @param showDetails Logical, show hover details in interactive plots.
 #' @export
 #'
 plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
@@ -278,13 +291,12 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     mzExpand = 0.001,
     useLoadedData = TRUE,
     filtered = FALSE,
-    legendNames = NULL,
     xLab = NULL,
     yLab = NULL,
     title = NULL,
-    colorBy = "targets",
+    groupBy = "feature",
     interactive = TRUE,
-    renderEngine = "webgl") {
+    showDetails = FALSE) {
   fts <- get_features(
     x,
     analyses,
@@ -342,7 +354,12 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 
   eic <- data.table::rbindlist(eic_list, fill = TRUE)
-  fts <- .make_colorBy_varkey(fts, colorBy, legendNames)
+  if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(fts)))) {
+    warning("groupBy columns not found in feature data")
+    return(NULL)
+  }
+  vals <- lapply(groupBy, function(col) as.character(fts[[col]]))
+  fts$var <- do.call(paste, c(vals, sep = " - "))
   cl <- .get_colors(unique(fts$var))
   cl50 <- paste(cl, "50", sep = "")
   names(cl50) <- names(cl)
@@ -381,7 +398,7 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       ggplot2::scale_fill_manual(values = cl50, guide = "none") +
       ggplot2::theme_classic() +
       ggplot2::labs(x = xLab, y = yLab, title = title) +
-      ggplot2::labs(color = colorBy)
+      ggplot2::labs(color = groupBy)
 
     plot
   } else {
@@ -396,13 +413,55 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       title = yLab,
       titlefont = list(size = 12, color = "black")
     )
+    make_hover_text <- function(pk_row) {
+      fmt_num <- function(x, digits = 2) {
+        if (is.null(x)) return(NA_real_)
+        ifelse(is.na(x), NA, round(as.numeric(x), digits))
+      }
+      base_lines <- c(
+        paste0("analysis: ", pk_row$analysis),
+        paste0("feature: ", pk_row$feature),
+        paste0("feature_component: ", pk_row$feature_component),
+        paste0("feature_group: ", pk_row$feature_group),
+        paste0("adduct: ", pk_row$adduct),
+        paste0("rt: ", round(pk_row$rt, 2)),
+        paste0("m/z: ", round(pk_row$mz, 4)),
+        paste0("mass: ", fmt_num(pk_row$mass, 4)),
+        paste0("noise: ", fmt_num(pk_row$noise, 0)),
+        paste0("intensity: ", round(pk_row$intensity, 0)),
+        paste0("sn: ", fmt_num(pk_row$sn, 1)),
+        paste0("area: ", fmt_num(pk_row$area, 0)),
+        paste0("rtmin: ", fmt_num(pk_row$rtmin, 2)),
+        paste0("rtmax: ", fmt_num(pk_row$rtmax, 2)),
+        paste0("width: ", fmt_num(pk_row$width, 2)),
+        paste0("mzmin: ", fmt_num(pk_row$mzmin, 4)),
+        paste0("mzmax: ", fmt_num(pk_row$mzmax, 4)),
+        paste0("ppm: ", fmt_num(pk_row$ppm, 1)),
+        paste0("fwhm_rt: ", fmt_num(pk_row$fwhm_rt, 2)),
+        paste0("fwhm_mz: ", fmt_num(pk_row$fwhm_mz, 4)),
+        paste0("gaussian_A: ", fmt_num(pk_row$gaussian_A, 2)),
+        paste0("gaussian_mu: ", fmt_num(pk_row$gaussian_mu, 2)),
+        paste0("gaussian_sigma: ", fmt_num(pk_row$gaussian_sigma, 2)),
+        paste0("gaussian_r2: ", fmt_num(pk_row$gaussian_r2, 4)),
+        paste0("polarity: ", pk_row$polarity),
+        paste0("filtered: ", pk_row$filtered),
+        paste0("filter: ", pk_row$filter),
+        paste0("filled: ", pk_row$filled),
+        paste0("correction: ", fmt_num(pk_row$correction, 4)),
+        paste0("eic_size: ", pk_row$eic_size),
+        paste0("ms1_size: ", pk_row$ms1_size),
+        paste0("ms2_size: ", pk_row$ms2_size)
+      )
+      paste(c(base_lines), collapse = "<br>")
+    }
     show_legend <- rep(TRUE, length(cl))
     names(show_legend) <- names(cl)
     plot <- plot_ly()
     for (i in seq_len(nrow(fts))) {
       pk <- fts[i, ]
       ft_var <- pk$var
-      hT <- .make_features_hover_string(pk)
+      hT <- if (showDetails) make_hover_text(pk) else ""
+      hoverinfo_val <- if (showDetails) "text" else "skip"
       temp <- eic[eic$analysis == pk$analysis & eic$feature == pk$feature, ]
       if (nrow(temp) > 0) {
         peak_region <- temp[temp$rt >= pk$rtmin & temp$rt <= pk$rtmax, ]
@@ -412,11 +471,11 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
               data = peak_region,
               x = ~rt,
               y = ~intensity,
-              type = "scatter",
+              type = "scattergl",
               mode = "markers",
               marker = list(color = cl[ft_var], size = 5),
-              text = paste(hT, "<br>RT: ", round(peak_region$rt, 2), "<br>Intensity: ", round(peak_region$intensity, 0)),
-              hoverinfo = "text",
+              text = if (showDetails) paste(hT, "<br>RT: ", round(peak_region$rt, 2), "<br>Intensity: ", round(peak_region$intensity, 0)) else NULL,
+              hoverinfo = hoverinfo_val,
               name = ft_var,
               legendgroup = ft_var,
               showlegend = FALSE
@@ -429,8 +488,8 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
               ymax = ~intensity,
               line = list(color = cl[ft_var], width = 1.5),
               fillcolor = cl50[ft_var],
-              text = paste(hT, "<br>RT: ", round(peak_region$rt, 2), "<br>Intensity: ", round(peak_region$intensity, 0)),
-              hoverinfo = "text",
+              text = if (showDetails) paste(hT, "<br>RT: ", round(peak_region$rt, 2), "<br>Intensity: ", round(peak_region$intensity, 0)) else NULL,
+              hoverinfo = hoverinfo_val,
               name = ft_var,
               legendgroup = ft_var,
               showlegend = show_legend[ft_var]
@@ -450,7 +509,7 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
             data = temp,
             x = ~rt,
             y = ~intensity,
-            type = "scatter",
+            type = "scattergl",
             mode = "lines",
             line = list(color = cl[ft_var], width = 0.5),
             name = ft_var,
@@ -462,19 +521,529 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     }
 
     plot <- plot %>% plotly::layout(xaxis = xaxis, yaxis = yaxis, title = title)
-    if (renderEngine %in% "webgl") {
-      # Fix for warnings with hoveron when webgl is used
-      plot$x$attrs <- lapply(plot$x$attrs, function(x) {
-        if (!is.null(x[["hoveron"]])) {
-          x[["hoveron"]] <- NULL
-        }
-        x
-      })
-      plot <- plot %>% plotly::toWebGL()
-    }
     plot
   }
 }
+
+# MARK: plot_features_ms1
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot MS1 spectra for selected features.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-features
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-normalized
+#' @template arg-ms-filtered
+#' @template arg-plot-groupBy
+#' @export
+#'
+plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    normalized = FALSE,
+    filtered = FALSE,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    groupBy = "feature",
+    showText = TRUE,
+    interactive = TRUE) {
+  fts <- get_features(
+    x,
+    analyses,
+    features,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    filtered
+  )
+
+  if (nrow(fts) == 0) {
+    message("\u2717 MS1 traces not found for the targets!")
+    return(NULL)
+  }
+
+  ms1_list <- lapply(
+    seq_len(nrow(fts)),
+    function(i) {
+      ft <- fts[i, ]
+      sel <- !is.na(ft$ms1_mz) && nchar(ft$ms1_mz) > 0 &&
+        !is.na(ft$ms1_intensity) && nchar(ft$ms1_intensity) > 0
+      if (!sel) return(data.table::data.table())
+      mz_dec <- rcpp_streamcraft_decode_string(ft$ms1_mz)
+      int_dec <- rcpp_streamcraft_decode_string(ft$ms1_intensity)
+      if (length(mz_dec) == 0 || length(mz_dec) != length(int_dec)) {
+        return(data.table::data.table())
+      }
+      data.table::data.table(
+        mz = mz_dec,
+        intensity = int_dec,
+        analysis = ft$analysis,
+        feature = ft$feature
+      )
+    }
+  )
+
+  if (normalized) {
+    ms1_list <- lapply(ms1_list, function(z) {
+      if (!is.null(z) && nrow(z) > 0) {
+        max_int <- max(z$intensity)
+        if (max_int > 0) z$intensity <- z$intensity / max_int
+      }
+      z
+    })
+  }
+
+  ms1 <- data.table::rbindlist(ms1_list, fill = TRUE)
+  if (nrow(ms1) == 0) {
+    message("\u2717 MS1 traces not found for the targets!")
+    return(NULL)
+  }
+
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  rpls <- DBI::dbGetQuery(conn, "SELECT analysis, replicate FROM Analyses")
+  rpl_map <- rpls$replicate
+  names(rpl_map) <- rpls$analysis
+  ms1$replicate <- rpl_map[ms1$analysis]
+  data.table::setcolorder(ms1, c("analysis", "replicate", "feature"))
+
+  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
+  unique_ms1_id <- paste0(ms1$analysis, "-", ms1$feature)
+  if ("feature_group" %in% colnames(fts)) {
+    fgs <- fts$feature_group
+    names(fgs) <- unique_fts_id
+    ms1$group <- fgs[unique_ms1_id]
+    data.table::setcolorder(ms1, c("analysis", "replicate", "group"))
+  } else if ("group" %in% colnames(fts)) {
+    fgs <- fts$group
+    names(fgs) <- unique_fts_id
+    ms1$group <- fgs[unique_ms1_id]
+    data.table::setcolorder(ms1, c("analysis", "replicate", "group"))
+  }
+
+  if ("name" %in% colnames(fts)) {
+    tar_ids <- fts$name
+    names(tar_ids) <- unique_fts_id
+    ms1$name <- tar_ids[unique_ms1_id]
+    data.table::setcolorder(ms1, c("analysis", "replicate", "name"))
+  }
+
+  if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(ms1)))) {
+    warning("groupBy columns not found in MS1 data")
+    return(NULL)
+  }
+  vals <- lapply(groupBy, function(col) as.character(ms1[[col]]))
+  ms1$var <- do.call(paste, c(vals, sep = " - "))
+  ms1$loop <- paste0(ms1$analysis, ms1$replicate, ms1$id, ms1$var)
+  cl <- .get_colors(unique(ms1$var))
+
+  if (showText) {
+    ms1$text_string <- paste0(round(ms1$mz, 4))
+  } else {
+    ms1$text_string <- ""
+  }
+
+  if (!interactive) {
+    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    plot <- ggplot2::ggplot(
+      ms1,
+      ggplot2::aes(x = mz, y = intensity, group = loop)
+    ) +
+      ggplot2::geom_segment(
+        ggplot2::aes(
+          xend = mz,
+          yend = 0,
+          color = var
+        ),
+        linewidth = 1
+      )
+
+    if (showText) {
+      plot <- plot +
+        ggplot2::geom_text(
+          ggplot2::aes(label = text_string),
+          vjust = 0.2,
+          hjust = -0.2,
+          angle = 90,
+          size = 2,
+          show.legend = FALSE
+        )
+    }
+
+    plot <- plot +
+      ggplot2::scale_y_continuous(
+        expand = c(0, 0),
+        limits = c(0, max(ms1$intensity) * 1.5)
+      ) +
+      ggplot2::labs(title = title, x = xLab, y = yLab) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = groupBy)
+
+    plot
+  } else {
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    ticksMin <- plyr::round_any(min(ms1$mz, na.rm = TRUE) * 0.9, 10)
+    ticksMax <- plyr::round_any(max(ms1$mz, na.rm = TRUE) * 1.1, 10)
+
+    title <- list(text = title, font = list(size = 12, color = "black"))
+
+    xaxis <- list(
+      linecolor = "black",
+      title = xLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(ticksMin, ticksMax),
+      dtick = round((max(ms1$mz) / 10), -1),
+      ticks = "outside"
+    )
+
+    yaxis <- list(
+      linecolor = "black",
+      title = yLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(0, max(ms1$intensity) * 1.5)
+    )
+
+    plot <- plot_ly()
+    seen_vars <- character(0)
+    for (lp in unique(ms1$loop)) {
+      seg <- ms1[ms1$loop == lp, ]
+      if (nrow(seg) == 0) next
+      var_val <- seg$var[1]
+      show_leg <- !(var_val %in% seen_vars)
+      if (show_leg) seen_vars <- c(seen_vars, var_val)
+      x_seg <- as.numeric(rbind(seg$mz, seg$mz, rep(NA, nrow(seg))))
+      y_seg <- as.numeric(rbind(rep(0, nrow(seg)), seg$intensity, rep(NA, nrow(seg))))
+      plot <- plot %>%
+        add_trace(
+          x = as.vector(x_seg),
+          y = as.vector(y_seg),
+          type = "scattergl",
+          mode = "lines",
+          line = list(color = cl[var_val], width = 1),
+          name = var_val,
+          legendgroup = var_val,
+          showlegend = show_leg,
+          hoverinfo = "skip"
+        )
+      if (showText) {
+        plot <- plot %>%
+          add_trace(
+            x = seg$mz,
+            y = seg$intensity,
+            type = "scattergl",
+            mode = "markers+text",
+            marker = list(size = 2, color = cl[var_val]),
+            text = seg$text_string,
+            textposition = "top center",
+            textfont = list(size = 9, color = cl[var_val]),
+            hoverinfo = "text",
+            name = var_val,
+            legendgroup = var_val,
+            showlegend = FALSE
+          )
+      }
+    }
+
+    plot <- plot %>%
+      plotly::layout(
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        uniformtext = list(minsize = 6, mode = "show")
+      )
+
+    plot
+  }
+}
+
+# MARK: plot_features_ms2
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot MS2 spectra for selected features.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-features
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-normalized
+#' @template arg-ms-filtered
+#' @template arg-plot-groupBy
+#' @export
+#'
+plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    features = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    normalized = TRUE,
+    filtered = FALSE,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    groupBy = "feature",
+    showText = TRUE,
+    interactive = TRUE) {
+  fts <- get_features(
+    x,
+    analyses,
+    features,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    filtered
+  )
+
+  if (nrow(fts) == 0) {
+    message("\u2717 MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  ms2_list <- lapply(
+    seq_len(nrow(fts)),
+    function(i) {
+      ft <- fts[i, ]
+      sel <- !is.na(ft$ms2_mz) && nchar(ft$ms2_mz) > 0 &&
+        !is.na(ft$ms2_intensity) && nchar(ft$ms2_intensity) > 0
+      if (!sel) return(data.table::data.table())
+      mz_dec <- rcpp_streamcraft_decode_string(ft$ms2_mz)
+      int_dec <- rcpp_streamcraft_decode_string(ft$ms2_intensity)
+      if (length(mz_dec) == 0 || length(mz_dec) != length(int_dec)) {
+        return(data.table::data.table())
+      }
+      data.table::data.table(
+        mz = mz_dec,
+        intensity = int_dec,
+        analysis = ft$analysis,
+        feature = ft$feature,
+        is_pre = FALSE
+      )
+    }
+  )
+
+  if (normalized) {
+    ms2_list <- lapply(ms2_list, function(z) {
+      if (!is.null(z) && nrow(z) > 0) {
+        max_int <- max(z$intensity)
+        if (max_int > 0) z$intensity <- z$intensity / max_int
+      }
+      z
+    })
+  }
+
+  ms2 <- data.table::rbindlist(ms2_list, fill = TRUE)
+  if (nrow(ms2) == 0) {
+    message("\u2717 MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  rpls <- DBI::dbGetQuery(conn, "SELECT analysis, replicate FROM Analyses")
+  rpl_map <- rpls$replicate
+  names(rpl_map) <- rpls$analysis
+  ms2$replicate <- rpl_map[ms2$analysis]
+  data.table::setcolorder(ms2, c("analysis", "replicate", "feature"))
+
+  unique_fts_id <- paste0(fts$analysis, "-", fts$feature)
+  unique_ms2_id <- paste0(ms2$analysis, "-", ms2$feature)
+  if ("feature_group" %in% colnames(fts)) {
+    fgs <- fts$feature_group
+    names(fgs) <- unique_fts_id
+    ms2$group <- fgs[unique_ms2_id]
+    data.table::setcolorder(ms2, c("analysis", "replicate", "group"))
+  } else if ("group" %in% colnames(fts)) {
+    fgs <- fts$group
+    names(fgs) <- unique_fts_id
+    ms2$group <- fgs[unique_ms2_id]
+    data.table::setcolorder(ms2, c("analysis", "replicate", "group"))
+  }
+
+  if ("name" %in% colnames(fts)) {
+    tar_ids <- fts$name
+    names(tar_ids) <- unique_fts_id
+    ms2$name <- tar_ids[unique_ms2_id]
+    data.table::setcolorder(ms2, c("analysis", "replicate", "name"))
+  }
+
+  if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(ms2)))) {
+    warning("groupBy columns not found in MS2 data")
+    return(NULL)
+  }
+  vals <- lapply(groupBy, function(col) as.character(ms2[[col]]))
+  ms2$var <- do.call(paste, c(vals, sep = " - "))
+
+  if (showText) {
+    ms2$text_string <- paste0(round(ms2$mz, 4))
+    ms2$text_string[ms2$is_pre] <- paste0("Pre ", ms2$text_string[ms2$is_pre])
+  } else {
+    ms2$text_string <- ""
+  }
+
+  ms2$loop <- paste0(ms2$analysis, ms2$replicate, ms2$id, ms2$var)
+  cl <- .get_colors(unique(ms2$var))
+
+  if (!interactive) {
+    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    ms2$linesize <- 1
+    ms2$linesize[ms2$is_pre] <- 2
+
+    plot <- ggplot2::ggplot(
+      ms2,
+      ggplot2::aes(x = mz, y = intensity, group = loop)
+    ) +
+      ggplot2::geom_segment(ggplot2::aes(
+        xend = mz,
+        yend = 0,
+        color = var,
+        linewidth = linesize
+      ))
+
+    if (showText) {
+      plot <- plot +
+        ggplot2::geom_text(
+          ggplot2::aes(label = text_string),
+          vjust = 0.2,
+          hjust = -0.2,
+          angle = 90,
+          size = 2,
+          show.legend = FALSE
+        )
+    }
+
+    plot <- plot +
+      ggplot2::scale_y_continuous(
+        expand = c(0, 0),
+        limits = c(0, max(ms2$intensity) * 1.5)
+      ) +
+      ggplot2::labs(title = title, x = xLab, y = yLab) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::scale_linewidth_continuous(range = c(1, 2), guide = "none") +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = groupBy)
+
+    plot
+  } else {
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    ms2$linesize <- 0.01
+    ms2$linesize[ms2$is_pre] <- 2
+
+    ticksMin <- plyr::round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
+    ticksMax <- plyr::round_any(max(ms2$mz, na.rm = TRUE) * 1.1, 10)
+
+    title <- list(text = title, font = list(size = 12, color = "black"))
+
+    xaxis <- list(
+      linecolor = "black",
+      title = xLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(ticksMin, ticksMax),
+      dtick = round((max(ms2$mz) / 10), -1),
+      ticks = "outside"
+    )
+
+    yaxis <- list(
+      linecolor = "black",
+      title = yLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(0, max(ms2$intensity) * 1.5)
+    )
+
+    plot <- plot_ly()
+    seen_vars <- character(0)
+    for (lp in unique(ms2$loop)) {
+      seg <- ms2[ms2$loop == lp, ]
+      if (nrow(seg) == 0) next
+      var_val <- seg$var[1]
+      show_leg <- !(var_val %in% seen_vars)
+      if (show_leg) seen_vars <- c(seen_vars, var_val)
+      x_seg <- as.numeric(rbind(seg$mz, seg$mz, rep(NA, nrow(seg))))
+      y_seg <- as.numeric(rbind(rep(0, nrow(seg)), seg$intensity, rep(NA, nrow(seg))))
+      plot <- plot %>%
+        add_trace(
+          x = as.vector(x_seg),
+          y = as.vector(y_seg),
+          type = "scattergl",
+          mode = "lines",
+          line = list(color = cl[var_val], width = seg$linesize[1]),
+          name = var_val,
+          legendgroup = var_val,
+          showlegend = show_leg,
+          hoverinfo = "skip"
+        )
+      if (showText) {
+        plot <- plot %>%
+          add_trace(
+            x = seg$mz,
+            y = seg$intensity,
+            type = "scattergl",
+            mode = "markers+text",
+            marker = list(size = 2, color = cl[var_val]),
+            text = paste0(seg$text_string, "  "),
+            textposition = "top center",
+            textangle = 90,
+            textfont = list(size = 9, color = cl[var_val]),
+            hoverinfo = "text",
+            name = var_val,
+            legendgroup = var_val,
+            showlegend = FALSE
+          )
+      }
+    }
+
+    plot <- plot %>%
+      plotly::layout(
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        uniformtext = list(minsize = 6, mode = "show")
+      )
+
+    plot
+  }
+}
+
 
 # MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt
 #' @noRd

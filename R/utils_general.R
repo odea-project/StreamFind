@@ -15,6 +15,7 @@
     return(all_analyses)
   }
   if (is.numeric(analyses)) {
+    all_analyses <- sort(all_analyses)
     valid_idx <- analyses[analyses >= 1 & analyses <= length(all_analyses)]
     if (length(valid_idx) == 0) return(character())
     return(all_analyses[valid_idx])
@@ -862,7 +863,7 @@
 #' @template arg-sql-params
 #' @return Data frame with query results.
 #' @noRd
-#' 
+#'
 .query_db <- function(conn, query, params = list()) {
   if (is.null(params)) {
     res <- DBI::dbGetQuery(conn, query)
@@ -878,7 +879,7 @@
 #' @param conn Database connection object.
 #' @return Character vector with table names.
 #' @noRd
-#' 
+#'
 .list_db_tables <- function(conn) {
   tables <- DBI::dbListTables(conn)
   tables
@@ -891,7 +892,7 @@
 #' @param table_name Name of the table to get information about.
 #' @return Data frame with table information.
 #' @noRd
-#' 
+#'
 .get_db_table_info <- function(conn, table_name) {
   res <- NULL
   tryCatch({

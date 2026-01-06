@@ -5,6 +5,14 @@ rcpp_nts_find_features2 <- function(info, spectra_headers, rtWindowsMin, rtWindo
     .Call(`_StreamFind_rcpp_nts_find_features2`, info, spectra_headers, rtWindowsMin, rtWindowsMax, ppmThreshold, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth, base_quantile, debug_mz)
 }
 
+rcpp_nts_load_features_ms1_2 <- function(info, spectra_headers, feature_list, filtered, rtWindow, mzWindow, minTracesIntensity, mzClust, presence) {
+    .Call(`_StreamFind_rcpp_nts_load_features_ms1_2`, info, spectra_headers, feature_list, filtered, rtWindow, mzWindow, minTracesIntensity, mzClust, presence)
+}
+
+rcpp_nts_load_features_ms2_2 <- function(info, spectra_headers, feature_list, filtered, minTracesIntensity, isolationWindow, mzClust, presence) {
+    .Call(`_StreamFind_rcpp_nts_load_features_ms2_2`, info, spectra_headers, feature_list, filtered, minTracesIntensity, isolationWindow, mzClust, presence)
+}
+
 rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFunction = "max") {
     .Call(`_StreamFind_rcpp_fill_bin_spectra`, spectra, bin_mat, bins, overlap, summaryFunction)
 }

@@ -472,6 +472,21 @@ namespace nts
         const float &base_quantile,
         const float &debug_mz = 0.0f);
 
+    void load_features_ms1(
+        bool filtered,
+        const std::vector<float> &rtWindow,
+        const std::vector<float> &mzWindow,
+        float minTracesIntensity,
+        float mzClust,
+        float presence);
+
+    void load_features_ms2(
+        bool filtered,
+        float minTracesIntensity,
+        float isolationWindow,
+        float mzClust,
+        float presence);
+
   };
 }; // namespace nts
 

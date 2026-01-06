@@ -32,6 +32,43 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_nts_load_features_ms1_2
+Rcpp::List rcpp_nts_load_features_ms1_2(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, bool filtered, std::vector<float> rtWindow, std::vector<float> mzWindow, float minTracesIntensity, float mzClust, float presence);
+RcppExport SEXP _StreamFind_rcpp_nts_load_features_ms1_2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP filteredSEXP, SEXP rtWindowSEXP, SEXP mzWindowSEXP, SEXP minTracesIntensitySEXP, SEXP mzClustSEXP, SEXP presenceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
+    Rcpp::traits::input_parameter< std::vector<float> >::type rtWindow(rtWindowSEXP);
+    Rcpp::traits::input_parameter< std::vector<float> >::type mzWindow(mzWindowSEXP);
+    Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
+    Rcpp::traits::input_parameter< float >::type mzClust(mzClustSEXP);
+    Rcpp::traits::input_parameter< float >::type presence(presenceSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_load_features_ms1_2(info, spectra_headers, feature_list, filtered, rtWindow, mzWindow, minTracesIntensity, mzClust, presence));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_nts_load_features_ms2_2
+Rcpp::List rcpp_nts_load_features_ms2_2(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, bool filtered, float minTracesIntensity, float isolationWindow, float mzClust, float presence);
+RcppExport SEXP _StreamFind_rcpp_nts_load_features_ms2_2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP filteredSEXP, SEXP minTracesIntensitySEXP, SEXP isolationWindowSEXP, SEXP mzClustSEXP, SEXP presenceSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
+    Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
+    Rcpp::traits::input_parameter< float >::type isolationWindow(isolationWindowSEXP);
+    Rcpp::traits::input_parameter< float >::type mzClust(mzClustSEXP);
+    Rcpp::traits::input_parameter< float >::type presence(presenceSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_load_features_ms2_2(info, spectra_headers, feature_list, filtered, minTracesIntensity, isolationWindow, mzClust, presence));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_fill_bin_spectra
 std::vector<double> rcpp_fill_bin_spectra(Rcpp::DataFrame spectra, Rcpp::DataFrame bin_mat, Rcpp::List bins, double overlap, std::string summaryFunction);
 RcppExport SEXP _StreamFind_rcpp_fill_bin_spectra(SEXP spectraSEXP, SEXP bin_matSEXP, SEXP binsSEXP, SEXP overlapSEXP, SEXP summaryFunctionSEXP) {
@@ -400,6 +437,8 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_find_features2", (DL_FUNC) &_StreamFind_rcpp_nts_find_features2, 12},
+    {"_StreamFind_rcpp_nts_load_features_ms1_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms1_2, 9},
+    {"_StreamFind_rcpp_nts_load_features_ms2_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms2_2, 8},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},

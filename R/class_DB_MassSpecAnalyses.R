@@ -82,7 +82,7 @@ add_analyses.DB_MassSpecAnalyses <- function(x, files, centroid = FALSE, levels 
 #' @template arg-x-DB_MassSpecAnalyses
 #' @template arg-analyses
 #' @export
-#' 
+#'
 remove_analyses.DB_MassSpecAnalyses <- function(x, analyses) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -114,8 +114,8 @@ remove_analyses.DB_MassSpecAnalyses <- function(x, analyses) {
 get_analysis_names.DB_MassSpecAnalyses <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
-  res <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
+  res <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   names(res) <- all_analyses
   res
 }
@@ -128,8 +128,8 @@ get_analysis_names.DB_MassSpecAnalyses <- function(x) {
 get_replicate_names.DB_MassSpecAnalyses <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
-  res <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses ORDER BY analysis")$replicate
+  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
+  res <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses ORDER BY lower(analysis), analysis")$replicate
   names(res) <- all_analyses
   res
 }
@@ -142,8 +142,8 @@ get_replicate_names.DB_MassSpecAnalyses <- function(x) {
 get_blank_names.DB_MassSpecAnalyses <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
-  res <- DBI::dbGetQuery(conn, "SELECT blank FROM Analyses ORDER BY analysis")$blank
+  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
+  res <- DBI::dbGetQuery(conn, "SELECT blank FROM Analyses ORDER BY lower(analysis), analysis")$blank
   names(res) <- all_analyses
   res
 }
@@ -157,7 +157,7 @@ get_blank_names.DB_MassSpecAnalyses <- function(x) {
 set_replicate_names.DB_MassSpecAnalyses <- function(x, value) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   if (length(value) != length(current)) {
     stop("Length of value must equal the number of analyses.")
   }
@@ -185,7 +185,7 @@ set_replicate_names.DB_MassSpecAnalyses <- function(x, value) {
 set_blank_names.DB_MassSpecAnalyses <- function(x, value) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   if (length(value) != length(current)) {
     stop("Length of value must equal the number of analyses.")
   }
@@ -212,8 +212,8 @@ set_blank_names.DB_MassSpecAnalyses <- function(x, value) {
 get_concentrations.DB_MassSpecAnalyses <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
-  res <- DBI::dbGetQuery(conn, "SELECT concentration FROM Analyses ORDER BY analysis")$concentration
+  all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
+  res <- DBI::dbGetQuery(conn, "SELECT concentration FROM Analyses ORDER BY lower(analysis), analysis")$concentration
   names(res) <- all_analyses
   res
 }
@@ -228,7 +228,7 @@ set_concentrations.DB_MassSpecAnalyses <- function(x, value) {
   if (!is.numeric(value)) stop("value must be numeric.")
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY analysis")$analysis
+  current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   if (length(value) != length(current)) {
     stop("Length of value must equal the number of analyses.")
   }
@@ -266,7 +266,7 @@ info.DB_MassSpecAnalyses <- function(x) {
       chromatograms_number AS chromatograms,
       concentration
     FROM Analyses
-    ORDER BY analysis
+    ORDER BY lower(analysis), analysis
   ")
 }
 
@@ -1300,15 +1300,20 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
     if ("Analyses" %in% DBI::dbListTables(conn)) {
       existing <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
       dup_existing <- intersect(existing, incoming_names)
-      if (length(dup_existing) > 0) {
-        for (nm in dup_existing) {
-          DBI::dbExecute(conn, "DELETE FROM SpectraHeaders WHERE analysis = ?", params = list(nm))
-          DBI::dbExecute(conn, "DELETE FROM ChromatogramsHeaders WHERE analysis = ?", params = list(nm))
-          DBI::dbExecute(conn, "DELETE FROM Analyses WHERE analysis = ?", params = list(nm))
-        }
+    if (length(dup_existing) > 0) {
+      for (nm in dup_existing) {
+        DBI::dbExecute(conn, "DELETE FROM SpectraHeaders WHERE analysis = ?", params = list(nm))
+        DBI::dbExecute(conn, "DELETE FROM ChromatogramsHeaders WHERE analysis = ?", params = list(nm))
+        DBI::dbExecute(conn, "DELETE FROM Analyses WHERE analysis = ?", params = list(nm))
+      }
       }
     }
   }
+
+  # Keep insertion deterministic and alphabetic
+  order_idx <- order(incoming_names)
+  incoming_names <- incoming_names[order_idx]
+  analyses <- analyses[order_idx]
 
   analyses_df <- data.frame(
     analysis = incoming_names,
@@ -1323,6 +1328,7 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
     concentration = vapply(analyses, function(a) a$concentration, NA_real_),
     stringsAsFactors = FALSE
   )
+  analyses_df <- analyses_df[order(analyses_df$analysis), , drop = FALSE]
 
   DBI::dbWriteTable(conn, "Analyses", analyses_df, append = TRUE)
 
@@ -1355,11 +1361,13 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
 
   if (length(spectra_rows) > 0) {
     spectra_df <- data.table::rbindlist(spectra_rows, fill = TRUE)
+    data.table::setorder(spectra_df, analysis)
     DBI::dbWriteTable(conn, "SpectraHeaders", spectra_df, append = TRUE)
   }
 
   if (length(chrom_rows) > 0) {
     chrom_df <- data.table::rbindlist(chrom_rows, fill = TRUE)
+    data.table::setorder(chrom_df, analysis)
     DBI::dbWriteTable(conn, "ChromatogramsHeaders", chrom_df, append = TRUE)
   }
 

@@ -3,10 +3,105 @@ db <- db[, c("name", "formula", "mass", "rt", "fragments", "tag"), with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
 dbsus <- db[!grepl("IS", db$tag), ]
 
-# MARK: MassSpecAnalysesDB tests
-# MassSpecAnalysesDB tests -----
+ms_files <- StreamFindData::get_ms_file_paths()
+ms_files <- ms_files[grepl("ww_", ms_files)]
+ms_files <- ms_files[grepl("pos_", ms_files)]
 
-# sf_root <- file.path("dev", "dev_duckdb", "demo.sf")
+root <- file.path("dev", "dev_duckdb", "data_nts")
+file.remove(list.files(root, full.names = TRUE))
+fs::dir_delete(root)
+
+ms <- DB_MassSpecEngine$new(projectPath = root, files = ms_files)
+set_replicate_names(ms$Analyses, c(rep("blank", 3), rep("influent", 3), rep("effluent", 3)))
+set_blank_names(ms$Analyses, c(rep("blank", 9)))
+
+ps_ff <- DB_MassSpecMethod_FindFeatures_native(
+  rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
+  ppmThreshold = 20,
+  noiseThreshold = 250,
+  minSNR = 3,
+  minTraces = 3,
+  baselineWindow = 200,
+  maxWidth = 250,
+  base_quantile = 0.99,
+  debug_mz = 0
+)
+
+ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
+  blankThreshold = 5,
+  rtExpand = 10,
+  mzExpand = 0.005
+)
+
+ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
+  rtWindow = c(-1, 1),
+  mzWindow = c(-1, 6),
+  mzClust = 0.008,
+  presence = 0.8,
+  minIntensity = 50,
+  filtered = FALSE
+)
+
+ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
+  isolationWindow = 1.3,
+  mzClust = 0.008,
+  presence = 0.8,
+  minIntensity = 10,
+  filtered = FALSE
+)
+
+ms$Workflow <- list(ps_ff, ps_bsub, ps_ms1, ps_ms2)
+
+ms
+
+ms$run_workflow()
+
+show(ms$NonTargetAnalysis)
+
+fts <- get_features(
+  ms$NonTargetAnalysis,
+  analyses = 1,
+  mass = dbsus,
+  ppm = 20,
+  sec = 30,
+  filtered = TRUE
+)
+
+colnames(fts)
+
+fts[, c("feature", "intensity", "ms1_size")]
+fts[, c("feature", "intensity", "ms2_size")]
+
+plot_features(
+  ms$NonTargetAnalysis,
+  analyses = 5,
+  mass = dbsus,
+  ppm = 20,
+  sec = 30,
+  filtered = FALSE,
+  groupBy = c("name", "replicate"),
+  showDetails = FALSE
+)
+
+plot_features_ms1(
+  ms$NonTargetAnalysis,
+  analyses = 5,
+  mass = dbsus,
+  ppm = 20,
+  sec = 30,
+  groupBy = c("name", "replicate")
+)
+
+plot_features_ms2(
+  ms$NonTargetAnalysis,
+  analyses = 5,
+  mass = dbsus,
+  ppm = 20,
+  sec = 30,
+  groupBy = c("name", "replicate")
+)
+
+
 # ms_files <- StreamFindData::get_ms_file_paths()[1:3]
 # ms_db_path <- file.path(sf_root, "MassSpecAnalyses.duckdb")
 # ms_db_obj <- MassSpecAnalysesDB(db = ms_db_path, files = ms_files)
@@ -32,10 +127,9 @@ files_merck_ex[, 1:3]
 
 
 ms <- DB_MassSpecEngine$new(
-   = sf_root,
+  projectPath = sf_root,
   files = files_merck_ex$file_path[1:2]
 )
-
 
 get_cache_info(ms$Cache)
 
@@ -118,6 +212,14 @@ get_features(
 )
 
 plot_features(
+  ms$NonTargetAnalysis,
+  analyses = 1,
+  mass = dbis,
+  ppm = 20,
+  legendNames = TRUE
+)
+
+plot_features_ms2(
   ms$NonTargetAnalysis,
   analyses = 1,
   mass = dbis,

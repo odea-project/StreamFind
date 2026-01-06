@@ -79,6 +79,7 @@ namespace nts::utils
   float quantile(std::vector<float> data, float quantile_fraction);
   size_t find_max_index(const std::vector<float> &v);
   size_t find_min_index(const std::vector<float> &v);
+  std::string encode_floats_base64(const std::vector<float> &input, int precision = 4);
 
   float gaussian_function(const float &A, const float &mu,
                           const float &sigma, const float &x);
@@ -144,6 +145,16 @@ namespace nts::utils
                                              const std::vector<float> &thresholds);
 
   std::vector<size_t> filter_above_value(const std::vector<float> &data, float threshold);
+
+  struct ClusteredMzIntensity
+  {
+    std::vector<float> mz;
+    std::vector<float> intensity;
+  };
+
+  ClusteredMzIntensity cluster_ms_targets_spectra(const sc::MS_TARGETS_SPECTRA &spectra,
+                                                  const float &mzClust,
+                                                  const float &presence);
 
   // Optimized clustering by threshold
   std::vector<int> cluster_by_threshold_float(const std::vector<float> &sorted_data,

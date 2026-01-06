@@ -6,6 +6,8 @@
 \alias{show.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features.DB_MassSpecResults_NonTargetAnalysis}
+\alias{plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis}
+\alias{plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis}
 \title{Constructor and methods to handle non-target analysis for mass spectrometry data}
 \usage{
 DB_MassSpecResults_NonTargetAnalysis(
@@ -48,13 +50,54 @@ DB_MassSpecResults_NonTargetAnalysis(
   mzExpand = 0.001,
   useLoadedData = TRUE,
   filtered = FALSE,
-  legendNames = NULL,
   xLab = NULL,
   yLab = NULL,
   title = NULL,
-  colorBy = "targets",
+  groupBy = "feature",
   interactive = TRUE,
-  renderEngine = "webgl"
+  showDetails = FALSE
+)
+
+\method{plot_features_ms1}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  normalized = FALSE,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "feature",
+  showText = TRUE,
+  interactive = TRUE
+)
+
+\method{plot_features_ms2}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  normalized = TRUE,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "feature",
+  showText = TRUE,
+  interactive = TRUE
 )
 }
 \arguments{
@@ -110,19 +153,17 @@ retention time range.}
 \item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
 right the mass range.}
 
-\item{legendNames}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
-the added targets as legend of the plot.}
-
 \item{xLab}{A string with the title for the x axis.}
 
 \item{yLab}{A string with the title for the y axis.}
 
-\item{colorBy}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
-\code{replicates}.}
+\item{groupBy}{Column to use for color grouping (default: "analysis").}
 
 \item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 
-\item{renderEngine}{The engine to render the data. The default is "webgl".}
+\item{showDetails}{Logical, show hover details in interactive plots.}
+
+\item{normalized}{A logical value indicating whether the result should be normalized.}
 }
 \value{
 An object of class \code{DB_MassSpecResults_NonTargetAnalysis} with the following structure:
@@ -158,5 +199,9 @@ The \code{DB_MassSpecResults_NonTargetAnalysis} class is a child of the \link{DB
 \item \code{get_features(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves features from the DB_MassSpecResults_NonTargetAnalysis object based on specified criteria.
 
 \item \code{plot_features(DB_MassSpecResults_NonTargetAnalysis)}: Plots features from the DB_MassSpecResults_NonTargetAnalysis object according to the specified parameters.
+
+\item \code{plot_features_ms1(DB_MassSpecResults_NonTargetAnalysis)}: Plot MS1 spectra for selected features.
+
+\item \code{plot_features_ms2(DB_MassSpecResults_NonTargetAnalysis)}: Plot MS2 spectra for selected features.
 
 }}

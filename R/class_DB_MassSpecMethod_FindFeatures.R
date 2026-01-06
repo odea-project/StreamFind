@@ -15,7 +15,7 @@
 #' @export
 #'
 DB_MassSpecMethod_FindFeatures_native <- function(
-  rtWindows = data.table::data.table(rtmin = 300, rtmax = 3600),
+  rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
   ppmThreshold = 15,
   noiseThreshold = 250,
   minSNR = 3,
@@ -25,6 +25,10 @@ DB_MassSpecMethod_FindFeatures_native <- function(
   base_quantile = 0.1,
   debug_mz = 0
 ) {
+  rtWindows <- data.table::data.table(
+    rtmin = as.numeric(rtWindows$rtmin),
+    rtmax = as.numeric(rtWindows$rtmax)
+  )
   x <- ProcessingStep(
     type = "DB_MassSpec",
     method = "FindFeatures",
@@ -64,10 +68,10 @@ validate_object.DB_MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_choice(x$type, "DB_MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
   checkmate::assert_choice(x$algorithm, "native")
-  checkmate::assert_data_table(data.table::as.data.table(x$parameters$rtWindows))
-  checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
-  checkmate::assert_numeric(x$parameters$rtWindows$rtmin, lower = 0)
-  checkmate::assert_numeric(x$parameters$rtWindows$rtmax, lower = 0)
+  checkmate::assert_data_frame(data.table::as.data.table(x$parameters$rtWindows))
+  checkmate::assert_true(all(c("rtmin", "rtmax") %in% colnames(data.table::as.data.table(x$parameters$rtWindows))))
+  checkmate::assert_numeric(x$parameters$rtWindows$rtmin)
+  checkmate::assert_numeric(x$parameters$rtWindows$rtmax)
   checkmate::assert_numeric(x$parameters$ppmThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minSNR, len = 1, lower = 0)

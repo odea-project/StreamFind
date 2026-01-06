@@ -85,7 +85,7 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
         if (nrow(fts) > 0) {
           message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
           db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
-          DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts)
+          DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts)
           return(invisible(TRUE))
         }
       }

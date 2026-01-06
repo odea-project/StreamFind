@@ -96,6 +96,23 @@ ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
   mzExpand = 0.005
 )
 
+ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
+  rtWindow = c(-1, 1),
+  mzWindow = c(-1, 6),
+  mzClust = 0.008,
+  presence = 0.8,
+  minIntensity = 50,
+  filtered = FALSE
+)
+
+ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
+  isolationWindow = 1.3,
+  mzClust = 0.008,
+  presence = 0.8,
+  minIntensity = 10,
+  filtered = FALSE
+)
+
 project_path <- file.path(getwd(), "dev", "merck_peak_finding", "data")
 # file.remove(list.files(project_path, full.names = TRUE))
 # fs::dir_delete(project_path)
@@ -103,19 +120,33 @@ ms <- DB_MassSpecEngine$new(project_path, files = files)
 set_replicate_names(ms$Analyses, c("blank", "sample"))
 set_blank_names(ms$Analyses, c("blank", "blank"))
 
-ms$Workflow = list(ps_ff, ps_bsub)
+ms$Workflow = list(ps_ff, ps_bsub, ps_ms1, ps_ms2)
 ms$run_workflow()
 ```
 
 ```{r}
+info(ms$Analyses)
+show(ms$NonTargetAnalysis)
 
 plot_features(
   ms$NonTargetAnalysis,
-  analyses = 1,
+  analyses = 2,
   mz = db_merck_ex[db_merck_ex$example %in% examples[1], ],
   ppm = 20,
   sec = 60
 )
+
+fts <- get_features(
+  ms$NonTargetAnalysis,
+  analyses = 2,
+  mz = db_merck_ex[db_merck_ex$example %in% examples[1], ],
+  ppm = 20,
+  sec = 60
+)
+
+fts[, c("feature", "intensity", "ms1_size")]
+fts[, c("feature", "intensity", "ms2_size")]
+
 ```
 
 # App

@@ -9,6 +9,7 @@
 #include <functional>
 #include <iomanip>
 #include <fstream>
+#include <numeric>
 
 // MARK: DEBUG
 
@@ -130,6 +131,115 @@ size_t nts::utils::find_max_index(const std::vector<float> &v)
 size_t nts::utils::find_min_index(const std::vector<float> &v)
 {
   return std::min_element(v.begin(), v.end()) - v.begin();
+}
+
+std::string nts::utils::encode_floats_base64(const std::vector<float> &input, int precision)
+{
+  if (input.empty())
+  {
+    return "";
+  }
+
+  std::string encoded = sc::encode_little_endian_from_float(input, precision);
+  return sc::encode_base64(encoded);
+}
+
+nts::utils::ClusteredMzIntensity nts::utils::cluster_ms_targets_spectra(const sc::MS_TARGETS_SPECTRA &spectra,
+                                                                        const float &mzClust,
+                                                                        const float &presence)
+{
+  ClusteredMzIntensity out;
+
+  const size_t n = spectra.mz.size();
+  if (n == 0)
+    return out;
+
+  // Sort indices once so we can sweep contiguous clusters by m/z.
+  std::vector<size_t> idx(n);
+  std::iota(idx.begin(), idx.end(), 0);
+  std::sort(idx.begin(), idx.end(), [&](size_t i, size_t j)
+            { return spectra.mz[i] < spectra.mz[j]; });
+
+  std::vector<float> sorted_mz(n);
+  std::vector<float> sorted_intensity(n);
+  std::vector<float> sorted_rt(spectra.rt.size());
+  for (size_t k = 0; k < n; ++k)
+  {
+    const size_t src = idx[k];
+    sorted_mz[k] = spectra.mz[src];
+    sorted_intensity[k] = spectra.intensity[src];
+    if (!sorted_rt.empty() && spectra.rt.size() > src)
+      sorted_rt[k] = spectra.rt[src];
+  }
+
+  // Pre-compute total unique RT count for presence filtering.
+  size_t total_unique_rt = 0;
+  if (!sorted_rt.empty())
+  {
+    std::vector<float> tmp = sorted_rt;
+    std::sort(tmp.begin(), tmp.end());
+    total_unique_rt = static_cast<size_t>(std::unique(tmp.begin(), tmp.end()) - tmp.begin());
+  }
+
+  std::vector<float> new_mz;
+  std::vector<float> new_intensity;
+  new_mz.reserve(n);
+  new_intensity.reserve(n);
+
+  const float mz_tol = std::max(mzClust, 0.0f);
+  const float presence_thresh = std::clamp(presence, 0.0f, 1.0f);
+
+  size_t start = 0;
+  while (start < n)
+  {
+    size_t end = start + 1;
+    while (end < n && (sorted_mz[end] - sorted_mz[end - 1]) <= mz_tol)
+      ++end;
+
+    // Cluster range is [start, end)
+    const size_t cluster_size = end - start;
+
+    // Presence filter: require enough unique RTs inside this cluster.
+    if (presence_thresh > 0.0f && total_unique_rt > 0)
+    {
+      std::vector<float> rt_slice;
+      rt_slice.reserve(cluster_size);
+      for (size_t i = start; i < end; ++i)
+        rt_slice.push_back(sorted_rt[i]);
+      std::sort(rt_slice.begin(), rt_slice.end());
+      size_t unique_rt = static_cast<size_t>(std::unique(rt_slice.begin(), rt_slice.end()) - rt_slice.begin());
+
+      if (static_cast<float>(unique_rt) < presence_thresh * static_cast<float>(total_unique_rt))
+      {
+        start = end;
+        continue;
+      }
+    }
+
+    float weighted_mz = 0.0f;
+    float intensity_sum = 0.0f;
+    float max_int = 0.0f;
+
+    for (size_t i = start; i < end; ++i)
+    {
+      const float inten = sorted_intensity[i];
+      weighted_mz += sorted_mz[i] * inten;
+      intensity_sum += inten;
+      max_int = std::max(max_int, inten);
+    }
+
+    if (intensity_sum > 0.0f)
+    {
+      new_mz.push_back(weighted_mz / intensity_sum);
+      new_intensity.push_back(max_int);
+    }
+
+    start = end;
+  }
+
+  out.mz = std::move(new_mz);
+  out.intensity = std::move(new_intensity);
+  return out;
 }
 
 float nts::utils::gaussian_function(const float &A,
