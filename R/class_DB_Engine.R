@@ -232,7 +232,6 @@ DB_Engine <- R6::R6Class(
       DBI::dbExecute(conn, "UPDATE Workflow SET methods = ? WHERE rowid = ?", list(json_processing_steps, 0))
       DBI::dbExecute(conn, "COMMIT")
       rollback_needed <- FALSE
-      self$add_audit_entry("add", "Workflow", list(processing_steps = names(wf_obj)))
       invisible(self)
     },
 

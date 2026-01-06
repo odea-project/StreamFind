@@ -71,7 +71,7 @@
       .workflow-box {
         background-color: white;
         border-radius: 4px;
-        padding: 10px;
+        padding: 5px;
         margin-bottom: 0px;
         border: none;
         box-shadow: none;
@@ -83,10 +83,6 @@
       .box.workflow-box > .box-body {
         border: none !important;
         box-shadow: none !important;
-      }
-      .col-sm-12 {
-        padding-left: 10px;
-        padding-right: 10px;
       }
       .method-details dt {
         font-weight: bold;
@@ -131,12 +127,10 @@
     x,
     id,
     ns,
-    reactive_analyses,
     reactive_workflow,
-    reactive_results,
-    reactive_audit,
     reactive_warnings,
-    reactive_volumes) {
+    reactive_volumes,
+    reactive_update_trigger) {
   shiny::moduleServer(id, function(input, output, session) {
     ns2 <- shiny::NS(id)
     engine <- x
@@ -928,7 +922,7 @@
           engine$Workflow <- rw
           reactive_workflow(engine$Workflow)
           reactive_saved_workflow(engine$Workflow)
-          reactive_audit(engine$AuditTrail)
+          reactive_update_trigger(reactive_update_trigger() + 1)
           shiny::showNotification("Workflow saved to database.", type = "message")
         },
         error = function(e) {
@@ -964,11 +958,9 @@
         {
           engine$Workflow <- reactive_workflow()
           engine$run_workflow()
-          reactive_analyses(engine$Analyses)
           reactive_workflow(engine$Workflow)
           reactive_saved_workflow(engine$Workflow)
-          try(reactive_results(engine$Results), silent = TRUE)
-          reactive_audit(engine$AuditTrail)
+          reactive_update_trigger(reactive_update_trigger() + 1)
           shiny::removeModal()
         },
         error = function(e) {

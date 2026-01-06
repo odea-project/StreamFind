@@ -16,6 +16,13 @@
         .nav-tabs-custom>.tab-content {
           padding: 5px !important;
         }
+        .box {
+          box-shadow: none !important;
+        }
+        .col-sm-12 {
+          padding-left: 15px;
+          padding-right: 15px;
+        }
       "))
     ),
     shinydashboard::tabItems(
@@ -81,6 +88,41 @@
     reactive_update_cache_size <- shiny::reactiveVal(0)
     reactive_update_trigger <- shiny::reactiveVal(0)
 
+    load_project_results <- function(project_path, engine_type) {
+      if (is.null(project_path) || is.na(project_path) || !dir.exists(project_path)) {
+        return(list())
+      }
+      dto <- DataTypeObjects()
+      data_type <- names(dto$engine)[match(engine_type, dto$engine)]
+      result_classes <- dto$results[[data_type]]
+      if (length(result_classes) == 0 || all(is.na(result_classes))) {
+        return(list())
+      }
+
+      results_list <- list()
+      for (cls in result_classes) {
+        db_path <- file.path(project_path, paste0(cls, ".duckdb"))
+        if (!file.exists(db_path)) next
+        ctor <- get0(cls, envir = asNamespace("StreamFind"), inherits = FALSE)
+        if (!is.function(ctor)) next
+        obj <- tryCatch(
+          ctor(db = db_path),
+          error = function(e) {
+            shiny::showNotification(
+              paste("Error loading", cls, "from", basename(db_path), ":", conditionMessage(e)),
+              duration = 5,
+              type = "error"
+            )
+            NULL
+          }
+        )
+        if (!is.null(obj)) {
+          results_list[[cls]] <- obj
+        }
+      }
+      results_list
+    }
+
     # MARK: obs Start/Load
     # obs Start/Load -----
     shiny::observeEvent(reactive_project_path(), {
@@ -93,6 +135,7 @@
       reactive_analyses(engine$Analyses)
       reactive_workflow(engine$Workflow)
       reactive_audit(engine$AuditTrail)
+      reactive_results(load_project_results(reactive_project_path(), reactive_engine_type()))
     })
 
     # MARK: obs Update Trigger
@@ -103,6 +146,7 @@
         reactive_analyses(engine$Analyses)
         reactive_workflow(engine$Workflow)
         reactive_audit(engine$AuditTrail)
+        reactive_results(load_project_results(reactive_project_path(), reactive_engine_type()))
       }
     })
 
@@ -126,7 +170,7 @@
         ),
         shinydashboard::box(
           width = 12,
-          height = "calc(100vh - 60px - 300px - 10px)",
+          height = "calc(100vh - 60px - 300px - 5px)",
           title = "Metadata",
           solidHeader = TRUE,
           style = "padding: 0px; box-sizing: border-box; overflow-y: auto; display: block; margin: 0;",
@@ -452,82 +496,69 @@
         engine,
         "workflow",
         ns,
-        reactive_analyses,
         reactive_workflow,
-        reactive_results,
-        reactive_audit,
         reactive_warnings,
-        reactive_volumes
+        reactive_volumes,
+        reactive_update_trigger
       )
       .mod_WADB_Workflow_UI(engine, "workflow", ns)
     })
 
-    # # MARK: Results
-    # # Results -----
-    # output$results_ui <- shiny::renderUI({
-    #   if (reactive_engine_type() %in% "Engine") {
-    #     shiny::showNotification(
-    #       "Results not implemented for Engine without an assigned data type!",
-    #       duration = 5,
-    #       type = "warning"
-    #     )
-    #     return(htmltools::div(" "))
-    #   }
+    # MARK: Results
+    # Results -----
+    output$results_ui <- shiny::renderUI({
+      res <- reactive_results()
 
-    #   res <- reactive_results()
+      if (length(res) > 0) {
+        tab_list <- list()
+        for (i in seq_along(res)) {
+          res_obj <- res[[i]]
+          cls <- class(res_obj)[1]
+          tab_id <- paste0("tab_", names(res)[i])
+          ui_fun <- get0(paste0(".mod_WorkflowAssembler_Result_UI.", cls), mode = "function")
+          server_fun <- get0(paste0(".mod_WorkflowAssembler_Result_Server.", cls), mode = "function")
 
-    #   if (length(res) > 0) {
-    #     result_methods <- methods(.mod_WorkflowAssembler_Result_Server)
-    #     tab_list <- list()
-    #     for (i in seq_along(res)) {
-    #       has_result_method <- any(vapply(
-    #         result_methods,
-    #         function(z) grepl(class(res[[i]])[1], z),
-    #         FALSE
-    #       ))
-
-    #       if (has_result_method) {
-    #         .mod_WorkflowAssembler_Result_Server(
-    #           res[[i]],
-    #           paste0("tab_", names(res)[i]),
-    #           ns,
-    #           reactive_analyses,
-    #           reactive_volumes
-    #         )
-    #         tab_list[[i]] <- shiny::tabPanel(
-    #           title = class(res[[i]])[1],
-    #           .mod_WorkflowAssembler_Result_UI(
-    #             res[[i]],
-    #             paste0("tab_", names(res)[i]),
-    #             ns
-    #           )
-    #         )
-    #       } else {
-    #         shiny::showNotification(
-    #           paste("No results method for ", class(res[[i]])[1], "!"),
-    #           duration = 5,
-    #           type = "warning"
-    #         )
-    #         tab_list[[i]] <- shiny::tabPanel(
-    #           title = class(res[[i]])[1],
-    #           htmltools::div(paste0(" ", i, ": ", class(res[[i]])[1]))
-    #         )
-    #       }
-    #     }
-    #     do.call(
-    #       shinydashboard::tabBox,
-    #       c(
-    #         list(
-    #           width = 12,
-    #           height = "calc(100vh - 50px - 30px)"
-    #         ),
-    #         tab_list
-    #       )
-    #     )
-    #   } else {
-    #     htmltools::div(htmltools::h4("No results found!"))
-    #   }
-    # })
+          if (is.function(ui_fun) && is.function(server_fun)) {
+            server_fun(
+              res_obj,
+              tab_id,
+              ns,
+              reactive_analyses,
+              reactive_volumes
+            )
+            tab_list[[length(tab_list) + 1]] <- shiny::tabPanel(
+              title = cls,
+              ui_fun(
+                res_obj,
+                tab_id,
+                ns
+              )
+            )
+          } else {
+            tab_list[[length(tab_list) + 1]] <- shiny::tabPanel(
+              title = cls,
+              htmltools::div(paste0("No results method available for ", cls))
+            )
+          }
+        }
+        if (length(tab_list) > 0) {
+          do.call(
+            shinydashboard::tabBox,
+            c(
+              list(
+                width = 12,
+                height = "calc(100vh - 60px)"
+              ),
+              tab_list
+            )
+          )
+        } else {
+          htmltools::div(htmltools::h4("No results found!"))
+        }
+      } else {
+        htmltools::div(htmltools::h4("No results found!"))
+      }
+    })
 
     # MARK: AuditTrail
     # AuditTrail -----

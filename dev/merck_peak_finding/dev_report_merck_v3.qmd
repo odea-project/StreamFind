@@ -90,18 +90,20 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   debug_mz = 0
 )
 
-# ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction(
-#   blankThreshold = 5,
-#   rtExpand = 10,
-#   mzExpand = 0.005
-# )
+ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
+  blankThreshold = 5,
+  rtExpand = 10,
+  mzExpand = 0.005
+)
 
 project_path <- file.path(getwd(), "dev", "merck_peak_finding", "data")
 # file.remove(list.files(project_path, full.names = TRUE))
 # fs::dir_delete(project_path)
 ms <- DB_MassSpecEngine$new(project_path, files = files)
+set_replicate_names(ms$Analyses, c("blank", "sample"))
+set_blank_names(ms$Analyses, c("blank", "blank"))
 
-ms$Workflow = list(ps_ff)
+ms$Workflow = list(ps_ff, ps_bsub)
 ms$run_workflow()
 ```
 
