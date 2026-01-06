@@ -76,3 +76,15 @@ Rcpp::List rcpp_nts_load_features_ms2_2(Rcpp::List info,
       presence);
   return nts_data.features_as_list_of_dt();
 };
+
+// MARK: rcpp_nts_create_components
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_create_components(Rcpp::List info,
+                                      Rcpp::List spectra_headers,
+                                      Rcpp::List feature_list,
+                                      std::vector<float> rtWindow)
+{
+  nts::NTS_DATA nts_data(info, spectra_headers, feature_list);
+  nts_data.create_components(rtWindow);
+  return nts_data.features_as_list_of_dt();
+};

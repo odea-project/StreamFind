@@ -69,6 +69,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_nts_create_components
+Rcpp::List rcpp_nts_create_components(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, std::vector<float> rtWindow);
+RcppExport SEXP _StreamFind_rcpp_nts_create_components(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP rtWindowSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< std::vector<float> >::type rtWindow(rtWindowSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_create_components(info, spectra_headers, feature_list, rtWindow));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_fill_bin_spectra
 std::vector<double> rcpp_fill_bin_spectra(Rcpp::DataFrame spectra, Rcpp::DataFrame bin_mat, Rcpp::List bins, double overlap, std::string summaryFunction);
 RcppExport SEXP _StreamFind_rcpp_fill_bin_spectra(SEXP spectraSEXP, SEXP bin_matSEXP, SEXP binsSEXP, SEXP overlapSEXP, SEXP summaryFunctionSEXP) {
@@ -439,6 +453,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_find_features2", (DL_FUNC) &_StreamFind_rcpp_nts_find_features2, 12},
     {"_StreamFind_rcpp_nts_load_features_ms1_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms1_2, 9},
     {"_StreamFind_rcpp_nts_load_features_ms2_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms2_2, 8},
+    {"_StreamFind_rcpp_nts_create_components", (DL_FUNC) &_StreamFind_rcpp_nts_create_components, 4},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},

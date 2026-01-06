@@ -17,7 +17,7 @@ set_blank_names(ms$Analyses, c(rep("blank", 9)))
 
 ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
-  ppmThreshold = 20,
+  ppmThreshold = 25,
   noiseThreshold = 250,
   minSNR = 3,
   minTraces = 3,
@@ -33,24 +33,28 @@ ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
   mzExpand = 0.005
 )
 
-ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
-  rtWindow = c(-1, 1),
-  mzWindow = c(-1, 6),
-  mzClust = 0.008,
-  presence = 0.8,
-  minIntensity = 50,
-  filtered = FALSE
+# ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
+#   rtWindow = c(-1, 1),
+#   mzWindow = c(-1, 6),
+#   mzClust = 0.008,
+#   presence = 0.8,
+#   minIntensity = 50,
+#   filtered = FALSE
+# )
+
+# ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
+#   isolationWindow = 1.3,
+#   mzClust = 0.008,
+#   presence = 0.8,
+#   minIntensity = 10,
+#   filtered = FALSE
+# )
+
+ps_comp <- DB_MassSpecMethod_CreateComponents_native(
+  rtWindow = c(0, 0)
 )
 
-ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
-  isolationWindow = 1.3,
-  mzClust = 0.008,
-  presence = 0.8,
-  minIntensity = 10,
-  filtered = FALSE
-)
-
-ms$Workflow <- list(ps_ff, ps_bsub, ps_ms1, ps_ms2)
+ms$Workflow <- list(ps_ff, ps_bsub, ps_comp)
 
 ms
 
@@ -60,12 +64,25 @@ show(ms$NonTargetAnalysis)
 
 fts <- get_features(
   ms$NonTargetAnalysis,
-  analyses = 1,
+  analyses = 5,
   mass = dbsus,
   ppm = 20,
   sec = 30,
-  filtered = TRUE
+  filtered = FALSE
+)[, 1:20]
+
+
+fts <- get_features(
+  ms$NonTargetAnalysis,
+  analyses = 5,
+  filtered = FALSE
 )
+fts <- fts[fts$feature_component %in% "TC1074", ]
+plot_features(
+  ms$NonTargetAnalysis,
+  features = fts
+)
+
 
 colnames(fts)
 
@@ -80,8 +97,14 @@ plot_features(
   sec = 30,
   filtered = FALSE,
   groupBy = c("name", "replicate"),
-  showDetails = FALSE
+  showDetails = TRUE
 )
+
+
+
+
+
+
 
 plot_features_ms1(
   ms$NonTargetAnalysis,

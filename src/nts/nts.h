@@ -472,6 +472,9 @@ namespace nts
         const float &base_quantile,
         const float &debug_mz = 0.0f);
 
+    void create_components(
+        const std::vector<float> &rtWindow);
+
     void load_features_ms1(
         bool filtered,
         const std::vector<float> &rtWindow,

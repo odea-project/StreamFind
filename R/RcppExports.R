@@ -13,6 +13,10 @@ rcpp_nts_load_features_ms2_2 <- function(info, spectra_headers, feature_list, fi
     .Call(`_StreamFind_rcpp_nts_load_features_ms2_2`, info, spectra_headers, feature_list, filtered, minTracesIntensity, isolationWindow, mzClust, presence)
 }
 
+rcpp_nts_create_components <- function(info, spectra_headers, feature_list, rtWindow) {
+    .Call(`_StreamFind_rcpp_nts_create_components`, info, spectra_headers, feature_list, rtWindow)
+}
+
 rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFunction = "max") {
     .Call(`_StreamFind_rcpp_fill_bin_spectra`, spectra, bin_mat, bins, overlap, summaryFunction)
 }
