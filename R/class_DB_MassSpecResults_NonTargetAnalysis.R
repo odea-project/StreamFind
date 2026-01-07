@@ -1,57 +1,27 @@
 # MARK: DB_MassSpecResults_NonTargetAnalysis
-#' @title Constructor and methods to handle non-target analysis for mass spectrometry data
-#' @description The `DB_MassSpecResults_NonTargetAnalysis` class is a child of the [StreamFind::DB_Results] class and is used to store results from non-target analysis (NTA) results from mass spectrometry data ("DB_MassSpec").
-#' @param analyses A data frame containing information about the analyses.
-#' @param headers A list of data frames containing information about the spectra headers.
-#' @param features A list of data frames containing information about the features detected.
-#' @return An object of class `DB_MassSpecResults_NonTargetAnalysis` with the following structure:
-#' \itemize{
-#'   \item `type`: The type of the results, which is "MassSpec".
-#'   \item `name`: The name of the results, which is "MassSpecResults_NonTargetAnalysis2".
-#'   \item `software`: The software used for the analysis, which is "StreamFind".
-#'   \item `version`: The version of the software, as a character string.
-#'   \item `info`: A data frame containing information about the analyses.
-#'   \item `headers`: A list of data frames containing information about the spectra headers.
-#'   \item `features`: A list of data frames containing information about the features.
-#' }
-#' The `info` data.table contains the following columns: analysis, replicate, blank, polarity and file. Each `features` data frame contains the following columns from `rcpp_nts_find_features2()`:
-#' \itemize{
-#'   \item Core feature properties: feature, group, component, adduct, rt, mz, mass, intensity, noise, sn, area
-#'   \item Chromatographic boundaries: rtmin, rtmax, width, mzmin, mzmax, ppm
-#'   \item Peak shape characterization: fwhm_rt, fwhm_mz
-#'   \item Gaussian fitting parameters: gaussian_A, gaussian_mu, gaussian_sigma, gaussian_r2
-#'   \item Processing flags: polarity, filtered, filter, filled, correction
-#'   \item Encoded profile data: eic_size, eic_rt, eic_mz, eic_intensity, eic_baseline, eic_smoothed
-#'   \item MS spectral data: ms1_size, ms1_mz, ms1_intensity, ms2_size, ms2_mz, ms2_intensity
-
-#' }
+#' @title Constructor and methods to handle non-target analysis (NTA) for mass spectrometry data
+#' @description Create a `DB_MassSpecResults_NonTargetAnalysis` object (child of [StreamFind::DB_Results]) that reuses an existing `DB_MassSpecAnalyses` DuckDB (for analyses and spectra) and stores NTA features in its own DuckDB.
+#' @param projectPath Path to the project directory containing `DB_MassSpecAnalyses.duckdb`; `DB_MassSpecResults_NonTargetAnalysis.duckdb` is created/used alongside it.
+#' @param features A data.frame/data.table with NTA feature results as produced by [StreamFind::DB_MassSpecMethod_FindFeatures_native], written to the `Features` table.
+#' @return An object of class `DB_MassSpecResults_NonTargetAnalysis` (and `DB_Results`) pointing to the feature DuckDB on disk and holding an `analyses` field with the linked `DB_MassSpecAnalyses`.
 #' @export
 #'
 DB_MassSpecResults_NonTargetAnalysis <- function(
-    db = file.path("data.sf", "DB_MassSpecResults_NonTargetAnalysis.duckdb"),
-    analyses = data.table::data.table(),
-    headers = data.table::data.table(),
+    projectPath = ".",
     features = data.table::data.table()) {
   if (!requireNamespace("DBI", quietly = TRUE)) stop("DBI package required.")
   if (!requireNamespace("duckdb", quietly = TRUE)) stop("duckdb package required.")
+
+  analyses_db <- file.path(projectPath, "DB_MassSpecAnalyses.duckdb")
+  if (!file.exists(analyses_db)) stop("DB_MassSpecAnalyses.duckdb not found at projectPath: ", analyses_db)
+  analyses_obj <- DB_MassSpecAnalyses(projectPath = projectPath)
+
+  db <- file.path(projectPath, "DB_MassSpecResults_NonTargetAnalysis.duckdb")
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
   conn <- DBI::dbConnect(duckdb::duckdb(), db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .create_DB_MassSpecAnalyses_Analyses_db_schema(conn)
-  .validate_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   .create_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
   .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
-
-  insert_analyses <- function(analyses) {
-    .validate_DB_MassSpecAnalyses_analyses_dt(analyses)
-    DBI::dbExecute(conn, "DELETE FROM Analyses")
-    DBI::dbWriteTable(conn, "Analyses", analyses, overwrite = TRUE)
-  }
-
-  insert_headers <- function(headers) {
-    DBI::dbExecute(conn, "DROP TABLE IF EXISTS SpectraHeaders")
-    DBI::dbWriteTable(conn, "SpectraHeaders", headers, overwrite = TRUE)
-  }
 
   insert_features <- function(features) {
     .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt(features)
@@ -59,13 +29,12 @@ DB_MassSpecResults_NonTargetAnalysis <- function(
     DBI::dbWriteTable(conn, "Features", features, overwrite = TRUE)
   }
 
-  if (!is.null(analyses)) if (nrow(analyses) > 0) insert_analyses(analyses)
-  if (!is.null(headers)) if (nrow(headers) > 0) insert_headers(headers)
   if (!is.null(features)) if (nrow(features) > 0) insert_features(features)
 
   x <- structure(
     list(
       db = db,
+      analyses = analyses_obj,
       dataType = "DB_MassSpec"
     ),
     class = c("DB_MassSpecResults_NonTargetAnalysis", "DB_Results")
@@ -86,12 +55,15 @@ validate_object.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
   checkmate::assert_class(x, "DB_MassSpecResults_NonTargetAnalysis")
   checkmate::assert_true(identical(x$dataType, "DB_MassSpec"))
   if (!file.exists(x$db)) stop("DB_MassSpecResults_NonTargetAnalysis file not found: ", x$db)
+  if (is.null(x$analyses) || !inherits(x$analyses, "DB_MassSpecAnalyses")) {
+    stop("Field analyses must be a DB_MassSpecAnalyses object.")
+  }
+  validate_object(x$analyses)
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  required_tables <- c("Analyses", "SpectraHeaders", "Features")
+  required_tables <- c("Features")
   present <- DBI::dbListTables(conn)
   if (!all(required_tables %in% present)) stop("Missing required tables in DB_MassSpecResults_NonTargetAnalysis")
-  .validate_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
   NextMethod()
 }
@@ -102,12 +74,12 @@ validate_object.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
 #' @export
 #'
 show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
+  info_analyses <- info(x$analyses)
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   cat("\n")
   cat(is(x))
   cat("\n")
-  analyses <- DBI::dbReadTable(conn, "Analyses")
   features <- DBI::dbGetQuery(conn, "
     SELECT analysis,
       COUNT(*) AS feature,
@@ -124,13 +96,13 @@ show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
   ")
   groups$groups[is.na(groups$groups)] <- 0
   info <- data.table::data.table(
-    "analysis" = analyses$analysis,
-    "replicate" = analyses$replicate,
-    "blank" = analyses$blank,
-    "polarity" = analyses$polarity,
-    "features" = features$not_filtered[match(analyses$analysis, features$analysis)],
-    "filtered" = features$filtered[match(analyses$analysis, features$analysis)],
-    "feature_groups" = groups$groups[match(analyses$analysis, groups$analysis)]
+    "analysis" = info_analyses$analysis,
+    "replicate" = info_analyses$replicate,
+    "blank" = info_analyses$blank,
+    "polarity" = info_analyses$polarity,
+    "features" = features$not_filtered[match(info_analyses$analysis, features$analysis)],
+    "filtered" = features$filtered[match(info_analyses$analysis, features$analysis)],
+    "feature_groups" = groups$groups[match(info_analyses$analysis, groups$analysis)]
   )
   info <- info[order(tolower(info$analysis), info$analysis), ]
   print(info)
@@ -141,6 +113,8 @@ show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
 #' @template arg-ntsdb-x
 #' @template arg-analyses
 #' @template arg-ms-features
+#' @template arg-ms-groups
+#' @template arg-ms-components
 #' @template arg-ms-mass
 #' @template arg-ms-mz
 #' @template arg-ms-rt
@@ -155,6 +129,8 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     x,
     analyses = NULL,
     features = NULL,
+    groups = NULL,
+    components = NULL,
     mass = NULL,
     mz = NULL,
     rt = NULL,
@@ -165,27 +141,47 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     filtered = FALSE) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  rpls <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses")$replicate
-  pols <- DBI::dbGetQuery(conn, "SELECT polarity FROM Analyses")$polarity
+  analyses_info <- info(x$analyses)
+  all_names <- analyses_info$analysis
+  rpls <- analyses_info$replicate
+  pols <- analyses_info$polarity
   names(rpls) <- all_names
   names(pols) <- all_names
-  ids <- NULL
-  if (!is.null(features)) {
-    if (is.data.frame(features)) {
-      if ("analysis" %in% colnames(features)) {
-        analyses <- unique(features$analysis)
+  parse_selection <- function(sel, column, aliases = character(0)) {
+    res <- list(values = NULL, analyses = NULL, ids = NULL)
+    if (is.null(sel)) return(res)
+    col_opts <- c(column, aliases)
+    if (is.data.frame(sel)) {
+      col_match <- col_opts[col_opts %in% colnames(sel)]
+      if (length(col_match) == 0) {
+        stop(sprintf("Selection for '%s' must include one of the following columns: %s", column, paste(col_opts, collapse = ", ")))
       }
-      if ("name" %in% colnames(features)) {
-        ids <- features$name
+      res$values <- sel[[col_match[1]]]
+      if ("analysis" %in% colnames(sel)) {
+        res$analyses <- unique(sel$analysis)
       }
-      features <- features$feature
+      if ("name" %in% colnames(sel)) {
+        res$ids <- sel$name
+      }
     } else {
-      ids <- names(features)
-      features <- features
+      res$values <- sel
+      if (!is.null(names(sel))) res$ids <- names(sel)
     }
+    if (!is.null(res$ids)) names(res$ids) <- res$values
+    res
   }
-  if (!is.null(ids)) names(ids) <- features
+
+  feat_sel <- parse_selection(features, "feature")
+  grp_sel <- parse_selection(groups, "feature_group", c("group"))
+  comp_sel <- parse_selection(components, "feature_component", c("component"))
+
+  features <- feat_sel$values
+  groups <- grp_sel$values
+  components <- comp_sel$values
+  ids <- feat_sel$ids
+  grp_ids <- grp_sel$ids
+  comp_ids <- comp_sel$ids
+  analyses <- unique(c(analyses, feat_sel$analyses, grp_sel$analyses, comp_sel$analyses))
   sel_names <- .resolve_analyses_selection(analyses, all_names)
   rpls <- rpls[sel_names]
   pols <- pols[sel_names]
@@ -196,11 +192,21 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   conditions <- c()
   conditions <- c(conditions, sprintf("filtered = %s", ifelse(filtered, "TRUE", "FALSE")))
   conditions <- c(conditions, sprintf("analysis IN ('%s')", paste(sel_names, collapse = "','")))
-  if (!is.null(features)) {
-    conditions <- c(conditions, sprintf("feature IN ('%s')", paste(features, collapse = "','")))
+  if (!is.null(features) || !is.null(groups) || !is.null(components)) {
+    if (!is.null(features)) {
+      conditions <- c(conditions, sprintf("feature IN ('%s')", paste(features, collapse = "','")))
+    }
+    if (!is.null(groups)) {
+      conditions <- c(conditions, sprintf("feature_group IN ('%s')", paste(groups, collapse = "','")))
+    }
+    if (!is.null(components)) {
+      conditions <- c(conditions, sprintf("feature_component IN ('%s')", paste(components, collapse = "','")))
+    }
     query <- paste0(query, " WHERE ", paste(conditions, collapse = " AND "))
     features <- DBI::dbGetQuery(conn, query)
     if (!is.null(ids)) features$name <- ids[features$feature]
+    if (!is.null(grp_ids)) features$name <- grp_ids[features$feature_group]
+    if (!is.null(comp_ids)) features$name <- comp_ids[features$feature_component]
     if ("analysis" %in% colnames(features)) {
       rep_map <- data.table::data.table(analysis = all_names, replicate = rpls)
       features <- merge(features, rep_map, by = "analysis", all.x = TRUE)
@@ -260,6 +266,8 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @template arg-ntsdb-x
 #' @template arg-analyses
 #' @template arg-ms-features
+#' @template arg-ms-groups
+#' @template arg-ms-components
 #' @template arg-ms-mass
 #' @template arg-ms-mz
 #' @template arg-ms-rt
@@ -267,8 +275,6 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @template arg-ms-ppm
 #' @template arg-ms-sec
 #' @template arg-ms-millisec
-#' @template arg-ms-rtExpand
-#' @template arg-ms-mzExpand
 #' @template arg-ms-filtered
 #' @template arg-labs
 #' @template arg-plot-groupBy
@@ -280,6 +286,8 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     x,
     analyses = NULL,
     features = NULL,
+    groups = NULL,
+    components = NULL,
     mass = NULL,
     mz = NULL,
     rt = NULL,
@@ -287,9 +295,6 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     ppm = 20,
     sec = 60,
     millisec = 5,
-    rtExpand = 120,
-    mzExpand = 0.001,
-    useLoadedData = TRUE,
     filtered = FALSE,
     xLab = NULL,
     yLab = NULL,
@@ -298,17 +303,19 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     interactive = TRUE,
     showDetails = FALSE) {
   fts <- get_features(
-    x,
-    analyses,
-    features,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    filtered
+    x = x,
+    analyses = analyses,
+    features = features,
+    groups = groups,
+    components = components,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    filtered = filtered
   )
 
   if (nrow(fts) == 0) {
@@ -525,11 +532,172 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 }
 
+# MARK: map_features
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot RT vs m/z traces for selected features using EIC data.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-features
+#' @template arg-ms-groups
+#' @template arg-ms-components
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-filtered
+#' @template arg-labs
+#' @template arg-plot-title
+#' @template arg-plot-groupBy
+#' @template arg-interactive
+#' @param showDetails Logical, show hover details in interactive plots.
+#' @export
+#'
+map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    features = NULL,
+    groups = NULL,
+    components = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    groupBy = "feature",
+    interactive = TRUE,
+    showDetails = FALSE) {
+  fts <- get_features(
+    x = x,
+    analyses = analyses,
+    features = features,
+    groups = groups,
+    components = components,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    filtered = filtered
+  )
+
+  if (nrow(fts) == 0) {
+    message("\u2717 Features not found for the targets!")
+    return(NULL)
+  }
+
+  if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(fts)))) {
+    warning("groupBy columns not found in feature data")
+    return(NULL)
+  }
+  vals <- lapply(groupBy, function(col) as.character(fts[[col]]))
+  fts$var <- do.call(paste, c(vals, sep = " - "))
+  cl <- .get_colors(unique(fts$var))
+
+  pt_list <- list()
+  for (i in seq_len(nrow(fts))) {
+    ft <- fts[i, ]
+    has_eic <- !is.na(ft$eic_rt) && !is.na(ft$eic_mz) && !is.na(ft$eic_intensity)
+    has_eic <- has_eic && nchar(ft$eic_rt) > 0 && nchar(ft$eic_mz) > 0 && nchar(ft$eic_intensity) > 0
+    if (!has_eic) next
+    rt_dec <- rcpp_streamcraft_decode_string(ft$eic_rt)
+    mz_dec <- rcpp_streamcraft_decode_string(ft$eic_mz)
+    int_dec <- rcpp_streamcraft_decode_string(ft$eic_intensity)
+    if (length(rt_dec) == 0 || length(mz_dec) == 0 || length(int_dec) == 0) next
+    if (!(length(rt_dec) == length(mz_dec) && length(rt_dec) == length(int_dec))) next
+    max_int <- max(int_dec, na.rm = TRUE)
+    if (!is.finite(max_int) || max_int == 0) next
+    norm_int <- int_dec / max_int
+    pt_list[[length(pt_list) + 1]] <- data.table::data.table(
+      analysis = ft$analysis,
+      feature = ft$feature,
+      rt = rt_dec,
+      mz = mz_dec,
+      intensity = norm_int,
+      var = ft$var
+    )
+  }
+
+  if (length(pt_list) == 0) {
+    message("\u2717 No valid EIC data found for mapping!")
+    return(NULL)
+  }
+
+  pts <- data.table::rbindlist(pt_list, fill = TRUE)
+  size_scaled <- pts$intensity
+  size_scaled[is.na(size_scaled)] <- 0
+  size_scaled <- size_scaled * 8 + 2
+
+  if (!interactive) {
+    plot <- ggplot2::ggplot(
+      pts,
+      ggplot2::aes(x = rt, y = mz, color = var, size = intensity)
+    ) +
+      ggplot2::geom_point(alpha = 0.7) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::scale_size(range = c(2, 10), guide = "none") +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title, color = groupBy)
+    return(plot)
+  }
+
+  title <- list(text = title, font = list(size = 12, color = "black"))
+  xaxis <- list(
+    linecolor = "black",
+    title = xLab,
+    titlefont = list(size = 12, color = "black")
+  )
+  yaxis <- list(
+    linecolor = "black",
+    title = yLab,
+    titlefont = list(size = 12, color = "black")
+  )
+
+  hover_vals <- if (showDetails) {
+    paste0(
+      "analysis: ", pts$analysis,
+      "<br>feature: ", pts$feature,
+      "<br>rt: ", round(pts$rt, 2),
+      "<br>m/z: ", round(pts$mz, 4),
+      "<br>norm_intensity: ", round(pts$intensity, 3)
+    )
+  } else {
+    ""
+  }
+
+  plot <- plot_ly(
+    data = pts,
+    x = ~rt,
+    y = ~mz,
+    type = "scattergl",
+    mode = "markers",
+    color = ~var,
+    colors = cl,
+    marker = list(size = size_scaled, sizemode = "diameter", opacity = 0.7),
+    text = hover_vals,
+    hoverinfo = if (showDetails) "text" else "skip"
+  )
+
+  plot <- plot %>% plotly::layout(title = title, xaxis = xaxis, yaxis = yaxis, legend = list(title = list(text = groupBy)))
+  plot
+}
+
 # MARK: plot_features_ms1
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot MS1 spectra for selected features.
 #' @template arg-ntsdb-x
 #' @template arg-analyses
 #' @template arg-ms-features
+#' @template arg-ms-groups
+#' @template arg-ms-components
 #' @template arg-ms-mass
 #' @template arg-ms-mz
 #' @template arg-ms-rt
@@ -546,6 +714,8 @@ plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
     x,
     analyses = NULL,
     features = NULL,
+    groups = NULL,
+    components = NULL,
     mass = NULL,
     mz = NULL,
     rt = NULL,
@@ -562,17 +732,19 @@ plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
     showText = TRUE,
     interactive = TRUE) {
   fts <- get_features(
-    x,
-    analyses,
-    features,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    filtered
+    x = x,
+    analyses = analyses,
+    features = features,
+    groups = groups,
+    components = components,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    filtered = filtered
   )
 
   if (nrow(fts) == 0) {
@@ -617,11 +789,9 @@ plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
     return(NULL)
   }
 
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  rpls <- DBI::dbGetQuery(conn, "SELECT analysis, replicate FROM Analyses")
-  rpl_map <- rpls$replicate
-  names(rpl_map) <- rpls$analysis
+  analyses_info <- info(x$analyses)
+  rpl_map <- analyses_info$replicate
+  names(rpl_map) <- analyses_info$analysis
   ms1$replicate <- rpl_map[ms1$analysis]
   data.table::setcolorder(ms1, c("analysis", "replicate", "feature"))
 
@@ -785,6 +955,8 @@ plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @template arg-ntsdb-x
 #' @template arg-analyses
 #' @template arg-ms-features
+#' @template arg-ms-groups
+#' @template arg-ms-components
 #' @template arg-ms-mass
 #' @template arg-ms-mz
 #' @template arg-ms-rt
@@ -801,6 +973,8 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
     x,
     analyses = NULL,
     features = NULL,
+    groups = NULL,
+    components = NULL,
     mass = NULL,
     mz = NULL,
     rt = NULL,
@@ -817,17 +991,19 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
     showText = TRUE,
     interactive = TRUE) {
   fts <- get_features(
-    x,
-    analyses,
-    features,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    filtered
+    x = x,
+    analyses = analyses,
+    features = features,
+    groups = groups,
+    components = components,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    filtered = filtered
   )
 
   if (nrow(fts) == 0) {
@@ -873,11 +1049,9 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
     return(NULL)
   }
 
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  rpls <- DBI::dbGetQuery(conn, "SELECT analysis, replicate FROM Analyses")
-  rpl_map <- rpls$replicate
-  names(rpl_map) <- rpls$analysis
+  analyses_info <- info(x$analyses)
+  rpl_map <- analyses_info$replicate
+  names(rpl_map) <- analyses_info$analysis
   ms2$replicate <- rpl_map[ms2$analysis]
   data.table::setcolorder(ms2, c("analysis", "replicate", "feature"))
 

@@ -52,6 +52,12 @@ run.DB_MassSpecMethod_CreateComponents_native <- function(x, engine = NULL) {
     return(FALSE)
   }
 
+  analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
+  if (nrow(analyses) == 0) {
+    warning("No analyses found in DB_MassSpecAnalyses.")
+    return(FALSE)
+  }
+
   db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
   if (!file.exists(db)) {
     warning("DB_MassSpecResults_NonTargetAnalysis database not found. Run FindFeatures first.")
@@ -61,8 +67,7 @@ run.DB_MassSpecMethod_CreateComponents_native <- function(x, engine = NULL) {
   conn <- DBI::dbConnect(duckdb::duckdb(), db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
 
-  analyses <- DBI::dbReadTable(conn, "Analyses")
-  headers <- DBI::dbReadTable(conn, "SpectraHeaders")
+  headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
   features <- DBI::dbReadTable(conn, "Features")
 
   if (nrow(features) == 0) {
@@ -80,13 +85,16 @@ run.DB_MassSpecMethod_CreateComponents_native <- function(x, engine = NULL) {
     hash <- .make_hash(x, analyses, parameters, features)
     cache_info <- get_cache_info(cache_manager)
     if (nrow(cache_info) > 0) {
-      fts <- load_cache(cache_manager, hash = hash)
-      if (!is.null(fts) && nrow(fts) > 0) {
-        message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
-        DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts)
-        return(invisible(TRUE))
+        fts <- load_cache(cache_manager, hash = hash)
+        if (!is.null(fts) && nrow(fts) > 0) {
+          message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+          DB_MassSpecResults_NonTargetAnalysis(
+            projectPath = engine$get_project_path(),
+            features = fts
+          )
+          return(invisible(TRUE))
+        }
       }
-    }
   }
 
   fts <- rcpp_nts_create_components(
@@ -115,6 +123,9 @@ run.DB_MassSpecMethod_CreateComponents_native <- function(x, engine = NULL) {
     message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
   }
 
-  DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts)
+  DB_MassSpecResults_NonTargetAnalysis(
+    projectPath = engine$get_project_path(),
+    features = fts
+  )
   invisible(TRUE)
 }

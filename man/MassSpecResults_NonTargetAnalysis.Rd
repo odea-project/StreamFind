@@ -738,7 +738,7 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 applied for ion isolation and fragmentation during acquisition of tandem
 data (i.e., MS2 data).}
 
-\item{groups}{A numeric or character vector with the number or ID of feature groups, respectively.}
+\item{groups}{A numeric or character vector with feature group IDs, or a data.frame/data.table with a \code{feature_group} (or \code{group}) column; an optional \code{analysis} column restricts analyses and a \code{name} column sets custom labels.}
 
 \item{intensities}{Logical (length 1). When \code{TRUE}, feature intensity values are returned.}
 

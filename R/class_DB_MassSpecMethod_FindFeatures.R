@@ -110,8 +110,10 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
       if (!is.null(fts)) {
         if (nrow(fts) > 0) {
           message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
-          db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
-          DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts)
+          DB_MassSpecResults_NonTargetAnalysis(
+            projectPath = engine$get_project_path(),
+            features = fts
+          )
           return(invisible(TRUE))
         }
       }
@@ -149,7 +151,9 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     data = as.data.frame(fts)
   )
   message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
-  db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
-  invisible(DB_MassSpecResults_NonTargetAnalysis(db, analyses, headers, fts))
+  invisible(DB_MassSpecResults_NonTargetAnalysis(
+    projectPath = engine$get_project_path(),
+    features = fts
+  ))
   invisible(TRUE)
 }

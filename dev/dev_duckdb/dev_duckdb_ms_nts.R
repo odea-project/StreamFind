@@ -17,7 +17,7 @@ set_blank_names(ms$Analyses, c(rep("blank", 9)))
 
 ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
-  ppmThreshold = 25,
+  ppmThreshold = 10,
   noiseThreshold = 250,
   minSNR = 3,
   minTraces = 3,
@@ -60,6 +60,8 @@ ms
 
 ms$run_workflow()
 
+
+
 show(ms$NonTargetAnalysis)
 
 fts <- get_features(
@@ -77,12 +79,26 @@ fts <- get_features(
   analyses = 5,
   filtered = FALSE
 )
-fts <- fts[fts$feature_component %in% "TC1074", ]
+fts <- fts[fts$feature_component %in% "FC_1082", ]
 plot_features(
   ms$NonTargetAnalysis,
   features = fts
 )
 
+
+plot_features(
+  ms$NonTargetAnalysis,
+  analyses = 5,
+  components = "FC_1083",
+  showDetails = FALSE
+)
+
+map_features(
+  ms$NonTargetAnalysis,
+  analyses = 5,
+  components = "FC_1083",
+  showDetails = TRUE
+)
 
 colnames(fts)
 
@@ -101,7 +117,7 @@ plot_features(
 )
 
 
-
+colnames(fts)
 
 
 

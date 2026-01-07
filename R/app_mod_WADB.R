@@ -105,8 +105,15 @@
         if (!file.exists(db_path)) next
         ctor <- get0(cls, envir = asNamespace("StreamFind"), inherits = FALSE)
         if (!is.function(ctor)) next
+        ctor_formals <- names(formals(ctor))
         obj <- tryCatch(
-          ctor(db = db_path),
+          {
+            if ("projectPath" %in% ctor_formals) {
+              ctor(projectPath = project_path)
+            } else {
+              ctor(db = db_path)
+            }
+          },
           error = function(e) {
             shiny::showNotification(
               paste("Error loading", cls, "from", basename(db_path), ":", conditionMessage(e)),

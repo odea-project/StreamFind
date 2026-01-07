@@ -103,7 +103,10 @@ run.DB_MassSpecMethod_LoadFeaturesMS1_native <- function(x, engine = NULL) {
       fts <- load_cache(cache_manager, hash = hash)
       if (!is.null(fts) && nrow(fts) > 0) {
         message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
-        DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts)
+        DB_MassSpecResults_NonTargetAnalysis(
+          projectPath = engine$get_project_path(),
+          features = fts
+        )
         return(invisible(TRUE))
       }
     }
@@ -140,6 +143,9 @@ run.DB_MassSpecMethod_LoadFeaturesMS1_native <- function(x, engine = NULL) {
     message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
   }
 
-  DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts)
+  DB_MassSpecResults_NonTargetAnalysis(
+    projectPath = engine$get_project_path(),
+    features = fts
+  )
   invisible(TRUE)
 }

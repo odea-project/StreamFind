@@ -32,7 +32,7 @@
 \title{Database-backed Mass Spectrometry Analyses}
 \usage{
 DB_MassSpecAnalyses(
-  db = file.path("data.sf", "DB_MassSpecAnalyses.duckdb"),
+  projectPath = ".",
   files = NULL,
   centroid = FALSE,
   levels = c(1, 2)
@@ -194,7 +194,7 @@ DB_MassSpecAnalyses(
 \method{get_db_table_info}{DB_MassSpecAnalyses}(x, tableName)
 }
 \arguments{
-\item{db}{Path to the MassSpec analyses DuckDB file. Defaults to \code{data.sf/MassSpecAnalyses.duckdb}.}
+\item{projectPath}{Path to the project directory where \code{DB_MassSpecAnalyses.duckdb} will be created/used.}
 
 \item{files}{A character vector with full file path/s of \emph{mzML}
 or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
@@ -304,7 +304,7 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 An object of class \code{DB_MassSpecAnalyses}, extending \code{DB_Analyses}.
 }
 \description{
-The \code{DB_MassSpecAnalyses} class stores MassSpec analyses metadata and headers in a DuckDB file.
+The \code{DB_MassSpecAnalyses} class stores MassSpec analyses metadata and headers in a DuckDB file within a project directory.
 }
 \section{Methods (by generic)}{
 \itemize{

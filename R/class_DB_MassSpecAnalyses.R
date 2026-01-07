@@ -1,7 +1,7 @@
 # MARK: DB_MassSpecAnalyses
 #' @title Database-backed Mass Spectrometry Analyses
-#' @description The `DB_MassSpecAnalyses` class stores MassSpec analyses metadata and headers in a DuckDB file.
-#' @template arg-ms-db
+#' @description The `DB_MassSpecAnalyses` class stores MassSpec analyses metadata and headers in a DuckDB file within a project directory.
+#' @param projectPath Path to the project directory where `DB_MassSpecAnalyses.duckdb` will be created/used.
 #' @template arg-ms-files
 #' @template arg-ms-centroid
 #' @template arg-ms-levels
@@ -10,10 +10,11 @@
 #' @export
 #'
 DB_MassSpecAnalyses <- function(
-    db = file.path("data.sf", "DB_MassSpecAnalyses.duckdb"),
+    projectPath = ".",
     files = NULL,
     centroid = FALSE,
     levels = c(1, 2)) {
+  db <- file.path(projectPath, "DB_MassSpecAnalyses.duckdb")
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
   conn <- DBI::dbConnect(duckdb::duckdb(), db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)

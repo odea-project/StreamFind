@@ -301,7 +301,7 @@ void nts::NTS_DATA::create_components(const std::vector<float> &rtWindow)
       const float mean_rt = cluster_rt_sum[c] / static_cast<float>(cluster_counts[c]);
 
       std::ostringstream oss;
-      oss << "TC" << std::fixed << std::setprecision(0) << mean_rt;
+      oss << "FC_" << std::fixed << std::setprecision(0) << mean_rt;
       const std::string component_id = oss.str();
 
       for (const int idx : clusters[c])

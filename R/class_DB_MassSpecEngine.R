@@ -30,7 +30,7 @@ DB_MassSpecEngine <- R6::R6Class(
       if (missing(value)) {
         if (is.null(private$.Analyses)) {
           private$.Analyses <- DB_MassSpecAnalyses(
-            db = file.path(private$.projectPath, "DB_MassSpecAnalyses.duckdb")
+            projectPath = private$.projectPath
           )
         }
         return(private$.Analyses)
@@ -50,15 +50,9 @@ DB_MassSpecEngine <- R6::R6Class(
     NonTargetAnalysis = function(value) {
       if (missing(value)) {
         if (is.null(private$.NonTargetAnalysis)) {
-          nts_db_path <- file.path(private$.projectPath, "DB_MassSpecResults_NonTargetAnalysis.duckdb")
-          if (!file.exists(nts_db_path)) {
-            private$.NonTargetAnalysis <- DB_MassSpecResults_NonTargetAnalysis(
-              db = nts_db_path,
-              analyses = query_db(self$Analyses, "SELECT * FROM Analyses")
-            )
-          } else {
-            private$.NonTargetAnalysis <- DB_MassSpecResults_NonTargetAnalysis(db = nts_db_path)
-          }
+          private$.NonTargetAnalysis <- DB_MassSpecResults_NonTargetAnalysis(
+            projectPath = private$.projectPath
+          )
         }
         return(private$.NonTargetAnalysis)
       }
@@ -89,7 +83,7 @@ DB_MassSpecEngine <- R6::R6Class(
         dataType = "DB_MassSpec"
       )
       private$.Analyses <- DB_MassSpecAnalyses(
-        db = file.path(private$.projectPath, "DB_MassSpecAnalyses.duckdb"),
+        projectPath = private$.projectPath,
         files = files,
         centroid = centroid,
         levels = levels

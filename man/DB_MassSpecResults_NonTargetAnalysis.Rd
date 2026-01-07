@@ -6,14 +6,13 @@
 \alias{show.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features.DB_MassSpecResults_NonTargetAnalysis}
+\alias{map_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis}
-\title{Constructor and methods to handle non-target analysis for mass spectrometry data}
+\title{Constructor and methods to handle non-target analysis (NTA) for mass spectrometry data}
 \usage{
 DB_MassSpecResults_NonTargetAnalysis(
-  db = file.path("data.sf", "DB_MassSpecResults_NonTargetAnalysis.duckdb"),
-  analyses = data.table::data.table(),
-  headers = data.table::data.table(),
+  projectPath = ".",
   features = data.table::data.table()
 )
 
@@ -25,6 +24,8 @@ DB_MassSpecResults_NonTargetAnalysis(
   x,
   analyses = NULL,
   features = NULL,
+  groups = NULL,
+  components = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -39,6 +40,8 @@ DB_MassSpecResults_NonTargetAnalysis(
   x,
   analyses = NULL,
   features = NULL,
+  groups = NULL,
+  components = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -46,9 +49,28 @@ DB_MassSpecResults_NonTargetAnalysis(
   ppm = 20,
   sec = 60,
   millisec = 5,
-  rtExpand = 120,
-  mzExpand = 0.001,
-  useLoadedData = TRUE,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "feature",
+  interactive = TRUE,
+  showDetails = FALSE
+)
+
+\method{map_features}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
   filtered = FALSE,
   xLab = NULL,
   yLab = NULL,
@@ -62,6 +84,8 @@ DB_MassSpecResults_NonTargetAnalysis(
   x,
   analyses = NULL,
   features = NULL,
+  groups = NULL,
+  components = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -83,6 +107,8 @@ DB_MassSpecResults_NonTargetAnalysis(
   x,
   analyses = NULL,
   features = NULL,
+  groups = NULL,
+  components = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -101,15 +127,19 @@ DB_MassSpecResults_NonTargetAnalysis(
 )
 }
 \arguments{
-\item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
-object.}
-
-\item{headers}{A list of data frames containing information about the spectra headers.}
+\item{projectPath}{Path to the project directory containing \code{DB_MassSpecAnalyses.duckdb}; \code{DB_MassSpecResults_NonTargetAnalysis.duckdb} is created/used alongside it.}
 
 \item{features}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
 
 \item{x}{A \code{MassSpecResults_NonTargetAnalysisDB} object.}
+
+\item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
+object.}
+
+\item{groups}{A numeric or character vector with feature group IDs, or a data.frame/data.table with a \code{feature_group} (or \code{group}) column; an optional \code{analysis} column restricts analyses and a \code{name} column sets custom labels.}
+
+\item{components}{A numeric or character vector with feature component IDs, or a data.frame/data.table with a \code{feature_component} (or \code{component}) column; an optional \code{analysis} column restricts analyses and a \code{name} column sets custom labels.}
 
 \item{mass}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
 and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
@@ -147,15 +177,11 @@ in milliseconds.}
 
 \item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
-\item{rtExpand}{Numeric (length 1) with the retention time values (in seconds) for expanding left and right the
-retention time range.}
-
-\item{mzExpand}{Numeric (length 1) with the mass or mass-to-charge ratio (\emph{m/z}) (in Da) for expanding left and
-right the mass range.}
-
 \item{xLab}{A string with the title for the x axis.}
 
 \item{yLab}{A string with the title for the y axis.}
+
+\item{title}{Plot title.}
 
 \item{groupBy}{Column to use for color grouping (default: "analysis").}
 
@@ -166,29 +192,10 @@ right the mass range.}
 \item{normalized}{A logical value indicating whether the result should be normalized.}
 }
 \value{
-An object of class \code{DB_MassSpecResults_NonTargetAnalysis} with the following structure:
-\itemize{
-\item \code{type}: The type of the results, which is "MassSpec".
-\item \code{name}: The name of the results, which is "MassSpecResults_NonTargetAnalysis2".
-\item \code{software}: The software used for the analysis, which is "StreamFind".
-\item \code{version}: The version of the software, as a character string.
-\item \code{info}: A data frame containing information about the analyses.
-\item \code{headers}: A list of data frames containing information about the spectra headers.
-\item \code{features}: A list of data frames containing information about the features.
-}
-The \code{info} data.table contains the following columns: analysis, replicate, blank, polarity and file. Each \code{features} data frame contains the following columns from \code{rcpp_nts_find_features2()}:
-\itemize{
-\item Core feature properties: feature, group, component, adduct, rt, mz, mass, intensity, noise, sn, area
-\item Chromatographic boundaries: rtmin, rtmax, width, mzmin, mzmax, ppm
-\item Peak shape characterization: fwhm_rt, fwhm_mz
-\item Gaussian fitting parameters: gaussian_A, gaussian_mu, gaussian_sigma, gaussian_r2
-\item Processing flags: polarity, filtered, filter, filled, correction
-\item Encoded profile data: eic_size, eic_rt, eic_mz, eic_intensity, eic_baseline, eic_smoothed
-\item MS spectral data: ms1_size, ms1_mz, ms1_intensity, ms2_size, ms2_mz, ms2_intensity
-}
+An object of class \code{DB_MassSpecResults_NonTargetAnalysis} (and \code{DB_Results}) pointing to the feature DuckDB on disk and holding an \code{analyses} field with the linked \code{DB_MassSpecAnalyses}.
 }
 \description{
-The \code{DB_MassSpecResults_NonTargetAnalysis} class is a child of the \link{DB_Results} class and is used to store results from non-target analysis (NTA) results from mass spectrometry data ("DB_MassSpec").
+Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_Results}) that reuses an existing \code{DB_MassSpecAnalyses} DuckDB (for analyses and spectra) and stores NTA features in its own DuckDB.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -199,6 +206,8 @@ The \code{DB_MassSpecResults_NonTargetAnalysis} class is a child of the \link{DB
 \item \code{get_features(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves features from the DB_MassSpecResults_NonTargetAnalysis object based on specified criteria.
 
 \item \code{plot_features(DB_MassSpecResults_NonTargetAnalysis)}: Plots features from the DB_MassSpecResults_NonTargetAnalysis object according to the specified parameters.
+
+\item \code{map_features(DB_MassSpecResults_NonTargetAnalysis)}: Plot RT vs m/z traces for selected features using EIC data.
 
 \item \code{plot_features_ms1(DB_MassSpecResults_NonTargetAnalysis)}: Plot MS1 spectra for selected features.
 

@@ -1,0 +1,1 @@
+#' @param components A numeric or character vector with feature component IDs, or a data.frame/data.table with a `feature_component` (or `component`) column; an optional `analysis` column restricts analyses and a `name` column sets custom labels.

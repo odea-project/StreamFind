@@ -60,7 +60,7 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
   }
 
   nts <- engine$NonTargetAnalysis
-  analyses <- query_db(nts, "SELECT * FROM Analyses")
+  analyses <- info(engine$Analyses)
 
   if (nrow(analyses) == 0) {
     warning("No analyses found in the DB_MassSpecResults_NonTargetAnalysis.")
@@ -84,8 +84,10 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
       if (!is.null(fts)) {
         if (nrow(fts) > 0) {
           message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
-          db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
-          DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts)
+          DB_MassSpecResults_NonTargetAnalysis(
+            projectPath = engine$get_project_path(),
+            features = fts
+          )
           return(invisible(TRUE))
         }
       }
@@ -135,7 +137,9 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
     )
     message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
   }
-  db <- file.path(engine$get_project_path(), "DB_MassSpecResults_NonTargetAnalysis.duckdb")
-  invisible(DB_MassSpecResults_NonTargetAnalysis(db, NULL, NULL, fts))
+  invisible(DB_MassSpecResults_NonTargetAnalysis(
+    projectPath = engine$get_project_path(),
+    features = fts
+  ))
   invisible(TRUE)
 }
