@@ -3,6 +3,9 @@
 \name{DB_MassSpecResults_Chromatograms}
 \alias{DB_MassSpecResults_Chromatograms}
 \alias{validate_object.DB_MassSpecResults_Chromatograms}
+\alias{query_db.DB_MassSpecResults_Chromatograms}
+\alias{list_db_tables.DB_MassSpecResults_Chromatograms}
+\alias{get_db_table_info.DB_MassSpecResults_Chromatograms}
 \alias{show.DB_MassSpecResults_Chromatograms}
 \alias{get_chromatograms.DB_MassSpecResults_Chromatograms}
 \alias{plot_chromatograms.DB_MassSpecResults_Chromatograms}
@@ -12,13 +15,19 @@
 \title{Constructor and methods to handle Mass Spectrometry chromatograms results using DuckDB}
 \usage{
 DB_MassSpecResults_Chromatograms(
-  db = file.path("data.sf", "DB_MassSpecResults_Chromatograms.duckdb"),
+  projectPath = ".",
   analyses = data.table::data.table(),
   chromatograms = data.table::data.table(),
   peaks = data.table::data.table()
 )
 
 \method{validate_object}{DB_MassSpecResults_Chromatograms}(x)
+
+\method{query_db}{DB_MassSpecResults_Chromatograms}(x, sql, params = NULL)
+
+\method{list_db_tables}{DB_MassSpecResults_Chromatograms}(x)
+
+\method{get_db_table_info}{DB_MassSpecResults_Chromatograms}(x, tableName)
 
 \method{show}{DB_MassSpecResults_Chromatograms}(x)
 
@@ -86,7 +95,7 @@ DB_MassSpecResults_Chromatograms(
 )
 }
 \arguments{
-\item{db}{Path to the DuckDB database file. Defaults to "data.sf/MassSpecResults_Chromatograms.duckdb".}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
 \item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
@@ -96,6 +105,12 @@ object.}
 \item{peaks}{A data.table containing peak data with columns related to chromatographic peaks.}
 
 \item{x}{An object of class \code{MassSpecResults_ChromatogramsDB}.}
+
+\item{sql}{SQL query string to execute against the database.}
+
+\item{params}{Query parameters to be used with the SQL query (optional).}
+
+\item{tableName}{Name of the table to query or retrieve information about.}
 
 \item{rtmin}{Numeric (length 1) with the minimum retention time.}
 
@@ -130,6 +145,12 @@ The \code{DB_MassSpecResults_Chromatograms} class represents chromatograms resul
 \section{Methods (by generic)}{
 \itemize{
 \item \code{validate_object(DB_MassSpecResults_Chromatograms)}: Validates the DB_MassSpecResults_Chromatograms object, returning NULL if valid.
+
+\item \code{query_db(DB_MassSpecResults_Chromatograms)}: Internal: execute a query on the DB (delegates to DB_Results).
+
+\item \code{list_db_tables(DB_MassSpecResults_Chromatograms)}: Internal: list tables in the DB (delegates to DB_Results).
+
+\item \code{get_db_table_info(DB_MassSpecResults_Chromatograms)}: Internal: get table info from the DB (delegates to DB_Results).
 
 \item \code{show(DB_MassSpecResults_Chromatograms)}: Prints a summary of the DB_MassSpecResults_Chromatograms object.
 

@@ -3,6 +3,9 @@
 \name{DB_MassSpecResults_NonTargetAnalysis}
 \alias{DB_MassSpecResults_NonTargetAnalysis}
 \alias{validate_object.DB_MassSpecResults_NonTargetAnalysis}
+\alias{query_db.DB_MassSpecResults_NonTargetAnalysis}
+\alias{list_db_tables.DB_MassSpecResults_NonTargetAnalysis}
+\alias{get_db_table_info.DB_MassSpecResults_NonTargetAnalysis}
 \alias{show.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features.DB_MassSpecResults_NonTargetAnalysis}
@@ -17,6 +20,12 @@ DB_MassSpecResults_NonTargetAnalysis(
 )
 
 \method{validate_object}{DB_MassSpecResults_NonTargetAnalysis}(x)
+
+\method{query_db}{DB_MassSpecResults_NonTargetAnalysis}(x, sql, params = NULL)
+
+\method{list_db_tables}{DB_MassSpecResults_NonTargetAnalysis}(x)
+
+\method{get_db_table_info}{DB_MassSpecResults_NonTargetAnalysis}(x, tableName)
 
 \method{show}{DB_MassSpecResults_NonTargetAnalysis}(x)
 
@@ -127,12 +136,18 @@ DB_MassSpecResults_NonTargetAnalysis(
 )
 }
 \arguments{
-\item{projectPath}{Path to the project directory containing \code{DB_MassSpecAnalyses.duckdb}; \code{DB_MassSpecResults_NonTargetAnalysis.duckdb} is created/used alongside it.}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
 \item{features}{A character vector with the feature IDs or a data.frame or data.table with a column named \code{feature}
 with the feature IDs. A column named \code{analysis} can be given to specify from which analyses the features matched.}
 
 \item{x}{A \code{MassSpecResults_NonTargetAnalysisDB} object.}
+
+\item{sql}{SQL query string to execute against the database.}
+
+\item{params}{Query parameters to be used with the SQL query (optional).}
+
+\item{tableName}{Name of the table to query or retrieve information about.}
 
 \item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
@@ -200,6 +215,12 @@ Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_R
 \section{Methods (by generic)}{
 \itemize{
 \item \code{validate_object(DB_MassSpecResults_NonTargetAnalysis)}: Validates the DB_MassSpecResults_NonTargetAnalysis object, returning NULL if valid.
+
+\item \code{query_db(DB_MassSpecResults_NonTargetAnalysis)}: Internal: execute a query on the DB (delegates to DB_Results).
+
+\item \code{list_db_tables(DB_MassSpecResults_NonTargetAnalysis)}: Internal: list tables in the DB (delegates to DB_Results).
+
+\item \code{get_db_table_info(DB_MassSpecResults_NonTargetAnalysis)}: Internal: get table info from the DB (delegates to DB_Results).
 
 \item \code{show(DB_MassSpecResults_NonTargetAnalysis)}: Prints a summary of the DB_MassSpecResults_NonTargetAnalysis object.
 

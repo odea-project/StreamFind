@@ -61,9 +61,9 @@ DB_Engine <- R6::R6Class(
     },
 
     # MARK: Cache
-    #' @field Cache A [StreamFind::CacheManager] object for managing cached data.
+    #' @field Cache A [StreamFind::DB_Cache] object for managing cached data.
     Cache = function() {
-      CacheManager(db = file.path(private$.projectPath, "Cache.duckdb"))
+      DB_Cache(projectPath = private$.projectPath)
     }
   ),
 
@@ -97,7 +97,7 @@ DB_Engine <- R6::R6Class(
       private$.dataType <- dataType
       conn <- DBI::dbConnect(duckdb::duckdb(), engine_db)
       on.exit(DBI::dbDisconnect(conn), add = TRUE)
-      conn_cache <- DBI::dbConnect(duckdb::duckdb(), file.path(sf_root, "Cache.duckdb"))
+      conn_cache <- DBI::dbConnect(duckdb::duckdb(), file.path(sf_root, "DB_Cache.duckdb"))
       on.exit(DBI::dbDisconnect(conn_cache), add = TRUE)
       .create_DB_Engine_db_schema(conn, private$.dataType)
       .validate_DB_Engine_db_schema(conn)

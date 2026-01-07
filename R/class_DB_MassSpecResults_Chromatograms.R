@@ -1,7 +1,7 @@
 # MARK: DB_MassSpecResults_Chromatograms
 #' @title Constructor and methods to handle Mass Spectrometry chromatograms results using DuckDB
 #' @description The `DB_MassSpecResults_Chromatograms` class represents chromatograms results from mass spectrometry analyses stored in a DuckDB database. This provides efficient storage and retrieval for large-scale chromatographic data.
-#' @param db Path to the DuckDB database file. Defaults to "data.sf/MassSpecResults_Chromatograms.duckdb".
+#' @template arg-projectPath
 #' @param analyses A data.table containing information about the analyses.
 #' @param chromatograms A data.table containing chromatogram data with columns: analysis, replicate, index, id, polarity, pre_mz, pre_ce, pro_mz, rt, intensity, and optional baseline/raw columns.
 #' @param peaks A data.table containing peak data with columns related to chromatographic peaks.
@@ -9,13 +9,14 @@
 #' @export
 #'
 DB_MassSpecResults_Chromatograms <- function(
-  db = file.path("data.sf", "DB_MassSpecResults_Chromatograms.duckdb"),
+  projectPath = ".",
   analyses = data.table::data.table(),
   chromatograms = data.table::data.table(),
   peaks = data.table::data.table()
 ) {
   if (!requireNamespace("DBI", quietly = TRUE)) stop("DBI package required.")
   if (!requireNamespace("duckdb", quietly = TRUE)) stop("duckdb package required.")
+  db <- file.path(projectPath, "DB_MassSpecResults_Chromatograms.duckdb")
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
   conn <- DBI::dbConnect(duckdb::duckdb(), db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -80,7 +81,7 @@ DB_MassSpecResults_Chromatograms <- function(
 #'
 validate_object.DB_MassSpecResults_Chromatograms <- function(x) {
   checkmate::assert_class(x, "DB_MassSpecResults_Chromatograms")
-  checkmate::assert_true(identical(x$dataType, "MassSpec"))
+  checkmate::assert_true(identical(x$dataType, "DB_MassSpec"))
   if (!file.exists(x$db)) stop("DB_MassSpecResults_Chromatograms file not found: ", x$db)
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -90,6 +91,33 @@ validate_object.DB_MassSpecResults_Chromatograms <- function(x) {
   .validate_DB_MassSpecAnalyses_Analyses_db_schema(conn)
   .validate_DB_MassSpecResults_Chromatograms_Chromatograms_db_schema(conn)
   .validate_DB_MassSpecResults_Chromatograms_Peaks_db_schema(conn)
+  NextMethod()
+}
+
+# MARK: query_db (dispatch to base)
+#' @describeIn DB_MassSpecResults_Chromatograms Internal: execute a query on the DB (delegates to DB_Results).
+#' @template arg-x-DB_MassSpecResults_Chromatograms
+#' @template arg-sql-sql
+#' @template arg-sql-params
+#' @export
+query_db.DB_MassSpecResults_Chromatograms <- function(x, sql, params = NULL) {
+  NextMethod()
+}
+
+# MARK: list_db_tables (dispatch to base)
+#' @describeIn DB_MassSpecResults_Chromatograms Internal: list tables in the DB (delegates to DB_Results).
+#' @template arg-x-DB_MassSpecResults_Chromatograms
+#' @export
+list_db_tables.DB_MassSpecResults_Chromatograms <- function(x) {
+  NextMethod()
+}
+
+# MARK: get_db_table_info (dispatch to base)
+#' @describeIn DB_MassSpecResults_Chromatograms Internal: get table info from the DB (delegates to DB_Results).
+#' @template arg-x-DB_MassSpecResults_Chromatograms
+#' @template arg-sql-tableName
+#' @export
+get_db_table_info.DB_MassSpecResults_Chromatograms <- function(x, tableName) {
   NextMethod()
 }
 

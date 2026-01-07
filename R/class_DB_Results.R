@@ -1,20 +1,21 @@
 # MARK: DB_Results
 #' @title Base class for database-backed Results
 #' @description Minimal base class to represent results stored in a DuckDB file.
-#' Requires a `db` path and a `dataType` identifier.
-#' @param db Path to DuckDB file.
-#' @param dataType Data type string (e.g., "DB_MassSpec").
+#' Used internally to expose shared S3 helpers for DB-backed results classes.
+#' @template arg-projectPath
 #' @return An object of class `DB_Results`.
 #' @export
 #'
-DB_Results <- function(db, dataType) {
-  checkmate::assert_character(db, len = 1, null.ok = FALSE)
-  checkmate::assert_character(dataType, len = 1, null.ok = FALSE)
+DB_Results <- function(projectPath = ".") {
+  checkmate::assert_character(projectPath, len = 1, null.ok = FALSE)
+  db <- file.path(projectPath, "DB_Results.duckdb")
+  dataType <- "DB_Generic"
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
   structure(
     list(
       db = db,
-      dataType = dataType
+      dataType = dataType,
+      projectPath = projectPath
     ),
     class = "DB_Results"
   )

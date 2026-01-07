@@ -8,7 +8,7 @@
 \alias{get_db_table_info.DB_Results}
 \title{Base class for database-backed Results}
 \usage{
-DB_Results(db, dataType)
+DB_Results(projectPath = ".")
 
 \method{validate_object}{DB_Results}(x)
 
@@ -19,9 +19,7 @@ DB_Results(db, dataType)
 \method{get_db_table_info}{DB_Results}(x, tableName)
 }
 \arguments{
-\item{db}{Path to DuckDB file.}
-
-\item{dataType}{Data type string (e.g., "DB_MassSpec").}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
 \item{x}{ResultsDB object.}
 
@@ -36,7 +34,7 @@ An object of class \code{DB_Results}.
 }
 \description{
 Minimal base class to represent results stored in a DuckDB file.
-Requires a \code{db} path and a \code{dataType} identifier.
+Used internally to expose shared S3 helpers for DB-backed results classes.
 }
 \section{Methods (by generic)}{
 \itemize{

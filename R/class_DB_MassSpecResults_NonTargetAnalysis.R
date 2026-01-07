@@ -1,7 +1,7 @@
 # MARK: DB_MassSpecResults_NonTargetAnalysis
 #' @title Constructor and methods to handle non-target analysis (NTA) for mass spectrometry data
 #' @description Create a `DB_MassSpecResults_NonTargetAnalysis` object (child of [StreamFind::DB_Results]) that reuses an existing `DB_MassSpecAnalyses` DuckDB (for analyses and spectra) and stores NTA features in its own DuckDB.
-#' @param projectPath Path to the project directory containing `DB_MassSpecAnalyses.duckdb`; `DB_MassSpecResults_NonTargetAnalysis.duckdb` is created/used alongside it.
+#' @template arg-projectPath
 #' @param features A data.frame/data.table with NTA feature results as produced by [StreamFind::DB_MassSpecMethod_FindFeatures_native], written to the `Features` table.
 #' @return An object of class `DB_MassSpecResults_NonTargetAnalysis` (and `DB_Results`) pointing to the feature DuckDB on disk and holding an `analyses` field with the linked `DB_MassSpecAnalyses`.
 #' @export
@@ -65,6 +65,33 @@ validate_object.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
   present <- DBI::dbListTables(conn)
   if (!all(required_tables %in% present)) stop("Missing required tables in DB_MassSpecResults_NonTargetAnalysis")
   .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
+  NextMethod()
+}
+
+# MARK: query_db (dispatch to base)
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Internal: execute a query on the DB (delegates to DB_Results).
+#' @template arg-ntsdb-x
+#' @template arg-sql-sql
+#' @template arg-sql-params
+#' @export
+query_db.DB_MassSpecResults_NonTargetAnalysis <- function(x, sql, params = NULL) {
+  NextMethod()
+}
+
+# MARK: list_db_tables (dispatch to base)
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Internal: list tables in the DB (delegates to DB_Results).
+#' @template arg-ntsdb-x
+#' @export
+list_db_tables.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
+  NextMethod()
+}
+
+# MARK: get_db_table_info (dispatch to base)
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Internal: get table info from the DB (delegates to DB_Results).
+#' @template arg-ntsdb-x
+#' @template arg-sql-tableName
+#' @export
+get_db_table_info.DB_MassSpecResults_NonTargetAnalysis <- function(x, tableName) {
   NextMethod()
 }
 

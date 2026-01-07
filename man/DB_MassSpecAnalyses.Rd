@@ -3,6 +3,9 @@
 \name{DB_MassSpecAnalyses}
 \alias{DB_MassSpecAnalyses}
 \alias{validate_object.DB_MassSpecAnalyses}
+\alias{query_db.DB_MassSpecAnalyses}
+\alias{list_db_tables.DB_MassSpecAnalyses}
+\alias{get_db_table_info.DB_MassSpecAnalyses}
 \alias{add_analyses.DB_MassSpecAnalyses}
 \alias{remove_analyses.DB_MassSpecAnalyses}
 \alias{get_analysis_names.DB_MassSpecAnalyses}
@@ -26,9 +29,6 @@
 \alias{get_chromatograms_headers.DB_MassSpecAnalyses}
 \alias{get_chromatograms.DB_MassSpecAnalyses}
 \alias{plot_chromatograms.DB_MassSpecAnalyses}
-\alias{query_db.DB_MassSpecAnalyses}
-\alias{list_db_tables.DB_MassSpecAnalyses}
-\alias{get_db_table_info.DB_MassSpecAnalyses}
 \title{Database-backed Mass Spectrometry Analyses}
 \usage{
 DB_MassSpecAnalyses(
@@ -39,6 +39,12 @@ DB_MassSpecAnalyses(
 )
 
 \method{validate_object}{DB_MassSpecAnalyses}(x)
+
+\method{query_db}{DB_MassSpecAnalyses}(x, sql, params = NULL)
+
+\method{list_db_tables}{DB_MassSpecAnalyses}(x)
+
+\method{get_db_table_info}{DB_MassSpecAnalyses}(x, tableName)
 
 \method{add_analyses}{DB_MassSpecAnalyses}(x, files, centroid = FALSE, levels = c(1, 2))
 
@@ -186,15 +192,9 @@ DB_MassSpecAnalyses(
   interactive = TRUE,
   colorPalette = NULL
 )
-
-\method{query_db}{DB_MassSpecAnalyses}(x, sql, params = NULL)
-
-\method{list_db_tables}{DB_MassSpecAnalyses}(x)
-
-\method{get_db_table_info}{DB_MassSpecAnalyses}(x, tableName)
 }
 \arguments{
-\item{projectPath}{Path to the project directory where \code{DB_MassSpecAnalyses.duckdb} will be created/used.}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
 \item{files}{A character vector with full file path/s of \emph{mzML}
 or \emph{mzXML} file/s or a data.frame with the columns \emph{file}, \emph{replicate}
@@ -208,6 +208,12 @@ replicate group name (character). Note the file paths must have the extension
 \item{levels}{Integer vector with the levels of MS data.}
 
 \item{x}{MassSpecAnalysesDB object.}
+
+\item{sql}{SQL query string to execute against the database.}
+
+\item{params}{Query parameters to be used with the SQL query (optional).}
+
+\item{tableName}{Name of the table to query or retrieve information about.}
 
 \item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
@@ -293,12 +299,6 @@ spectra) to 1 (i.e., must be present in all spectra) for traces during clusterin
 \item{rtmin}{Numeric (length 1) with the minimum retention time.}
 
 \item{rtmax}{Numeric (length 1) with the maximum retention time.}
-
-\item{sql}{SQL query string to execute against the database.}
-
-\item{params}{Query parameters to be used with the SQL query (optional).}
-
-\item{tableName}{Name of the table to query or retrieve information about.}
 }
 \value{
 An object of class \code{DB_MassSpecAnalyses}, extending \code{DB_Analyses}.
@@ -309,6 +309,12 @@ The \code{DB_MassSpecAnalyses} class stores MassSpec analyses metadata and heade
 \section{Methods (by generic)}{
 \itemize{
 \item \code{validate_object(DB_MassSpecAnalyses)}: Validate the DB_MassSpecAnalyses object (schema + type).
+
+\item \code{query_db(DB_MassSpecAnalyses)}: Internal: execute a query on the DB (delegates to DB_Analyses).
+
+\item \code{list_db_tables(DB_MassSpecAnalyses)}: Internal: list tables in the DB (delegates to DB_Analyses).
+
+\item \code{get_db_table_info(DB_MassSpecAnalyses)}: Internal: get table info from the DB (delegates to DB_Analyses).
 
 \item \code{add_analyses(DB_MassSpecAnalyses)}: Add analyses to the DB (append; overwrites only duplicates)
 
@@ -355,11 +361,5 @@ The \code{DB_MassSpecAnalyses} class stores MassSpec analyses metadata and heade
 \item \code{get_chromatograms(DB_MassSpecAnalyses)}: Get chromatograms for the specified analyses and chromatogram IDs/indices.
 
 \item \code{plot_chromatograms(DB_MassSpecAnalyses)}: Plot chromatograms for the specified analyses and chromatogram IDs/indices.
-
-\item \code{query_db(DB_MassSpecAnalyses)}: Internal: execute a query on the DB.
-
-\item \code{list_db_tables(DB_MassSpecAnalyses)}: Internal: list tables in the DB.
-
-\item \code{get_db_table_info(DB_MassSpecAnalyses)}: Internal: get table info from the DB.
 
 }}

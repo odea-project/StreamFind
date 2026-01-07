@@ -1,7 +1,7 @@
 # MARK: DB_MassSpecAnalyses
 #' @title Database-backed Mass Spectrometry Analyses
 #' @description The `DB_MassSpecAnalyses` class stores MassSpec analyses metadata and headers in a DuckDB file within a project directory.
-#' @param projectPath Path to the project directory where `DB_MassSpecAnalyses.duckdb` will be created/used.
+#' @template arg-projectPath
 #' @template arg-ms-files
 #' @template arg-ms-centroid
 #' @template arg-ms-levels
@@ -23,7 +23,7 @@ DB_MassSpecAnalyses <- function(
   .validate_DB_MassSpecAnalyses_Spectra_db_schema(conn)
   .validate_DB_MassSpecAnalyses_Chromatograms_db_schema(conn)
   if (!is.null(files)) {
-    cache_db <- file.path(dirname(db), "Cache.duckdb")
+    cache_db <- file.path(dirname(db), "DB_Cache.duckdb")
     analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels, cache_db = cache_db)
     if (is.null(analyses) || length(analyses) == 0) {
       stop("No analyses parsed from files.")
@@ -58,6 +58,33 @@ validate_object.DB_MassSpecAnalyses <- function(x) {
   NextMethod()
 }
 
+# MARK: query_db (dispatch to base)
+#' @describeIn DB_MassSpecAnalyses Internal: execute a query on the DB (delegates to DB_Analyses).
+#' @template arg-x-DB_MassSpecAnalyses
+#' @template arg-sql-sql
+#' @template arg-sql-params
+#' @export
+query_db.DB_MassSpecAnalyses <- function(x, sql, params = NULL) {
+  NextMethod()
+}
+
+# MARK: list_db_tables (dispatch to base)
+#' @describeIn DB_MassSpecAnalyses Internal: list tables in the DB (delegates to DB_Analyses).
+#' @template arg-x-DB_MassSpecAnalyses
+#' @export
+list_db_tables.DB_MassSpecAnalyses <- function(x) {
+  NextMethod()
+}
+
+# MARK: get_db_table_info (dispatch to base)
+#' @describeIn DB_MassSpecAnalyses Internal: get table info from the DB (delegates to DB_Analyses).
+#' @template arg-x-DB_MassSpecAnalyses
+#' @template arg-sql-tableName
+#' @export
+get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
+  NextMethod()
+}
+
 # MARK: add_analyses
 #' @describeIn DB_MassSpecAnalyses Add analyses to the DB (append; overwrites only duplicates)
 #' @template arg-x-DB_MassSpecAnalyses
@@ -68,7 +95,7 @@ validate_object.DB_MassSpecAnalyses <- function(x) {
 add_analyses.DB_MassSpecAnalyses <- function(x, files, centroid = FALSE, levels = c(1, 2)) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  cache_db <- file.path(dirname(x$db), "Cache.duckdb")
+  cache_db <- file.path(dirname(x$db), "DB_Cache.duckdb")
   analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels, cache_db = cache_db)
   if (is.null(analyses) || length(analyses) == 0) {
     stop("No analyses parsed from files.")
@@ -1068,41 +1095,6 @@ plot_chromatograms.DB_MassSpecAnalyses <- function(
   )
 }
 
-# MARK: query_db
-#' @describeIn DB_MassSpecAnalyses Internal: execute a query on the DB.
-#' @template arg-x-DB_MassSpecAnalyses
-#' @template arg-sql-sql
-#' @template arg-sql-params
-#' @export
-#'
-query_db.DB_MassSpecAnalyses <- function(x, sql, params = NULL) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .query_db(conn, sql, params)
-}
-
-# MARK: list_db_tables
-#' @describeIn DB_MassSpecAnalyses Internal: list tables in the DB.
-#' @template arg-x-DB_MassSpecAnalyses
-#' @export
-#'
-list_db_tables.DB_MassSpecAnalyses <- function(x) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .list_db_tables(conn)
-}
-
-# MARK: get_db_table_info
-#' @describeIn DB_MassSpecAnalyses Internal: get table info from the DB.
-#' @template arg-x-DB_MassSpecAnalyses
-#' @template arg-sql-tableName
-#' @export
-#'
-get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .get_db_table_info(conn, tableName)
-}
 
 # MARK: .validate_DB_MassSpecAnalyses_analyses_dt
 #' @noRd
@@ -1598,7 +1590,7 @@ get_db_table_info.DB_MassSpecAnalyses <- function(x, tableName) {
     }
 
     cache_manager <- NULL
-    if (file.exists(cache_db)) cache_manager <- CacheManager(cache_db)
+    if (file.exists(cache_db)) cache_manager <- DB_Cache(projectPath = dirname(cache_db))
 
     analyses <- lapply(files, function(x) {
       if (!is.null(cache_manager)) {

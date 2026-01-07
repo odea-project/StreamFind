@@ -23,7 +23,7 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 
 \item{\code{AuditTrail}}{Audit trail from database (read-only).}
 
-\item{\code{Cache}}{A \link{CacheManager} object for managing cached data.}
+\item{\code{Cache}}{A \link{DB_Cache} object for managing cached data.}
 }
 \if{html}{\out{</div>}}
 }

@@ -3,28 +3,47 @@
 \name{DB_Analyses}
 \alias{DB_Analyses}
 \alias{validate_object.DB_Analyses}
+\alias{query_db.DB_Analyses}
+\alias{list_db_tables.DB_Analyses}
+\alias{get_db_table_info.DB_Analyses}
 \title{Base class for database-backed Analyses}
 \usage{
-DB_Analyses(db, dataType)
+DB_Analyses(projectPath = ".")
 
 \method{validate_object}{DB_Analyses}(x)
+
+\method{query_db}{DB_Analyses}(x, sql, params = NULL)
+
+\method{list_db_tables}{DB_Analyses}(x)
+
+\method{get_db_table_info}{DB_Analyses}(x, tableName)
 }
 \arguments{
-\item{db}{Path to DuckDB file.}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
-\item{dataType}{Data type string (e.g., "MassSpec").}
+\item{x}{A \code{DB_Analyses} object.}
 
-\item{x}{DB_Analyses object.}
+\item{sql}{SQL query string to execute against the database.}
+
+\item{params}{Query parameters to be used with the SQL query (optional).}
+
+\item{tableName}{Name of the table to query or retrieve information about.}
 }
 \value{
 An object of class \code{DB_Analyses}.
 }
 \description{
 Minimal base class to represent analyses stored in a DuckDB file.
-Requires a \code{db} path and a \code{type} identifier.
+Used internally to expose shared S3 helpers for DB-backed analyses classes.
 }
 \section{Methods (by generic)}{
 \itemize{
 \item \code{validate_object(DB_Analyses)}: Validate the DB_Analyses object.
+
+\item \code{query_db(DB_Analyses)}: Internal: execute a query on the DB.
+
+\item \code{list_db_tables(DB_Analyses)}: Internal: list tables in the DB.
+
+\item \code{get_db_table_info(DB_Analyses)}: Internal: get table info from the DB.
 
 }}
