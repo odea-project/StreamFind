@@ -4,11 +4,17 @@
   list(
     shiny::tags$head(
       shiny::tags$style(htmltools::HTML("
-        .box.box-solid {
-          margin-bottom: 0 !important;
-        }
         .content {
           padding: 5px !important;
+          overflow: hidden !important;
+          width: 100% !important;
+        }
+        .row {
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+        }
+        .box.box-solid {
+          margin-bottom: 0 !important;
         }
         .nav-tabs-custom {
           margin-bottom: 0 !important;
@@ -20,8 +26,12 @@
           box-shadow: none !important;
         }
         .col-sm-12 {
-          padding-left: 15px;
-          padding-right: 15px;
+          padding-left: 0px;
+          padding-right: 0px;
+        }
+        .col-sm-6 {
+          padding-left: 0px;
+          padding-right: 0px;
         }
       "))
     ),
@@ -515,16 +525,14 @@
     # Results -----
     output$results_ui <- shiny::renderUI({
       res <- reactive_results()
-
       if (length(res) > 0) {
         tab_list <- list()
         for (i in seq_along(res)) {
           res_obj <- res[[i]]
           cls <- class(res_obj)[1]
           tab_id <- paste0("tab_", names(res)[i])
-          ui_fun <- get0(paste0(".mod_WorkflowAssembler_Result_UI.", cls), mode = "function")
-          server_fun <- get0(paste0(".mod_WorkflowAssembler_Result_Server.", cls), mode = "function")
-
+          ui_fun <- get0(paste0(".mod_WADB_Result_UI.", cls), mode = "function")
+          server_fun <- get0(paste0(".mod_WADB_Result_Server.", cls), mode = "function")
           if (is.function(ui_fun) && is.function(server_fun)) {
             server_fun(
               res_obj,
@@ -535,6 +543,7 @@
             )
             tab_list[[length(tab_list) + 1]] <- shiny::tabPanel(
               title = cls,
+              height = "calc(100vh - 60px)",
               ui_fun(
                 res_obj,
                 tab_id,
@@ -544,6 +553,7 @@
           } else {
             tab_list[[length(tab_list) + 1]] <- shiny::tabPanel(
               title = cls,
+              height = "calc(100vh - 60px)",
               htmltools::div(paste0("No results method available for ", cls))
             )
           }

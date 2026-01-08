@@ -469,8 +469,9 @@ namespace nts
         const int &minTraces,
         const float &baselineWindow,
         const float &maxWidth,
-        const float &base_quantile,
-        const float &debug_mz = 0.0f);
+        const float &baseQuantile,
+        const float &debugMZ = 0.0f,
+        const int &debugSpecIdx = -1);
 
     void create_components(
         const std::vector<float> &rtWindow);

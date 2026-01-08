@@ -3,20 +3,20 @@
 library(plotly)
 
 #' Plot cluster data from debug log
-#' 
+#'
 #' @param plot3D Logical. If TRUE (default), creates 3D plot. If FALSE, creates 2D line plot.
 #' @param log_file Path to the log file. Default: "log/peak_detection_debug.log"
 #' @return A plotly figure object
-plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debug.log") {
-  
+plot_cluster_data <- function(plot3D = FALSE, log_file = "log/peak_detection_debug.log") {
+
   # Check if log file exists
   if (!file.exists(log_file)) {
     stop("Log file not found: ", log_file)
   }
-  
+
   # Read the log file
   log_lines <- readLines(log_file, warn = FALSE)
-  
+
   # Find the lines with cluster data
   rt_line <- grep("cluster_rt <- c\\(", log_lines, value = TRUE)
   mz_line <- grep("cluster_mz <- c\\(", log_lines, value = TRUE)
@@ -24,23 +24,23 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
   noise_line <- grep("cluster_noise <- c\\(", log_lines, value = TRUE)
   smoothed_line <- grep("cluster_smoothed <- c\\(", log_lines, value = TRUE)
   baseline_line <- grep("cluster_baseline <- c\\(", log_lines, value = TRUE)
-  
+
   # Extract the data by evaluating the R code
-  if (length(rt_line) > 0 && length(mz_line) > 0 && 
+  if (length(rt_line) > 0 && length(mz_line) > 0 &&
       length(intensity_line) > 0 && length(noise_line) > 0) {
-    
+
     # Remove leading whitespace and extract just the assignment part
     rt_line <- sub("^\\s+", "", rt_line)
     mz_line <- sub("^\\s+", "", mz_line)
     intensity_line <- sub("^\\s+", "", intensity_line)
     noise_line <- sub("^\\s+", "", noise_line)
-    
+
     # Evaluate to get the vectors
     eval(parse(text = rt_line))
     eval(parse(text = mz_line))
     eval(parse(text = intensity_line))
     eval(parse(text = noise_line))
-    
+
     # Get smoothed and baseline if available
     cluster_smoothed <- NULL
     cluster_baseline <- NULL
@@ -52,7 +52,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
       baseline_line <- sub("^\\s+", "", baseline_line)
       eval(parse(text = baseline_line))
     }
-    
+
     # Get peak positions if available (candidate peaks)
     peak_rt <- NULL
     peak_mz <- NULL
@@ -79,13 +79,13 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
         }
       }
     }
-    
+
     # Get valid peak positions from "Peak boundaries" section (after boundary calculation & merging)
     valid_peak_rt <- NULL
     valid_peak_mz <- NULL
     valid_peak_intensity <- NULL
     valid_peak_reason <- NULL  # Rejection reason if peak didn't become a feature
-    
+
     boundary_lines <- grep("Peaks after boundary calculation & merging:", log_lines, value = FALSE)
     if (length(boundary_lines) > 0) {
       # Find the "Peak boundaries" header
@@ -96,35 +96,35 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           break
         }
       }
-      
+
       if (!is.null(boundary_header_idx)) {
         # Extract peak boundary data from lines following the header
         for (i in (boundary_header_idx + 1):length(log_lines)) {
           line <- log_lines[i]
           # Stop if we hit "Processing peak" section
           if (grepl("Processing peak with original apex", line)) break
-          
+
           # Extract values: format is "  - Apex: RT=1036.10, m/z=1035.4451, intensity=62 | Range: ..."
           if (grepl("- Apex:", line)) {
             rt_match <- regmatches(line, regexpr("RT=[0-9.]+", line))
             mz_match <- regmatches(line, regexpr("m/z=[0-9.]+", line))
             int_match <- regmatches(line, regexpr("intensity=[0-9.]+", line))
-            
+
             if (length(rt_match) > 0 && length(mz_match) > 0 && length(int_match) > 0) {
               rt_val <- as.numeric(sub("RT=", "", rt_match))
               mz_val <- as.numeric(sub("m/z=", "", mz_match))
               int_val <- as.numeric(sub("intensity=", "", int_match))
-              
+
               valid_peak_rt <- c(valid_peak_rt, rt_val)
               valid_peak_mz <- c(valid_peak_mz, mz_val)
               valid_peak_intensity <- c(valid_peak_intensity, int_val)
-              
+
               # Look for rejection reason for this peak (search forward in "Processing peak" section)
               # Match by the FINAL RT (after apex shifts), not the original processing RT
               rejection_reason <- NULL
               for (j in i:min(i + 200, length(log_lines))) {
                 check_line <- log_lines[j]
-                
+
                 # Check if this is the processing section for our peak (match RT with tolerance)
                 if (grepl("Processing peak with original apex", check_line)) {
                   proc_rt_match <- regmatches(check_line, regexpr("RT=[0-9.]+", check_line))
@@ -135,7 +135,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
                       # Found the processing section for this peak, look for rejection/acceptance
                       for (k in (j + 1):min(j + 50, length(log_lines))) {
                         result_line <- log_lines[k]
-                        
+
                         # Check for rejection
                         if (grepl("→ Peak REJECTED", result_line)) {
                           # Extract reason from parentheses
@@ -145,7 +145,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
                           }
                           break
                         }
-                        
+
                         # Check for acceptance - but verify the FINAL RT matches our boundary RT
                         if (grepl("→ FINAL FEATURE:", result_line)) {
                           # Look at the next line for the actual RT
@@ -164,7 +164,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
                           }
                           break
                         }
-                        
+
                         # Stop if we hit next peak processing
                         if (grepl("Processing peak with original apex", result_line) && k > j) break
                       }
@@ -173,14 +173,14 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
                   }
                 }
               }
-              
+
               valid_peak_reason <- c(valid_peak_reason, ifelse(is.null(rejection_reason), "Unknown", rejection_reason))
             }
           }
         }
       }
     }
-    
+
     # Extract final feature peak boundaries and details (not rejected peaks)
     peak_regions <- list()
     feature_annotations <- list()
@@ -191,36 +191,36 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
       feature_line <- log_lines[line_idx]
       feature_name_match <- regmatches(feature_line, regexpr("CL[0-9]+_[A-Z0-9_]+", feature_line))
       feature_name <- if (length(feature_name_match) > 0) feature_name_match else "Unknown"
-      
+
       # Extract fitted Gaussian data (search backwards from FINAL FEATURE line)
       fitted_rt <- NULL
       fitted_intensity <- NULL
       fitted_mz <- NULL
       for (i in (line_idx - 1):max(1, line_idx - 50)) {
         line <- log_lines[i]
-        
+
         # Look for "Fitted vs Actual intensities:" section
         if (grepl("Fitted vs Actual intensities:", line)) {
           # Next lines should have RT values, Actual, and Fitted
           for (j in (i + 1):min(i + 10, length(log_lines))) {
             data_line <- log_lines[j]
-            
+
             # Extract RT values
             if (grepl("^\\s+RT values:", data_line)) {
               rt_str <- sub("^\\s+RT values:\\s*", "", data_line)
               fitted_rt <- as.numeric(strsplit(rt_str, ",\\s*")[[1]])
             }
-            
+
             # Extract Fitted values
             if (grepl("^\\s+Fitted:", data_line)) {
               fitted_str <- sub("^\\s+Fitted:\\s*", "", data_line)
               fitted_intensity <- as.numeric(strsplit(fitted_str, ",\\s*")[[1]])
             }
-            
+
             # Stop when we hit another section
             if (grepl("Sum of squared", data_line)) break
           }
-          
+
           # If we found fitted data, get corresponding m/z values from cluster
           if (!is.null(fitted_rt) && !is.null(fitted_intensity)) {
             # Match RT values to cluster m/z
@@ -232,7 +232,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           break
         }
       }
-      
+
       # Look for the RT range line and other details (next few lines after FINAL FEATURE)
       apex_rt <- NULL
       rtmin <- NULL
@@ -240,15 +240,15 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
       mz <- NULL
       intensity <- NULL
       sn <- NULL
-      
+
       for (i in (line_idx + 1):min(line_idx + 5, length(log_lines))) {
         line <- log_lines[i]
-        
+
         # Match RT pattern: "RT=967.88 (range: 883.02-987.85, width=104.83s, FWHM=34.95s)"
         if (grepl("RT=.*\\(range:", line)) {
           rt_match <- regmatches(line, regexpr("RT=[0-9.]+", line))
           range_match <- regmatches(line, regexpr("range: [0-9.]+-[0-9.]+", line))
-          
+
           if (length(rt_match) > 0 && length(range_match) > 0) {
             apex_rt <- as.numeric(sub("RT=", "", rt_match))
             range_str <- sub("range: ", "", range_match)
@@ -257,7 +257,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             rtmax <- as.numeric(range_parts[2])
           }
         }
-        
+
         # Match m/z pattern: "m/z=636.3651 (range: 636.3607-636.3715, ppm=17.0)"
         if (grepl("m/z=[0-9.]+", line) && grepl("range:", line)) {
           mz_match <- regmatches(line, regexpr("m/z=[0-9.]+", line))
@@ -265,7 +265,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             mz <- as.numeric(sub("m/z=", "", mz_match))
           }
         }
-        
+
         # Match intensity pattern: "Intensity=266, Noise=51, S/N=5.2"
         if (grepl("Intensity=[0-9]+", line)) {
           int_match <- regmatches(line, regexpr("Intensity=[0-9]+", line))
@@ -278,7 +278,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           }
         }
       }
-      
+
       # Extract additional details from RT line
       width <- NULL
       fwhm <- NULL
@@ -298,7 +298,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           }
         }
       }
-      
+
       # Extract area and Gaussian R² from Area line
       area <- NULL
       gaussian_r2 <- NULL
@@ -321,18 +321,18 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           break
         }
       }
-      
+
       if (!is.null(apex_rt) && !is.null(rtmin) && !is.null(rtmax)) {
         peak_regions[[length(peak_regions) + 1]] <- list(
           apex_rt = apex_rt,
           rtmin = rtmin,
           rtmax = rtmax
         )
-        
+
         # Store fitted Gaussian data if available
         if (!is.null(fitted_rt) && !is.null(fitted_intensity) && !is.null(fitted_mz)) {
           # Ensure all vectors have the same length and no NAs
-          if (length(fitted_rt) == length(fitted_intensity) && 
+          if (length(fitted_rt) == length(fitted_intensity) &&
               length(fitted_rt) == length(fitted_mz) &&
               !any(is.na(fitted_mz))) {
             fitted_gaussians[[length(fitted_gaussians) + 1]] <- list(
@@ -348,7 +348,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           # Add empty placeholder to keep indices aligned
           fitted_gaussians[[length(fitted_gaussians) + 1]] <- NULL
         }
-        
+
         # Create detailed annotation text
         annotation_text <- paste0(
           feature_name,
@@ -362,7 +362,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           if (!is.null(gaussian_r2)) paste0("\nGauss R²=", round(gaussian_r2, 3)) else "",
           if (!is.null(n_traces)) paste0("\nn=", n_traces) else ""
         )
-        
+
         feature_annotations[[length(feature_annotations) + 1]] <- list(
           rt = apex_rt,
           mz = if (!is.null(mz)) mz else mean(cluster_mz),
@@ -371,17 +371,17 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
         )
       }
     }
-    
+
     # Deduplicate features - keep only unique apex RTs (merged peaks create duplicates)
     if (length(feature_annotations) > 0) {
       apex_rts <- sapply(feature_annotations, function(x) x$rt)
       unique_indices <- !duplicated(apex_rts)
-      
+
       peak_regions <- peak_regions[unique_indices]
       feature_annotations <- feature_annotations[unique_indices]
       fitted_gaussians <- fitted_gaussians[unique_indices]
     }
-  
+
     # Create plot based on plot3D flag
     if (plot3D) {
       # Create 3D scatter plot with multiple traces
@@ -416,12 +416,12 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             opacity = 0.6
           ),
           name = "Noise",
-          text = ~paste("RT:", round(cluster_rt, 2), 
+          text = ~paste("RT:", round(cluster_rt, 2),
                         "<br>m/z:", round(cluster_mz, 4),
                         "<br>Noise:", round(cluster_noise, 0)),
           hoverinfo = "text"
         )
-      
+
       # Add smoothed trace if available
       if (!is.null(cluster_smoothed)) {
         fig <- fig %>%
@@ -443,7 +443,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             hoverinfo = "text"
           )
       }
-      
+
       # Add baseline trace if available
       if (!is.null(cluster_baseline)) {
         fig <- fig %>%
@@ -465,7 +465,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             hoverinfo = "text"
           )
       }
-      
+
       # Add peak positions if available (candidate peaks) - COMMENTED OUT to show only boundary peaks
       # if (!is.null(peak_rt) && length(peak_rt) > 0) {
       #   fig <- fig %>%
@@ -488,7 +488,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
       #       hoverinfo = "text"
       #     )
       # }
-      
+
       # Add valid peak positions if available (after validation)
       if (!is.null(valid_peak_rt) && length(valid_peak_rt) > 0) {
         # Create text with rejection reason
@@ -496,7 +496,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
                                "<br>m/z:", round(valid_peak_mz, 4),
                                "<br>Intensity:", round(valid_peak_intensity, 0),
                                "<br>Status:", valid_peak_reason)
-        
+
         fig <- fig %>%
           add_trace(
             x = valid_peak_rt,
@@ -516,13 +516,13 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             hoverinfo = "text"
           )
       }
-      
+
       # Add peak regions for final features (not rejected) with hover annotations - LAST to appear on top
       if (length(peak_regions) > 0) {
         for (i in seq_along(peak_regions)) {
           region <- peak_regions[[i]]
           annot <- feature_annotations[[i]]
-          
+
           # Filter cluster data to peak region (with small tolerance to ensure edge inclusion)
           rt_tolerance <- 0.1  # seconds
           region_mask <- cluster_rt >= (region$rtmin - rt_tolerance) & cluster_rt <= (region$rtmax + rt_tolerance)
@@ -530,12 +530,12 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             region_rt <- cluster_rt[region_mask]
             region_mz <- cluster_mz[region_mask]
             region_intensity <- cluster_intensity[region_mask]
-            
+
             # Create hover text with feature annotation
             hover_text <- paste0(
               "<b>", annot$text, "</b>"
             )
-            
+
             fig <- fig %>%
               add_trace(
                 x = region_rt,
@@ -556,7 +556,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
                 hoverinfo = "text"
               )
           }
-          
+
           # Add fitted Gaussian trace for this feature (purple line)
           if (i <= length(fitted_gaussians) && !is.null(fitted_gaussians[[i]])) {
             gaussian_data <- fitted_gaussians[[i]]
@@ -564,7 +564,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             gaussian_text_3d <- paste("Fitted Gaussian<br>RT:", round(gaussian_data$rt, 2),
                                       "<br>m/z:", round(gaussian_data$mz, 4),
                                       "<br>Fitted:", round(gaussian_data$intensity, 1))
-            
+
             fig <- fig %>%
               add_trace(
                 x = gaussian_data$rt,
@@ -583,7 +583,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           }
         }
       }
-      
+
       fig <- fig %>%
         layout(
           title = "Peak Detection Cluster: Intensity vs Noise",
@@ -597,7 +597,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           ),
           showlegend = TRUE
         )
-      
+
     } else {
       # Create 2D line plot with multiple traces
       fig <- plot_ly() %>%
@@ -625,7 +625,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
                         "<br>Noise:", round(cluster_noise, 0)),
           hoverinfo = "text"
         )
-      
+
       # Add smoothed trace if available
       if (!is.null(cluster_smoothed)) {
         fig <- fig %>%
@@ -642,7 +642,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             hoverinfo = "text"
           )
       }
-      
+
       # Add baseline trace if available
       if (!is.null(cluster_baseline)) {
         fig <- fig %>%
@@ -659,7 +659,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             hoverinfo = "text"
           )
       }
-      
+
       # Add peak positions if available (candidate peaks) - COMMENTED OUT to show only boundary peaks
       # if (!is.null(peak_rt) && length(peak_rt) > 0) {
       #   fig <- fig %>%
@@ -680,14 +680,14 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
       #       hoverinfo = "text"
       #     )
       # }
-      
+
       # Add valid peak positions if available (after validation)
       if (!is.null(valid_peak_rt) && length(valid_peak_rt) > 0) {
         # Create text with rejection reason
         valid_text_2d <- paste("VALID PEAK<br>RT:", round(valid_peak_rt, 2),
                                "<br>Intensity:", round(valid_peak_intensity, 0),
                                "<br>Status:", valid_peak_reason)
-        
+
         fig <- fig %>%
           add_trace(
             x = valid_peak_rt,
@@ -705,13 +705,13 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             hoverinfo = "text"
           )
       }
-      
+
       # Add peak regions for final features (not rejected) as shaded areas with hover annotations - LAST to appear on top
       if (length(peak_regions) > 0 && !is.null(cluster_smoothed)) {
         for (i in seq_along(peak_regions)) {
           region <- peak_regions[[i]]
           annot <- feature_annotations[[i]]
-          
+
           # Filter cluster data to peak region (with small tolerance to ensure edge inclusion)
           rt_tolerance <- 0.1  # seconds
           region_mask <- cluster_rt >= (region$rtmin - rt_tolerance) & cluster_rt <= (region$rtmax + rt_tolerance)
@@ -719,12 +719,12 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
             region_rt <- cluster_rt[region_mask]
             region_smoothed <- cluster_smoothed[region_mask]
             region_baseline <- if (!is.null(cluster_baseline)) cluster_baseline[region_mask] else rep(0, length(region_rt))
-            
+
             # Create hover text with feature annotation
             hover_text <- paste0(
               "<b>", annot$text, "</b>"
             )
-            
+
             fig <- fig %>%
               add_ribbons(
                 x = region_rt,
@@ -756,14 +756,14 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
                 hoverinfo = "text"
               )
           }
-          
+
           # Add fitted Gaussian trace for this feature (purple line)
           if (i <= length(fitted_gaussians) && !is.null(fitted_gaussians[[i]])) {
             gaussian_data <- fitted_gaussians[[i]]
             # Create text explicitly to avoid size mismatch
             gaussian_text_2d <- paste("Fitted Gaussian<br>RT:", round(gaussian_data$rt, 2),
                                       "<br>Fitted:", round(gaussian_data$intensity, 1))
-            
+
             fig <- fig %>%
               add_trace(
                 x = gaussian_data$rt,
@@ -781,7 +781,7 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           }
         }
       }
-      
+
       fig <- fig %>%
         layout(
           title = "Peak Detection Cluster: Intensity vs Noise",
@@ -790,9 +790,9 @@ plot_cluster_data <- function(plot3D = TRUE, log_file = "log/peak_detection_debu
           showlegend = TRUE
         )
     }
-    
+
     return(fig)
-    
+
   } else {
     cat("Error: Could not find cluster data in log file.\n")
     cat("Make sure the debug output has been generated.\n")

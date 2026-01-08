@@ -15,8 +15,9 @@ void nts::NTS_DATA::find_features(
     const int &minTraces,
     const float &baselineWindow,
     const float &maxWidth,
-    const float &base_quantile,
-    const float &debug_mz)
+    const float &baseQuantile,
+    const float &debugMZ,
+    const int &debugSpecIdx)
 {
 
   if (rtWindowsMin.size() != rtWindowsMax.size())
@@ -54,9 +55,15 @@ void nts::NTS_DATA::find_features(
     }
     else
     {
-      idx_load = header.index;
-      rt_load = header.rt;
-      polarity_load = header.polarity;
+      for (size_t i = 0; i < header.index.size(); ++i)
+      {
+        if (header.level[i] == 1)
+        {
+          idx_load.push_back(header.index[i]);
+          rt_load.push_back(header.rt[i]);
+          polarity_load.push_back(header.polarity[i]);
+        }
+      }
     }
 
     sc::MS_FILE ana(files[a]);
@@ -74,14 +81,14 @@ void nts::NTS_DATA::find_features(
     for (size_t i = 0; i < idx_load.size(); ++i)
     {
       const float &rt = rt_load[i];
-      const int &spectrum_idx = idx_load[i];
+      const int &spectrumIdx = idx_load[i];
       const int &polarity = polarity_load[i];
 
       if (polarity > 0) {
         pos_count++;
         nts::utils::denoise_spectra(
           ana,
-          spectrum_idx,
+          spectrumIdx,
           rt,
           noiseThreshold,
           minTraces,
@@ -92,14 +99,14 @@ void nts::NTS_DATA::find_features(
           spec_pos_noise,
           total_raw_points,
           total_clean_points,
-          false && i == 10, // Show debug info for first spectrum only
-          base_quantile
+          debugSpecIdx,
+          baseQuantile
         );
       } else if (polarity < 0) {
         neg_count++;
         nts::utils::denoise_spectra(
           ana,
-          spectrum_idx,
+          spectrumIdx,
           rt,
           noiseThreshold,
           minTraces,
@@ -110,8 +117,8 @@ void nts::NTS_DATA::find_features(
           spec_neg_noise,
           total_raw_points,
           total_clean_points,
-          false && i == 10, // Show debug info for first spectrum only
-          base_quantile
+          debugSpecIdx,
+          baseQuantile
         );
       }
     }
@@ -124,7 +131,7 @@ void nts::NTS_DATA::find_features(
 
     Rcpp::Rcout << "      Denoising stats: " << total_raw_points << " -> " << total_clean_points
                 << " points (" << std::fixed << std::setprecision(1) << denoising_efficiency
-                << "% noise removed, base_quantile=" << base_quantile << ")" << std::endl;
+                << "% noise removed, baseQuantile=" << baseQuantile << ")" << std::endl;
 
     // Process positive and negative polarities separately
     std::vector<FEATURE> pos_features, neg_features;
@@ -150,7 +157,7 @@ void nts::NTS_DATA::find_features(
         +1, "[M+H]+", -1.007276f, // positive: subtract proton
         minTraces, minSNR, baselineWindow, maxWidth,
         analyses[a],
-        debug_mz
+        debugMZ
       );
     }
 
@@ -175,7 +182,7 @@ void nts::NTS_DATA::find_features(
         -1, "[M-H]-", 1.007276f, // negative: add proton
         minTraces, minSNR, baselineWindow, maxWidth,
         analyses[a],
-        debug_mz
+        debugMZ
       );
     }
 

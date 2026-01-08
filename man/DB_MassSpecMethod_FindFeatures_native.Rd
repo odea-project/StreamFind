@@ -12,8 +12,9 @@ DB_MassSpecMethod_FindFeatures_native(
   minTraces = 3,
   baselineWindow = 200,
   maxWidth = 100,
-  base_quantile = 0.1,
-  debug_mz = 0
+  baseQuantile = 0.1,
+  debugMZ = 0,
+  debugSpecIdx = -1
 )
 }
 \arguments{
@@ -31,7 +32,11 @@ DB_MassSpecMethod_FindFeatures_native(
 
 \item{maxWidth}{numeric(1) expected maximum window for a chromatographic peak.}
 
-\item{base_quantile}{numeric(1) quantile to estimate the baseline in a mass cluster.}
+\item{baseQuantile}{numeric(1) quantile to estimate the baseline in a mass cluster.}
+
+\item{debugMZ}{numeric(1) m/z value to enable debugging for specific mass traces (0 to disable).}
+
+\item{debugSpecIdx}{integer(1) spectrum index to enable debugging for denoising (-1 to disable).}
 }
 \description{
 Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.

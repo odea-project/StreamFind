@@ -65,7 +65,7 @@ namespace nts::utils
     float quantile;
     float threshold_multiplier;
 
-    AdaptiveNoiseParams(const VectorStats &stats, int data_size, float base_quantile = 0.10f);
+    AdaptiveNoiseParams(const VectorStats &stats, int data_size, float baseQuantile = 0.10f);
   };
 
   // MARK: CORE UTILITY FUNCTIONS
@@ -208,7 +208,7 @@ namespace nts::utils
   // Optimized spectral denoising function
   void denoise_spectra(
     sc::MS_FILE &ana,
-    const int &spectrum_idx,
+    const int &spectrumIdx,
     const float &rt,
     const float &noiseThreshold,
     const int &minTraces,
@@ -219,21 +219,21 @@ namespace nts::utils
     std::vector<float> &spec_noise,
     size_t &total_raw_points,
     size_t &total_clean_points,
-    const bool &debug,
-    const float &base_quantile = 0.10f);
+    const int &debugSpecIdx,
+    const float &baseQuantile = 0.10f);
 
   // MARK: PEAK DETECTION AND ANALYSIS FUNCTIONS
 
   // Baseline calculation using moving minimum
-  std::vector<float> calculate_baseline(const std::vector<float> &intensity, int window_size);
+  std::vector<float> calculate_baseline(const std::vector<float> &intensity, int windowSize);
 
   // smoothing using savitzky-golay
   std::vector<float> smooth_intensity_savitzky_golay(const std::vector<float> &intensity,
-                                                     int window_size,
-                                                     int poly_order);
+                                                     int windowSize,
+                                                     int polyOrder);
 
   // Smooth intensity data
-  std::vector<float> smooth_intensity(const std::vector<float> &intensity, int window_size);
+  std::vector<float> smooth_intensity(const std::vector<float> &intensity, int windowSize);
 
   // Calculate derivatives for peak detection
   void calculate_derivatives(const std::vector<float> &smoothed_intensity,
@@ -243,7 +243,7 @@ namespace nts::utils
   // Find peak candidates based on derivative zero-crossings (positive to negative)
   std::vector<int> find_peak_candidates(const std::vector<float> &first_derivative,
                                         const std::vector<float> &raw_intensity = std::vector<float>(),
-                                        int refine_window = 0);
+                                        int refineWindow = 0);
 
   // Validate peak candidates using derivative criteria
   std::vector<int> validate_peak_candidates(const std::vector<int> &candidates,
@@ -263,13 +263,14 @@ namespace nts::utils
                                                 int min_traces,
                                                 float cycle_time,
                                                 bool debug = false,
-                                                float debug_mz = 0.0f);
+                                                float debugMZ = 0.0f);
 
   // Calculate FWHM boundaries
   std::pair<int, int> calculate_fwhm_boundaries(int peak_idx,
                                                 const std::vector<float> &rt,
                                                 const std::vector<float> &intensity,
-                                                int left_boundary, int right_boundary);
+                                                int left_boundary,
+                                                int right_boundary);
 
   // Calculate peak area using trapezoidal integration
   float calculate_peak_area(const std::vector<float> &rt, const std::vector<float> &intensity);
@@ -331,7 +332,7 @@ namespace nts::utils
       float baselineWindow,
       float maxWidth,
       const std::string &analysis_name,
-      float debug_mz = 0.0f);
+      float debugMZ = 0.0f);
 
 }; // namespace nts::utils
 #endif

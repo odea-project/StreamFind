@@ -1,4 +1,3 @@
-
 # MARK: Native
 # Native ------
 
@@ -11,7 +10,9 @@
 #' @param minTraces numeric(1) minimum number of traces to consider a mass cluster and chromatographic peak.
 #' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
 #' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
-#' @param base_quantile numeric(1) quantile to estimate the baseline in a mass cluster.
+#' @param baseQuantile numeric(1) quantile to estimate the baseline in a mass cluster.
+#' @param debugMZ numeric(1) m/z value to enable debugging for specific mass traces (0 to disable).
+#' @param debugSpecIdx integer(1) spectrum index to enable debugging for denoising (-1 to disable).
 #' @export
 #'
 DB_MassSpecMethod_FindFeatures_native <- function(
@@ -22,8 +23,9 @@ DB_MassSpecMethod_FindFeatures_native <- function(
   minTraces = 3,
   baselineWindow = 200,
   maxWidth = 100,
-  base_quantile = 0.1,
-  debug_mz = 0
+  baseQuantile = 0.1,
+  debugMZ = 0,
+  debugSpecIdx = -1
 ) {
   rtWindows <- data.table::data.table(
     rtmin = as.numeric(rtWindows$rtmin),
@@ -51,8 +53,9 @@ DB_MassSpecMethod_FindFeatures_native <- function(
       minTraces = as.numeric(minTraces),
       baselineWindow = as.numeric(baselineWindow),
       maxWidth = as.numeric(maxWidth),
-      base_quantile = as.numeric(base_quantile),
-      debug_mz = as.numeric(debug_mz)
+      baseQuantile = as.numeric(baseQuantile),
+      debugMZ = as.numeric(debugMZ),
+      debugSpecIdx = as.integer(debugSpecIdx)
     )
   )
   if (is.null(validate_object(x))) {
@@ -78,7 +81,9 @@ validate_object.DB_MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_numeric(x$parameters$minTraces, len = 1, lower = 1)
   checkmate::assert_numeric(x$parameters$baselineWindow, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$maxWidth, len = 1, lower = 0)
-  checkmate::assert_numeric(x$parameters$base_quantile, len = 1, lower = 0, upper = 1)
+  checkmate::assert_numeric(x$parameters$baseQuantile, len = 1, lower = 0, upper = 1)
+  checkmate::assert_numeric(x$parameters$debugMZ, len = 1, lower = 0)
+  checkmate::assert_integerish(x$parameters$debugSpecIdx, len = 1, lower = -1)
   NULL
 }
 
@@ -131,8 +136,9 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     minTraces = parameters$minTraces,
     baselineWindow = parameters$baselineWindow,
     maxWidth = parameters$maxWidth,
-    base_quantile = parameters$base_quantile,
-    debug_mz = parameters$debug_mz
+    baseQuantile = parameters$baseQuantile,
+    debugMZ = parameters$debugMZ,
+    debugSpecIdx = parameters$debugSpecIdx
   )
 
   if (is.null(fts) || length(fts) == 0) {

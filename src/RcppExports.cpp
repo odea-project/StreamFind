@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // rcpp_nts_find_features2
-Rcpp::List rcpp_nts_find_features2(Rcpp::List info, Rcpp::List spectra_headers, std::vector<float> rtWindowsMin, std::vector<float> rtWindowsMax, float ppmThreshold, float noiseThreshold, float minSNR, int minTraces, float baselineWindow, float maxWidth, float base_quantile, float debug_mz);
-RcppExport SEXP _StreamFind_rcpp_nts_find_features2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP rtWindowsMinSEXP, SEXP rtWindowsMaxSEXP, SEXP ppmThresholdSEXP, SEXP noiseThresholdSEXP, SEXP minSNRSEXP, SEXP minTracesSEXP, SEXP baselineWindowSEXP, SEXP maxWidthSEXP, SEXP base_quantileSEXP, SEXP debug_mzSEXP) {
+Rcpp::List rcpp_nts_find_features2(Rcpp::List info, Rcpp::List spectra_headers, std::vector<float> rtWindowsMin, std::vector<float> rtWindowsMax, float ppmThreshold, float noiseThreshold, float minSNR, int minTraces, float baselineWindow, float maxWidth, float baseQuantile, float debugMZ, int debugSpecIdx);
+RcppExport SEXP _StreamFind_rcpp_nts_find_features2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP rtWindowsMinSEXP, SEXP rtWindowsMaxSEXP, SEXP ppmThresholdSEXP, SEXP noiseThresholdSEXP, SEXP minSNRSEXP, SEXP minTracesSEXP, SEXP baselineWindowSEXP, SEXP maxWidthSEXP, SEXP baseQuantileSEXP, SEXP debugMZSEXP, SEXP debugSpecIdxSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -26,9 +26,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type minTraces(minTracesSEXP);
     Rcpp::traits::input_parameter< float >::type baselineWindow(baselineWindowSEXP);
     Rcpp::traits::input_parameter< float >::type maxWidth(maxWidthSEXP);
-    Rcpp::traits::input_parameter< float >::type base_quantile(base_quantileSEXP);
-    Rcpp::traits::input_parameter< float >::type debug_mz(debug_mzSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_nts_find_features2(info, spectra_headers, rtWindowsMin, rtWindowsMax, ppmThreshold, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth, base_quantile, debug_mz));
+    Rcpp::traits::input_parameter< float >::type baseQuantile(baseQuantileSEXP);
+    Rcpp::traits::input_parameter< float >::type debugMZ(debugMZSEXP);
+    Rcpp::traits::input_parameter< int >::type debugSpecIdx(debugSpecIdxSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_find_features2(info, spectra_headers, rtWindowsMin, rtWindowsMax, ppmThreshold, noiseThreshold, minSNR, minTraces, baselineWindow, maxWidth, baseQuantile, debugMZ, debugSpecIdx));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -450,7 +451,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_StreamFind_rcpp_nts_find_features2", (DL_FUNC) &_StreamFind_rcpp_nts_find_features2, 12},
+    {"_StreamFind_rcpp_nts_find_features2", (DL_FUNC) &_StreamFind_rcpp_nts_find_features2, 13},
     {"_StreamFind_rcpp_nts_load_features_ms1_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms1_2, 9},
     {"_StreamFind_rcpp_nts_load_features_ms2_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms2_2, 8},
     {"_StreamFind_rcpp_nts_create_components", (DL_FUNC) &_StreamFind_rcpp_nts_create_components, 4},

@@ -8,10 +8,11 @@ ms_files <- ms_files[grepl("ww_", ms_files)]
 ms_files <- ms_files[grepl("pos_", ms_files)]
 
 root <- file.path("dev", "dev_duckdb", "data_nts")
-file.remove(list.files(root, full.names = TRUE))
-fs::dir_delete(root)
+# file.remove(list.files(root, full.names = TRUE))
+# fs::dir_delete(root)
 
 ms <- DB_MassSpecEngine$new(projectPath = root, files = ms_files)
+
 set_replicate_names(ms$Analyses, c(rep("blank", 3), rep("influent", 3), rep("effluent", 3)))
 set_blank_names(ms$Analyses, c(rep("blank", 9)))
 
@@ -23,8 +24,9 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   minTraces = 3,
   baselineWindow = 200,
   maxWidth = 250,
-  base_quantile = 0.99,
-  debug_mz = 0
+  baseQuantile = 0.99,
+  debugMZ = 0,
+  debugSpecIdx = 0
 )
 
 ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
@@ -55,12 +57,72 @@ ps_comp <- DB_MassSpecMethod_CreateComponents_native(
 )
 
 ms$Workflow <- list(ps_ff, ps_bsub, ps_comp)
-
-ms
-
 ms$run_workflow()
 
 
+root <- file.path("dev", "dev_duckdb", "data_nts")
+ms <- DB_MassSpecEngine$new(projectPath = root)
+ms$run_app()
+
+
+find_features_debug <- function(
+  projectPath,
+  file,
+  rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
+  ppmThreshold = 10,
+  noiseThreshold = 250,
+  minSNR = 3,
+  minTraces = 3,
+  baselineWindow = 200,
+  maxWidth = 250,
+  baseQuantile = 0.99,
+  debugMZ = 0,
+  debugSpecIdx = -1
+) {
+  ms <- DB_MassSpecEngine$new(
+    projectPath = projectPath,
+    files = file
+  )
+  ps_ff <- DB_MassSpecMethod_FindFeatures_native(
+    rtWindows = rtWindows,
+    ppmThreshold = ppmThreshold,
+    noiseThreshold = noiseThreshold,
+    minSNR = minSNR,
+    minTraces = minTraces,
+    baselineWindow = baselineWindow,
+    maxWidth = maxWidth,
+    baseQuantile = baseQuantile,
+    debugMZ = debugMZ,
+    debugSpecIdx = debugSpecIdx
+  )
+  ms$Workflow <- list(ps_ff)
+  ms$run_workflow()
+  ms
+}
+
+ms <- find_features_debug(
+  projectPath = root,
+  file = ms_files[6],
+  rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
+  ppmThreshold = 10,
+  noiseThreshold = 250,
+  minSNR = 3,
+  minTraces = 3,
+  baselineWindow = 200,
+  maxWidth = 250,
+  baseQuantile = 0.99,
+  debugMZ = 0,
+  debugSpecIdx = -1
+)
+ms$run_app()
+
+source("dev\\merck_peak_finding\\dev_log_plot.R")
+plot_cluster_data(log_file = "log\\debug_log_peak_detection_247.176300.log")
+
+hd <- get_spectra_headers(ms$Analyses)
+hd[hd$rt >= 1119 & hd$rt <= 1120, ]
+
+ms$clear_cache()
 
 show(ms$NonTargetAnalysis)
 
@@ -71,8 +133,14 @@ fts <- get_features(
   ppm = 20,
   sec = 30,
   filtered = FALSE
-)[, 1:20]
+)[, 1:30]
 
+
+get_features(
+  ms$NonTargetAnalysis,
+  analyses = 3,
+  filtered = FALSE
+)[, 1:30]
 
 fts <- get_features(
   ms$NonTargetAnalysis,

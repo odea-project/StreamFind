@@ -217,7 +217,9 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
   query <- "SELECT * FROM Features"
   conditions <- c()
-  conditions <- c(conditions, sprintf("filtered = %s", ifelse(filtered, "TRUE", "FALSE")))
+  if (!filtered) {
+    conditions <- c(conditions, "filtered = FALSE")
+  }
   conditions <- c(conditions, sprintf("analysis IN ('%s')", paste(sel_names, collapse = "','")))
   if (!is.null(features) || !is.null(groups) || !is.null(components)) {
     if (!is.null(features)) {
@@ -253,12 +255,13 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       pols
     )
     conditions <- apply(targets, 1, function(tgt) {
+      filter_pred <- if (!filtered) "filtered = FALSE" else "1=1"
       sprintf(
-        "(mz >= %f AND mz <= %f AND rt >= %f AND rt <= %f AND analysis = '%s' AND polarity = %d AND filtered = %s)",
+        "(mz >= %f AND mz <= %f AND rt >= %f AND rt <= %f AND analysis = '%s' AND polarity = %d AND %s)",
         as.numeric(tgt["mzmin"]), as.numeric(tgt["mzmax"]),
         as.numeric(tgt["rtmin"]), as.numeric(tgt["rtmax"]),
         tgt["analysis"], as.integer(tgt["polarity"]),
-        ifelse(filtered, "TRUE", "FALSE")
+        filter_pred
       )
     })
     query <- sprintf("SELECT * FROM Features WHERE %s", paste(conditions, collapse = " OR "))
@@ -366,6 +369,12 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       sel2 <- length(rt_decoded) > 0 && length(intensity_decoded) > 0
       sel2 <- sel2 && length(rt_decoded) == length(intensity_decoded)
       if (sel2) {
+        ord <- order(rt_decoded)
+        rt_decoded <- rt_decoded[ord]
+        intensity_decoded <- intensity_decoded[ord]
+        if (!is.null(baseline_decoded) && length(baseline_decoded) == length(rt_decoded)) {
+          baseline_decoded <- baseline_decoded[ord]
+        }
         eic_data <- data.table::data.table(
           analysis = ft$analysis,
           feature = ft$feature,
@@ -392,9 +401,13 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     warning("groupBy columns not found in feature data")
     return(NULL)
   }
+  order_idx <- do.call(order, fts[, groupBy, with = FALSE])
+  fts <- fts[order_idx]
   vals <- lapply(groupBy, function(col) as.character(fts[[col]]))
   fts$var <- do.call(paste, c(vals, sep = " - "))
-  cl <- .get_colors(unique(fts$var))
+  var_levels <- unique(fts$var)
+  fts$var <- factor(fts$var, levels = var_levels)
+  cl <- .get_colors(var_levels)
   cl50 <- paste(cl, "50", sep = "")
   names(cl50) <- names(cl)
 
@@ -626,9 +639,13 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     warning("groupBy columns not found in feature data")
     return(NULL)
   }
+  order_idx <- do.call(order, fts[, groupBy, with = FALSE])
+  fts <- fts[order_idx]
   vals <- lapply(groupBy, function(col) as.character(fts[[col]]))
   fts$var <- do.call(paste, c(vals, sep = " - "))
-  cl <- .get_colors(unique(fts$var))
+  var_levels <- unique(fts$var)
+  fts$var <- factor(fts$var, levels = var_levels)
+  cl <- .get_colors(var_levels)
 
   pt_list <- list()
   for (i in seq_len(nrow(fts))) {
@@ -641,6 +658,10 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     int_dec <- rcpp_streamcraft_decode_string(ft$eic_intensity)
     if (length(rt_dec) == 0 || length(mz_dec) == 0 || length(int_dec) == 0) next
     if (!(length(rt_dec) == length(mz_dec) && length(rt_dec) == length(int_dec))) next
+    ord <- order(rt_dec)
+    rt_dec <- rt_dec[ord]
+    mz_dec <- mz_dec[ord]
+    int_dec <- int_dec[ord]
     max_int <- max(int_dec, na.rm = TRUE)
     if (!is.finite(max_int) || max_int == 0) next
     norm_int <- int_dec / max_int
