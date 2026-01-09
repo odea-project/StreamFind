@@ -265,15 +265,14 @@
             style = "display: flex; align-items: center; justify-content: space-between;",
             shiny::div(
               style = "display: flex; align-items: center; gap: 10px; flex-wrap: wrap;",
-              shiny::actionButton(
-                ns_full("scatter_color_replicates"),
-                "By Replicates",
-                class = "btn btn-outline-primary btn-sm"
-              ),
-              shiny::actionButton(
-                ns_full("scatter_color_analysis"),
-                "By Analyses",
-                class = "btn btn-outline-primary btn-sm"
+              shiny::div(
+                style = "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;",
+                shiny::span("Group by:", style = "font-weight: 500;"),
+                shiny::checkboxInput(ns_full("scatter_color_analysis"), "Analysis", value = TRUE, width = "auto"),
+                shiny::checkboxInput(ns_full("scatter_color_replicate"), "Replicate", value = FALSE, width = "auto"),
+                shiny::checkboxInput(ns_full("scatter_color_feature"), "Feature", value = FALSE, width = "auto"),
+                shiny::checkboxInput(ns_full("scatter_color_component"), "Component", value = FALSE, width = "auto"),
+                shiny::checkboxInput(ns_full("scatter_color_group"), "Group", value = FALSE, width = "auto")
               ),
               shiny::div(
                 style = "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;",
@@ -731,13 +730,13 @@
           digits <- 1
         }
         # Intensities / sizes / times rounded to unit
-        if (grepl("intensity|area|size|noise", col_lower) ||
+        if (grepl("intensity|area|size|noise|plates", col_lower) ||
           grepl("^rt", col_lower) ||
           (grepl("width|fwhm", col_lower) && col_lower != "fwhm_mz")) {
           digits <- 0
         }
         # Quality-style fields at 2 decimals
-        if (grepl("gaussian_r2|correction", col_lower)) {
+        if (grepl("gaussian_r2|correction|jaggedness|sharpness|asymmetry", col_lower)) {
           digits <- 2
         }
         step <- if (digits == 0) 1 else 10^-digits
@@ -1031,12 +1030,12 @@
         if (col_lower %in% c("gaussian_mu", "gaussian_a")) digits <- 0
         if (col_lower == "fwhm_mz") digits <- 4
         if (grepl("^mz", col_lower) || grepl("mzmin|mzmax|mass", col_lower)) digits <- 4
-        if (grepl("intensity|area|size|noise", col_lower) ||
+        if (grepl("intensity|area|size|noise|plates", col_lower) ||
           grepl("^rt", col_lower) ||
           (grepl("width|fwhm", col_lower) && col_lower != "fwhm_mz")) {
           digits <- 0
         }
-        if (grepl("gaussian_r2|correction", col_lower)) digits <- 2
+        if (grepl("gaussian_r2|correction|jaggedness|sharpness|asymmetry", col_lower)) digits <- 2
         digits
       }
 
@@ -1178,12 +1177,15 @@
       fts
     })
 
-    scatter_color_by <- shiny::reactiveVal("analysis")
-    shiny::observeEvent(input$scatter_color_replicates, {
-      scatter_color_by("replicate")
-    })
-    shiny::observeEvent(input$scatter_color_analysis, {
-      scatter_color_by("analysis")
+    scatter_color_cols <- shiny::reactive({
+      cols <- character(0)
+      if (isTRUE(input$scatter_color_analysis)) cols <- c(cols, "analysis")
+      if (isTRUE(input$scatter_color_replicate)) cols <- c(cols, "replicate")
+      if (isTRUE(input$scatter_color_feature)) cols <- c(cols, "feature")
+      if (isTRUE(input$scatter_color_component)) cols <- c(cols, "feature_component")
+      if (isTRUE(input$scatter_color_group)) cols <- c(cols, "feature_group")
+      if (length(cols) == 0) cols <- "analysis"
+      cols
     })
 
     scatter_selection_cols <- shiny::reactive({
@@ -1200,12 +1202,17 @@
       fts <- as.data.frame(features_scatter_data())
       shiny::validate(shiny::need(nrow(fts) > 0, "No features available to plot."))
 
-      fts$color_var <- if (scatter_color_by() == "replicate" && "replicate" %in% colnames(fts)) {
-        fts$replicate
-      } else {
-        fts$analysis
-      }
+      color_cols <- scatter_color_cols()
+      color_cols <- color_cols[color_cols %in% colnames(fts)]
+      if (length(color_cols) == 0) color_cols <- "analysis"
+
+      fts[, color_cols] <- lapply(fts[, color_cols, drop = FALSE], as.character)
+      for (col in color_cols) fts[[col]][is.na(fts[[col]])] <- ""
+      fts$color_var <- do.call(paste, c(fts[, color_cols, drop = FALSE], sep = "_"))
+
       pal <- .get_colors(unique(fts$color_var))
+      hide_legend <- length(unique(fts$color_var)) > 50
+
       sel_cols <- scatter_selection_cols()
       sel_cols <- sel_cols[sel_cols %in% colnames(fts)]
       if (length(sel_cols) == 0) sel_cols <- intersect(c("analysis", "feature"), colnames(fts))
@@ -1224,7 +1231,7 @@
         colors = pal,
         marker = list(
           sizemode = "diameter",
-          size = fts$size,
+          size = ~size,
           sizemin = 3,
           line = list(width = 0)
         ),
@@ -1248,11 +1255,12 @@
           gridcolor = "#eee"
         ),
         legend = list(
-          title = list(text = ifelse(scatter_color_by() == "replicate", "Replicate", "Analysis")),
+          title = list(text = paste(color_cols, collapse = ", ")),
           orientation = "h",
           x = 0,
           y = -0.15
-        )
+        ),
+        showlegend = !hide_legend
       )
 
       p <- plotly::config(

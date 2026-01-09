@@ -26,7 +26,7 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   maxWidth = 250,
   baseQuantile = 0.99,
   debugMZ = 0,
-  debugSpecIdx = 0
+  debugSpecIdx = -1
 )
 
 ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
@@ -53,7 +53,7 @@ ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
 # )
 
 ps_comp <- DB_MassSpecMethod_CreateComponents_native(
-  rtWindow = c(0, 0)
+  rtWindow = c(-2, 2)
 )
 
 ms$Workflow <- list(ps_ff, ps_bsub, ps_comp)

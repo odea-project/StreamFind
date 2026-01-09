@@ -130,6 +130,7 @@ Collate:
     'class_DB_MassSpecMethod_LoadFeaturesMS2.R'
     'class_DB_MassSpecMethod_CreateComponents.R'
     'class_DB_MassSpecMethod_FeatureBlankSubtraction.R'
+    'class_DB_MassSpecMethod_FilterFeature.R'
     'class_MassSpecMethod_AnnotateFeatures.R'
     'class_MassSpecMethod_AverageSpectra.R'
     'class_MassSpecMethod_BinSpectra.R'

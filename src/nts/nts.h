@@ -2,11 +2,26 @@
 #define NTS_H
 
 #include <Rcpp.h>
-#include "utils.h"
+#include <numeric>
+#include <unordered_map>
+#include "nts_utils.h"
+#include "nts_deconvolution.h"
+#include "nts_annotation.h"
 #include "../streamcraft/streamcraft.h"
 
 namespace nts
 {
+  struct MS_SPECTRUM
+  {
+    std::vector<float> mz;
+    std::vector<float> intensity;
+  };
+
+  MS_SPECTRUM merge_MS_TARGETS_SPECTRA(
+    const sc::MS_TARGETS_SPECTRA &spectra,
+    const float &mzClust,
+    const float &presence);
+
   // MARK: FEATURE
   struct FEATURE
   {
@@ -34,6 +49,11 @@ namespace nts
     float gaussian_mu;
     float gaussian_sigma;
     float gaussian_r2;
+    float jaggedness;
+    float sharpness;
+    float asymmetry;
+    int modality;
+    float plates;
     int polarity;
     bool filtered;
     std::string filter;
@@ -80,6 +100,11 @@ namespace nts
     std::vector<float> gaussian_mu;
     std::vector<float> gaussian_sigma;
     std::vector<float> gaussian_r2;
+    std::vector<float> jaggedness;
+    std::vector<float> sharpness;
+    std::vector<float> asymmetry;
+    std::vector<int> modality;
+    std::vector<float> plates;
     std::vector<int> polarity;
     std::vector<bool> filtered;
     std::vector<std::string> filter;
@@ -130,6 +155,11 @@ namespace nts
       feature_i.gaussian_mu = gaussian_mu[i];
       feature_i.gaussian_sigma = gaussian_sigma[i];
       feature_i.gaussian_r2 = gaussian_r2[i];
+      feature_i.jaggedness = jaggedness[i];
+      feature_i.sharpness = sharpness[i];
+      feature_i.asymmetry = asymmetry[i];
+      feature_i.modality = modality[i];
+      feature_i.plates = plates[i];
       feature_i.polarity = polarity[i];
       feature_i.filtered = filtered[i];
       feature_i.filter = filter[i];
@@ -175,6 +205,11 @@ namespace nts
       gaussian_mu[i] = feature_i.gaussian_mu;
       gaussian_sigma[i] = feature_i.gaussian_sigma;
       gaussian_r2[i] = feature_i.gaussian_r2;
+      jaggedness[i] = feature_i.jaggedness;
+      sharpness[i] = feature_i.sharpness;
+      asymmetry[i] = feature_i.asymmetry;
+      modality[i] = feature_i.modality;
+      plates[i] = feature_i.plates;
       polarity[i] = feature_i.polarity;
       filtered[i] = feature_i.filtered;
       filter[i] = feature_i.filter;
@@ -219,6 +254,11 @@ namespace nts
       gaussian_mu.push_back(feature_i.gaussian_mu);
       gaussian_sigma.push_back(feature_i.gaussian_sigma);
       gaussian_r2.push_back(feature_i.gaussian_r2);
+      jaggedness.push_back(feature_i.jaggedness);
+      sharpness.push_back(feature_i.sharpness);
+      asymmetry.push_back(feature_i.asymmetry);
+      modality.push_back(feature_i.modality);
+      plates.push_back(feature_i.plates);
       polarity.push_back(feature_i.polarity);
       filtered.push_back(feature_i.filtered);
       filter.push_back(feature_i.filter);
@@ -254,6 +294,7 @@ namespace nts
           "mzmin", "mzmax", "ppm",
           "fwhm_rt", "fwhm_mz",
           "gaussian_A", "gaussian_mu", "gaussian_sigma", "gaussian_r2",
+          "jaggedness", "sharpness", "asymmetry", "modality", "plates",
           "polarity", "filtered", "filter", "filled", "correction",
           "eic_size", "eic_rt", "eic_mz", "eic_intensity", "eic_baseline", "eic_smoothed",
           "ms1_size", "ms1_mz", "ms1_intensity",
@@ -288,6 +329,11 @@ namespace nts
       gaussian_mu = Rcpp::as<std::vector<float>>(fts["gaussian_mu"]);
       gaussian_sigma = Rcpp::as<std::vector<float>>(fts["gaussian_sigma"]);
       gaussian_r2 = Rcpp::as<std::vector<float>>(fts["gaussian_r2"]);
+      jaggedness = Rcpp::as<std::vector<float>>(fts["jaggedness"]);
+      sharpness = Rcpp::as<std::vector<float>>(fts["sharpness"]);
+      asymmetry = Rcpp::as<std::vector<float>>(fts["asymmetry"]);
+      modality = Rcpp::as<std::vector<int>>(fts["modality"]);
+      plates = Rcpp::as<std::vector<float>>(fts["plates"]);
       polarity = Rcpp::as<std::vector<int>>(fts["polarity"]);
       filtered = Rcpp::as<std::vector<bool>>(fts["filtered"]);
       filter = Rcpp::as<std::vector<std::string>>(fts["filter"]);
@@ -339,6 +385,11 @@ namespace nts
           Rcpp::Named("gaussian_mu") = gaussian_mu,
           Rcpp::Named("gaussian_sigma") = gaussian_sigma,
           Rcpp::Named("gaussian_r2") = gaussian_r2,
+          Rcpp::Named("jaggedness") = jaggedness,
+          Rcpp::Named("sharpness") = sharpness,
+          Rcpp::Named("asymmetry") = asymmetry,
+          Rcpp::Named("modality") = modality,
+          Rcpp::Named("plates") = plates,
           Rcpp::Named("polarity") = polarity,
           Rcpp::Named("filtered") = filtered,
           Rcpp::Named("filter") = filter,
@@ -359,6 +410,163 @@ namespace nts
 
       out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
       return out;
+    };
+
+    void sort_by_mz()
+    {
+      if (feature.size() == 0)
+        return;
+
+      std::vector<int> new_order(feature.size());
+      std::iota(new_order.begin(), new_order.end(), 0);
+
+      std::sort(new_order.begin(), new_order.end(), [this](int i1, int i2) {
+        return mz[i1] < mz[i2];
+      });
+
+      // Create sorted copies of all vectors
+      std::vector<std::string> feature_sorted(feature.size());
+      std::vector<std::string> feature_group_sorted(feature.size());
+      std::vector<std::string> feature_component_sorted(feature.size());
+      std::vector<std::string> adduct_sorted(feature.size());
+      std::vector<float> rt_sorted(feature.size());
+      std::vector<float> mz_sorted(feature.size());
+      std::vector<float> mass_sorted(feature.size());
+      std::vector<float> intensity_sorted(feature.size());
+      std::vector<float> noise_sorted(feature.size());
+      std::vector<float> sn_sorted(feature.size());
+      std::vector<float> area_sorted(feature.size());
+      std::vector<float> rtmin_sorted(feature.size());
+      std::vector<float> rtmax_sorted(feature.size());
+      std::vector<float> width_sorted(feature.size());
+      std::vector<float> mzmin_sorted(feature.size());
+      std::vector<float> mzmax_sorted(feature.size());
+      std::vector<float> ppm_sorted(feature.size());
+      std::vector<float> fwhm_rt_sorted(feature.size());
+      std::vector<float> fwhm_mz_sorted(feature.size());
+      std::vector<float> gaussian_A_sorted(feature.size());
+      std::vector<float> gaussian_mu_sorted(feature.size());
+      std::vector<float> gaussian_sigma_sorted(feature.size());
+      std::vector<float> gaussian_r2_sorted(feature.size());
+      std::vector<float> jaggedness_sorted(feature.size());
+      std::vector<float> sharpness_sorted(feature.size());
+      std::vector<float> asymmetry_sorted(feature.size());
+      std::vector<int> modality_sorted(feature.size());
+      std::vector<float> plates_sorted(feature.size());
+      std::vector<int> polarity_sorted(feature.size());
+      std::vector<bool> filtered_sorted(feature.size());
+      std::vector<std::string> filter_sorted(feature.size());
+      std::vector<bool> filled_sorted(feature.size());
+      std::vector<float> correction_sorted(feature.size());
+      std::vector<int> eic_size_sorted(feature.size());
+      std::vector<std::string> eic_rt_sorted(feature.size());
+      std::vector<std::string> eic_mz_sorted(feature.size());
+      std::vector<std::string> eic_intensity_sorted(feature.size());
+      std::vector<std::string> eic_baseline_sorted(feature.size());
+      std::vector<std::string> eic_smoothed_sorted(feature.size());
+      std::vector<int> ms1_size_sorted(feature.size());
+      std::vector<std::string> ms1_mz_sorted(feature.size());
+      std::vector<std::string> ms1_intensity_sorted(feature.size());
+      std::vector<int> ms2_size_sorted(feature.size());
+      std::vector<std::string> ms2_mz_sorted(feature.size());
+      std::vector<std::string> ms2_intensity_sorted(feature.size());
+
+      for (size_t i = 0; i < feature.size(); i++)
+      {
+        int idx = new_order[i];
+        feature_sorted[i] = feature[idx];
+        feature_group_sorted[i] = feature_group[idx];
+        feature_component_sorted[i] = feature_component[idx];
+        adduct_sorted[i] = adduct[idx];
+        rt_sorted[i] = rt[idx];
+        mz_sorted[i] = mz[idx];
+        mass_sorted[i] = mass[idx];
+        intensity_sorted[i] = intensity[idx];
+        noise_sorted[i] = noise[idx];
+        sn_sorted[i] = sn[idx];
+        area_sorted[i] = area[idx];
+        rtmin_sorted[i] = rtmin[idx];
+        rtmax_sorted[i] = rtmax[idx];
+        width_sorted[i] = width[idx];
+        mzmin_sorted[i] = mzmin[idx];
+        mzmax_sorted[i] = mzmax[idx];
+        ppm_sorted[i] = ppm[idx];
+        fwhm_rt_sorted[i] = fwhm_rt[idx];
+        fwhm_mz_sorted[i] = fwhm_mz[idx];
+        gaussian_A_sorted[i] = gaussian_A[idx];
+        gaussian_mu_sorted[i] = gaussian_mu[idx];
+        gaussian_sigma_sorted[i] = gaussian_sigma[idx];
+        gaussian_r2_sorted[i] = gaussian_r2[idx];
+        jaggedness_sorted[i] = jaggedness[idx];
+        sharpness_sorted[i] = sharpness[idx];
+        asymmetry_sorted[i] = asymmetry[idx];
+        modality_sorted[i] = modality[idx];
+        plates_sorted[i] = plates[idx];
+        polarity_sorted[i] = polarity[idx];
+        filtered_sorted[i] = filtered[idx];
+        filter_sorted[i] = filter[idx];
+        filled_sorted[i] = filled[idx];
+        correction_sorted[i] = correction[idx];
+        eic_size_sorted[i] = eic_size[idx];
+        eic_rt_sorted[i] = eic_rt[idx];
+        eic_mz_sorted[i] = eic_mz[idx];
+        eic_intensity_sorted[i] = eic_intensity[idx];
+        eic_baseline_sorted[i] = eic_baseline[idx];
+        eic_smoothed_sorted[i] = eic_smoothed[idx];
+        ms1_size_sorted[i] = ms1_size[idx];
+        ms1_mz_sorted[i] = ms1_mz[idx];
+        ms1_intensity_sorted[i] = ms1_intensity[idx];
+        ms2_size_sorted[i] = ms2_size[idx];
+        ms2_mz_sorted[i] = ms2_mz[idx];
+        ms2_intensity_sorted[i] = ms2_intensity[idx];
+      }
+
+      // Replace with sorted vectors
+      feature = feature_sorted;
+      feature_group = feature_group_sorted;
+      feature_component = feature_component_sorted;
+      adduct = adduct_sorted;
+      rt = rt_sorted;
+      mz = mz_sorted;
+      mass = mass_sorted;
+      intensity = intensity_sorted;
+      noise = noise_sorted;
+      sn = sn_sorted;
+      area = area_sorted;
+      rtmin = rtmin_sorted;
+      rtmax = rtmax_sorted;
+      width = width_sorted;
+      mzmin = mzmin_sorted;
+      mzmax = mzmax_sorted;
+      ppm = ppm_sorted;
+      fwhm_rt = fwhm_rt_sorted;
+      fwhm_mz = fwhm_mz_sorted;
+      gaussian_A = gaussian_A_sorted;
+      gaussian_mu = gaussian_mu_sorted;
+      gaussian_sigma = gaussian_sigma_sorted;
+      gaussian_r2 = gaussian_r2_sorted;
+      jaggedness = jaggedness_sorted;
+      sharpness = sharpness_sorted;
+      asymmetry = asymmetry_sorted;
+      modality = modality_sorted;
+      plates = plates_sorted;
+      polarity = polarity_sorted;
+      filtered = filtered_sorted;
+      filter = filter_sorted;
+      filled = filled_sorted;
+      correction = correction_sorted;
+      eic_size = eic_size_sorted;
+      eic_rt = eic_rt_sorted;
+      eic_mz = eic_mz_sorted;
+      eic_intensity = eic_intensity_sorted;
+      eic_baseline = eic_baseline_sorted;
+      eic_smoothed = eic_smoothed_sorted;
+      ms1_size = ms1_size_sorted;
+      ms1_mz = ms1_mz_sorted;
+      ms1_intensity = ms1_intensity_sorted;
+      ms2_size = ms2_size_sorted;
+      ms2_mz = ms2_mz_sorted;
+      ms2_intensity = ms2_intensity_sorted;
     };
   };
 
@@ -471,10 +679,33 @@ namespace nts
         const float &maxWidth,
         const float &baseQuantile,
         const float &debugMZ = 0.0f,
-        const int &debugSpecIdx = -1);
+        const int &debugSpecIdx = -1)
+    {
+      deconvolution::find_features_impl(
+        *this,
+        rtWindowsMin,
+        rtWindowsMax,
+        ppmThreshold,
+        noiseThreshold,
+        minSNR,
+        minTraces,
+        baselineWindow,
+        maxWidth,
+        baseQuantile,
+        debugMZ,
+        debugSpecIdx
+      );
+    }
 
-    void create_components(
-        const std::vector<float> &rtWindow);
+    void create_components(const std::vector<float> &rtWindow);
+
+    void annotate_components(
+        int maxIsotopes = 5,
+        int maxCharge = 1,
+        int maxGaps = 1)
+    {
+      annotation::annotate_components_impl(*this, maxIsotopes, maxCharge, maxGaps);
+    }
 
     void load_features_ms1(
         bool filtered,

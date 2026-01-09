@@ -418,7 +418,7 @@
             label = NULL,
             value = display_value,
             width = "100%",
-            placeholder = "Enter numbers separated by spaces"
+            placeholder = "If applicable, enter numbers separated by spaces"
           )
         } else if (is.character(param_value)) {
           input_element <- shiny::textInput(
@@ -1089,90 +1089,116 @@
       selected_method <- reactive_selected_method()
       shiny::req(selected_method %in% names(rw))
       settings <- rw[[selected_method]]
-      param_names <- names(settings$parameters)
-      for (param_name in param_names) {
-        tryCatch(
-          {
-            param_class <- class(settings$parameters[[param_name]])
-            if ("logical" %in% param_class) {
-              value <- as.logical(input[[param_name]])
-              if (length(value) == 0) {
-                value <- as.logical(NA)
-              }
-              settings$parameters[[param_name]] <- as.logical(value)
-            } else if ("numeric" %in% param_class) {
-              input_value <- input[[param_name]]
-              if (is.null(input_value) || input_value == "") {
-                value <- as.numeric(NA_real_)
-              } else {
-                value_parts <- trimws(strsplit(input_value, "\\s+")[[1]])
-                value_parts <- value_parts[value_parts != ""]
-                if (length(value_parts) == 0) {
-                  value <- as.numeric(NA_real_)
+
+      tryCatch(
+        {
+          param_names <- names(settings$parameters)
+          for (param_name in param_names) {
+            tryCatch(
+              {
+                param_class <- class(settings$parameters[[param_name]])
+                if ("logical" %in% param_class) {
+                  value <- as.logical(input[[param_name]])
+                  if (length(value) == 0) {
+                    value <- as.logical(NA)
+                  }
+                  settings$parameters[[param_name]] <- as.logical(value)
+                } else if ("numeric" %in% param_class) {
+                  input_value <- input[[param_name]]
+                  if (is.null(input_value) || input_value == "") {
+                    value <- as.numeric(NA_real_)
+                  } else {
+                    value_parts <- trimws(strsplit(input_value, "\\s+")[[1]])
+                    value_parts <- value_parts[value_parts != ""]
+                    if (length(value_parts) == 0) {
+                      value <- as.numeric(NA_real_)
+                    } else {
+                      value <- as.numeric(value_parts)
+                    }
+                  }
+                  settings$parameters[[param_name]] <- value
+                } else if ("character" %in% param_class) {
+                  value <- as.character(input[[param_name]])
+                  if (length(value) == 0) {
+                    value <- as.character(NA_character_)
+                  }
+                  settings$parameters[[param_name]] <- as.character(value)
+                } else if ("integer" %in% param_class) {
+                  value <- as.integer(input[[param_name]])
+                  if (length(value) == 0) {
+                    value <- as.integer(NA_integer_)
+                  }
+                  settings$parameters[[param_name]] <- as.integer(value)
+                } else if ("data.frame" %in% param_class) {
+                  next
+                } else if (param_class == "NULL") {
+                  shiny::showNotification(
+                    paste("Parameter ", param_name, " is NULL"),
+                    duration = 5,
+                    type = "warning"
+                  )
                 } else {
-                  value <- as.numeric(value_parts)
+                  shiny::showNotification(
+                    paste("Unsupported parameter type for ", param_name),
+                    duration = 5,
+                    type = "warning"
+                  )
                 }
+              },
+              error = function(e) {
+                shiny::showNotification(
+                  paste(
+                    "Error getting parameter ",
+                    param_name,
+                    " value:",
+                    e$message
+                  ),
+                  duration = 5,
+                  type = "error"
+                )
+              },
+              warning = function(w) {
+                shiny::showNotification(
+                  paste(
+                    "Warning getting parameter ",
+                    param_name,
+                    " value:",
+                    w$message
+                  ),
+                  duration = 5,
+                  type = "warning"
+                )
               }
-              settings$parameters[[param_name]] <- value
-            } else if ("character" %in% param_class) {
-              value <- as.character(input[[param_name]])
-              if (length(value) == 0) {
-                value <- as.character(NA_character_)
-              }
-              settings$parameters[[param_name]] <- as.character(value)
-            } else if ("integer" %in% param_class) {
-              value <- as.integer(input[[param_name]])
-              if (length(value) == 0) {
-                value <- as.integer(NA_integer_)
-              }
-              settings$parameters[[param_name]] <- as.integer(value)
-            } else if ("data.frame" %in% param_class) {
-              next
-            } else if (param_class == "NULL") {
-              shiny::showNotification(
-                paste("Parameter ", param_name, " is NULL"),
-                duration = 5,
-                type = "warning"
-              )
-            } else {
-              shiny::showNotification(
-                paste("Unsupported parameter type for ", param_name),
-                duration = 5,
-                type = "warning"
-              )
-            }
-          },
-          error = function(e) {
-            shiny::showNotification(
-              paste(
-                "Error getting parameter ",
-                param_name,
-                " value:",
-                e$message
-              ),
-              duration = 5,
-              type = "error"
-            )
-          },
-          warning = function(w) {
-            shiny::showNotification(
-              paste(
-                "Warning getting parameter ",
-                param_name,
-                " value:",
-                w$message
-              ),
-              duration = 5,
-              type = "warning"
             )
           }
-        )
-      }
-      rw[[selected_method]] <- settings
-      reactive_workflow(rw)
-      shiny::showNotification(
-        "Settings updated successfully!",
-        type = "message"
+
+          # Validate settings before updating
+          validation_issue <- validate_object(settings)
+          if (!is.null(validation_issue)) {
+            stop(validation_issue)
+          }
+
+          rw[[selected_method]] <- settings
+          reactive_workflow(rw)
+          shiny::showNotification(
+            "Settings updated successfully!",
+            type = "message"
+          )
+        },
+        error = function(e) {
+          shiny::showNotification(
+            paste("Validation failed:", e$message),
+            duration = 10,
+            type = "error"
+          )
+        },
+        warning = function(w) {
+          shiny::showNotification(
+            paste("Warning:", w$message),
+            duration = 10,
+            type = "warning"
+          )
+        }
       )
     })
 
