@@ -250,5 +250,6 @@ run_app(file = "ms.rds")
 
 ms$run_app()
 
+run_app()
 
 

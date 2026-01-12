@@ -84,9 +84,28 @@ Rcpp::List rcpp_nts_load_features_ms2_2(Rcpp::List info,
 Rcpp::List rcpp_nts_create_components(Rcpp::List info,
                                       Rcpp::List spectra_headers,
                                       Rcpp::List feature_list,
-                                      std::vector<float> rtWindow)
+                                      std::vector<float> rtWindow,
+                                      float minCorrelation = 0.8,
+                                      float debugRT = 0.0,
+                                      std::string debugAnalysis = "")
 {
   nts::NTS_DATA nts_data(info, spectra_headers, feature_list);
-  nts_data.create_components(rtWindow);
+  nts_data.create_components(rtWindow, minCorrelation, debugRT, debugAnalysis);
+  return nts_data.features_as_list_of_dt();
+};
+
+// MARK: rcpp_nts_annotate_components
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_annotate_components(Rcpp::List info,
+                                        Rcpp::List spectra_headers,
+                                        Rcpp::List feature_list,
+                                        int maxIsotopes = 5,
+                                        int maxCharge = 1,
+                                        int maxGaps = 1,
+                                        std::string debugComponent = "",
+                                        std::string debugAnalysis = "")
+{
+  nts::NTS_DATA nts_data(info, spectra_headers, feature_list);
+  nts_data.annotate_components(maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis);
   return nts_data.features_as_list_of_dt();
 };

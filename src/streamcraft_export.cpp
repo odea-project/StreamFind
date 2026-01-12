@@ -21,6 +21,22 @@ std::vector<float> rcpp_streamcraft_decode_string(std::string base64_encoded) {
   }
 };
 
+// MARK: rcpp_streamcraft_encode_vector
+// [[Rcpp::export]]
+std::string rcpp_streamcraft_encode_vector(Rcpp::NumericVector numeric_vector) {
+  if (numeric_vector.size() == 0) {
+    return "";
+  }
+  try {
+    std::vector<float> float_vector = Rcpp::as<std::vector<float>>(numeric_vector);
+    std::string encoded_binary = sc::encode_little_endian_from_float(float_vector, 4);
+    return sc::encode_base64(encoded_binary);
+  } catch (const std::exception& e) {
+    Rcpp::warning("Failed to encode vector: " + std::string(e.what()));
+    return "";
+  }
+};
+
 // MARK: rcpp_streamcraft_parse_ms_analysis_from_files
 // [[Rcpp::export]]
 Rcpp::List rcpp_streamcraft_parse_ms_analysis_from_files(std::string file_path)

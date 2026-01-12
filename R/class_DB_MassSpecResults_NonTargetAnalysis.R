@@ -672,7 +672,11 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     norm_int <- int_dec / max_int
     pt_list[[length(pt_list) + 1]] <- data.table::data.table(
       analysis = ft$analysis,
+      replicate = ft$replicate,
       feature = ft$feature,
+      feature_component = ft$feature_component,
+      feature_group = ft$feature_group,
+      adduct = ft$adduct,
       rt = rt_dec,
       mz = mz_dec,
       intensity = norm_int,
@@ -718,7 +722,11 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   hover_vals <- if (showDetails) {
     paste0(
       "analysis: ", pts$analysis,
+      "<br>replicate: ", pts$replicate,
       "<br>feature: ", pts$feature,
+      "<br>component: ", pts$feature_component,
+      "<br>group: ", pts$feature_group,
+      "<br>adduct: ", pts$adduct,
       "<br>rt: ", round(pts$rt, 2),
       "<br>m/z: ", round(pts$mz, 4),
       "<br>norm_intensity: ", round(pts$intensity, 3)
@@ -1269,6 +1277,354 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
 
     plot
   }
+}
+
+
+# MARK: get_suspects
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Performs suspect screening on features stored in the DuckDB
+#' against a provided suspect database. Matches features based on mass or *m/z*, retention time, and when available
+#' MS2 spectral similarity.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @param suspects A data.frame with suspect information. Must contain columns: `name` (character) and either `mass`
+#' (neutral monoisotopic mass) or `mz` (expected m/z). Optional columns: `rt` (retention time in seconds), `formula`
+#' (molecular formula), `SMILES`, `fragments` or `fragments_mz` (MS2 fragment m/z values, semicolon-separated),
+#' `fragments_int` (MS2 fragment intensities, semicolon-separated), `fragments_formula` (fragment formulas,
+#' semicolon-separated).
+#' @param ppm Numeric. Mass tolerance in parts-per-million for matching suspect mass or *m/z* to features. Default: 5.
+#' @param sec Numeric. Retention time tolerance in seconds for matching suspect RT to features. Default: 10.
+#' @param ppmMS2 Numeric. Mass tolerance in ppm for MS2 fragment matching. Default: 10.
+#' @param mzrMS2 Numeric. Minimum absolute m/z range for MS2 fragment matching (used when ppm range is smaller).
+#' Default: 0.008.
+#' @param minCusiness Numeric. Minimum cosine similarity score (0-1) for MS2 spectral matching to upgrade
+#' identification level. Default: 0.7.
+#' @param minFragments Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
+#' Default: 3.
+#' @param filtered Logical. If TRUE, includes filtered features in the search. Default: FALSE.
+#' @return A data.table with matched suspects.
+#' Identification levels: "1" = MS1+RT+MS2 match, "2" = MS1+MS2 match, "3b" = MS1+RT match, "4" = MS1 match only.
+#' @export
+#'
+get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    suspects = NULL,
+    ppm = 5,
+    sec = 10,
+    ppmMS2 = 10,
+    mzrMS2 = 0.008,
+    minCusiness = 0.7,
+    minFragments = 3,
+    filtered = FALSE) {
+
+  if (is.null(suspects)) {
+    stop("Argument 'suspects' is required. Provide a data.frame with at least columns 'name' and 'mass' or 'mz'.")
+  }
+
+  suspects <- data.table::as.data.table(suspects)
+  valid_db <- FALSE
+
+  if (is.data.frame(suspects)) {
+    suspects <- data.table::as.data.table(suspects)
+    if (
+      any(c("mass", "neutralMass") %in% colnames(suspects)) |
+        "mz" %in% colnames(suspects)
+    ) {
+      if ("name" %in% colnames(suspects)) {
+        if ("neutralMass" %in% colnames(suspects)) {
+          data.table::setnames(suspects, "neutralMass", "mass")
+        }
+        valid_db <- TRUE
+      }
+    }
+  }
+
+  if (!valid_db) {
+    stop(
+      "Argument 'suspects' must be a data.frame with at least the columns 'name' and 'mass' or 'mz'!"
+    )
+  }
+
+  if (!"rt" %in% colnames(suspects)) {
+    suspects$rt <- 0
+  } else {
+    suspects$rt[suspects$rt == ""] <- 0
+  }
+  suspects$rt <- as.numeric(suspects$rt)
+  suspects$rt[is.na(suspects$rt)] <- 0
+
+  # Query features from database based on suspect mass/mz
+  if ("mass" %in% colnames(suspects)) {
+    features <- get_features(
+      x,
+      analyses,
+      mass = suspects,
+      ppm = ppm,
+      sec = sec,
+      filtered = filtered
+    )
+  } else if ("mz" %in% colnames(suspects)) {
+    features <- get_features(
+      x,
+      analyses,
+      mz = suspects,
+      ppm = ppm,
+      sec = sec,
+      filtered = filtered
+    )
+  } else {
+    stop(
+      "Argument 'suspects' must be a data.frame with at least the columns 'name' and 'mass' or 'mz'!"
+    )
+  }
+
+  if (nrow(features) == 0) {
+    message("\U2717 No suspects found!")
+    return(data.table::data.table())
+  }
+
+  # Process each feature
+  suspects_out <- data.table::data.table()
+  for (i in seq_len(nrow(features))) {
+    # Match to suspect database
+    suspect_db <- suspects[vapply(
+      suspects$name,
+      function(j) {
+        grepl(j, features$name[i])
+      },
+      FALSE
+    )]
+    suspect_db <- suspect_db[1, ]
+
+    # Initialize result row with all columns and default values
+    temp <- data.table::data.table(
+      analysis = features$analysis[i],
+      replicate = features$replicate[i],
+      feature = features$feature[i],
+      feature_group = features$feature_group[i],
+      feature_component = features$feature_component[i],
+      adduct = features$adduct[i],
+      name = features$name[i],
+      formula = if ("formula" %in% colnames(suspect_db)) suspect_db$formula else NA_character_,
+      db_mass = NA_real_,
+      exp_mass = features$mass[i],
+      error_mass = NA_real_,
+      db_rt = suspect_db$rt,
+      exp_rt = features$rt[i],
+      error_rt = NA_real_,
+      id_level = "4",
+      shared_fragments = 0L,
+      cossiness = 0,
+      db_ms2_size = 0L,
+      db_ms2_mz = NA_character_,
+      db_ms2_intensity = NA_character_,
+      exp_ms2_size = features$ms2_size[i],
+      exp_ms2_mz = features$ms2_mz[i],
+      exp_ms2_intensity = features$ms2_intensity[i]
+    )
+
+    # Calculate mass information
+    if ("mz" %in% colnames(suspect_db) && !is.na(suspect_db$mz)) {
+      temp$db_mass <- suspect_db$mz - (features$polarity[i] * 1.007276)
+    } else if ("mass" %in% colnames(suspect_db) && !is.na(suspect_db$mass)) {
+      temp$db_mass <- suspect_db$mass
+    }
+
+    if (!is.na(temp$db_mass) && !is.na(temp$exp_mass)) {
+      temp$error_mass <- round(
+        ((temp$exp_mass - temp$db_mass) / temp$exp_mass) * 1E6,
+        digits = 1
+      )
+    }
+
+    # Calculate RT error
+    if (!is.na(temp$db_rt) && !is.na(temp$exp_rt)) {
+      temp$error_rt <- round(temp$exp_rt - temp$db_rt, digits = 1)
+    }
+
+    # Upgrade identification level if RT matches
+    if (!is.na(temp$db_rt) && temp$db_rt > 0 && !is.na(temp$exp_rt)) {
+      temp$id_level <- "3b"
+    }
+
+    # MS2 spectral matching
+    if (
+      "fragments" %in% colnames(suspect_db) ||
+        "fragments_mz" %in% colnames(suspect_db)
+    ) {
+      if ("fragments" %in% colnames(suspect_db)) {
+        fragments <- suspect_db$fragments
+      } else {
+        fragments <- suspect_db$fragments_mz
+      }
+
+      if (!is.na(fragments)) {
+        # Decode experimental MS2 data from encoded strings
+        ms2 <- data.table::data.table()
+        if (!is.na(features$ms2_mz[i]) && nchar(features$ms2_mz[i]) > 0 &&
+            !is.na(features$ms2_intensity[i]) && nchar(features$ms2_intensity[i]) > 0) {
+          mz_dec <- rcpp_streamcraft_decode_string(features$ms2_mz[i])
+          int_dec <- rcpp_streamcraft_decode_string(features$ms2_intensity[i])
+          if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
+            ms2 <- data.table::data.table(
+              mz = mz_dec,
+              intensity = int_dec
+            )
+          }
+        }
+
+        if (nrow(ms2) > 0) {
+          # Parse suspect fragments
+          if ("fragments" %in% colnames(suspect_db)) {
+            fragments <- unlist(strsplit(
+              fragments,
+              split = "; ",
+              fixed = TRUE
+            ))
+            fragments <- strsplit(fragments, " ")
+            db_fragments <- data.table::data.table(
+              "formula" = vapply(
+                fragments,
+                function(x) {
+                  x[1]
+                },
+                NA_character_
+              ),
+              "mz" = vapply(
+                fragments,
+                function(x) {
+                  as.numeric(x[1])
+                },
+                NA_real_
+              ),
+              "intensity" = vapply(
+                fragments,
+                function(x) {
+                  as.numeric(x[2])
+                },
+                NA_real_
+              )
+            )
+          } else {
+            fragments <- unlist(strsplit(
+              fragments,
+              split = ";",
+              fixed = TRUE
+            ))
+            fragments_int <- unlist(strsplit(
+              suspect_db$fragments_int,
+              split = ";",
+              fixed = TRUE
+            ))
+            if ("fragments_formula" %in% colnames(suspect_db)) {
+              if (grepl(";", suspect_db$fragments_formula)) {
+                fragments_formula <- unlist(
+                  strsplit(
+                    suspect_db$fragments_formula,
+                    split = ";",
+                    fixed = TRUE
+                  )
+                )
+              } else if (!suspect_db$fragments_formula %in% "") {
+                fragments_formula <- rep(
+                  suspect_db$fragments_formula,
+                  length(fragments)
+                )
+              } else {
+                fragments_formula <- rep(
+                  NA_character_,
+                  length(fragments)
+                )
+              }
+            } else {
+              fragments_formula <- rep(NA_character_, length(fragments))
+            }
+
+            db_fragments <- data.table::data.table(
+              "formula" = fragments_formula,
+              "mz" = as.numeric(fragments),
+              "intensity" = as.numeric(fragments_int)
+            )
+          }
+
+        # Store database MS2 as encoded base64 strings
+        temp$db_ms2_size <- as.integer(nrow(db_fragments))
+        temp$db_ms2_mz <- rcpp_streamcraft_encode_vector(db_fragments$mz)
+        temp$db_ms2_intensity <- rcpp_streamcraft_encode_vector(db_fragments$intensity)
+
+        # Calculate m/z ranges for matching
+        mzr <- db_fragments$mz * ppmMS2 / 1E6
+        mzr[mzr < mzrMS2] <- mzrMS2
+        db_fragments$mzmin <- db_fragments$mz - mzr
+        db_fragments$mzmax <- db_fragments$mz + mzr
+
+        # Match suspect fragments to experimental MS2
+          db_fragments$exp_idx <- vapply(
+            seq_len(nrow(db_fragments)),
+            function(z, ms2, db_fragments) {
+              idx <- which(
+                ms2$mz >= db_fragments$mzmin[z] &
+                  ms2$mz <= db_fragments$mzmax[z]
+              )
+              if (length(idx) == 0) {
+                NA_integer_
+              } else {
+                if (length(idx) > 1) {
+                  candidates <- ms2$mz[idx]
+                  mz_error <- abs(candidates - db_fragments$mz[z])
+                  idx <- idx[which.min(mz_error)]
+                  idx <- idx[1]
+                }
+                as.integer(idx)
+              }
+            },
+            ms2 = ms2,
+            db_fragments = db_fragments,
+            integer(1)
+          )
+
+          number_shared_fragments <- length(db_fragments$exp_idx[
+            !is.na(db_fragments$exp_idx)
+          ])
+
+          if (number_shared_fragments > 0) {
+            # Calculate cosine similarity
+            sel <- !is.na(db_fragments$exp_idx)
+            intensity_db <- db_fragments$intensity[sel]
+            intensity_db <- intensity_db / max(intensity_db)
+            intensity_exp <- ms2$intensity[db_fragments$exp_idx[sel]]
+            intensity_exp <- intensity_exp / max(intensity_exp)
+            dot_pro <- sum(intensity_db * intensity_exp)
+            mag_db <- sqrt(sum(intensity_db^2))
+            mag_exp <- sqrt(sum(intensity_exp^2))
+            cossiness <- round(
+              dot_pro / (mag_db * mag_exp),
+              digits = 4
+            )
+          } else {
+            cossiness <- 0
+          }
+
+          temp$shared_fragments <- as.integer(number_shared_fragments)
+          temp$cossiness <- cossiness
+
+          # Upgrade identification level if MS2 matches well
+          if (
+            number_shared_fragments >= minFragments ||
+              cossiness >= minCusiness
+          ) {
+            if (temp$id_level == "3b") {
+              temp$id_level <- "1"
+            } else if (temp$id_level == "4") {
+              temp$id_level <- "2"
+            }
+          }
+        }
+      }
+    }
+    suspects_out <- data.table::rbindlist(list(suspects_out, temp), fill = TRUE)
+  }
+  suspects_out
 }
 
 

@@ -5364,6 +5364,30 @@ report.MassSpecResults_NonTargetAnalysis2 <- function(
     return("")
   }
 
+  # Helper function to safely round numeric values
+  safe_round <- function(x, digits) {
+    if (is.null(x) || !is.numeric(x) || length(x) == 0) return("NA")
+    if (is.na(x)) return("NA")
+    return(round(x, digits = digits))
+  }
+
+  # Helper function to safely format numeric values
+  safe_format <- function(x, digits) {
+    if (is.null(x) || !is.numeric(x) || length(x) == 0) return("NA")
+    if (is.na(x)) return("NA")
+    return(format(round(x, digits = digits), scientific = FALSE, big.mark = ","))
+  }
+
+  # Helper function to safely get column value
+  safe_get <- function(col_name) {
+    if (col_name %in% colnames(pk)) {
+      val <- pk[[col_name]]
+      if (is.null(val) || length(val) == 0) return("NA")
+      return(val)
+    }
+    return("NA")
+  }
+
   # Create simple hover layout with core feature properties only
   hT <- paste(
     if ("var" %in% colnames(pk)) {
@@ -5371,36 +5395,36 @@ report.MassSpecResults_NonTargetAnalysis2 <- function(
     } else {
       ""
     },
-    "</br>feature: ", pk[["feature"]],
-    "</br>group: ", pk[["group"]],
-    "</br>component: ", pk[["component"]],
-    "</br>adduct: ", pk[["adduct"]],
-    "</br>analysis: ", pk[["analysis"]],
-    "</br>replicate: ", pk[["replicate"]],
-    "</br>polarity: ", pk[["polarity"]],
-    "</br>mass: ", round(pk[["mass"]], digits = 4),
-    "</br>mz: ", round(pk[["mz"]], digits = 4),
-    "</br>mzmin: ", round(pk[["mzmin"]], digits = 4),
-    "</br>mzmax: ", round(pk[["mzmax"]], digits = 4),
-    "</br>ppm: ", round(pk[["ppm"]], digits = 1),
-    "</br>fwhm_mz: ", round(pk[["fwhm_mz"]], digits = 4),
-    "</br>rt: ", round(pk[["rt"]], digits = 2),
-    "</br>rtmin: ", round(pk[["rtmin"]], digits = 2),
-    "</br>rtmax: ", round(pk[["rtmax"]], digits = 2),
-    "</br>width: ", round(pk[["width"]], digits = 2),
-    "</br>fwhm_rt: ", round(pk[["fwhm_rt"]], digits = 2),
-    "</br>intensity: ", format(round(pk[["intensity"]], digits = 0), scientific = FALSE, big.mark = ","),
-    "</br>area: ", format(round(pk[["area"]], digits = 0), scientific = FALSE, big.mark = ","),
-    "</br>noise: ", format(round(pk[["noise"]], digits = 0), scientific = FALSE, big.mark = ","),
-    "</br>sn: ", round(pk[["sn"]], digits = 1),
-    "</br>correction: ", round(pk[["correction"]], digits = 3),
-    "</br>gaussian_A: ", format(round(pk[["gaussian_A"]], digits = 0), scientific = FALSE, big.mark = ","),
-    "</br>gaussian_mu: ", round(pk[["gaussian_mu"]], digits = 2),
-    "</br>gaussian_sigma: ", round(pk[["gaussian_sigma"]], digits = 2),
-    "</br>gaussian_r2: ", round(pk[["gaussian_r2"]], digits = 3),
-    "</br>filtered: ", pk[["filtered"]],
-    "</br>filter: ", pk[["filter"]],
-    "</br>filled: ", pk[["filled"]]
+    "</br>feature: ", safe_get("feature"),
+    "</br>group: ", safe_get("group"),
+    "</br>component: ", safe_get("component"),
+    "</br>adduct: ", safe_get("adduct"),
+    "</br>analysis: ", safe_get("analysis"),
+    "</br>replicate: ", safe_get("replicate"),
+    "</br>polarity: ", safe_get("polarity"),
+    "</br>mass: ", safe_round(pk[["mass"]], digits = 4),
+    "</br>mz: ", safe_round(pk[["mz"]], digits = 4),
+    "</br>mzmin: ", safe_round(pk[["mzmin"]], digits = 4),
+    "</br>mzmax: ", safe_round(pk[["mzmax"]], digits = 4),
+    "</br>ppm: ", safe_round(pk[["ppm"]], digits = 1),
+    "</br>fwhm_mz: ", safe_round(pk[["fwhm_mz"]], digits = 4),
+    "</br>rt: ", safe_round(pk[["rt"]], digits = 2),
+    "</br>rtmin: ", safe_round(pk[["rtmin"]], digits = 2),
+    "</br>rtmax: ", safe_round(pk[["rtmax"]], digits = 2),
+    "</br>width: ", safe_round(pk[["width"]], digits = 2),
+    "</br>fwhm_rt: ", safe_round(pk[["fwhm_rt"]], digits = 2),
+    "</br>intensity: ", safe_format(pk[["intensity"]], digits = 0),
+    "</br>area: ", safe_format(pk[["area"]], digits = 0),
+    "</br>noise: ", safe_format(pk[["noise"]], digits = 0),
+    "</br>sn: ", safe_round(pk[["sn"]], digits = 1),
+    "</br>correction: ", safe_round(pk[["correction"]], digits = 3),
+    "</br>gaussian_A: ", safe_format(pk[["gaussian_A"]], digits = 0),
+    "</br>gaussian_mu: ", safe_round(pk[["gaussian_mu"]], digits = 2),
+    "</br>gaussian_sigma: ", safe_round(pk[["gaussian_sigma"]], digits = 2),
+    "</br>gaussian_r2: ", safe_round(pk[["gaussian_r2"]], digits = 3),
+    "</br>filtered: ", safe_get("filtered"),
+    "</br>filter: ", safe_get("filter"),
+    "</br>filled: ", safe_get("filled")
   )
 
   hT

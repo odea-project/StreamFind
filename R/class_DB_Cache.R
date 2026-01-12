@@ -67,17 +67,39 @@ get_cache_info.DB_Cache <- function(x, ...) {
 }
 
 # MARK: clear_cache
-#' @describeIn DB_Cache Reset cache (delete all cache entries)
+#' @describeIn DB_Cache Reset cache (delete all cache entries or specific entries by name)
 #' @param x DB_Cache object
+#' @param value Character vector of cache entry names to delete. If NULL (default), deletes entire cache database.
 #' @export
-clear_cache.DB_Cache <- function(x, ...) {
+clear_cache.DB_Cache <- function(x, value = NULL, ...) {
   stopifnot(inherits(x, "DB_Cache"))
-  if (file.remove(x$db)) {
-    DB_Cache(projectPath = dirname(x$db))
-    invisible(TRUE)
+
+  if (is.null(value)) {
+    # Delete entire database file and recreate
+    if (file.remove(x$db)) {
+      DB_Cache(projectPath = dirname(x$db))
+      invisible(TRUE)
+    } else {
+      warning("Failed to delete cache file.")
+      invisible(FALSE)
+    }
   } else {
-    warning("Failed to delete cache file.")
-    invisible(FALSE)
+    # Delete specific entries by name
+    conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+    on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+    # Build SQL with parameterized query for safety
+    placeholders <- paste(rep("?", length(value)), collapse = ", ")
+    sql <- sprintf("DELETE FROM CacheManager WHERE name IN (%s)", placeholders)
+    rows_deleted <- DBI::dbExecute(conn, sql, as.list(value))
+
+    if (rows_deleted > 0) {
+      message(sprintf("Deleted %d cache entry(ies).", rows_deleted))
+      invisible(TRUE)
+    } else {
+      warning("No matching cache entries found.")
+      invisible(FALSE)
+    }
   }
 }
 

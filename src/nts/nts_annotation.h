@@ -141,6 +141,33 @@ namespace nts
       std::vector<ADDUCT> adducts(const int &pol);
     };
 
+    // MARK: FRAGMENT_LOSS
+    struct FRAGMENT_LOSS
+    {
+      std::string name;
+      std::string formula;
+      float mass_loss;
+      int polarity;
+
+      FRAGMENT_LOSS(const std::string &n, const std::string &f, float ml, int p)
+          : name(n), formula(f), mass_loss(ml), polarity(p) {}
+    };
+
+    // MARK: FRAGMENT_LOSS_SET
+    struct FRAGMENT_LOSS_SET
+    {
+      std::vector<FRAGMENT_LOSS> all_losses{
+          FRAGMENT_LOSS("water", "H2O", 18.010565, 0),        // neutral, both polarities
+          FRAGMENT_LOSS("carbon dioxide", "CO2", 43.989829, 0), // neutral, both polarities
+          FRAGMENT_LOSS("ammonia", "NH3", 17.026549, 1),      // positive mode
+          FRAGMENT_LOSS("carbon monoxide", "CO", 27.994915, 0), // neutral, both polarities
+          FRAGMENT_LOSS("methyl", "CH3", 15.023475, 0),       // neutral, both polarities
+          FRAGMENT_LOSS("formic acid", "CH2O2", 46.005479, -1) // negative mode
+      };
+
+      std::vector<FRAGMENT_LOSS> losses(const int &pol);
+    };
+
     // MARK: CANDIDATE_CHAIN
     struct CANDIDATE_CHAIN
     {
@@ -157,19 +184,28 @@ namespace nts
                                      const nts::FEATURES &fts,
                                      const int &ft_index,
                                      const int &maxIsotopes,
-                                     const double &rtWindowAlignment);
+                                     const std::vector<int> *component_indices = nullptr,
+                                     const std::unordered_set<int> *assigned_features = nullptr);
 
       void annotate_isotopes(const ISOTOPE_COMBINATIONS &combinations,
                               const int &maxIsotopes,
                               const int &maxCharge,
-                              const int &maxGaps);
+                              const int &maxGaps,
+                              bool debug = false);
 
       void find_adduct_candidates(const nts::FEATURE &ft,
                                    const nts::FEATURES &fts,
                                    const int &ft_index,
-                                   const double &rtWindowAlignment);
+                                   const std::vector<int> *component_indices = nullptr);
 
       void annotate_adducts();
+
+      void find_fragment_candidates(const nts::FEATURE &ft,
+                                     const nts::FEATURES &fts,
+                                     const int &ft_index,
+                                     const std::vector<int> *component_indices = nullptr);
+
+      void annotate_fragments();
     };
 
     // Helper function
@@ -179,7 +215,9 @@ namespace nts
         nts::NTS_DATA &nts_data,
         int maxIsotopes,
         int maxCharge,
-        int maxGaps);
+        int maxGaps,
+        const std::string &debugComponent = "",
+        const std::string &debugAnalysis = "");
 
   } // namespace annotation
 } // namespace nts

@@ -1382,7 +1382,7 @@
         )
       )
       nts <- nts_data()
-      p <- map_features(nts, features = selected_features_scatter(), filtered = TRUE)
+      p <- map_features(nts, features = selected_features_scatter(), filtered = TRUE, showDetails = TRUE)
       shiny::validate(shiny::need(!is.null(p), "No XIC data for selected features."))
       plotly::layout(
         p,
@@ -1714,7 +1714,8 @@
       p <- map_features(
         nts,
         features = selected_features(),
-        filtered = TRUE
+        filtered = TRUE,
+        showDetails = TRUE
       )
 
       shiny::validate(

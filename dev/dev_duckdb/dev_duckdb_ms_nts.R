@@ -29,6 +29,21 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   debugSpecIdx = -1
 )
 
+ps_comp <- DB_MassSpecMethod_CreateComponents_native(
+  rtWindow = c(-2, 2),
+  minCorrelation = 0.8,
+  debugRT = 1108,
+  debugAnalysis = "02_tof_ww_is_pos_influent-r001"
+)
+
+ps_annot <- DB_MassSpecMethod_AnnotateComponents_native(
+  maxIsotopes = 8,
+  maxCharge = 1,
+  maxGaps = 1,
+  debugComponent = "FC39_RT954",
+  debugAnalysis = "02_tof_ww_is_pos_influent-r001"
+)
+
 ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
   blankThreshold = 5,
   rtExpand = 10,
@@ -44,25 +59,35 @@ ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
 #   filtered = FALSE
 # )
 
-# ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
-#   isolationWindow = 1.3,
-#   mzClust = 0.008,
-#   presence = 0.8,
-#   minIntensity = 10,
-#   filtered = FALSE
-# )
-
-ps_comp <- DB_MassSpecMethod_CreateComponents_native(
-  rtWindow = c(-2, 2)
+ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
+  isolationWindow = 1.3,
+  mzClust = 0.008,
+  presence = 0.8,
+  minIntensity = 10,
+  filtered = FALSE
 )
 
-ms$Workflow <- list(ps_ff, ps_bsub, ps_comp)
+ms$Workflow <- list(ps_ff, ps_comp, ps_annot) #, ps_bsub, ps_ms2
+clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
+#clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
 ms$run_workflow()
+
+
+
+#get_cache_info(ms$Cache)
+
+
+
 
 
 root <- file.path("dev", "dev_duckdb", "data_nts")
 ms <- DB_MassSpecEngine$new(projectPath = root)
 ms$run_app()
+
+
+View(get_suspects(ms$NonTargetAnalysis, suspects = dbsus, ppm = 10, sec = 15))
+
+
 
 
 find_features_debug <- function(
@@ -116,6 +141,55 @@ ms <- find_features_debug(
 )
 ms$run_app()
 
+
+create_components_debug <- function(
+  projectPath,
+  files,
+  rtWindow = c(-2, 2),
+  minCorrelation = 0.8,
+  debugRT = 0.0,
+  debugAnalysis = ""
+) {
+  ms <- DB_MassSpecEngine$new(
+    projectPath = projectPath,
+    files = files
+  )
+  ps_ff <- DB_MassSpecMethod_FindFeatures_native(
+    rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
+    ppmThreshold = 10,
+    noiseThreshold = 250,
+    minSNR = 3,
+    minTraces = 3,
+    baselineWindow = 200,
+    maxWidth = 250,
+    baseQuantile = 0.99,
+    debugMZ = 0,
+    debugSpecIdx = -1
+  )
+  ps_comp <- DB_MassSpecMethod_CreateComponents_native(
+    rtWindow = rtWindow,
+    minCorrelation = minCorrelation,
+    debugRT = debugRT,
+    debugAnalysis = debugAnalysis
+  )
+  ms$Workflow <- list(ps_comp)
+  ms$run_workflow()
+}
+
+create_components_debug(
+  projectPath = root,
+  files = ms_files,
+  rtWindow = c(-2, 2),
+  minCorrelation = 0.8,
+  debugRT = 1108,
+  debugAnalysis = ""
+)
+
+
+
+
+
+
 source("dev\\merck_peak_finding\\dev_log_plot.R")
 plot_cluster_data(log_file = "log\\debug_log_peak_detection_247.176300.log")
 
@@ -138,7 +212,8 @@ fts <- get_features(
 
 get_features(
   ms$NonTargetAnalysis,
-  analyses = 3,
+  analyses = 5,
+  components = "FC_934",
   filtered = FALSE
 )[, 1:30]
 

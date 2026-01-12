@@ -71,8 +71,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_nts_create_components
-Rcpp::List rcpp_nts_create_components(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, std::vector<float> rtWindow);
-RcppExport SEXP _StreamFind_rcpp_nts_create_components(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP rtWindowSEXP) {
+Rcpp::List rcpp_nts_create_components(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, std::vector<float> rtWindow, float minCorrelation, float debugRT, std::string debugAnalysis);
+RcppExport SEXP _StreamFind_rcpp_nts_create_components(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP rtWindowSEXP, SEXP minCorrelationSEXP, SEXP debugRTSEXP, SEXP debugAnalysisSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -80,7 +80,28 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
     Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
     Rcpp::traits::input_parameter< std::vector<float> >::type rtWindow(rtWindowSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_nts_create_components(info, spectra_headers, feature_list, rtWindow));
+    Rcpp::traits::input_parameter< float >::type minCorrelation(minCorrelationSEXP);
+    Rcpp::traits::input_parameter< float >::type debugRT(debugRTSEXP);
+    Rcpp::traits::input_parameter< std::string >::type debugAnalysis(debugAnalysisSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_create_components(info, spectra_headers, feature_list, rtWindow, minCorrelation, debugRT, debugAnalysis));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_nts_annotate_components
+Rcpp::List rcpp_nts_annotate_components(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, int maxIsotopes, int maxCharge, int maxGaps, std::string debugComponent, std::string debugAnalysis);
+RcppExport SEXP _StreamFind_rcpp_nts_annotate_components(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP maxGapsSEXP, SEXP debugComponentSEXP, SEXP debugAnalysisSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
+    Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
+    Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
+    Rcpp::traits::input_parameter< std::string >::type debugComponent(debugComponentSEXP);
+    Rcpp::traits::input_parameter< std::string >::type debugAnalysis(debugAnalysisSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_annotate_components(info, spectra_headers, feature_list, maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -411,6 +432,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_streamcraft_encode_vector
+std::string rcpp_streamcraft_encode_vector(Rcpp::NumericVector numeric_vector);
+RcppExport SEXP _StreamFind_rcpp_streamcraft_encode_vector(SEXP numeric_vectorSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type numeric_vector(numeric_vectorSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_streamcraft_encode_vector(numeric_vector));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_streamcraft_parse_ms_analysis_from_files
 Rcpp::List rcpp_streamcraft_parse_ms_analysis_from_files(std::string file_path);
 RcppExport SEXP _StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files(SEXP file_pathSEXP) {
@@ -454,7 +486,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_find_features2", (DL_FUNC) &_StreamFind_rcpp_nts_find_features2, 13},
     {"_StreamFind_rcpp_nts_load_features_ms1_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms1_2, 9},
     {"_StreamFind_rcpp_nts_load_features_ms2_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms2_2, 8},
-    {"_StreamFind_rcpp_nts_create_components", (DL_FUNC) &_StreamFind_rcpp_nts_create_components, 4},
+    {"_StreamFind_rcpp_nts_create_components", (DL_FUNC) &_StreamFind_rcpp_nts_create_components, 7},
+    {"_StreamFind_rcpp_nts_annotate_components", (DL_FUNC) &_StreamFind_rcpp_nts_annotate_components, 8},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},
@@ -476,6 +509,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_parse_asc_file", (DL_FUNC) &_StreamFind_rcpp_parse_asc_file, 1},
     {"_StreamFind_rcpp_write_asc_file", (DL_FUNC) &_StreamFind_rcpp_write_asc_file, 3},
     {"_StreamFind_rcpp_streamcraft_decode_string", (DL_FUNC) &_StreamFind_rcpp_streamcraft_decode_string, 1},
+    {"_StreamFind_rcpp_streamcraft_encode_vector", (DL_FUNC) &_StreamFind_rcpp_streamcraft_encode_vector, 1},
     {"_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files, 1},
     {"_StreamFind_rcpp_streamcraft_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_spectra, 5},
     {"_StreamFind_rcpp_streamcraft_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_chromatograms, 2},

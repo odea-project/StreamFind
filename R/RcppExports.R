@@ -13,8 +13,12 @@ rcpp_nts_load_features_ms2_2 <- function(info, spectra_headers, feature_list, fi
     .Call(`_StreamFind_rcpp_nts_load_features_ms2_2`, info, spectra_headers, feature_list, filtered, minTracesIntensity, isolationWindow, mzClust, presence)
 }
 
-rcpp_nts_create_components <- function(info, spectra_headers, feature_list, rtWindow) {
-    .Call(`_StreamFind_rcpp_nts_create_components`, info, spectra_headers, feature_list, rtWindow)
+rcpp_nts_create_components <- function(info, spectra_headers, feature_list, rtWindow, minCorrelation = 0.8, debugRT = 0.0, debugAnalysis = "") {
+    .Call(`_StreamFind_rcpp_nts_create_components`, info, spectra_headers, feature_list, rtWindow, minCorrelation, debugRT, debugAnalysis)
+}
+
+rcpp_nts_annotate_components <- function(info, spectra_headers, feature_list, maxIsotopes = 5L, maxCharge = 1L, maxGaps = 1L, debugComponent = "", debugAnalysis = "") {
+    .Call(`_StreamFind_rcpp_nts_annotate_components`, info, spectra_headers, feature_list, maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis)
 }
 
 rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFunction = "max") {
@@ -99,6 +103,10 @@ rcpp_write_asc_file <- function(file, metadata_list, spectra) {
 
 rcpp_streamcraft_decode_string <- function(base64_encoded) {
     .Call(`_StreamFind_rcpp_streamcraft_decode_string`, base64_encoded)
+}
+
+rcpp_streamcraft_encode_vector <- function(numeric_vector) {
+    .Call(`_StreamFind_rcpp_streamcraft_encode_vector`, numeric_vector)
 }
 
 rcpp_streamcraft_parse_ms_analysis_from_files <- function(file_path) {

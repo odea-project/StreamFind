@@ -64,6 +64,6 @@ raman_workflow <- StreamFind::Workflow(
   )
 )
 raman$Workflow <- raman_workflow
-raman$run_workflow()
+#raman$run_workflow()
 raman$save("raman.rds")
 raman$run_app()

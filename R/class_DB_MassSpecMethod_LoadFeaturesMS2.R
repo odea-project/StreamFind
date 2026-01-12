@@ -74,11 +74,12 @@ run.DB_MassSpecMethod_LoadFeaturesMS2_native <- function(x, engine = NULL) {
     return(FALSE)
   }
 
+  analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
+  headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
+
   conn <- DBI::dbConnect(duckdb::duckdb(), db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
 
-  analyses <- DBI::dbReadTable(conn, "Analyses")
-  headers <- DBI::dbReadTable(conn, "SpectraHeaders")
   features <- DBI::dbReadTable(conn, "Features")
 
   if (nrow(features) == 0) {

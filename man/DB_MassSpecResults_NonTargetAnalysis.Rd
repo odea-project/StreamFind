@@ -12,6 +12,7 @@
 \alias{map_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis}
+\alias{get_suspects.DB_MassSpecResults_NonTargetAnalysis}
 \title{Constructor and methods to handle non-target analysis (NTA) for mass spectrometry data}
 \usage{
 DB_MassSpecResults_NonTargetAnalysis(
@@ -134,6 +135,19 @@ DB_MassSpecResults_NonTargetAnalysis(
   showText = TRUE,
   interactive = TRUE
 )
+
+\method{get_suspects}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  suspects = NULL,
+  ppm = 5,
+  sec = 10,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCusiness = 0.7,
+  minFragments = 3,
+  filtered = FALSE
+)
 }
 \arguments{
 \item{projectPath}{Path to the project directory where this database file will be created/used.}
@@ -183,14 +197,14 @@ time values (in seconds).}
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
-\item{ppm}{Numeric of length one with the mass deviation, in ppm.}
+\item{ppm}{Numeric. Mass tolerance in parts-per-million for matching suspect mass or \emph{m/z} to features. Default: 5.}
 
-\item{sec}{Numeric of length one with the time deviation, in seconds.}
+\item{sec}{Numeric. Retention time tolerance in seconds for matching suspect RT to features. Default: 10.}
 
 \item{millisec}{Numeric of length one with the drift time deviation,
 in milliseconds.}
 
-\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+\item{filtered}{Logical. If TRUE, includes filtered features in the search. Default: FALSE.}
 
 \item{xLab}{A string with the title for the x axis.}
 
@@ -205,9 +219,29 @@ in milliseconds.}
 \item{showDetails}{Logical, show hover details in interactive plots.}
 
 \item{normalized}{A logical value indicating whether the result should be normalized.}
+
+\item{suspects}{A data.frame with suspect information. Must contain columns: \code{name} (character) and either \code{mass}
+(neutral monoisotopic mass) or \code{mz} (expected m/z). Optional columns: \code{rt} (retention time in seconds), \code{formula}
+(molecular formula), \code{SMILES}, \code{fragments} or \code{fragments_mz} (MS2 fragment m/z values, semicolon-separated),
+\code{fragments_int} (MS2 fragment intensities, semicolon-separated), \code{fragments_formula} (fragment formulas,
+semicolon-separated).}
+
+\item{ppmMS2}{Numeric. Mass tolerance in ppm for MS2 fragment matching. Default: 10.}
+
+\item{mzrMS2}{Numeric. Minimum absolute m/z range for MS2 fragment matching (used when ppm range is smaller).
+Default: 0.008.}
+
+\item{minCusiness}{Numeric. Minimum cosine similarity score (0-1) for MS2 spectral matching to upgrade
+identification level. Default: 0.7.}
+
+\item{minFragments}{Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
+Default: 3.}
 }
 \value{
 An object of class \code{DB_MassSpecResults_NonTargetAnalysis} (and \code{DB_Results}) pointing to the feature DuckDB on disk and holding an \code{analyses} field with the linked \code{DB_MassSpecAnalyses}.
+
+A data.table with matched suspects.
+Identification levels: "1" = MS1+RT+MS2 match, "2" = MS1+MS2 match, "3b" = MS1+RT match, "4" = MS1 match only.
 }
 \description{
 Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_Results}) that reuses an existing \code{DB_MassSpecAnalyses} DuckDB (for analyses and spectra) and stores NTA features in its own DuckDB.
@@ -233,5 +267,9 @@ Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_R
 \item \code{plot_features_ms1(DB_MassSpecResults_NonTargetAnalysis)}: Plot MS1 spectra for selected features.
 
 \item \code{plot_features_ms2(DB_MassSpecResults_NonTargetAnalysis)}: Plot MS2 spectra for selected features.
+
+\item \code{get_suspects(DB_MassSpecResults_NonTargetAnalysis)}: Performs suspect screening on features stored in the DuckDB
+against a provided suspect database. Matches features based on mass or \emph{m/z}, retention time, and when available
+MS2 spectral similarity.
 
 }}

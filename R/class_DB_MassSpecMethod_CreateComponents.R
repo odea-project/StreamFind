@@ -2,12 +2,18 @@
 # Native ------
 
 #' @title DB_MassSpecMethod_CreateComponents_native class
-#' @description Native StreamFind method to assign component identifiers by clustering features that overlap in retention time using their FWHM windows.
+#' @description Native StreamFind method to assign component identifiers by clustering features that overlap in retention time using their FWHM windows, with optional EIC correlation-based sub-clustering.
 #' @param rtWindow Numeric length-2 vector of retention time offsets (seconds) applied left/right to the FWHM window when checking overlaps. Defaults to no offset.
+#' @param minCorrelation Numeric value (0-1) for minimum Pearson correlation between EIC profiles to keep features in the same component. Features with correlation below this threshold are separated into different components. Set to 0 to disable EIC correlation filtering. Defaults to 0.8.
+#' @param debugRT Numeric retention time (seconds) to debug. Components containing features within debugRT ± rtWindow will be logged to log. Set to 0 to disable debugging. Defaults to 0.
+#' @param debugAnalysis Character string specifying the analysis name to debug. When specified, only debug logging for the matching analysis is generated. Empty string logs all analyses. Defaults to "".
 #' @export
 #'
 DB_MassSpecMethod_CreateComponents_native <- function(
-  rtWindow = c(0, 0)
+  rtWindow = c(0, 0),
+  minCorrelation = 0.8,
+  debugRT = 0,
+  debugAnalysis = ""
 ) {
   x <- ProcessingStep(
     type = "DB_MassSpec",
@@ -24,7 +30,10 @@ DB_MassSpecMethod_CreateComponents_native <- function(
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_,
     parameters = list(
-      rtWindow = rtWindow
+      rtWindow = rtWindow,
+      minCorrelation = minCorrelation,
+      debugRT = debugRT,
+      debugAnalysis = debugAnalysis
     )
   )
   if (is.null(validate_object(x))) {
@@ -41,6 +50,9 @@ validate_object.DB_MassSpecMethod_CreateComponents_native <- function(x) {
   checkmate::assert_choice(x$method, "CreateComponents")
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_numeric(x$parameters$rtWindow, max.len = 2, null.ok = FALSE)
+  checkmate::assert_number(x$parameters$minCorrelation, lower = 0, upper = 1, null.ok = FALSE)
+  checkmate::assert_number(x$parameters$debugRT, lower = 0, null.ok = FALSE)
+  checkmate::assert_string(x$parameters$debugAnalysis, null.ok = FALSE)
   NULL
 }
 
@@ -101,7 +113,10 @@ run.DB_MassSpecMethod_CreateComponents_native <- function(x, engine = NULL) {
     info = analyses,
     spectra_headers = headers_list,
     feature_list = features_list,
-    rtWindow = parameters$rtWindow
+    rtWindow = parameters$rtWindow,
+    minCorrelation = parameters$minCorrelation,
+    debugRT = parameters$debugRT,
+    debugAnalysis = parameters$debugAnalysis
   )
 
   if (is.null(fts) || length(fts) == 0) {

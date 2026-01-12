@@ -1,107 +1,12 @@
 #include "nts.h"
 #include "nts_utils.h"
 #include "nts_annotation.h"
+#include "nts_componentization.h"
 #include <iomanip>
 #include <algorithm>
 #include <sstream>
 #include <filesystem>
-
-// MARK: create_components
-void nts::NTS_DATA::create_components(const std::vector<float> &rtWindow)
-{
-  const float left_offset = rtWindow.size() >= 1 ? rtWindow[0] : 0.0f;
-  const float right_offset = rtWindow.size() >= 2 ? rtWindow[1] : 0.0f;
-
-  for (size_t i = 0; i < features.size(); ++i)
-  {
-    FEATURES &fts = features[i];
-    const int n = fts.size();
-
-    if (n == 0)
-    {
-      continue;
-    }
-
-    struct Interval
-    {
-      float start;
-      float end;
-      int idx;
-      float rt_center;
-    };
-
-    std::vector<Interval> intervals;
-    intervals.reserve(n);
-
-    for (int j = 0; j < n; ++j)
-    {
-      const FEATURE &ft = fts.get_feature(j);
-
-      const float start = ft.rt + left_offset;
-      const float end = ft.rt + right_offset;
-
-      intervals.push_back({start, end, j, ft.rt});
-    }
-
-    std::sort(intervals.begin(), intervals.end(), [](const Interval &a, const Interval &b) {
-      if (a.start == b.start)
-      {
-        return a.end < b.end;
-      }
-      return a.start < b.start;
-    });
-
-    std::vector<std::vector<int>> clusters;
-    std::vector<float> cluster_rt_sum;
-    std::vector<int> cluster_counts;
-
-    // Use an anchor interval per cluster to avoid long chains of overlaps
-    float anchor_start = intervals[0].start;
-    float anchor_end = intervals[0].end;
-
-    clusters.push_back({intervals[0].idx});
-    cluster_rt_sum.push_back(intervals[0].rt_center);
-    cluster_counts.push_back(1);
-
-    for (size_t j = 1; j < intervals.size(); ++j)
-    {
-      const Interval &intv = intervals[j];
-
-      const bool overlaps_anchor = intv.start <= anchor_end && intv.end >= anchor_start;
-
-      if (overlaps_anchor)
-      {
-        clusters.back().push_back(intv.idx);
-        cluster_rt_sum.back() += intv.rt_center;
-        cluster_counts.back() += 1;
-      }
-      else
-      {
-        clusters.push_back({intv.idx});
-        cluster_rt_sum.push_back(intv.rt_center);
-        cluster_counts.push_back(1);
-        anchor_start = intv.start;
-        anchor_end = intv.end;
-      }
-    }
-
-    for (size_t c = 0; c < clusters.size(); ++c)
-    {
-      const float mean_rt = cluster_rt_sum[c] / static_cast<float>(cluster_counts[c]);
-
-      std::ostringstream oss;
-      oss << "FC_" << std::fixed << std::setprecision(0) << mean_rt;
-      const std::string component_id = oss.str();
-
-      for (const int idx : clusters[c])
-      {
-        FEATURE ft = fts.get_feature(idx);
-        ft.feature_component = component_id;
-        fts.set_feature(idx, ft);
-      }
-    }
-  }
-}
+#include <cmath>
 
 // MARK: merge_MS_TARGETS_SPECTRA
 nts::MS_SPECTRUM nts::merge_MS_TARGETS_SPECTRA(

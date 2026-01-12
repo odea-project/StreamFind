@@ -20,7 +20,7 @@ DB_Cache(projectPath = ".")
 
 \method{get_cache_info}{DB_Cache}(x, ...)
 
-\method{clear_cache}{DB_Cache}(x, ...)
+\method{clear_cache}{DB_Cache}(x, value = NULL, ...)
 
 \method{size}{DB_Cache}(x, unit = "auto", ...)
 
@@ -42,6 +42,8 @@ DB_Cache(projectPath = ".")
 \item{description}{Description of cache entry}
 
 \item{data}{Any R object to cache (will be serialized)}
+
+\item{value}{Character vector of cache entry names to delete. If NULL (default), deletes entire cache database.}
 
 \item{unit}{Optional unit for size, possible values: "bytes", "KB", "MB", "GB" or "auto" (default).}
 
@@ -71,7 +73,7 @@ S3 class to manage \code{DB_Cache.duckdb} for caching and loading data.
 
 \item \code{get_cache_info(DB_Cache)}: Get cache information table.
 
-\item \code{clear_cache(DB_Cache)}: Reset cache (delete all cache entries)
+\item \code{clear_cache(DB_Cache)}: Reset cache (delete all cache entries or specific entries by name)
 
 \item \code{size(DB_Cache)}: Get size of Cache.duckdb file in bytes.
 

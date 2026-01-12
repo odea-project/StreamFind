@@ -7,6 +7,7 @@
 #include "nts_utils.h"
 #include "nts_deconvolution.h"
 #include "nts_annotation.h"
+#include "nts_componentization.h"
 #include "../streamcraft/streamcraft.h"
 
 namespace nts
@@ -697,14 +698,23 @@ namespace nts
       );
     }
 
-    void create_components(const std::vector<float> &rtWindow);
+    void create_components(
+        const std::vector<float> &rtWindow,
+        float minCorrelation = 0.8f,
+        float debugRT = 0.0f,
+        const std::string &debugAnalysis = "")
+    {
+      componentization::create_components_impl(*this, rtWindow, minCorrelation, debugRT, debugAnalysis);
+    }
 
     void annotate_components(
         int maxIsotopes = 5,
         int maxCharge = 1,
-        int maxGaps = 1)
+        int maxGaps = 1,
+        const std::string &debugComponent = "",
+        const std::string &debugAnalysis = "")
     {
-      annotation::annotate_components_impl(*this, maxIsotopes, maxCharge, maxGaps);
+      annotation::annotate_components_impl(*this, maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis);
     }
 
     void load_features_ms1(
