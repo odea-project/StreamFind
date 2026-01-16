@@ -745,6 +745,91 @@ get_spectra_eic.DB_MassSpecAnalyses <- function(
   eic
 }
 
+# MARK: plot_spectra_eic
+#' @describeIn DB_MassSpecAnalyses Plot extracted ion chromatograms (EIC) for the specified analyses and targets.
+#' @template arg-x-DB_MassSpecAnalyses
+#' @template arg-analyses
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-id
+#' @template arg-plot-downsize
+#' @template arg-plot-xLab
+#' @template arg-plot-yLab
+#' @template arg-plot-title
+#' @template arg-plot-groupBy
+#' @template arg-plot-interactive
+#' @template arg-plot-colorPalette
+#' @export
+#'
+plot_spectra_eic.DB_MassSpecAnalyses <- function(
+    x,
+    analyses = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    id = NULL,
+    downsize = NULL,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    groupBy = c("analysis", "id"),
+    interactive = TRUE,
+    colorPalette = NULL) {
+  eic <- get_spectra_eic(
+    x,
+    analyses,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    id
+  )
+  if (nrow(eic) == 0) {
+    message("\U2717 EIC not found for the analyses!")
+    return(NULL)
+  }
+  if (!is.null(downsize) && downsize > 0 && nrow(eic) > downsize) {
+    eic <- data.table::as.data.table(eic)
+    eic$rt <- floor(eic$rt / downsize) * downsize
+    group_cols <- c("rt", "analysis", "id")
+    eic <- eic[, lapply(.SD, function(col) {
+      if (is.numeric(col)) {
+        mean(col, na.rm = TRUE)
+      } else if (is.character(col)) {
+        col[1]
+      } else {
+        col[1]
+      }
+    }), by = group_cols]
+  }
+  if (is.null(xLab)) xLab <- "Retention time / seconds"
+  if (is.null(yLab)) yLab <- "Intensity / counts"
+  .plot_lines_tabular_data(
+    data = eic,
+    xvar = "rt",
+    yvar = "intensity",
+    groupBy = groupBy,
+    basicGroupBy = c("analysis", "id"),
+    interactive = interactive,
+    title = title,
+    xLab = xLab,
+    yLab = yLab,
+    colorPalette = colorPalette
+  )
+}
+
 # MARK: get_spectra_ms1
 #' @describeIn DB_MassSpecAnalyses Get MS1 spectra for the specified analyses and targets.
 #' @template arg-x-DB_MassSpecAnalyses

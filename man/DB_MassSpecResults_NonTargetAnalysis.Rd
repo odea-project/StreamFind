@@ -8,6 +8,7 @@
 \alias{get_db_table_info.DB_MassSpecResults_NonTargetAnalysis}
 \alias{show.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_features.DB_MassSpecResults_NonTargetAnalysis}
+\alias{get_internal_standards.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{map_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis}
@@ -45,6 +46,8 @@ DB_MassSpecResults_NonTargetAnalysis(
   millisec = 5,
   filtered = FALSE
 )
+
+\method{get_internal_standards}{DB_MassSpecResults_NonTargetAnalysis}(x, analyses = NULL)
 
 \method{plot_features}{DB_MassSpecResults_NonTargetAnalysis}(
   x,
@@ -144,10 +147,12 @@ DB_MassSpecResults_NonTargetAnalysis(
   sec = 10,
   ppmMS2 = 10,
   mzrMS2 = 0.008,
-  minCusiness = 0.7,
-  minFragments = 3,
+  minCosineSimilarity = 0.7,
+  minSharedFragments = 3,
   filtered = FALSE
 )
+
+\method{get_internal_standards}{DB_MassSpecResults_NonTargetAnalysis}(x, analyses = NULL)
 }
 \arguments{
 \item{projectPath}{Path to the project directory where this database file will be created/used.}
@@ -231,10 +236,10 @@ semicolon-separated).}
 \item{mzrMS2}{Numeric. Minimum absolute m/z range for MS2 fragment matching (used when ppm range is smaller).
 Default: 0.008.}
 
-\item{minCusiness}{Numeric. Minimum cosine similarity score (0-1) for MS2 spectral matching to upgrade
+\item{minCosineSimilarity}{Numeric. Minimum cosine similarity score (0-1) for MS2 spectral matching to upgrade
 identification level. Default: 0.7.}
 
-\item{minFragments}{Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
+\item{minSharedFragments}{Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
 Default: 3.}
 }
 \value{
@@ -260,6 +265,8 @@ Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_R
 
 \item \code{get_features(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves features from the DB_MassSpecResults_NonTargetAnalysis object based on specified criteria.
 
+\item \code{get_internal_standards(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves internal standards from the InternalStandards table.
+
 \item \code{plot_features(DB_MassSpecResults_NonTargetAnalysis)}: Plots features from the DB_MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 
 \item \code{map_features(DB_MassSpecResults_NonTargetAnalysis)}: Plot RT vs m/z traces for selected features using EIC data.
@@ -271,5 +278,7 @@ Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_R
 \item \code{get_suspects(DB_MassSpecResults_NonTargetAnalysis)}: Performs suspect screening on features stored in the DuckDB
 against a provided suspect database. Matches features based on mass or \emph{m/z}, retention time, and when available
 MS2 spectral similarity.
+
+\item \code{get_internal_standards(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves internal standards from the database.
 
 }}

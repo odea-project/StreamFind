@@ -196,6 +196,7 @@ namespace deconvolution {
       const float &baselineWindow,
       const float &maxWidth,
       const float &baseQuantile,
+      const std::string &debugAnalysis,
       const float &debugMZ,
       const int &debugSpecIdx);
 

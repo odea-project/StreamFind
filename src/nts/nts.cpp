@@ -2,6 +2,7 @@
 #include "nts_utils.h"
 #include "nts_annotation.h"
 #include "nts_componentization.h"
+#include "nts_alignment.h"
 #include <iomanip>
 #include <algorithm>
 #include <sstream>

@@ -22,6 +22,8 @@ DB_MassSpecResults_NonTargetAnalysis <- function(
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   .create_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
   .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
+  .create_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema(conn)
+  .validate_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema(conn)
 
   insert_features <- function(features) {
     .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt(features)
@@ -291,6 +293,42 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 }
 
+# MARK: get_internal_standards
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Retrieves internal standards from the InternalStandards table.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @export
+#'
+get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  analyses_info <- info(x$analyses)
+  all_names <- analyses_info$analysis
+
+  # Resolve analyses selection
+  sel_names <- if (is.null(analyses)) {
+    all_names
+  } else {
+    .resolve_analyses_selection(analyses, all_names)
+  }
+
+  if (length(sel_names) == 0) {
+    return(data.table::data.table())
+  }
+
+  # Build query
+  query <- sprintf(
+    "SELECT * FROM InternalStandards WHERE analysis IN ('%s')",
+    paste(sel_names, collapse = "','")
+  )
+
+  result <- DBI::dbGetQuery(conn, query)
+  data.table::as.data.table(result)
+}
+
 # MARK: plot_features
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Plots features from the DB_MassSpecResults_NonTargetAnalysis object according to the specified parameters.
 #' @template arg-ntsdb-x
@@ -390,6 +428,9 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       }
     }
   }
+
+  # Remove NULL entries from eic_list
+  eic_list <- eic_list[!sapply(eic_list, is.null)]
 
   if (length(eic_list) == 0) {
     message("\U2717 No valid EIC data found for plotting!")
@@ -683,6 +724,9 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       var = ft$var
     )
   }
+
+  # Remove NULL entries from pt_list
+  pt_list <- pt_list[!sapply(pt_list, is.null)]
 
   if (length(pt_list) == 0) {
     message("\u2717 No valid EIC data found for mapping!")
@@ -1296,9 +1340,9 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @param ppmMS2 Numeric. Mass tolerance in ppm for MS2 fragment matching. Default: 10.
 #' @param mzrMS2 Numeric. Minimum absolute m/z range for MS2 fragment matching (used when ppm range is smaller).
 #' Default: 0.008.
-#' @param minCusiness Numeric. Minimum cosine similarity score (0-1) for MS2 spectral matching to upgrade
+#' @param minCosineSimilarity Numeric. Minimum cosine similarity score (0-1) for MS2 spectral matching to upgrade
 #' identification level. Default: 0.7.
-#' @param minFragments Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
+#' @param minSharedFragments Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
 #' Default: 3.
 #' @param filtered Logical. If TRUE, includes filtered features in the search. Default: FALSE.
 #' @return A data.table with matched suspects.
@@ -1313,8 +1357,8 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
     sec = 10,
     ppmMS2 = 10,
     mzrMS2 = 0.008,
-    minCusiness = 0.7,
-    minFragments = 3,
+    minCosineSimilarity = 0.7,
+    minSharedFragments = 3,
     filtered = FALSE) {
 
   if (is.null(suspects)) {
@@ -1399,11 +1443,7 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
     # Initialize result row with all columns and default values
     temp <- data.table::data.table(
       analysis = features$analysis[i],
-      replicate = features$replicate[i],
       feature = features$feature[i],
-      feature_group = features$feature_group[i],
-      feature_component = features$feature_component[i],
-      adduct = features$adduct[i],
       name = features$name[i],
       formula = if ("formula" %in% colnames(suspect_db)) suspect_db$formula else NA_character_,
       db_mass = NA_real_,
@@ -1412,9 +1452,11 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
       db_rt = suspect_db$rt,
       exp_rt = features$rt[i],
       error_rt = NA_real_,
+      intensity = features$intensity[i],
+      area = features$area[i],
       id_level = "4",
       shared_fragments = 0L,
-      cossiness = 0,
+      cosine_similarity = 0,
       db_ms2_size = 0L,
       db_ms2_mz = NA_character_,
       db_ms2_intensity = NA_character_,
@@ -1597,21 +1639,21 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
             dot_pro <- sum(intensity_db * intensity_exp)
             mag_db <- sqrt(sum(intensity_db^2))
             mag_exp <- sqrt(sum(intensity_exp^2))
-            cossiness <- round(
+            cosine_similarity <- round(
               dot_pro / (mag_db * mag_exp),
               digits = 4
             )
           } else {
-            cossiness <- 0
+            cosine_similarity <- 0
           }
 
           temp$shared_fragments <- as.integer(number_shared_fragments)
-          temp$cossiness <- cossiness
+          temp$cosine_similarity <- cosine_similarity
 
           # Upgrade identification level if MS2 matches well
           if (
-            number_shared_fragments >= minFragments ||
-              cossiness >= minCusiness
+            number_shared_fragments >= minSharedFragments ||
+              cosine_similarity >= minCosineSimilarity
           ) {
             if (temp$id_level == "3b") {
               temp$id_level <- "1"
@@ -1625,6 +1667,89 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
     suspects_out <- data.table::rbindlist(list(suspects_out, temp), fill = TRUE)
   }
   suspects_out
+}
+
+
+# MARK: get_internal_standards
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Retrieves internal standards from the database.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @export
+#'
+get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analyses = NULL) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  # Check if table exists
+  if (!"InternalStandards" %in% DBI::dbListTables(conn)) {
+    message("\U2717 No internal standards table found in database.")
+    return(data.table::data.table())
+  }
+
+  # Get all internal standards or filter by analyses
+  if (is.null(analyses)) {
+    internal_standards <- DBI::dbGetQuery(conn, "SELECT * FROM InternalStandards")
+  } else {
+    all_analyses <- info(x$analyses)$analysis
+    sel_analyses <- .resolve_analyses_selection(analyses, all_analyses)
+    if (length(sel_analyses) == 0) {
+      return(data.table::data.table())
+    }
+    placeholders <- paste(rep("?", length(sel_analyses)), collapse = ", ")
+    query <- sprintf("SELECT * FROM InternalStandards WHERE analysis IN (%s)", placeholders)
+    internal_standards <- DBI::dbGetQuery(conn, query, params = as.list(sel_analyses))
+  }
+
+  internal_standards <- data.table::as.data.table(internal_standards)
+
+  if (nrow(internal_standards) == 0) {
+    return(internal_standards)
+  }
+
+  # Query Features table to get replicate, feature_group, feature_component, and adduct
+  # Build condition to match analysis and feature pairs
+  analysis_feature_pairs <- internal_standards[, .(analysis, feature)]
+  conditions <- sprintf(
+    "(analysis = '%s' AND feature = '%s')",
+    analysis_feature_pairs$analysis,
+    analysis_feature_pairs$feature
+  )
+  features_query <- sprintf(
+    "SELECT analysis, feature, feature_group, feature_component, adduct FROM Features WHERE %s",
+    paste(conditions, collapse = " OR ")
+  )
+  features_data <- DBI::dbGetQuery(conn, features_query)
+  features_data <- data.table::as.data.table(features_data)
+
+  # Get replicate information from analyses
+  analyses_info <- info(x$analyses)
+  replicate_map <- analyses_info$replicate
+  names(replicate_map) <- analyses_info$analysis
+  internal_standards$replicate <- replicate_map[internal_standards$analysis]
+
+  # Merge feature data
+  if (nrow(features_data) > 0) {
+    internal_standards <- merge(
+      internal_standards,
+      features_data,
+      by = c("analysis", "feature"),
+      all.x = TRUE
+    )
+  } else {
+    # Add empty columns if no feature data found
+    internal_standards$feature_group <- NA_character_
+    internal_standards$feature_component <- NA_character_
+    internal_standards$adduct <- NA_character_
+  }
+
+  # Reorder columns to put replicate, feature_group, feature_component, and adduct after feature
+  col_order <- c(
+    "analysis", "replicate", "feature", "feature_group", "feature_component", "adduct",
+    setdiff(colnames(internal_standards), c("analysis", "replicate", "feature", "feature_group", "feature_component", "adduct"))
+  )
+  data.table::setcolorder(internal_standards, col_order)
+
+  internal_standards
 }
 
 
@@ -1766,6 +1891,82 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
     },
     error = function(e) {
       stop("Schema migration check (Features): ", e$message)
+    }
+  )
+  invisible(TRUE)
+}
+
+
+# MARK: .create_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema
+#' @noRd
+.create_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema <- function(conn) {
+  DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS InternalStandards (
+    analysis VARCHAR,
+    feature VARCHAR,
+    name VARCHAR,
+    formula VARCHAR,
+    db_mass DOUBLE,
+    exp_mass DOUBLE,
+    error_mass DOUBLE,
+    db_rt DOUBLE,
+    exp_rt DOUBLE,
+    error_rt DOUBLE,
+    intensity DOUBLE,
+    area DOUBLE,
+    id_level VARCHAR,
+    shared_fragments INTEGER,
+    cosine_similarity DOUBLE,
+    db_ms2_size INTEGER,
+    db_ms2_mz VARCHAR,
+    db_ms2_intensity VARCHAR,
+    exp_ms2_size INTEGER,
+    exp_ms2_mz VARCHAR,
+    exp_ms2_intensity VARCHAR,
+    PRIMARY KEY (analysis, feature)
+  )")
+
+  invisible(TRUE)
+}
+
+
+# MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema
+#' @noRd
+.validate_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema <- function(conn) {
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(InternalStandards)")
+      required <- list(
+        analysis = "VARCHAR",
+        feature = "VARCHAR",
+        name = "VARCHAR",
+        formula = "VARCHAR",
+        db_mass = "DOUBLE",
+        exp_mass = "DOUBLE",
+        error_mass = "DOUBLE",
+        db_rt = "DOUBLE",
+        exp_rt = "DOUBLE",
+        error_rt = "DOUBLE",
+        intensity = "DOUBLE",
+        area = "DOUBLE",
+        id_level = "VARCHAR",
+        shared_fragments = "INTEGER",
+        cosine_similarity = "DOUBLE",
+        db_ms2_size = "INTEGER",
+        db_ms2_mz = "VARCHAR",
+        db_ms2_intensity = "VARCHAR",
+        exp_ms2_size = "INTEGER",
+        exp_ms2_mz = "VARCHAR",
+        exp_ms2_intensity = "VARCHAR"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to InternalStandards table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE InternalStandards ADD COLUMN %s %s", col, required[[col]]))
+        }
+      }
+    },
+    error = function(e) {
+      stop("Schema migration check (InternalStandards): ", e$message)
     }
   )
   invisible(TRUE)

@@ -545,12 +545,26 @@ std::vector<int> nts::deconvolution::validate_peak_candidates(
     }
 
     // Check first derivative before peak (should be positive)
-    // Extend to left until reaching below half peak intensity
+    // Extend to left until reaching a valley (local minimum) or below half peak intensity
     float apex_intensity = smoothed_intensity[idx];
     float half_apex = 0.5f * apex_intensity;
     int pre_start = idx - 1;
+
+    // Look for valley: a point where intensity starts rising again (moving away from peak)
+    // A valley is detected when we find 2+ consecutive increases in intensity
+    int consecutive_increases = 0;
     while (pre_start >= 0 && smoothed_intensity[pre_start] >= half_apex)
     {
+      // Check if we're at a valley (intensity starts rising as we move left)
+      if (pre_start > 0 && smoothed_intensity[pre_start] < smoothed_intensity[pre_start - 1])
+      {
+        consecutive_increases++;
+        if (consecutive_increases >= 2) break; // Found a valley, stop here
+      }
+      else
+      {
+        consecutive_increases = 0;
+      }
       pre_start--;
     }
 
@@ -567,10 +581,23 @@ std::vector<int> nts::deconvolution::validate_peak_candidates(
     if (pre_count > 0) pre_avg /= pre_count;
 
     // Check first derivative after peak (should be negative)
-    // Extend to right until reaching below half peak intensity
+    // Extend to right until reaching a valley (local minimum) or below half peak intensity
     int post_end = idx + 1;
+
+    // Look for valley: a point where intensity starts rising again (moving away from peak)
+    consecutive_increases = 0;
     while (post_end < n && smoothed_intensity[post_end] >= half_apex)
     {
+      // Check if we're at a valley (intensity starts rising as we move right)
+      if (post_end < n - 1 && smoothed_intensity[post_end] < smoothed_intensity[post_end + 1])
+      {
+        consecutive_increases++;
+        if (consecutive_increases >= 2) break; // Found a valley, stop here
+      }
+      else
+      {
+        consecutive_increases = 0;
+      }
       post_end++;
     }
 
@@ -598,6 +625,10 @@ std::vector<int> nts::deconvolution::validate_peak_candidates(
     // Only points with strictly HIGHER intensity cause rejection; equal peaks are both kept
     bool pre_apex = false;
     bool post_apex = false;
+    int pre_apex_idx = -1;
+    float pre_apex_intensity = 0.0f;
+    int post_apex_idx = -1;
+    float post_apex_intensity = 0.0f;
 
     // Check pre_range: any point with intensity > current peak (strictly greater)
     // Equal intensity peaks will both be kept and merged in the merging step
@@ -607,6 +638,8 @@ std::vector<int> nts::deconvolution::validate_peak_candidates(
       if (i >= 0 && i < n && smoothed_intensity[i] > apex_intensity)
       {
         pre_apex = true;
+        pre_apex_idx = i;
+        pre_apex_intensity = smoothed_intensity[i];
         break;
       }
     }
@@ -619,15 +652,35 @@ std::vector<int> nts::deconvolution::validate_peak_candidates(
       if (i >= 0 && i < n && smoothed_intensity[i] > apex_intensity)
       {
         post_apex = true;
+        post_apex_idx = i;
+        post_apex_intensity = smoothed_intensity[i];
         break;
       }
     }
 
-    // Build rejection reason if validation fails
+    // Build rejection reason if validation fails with detailed information
     bool pre_valid = pre_avg > 0;
     bool post_valid = post_avg < 0;
     bool is_local_max = !pre_apex && !post_apex;
-    if (!is_local_max) reject_reason = "not a local maximum";
+
+    if (!is_local_max)
+    {
+      std::ostringstream reason_stream;
+      reason_stream << "not a local maximum";
+      if (pre_apex && !rt.empty() && pre_apex_idx < static_cast<int>(rt.size()))
+      {
+        reason_stream << " (higher peak before: RT=" << std::fixed << std::setprecision(2)
+                     << rt[pre_apex_idx] << ", intensity=" << std::setprecision(0)
+                     << pre_apex_intensity << ")";
+      }
+      if (post_apex && !rt.empty() && post_apex_idx < static_cast<int>(rt.size()))
+      {
+        reason_stream << " (higher peak after: RT=" << std::fixed << std::setprecision(2)
+                     << rt[post_apex_idx] << ", intensity=" << std::setprecision(0)
+                     << post_apex_intensity << ")";
+      }
+      reject_reason = reason_stream.str();
+    }
     else if (!pre_valid) reject_reason = "d1_before not positive";
     else if (!post_valid) reject_reason = "d1_after not negative";
 
@@ -717,29 +770,21 @@ std::pair<int, int> nts::deconvolution::calculate_peak_boundaries(
       break;
     }
 
-    // Check for sustained rising trend (without requiring a valley)
-    // This detects when we're entering another peak's right side while moving left
-    if (i >= 4 && i < peak_idx - 1)
+    // Check for valley: detect 2+ consecutive increases when moving left (away from peak)
+    // A valley is characterized by a local minimum followed by rising intensity
+    if (i >= 2 && i < peak_idx - 1)
     {
-      // Look at 4 consecutive points starting from current position
-      float pt1 = smoothed_intensity[i]; // Current position
-      float pt2 = smoothed_intensity[i - 1];
-      float pt3 = smoothed_intensity[i - 2];
-      float pt4 = smoothed_intensity[i - 3];     // Furthest left
+      // Check if intensity is rising as we move left (away from peak)
+      // This indicates we've crossed a valley and are climbing another peak
+      bool first_increase = smoothed_intensity[i - 1] > smoothed_intensity[i];
+      bool second_increase = smoothed_intensity[i - 2] > smoothed_intensity[i - 1];
 
-      // Check for consistent rising trend over 4 points after current position
-      // If all 4 points are consecutively increasing, we're likely on another peak's ascending edge
-      bool is_rising = (pt2 > pt1) && (pt3 > pt2) && (pt4 > pt3);
-
-      if (is_rising)
+      if (first_increase && second_increase)
       {
-        // is the valey detected in pt1 at least below half of the apex intensity?
-        bool valley_below_half_apex = pt1 < (apex_intensity * 0.5f);
-        if (valley_below_half_apex) {
-          left_idx = i;
-          left_stop_reason = "sustained left rising trend (entering another peak), pt1=" + std::to_string(pt1);
-          break;
-        }
+        // Found a valley - stop here to avoid crossing into another peak
+        left_idx = i;
+        left_stop_reason = "valley detected (2+ consecutive increases moving left), intensity=" + std::to_string(smoothed_intensity[i]);
+        break;
       }
     }
 
@@ -791,29 +836,21 @@ std::pair<int, int> nts::deconvolution::calculate_peak_boundaries(
       break;
     }
 
-    // Check for sustained rising trend (without requiring a valley)
-    // This detects when we're entering another peak's left side while moving right
-    if (i + 3 < n && i > peak_idx + 1)
+    // Check for valley: detect 2+ consecutive increases when moving right (away from peak)
+    // A valley is characterized by a local minimum followed by rising intensity
+    if (i + 2 < n && i > peak_idx + 1)
     {
-      // Look at 4 consecutive points starting from current position
-      float pt1 = smoothed_intensity[i];     // Current position
-      float pt2 = smoothed_intensity[i + 1];
-      float pt3 = smoothed_intensity[i + 2];
-      float pt4 = smoothed_intensity[i + 3]; // Furthest ahead
+      // Check if intensity is rising as we move right (away from peak)
+      // This indicates we've crossed a valley and are climbing another peak
+      bool first_increase = smoothed_intensity[i + 1] > smoothed_intensity[i];
+      bool second_increase = smoothed_intensity[i + 2] > smoothed_intensity[i + 1];
 
-      // Check for consistent rising trend over 4 points
-      // If all 4 points are consecutively increasing, we're likely on another peak's ascending edge
-      bool is_rising = (pt2 > pt1) && (pt3 > pt2) && (pt4 > pt3);
-
-      if (is_rising)
+      if (first_increase && second_increase)
       {
-        // is the valey detected in pt1 at least below half of the apex intensity?
-        bool valley_below_half_apex = (pt1 < (apex_intensity * 0.5f));
-        if (valley_below_half_apex) {
-          right_idx = i;
-          right_stop_reason = "sustained right rising trend (entering another peak), pt1=" + std::to_string(pt1);
-          break;
-        }
+        // Found a valley - stop here to avoid crossing into another peak
+        right_idx = i;
+        right_stop_reason = "valley detected (2+ consecutive increases moving right), intensity=" + std::to_string(smoothed_intensity[i]);
+        break;
       }
     }
 
@@ -1941,6 +1978,7 @@ void nts::deconvolution::find_features_impl(
     const float &baselineWindow,
     const float &maxWidth,
     const float &baseQuantile,
+    const std::string &debugAnalysis,
     const float &debugMZ,
     const int &debugSpecIdx)
 {
@@ -1954,6 +1992,10 @@ void nts::deconvolution::find_features_impl(
   {
     Rcpp::Rcout << std::endl;
     Rcpp::Rcout << a + 1 << "/" << nts_data.analyses.size() << " Processing analysis " << nts_data.analyses[a] << std::endl;
+
+    // Only enable debugging for matching analysis
+    float current_debugMZ = (debugAnalysis.empty() || debugAnalysis == nts_data.analyses[a]) ? debugMZ : 0.0f;
+    int current_debugSpecIdx = (debugAnalysis.empty() || debugAnalysis == nts_data.analyses[a]) ? debugSpecIdx : -1;
     const sc::MS_SPECTRA_HEADERS &header = nts_data.headers[a];
     std::vector<int> idx_load;
     std::vector<float> rt_load;
@@ -2023,7 +2065,7 @@ void nts::deconvolution::find_features_impl(
           spec_pos_noise,
           total_raw_points,
           total_clean_points,
-          debugSpecIdx,
+          current_debugSpecIdx,
           baseQuantile
         );
       } else if (polarity < 0) {
@@ -2041,7 +2083,7 @@ void nts::deconvolution::find_features_impl(
           spec_neg_noise,
           total_raw_points,
           total_clean_points,
-          debugSpecIdx,
+          current_debugSpecIdx,
           baseQuantile
         );
       }
@@ -2081,7 +2123,7 @@ void nts::deconvolution::find_features_impl(
         +1, "[M+H]+", -1.007276f, // positive: subtract proton
         minTraces, minSNR, baselineWindow, maxWidth,
         nts_data.analyses[a],
-        debugMZ
+        current_debugMZ
       );
     }
 
@@ -2106,7 +2148,7 @@ void nts::deconvolution::find_features_impl(
         -1, "[M-H]-", 1.007276f, // negative: add proton
         minTraces, minSNR, baselineWindow, maxWidth,
         nts_data.analyses[a],
-        debugMZ
+        current_debugMZ
       );
     }
 

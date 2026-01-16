@@ -13,6 +13,7 @@ DB_MassSpecMethod_FindFeatures_native(
   baselineWindow = 200,
   maxWidth = 100,
   baseQuantile = 0.1,
+  debugAnalysis = "",
   debugMZ = 0,
   debugSpecIdx = -1
 )
@@ -33,6 +34,8 @@ DB_MassSpecMethod_FindFeatures_native(
 \item{maxWidth}{numeric(1) expected maximum window for a chromatographic peak.}
 
 \item{baseQuantile}{numeric(1) quantile to estimate the baseline in a mass cluster.}
+
+\item{debugAnalysis}{character(1) analysis name to enable debugging for (empty string to debug all).}
 
 \item{debugMZ}{numeric(1) m/z value to enable debugging for specific mass traces (0 to disable).}
 

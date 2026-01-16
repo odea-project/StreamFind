@@ -24,6 +24,7 @@
 \alias{plot_spectra_bpc.DB_MassSpecAnalyses}
 \alias{get_raw_spectra.DB_MassSpecAnalyses}
 \alias{get_spectra_eic.DB_MassSpecAnalyses}
+\alias{plot_spectra_eic.DB_MassSpecAnalyses}
 \alias{get_spectra_ms1.DB_MassSpecAnalyses}
 \alias{get_spectra_ms2.DB_MassSpecAnalyses}
 \alias{get_chromatograms_headers.DB_MassSpecAnalyses}
@@ -131,6 +132,26 @@ DB_MassSpecAnalyses(
   sec = 60,
   millisec = 5,
   id = NULL
+)
+
+\method{plot_spectra_eic}{DB_MassSpecAnalyses}(
+  x,
+  analyses = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  id = NULL,
+  downsize = NULL,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = c("analysis", "id"),
+  interactive = TRUE,
+  colorPalette = NULL
 )
 
 \method{get_spectra_ms1}{DB_MassSpecAnalyses}(
@@ -351,6 +372,8 @@ The \code{DB_MassSpecAnalyses} class stores MassSpec analyses metadata and heade
 \item \code{get_raw_spectra(DB_MassSpecAnalyses)}: Get raw spectra data from specified analyses, returning a \code{data.table} with the spectra data.
 
 \item \code{get_spectra_eic(DB_MassSpecAnalyses)}: Get extracted ion chromatograms (EIC) for the specified analyses and targets.
+
+\item \code{plot_spectra_eic(DB_MassSpecAnalyses)}: Plot extracted ion chromatograms (EIC) for the specified analyses and targets.
 
 \item \code{get_spectra_ms1(DB_MassSpecAnalyses)}: Get MS1 spectra for the specified analyses and targets.
 

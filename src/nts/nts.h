@@ -8,6 +8,7 @@
 #include "nts_deconvolution.h"
 #include "nts_annotation.h"
 #include "nts_componentization.h"
+#include "nts_alignment.h"
 #include "../streamcraft/streamcraft.h"
 
 namespace nts
@@ -679,6 +680,7 @@ namespace nts
         const float &baselineWindow,
         const float &maxWidth,
         const float &baseQuantile,
+        const std::string &debugAnalysis = "",
         const float &debugMZ = 0.0f,
         const int &debugSpecIdx = -1)
     {
@@ -693,6 +695,7 @@ namespace nts
         baselineWindow,
         maxWidth,
         baseQuantile,
+        debugAnalysis,
         debugMZ,
         debugSpecIdx
       );
@@ -715,6 +718,19 @@ namespace nts
         const std::string &debugAnalysis = "")
     {
       annotation::annotate_components_impl(*this, maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis);
+    }
+
+    void group_features(
+        const std::string &method,
+        const Rcpp::List &internal_standards_list,
+        float rtDeviation,
+        float ppm,
+        int minSamples,
+        float binSize = 5.0f,
+        bool debug = false,
+        float debugRT = 0.0f)
+    {
+      alignment::group_features_impl(*this, method, internal_standards_list, rtDeviation, ppm, minSamples, binSize, debug, debugRT);
     }
 
     void load_features_ms1(

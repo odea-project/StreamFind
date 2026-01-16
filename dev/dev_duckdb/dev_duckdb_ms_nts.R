@@ -25,23 +25,46 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   baselineWindow = 200,
   maxWidth = 250,
   baseQuantile = 0.99,
-  debugMZ = 0,
+  debugAnalysis = "03_tof_ww_is_pos_o3sw_effluent-r002",
+  debugMZ = 304.1893,
   debugSpecIdx = -1
 )
 
 ps_comp <- DB_MassSpecMethod_CreateComponents_native(
   rtWindow = c(-2, 2),
-  minCorrelation = 0.8,
-  debugRT = 1108,
-  debugAnalysis = "02_tof_ww_is_pos_influent-r001"
+  minCorrelation = 0.9,
+  debugRT = 1015,
+  debugAnalysis = "02_tof_ww_is_pos_influent-r002"
 )
 
 ps_annot <- DB_MassSpecMethod_AnnotateComponents_native(
   maxIsotopes = 8,
   maxCharge = 1,
   maxGaps = 1,
-  debugComponent = "FC39_RT954",
-  debugAnalysis = "02_tof_ww_is_pos_influent-r001"
+  debugComponent = "",
+  debugAnalysis = ""
+)
+
+pf_istd <- DB_MassSpecMethod_FindInternalStandard_native(
+  suspects = dbis,
+  ppm = 10,
+  sec = 15,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCosineSimilarity = 0.7,
+  minSharedFragments = 3,
+  filtered = TRUE
+)
+
+ps_gf <- DB_MassSpecMethod_GroupFeatures_native(
+  method = "internal_standards", #"obi_warp"
+  rtDeviation = 5,
+  ppm = 10,
+  minSamples = 1,
+  binSize = 5,
+  filtered = FALSE,
+  debug = TRUE,
+  debugRT = 915
 )
 
 ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
@@ -67,15 +90,54 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   filtered = FALSE
 )
 
-ms$Workflow <- list(ps_ff, ps_comp, ps_annot) #, ps_bsub, ps_ms2
-clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
+ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf) #, ps_bsub, ps_ms2, #
+#clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
 #clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
+#clear_cache(ms$Cache, value = c("DB_FindInternalStandard_native"))
+#clear_cache(ms$Cache, value = c("DB_GroupFeatures_native"))
+#clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
 ms$run_workflow()
+
+
+
+.plot_debug_DB_MassSpecMethod_GroupFeatures_native(
+  "C:\\Users\\cunha\\Documents\\GitHub\\StreamFind\\log\\debug_log_group_features_methodobi_warp_rt915.00.log"
+)
+
+.plot_debug_DB_MassSpecMethod_GroupFeatures_native(
+  "C:\\Users\\cunha\\Documents\\GitHub\\StreamFind\\log\\debug_log_group_features_methodinternal_standards_rt915.00.log"
+)
+
+plot_debug_log(
+  ps_ff,
+  logFile = file.path("C:/Users/cunha/Documents/GitHub/StreamFind/log/debug_log_peak_detection_304.189301.log")
+)
+
+#DEBUG
+#"03_tof_ww_is_pos_o3sw_effluent-r002"
+#304.1893
+
+#"03_tof_ww_is_pos_o3sw_effluent-r002"
+#356.2657
+
+#"02_tof_ww_is_pos_influent-r003"
+#342.2639
+
+get_suspects(ms$NonTargetAnalysis, suspects = dbsus[2, ], ppm = 10, sec = 15)
+
+
+get_features(ms$NonTargetAnalysis, mass = dbsus[2, ], ppm = 10, sec = 15)[, 1:20]
+
+istd_dt <- get_internal_standards(ms$NonTargetAnalysis)
+istd_avg_rt <- istd_dt[, .(avg_exp_rt = mean(exp_rt, na.rm = TRUE)), by = "name"]
+istd_dt_with_shift <- istd_dt[istd_avg_rt, on = "name", `:=`(rt_shift = exp_rt - i.avg_exp_rt)]
+
 
 
 
 #get_cache_info(ms$Cache)
 
+ms$run_app()
 
 
 

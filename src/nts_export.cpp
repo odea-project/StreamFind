@@ -15,6 +15,7 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
                                    float baselineWindow = 200.0,
                                    float maxWidth = 100.0,
                                    float baseQuantile = 0.10,
+                                   std::string debugAnalysis = "",
                                    float debugMZ = 0.0,
                                    int debugSpecIdx = -1) {
   Rcpp::List features;
@@ -29,6 +30,7 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
     baselineWindow,
     maxWidth,
     baseQuantile,
+    debugAnalysis,
     debugMZ,
     debugSpecIdx
   );
@@ -107,5 +109,24 @@ Rcpp::List rcpp_nts_annotate_components(Rcpp::List info,
 {
   nts::NTS_DATA nts_data(info, spectra_headers, feature_list);
   nts_data.annotate_components(maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis);
+  return nts_data.features_as_list_of_dt();
+};
+
+// MARK: rcpp_nts_group_features_2
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_group_features_2(Rcpp::List info,
+                                     Rcpp::List spectra_headers,
+                                     Rcpp::List feature_list,
+                                     std::string method = "obi_warp",
+                                     Rcpp::List internal_standards_list = R_NilValue,
+                                     float rtDeviation = 5.0,
+                                     float ppm = 5.0,
+                                     int minSamples = 1,
+                                     float binSize = 5.0,
+                                     bool debug = false,
+                                     float debugRT = 0.0)
+{
+  nts::NTS_DATA nts_data(info, spectra_headers, feature_list);
+  nts_data.group_features(method, internal_standards_list, rtDeviation, ppm, minSamples, binSize, debug, debugRT);
   return nts_data.features_as_list_of_dt();
 };

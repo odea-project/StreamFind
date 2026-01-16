@@ -17,7 +17,7 @@ add <- function(x, ...) {
 #' @param ... Additional arguments.
 #' @export
 #' @noRd
-#' 
+#'
 add_analyses <- function(x, ...) {
   UseMethod("add_analyses")
 }
@@ -28,7 +28,7 @@ add_analyses <- function(x, ...) {
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
-#' 
+#'
 as.json <- function(x, ...) {
   UseMethod("as.json")
 }
@@ -172,7 +172,7 @@ get_concentrations <- function(x, ...) {
 #' @param table_name Table name.
 #' @export
 #' @noRd
-#' 
+#'
 get_db_table_info <- function(x, table_name) {
   UseMethod("get_db_table_info")
 }
@@ -557,7 +557,7 @@ info <- function(x, ...) {
 #' @param x Object containing a path to a DuckDB file.
 #' @export
 #' @noRd
-#' 
+#'
 list_db_tables <- function(x) {
   UseMethod("list_db_tables")
 }
@@ -722,6 +722,17 @@ plot_cumulative_explained_variance <- function(x, ...) {
 #'
 plot_data <- function(x, ...) {
   UseMethod("plot_data")
+}
+
+#' @title Generic `plot_debug_log`
+#' @description S3 generic to plot debug log from `x`.
+#' @param x An object from which the debug log will be plotted.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+plot_debug_log <- function(x, ...) {
+  UseMethod("plot_debug_log")
 }
 
 #' @title Generic `plot_explained_variance`
@@ -1107,7 +1118,7 @@ predict <- function(x, ...) {
 #' @template arg-sql-params
 #' @export
 #' @noRd
-#' 
+#'
 query_db <- function(x, sql, params = NULL) {
   UseMethod("query_db")
 }

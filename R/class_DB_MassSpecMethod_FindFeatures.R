@@ -11,6 +11,7 @@
 #' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
 #' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
 #' @param baseQuantile numeric(1) quantile to estimate the baseline in a mass cluster.
+#' @param debugAnalysis character(1) analysis name to enable debugging for (empty string to debug all).
 #' @param debugMZ numeric(1) m/z value to enable debugging for specific mass traces (0 to disable).
 #' @param debugSpecIdx integer(1) spectrum index to enable debugging for denoising (-1 to disable).
 #' @export
@@ -24,6 +25,7 @@ DB_MassSpecMethod_FindFeatures_native <- function(
   baselineWindow = 200,
   maxWidth = 100,
   baseQuantile = 0.1,
+  debugAnalysis = "",
   debugMZ = 0,
   debugSpecIdx = -1
 ) {
@@ -54,6 +56,7 @@ DB_MassSpecMethod_FindFeatures_native <- function(
       baselineWindow = as.numeric(baselineWindow),
       maxWidth = as.numeric(maxWidth),
       baseQuantile = as.numeric(baseQuantile),
+      debugAnalysis = as.character(debugAnalysis),
       debugMZ = as.numeric(debugMZ),
       debugSpecIdx = as.integer(debugSpecIdx)
     )
@@ -82,6 +85,7 @@ validate_object.DB_MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_numeric(x$parameters$baselineWindow, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$maxWidth, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$baseQuantile, len = 1, lower = 0, upper = 1)
+  checkmate::assert_character(x$parameters$debugAnalysis, len = 1)
   checkmate::assert_numeric(x$parameters$debugMZ, len = 1, lower = 0)
   checkmate::assert_integerish(x$parameters$debugSpecIdx, len = 1, lower = -1)
   NULL
@@ -137,6 +141,7 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     baselineWindow = parameters$baselineWindow,
     maxWidth = parameters$maxWidth,
     baseQuantile = parameters$baseQuantile,
+    debugAnalysis = parameters$debugAnalysis,
     debugMZ = parameters$debugMZ,
     debugSpecIdx = parameters$debugSpecIdx
   )
@@ -162,4 +167,17 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     features = fts
   ))
   invisible(TRUE)
+}
+
+#' @title Plot debug log for DB_MassSpecMethod_FindFeatures_native
+#' @description Plots the debug log generated during the execution of the DB_MassSpecMethod_FindFeatures_native method.
+#' @param x An object of class DB_MassSpecMethod_FindFeatures_native.
+#' @param logFile Character(1) path to the debug log file.
+#' @param plot3D Logical(1) indicating whether to create a 3D plot (default is FALSE).
+#' @return A plot visualizing the debug information.
+#' @export
+#' @noRd
+#'
+plot_debug_log.DB_MassSpecMethod_FindFeatures_native <- function(x, logFile, plot3D = FALSE) {
+  .plot_debug_DB_MassSpecMethod_FindFeatures_native(logFile = logFile, plot3D = plot3D)
 }
