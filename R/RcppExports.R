@@ -17,12 +17,16 @@ rcpp_nts_create_components <- function(info, spectra_headers, feature_list, rtWi
     .Call(`_StreamFind_rcpp_nts_create_components`, info, spectra_headers, feature_list, rtWindow, minCorrelation, debugRT, debugAnalysis)
 }
 
-rcpp_nts_annotate_components <- function(info, spectra_headers, feature_list, maxIsotopes = 5L, maxCharge = 1L, maxGaps = 1L, debugComponent = "", debugAnalysis = "") {
-    .Call(`_StreamFind_rcpp_nts_annotate_components`, info, spectra_headers, feature_list, maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis)
+rcpp_nts_annotate_components <- function(info, spectra_headers, feature_list, maxIsotopes = 5L, maxCharge = 1L, maxGaps = 1L, ppm = 10.0, debugComponent = "", debugAnalysis = "") {
+    .Call(`_StreamFind_rcpp_nts_annotate_components`, info, spectra_headers, feature_list, maxIsotopes, maxCharge, maxGaps, ppm, debugComponent, debugAnalysis)
 }
 
 rcpp_nts_group_features_2 <- function(info, spectra_headers, feature_list, method = "obi_warp", internal_standards_list = NULL, rtDeviation = 5.0, ppm = 5.0, minSamples = 1L, binSize = 5.0, debug = FALSE, debugRT = 0.0) {
     .Call(`_StreamFind_rcpp_nts_group_features_2`, info, spectra_headers, feature_list, method, internal_standards_list, rtDeviation, ppm, minSamples, binSize, debug, debugRT)
+}
+
+rcpp_nts_fill_features_2 <- function(info, spectra_headers, feature_list, withinReplicate = FALSE, filtered = FALSE, rtExpand = 10.0, mzExpand = 0.01, maxPeakWidth = 30.0, minTracesIntensity = 1000.0, minNumberTraces = 5L, minIntensity = 5000.0, rtApexDeviation = 5.0, minSignalToNoiseRatio = 3.0, minGaussianFit = 0.2, debugFG = "") {
+    .Call(`_StreamFind_rcpp_nts_fill_features_2`, info, spectra_headers, feature_list, withinReplicate, filtered, rtExpand, mzExpand, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, rtApexDeviation, minSignalToNoiseRatio, minGaussianFit, debugFG)
 }
 
 rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFunction = "max") {

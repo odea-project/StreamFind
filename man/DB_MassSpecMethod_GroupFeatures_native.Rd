@@ -9,6 +9,7 @@ DB_MassSpecMethod_GroupFeatures_native(
   rtDeviation = 5,
   ppm = 10,
   minSamples = 1,
+  binSize = 5,
   filtered = FALSE,
   debug = FALSE,
   debugRT = 0
@@ -22,6 +23,9 @@ DB_MassSpecMethod_GroupFeatures_native(
 \item{ppm}{Numeric. Mass tolerance in parts-per-million for grouping features. Default: 10.}
 
 \item{minSamples}{Integer. Minimum number of samples a feature must appear in to be grouped. Default: 1.}
+
+\item{binSize}{Numeric. RT bin size in seconds for harmonizing RT dimension across analyses.
+Shifts are calculated per bin instead of per feature. Default: 5.}
 
 \item{filtered}{Logical. If TRUE, includes filtered features in grouping. Default: FALSE.}
 

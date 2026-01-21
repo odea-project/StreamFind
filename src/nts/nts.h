@@ -9,6 +9,7 @@
 #include "nts_annotation.h"
 #include "nts_componentization.h"
 #include "nts_alignment.h"
+#include "nts_gap_filling.h"
 #include "../streamcraft/streamcraft.h"
 
 namespace nts
@@ -714,10 +715,11 @@ namespace nts
         int maxIsotopes = 5,
         int maxCharge = 1,
         int maxGaps = 1,
+        float ppm = 10.0,
         const std::string &debugComponent = "",
         const std::string &debugAnalysis = "")
     {
-      annotation::annotate_components_impl(*this, maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis);
+      annotation::annotate_components_impl(*this, maxIsotopes, maxCharge, maxGaps, ppm, debugComponent, debugAnalysis);
     }
 
     void group_features(
@@ -747,6 +749,36 @@ namespace nts
         float isolationWindow,
         float mzClust,
         float presence);
+
+    void fill_features(
+        bool withinReplicate,
+        bool filtered,
+        float rtExpand,
+        float mzExpand,
+        float maxPeakWidth,
+        float minTracesIntensity,
+        int minNumberTraces,
+        float minIntensity,
+        float rtApexDeviation,
+        float minSignalToNoiseRatio,
+        float minGaussianFit,
+        std::string debugFG = "")
+    {
+      gap_filling::fill_features_impl(
+          *this,
+          withinReplicate,
+          filtered,
+          rtExpand,
+          mzExpand,
+          maxPeakWidth,
+          minTracesIntensity,
+          minNumberTraces,
+          minIntensity,
+          rtApexDeviation,
+          minSignalToNoiseRatio,
+          minGaussianFit,
+          debugFG);
+    }
 
   };
 }; // namespace nts

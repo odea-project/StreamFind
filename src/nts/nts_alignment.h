@@ -33,6 +33,7 @@ struct AlignmentFeature {
   float rt;
   float mass;
   float intensity;
+  int polarity;
   float rt_corrected;
   int group_id;
   std::string feature_group;

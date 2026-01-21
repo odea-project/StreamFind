@@ -290,9 +290,10 @@ void group_features(
   float rt_deviation,
   int min_samples
 ) {
-  // Sort features by mass and RT for efficient grouping
+  // Sort features by polarity, mass, and RT for efficient grouping
   std::sort(features.begin(), features.end(),
             [](const AlignmentFeature &a, const AlignmentFeature &b) {
+              if (a.polarity != b.polarity) return a.polarity < b.polarity;
               if (a.mass != b.mass) return a.mass < b.mass;
               float rt_a = std::isnan(a.rt_corrected) ? a.rt : a.rt_corrected;
               float rt_b = std::isnan(b.rt_corrected) ? b.rt : b.rt_corrected;
@@ -322,9 +323,10 @@ void group_features(
     float rt_min = ref_rt - rt_deviation;
     float rt_max = ref_rt + rt_deviation;
 
-    // Assign features within tolerance to this group
+    // Assign features within tolerance to this group (same polarity)
     for (size_t j = i + 1; j < features.size(); ++j) {
       if (features[j].group_id > 0) continue;
+      if (features[j].polarity != features[i].polarity) break; // Different polarity, no more matches
       if (features[j].mass > mass_max) break; // No more matches possible
 
       float feature_rt = std::isnan(features[j].rt_corrected) ? features[j].rt : features[j].rt_corrected;
@@ -339,6 +341,7 @@ void group_features(
   // Calculate representative mass and RT for each group (median values)
   std::map<int, std::vector<float>> group_masses;
   std::map<int, std::vector<float>> group_rts;
+  std::map<int, int> group_polarities;
 
   for (const auto &feature : features) {
     if (feature.group_id > 0) {
@@ -346,6 +349,7 @@ void group_features(
       // Use uncorrected RT if rt_corrected is NaN
       float rt_value = std::isnan(feature.rt_corrected) ? feature.rt : feature.rt_corrected;
       group_rts[feature.group_id].push_back(rt_value);
+      group_polarities[feature.group_id] = feature.polarity;
     }
   }
 
@@ -354,6 +358,7 @@ void group_features(
     int group_id = pair.first;
     auto masses = pair.second;
     auto rts = group_rts[group_id];
+    int polarity = group_polarities[group_id];
 
     std::sort(masses.begin(), masses.end());
     std::sort(rts.begin(), rts.end());
@@ -361,9 +366,19 @@ void group_features(
     float median_mass = masses[masses.size() / 2];
     float median_rt = rts[rts.size() / 2];
 
+    std::string polarity_suffix;
+    if (polarity > 0) {
+      polarity_suffix = "_POS";
+    } else if (polarity < 0) {
+      polarity_suffix = "_NEG";
+    } else {
+      polarity_suffix = "";
+    }
+
     std::string group_name = "FG" + std::to_string(group_id) +
                             "_M" + std::to_string(static_cast<int>(std::round(median_mass))) +
-                            "_RT" + std::to_string(static_cast<int>(std::round(median_rt)));
+                            "_RT" + std::to_string(static_cast<int>(std::round(median_rt))) +
+                            polarity_suffix;
     group_names[group_id] = group_name;
   }
 
@@ -454,6 +469,7 @@ void group_features_impl(
       af.rt = fts_i.rt[i];
       af.mass = fts_i.mass[i];
       af.intensity = fts_i.intensity[i];
+      af.polarity = fts_i.polarity[i];
       af.rt_corrected = fts_i.rt[i]; // Will be updated by alignment
       af.group_id = 0;
       af.feature_group = "";
@@ -701,7 +717,7 @@ void group_features_impl(
     for (const auto &feature : all_features) {
       if (feature.rt_corrected >= rt_min && feature.rt_corrected <= rt_max) {
         debug_log << "Analysis: " << feature.analysis << ", Feature: " << feature.feature
-                 << ", Mass: " << feature.mass << ", RT: " << feature.rt
+                 << ", Polarity: " << feature.polarity << ", Mass: " << feature.mass << ", RT: " << feature.rt
                  << ", RT_corrected: " << feature.rt_corrected
                  << ", Shift: " << (feature.rt - feature.rt_corrected) << std::endl;
       }
@@ -722,7 +738,7 @@ void group_features_impl(
       if (feature.rt_corrected >= rt_min && feature.rt_corrected <= rt_max) {
         debug_log << "Analysis: " << feature.analysis << ", Feature: " << feature.feature
                  << ", Group: " << feature.feature_group << " (ID: " << feature.group_id << ")"
-                 << ", Mass: " << feature.mass << ", RT_corrected: " << feature.rt_corrected << std::endl;
+                 << ", Polarity: " << feature.polarity << ", Mass: " << feature.mass << ", RT_corrected: " << feature.rt_corrected << std::endl;
       }
     }
     debug_log << std::endl;

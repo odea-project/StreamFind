@@ -102,7 +102,7 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
   fts_list <- lapply(fts_list, function(x) {
     ana <- x$analysis[1]
     blk_analyses <- analyses$analysis[analyses$replicate == analyses$blank[analyses$analysis == ana]]
-    targets <- x[, c("feature", "mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity")]
+    targets <- data.table::as.data.table(x[, c("feature", "mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "polarity")])
     targets$rtmin <- targets$rtmin - parameters$rtExpand
     targets$rtmax <- targets$rtmax + parameters$rtExpand
     targets$mzmin <- targets$mzmin - parameters$mzExpand

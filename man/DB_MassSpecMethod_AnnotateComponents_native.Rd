@@ -8,6 +8,7 @@ DB_MassSpecMethod_AnnotateComponents_native(
   maxIsotopes = 5,
   maxCharge = 1,
   maxGaps = 1,
+  ppm = 10,
   debugComponent = "",
   debugAnalysis = ""
 )
@@ -18,6 +19,8 @@ DB_MassSpecMethod_AnnotateComponents_native(
 \item{maxCharge}{Integer specifying the maximum charge state to consider. Defaults to 1.}
 
 \item{maxGaps}{Integer specifying the maximum number of gaps allowed in isotope patterns. Defaults to 1.}
+
+\item{ppm}{Numeric specifying the minimum m/z tolerance in ppm. Uses fwhm_mz/2 if larger than this value, otherwise uses this ppm value. Defaults to 10.}
 
 \item{debugComponent}{Character specifying component ID to debug (empty string to disable). Defaults to "".}
 

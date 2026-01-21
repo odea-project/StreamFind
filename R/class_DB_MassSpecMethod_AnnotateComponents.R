@@ -26,6 +26,7 @@
 #' @param maxIsotopes Integer specifying the maximum number of isotopes to consider. Defaults to 5.
 #' @param maxCharge Integer specifying the maximum charge state to consider. Defaults to 1.
 #' @param maxGaps Integer specifying the maximum number of gaps allowed in isotope patterns. Defaults to 1.
+#' @param ppm Numeric specifying the minimum m/z tolerance in ppm. Uses fwhm_mz/2 if larger than this value, otherwise uses this ppm value. Defaults to 10.
 #' @param debugComponent Character specifying component ID to debug (empty string to disable). Defaults to "".
 #' @param debugAnalysis Character specifying analysis name to debug (empty string to disable). Defaults to "".
 #' @export
@@ -34,6 +35,7 @@ DB_MassSpecMethod_AnnotateComponents_native <- function(
   maxIsotopes = 5,
   maxCharge = 1,
   maxGaps = 1,
+  ppm = 10,
   debugComponent = "",
   debugAnalysis = ""
 ) {
@@ -55,6 +57,7 @@ DB_MassSpecMethod_AnnotateComponents_native <- function(
       maxIsotopes = maxIsotopes,
       maxCharge = maxCharge,
       maxGaps = maxGaps,
+      ppm = ppm,
       debugComponent = as.character(debugComponent),
       debugAnalysis = as.character(debugAnalysis)
     )
@@ -75,6 +78,7 @@ validate_object.DB_MassSpecMethod_AnnotateComponents_native <- function(x) {
   checkmate::assert_int(x$parameters$maxIsotopes, lower = 1, null.ok = FALSE)
   checkmate::assert_int(x$parameters$maxCharge, lower = 1, null.ok = FALSE)
   checkmate::assert_int(x$parameters$maxGaps, lower = 0, null.ok = FALSE)
+  checkmate::assert_number(x$parameters$ppm, lower = 0.1, null.ok = FALSE)
   checkmate::assert_character(x$parameters$debugComponent, len = 1, null.ok = FALSE)
   checkmate::assert_character(x$parameters$debugAnalysis, len = 1, null.ok = FALSE)
   NULL
@@ -140,6 +144,7 @@ run.DB_MassSpecMethod_AnnotateComponents_native <- function(x, engine = NULL) {
     maxIsotopes = parameters$maxIsotopes,
     maxCharge = parameters$maxCharge,
     maxGaps = parameters$maxGaps,
+    ppm = parameters$ppm,
     debugComponent = parameters$debugComponent,
     debugAnalysis = parameters$debugAnalysis
   )

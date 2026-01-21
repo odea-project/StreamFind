@@ -394,160 +394,6 @@
             )
           )
         )
-      ),
-      # MARK: Features Tab
-      shiny::tabPanel(
-        title = shiny::tagList(shiny::icon("table", class = "mr-2"), "Features Table"),
-        shiny::div(
-          class = "tab-content",
-          style = "max-height: calc(100vh - 120px); overflow-y: auto; padding: 0;",
-          shiny::div(
-            class = "features-controls-bar",
-            style = "display: flex; align-items: center; justify-content: space-between;",
-            shiny::div(
-              class = "btn-group",
-              shiny::actionButton(
-                ns_full("deselect_all_features"),
-                "Deselect All",
-                icon = shiny::icon("times-circle"),
-                class = "btn btn-outline-secondary btn-sm",
-                style = "padding-right: 10px;"
-              ),
-              shiny::downloadButton(
-                ns_full("export_features_csv"),
-                "Export to CSV",
-                icon = shiny::icon("file-csv"),
-                class = "btn btn-outline-primary btn-sm ml-2",
-                style = "padding-right: 10px;"
-              ),
-              shiny::downloadButton(
-                ns_full("export_selected_features_csv"),
-                "Export Selected to CSV",
-                icon = shiny::icon("file-csv"),
-                class = "btn btn-outline-primary btn-sm ml-2",
-                style = "padding-right: 10px;"
-              ),
-              shiny::actionButton(
-                ns_full("remove_selected_features"),
-                "Remove Selected Features",
-                icon = shiny::icon("trash-alt"),
-                class = "btn btn-outline-danger btn-sm ml-2",
-                style = "padding-right: 10px;"
-              )
-            ),
-            shiny::div(
-              class = "proportion-controls",
-              style = "display: flex; align-items: center; gap: 10px;",
-              shiny::span(
-                "Layout:",
-                style = "font-weight: 500; margin-right: 10px;"
-              ),
-              shiny::div(
-                class = "btn-group btn-group-sm",
-                shiny::actionButton(
-                  ns_full("prop_20_80"),
-                  "20:80",
-                  class = "btn btn-outline-primary btn-sm"
-                ),
-                shiny::actionButton(
-                  ns_full("prop_30_70"),
-                  "30:70",
-                  class = "btn btn-outline-primary btn-sm"
-                ),
-                shiny::actionButton(
-                  ns_full("prop_40_60"),
-                  "40:60",
-                  class = "btn btn-outline-primary btn-sm"
-                ),
-                shiny::actionButton(
-                  ns_full("prop_50_50"),
-                  "50:50",
-                  class = "btn btn-outline-primary btn-sm"
-                ),
-                shiny::actionButton(
-                  ns_full("prop_60_40"),
-                  "60:40",
-                  class = "btn btn-outline-primary btn-sm active"
-                ),
-                shiny::actionButton(
-                  ns_full("prop_70_30"),
-                  "70:30",
-                  class = "btn btn-outline-primary btn-sm"
-                ),
-                shiny::actionButton(
-                  ns_full("prop_80_20"),
-                  "80:20",
-                  class = "btn btn-outline-primary btn-sm"
-                )
-              )
-            )
-          ),
-          shiny::div(
-            id = ns_full("main_content_container"),
-            style = "display: flex; height: calc(100vh - 250px);",
-            shiny::div(
-              id = ns_full("features_table_panel"),
-              style = "height: calc(100vh - 250px); padding: 10px; overflow-x: auto; overflow-y: auto; width: 100%;",
-              DT::dataTableOutput(ns_full("features_table"), height = "auto", width = "100%")
-            ),
-            shiny::div(
-              id = ns_full("features_plots_panel"),
-              style = "height: calc(100vh - 250px); padding: 10px; overflow: hidden;",
-              shiny::tabsetPanel(
-                id = ns_full("feature_details_tabs"),
-                type = "tabs",
-                shiny::tabPanel(
-                  title = "EIC",
-                  height = "100%",
-                  shiny::div(
-                    style = "height: 30px; position: relative;",
-                    .app_util_create_maximize_button("feature_peaks_plot", ns_full)
-                  ),
-                  plotly::plotlyOutput(
-                    ns_full("feature_peaks_plot"),
-                    height = "calc(100vh - 320px)"
-                  )
-                ),
-                shiny::tabPanel(
-                  title = "MS1",
-                  height = "100%",
-                  shiny::div(
-                    style = "height: 30px; position: relative;",
-                    .app_util_create_maximize_button("feature_ms1_plot", ns_full)
-                  ),
-                  plotly::plotlyOutput(
-                    ns_full("ms1_plot"),
-                    height = "calc(100vh - 320px)"
-                  )
-                ),
-                shiny::tabPanel(
-                  title = "MS2",
-                  height = "100%",
-                  shiny::div(
-                    style = "height: 30px; position: relative;",
-                    .app_util_create_maximize_button("feature_ms2_plot", ns_full)
-                  ),
-                  plotly::plotlyOutput(
-                    ns_full("ms2_plot"),
-                    height = "calc(100vh - 320px)"
-                  )
-                ),
-                shiny::tabPanel(
-                  title = "XIC",
-                  height = "100%",
-                  shiny::div(
-                    style = "height: 30px; position: relative;",
-                    .app_util_create_maximize_button("feature_xic_plot", ns_full)
-                  ),
-                  plotly::plotlyOutput(
-                    ns_full("feature_xic_plot"),
-                    height = "calc(100vh - 320px)"
-                  )
-                )
-              )
-            )
-          )
-        )
       )
     )
   )
@@ -564,52 +410,65 @@
     reactive_volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns_full <- session$ns
-    # MARK: Reactive State
+
+    # MARK: Helpers
+    status_tag <- function(value) {
+      shiny::tags$span(
+        class = ifelse(value, "status-yes", "status-no"),
+        ifelse(value, "YES", "NO")
+      )
+    }
+
+    # MARK: nts_data
     nts_data <- shiny::reactiveVal()
 
-    # MARK: Init data
     shiny::observe({
       shiny::validate(shiny::need(!is.null(x), "NTA data is not available"))
       nts_data(x)
     })
 
-    # MARK: Chart color toggle
+    # MARK: features_data
+    features_data <- shiny::reactive({
+      nts <- nts_data()
+      fts <- data.table::as.data.table(get_features(nts, filtered = TRUE))
+      if (nrow(fts) == 0) return(fts)
+      digits_for_col <- function(col) {
+        col_lower <- tolower(col)
+        digits <- 4
+        if (col_lower %in% c("ppm", "sn")) digits <- 1
+        if (col_lower %in% c("gaussian_sigma")) digits <- 1
+        if (col_lower %in% c("gaussian_mu", "gaussian_a")) digits <- 0
+        if (col_lower == "fwhm_mz") digits <- 4
+        mz_in_col <- grepl("^mz", col_lower) || grepl("mzmin|mzmax|mass", col_lower)
+        if (mz_in_col) digits <- 4
+        no_decimals <- grepl("intensity|area|size|noise|plates", col_lower)
+        no_decimals <- no_decimals || grepl("^rt", col_lower)
+        no_decimals <- no_decimals || (grepl("width|fwhm", col_lower) && col_lower != "fwhm_mz")
+        if (no_decimals) digits <- 0
+        if (grepl("gaussian_r2|correction|jaggedness|sharpness|asymmetry", col_lower)) digits <- 2
+        digits
+      }
+      num_cols <- names(fts)[sapply(fts, is.numeric)]
+      for (col in num_cols) {
+        d <- digits_for_col(col)
+        fts[[col]] <- round(fts[[col]], d)
+      }
+      fts
+    })
+
+    # MARK: chart_color_by
     chart_color_by <- shiny::reactiveVal("replicates")
 
     shiny::observeEvent(input$chart_color_by, {
       chart_color_by(input$chart_color_by)
     })
 
-    # MARK: Layout proportions (features tab)
-    features_layout_proportions <- shiny::reactiveVal(c(60, 40))
+    # MARK: Layout proportions (features scatter tab)
     scatter_layout_proportions <- shiny::reactiveVal(c(80, 20))
     scatter_numeric_cols <- shiny::reactive({
       fts <- data.table::as.data.table(features_data())
       names(fts)[sapply(fts, is.numeric)]
     })
-
-    shiny::observeEvent(input$prop_20_80, {
-      features_layout_proportions(c(20, 80))
-    })
-    shiny::observeEvent(input$prop_30_70, {
-      features_layout_proportions(c(30, 70))
-    })
-    shiny::observeEvent(input$prop_40_60, {
-      features_layout_proportions(c(40, 60))
-    })
-    shiny::observeEvent(input$prop_50_50, {
-      features_layout_proportions(c(50, 50))
-    })
-    shiny::observeEvent(input$prop_60_40, {
-      features_layout_proportions(c(60, 40))
-    })
-    shiny::observeEvent(input$prop_70_30, {
-      features_layout_proportions(c(70, 30))
-    })
-    shiny::observeEvent(input$prop_80_20, {
-      features_layout_proportions(c(80, 20))
-    })
-
     shiny::observeEvent(input$scatter_prop_20_80, {
       scatter_layout_proportions(c(20, 80))
     })
@@ -631,75 +490,37 @@
     shiny::observeEvent(input$scatter_prop_80_20, {
       scatter_layout_proportions(c(80, 20))
     })
-
-    shiny::observe({
-      props <- features_layout_proportions()
-      table_width <- props[1]
-      plots_width <- props[2]
-
-      table_id <- session$ns("features_table_panel")
-      plots_id <- session$ns("features_plots_panel")
-
-      shiny::insertUI(
-        selector = "head",
-        where = "beforeEnd",
-        ui = shiny::tags$style(shiny::HTML(paste0(
-          "
-        #", table_id, " { width: ", table_width, "% !important; }
-        #", plots_id, " { width: ", plots_width, "% !important; }
-      "
-        )))
-      )
-
-      current_prop <- paste0(table_width, "_", plots_width)
-      button_id <- session$ns(paste0("prop_", current_prop))
-
-      shiny::insertUI(
-        selector = "head",
-        where = "beforeEnd",
-        ui = shiny::tags$script(shiny::HTML(paste0(
-          "
-        $('.proportion-controls .btn').removeClass('active');
-        $('#", button_id, "').addClass('active');
-      "
-        )))
-      )
-    })
-
     shiny::observe({
       props <- scatter_layout_proportions()
       table_width <- props[1]
       plots_width <- props[2]
-
       table_id <- session$ns("features_scatter_panel")
       plots_id <- session$ns("features_scatter_details_panel")
-
       shiny::insertUI(
         selector = "head",
         where = "beforeEnd",
         ui = shiny::tags$style(shiny::HTML(paste0(
           "
-        #", table_id, " { width: ", table_width, "% !important; }
-        #", plots_id, " { width: ", plots_width, "% !important; }
-      "
+            #", table_id, " { width: ", table_width, "% !important; }
+            #", plots_id, " { width: ", plots_width, "% !important; }
+          "
         )))
       )
-
       current_prop <- paste0(table_width, "_", plots_width)
       button_id <- session$ns(paste0("scatter_prop_", current_prop))
-
       shiny::insertUI(
         selector = "head",
         where = "beforeEnd",
         ui = shiny::tags$script(shiny::HTML(paste0(
           "
-        $('.features-controls-bar .btn').removeClass('active');
-        $('#", button_id, "').addClass('active');
-      "
+            $('.features-controls-bar .btn').removeClass('active');
+            $('#", button_id, "').addClass('active');
+          "
         )))
       )
     })
 
+    # MARK: UI scatter_numeric_filters
     output$scatter_numeric_filters <- shiny::renderUI({
       fts <- data.table::as.data.table(features_data())
       if (nrow(fts) == 0) return(NULL)
@@ -709,7 +530,6 @@
       slider_specs <- function(col, rng) {
         digits <- 3
         col_lower <- tolower(col)
-        # Specific overrides first
         if (col_lower == "fwhm_mz") {
           digits <- 4
         } else if (col_lower == "gaussian_sigma") {
@@ -717,25 +537,23 @@
         } else if (col_lower %in% c("gaussian_mu", "gaussian_a")) {
           digits <- 0
         }
-        # Mass / m/z at 4 decimals
-        if (grepl("^mz", col, ignore.case = TRUE) || grepl("mzmin|mzmax|mass", col_lower)) {
+        four_decimals <- grepl("^mz", col, ignore.case = TRUE)
+        four_decimals <- four_decimals || grepl("mzmin|mzmax|mass", col_lower)
+        if (four_decimals) {
           digits <- 4
         }
-        # ppm at 1 decimal
         if (col_lower == "ppm") {
           digits <- 1
         }
-        # signal-to-noise at 1 decimal
         if (col_lower == "sn") {
           digits <- 1
         }
-        # Intensities / sizes / times rounded to unit
-        if (grepl("intensity|area|size|noise|plates", col_lower) ||
-          grepl("^rt", col_lower) ||
-          (grepl("width|fwhm", col_lower) && col_lower != "fwhm_mz")) {
+        zero_decimals <- grepl("intensity|area|size|noise|plates", col_lower)
+        zero_decimals <- zero_decimals || grepl("^rt", col_lower)
+        zero_decimals <- zero_decimals || (grepl("width|fwhm", col_lower) && col_lower != "fwhm_mz")
+        if (zero_decimals) {
           digits <- 0
         }
-        # Quality-style fields at 2 decimals
         if (grepl("gaussian_r2|correction|jaggedness|sharpness|asymmetry", col_lower)) {
           digits <- 2
         }
@@ -788,122 +606,97 @@
       shiny::tagList(ui_elems)
     })
 
-    # MARK: Helpers
-    status_tag <- function(value) {
-      shiny::tags$span(
-        class = ifelse(value, "status-yes", "status-no"),
-        ifelse(value, "YES", "NO")
-      )
-    }
-
-    # MARK: Summary data
+    # MARK: summary_data
     summary_data <- shiny::reactive({
       nts <- nts_data()
       info_analyses <- info(nts$analyses)
-
-      conn <- DBI::dbConnect(duckdb::duckdb(), nts$db)
-      on.exit(DBI::dbDisconnect(conn), add = TRUE)
-
-      counts <- DBI::dbGetQuery(
-        conn,
-        "
-        SELECT analysis,
-               COUNT(*) AS total,
-               SUM(CASE WHEN filtered THEN 1 ELSE 0 END) AS filtered
-        FROM Features
-        GROUP BY analysis
-      "
-      )
-
-      if (nrow(counts) == 0) {
+      all_fts <- features_data()
+      if (nrow(all_fts) == 0) {
         counts <- data.frame(
           analysis = info_analyses$analysis,
           total = 0,
-          filtered = 0
+          filtered = 0,
+          not_filtered = 0,
+          replicate = info_analyses$replicate
         )
+        return(list(
+          info = info_analyses,
+          counts = counts,
+          total_analyses = nrow(info_analyses),
+          total_features = 0,
+          filtered_features = 0,
+          total_groups = 0,
+          has_eic = FALSE,
+          has_ms1 = FALSE,
+          has_ms2 = FALSE
+        ))
       }
-
-      counts$filtered[is.na(counts$filtered)] <- 0
+      counts <- all_fts[, .(total = .N, filtered = sum(filtered, na.rm = TRUE)), by = analysis]
       counts$not_filtered <- counts$total - counts$filtered
       counts$replicate <- info_analyses$replicate[match(counts$analysis, info_analyses$analysis)]
-
-      total_groups_query <- DBI::dbGetQuery(
-        conn,
-        "
-        SELECT COUNT(DISTINCT feature_group) AS n
-        FROM Features
-        WHERE NOT filtered AND feature_group != ''
-      "
-      )
-
+      non_filtered_fts <- all_fts[!all_fts$filtered, ]
+      total_groups <- 0
+      if (nrow(non_filtered_fts) > 0 && "feature_group" %in% colnames(non_filtered_fts)) {
+        total_groups <- data.table::uniqueN(non_filtered_fts[feature_group != "" & !is.na(feature_group)]$feature_group)
+      }
+      has_eic <- FALSE
+      has_ms1 <- FALSE
+      has_ms2 <- FALSE
+      if ("eic_size" %in% colnames(all_fts)) {
+        has_eic <- any(all_fts$eic_size > 0, na.rm = TRUE)
+      }
+      if ("ms1_size" %in% colnames(all_fts)) {
+        has_ms1 <- any(all_fts$ms1_size > 0, na.rm = TRUE)
+      }
+      if ("ms2_size" %in% colnames(all_fts)) {
+        has_ms2 <- any(all_fts$ms2_size > 0, na.rm = TRUE)
+      }
       list(
         info = info_analyses,
         counts = counts,
         total_analyses = nrow(info_analyses),
         total_features = sum(counts$total, na.rm = TRUE),
         filtered_features = sum(counts$filtered, na.rm = TRUE),
-        total_groups = ifelse(
-          nrow(total_groups_query) == 0 || is.na(total_groups_query$n[1]),
-          0,
-          total_groups_query$n[1]
-        ),
-        has_eic = DBI::dbGetQuery(
-          conn,
-          "SELECT COUNT(*) AS n FROM Features WHERE eic_size > 0"
-        )$n > 0,
-        has_ms1 = DBI::dbGetQuery(
-          conn,
-          "SELECT COUNT(*) AS n FROM Features WHERE ms1_size > 0"
-        )$n > 0,
-        has_ms2 = DBI::dbGetQuery(
-          conn,
-          "SELECT COUNT(*) AS n FROM Features WHERE ms2_size > 0"
-        )$n > 0
+        total_groups = total_groups,
+        has_eic = has_eic,
+        has_ms1 = has_ms1,
+        has_ms2 = has_ms2
       )
     })
 
-    # MARK: Summary outputs
+    # MARK: summary outputs
     output$total_analyses <- shiny::renderText({
       as.character(summary_data()$total_analyses)
     })
-
     output$total_features <- shiny::renderText({
       as.character(summary_data()$total_features)
     })
-
     output$filtered_features_count <- shiny::renderText({
       as.character(summary_data()$filtered_features)
     })
-
     output$total_groups <- shiny::renderText({
       as.character(summary_data()$total_groups)
     })
-
     output$has_features_eic_ui <- shiny::renderUI({
       status_tag(summary_data()$has_eic)
     })
-
     output$has_features_ms1_ui <- shiny::renderUI({
       status_tag(summary_data()$has_ms1)
     })
-
     output$has_features_ms2_ui <- shiny::renderUI({
       status_tag(summary_data()$has_ms2)
     })
-
     output$has_features_suspects_ui <- shiny::renderUI({
       # TODO: implement suspect detection once available for DB_MassSpecResults_NonTargetAnalysis
       status_tag(FALSE)
     })
 
-    # MARK: Summary chart
+    # MARK: summary_chart
     output$features_chart <- plotly::renderPlotly({
       counts <- data.table::as.data.table(summary_data()$counts)
-
       shiny::validate(
         shiny::need(nrow(counts) > 0, "No features available to plot.")
       )
-
       color_by <- chart_color_by()
       if (color_by == "replicates" && "replicate" %in% colnames(counts)) {
         agg <- counts[
@@ -917,7 +710,6 @@
         ]
         agg$sd_features[is.na(agg$sd_features)] <- 0
         pal <- .get_colors(agg$replicate)
-
         plotly::plot_ly(
           data = agg,
           x = ~replicate,
@@ -967,7 +759,6 @@
       } else {
         counts$color_by <- counts$analysis
         pal <- .get_colors(counts$color_by)
-
         plotly::plot_ly(
           data = counts,
           x = ~analysis,
@@ -1014,129 +805,16 @@
       }
     })
 
-    # MARK: Features table data
-    features_data <- shiny::reactive({
-      nts <- nts_data()
-      fts <- data.table::as.data.table(get_features(nts, filtered = TRUE))
-      if (nrow(fts) == 0) return(fts)
-
-      digits_for_col <- function(col) {
-        col_lower <- tolower(col)
-        # Defaults
-        digits <- 4
-        # Specific rules
-        if (col_lower %in% c("ppm", "sn")) digits <- 1
-        if (col_lower %in% c("gaussian_sigma")) digits <- 1
-        if (col_lower %in% c("gaussian_mu", "gaussian_a")) digits <- 0
-        if (col_lower == "fwhm_mz") digits <- 4
-        if (grepl("^mz", col_lower) || grepl("mzmin|mzmax|mass", col_lower)) digits <- 4
-        if (grepl("intensity|area|size|noise|plates", col_lower) ||
-          grepl("^rt", col_lower) ||
-          (grepl("width|fwhm", col_lower) && col_lower != "fwhm_mz")) {
-          digits <- 0
-        }
-        if (grepl("gaussian_r2|correction|jaggedness|sharpness|asymmetry", col_lower)) digits <- 2
-        digits
-      }
-
-      num_cols <- names(fts)[sapply(fts, is.numeric)]
-      for (col in num_cols) {
-        d <- digits_for_col(col)
-        fts[[col]] <- round(fts[[col]], d)
-      }
-      fts
-    })
-
-    features_table_data <- shiny::reactive({
-      fts <- data.table::as.data.table(features_data())
-      if (nrow(fts) == 0) {
-        return(fts)
-      }
-      drop_cols <- intersect(
-        c(
-          "eic_rt",
-          "eic_mz",
-          "eic_intensity",
-          "eic_baseline",
-          "eic_smoothed",
-          "ms1_mz",
-          "ms1_intensity",
-          "ms2_mz",
-          "ms2_intensity"
-        ),
-        colnames(fts)
-      )
-      fts[, (drop_cols) := NULL]
-
-      fts$sel <- rep(FALSE, nrow(fts))
-      data.table::setcolorder(
-        fts,
-        unique(c("sel", "analysis", "replicate", "feature", colnames(fts)))
-      )
-      fts
-    })
-
-    # MARK: Features table render
-    output$features_table <- DT::renderDT({
-      fts <- features_table_data()
-
-      if (nrow(fts) == 0) {
-        return(DT::datatable(
-          data.frame(Message = "No features available."),
-          options = list(dom = "t", ordering = FALSE, paging = FALSE),
-          style = "bootstrap",
-          class = "table table-striped table-hover",
-          rownames = FALSE
-        ))
-      }
-
-      sel_col_index <- which(names(fts) == "sel") - 1
-
-      DT::datatable(
-        fts,
-        #escape = FALSE,
-        filter = "top",
-        options = list(
-          pageLength = 20,
-          autoWidth = TRUE,
-          processing = TRUE,
-          scrollY = TRUE,
-          scrollX = TRUE,
-          #scrollCollapse = TRUE,
-          paging = TRUE,
-          deferRender = TRUE,
-          lengthMenu = c(10, 15, 20, 25, 50, 100),
-          ordering = TRUE,
-          searching = TRUE,
-          searchHighlight = TRUE,
-          columnDefs = list(
-            list(className = "dt-center", targets = c(1)),
-            list(
-              targets = sel_col_index,
-              render = DT::JS(
-                "function(data, type, row, meta) {",
-                "  if (type === 'display') {",
-                "    var checked = data === true ? 'checked' : '';",
-                "    return '<input type=\"checkbox\" ' + checked + ' class=\"sel-checkbox\" data-row=\"' + meta.row + '\" />';",
-                "  }",
-                "  return data;",
-                "}"
-              ),
-              className = "dt-center"
-            )
-          )
-        ),
-        selection = list(mode = "multiple", selected = NULL, target = "row")
-      )
-    })
-
-    # MARK: Features scatter data
+    # MARK: features_scatter_data
     features_scatter_data <- shiny::reactive({
       fts <- data.table::as.data.table(features_data())
       if (nrow(fts) == 0) return(fts)
-      fts[, analysis := as.character(analysis)]
-      if ("feature" %in% colnames(fts)) fts[, feature := as.character(feature)]
-      if ("replicate" %in% colnames(fts)) fts[, replicate := as.character(replicate)]
+
+      # Make explicit copy to avoid shallow copy warning with :=
+      fts <- data.table::copy(fts)
+      fts$analysis <- as.character(fts$analysis)
+      fts$feature <- as.character(fts$feature)
+      fts$replicate <- as.character(fts$replicate)
 
       # Apply text search (regex) across all columns
       search_term <- input$scatter_search
@@ -1154,6 +832,7 @@
           fts <- fts[fts[[col]] >= rng[1] & fts[[col]] <= rng[2]]
         }
       }
+
       # Apply logical filters
       log_cols <- names(fts)[sapply(fts, is.logical)]
       for (col in log_cols) {
@@ -1168,15 +847,17 @@
 
       fts$rel_intensity <- NA_real_
       if ("intensity" %in% colnames(fts) && "analysis" %in% colnames(fts)) {
-        fts[, rel_intensity := intensity / max(intensity, na.rm = TRUE), by = analysis]
+        max_intensity_global <- max(fts$intensity, na.rm = TRUE)
+        fts$rel_intensity <- fts$intensity / max_intensity_global
         fts$rel_intensity[is.infinite(fts$rel_intensity) | is.na(fts$rel_intensity)] <- 0
       } else {
         fts$rel_intensity <- 0
       }
-      fts$size <- 6 + 10 * fts$rel_intensity
+      fts$dot_size <- 6 + 10 * fts$rel_intensity
       fts
     })
 
+    # MARK: scatter_color_cols & scatter_selection_cols
     scatter_color_cols <- shiny::reactive({
       cols <- character(0)
       if (isTRUE(input$scatter_color_analysis)) cols <- c(cols, "analysis")
@@ -1187,7 +868,6 @@
       if (length(cols) == 0) cols <- "analysis"
       cols
     })
-
     scatter_selection_cols <- shiny::reactive({
       cols <- character(0)
       if (isTRUE(input$scatter_select_analysis)) cols <- c(cols, "analysis")
@@ -1198,6 +878,7 @@
       cols
     })
 
+    # MARK: features_scatter_plot
     output$features_scatter_plot <- plotly::renderPlotly({
       fts <- as.data.frame(features_scatter_data())
       shiny::validate(shiny::need(nrow(fts) > 0, "No features available to plot."))
@@ -1220,6 +901,9 @@
       for (col in sel_cols) fts[[col]][is.na(fts[[col]])] <- ""
       fts$scatter_key <- do.call(paste, c(fts[, sel_cols, drop = FALSE], sep = "||"))
 
+      # Ensure size is numeric vector to avoid ordering issues with formula notation
+      # size_values <- as.numeric(fts$dot_size)
+
       p <- plotly::plot_ly(
         data = fts,
         source = "features_scatter",
@@ -1231,7 +915,7 @@
         colors = pal,
         marker = list(
           sizemode = "diameter",
-          size = ~size,
+          size = ~dot_size,
           sizemin = 3,
           line = list(width = 0)
         ),
@@ -1275,6 +959,7 @@
       p
     })
 
+    # MARK: selected_features_scatter
     selected_features_scatter <- shiny::reactive({
       evt <- plotly::event_data("plotly_selected", source = "features_scatter")
       if (is.null(evt) || nrow(evt) == 0) {
@@ -1284,15 +969,13 @@
       keys <- evt$key
       if (is.null(keys)) return(NULL)
       keys <- as.character(keys)
-      sel_df <- data.table::data.table(key_val = keys)
 
-      fts <- data.table::as.data.table(features_scatter_data())
+      fts <- data.table::copy(features_scatter_data())
       if (!nrow(fts)) return(NULL)
+
       sel_cols <- scatter_selection_cols()
       sel_cols <- sel_cols[sel_cols %in% colnames(fts)]
       if (length(sel_cols) == 0) sel_cols <- intersect(c("analysis", "feature"), colnames(fts))
-
-      # Drop rows with empty component/group when those fields are required
       if ("feature_component" %in% sel_cols && "feature_component" %in% colnames(fts)) {
         fts <- fts[feature_component != "" & !is.na(feature_component)]
       }
@@ -1301,21 +984,22 @@
       }
       if (!nrow(fts)) return(NULL)
 
-      fts[, (sel_cols) := lapply(.SD, as.character), .SDcols = sel_cols]
-      for (col in sel_cols) fts[[col]][is.na(fts[[col]])] <- ""
-      fts$scatter_key <- do.call(paste, c(fts[, ..sel_cols], sep = "||"))
-      key_map <- fts[, .(analysis, feature, key_val = scatter_key)]
+      key_parts <- strsplit(keys, "||", fixed = TRUE)
 
-      merged <- merge(sel_df, key_map, by = "key_val")
-      if (nrow(merged) == 0) return(NULL)
-      unique(merged[, .(analysis, feature)])
+      sel <- rep(TRUE, nrow(fts))
+      lapply(seq_along(sel_cols), function(i) {
+        sel <<- sel & fts[[sel_cols[i]]] %in% key_parts[[1]][i]
+        invisible(NULL)
+      })
+
+      fts[sel, c("analysis", "feature"), with = FALSE]
     })
 
-    # MARK: Scatter detail plots/tables
+    # MARK: feature_peaks_plot_scatter
     output$feature_peaks_plot_scatter <- plotly::renderPlotly({
       shiny::validate(
         shiny::need(
-          !is.null(selected_features_scatter()),
+          nrow(selected_features_scatter()) > 0,
           "Select one or more points to view EIC."
         )
       )
@@ -1336,10 +1020,11 @@
         plotly::config(displaylogo = FALSE, responsive = TRUE)
     })
 
+    # MARK: feature_ms1_plot_scatter
     output$feature_ms1_plot_scatter <- plotly::renderPlotly({
       shiny::validate(
         shiny::need(
-          !is.null(selected_features_scatter()),
+          nrow(selected_features_scatter()) > 0,
           "Select one or more points to view MS1."
         )
       )
@@ -1355,10 +1040,11 @@
         plotly::config(displaylogo = FALSE, responsive = TRUE)
     })
 
+    # MARK: feature_ms2_plot_scatter
     output$feature_ms2_plot_scatter <- plotly::renderPlotly({
       shiny::validate(
         shiny::need(
-          !is.null(selected_features_scatter()),
+          nrow(selected_features_scatter()) > 0,
           "Select one or more points to view MS2."
         )
       )
@@ -1377,7 +1063,7 @@
     output$feature_xic_plot_scatter <- plotly::renderPlotly({
       shiny::validate(
         shiny::need(
-          !is.null(selected_features_scatter()),
+          nrow(selected_features_scatter()) > 0,
           "Select one or more points to view XIC."
         )
       )
@@ -1393,24 +1079,14 @@
         plotly::config(displaylogo = FALSE, responsive = TRUE)
     })
 
+    # MARK: feature_details_table_scatter
     output$feature_details_table_scatter <- DT::renderDT({
       sel <- selected_features_scatter()
-      shiny::validate(shiny::need(!is.null(sel), "Select one or more points to view details."))
+      shiny::validate(shiny::need(nrow(sel) > 0, "Select one or more points to view details."))
 
-      fts <- data.table::as.data.table(features_data())
+      fts <- data.table::copy(features_data()[analysis %in% sel$analysis & feature %in% sel$feature, ])
+
       if (nrow(fts) == 0) {
-        return(DT::datatable(
-          data.frame(Message = "No features available."),
-          options = list(dom = "t", paging = FALSE, ordering = FALSE),
-          style = "bootstrap",
-          class = "table table-striped table-hover",
-          rownames = FALSE
-        ))
-      }
-
-      keep <- fts[fts$analysis %in% sel$analysis & fts$feature %in% sel$feature, ]
-
-      if (nrow(keep) == 0) {
         return(DT::datatable(
           data.frame(Message = "No details available for selected features."),
           options = list(dom = "t", paging = FALSE, ordering = FALSE),
@@ -1419,29 +1095,25 @@
           rownames = FALSE
         ))
       }
-      drop_cols <- intersect(
-        c(
-          "eic_rt",
-          "eic_mz",
-          "eic_intensity",
-          "eic_baseline",
-          "eic_smoothed",
-          "ms1_mz",
-          "ms1_intensity",
-          "ms2_mz",
-          "ms2_intensity",
-          "rel_intensity",
-          "size"
-        ),
-        colnames(keep)
-      )
-      if (length(drop_cols) > 0) keep[, (drop_cols) := NULL]
 
-      # Wide format: one row per property, one column per selected item
-      n_sel <- nrow(keep)
-      prop_names <- setdiff(colnames(keep), character(0))
+      keep_cols <- colnames(fts)
+      keep_cols <- !keep_cols %in% c(
+        "eic_rt",
+        "eic_mz",
+        "eic_intensity",
+        "eic_baseline",
+        "eic_smoothed",
+        "ms1_mz",
+        "ms1_intensity",
+        "ms2_mz",
+        "ms2_intensity",
+        "rel_intensity"
+      )
+      fts <- fts[, keep_cols, with = FALSE]
+      n_sel <- nrow(fts)
+      prop_names <- colnames(fts)
       rows <- lapply(prop_names, function(p) {
-        vals <- as.character(keep[[p]])
+        vals <- as.character(fts[[p]])
         data.frame(
           Property = p,
           t(as.matrix(vals)),
@@ -1454,7 +1126,6 @@
       } else {
         setnames(details_dt, c("Property", "Value"))
       }
-
       DT::datatable(
         details_dt,
         options = list(
@@ -1468,293 +1139,5 @@
         rownames = FALSE
       )
     })
-
-    shiny::observeEvent(input$deselect_all_features, {
-      DT::selectRows(DT::dataTableProxy("features_table"), NULL)
-    })
-
-    # MARK: Export handlers
-    output$export_features_csv <- shiny::downloadHandler(
-      filename = function() {
-        paste0("features_data_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv")
-      },
-      content = function(file) {
-        table_data <- data.table::copy(features_table_data())
-        if ("sel" %in% colnames(table_data)) table_data$sel <- NULL
-        write.csv(table_data, file, row.names = FALSE)
-      }
-    )
-
-    output$export_selected_features_csv <- shiny::downloadHandler(
-      filename = function() {
-        paste0(
-          "selected_features_",
-          format(Sys.time(), "%Y%m%d_%H%M%S"),
-          ".csv"
-        )
-      },
-      content = function(file) {
-        rows <- input$features_table_rows_selected
-        table_data <- data.table::copy(features_table_data())
-        if ("sel" %in% colnames(table_data)) table_data$sel <- NULL
-
-        if (!is.null(rows) && length(rows) > 0) {
-          write.csv(table_data[rows, ], file, row.names = FALSE)
-        } else {
-          write.csv(
-            data.frame(Message = "No features selected"),
-            file,
-            row.names = FALSE
-          )
-        }
-      }
-    )
-
-    # MARK: Selected features
-    selected_features <- shiny::reactive({
-      rows <- input$features_table_rows_selected
-      if (is.null(rows) || length(rows) == 0) {
-        return(NULL)
-      }
-      table_data <- features_table_data()
-      data.table::data.table(
-        analysis = table_data$analysis[rows],
-        feature = table_data$feature[rows]
-      )
-    })
-
-    # MARK: Remove selected features (placeholder)
-    shiny::observeEvent(input$remove_selected_features, {
-      # TODO: implement feature removal against DB_MassSpecResults_NonTargetAnalysis backend
-      shiny::showNotification(
-        "Feature removal is not yet implemented for database-backed results.",
-        type = "warning"
-      )
-    })
-
-    # MARK: EIC plot
-    output$feature_peaks_plot <- plotly::renderPlotly({
-      shiny::validate(
-        shiny::need(
-          !is.null(selected_features()),
-          "Please select one or more features from the table to display the plot."
-        )
-      )
-
-      nts <- nts_data()
-      p <- plot_features(
-        nts,
-        features = selected_features(),
-        filtered = TRUE,
-        showDetails = TRUE
-      )
-
-      shiny::validate(
-        shiny::need(
-          !is.null(p),
-          "No EIC data available for the selected features."
-        )
-      )
-
-      plotly::layout(
-        p,
-        width = NULL,
-        autosize = TRUE,
-        margin = list(l = 50, r = 30, t = 30, b = 50),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor = "rgba(0,0,0,0)",
-        xaxis = list(
-          title = list(
-            text = "Retention Time (RT)",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        yaxis = list(
-          title = list(
-            text = "Intensity",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        )
-      ) %>%
-        plotly::config(
-          displayModeBar = TRUE,
-          displaylogo = FALSE,
-          responsive = TRUE
-        )
-    })
-
-    # MARK: Selected features (mass)
-    selected_features_with_mass <- shiny::reactive({
-      rows <- input$features_table_rows_selected
-      features <- features_data()
-      if (is.null(rows) || length(rows) == 0 || nrow(features) == 0) {
-        return(NULL)
-      }
-      data.frame(
-        mass = features$mass[rows],
-        analysis = features$analysis[rows],
-        feature = features$feature[rows]
-      )
-    })
-
-    # MARK: MS1 plot
-    output$ms1_plot <- plotly::renderPlotly({
-      shiny::validate(
-        shiny::need(
-          !is.null(selected_features_with_mass()),
-          "Please select one or more features from the table to display the plot."
-        )
-      )
-
-      nts <- nts_data()
-      p <- plot_features_ms1(nts, features = selected_features(), filtered = TRUE)
-
-      shiny::validate(
-        shiny::need(
-          !is.null(p),
-          "No MS1 data available for the selected features."
-        )
-      )
-
-      plotly::layout(
-        p,
-        width = NULL,
-        autosize = TRUE,
-        margin = list(l = 50, r = 30, t = 30, b = 50),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor = "rgba(0,0,0,0)",
-        xaxis = list(
-          title = list(
-            text = "m/z",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        yaxis = list(
-          title = list(
-            text = "Intensity",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        )
-      ) %>%
-        plotly::config(
-          displayModeBar = TRUE,
-          displaylogo = FALSE,
-          responsive = TRUE
-        )
-    })
-
-    # MARK: MS2 plot
-    output$ms2_plot <- plotly::renderPlotly({
-      shiny::validate(
-        shiny::need(
-          !is.null(selected_features_with_mass()),
-          "Please select one or more features from the table to display the plot."
-        )
-      )
-
-      nts <- nts_data()
-      p <- plot_features_ms2(nts, features = selected_features(), filtered = TRUE)
-
-      shiny::validate(
-        shiny::need(
-          !is.null(p),
-          "No MS2 data available for the selected features."
-        )
-      )
-
-      plotly::layout(
-        p,
-        width = NULL,
-        autosize = TRUE,
-        margin = list(l = 50, r = 30, t = 30, b = 50),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor = "rgba(0,0,0,0)",
-        xaxis = list(
-          title = list(
-            text = "m/z",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        yaxis = list(
-          title = list(
-            text = "Intensity / Counts",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        )
-      ) %>%
-        plotly::config(
-          displayModeBar = TRUE,
-          displaylogo = FALSE,
-          responsive = TRUE
-        )
-    })
-
-    # MARK: XIC plot (map_features)
-    output$feature_xic_plot <- plotly::renderPlotly({
-      shiny::validate(
-        shiny::need(
-          !is.null(selected_features()),
-          "Please select one or more features from the table to display the plot."
-        )
-      )
-
-      nts <- nts_data()
-      p <- map_features(
-        nts,
-        features = selected_features(),
-        filtered = TRUE,
-        showDetails = TRUE
-      )
-
-      shiny::validate(
-        shiny::need(
-          !is.null(p),
-          "No XIC data available for the selected features."
-        )
-      )
-
-      plotly::layout(
-        p,
-        width = NULL,
-        autosize = TRUE,
-        margin = list(l = 50, r = 30, t = 30, b = 50),
-        paper_bgcolor = "rgba(0,0,0,0)",
-        plot_bgcolor = "rgba(0,0,0,0)",
-        xaxis = list(
-          title = list(
-            text = "Retention Time (RT)",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        ),
-        yaxis = list(
-          title = list(
-            text = "m/z",
-            font = list(size = 14, color = "#555")
-          ),
-          tickfont = list(size = 12),
-          gridcolor = "#eee"
-        )
-      ) %>%
-        plotly::config(
-          displayModeBar = TRUE,
-          displaylogo = FALSE,
-          responsive = TRUE
-        )
-    })
-
   })
 }

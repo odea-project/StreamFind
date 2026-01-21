@@ -89,8 +89,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // rcpp_nts_annotate_components
-Rcpp::List rcpp_nts_annotate_components(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, int maxIsotopes, int maxCharge, int maxGaps, std::string debugComponent, std::string debugAnalysis);
-RcppExport SEXP _StreamFind_rcpp_nts_annotate_components(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP maxGapsSEXP, SEXP debugComponentSEXP, SEXP debugAnalysisSEXP) {
+Rcpp::List rcpp_nts_annotate_components(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, int maxIsotopes, int maxCharge, int maxGaps, float ppm, std::string debugComponent, std::string debugAnalysis);
+RcppExport SEXP _StreamFind_rcpp_nts_annotate_components(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP maxIsotopesSEXP, SEXP maxChargeSEXP, SEXP maxGapsSEXP, SEXP ppmSEXP, SEXP debugComponentSEXP, SEXP debugAnalysisSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -100,9 +100,10 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type maxIsotopes(maxIsotopesSEXP);
     Rcpp::traits::input_parameter< int >::type maxCharge(maxChargeSEXP);
     Rcpp::traits::input_parameter< int >::type maxGaps(maxGapsSEXP);
+    Rcpp::traits::input_parameter< float >::type ppm(ppmSEXP);
     Rcpp::traits::input_parameter< std::string >::type debugComponent(debugComponentSEXP);
     Rcpp::traits::input_parameter< std::string >::type debugAnalysis(debugAnalysisSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_nts_annotate_components(info, spectra_headers, feature_list, maxIsotopes, maxCharge, maxGaps, debugComponent, debugAnalysis));
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_annotate_components(info, spectra_headers, feature_list, maxIsotopes, maxCharge, maxGaps, ppm, debugComponent, debugAnalysis));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -124,6 +125,31 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< bool >::type debug(debugSEXP);
     Rcpp::traits::input_parameter< float >::type debugRT(debugRTSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_nts_group_features_2(info, spectra_headers, feature_list, method, internal_standards_list, rtDeviation, ppm, minSamples, binSize, debug, debugRT));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_nts_fill_features_2
+Rcpp::List rcpp_nts_fill_features_2(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, bool withinReplicate, bool filtered, float rtExpand, float mzExpand, float maxPeakWidth, float minTracesIntensity, int minNumberTraces, float minIntensity, float rtApexDeviation, float minSignalToNoiseRatio, float minGaussianFit, std::string debugFG);
+RcppExport SEXP _StreamFind_rcpp_nts_fill_features_2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP withinReplicateSEXP, SEXP filteredSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP, SEXP maxPeakWidthSEXP, SEXP minTracesIntensitySEXP, SEXP minNumberTracesSEXP, SEXP minIntensitySEXP, SEXP rtApexDeviationSEXP, SEXP minSignalToNoiseRatioSEXP, SEXP minGaussianFitSEXP, SEXP debugFGSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< bool >::type withinReplicate(withinReplicateSEXP);
+    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
+    Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
+    Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
+    Rcpp::traits::input_parameter< float >::type maxPeakWidth(maxPeakWidthSEXP);
+    Rcpp::traits::input_parameter< float >::type minTracesIntensity(minTracesIntensitySEXP);
+    Rcpp::traits::input_parameter< int >::type minNumberTraces(minNumberTracesSEXP);
+    Rcpp::traits::input_parameter< float >::type minIntensity(minIntensitySEXP);
+    Rcpp::traits::input_parameter< float >::type rtApexDeviation(rtApexDeviationSEXP);
+    Rcpp::traits::input_parameter< float >::type minSignalToNoiseRatio(minSignalToNoiseRatioSEXP);
+    Rcpp::traits::input_parameter< float >::type minGaussianFit(minGaussianFitSEXP);
+    Rcpp::traits::input_parameter< std::string >::type debugFG(debugFGSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_fill_features_2(info, spectra_headers, feature_list, withinReplicate, filtered, rtExpand, mzExpand, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, rtApexDeviation, minSignalToNoiseRatio, minGaussianFit, debugFG));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -509,8 +535,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_load_features_ms1_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms1_2, 9},
     {"_StreamFind_rcpp_nts_load_features_ms2_2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms2_2, 8},
     {"_StreamFind_rcpp_nts_create_components", (DL_FUNC) &_StreamFind_rcpp_nts_create_components, 7},
-    {"_StreamFind_rcpp_nts_annotate_components", (DL_FUNC) &_StreamFind_rcpp_nts_annotate_components, 8},
+    {"_StreamFind_rcpp_nts_annotate_components", (DL_FUNC) &_StreamFind_rcpp_nts_annotate_components, 9},
     {"_StreamFind_rcpp_nts_group_features_2", (DL_FUNC) &_StreamFind_rcpp_nts_group_features_2, 11},
+    {"_StreamFind_rcpp_nts_fill_features_2", (DL_FUNC) &_StreamFind_rcpp_nts_fill_features_2, 15},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},

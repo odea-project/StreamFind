@@ -102,7 +102,7 @@ validate_object.MassSpecMethod_FillFeatures_StreamFind <- function(x) {
 
 #' @export
 #' @noRd
-#' 
+#'
 run.MassSpecMethod_FillFeatures_StreamFind <- function(x, engine = NULL) {
   if (!is(engine, "MassSpecEngine")) {
     warning("Engine is not a MassSpecEngine object!")

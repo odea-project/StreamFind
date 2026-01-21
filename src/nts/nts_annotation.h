@@ -135,7 +135,7 @@ namespace nts
           ADDUCT("NH4", 1, "[M+NH4]+", 18.033823, 1),
           ADDUCT("Cl", -1, "[M+Cl]-", 34.969402, 1),
           ADDUCT("Br", -1, "[M+Br]-", 78.918885, 1),
-          ADDUCT("CHO2", -1, "[M+CHO2]-", 44.998201, 1)};
+          ADDUCT("CHO2", -1, "[M+CHO2]-", 44.998201, 1)}; // Formate adduct
 
       float neutralizer(const int &pol);
       std::vector<ADDUCT> adducts(const int &pol);
@@ -177,8 +177,8 @@ namespace nts
       void clear();
       int size() const;
       void sort_by_mz();
-      std::vector<float> get_chain_mzr() const;
-      float get_max_mzr() const;
+      std::vector<float> get_chain_mzr(float ppm) const;
+      float get_max_mzr(float ppm) const;
 
       void find_isotopic_candidates(const nts::FEATURE &ft,
                                      const nts::FEATURES &fts,
@@ -190,22 +190,21 @@ namespace nts
       void annotate_isotopes(const ISOTOPE_COMBINATIONS &combinations,
                               const int &maxIsotopes,
                               const int &maxCharge,
-                              const int &maxGaps,
-                              bool debug = false);
+                              const int &maxGaps,                             float ppm,                              bool debug = false);
 
       void find_adduct_candidates(const nts::FEATURE &ft,
                                    const nts::FEATURES &fts,
                                    const int &ft_index,
                                    const std::vector<int> *component_indices = nullptr);
 
-      void annotate_adducts();
+      void annotate_adducts(float ppm, bool debug = false);
 
       void find_fragment_candidates(const nts::FEATURE &ft,
                                      const nts::FEATURES &fts,
                                      const int &ft_index,
                                      const std::vector<int> *component_indices = nullptr);
 
-      void annotate_fragments();
+      void annotate_fragments(float ppm, bool debug = false);
     };
 
     // Helper function
@@ -216,6 +215,7 @@ namespace nts
         int maxIsotopes,
         int maxCharge,
         int maxGaps,
+        float ppm,
         const std::string &debugComponent = "",
         const std::string &debugAnalysis = "");
 

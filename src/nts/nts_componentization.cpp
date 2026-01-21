@@ -126,19 +126,15 @@ namespace nts
       const float left_offset = rtWindow.size() >= 1 ? rtWindow[0] : 0.0f;
       const float right_offset = rtWindow.size() >= 2 ? rtWindow[1] : 0.0f;
 
-      // Initialize debug logging if debugRT is specified
       const bool debug_mode = debugRT > 0.0f;
       if (debug_mode) {
         std::ostringstream log_filename;
         log_filename << "log/debug_log_create_components_"
                      << std::fixed << std::setprecision(2) << debugRT << ".log";
         utils::init_debug_log(log_filename.str(), "=== Component Creation Debug Log ===\n");
-        DEBUG_OUT("Debugging components with RT: " << debugRT
-                  << " (window: " << left_offset << " to " << right_offset << ")\n");
-        if (!debugAnalysis.empty()) {
-          DEBUG_OUT("Filtering for analysis: " << debugAnalysis << "\n");
-        }
       }
+
+      bool debug_triggered = false;
 
       for (size_t i = 0; i < nts_data.features.size(); ++i)
       {
@@ -150,259 +146,356 @@ namespace nts
           continue;
         }
 
-        // Initialize component counter for this analysis
-        int component_counter = 1;
-
-        // Skip this analysis if debugAnalysis is specified and doesn't match
         const bool debug_this_analysis = debugAnalysis.empty() ||
                                          (i < nts_data.analyses.size() && nts_data.analyses[i] == debugAnalysis);
         const bool should_debug = debug_mode && debug_this_analysis;
 
-        struct Interval
-        {
-          float start;
-          float end;
-          int idx;
-          float rt_center;
-        };
+        if (should_debug && !debug_triggered) {
+          debug_triggered = true;
+          const std::string analysis_name = i < nts_data.analyses.size() ? nts_data.analyses[i] : std::to_string(i);
+          Rcpp::Rcout << "Debugging components: Analysis '" << analysis_name
+                      << "' RT=" << debugRT << " (window " << left_offset << " to " << right_offset
+                      << ") -> [" << (debugRT + left_offset) << ", " << (debugRT + right_offset) << "]" << std::endl;
+          DEBUG_OUT("\nDebugging analysis: " << analysis_name << "\n");
+        }
 
-        std::vector<Interval> intervals;
-        intervals.reserve(n);
-
+        std::map<int, std::vector<int>> polarity_groups;
         for (int j = 0; j < n; ++j)
         {
           const FEATURE &ft = fts.get_feature(j);
-
-          const float start = ft.rt + left_offset;
-          const float end = ft.rt + right_offset;
-
-          intervals.push_back({start, end, j, ft.rt});
-
-          // Debug features within the debug RT window
-          if (should_debug && ft.rt >= (debugRT + left_offset) && ft.rt <= (debugRT + right_offset)) {
-            DEBUG_LOG("Analysis " << (i < nts_data.analyses.size() ? nts_data.analyses[i] : std::to_string(i)) << ": Feature " << ft.feature
-                      << " at RT=" << ft.rt << " (mz=" << ft.mz
-                      << ", intensity=" << ft.intensity << ")\n");
-          }
+          polarity_groups[ft.polarity].push_back(j);
         }
 
-        std::sort(intervals.begin(), intervals.end(), [](const Interval &a, const Interval &b) {
-          if (a.start == b.start)
-          {
-            return a.end < b.end;
-          }
-          return a.start < b.start;
-        });
-
-        std::vector<std::vector<int>> clusters;
-        std::vector<float> cluster_rt_sum;
-        std::vector<int> cluster_counts;
-
-        // Use an anchor interval per cluster to avoid long chains of overlaps
-        float anchor_start = intervals[0].start;
-        float anchor_end = intervals[0].end;
-
-        clusters.push_back({intervals[0].idx});
-        cluster_rt_sum.push_back(intervals[0].rt_center);
-        cluster_counts.push_back(1);
-
-        for (size_t j = 1; j < intervals.size(); ++j)
+        for (const auto &[polarity, feature_indices] : polarity_groups)
         {
-          const Interval &intv = intervals[j];
+          if (feature_indices.empty()) continue;
 
-          const bool overlaps_anchor = intv.start <= anchor_end && intv.end >= anchor_start;
+          int component_counter = 1;
 
-          if (overlaps_anchor)
-          {
-            clusters.back().push_back(intv.idx);
-            cluster_rt_sum.back() += intv.rt_center;
-            cluster_counts.back() += 1;
-          }
-          else
-          {
-            clusters.push_back({intv.idx});
-            cluster_rt_sum.push_back(intv.rt_center);
-            cluster_counts.push_back(1);
-            anchor_start = intv.start;
-            anchor_end = intv.end;
-          }
-        }
-
-        // Further subdivide clusters based on EIC correlation
-        for (size_t c = 0; c < clusters.size(); ++c)
-        {
-          const std::vector<int> &cluster = clusters[c];
-
-          // Check if this cluster contains features in the debug RT window
-          bool debug_this_cluster = false;
-          if (should_debug) {
-            for (const int idx : cluster) {
-              const FEATURE &ft = fts.get_feature(idx);
-              if (ft.rt >= (debugRT + left_offset) && ft.rt <= (debugRT + right_offset)) {
-                debug_this_cluster = true;
-                break;
-              }
-            }
-            if (debug_this_cluster) {
-              DEBUG_LOG("\n--- Analysis " << (i < nts_data.analyses.size() ? nts_data.analyses[i] : std::to_string(i))
-                        << ": Processing Cluster " << c << " (" << cluster.size() << " features) ---\n");
-              for (const int idx : cluster) {
-                const FEATURE &ft = fts.get_feature(idx);
-                DEBUG_LOG("  Feature " << ft.feature << ": RT=" << ft.rt
-                          << ", mz=" << ft.mz << ", intensity=" << ft.intensity << "\n");
-              }
-            }
+          // Determine polarity suffix
+          std::string polarity_suffix;
+          if (polarity > 0) {
+            polarity_suffix = "_POS";
+          } else if (polarity < 0) {
+            polarity_suffix = "_NEG";
+          } else {
+            polarity_suffix = "";
           }
 
-          if (cluster.size() == 1 || minCorrelation <= 0.0f) {
-            // No subdivision needed
-            const float mean_rt = cluster_rt_sum[c] / static_cast<float>(cluster_counts[c]);
-            std::ostringstream oss;
-            oss << "FC" << component_counter++ << "_RT" << std::fixed << std::setprecision(0) << mean_rt;
-            const std::string component_id = oss.str();
-
-            for (const int idx : cluster) {
-              FEATURE ft = fts.get_feature(idx);
-              ft.feature_component = component_id;
-              fts.set_feature(idx, ft);
-            }
-            continue;
-          }
-
-          // Build correlation matrix and decode EICs once
-          struct FeatureEIC {
+          struct FeatureRT {
             int idx;
             float rt;
-            std::vector<float> eic_rt;
-            std::vector<float> eic_int;
           };
 
-          std::vector<FeatureEIC> feature_eics;
-          feature_eics.reserve(cluster.size());
+          std::vector<FeatureRT> sorted_features;
+          sorted_features.reserve(feature_indices.size());
 
-          for (const int idx : cluster) {
-            const FEATURE &ft = fts.get_feature(idx);
-            FeatureEIC feic;
-            feic.idx = idx;
-            feic.rt = ft.rt;
-            feic.eic_rt = decode_eic_base64(ft.eic_rt);
-            feic.eic_int = decode_eic_base64(ft.eic_intensity);
-            if (!feic.eic_rt.empty() && !feic.eic_int.empty()) {
-              feature_eics.push_back(feic);
-            }
+          for (int j : feature_indices) {
+            const FEATURE &ft = fts.get_feature(j);
+            sorted_features.push_back({j, ft.rt});
           }
 
-          if (feature_eics.size() <= 1) {
-            // All features lack valid EICs, keep them together
-            const float mean_rt = cluster_rt_sum[c] / static_cast<float>(cluster_counts[c]);
-            std::ostringstream oss;
-            oss << "FC" << component_counter++ << "_RT" << std::fixed << std::setprecision(0) << mean_rt;
-            const std::string component_id = oss.str();
+          std::sort(sorted_features.begin(), sorted_features.end(),
+                    [](const FeatureRT &a, const FeatureRT &b) {
+                      return a.rt < b.rt;
+                    });
+
+          // Sliding window: each unassigned feature seeds a cluster within RT window
+          std::vector<bool> assigned(sorted_features.size(), false);
+
+          for (size_t cluster_idx = 0; cluster_idx < sorted_features.size(); ++cluster_idx) {
+            if (assigned[cluster_idx]) continue;
+
+            const float seed_rt = sorted_features[cluster_idx].rt;
+            const float window_start = seed_rt + left_offset;
+            const float window_end = seed_rt + right_offset;
+
+            std::vector<int> cluster;
+            float rt_sum = 0.0f;
+
+            // Collect unassigned features within RT window
+            for (size_t j = cluster_idx; j < sorted_features.size(); ++j) {
+              if (assigned[j]) continue;
+
+              const float ft_rt = sorted_features[j].rt;
+
+              if (ft_rt > window_end) break;
+
+              // Include if within window
+              if (ft_rt >= window_start && ft_rt <= window_end) {
+                cluster.push_back(sorted_features[j].idx);
+                rt_sum += ft_rt;
+              }
+            }
+
+            if (cluster.empty()) continue;
+
+            const int cluster_count = static_cast<int>(cluster.size());
+            const float cluster_rt_mean = rt_sum / static_cast<float>(cluster_count);
+
+            // Debug if any feature falls within the debug RT window
+            bool debug_this_cluster = false;
+            if (should_debug) {
+              for (const int idx : cluster) {
+                const FEATURE &ft = fts.get_feature(idx);
+                if (ft.rt >= (debugRT + left_offset) && ft.rt <= (debugRT + right_offset)) {
+                  debug_this_cluster = true;
+                  break;
+                }
+              }
+              if (debug_this_cluster) {
+                DEBUG_LOG("\n--- Analysis " << (i < nts_data.analyses.size() ? nts_data.analyses[i] : std::to_string(i))
+                          << " [Polarity=" << polarity << "]: Processing Cluster starting at RT=" << seed_rt
+                          << " (" << cluster.size() << " features) ---\n");
+                DEBUG_LOG("  Sliding window cluster starting from seed RT=" << seed_rt
+                          << " with window [" << window_start << ", "
+                          << window_end << "]\n");
+                for (const int idx : cluster) {
+                  const FEATURE &ft = fts.get_feature(idx);
+                  const bool in_debug_window = ft.rt >= (debugRT + left_offset) && ft.rt <= (debugRT + right_offset);
+                  DEBUG_LOG("  Feature " << ft.feature << ": RT=" << ft.rt
+                            << ", mz=" << ft.mz << ", intensity=" << ft.intensity
+                            << (in_debug_window ? " [IN DEBUG WINDOW]" : "") << "\n");
+                }
+              }
+            }
+
+            if (cluster.size() == 1 || minCorrelation <= 0.0f) {
+              std::ostringstream oss;
+              oss << "FC" << component_counter++ << "_RT" << std::fixed << std::setprecision(0) << cluster_rt_mean << polarity_suffix;
+              const std::string component_id = oss.str();
+
+              for (const int idx : cluster) {
+                FEATURE ft = fts.get_feature(idx);
+                ft.feature_component = component_id;
+                fts.set_feature(idx, ft);
+
+                // Mark as assigned
+                for (size_t k = 0; k < sorted_features.size(); ++k) {
+                  if (sorted_features[k].idx == idx) {
+                    assigned[k] = true;
+                    break;
+                  }
+                }
+              }
+              continue;
+            }
+
+            // Decode EICs for correlation analysis
+            struct FeatureEIC {
+              int idx;
+              float rt;
+              std::vector<float> eic_rt;
+              std::vector<float> eic_int;
+            };
+
+            std::vector<FeatureEIC> feature_eics;
+            feature_eics.reserve(cluster.size());
 
             for (const int idx : cluster) {
-              FEATURE ft = fts.get_feature(idx);
-              ft.feature_component = component_id;
-              fts.set_feature(idx, ft);
-            }
-            continue;
-          }
-
-          // Perform hierarchical clustering based on correlation
-          std::vector<std::vector<int>> sub_clusters;
-          std::vector<bool> assigned(feature_eics.size(), false);
-
-          for (size_t seed = 0; seed < feature_eics.size(); ++seed) {
-            if (assigned[seed]) continue;
-
-            std::vector<int> sub_cluster;
-            sub_cluster.push_back(seed);
-            assigned[seed] = true;
-
-            if (debug_this_cluster && should_debug) {
-              DEBUG_LOG("\n  Sub-cluster with seed feature "
-                        << fts.get_feature(feature_eics[seed].idx).feature
-                        << " (RT=" << feature_eics[seed].rt << "):\n");
+              const FEATURE &ft = fts.get_feature(idx);
+              FeatureEIC feic;
+              feic.idx = idx;
+              feic.rt = ft.rt;
+              feic.eic_rt = decode_eic_base64(ft.eic_rt);
+              feic.eic_int = decode_eic_base64(ft.eic_intensity);
+              if (!feic.eic_rt.empty() && !feic.eic_int.empty()) {
+                feature_eics.push_back(feic);
+              }
             }
 
-            // Find all features that correlate well with the seed
-            for (size_t candidate = seed + 1; candidate < feature_eics.size(); ++candidate) {
-              if (assigned[candidate]) continue;
+            if (feature_eics.size() <= 1) {
+              std::ostringstream oss;
+              oss << "FC" << component_counter++ << "_RT" << std::fixed << std::setprecision(0) << cluster_rt_mean << polarity_suffix;
+              const std::string component_id = oss.str();
 
-              // Check correlation with seed
-              const auto &eic_seed = feature_eics[seed];
-              const auto &eic_cand = feature_eics[candidate];
+              for (const int idx : cluster) {
+                FEATURE ft = fts.get_feature(idx);
+                ft.feature_component = component_id;
+                fts.set_feature(idx, ft);
 
-              auto [aligned1, aligned2] = align_eics_by_rt(
-                eic_seed.eic_rt, eic_seed.eic_int,
-                eic_cand.eic_rt, eic_cand.eic_int
-              );
-
-              if (aligned1.size() >= 3) {
-                const float corr = calculate_pearson_correlation(aligned1, aligned2);
-
-                if (debug_this_cluster && should_debug) {
-                  DEBUG_LOG("    Feature " << fts.get_feature(feature_eics[candidate].idx).feature
-                            << " (RT=" << feature_eics[candidate].rt << "): correlation="
-                            << corr << " (aligned points: " << aligned1.size() << ")");
+                // Mark as assigned
+                for (size_t k = 0; k < sorted_features.size(); ++k) {
+                  if (sorted_features[k].idx == idx) {
+                    assigned[k] = true;
+                    break;
+                  }
                 }
+              }
+              continue;
+            }
 
-                if (corr >= minCorrelation) {
-                  sub_cluster.push_back(candidate);
-                  assigned[candidate] = true;
+            // Hierarchical clustering based on correlation
+            std::vector<std::vector<int>> sub_clusters;
+            std::vector<bool> eic_assigned(feature_eics.size(), false);
+
+            for (size_t seed = 0; seed < feature_eics.size(); ++seed) {
+              if (eic_assigned[seed]) continue;
+
+              std::vector<int> sub_cluster;
+              sub_cluster.push_back(seed);
+              eic_assigned[seed] = true;
+
+              if (debug_this_cluster && should_debug) {
+                DEBUG_LOG("\n  Sub-cluster with seed feature "
+                          << fts.get_feature(feature_eics[seed].idx).feature
+                          << " (RT=" << feature_eics[seed].rt << "):\n");
+              }
+
+              const float sub_seed_rt = feature_eics[seed].rt;
+              const float sub_window_start = sub_seed_rt + left_offset;
+              const float sub_window_end = sub_seed_rt + right_offset;
+
+              // Check correlation with features in cluster
+              for (size_t candidate = seed + 1; candidate < feature_eics.size(); ++candidate) {
+                if (eic_assigned[candidate]) continue;
+
+                // Check correlation with seed
+                const auto &eic_seed = feature_eics[seed];
+                const auto &eic_cand = feature_eics[candidate];
+
+                auto [aligned1, aligned2] = align_eics_by_rt(
+                  eic_seed.eic_rt, eic_seed.eic_int,
+                  eic_cand.eic_rt, eic_cand.eic_int
+                );
+
+                if (aligned1.size() >= 3) {
+                  const float corr = calculate_pearson_correlation(aligned1, aligned2);
+
                   if (debug_this_cluster && should_debug) {
-                    DEBUG_LOG(" -> GROUPED\n");
+                    DEBUG_LOG("    Feature " << fts.get_feature(feature_eics[candidate].idx).feature
+                              << " (RT=" << feature_eics[candidate].rt << "): correlation="
+                              << corr << " (aligned points: " << aligned1.size() << ")");
+                  }
+
+                  if (corr >= minCorrelation) {
+                    sub_cluster.push_back(candidate);
+                    eic_assigned[candidate] = true;
+                    if (debug_this_cluster && should_debug) {
+                      DEBUG_LOG(" -> GROUPED\n");
+                    }
+                  } else {
+                    if (debug_this_cluster && should_debug) {
+                      DEBUG_LOG(" -> SEPARATED\n");
+                    }
                   }
                 } else {
                   if (debug_this_cluster && should_debug) {
-                    DEBUG_LOG(" -> SEPARATED\n");
+                    DEBUG_LOG("    Feature " << fts.get_feature(feature_eics[candidate].idx).feature
+                              << " (RT=" << feature_eics[candidate].rt << "): insufficient overlap ("
+                              << aligned1.size() << " points)\n");
                   }
                 }
-              } else {
-                if (debug_this_cluster && should_debug) {
-                  DEBUG_LOG("    Feature " << fts.get_feature(feature_eics[candidate].idx).feature
-                            << " (RT=" << feature_eics[candidate].rt << "): insufficient overlap ("
-                            << aligned1.size() << " points)\n");
+              }
+
+              // Expansion: search for additional features within sub-seed's RT window
+              for (size_t k = 0; k < sorted_features.size(); ++k) {
+                if (assigned[k]) continue;
+
+                const int feat_idx = sorted_features[k].idx;
+
+                // Check if feature already in current cluster
+                bool already_in_cluster = false;
+                for (const auto &feic : feature_eics) {
+                  if (feic.idx == feat_idx) {
+                    already_in_cluster = true;
+                    break;
+                  }
+                }
+                if (already_in_cluster) continue;
+
+                const FEATURE &ft = fts.get_feature(feat_idx);
+
+                // Check if within sub-seed's RT window
+                if (ft.rt >= sub_window_start && ft.rt <= sub_window_end) {
+                  // Decode EIC for this additional feature
+                  FeatureEIC additional_feic;
+                  additional_feic.idx = feat_idx;
+                  additional_feic.rt = ft.rt;
+                  additional_feic.eic_rt = decode_eic_base64(ft.eic_rt);
+                  additional_feic.eic_int = decode_eic_base64(ft.eic_intensity);
+
+                  if (!additional_feic.eic_rt.empty() && !additional_feic.eic_int.empty()) {
+                    const auto &eic_seed = feature_eics[seed];
+
+                    auto [aligned1, aligned2] = align_eics_by_rt(
+                      eic_seed.eic_rt, eic_seed.eic_int,
+                      additional_feic.eic_rt, additional_feic.eic_int
+                    );
+
+                    if (aligned1.size() >= 3) {
+                      const float corr = calculate_pearson_correlation(aligned1, aligned2);
+
+                      if (debug_this_cluster && should_debug) {
+                        DEBUG_LOG("    [EXPANDED] Feature " << ft.feature
+                                  << " (RT=" << additional_feic.rt << "): correlation="
+                                  << corr << " (aligned points: " << aligned1.size() << ")");
+                      }
+
+                      if (corr >= minCorrelation) {
+                        const int new_idx = static_cast<int>(feature_eics.size());
+                        feature_eics.push_back(additional_feic);
+                        eic_assigned.push_back(true);
+                        sub_cluster.push_back(new_idx);
+                        assigned[k] = true;
+
+                        if (debug_this_cluster && should_debug) {
+                          DEBUG_LOG(" -> GROUPED (EXPANDED)\n");
+                        }
+                      } else {
+                        if (debug_this_cluster && should_debug) {
+                          DEBUG_LOG(" -> SEPARATED\n");
+                        }
+                      }
+                    }
+                  }
                 }
               }
+
+              sub_clusters.push_back(sub_cluster);
             }
 
-            sub_clusters.push_back(sub_cluster);
-          }
+            // Assign component IDs to sub-clusters and mark features as assigned
+            for (size_t sc = 0; sc < sub_clusters.size(); ++sc) {
+              const auto &sub_cluster = sub_clusters[sc];
+              float sub_rt_sum = 0.0f;
+              for (int sub_idx : sub_cluster) {
+                sub_rt_sum += feature_eics[sub_idx].rt;
+              }
+              const float mean_rt = sub_rt_sum / static_cast<float>(sub_cluster.size());
 
-          // Assign component IDs to sub-clusters
-          for (size_t sc = 0; sc < sub_clusters.size(); ++sc) {
-            const auto &sub_cluster = sub_clusters[sc];
-            float sub_rt_sum = 0.0f;
-            for (int sub_idx : sub_cluster) {
-              sub_rt_sum += feature_eics[sub_idx].rt;
-            }
-            const float mean_rt = sub_rt_sum / static_cast<float>(sub_cluster.size());
-
-            std::ostringstream oss;
-            oss << "FC" << component_counter++ << "_RT" << std::fixed << std::setprecision(0) << mean_rt;
-            const std::string component_id = oss.str();
-
-            if (debug_this_cluster && should_debug) {
-              DEBUG_LOG("\n  Final Component " << component_id << " ("
-                        << sub_cluster.size() << " features):\n");
-            }
-
-            for (int sub_idx : sub_cluster) {
-              FEATURE ft = fts.get_feature(feature_eics[sub_idx].idx);
-              ft.feature_component = component_id;
-              fts.set_feature(feature_eics[sub_idx].idx, ft);
+              std::ostringstream oss;
+              oss << "FC" << component_counter++ << "_RT" << std::fixed << std::setprecision(0) << mean_rt << polarity_suffix;
+              const std::string component_id = oss.str();
 
               if (debug_this_cluster && should_debug) {
-                DEBUG_LOG("    " << ft.feature << " (RT=" << ft.rt << ")\n");
+                DEBUG_LOG("\n  Final Component " << component_id << " ("
+                          << sub_cluster.size() << " features):\n");
+              }
+
+              for (int sub_idx : sub_cluster) {
+                const int feature_idx = feature_eics[sub_idx].idx;
+                FEATURE ft = fts.get_feature(feature_idx);
+                ft.feature_component = component_id;
+                fts.set_feature(feature_idx, ft);
+
+                for (size_t k = 0; k < sorted_features.size(); ++k) {
+                  if (sorted_features[k].idx == feature_idx) {
+                    assigned[k] = true;
+                    break;
+                  }
+                }
+
+                if (debug_this_cluster && should_debug) {
+                  DEBUG_LOG("    " << ft.feature << " (RT=" << ft.rt << ")\n");
+                }
               }
             }
           }
         }
       }
 
-      // Close debug log if it was opened
       if (debug_mode) {
-        DEBUG_OUT("\nDebug log closed.\n");
         utils::close_debug_log();
       }
     }

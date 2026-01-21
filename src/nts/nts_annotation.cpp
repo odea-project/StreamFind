@@ -246,32 +246,36 @@ namespace nts
       indices = indices_sorted;
     }
 
-    std::vector<float> CANDIDATE_CHAIN::get_chain_mzr() const
+    std::vector<float> CANDIDATE_CHAIN::get_chain_mzr(float ppm) const
     {
       if (chain.size() == 0)
         return std::vector<float>();
 
       std::vector<float> mzr(chain.size());
+      const float min_ppm = 10.0f;
 
       for (size_t i = 0; i < chain.size(); i++)
       {
-        float left = chain[i].mz - chain[i].mzmin;
-        float right = chain[i].mzmax - chain[i].mz;
-        mzr[i] = left;
-        if (left < right)
-        {
-          mzr[i] = right;
+        float fwhm_mz = chain[i].fwhm_mz;
+        float mz = chain[i].mz;
+        float fwhm_ppm = (fwhm_mz / mz) * 1e6f;
+
+        // Use fwhm_mz / 2 if it's larger than min_ppm, otherwise use min_ppm
+        if (fwhm_ppm >= min_ppm) {
+          mzr[i] = fwhm_mz / 2.0f;
+        } else {
+          mzr[i] = (min_ppm * mz) / 1e6f;
         }
       }
       return mzr;
     }
 
-    float CANDIDATE_CHAIN::get_max_mzr() const
+    float CANDIDATE_CHAIN::get_max_mzr(float ppm) const
     {
       if (chain.size() == 0)
         return 0.0;
 
-      std::vector<float> mzr = this->get_chain_mzr();
+      std::vector<float> mzr = this->get_chain_mzr(ppm);
       float max_mzr = *std::max_element(mzr.begin(), mzr.end());
       return max_mzr;
     }
@@ -339,10 +343,11 @@ namespace nts
                                              const int &maxIsotopes,
                                              const int &maxCharge,
                                              const int &maxGaps,
+                                             float ppm,
                                              bool debug)
     {
       bool is_Mplus = false;
-      float mzr = this->get_max_mzr();
+      float mzr = this->get_max_mzr(ppm);
       const int number_candidates = chain.size();
       FEATURE mono_ion = chain[0];
 
@@ -725,23 +730,25 @@ namespace nts
       }
     }
 
-    void CANDIDATE_CHAIN::annotate_adducts()
+    void CANDIDATE_CHAIN::annotate_adducts(float ppm, bool debug)
     {
       ADDUCT_SET all_adducts;
       const int &pol = chain[0].polarity;
       const float neutralizer = all_adducts.neutralizer(pol);
       std::vector<ADDUCT> adducts = all_adducts.adducts(pol);
       const int number_candidates = chain.size();
-      const std::vector<float> &mzr = this->get_chain_mzr();
+      const std::vector<float> &mzr = this->get_chain_mzr(ppm);
       const float &mion_mz = chain[0].mz;
       const float &mion_mzr = mzr[0];
 
-      // Find the [M+H]+ feature in the chain to reference its mass
+      // Find the monoisotopic ion ([M+H]+ or [M-H]-) in the chain to reference its mass
       int mh_index = -1;
       float mh_mz = 0.0f;
+      std::string base_adduct = (pol == 1) ? "[M+H]+" : "[M-H]-";
+
       for (int c = 0; c < number_candidates; ++c)
       {
-        if (chain[c].adduct == "[M+H]+")
+        if (chain[c].adduct == base_adduct)
         {
           mh_index = c;
           mh_mz = chain[c].mz;
@@ -765,12 +772,19 @@ namespace nts
           const float &mz = chain[c].mz;
           const float exp_mass_distance = mz - (mion_mz + neutralizer);
           const float mass_error = std::abs(exp_mass_distance - adduct_mass_distance);
+          const float mass_error_ppm = (mass_error / mz) * 1e6f;
 
           if (mass_error < mion_mzr)
           {
-            // If we found an [M+H]+ in the chain and this is not the [M+H]+,
-            // format as adduct MZXXX [M+Element]+ to show the relationship
-            if (mh_index >= 0 && adduct.cat != "[M+H]+")
+            if (debug)
+            {
+              DEBUG_LOG("      -> Assigning adduct " << adduct.cat << " to " << chain[c].feature
+                        << " (mass_error=" << mass_error << ", mass_error_ppm=" << mass_error_ppm << ")" << std::endl);
+            }
+
+            // If we found the monoisotopic ion in the chain and this is not that ion,
+            // format as adduct MZXXX [M+Element] to show the relationship
+            if (mh_index >= 0 && adduct.cat != base_adduct)
             {
               std::ostringstream oss;
               oss << "adduct MZ" << std::round(mh_mz) << " " << adduct.cat;
@@ -825,13 +839,13 @@ namespace nts
       }
     }
 
-    void CANDIDATE_CHAIN::annotate_fragments()
+    void CANDIDATE_CHAIN::annotate_fragments(float ppm, bool debug)
     {
       FRAGMENT_LOSS_SET all_losses;
       const int &pol = chain[0].polarity;
       std::vector<FRAGMENT_LOSS> losses = all_losses.losses(pol);
       const int number_candidates = chain.size();
-      const std::vector<float> &mzr = this->get_chain_mzr();
+      const std::vector<float> &mzr = this->get_chain_mzr(ppm);
       const float &parent_mz = chain[0].mz;
       const float &parent_mzr = mzr[0];
 
@@ -851,9 +865,16 @@ namespace nts
           const float &mz = chain[c].mz;
           const float exp_mass_loss = parent_mz - mz;
           const float mass_error = std::abs(exp_mass_loss - loss_mass);
+          const float mass_error_ppm = (mass_error / mz) * 1e6f;
 
           if (mass_error < parent_mzr)
           {
+            if (debug)
+            {
+              DEBUG_LOG("      -> Assigning fragment loss -" << loss.formula << " to " << chain[c].feature
+                        << " (mass_error=" << mass_error << ", mass_error_ppm=" << mass_error_ppm << ")" << std::endl);
+            }
+
             // Format as "loss MZXXX -Formula"
             std::ostringstream oss;
             oss << "loss MZ" << std::round(parent_mz) << " -" << loss.formula;
@@ -870,6 +891,7 @@ namespace nts
         int maxIsotopes,
         int maxCharge,
         int maxGaps,
+        float ppm,
         const std::string &debugComponent,
         const std::string &debugAnalysis)
     {
@@ -1053,7 +1075,7 @@ namespace nts
 
             if (number_candidates > 1)
             {
-              candidates_chain.annotate_isotopes(combinations, maxIsotopes, maxCharge, maxGaps, debug_this_component);
+              candidates_chain.annotate_isotopes(combinations, maxIsotopes, maxCharge, maxGaps, ppm, debug_this_component);
 
               if (debug_this_component)
               {
@@ -1114,13 +1136,46 @@ namespace nts
             const int main_ft_idx = component_indices[i];
             nts::FEATURE main_ft = fts.get_feature(main_ft_idx);
 
-            // Skip if already annotated with adduct (contains " + ")
+            // Skip if annotated as isotope
+            if (main_ft.adduct.find("isotope") == 0)
+            {
+              if (debug_this_component)
+              {
+                DEBUG_LOG("\n--- Skipping feature [" << i << "] " << main_ft.feature
+                          << " - already annotated as isotope: " << main_ft.adduct << std::endl);
+              }
+              continue;
+            }
+
+            // Skip if already annotated as adduct
+            if (main_ft.adduct.find("adduct MZ") == 0)
+            {
+              if (debug_this_component)
+              {
+                DEBUG_LOG("\n--- Skipping feature [" << i << "] " << main_ft.feature
+                          << " - already annotated as adduct: " << main_ft.adduct << std::endl);
+              }
+              continue;
+            }
+
+            // Skip if already annotated as loss/fragment
+            if (main_ft.adduct.find("loss MZ") == 0)
+            {
+              if (debug_this_component)
+              {
+                DEBUG_LOG("\n--- Skipping feature [" << i << "] " << main_ft.feature
+                          << " - already annotated as loss: " << main_ft.adduct << std::endl);
+              }
+              continue;
+            }
+
+            // Skip if already annotated with complex adduct (contains " + ")
             if (main_ft.adduct.find(" + ") != std::string::npos)
             {
               if (debug_this_component)
               {
                 DEBUG_LOG("\n--- Skipping feature [" << i << "] " << main_ft.feature
-                          << " - already has adduct annotation: " << main_ft.adduct << std::endl);
+                          << " - already has complex adduct annotation: " << main_ft.adduct << std::endl);
               }
               continue;
             }
@@ -1140,15 +1195,17 @@ namespace nts
 
             if (number_candidates > 1)
             {
-              adduct_candidates_chain.annotate_adducts();
+              adduct_candidates_chain.annotate_adducts(ppm, debug_this_component);
 
               if (debug_this_component)
               {
                 DEBUG_LOG("  After adduct annotation:" << std::endl);
                 for (size_t c = 0; c < adduct_candidates_chain.chain.size(); c++)
                 {
-                  DEBUG_LOG("    Chain[" << c << "]: " << adduct_candidates_chain.chain[c].feature
-                            << " adduct=\"" << adduct_candidates_chain.chain[c].adduct << "\"" << std::endl);
+                  const auto &ft = adduct_candidates_chain.chain[c];
+                  DEBUG_LOG("    Chain[" << c << "]: " << ft.feature
+                            << " adduct=\"" << ft.adduct << "\"");
+                  DEBUG_LOG(std::endl);
                 }
               }
 
@@ -1236,15 +1293,17 @@ namespace nts
 
             if (number_candidates > 1)
             {
-              fragment_candidates_chain.annotate_fragments();
+              fragment_candidates_chain.annotate_fragments(ppm, debug_this_component);
 
               if (debug_this_component)
               {
                 DEBUG_LOG("  After fragment annotation:" << std::endl);
                 for (size_t c = 0; c < fragment_candidates_chain.chain.size(); c++)
                 {
-                  DEBUG_LOG("    Chain[" << c << "]: " << fragment_candidates_chain.chain[c].feature
-                            << " adduct=\"" << fragment_candidates_chain.chain[c].adduct << "\"" << std::endl);
+                  const auto &ft = fragment_candidates_chain.chain[c];
+                  DEBUG_LOG("    Chain[" << c << "]: " << ft.feature
+                            << " adduct=\"" << ft.adduct << "\"");
+                  DEBUG_LOG(std::endl);
                 }
               }
 

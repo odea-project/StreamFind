@@ -1446,6 +1446,7 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
       feature = features$feature[i],
       name = features$name[i],
       formula = if ("formula" %in% colnames(suspect_db)) suspect_db$formula else NA_character_,
+      polarity = features$polarity[i],
       db_mass = NA_real_,
       exp_mass = features$mass[i],
       error_mass = NA_real_,
@@ -1744,8 +1745,8 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
 
   # Reorder columns to put replicate, feature_group, feature_component, and adduct after feature
   col_order <- c(
-    "analysis", "replicate", "feature", "feature_group", "feature_component", "adduct",
-    setdiff(colnames(internal_standards), c("analysis", "replicate", "feature", "feature_group", "feature_component", "adduct"))
+    "analysis", "replicate", "feature", "feature_group", "feature_component", "adduct", "polarity",
+    setdiff(colnames(internal_standards), c("analysis", "replicate", "feature", "feature_group", "feature_component", "adduct", "polarity"))
   )
   data.table::setcolorder(internal_standards, col_order)
 
@@ -1905,6 +1906,7 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
     feature VARCHAR,
     name VARCHAR,
     formula VARCHAR,
+    polarity INTEGER,
     db_mass DOUBLE,
     exp_mass DOUBLE,
     error_mass DOUBLE,
@@ -1940,6 +1942,7 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
         feature = "VARCHAR",
         name = "VARCHAR",
         formula = "VARCHAR",
+        polarity = "INTEGER",
         db_mass = "DOUBLE",
         exp_mass = "DOUBLE",
         error_mass = "DOUBLE",

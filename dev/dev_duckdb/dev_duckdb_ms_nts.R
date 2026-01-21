@@ -5,7 +5,7 @@ dbsus <- db[!grepl("IS", db$tag), ]
 
 ms_files <- StreamFindData::get_ms_file_paths()
 ms_files <- ms_files[grepl("ww_", ms_files)]
-ms_files <- ms_files[grepl("pos_", ms_files)]
+#ms_files <- ms_files[grepl("pos_", ms_files)]
 
 root <- file.path("dev", "dev_duckdb", "data_nts")
 # file.remove(list.files(root, full.names = TRUE))
@@ -13,8 +13,23 @@ root <- file.path("dev", "dev_duckdb", "data_nts")
 
 ms <- DB_MassSpecEngine$new(projectPath = root, files = ms_files)
 
-set_replicate_names(ms$Analyses, c(rep("blank", 3), rep("influent", 3), rep("effluent", 3)))
-set_blank_names(ms$Analyses, c(rep("blank", 9)))
+set_replicate_names(ms$Analyses, c(
+  rep("neg_blank", 3),
+  rep("pos_blank", 3),
+  rep("neg_influent", 3),
+  rep("pos_influent", 3),
+  rep("neg_effluent", 3),
+  rep("pos_effluent", 3)
+))
+
+set_blank_names(ms$Analyses, c(
+  rep("neg_blank", 3),
+  rep("pos_blank", 3),
+  rep("neg_blank", 3),
+  rep("pos_blank", 3),
+  rep("neg_blank", 3),
+  rep("pos_blank", 3)
+))
 
 ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
@@ -25,22 +40,23 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   baselineWindow = 200,
   maxWidth = 250,
   baseQuantile = 0.99,
-  debugAnalysis = "03_tof_ww_is_pos_o3sw_effluent-r002",
-  debugMZ = 304.1893,
+  debugAnalysis = "",
+  debugMZ = 0,
   debugSpecIdx = -1
 )
 
 ps_comp <- DB_MassSpecMethod_CreateComponents_native(
-  rtWindow = c(-2, 2),
+  rtWindow = c(-5, 5),
   minCorrelation = 0.9,
-  debugRT = 1015,
-  debugAnalysis = "02_tof_ww_is_pos_influent-r002"
+  debugRT = 968,
+  debugAnalysis = "	02_tof_ww_is_neg_influent-r003"
 )
 
 ps_annot <- DB_MassSpecMethod_AnnotateComponents_native(
   maxIsotopes = 8,
   maxCharge = 1,
   maxGaps = 1,
+  ppm = 10,
   debugComponent = "",
   debugAnalysis = ""
 )
@@ -63,8 +79,8 @@ ps_gf <- DB_MassSpecMethod_GroupFeatures_native(
   minSamples = 1,
   binSize = 5,
   filtered = FALSE,
-  debug = TRUE,
-  debugRT = 915
+  debug = FALSE,
+  debugRT = 0
 )
 
 ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
@@ -72,6 +88,28 @@ ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
   rtExpand = 10,
   mzExpand = 0.005
 )
+
+ps_filterf1 <- DB_MassSpecMethod_FilterFeatures_native(
+  removeIsotopes = TRUE,
+  removeAdducts = TRUE,
+  removeLosses = TRUE
+)
+
+ps_fillf <- DB_MassSpecMethod_FillFeatures_native(
+  withinReplicate = TRUE,
+  filtered = FALSE,
+  rtExpand = 5,
+  mzExpand = 0.0005,
+  maxPeakWidth = 250,
+  minTracesIntensity = 250,
+  minNumberTraces = 4,
+  minIntensity = 1000,
+  rtApexDeviation = 5,
+  minSignalToNoiseRatio = 3,
+  minGaussianFit = 0.8,
+  debugFG = ""
+)
+
 
 # ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
 #   rtWindow = c(-1, 1),
@@ -90,13 +128,41 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   filtered = FALSE
 )
 
-ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf) #, ps_bsub, ps_ms2, #
-#clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
-#clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
-#clear_cache(ms$Cache, value = c("DB_FindInternalStandard_native"))
-#clear_cache(ms$Cache, value = c("DB_GroupFeatures_native"))
-#clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
+ms$Workflow <- list(ps_ff, ps_comp) #, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_fillf
+# clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
+clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
+clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
+clear_cache(ms$Cache, value = c("DB_FindInternalStandard_native"))
+clear_cache(ms$Cache, value = c("DB_GroupFeatures_native"))
+clear_cache(ms$Cache, value = c("DB_FeatureBlankSubtraction_native"))
+clear_cache(ms$Cache, value = c("DB_FilterFeatures_native"))
+clear_cache(ms$Cache, value = c("DB_FillFeatures_native"))
 ms$run_workflow()
+
+
+ms$run_app()
+
+root <- file.path("dev", "dev_duckdb", "data_nts")
+ms <- DB_MassSpecEngine$new(projectPath = root)
+ms$run_app()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -105,7 +171,7 @@ ms$run_workflow()
 )
 
 .plot_debug_DB_MassSpecMethod_GroupFeatures_native(
-  "C:\\Users\\cunha\\Documents\\GitHub\\StreamFind\\log\\debug_log_group_features_methodinternal_standards_rt915.00.log"
+  "C:\\Users\\cunha\\Documents\\GitHub\\StreamFind\\log\\debug_log_group_features_methodinternal_standards_rt1157.00.log"
 )
 
 plot_debug_log(
@@ -123,9 +189,11 @@ plot_debug_log(
 #"02_tof_ww_is_pos_influent-r003"
 #342.2639
 
-get_suspects(ms$NonTargetAnalysis, suspects = dbsus[2, ], ppm = 10, sec = 15)
+# DEBUG ANNOTATION
+#"02_tof_ww_is_neg_influent-r002", "FG761_M286_RT968_NEG", "FC60_RT968_NEG", mz 285.0802
+#"02_tof_ww_is_neg_influent-r001", "FG761_M286_RT968_NEG", "FC65_RT967_NEG", mz 285.0806
 
-
+get_suspects(ms$NonTargetAnalysis, suspects = dbis, ppm = 10, sec = 15)
 get_features(ms$NonTargetAnalysis, mass = dbsus[2, ], ppm = 10, sec = 15)[, 1:20]
 
 istd_dt <- get_internal_standards(ms$NonTargetAnalysis)
@@ -137,14 +205,6 @@ istd_dt_with_shift <- istd_dt[istd_avg_rt, on = "name", `:=`(rt_shift = exp_rt -
 
 #get_cache_info(ms$Cache)
 
-ms$run_app()
-
-
-
-
-root <- file.path("dev", "dev_duckdb", "data_nts")
-ms <- DB_MassSpecEngine$new(projectPath = root)
-ms$run_app()
 
 
 View(get_suspects(ms$NonTargetAnalysis, suspects = dbsus, ppm = 10, sec = 15))

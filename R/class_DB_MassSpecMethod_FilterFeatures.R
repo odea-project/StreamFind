@@ -28,6 +28,9 @@
 #' @param minSizeEIC Integer (length 1) with the minimum number of EIC data points.
 #' @param minSizeMS1 Integer (length 1) with the minimum number of MS1 data points.
 #' @param minSizeMS2 Integer (length 1) with the minimum number of MS2 data points.
+#' @param removeIsotopes Logical (length 1) with `TRUE` to remove features where adduct contains 'isotope'.
+#' @param removeAdducts Logical (length 1) with `TRUE` to remove features where adduct contains 'adduct'.
+#' @param removeLosses Logical (length 1) with `TRUE` to remove features where adduct contains 'loss'.
 #'
 #' @return A `DB_MassSpecMethod_FilterFeatures_native` object.
 #'
@@ -59,7 +62,10 @@ DB_MassSpecMethod_FilterFeatures_native <- function(
   removeFilled = FALSE,
   minSizeEIC = NA_integer_,
   minSizeMS1 = NA_integer_,
-  minSizeMS2 = NA_integer_
+  minSizeMS2 = NA_integer_,
+  removeIsotopes = FALSE,
+  removeAdducts = FALSE,
+  removeLosses = FALSE
 ) {
   x <- ProcessingStep(
     type = "DB_MassSpec",
@@ -94,7 +100,10 @@ DB_MassSpecMethod_FilterFeatures_native <- function(
       removeFilled = as.logical(removeFilled),
       minSizeEIC = as.integer(minSizeEIC),
       minSizeMS1 = as.integer(minSizeMS1),
-      minSizeMS2 = as.integer(minSizeMS2)
+      minSizeMS2 = as.integer(minSizeMS2),
+      removeIsotopes = as.logical(removeIsotopes),
+      removeAdducts = as.logical(removeAdducts),
+      removeLosses = as.logical(removeLosses)
     ),
     number_permitted = Inf,
     version = as.character(packageVersion("StreamFind")),
@@ -143,6 +152,9 @@ validate_object.DB_MassSpecMethod_FilterFeatures_native <- function(x) {
   checkmate::assert_integerish(x$parameters$minSizeEIC, len = 1)
   checkmate::assert_integerish(x$parameters$minSizeMS1, len = 1)
   checkmate::assert_integerish(x$parameters$minSizeMS2, len = 1)
+  checkmate::assert_logical(x$parameters$removeIsotopes, len = 1)
+  checkmate::assert_logical(x$parameters$removeAdducts, len = 1)
+  checkmate::assert_logical(x$parameters$removeLosses, len = 1)
   NULL
 }
 
@@ -158,20 +170,12 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
     return(FALSE)
   }
 
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-
-  if (is.null(engine$Analyses$results[["DB_MassSpecResults_NonTargetAnalysis"]])) {
+  if (is.null(engine$NonTargetAnalysis)) {
     warning("No DB_MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$Results$DB_MassSpecResults_NonTargetAnalysis
-
-  conn <- DBI::dbConnect(duckdb::duckdb(), nts$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  nts <- engine$NonTargetAnalysis
 
   parameters <- x$parameters
 
@@ -181,18 +185,30 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
     hash <- .make_hash(x, nts$db, parameters)
     cache_info <- get_cache_info(cache_manager)
     if (nrow(cache_info) > 0) {
-      cached_result <- load_cache(cache_manager, hash = hash)
-      if (!is.null(cached_result)) {
-        if (is.logical(cached_result) && cached_result) {
-          message("\U2139 FilterFeatures results using ", x$algorithm, " loaded from cache!")
+      fts <- load_cache(cache_manager, hash = hash)
+      if (!is.null(fts) && is.data.frame(fts)) {
+        if (nrow(fts) > 0) {
+          message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+          DB_MassSpecResults_NonTargetAnalysis(
+            projectPath = engine$get_project_path(),
+            features = fts
+          )
           return(invisible(TRUE))
         }
       }
     }
   }
 
+  # Query all features from database
+  fts <- query_db(nts, "SELECT * FROM Features")
+
+  if (nrow(fts) == 0) {
+    warning("No features found in DB_MassSpecResults_NonTargetAnalysis! Not done.")
+    return(FALSE)
+  }
+
   # Count features before filtering
-  n_before <- DBI::dbGetQuery(conn, "SELECT COUNT(*) as n FROM Features WHERE NOT filtered")$n
+  n_before <- sum(!fts$filtered, na.rm = TRUE)
 
   if (n_before == 0) {
     warning("DB_MassSpecResults_NonTargetAnalysis object does not have unfiltered features! Not done.")
@@ -200,175 +216,154 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
   }
 
   # Build SQL WHERE clauses for each filter
-  filter_conditions <- character(0)
-  filter_names <- character(0)
+  filter_to_apply <- list()
 
   # Numeric filters (minimum thresholds)
   if (!is.na(parameters$minSN)) {
-    filter_conditions <- c(filter_conditions, sprintf("sn < %f", parameters$minSN))
-    filter_names <- c(filter_names, "minSN")
+    filter_to_apply[["minSN"]] <- function(x) x$sn < parameters$minSN
   }
 
   if (!is.na(parameters$minArea)) {
-    filter_conditions <- c(filter_conditions, sprintf("area < %f", parameters$minArea))
-    filter_names <- c(filter_names, "minArea")
+    filter_to_apply[["minArea"]] <- function(x) x$area < parameters$minArea
   }
 
   if (!is.na(parameters$minWidth)) {
-    filter_conditions <- c(filter_conditions, sprintf("width < %f", parameters$minWidth))
-    filter_names <- c(filter_names, "minWidth")
+    filter_to_apply[["minWidth"]] <- function(x) x$width < parameters$minWidth
   }
 
   if (!is.na(parameters$maxWidth)) {
-    filter_conditions <- c(filter_conditions, sprintf("width > %f", parameters$maxWidth))
-    filter_names <- c(filter_names, "maxWidth")
+    filter_to_apply[["maxWidth"]] <- function(x) x$width > parameters$maxWidth
   }
 
   if (!is.na(parameters$maxPPM)) {
-    filter_conditions <- c(filter_conditions, sprintf("ppm > %f", parameters$maxPPM))
-    filter_names <- c(filter_names, "maxPPM")
+    filter_to_apply[["maxPPM"]] <- function(x) x$ppm > parameters$maxPPM
   }
 
   if (!is.na(parameters$minFwhmRT)) {
-    filter_conditions <- c(filter_conditions, sprintf("fwhm_rt < %f", parameters$minFwhmRT))
-    filter_names <- c(filter_names, "minFwhmRT")
+    filter_to_apply[["minFwhmRT"]] <- function(x) x$fwhm_rt < parameters$minFwhmRT
   }
 
   if (!is.na(parameters$maxFwhmRT)) {
-    filter_conditions <- c(filter_conditions, sprintf("fwhm_rt > %f", parameters$maxFwhmRT))
-    filter_names <- c(filter_names, "maxFwhmRT")
+    filter_to_apply[["maxFwhmRT"]] <- function(x) x$fwhm_rt > parameters$maxFwhmRT
   }
 
   if (!is.na(parameters$minFwhmMZ)) {
-    filter_conditions <- c(filter_conditions, sprintf("fwhm_mz < %f", parameters$minFwhmMZ))
-    filter_names <- c(filter_names, "minFwhmMZ")
+    filter_to_apply[["minFwhmMZ"]] <- function(x) x$fwhm_mz < parameters$minFwhmMZ
   }
 
   if (!is.na(parameters$maxFwhmMZ)) {
-    filter_conditions <- c(filter_conditions, sprintf("fwhm_mz > %f", parameters$maxFwhmMZ))
-    filter_names <- c(filter_names, "maxFwhmMZ")
+    filter_to_apply[["maxFwhmMZ"]] <- function(x) x$fwhm_mz > parameters$maxFwhmMZ
   }
 
   if (!is.na(parameters$minGaussianA)) {
-    filter_conditions <- c(filter_conditions, sprintf("gaussian_A < %f", parameters$minGaussianA))
-    filter_names <- c(filter_names, "minGaussianA")
+    filter_to_apply[["minGaussianA"]] <- function(x) x$gaussian_A < parameters$minGaussianA
   }
 
   if (!is.na(parameters$minGaussianMu)) {
-    filter_conditions <- c(filter_conditions, sprintf("gaussian_mu < %f", parameters$minGaussianMu))
-    filter_names <- c(filter_names, "minGaussianMu")
+    filter_to_apply[["minGaussianMu"]] <- function(x) x$gaussian_mu < parameters$minGaussianMu
   }
 
   if (!is.na(parameters$maxGaussianMu)) {
-    filter_conditions <- c(filter_conditions, sprintf("gaussian_mu > %f", parameters$maxGaussianMu))
-    filter_names <- c(filter_names, "maxGaussianMu")
+    filter_to_apply[["maxGaussianMu"]] <- function(x) x$gaussian_mu > parameters$maxGaussianMu
   }
 
   if (!is.na(parameters$minGaussianSigma)) {
-    filter_conditions <- c(filter_conditions, sprintf("gaussian_sigma < %f", parameters$minGaussianSigma))
-    filter_names <- c(filter_names, "minGaussianSigma")
+    filter_to_apply[["minGaussianSigma"]] <- function(x) x$gaussian_sigma < parameters$minGaussianSigma
   }
 
   if (!is.na(parameters$maxGaussianSigma)) {
-    filter_conditions <- c(filter_conditions, sprintf("gaussian_sigma > %f", parameters$maxGaussianSigma))
-    filter_names <- c(filter_names, "maxGaussianSigma")
+    filter_to_apply[["maxGaussianSigma"]] <- function(x) x$gaussian_sigma > parameters$maxGaussianSigma
   }
 
   if (!is.na(parameters$minGaussianR2)) {
-    filter_conditions <- c(filter_conditions, sprintf("gaussian_r2 < %f", parameters$minGaussianR2))
-    filter_names <- c(filter_names, "minGaussianR2")
+    filter_to_apply[["minGaussianR2"]] <- function(x) x$gaussian_r2 < parameters$minGaussianR2
   }
 
   if (!is.na(parameters$maxJaggedness)) {
-    filter_conditions <- c(filter_conditions, sprintf("jaggedness > %f", parameters$maxJaggedness))
-    filter_names <- c(filter_names, "maxJaggedness")
+    filter_to_apply[["maxJaggedness"]] <- function(x) x$jaggedness > parameters$maxJaggedness
   }
 
   if (!is.na(parameters$minSharpness)) {
-    filter_conditions <- c(filter_conditions, sprintf("sharpness < %f", parameters$minSharpness))
-    filter_names <- c(filter_names, "minSharpness")
+    filter_to_apply[["minSharpness"]] <- function(x) x$sharpness < parameters$minSharpness
   }
 
   if (!is.na(parameters$minAsymmetry)) {
-    filter_conditions <- c(filter_conditions, sprintf("asymmetry < %f", parameters$minAsymmetry))
-    filter_names <- c(filter_names, "minAsymmetry")
+    filter_to_apply[["minAsymmetry"]] <- function(x) x$asymmetry < parameters$minAsymmetry
   }
 
   if (!is.na(parameters$maxAsymmetry)) {
-    filter_conditions <- c(filter_conditions, sprintf("asymmetry > %f", parameters$maxAsymmetry))
-    filter_names <- c(filter_names, "maxAsymmetry")
+    filter_to_apply[["maxAsymmetry"]] <- function(x) x$asymmetry > parameters$maxAsymmetry
   }
 
   if (!is.na(parameters$maxModality)) {
-    filter_conditions <- c(filter_conditions, sprintf("modality > %d", parameters$maxModality))
-    filter_names <- c(filter_names, "maxModality")
+    filter_to_apply[["maxModality"]] <- function(x) x$modality > parameters$maxModality
   }
 
   if (!is.na(parameters$minPlates)) {
-    filter_conditions <- c(filter_conditions, sprintf("plates < %f", parameters$minPlates))
-    filter_names <- c(filter_names, "minPlates")
+    filter_to_apply[["minPlates"]] <- function(x) x$plates < parameters$minPlates
   }
 
   # Boolean filters
   if (!is.na(parameters$onlyFilled)) {
     if (parameters$onlyFilled) {
-      filter_conditions <- c(filter_conditions, "NOT filled")
-      filter_names <- c(filter_names, "onlyFilled")
+      filter_to_apply[["onlyFilled"]] <- function(x) !x$filled
     } else {
-      filter_conditions <- c(filter_conditions, "filled")
-      filter_names <- c(filter_names, "notFilled")
+      filter_to_apply[["notFilled"]] <- function(x) x$filled
     }
   }
 
   if (parameters$removeFilled) {
-    filter_conditions <- c(filter_conditions, "filled")
-    filter_names <- c(filter_names, "removeFilled")
+    filter_to_apply[["removeFilled"]] <- function(x) x$filled
   }
 
   # Integer filters
   if (!is.na(parameters$minSizeEIC)) {
-    filter_conditions <- c(filter_conditions, sprintf("eic_size < %d", parameters$minSizeEIC))
-    filter_names <- c(filter_names, "minSizeEIC")
+    filter_to_apply[["minSizeEIC"]] <- function(x) x$eic_size < parameters$minSizeEIC
   }
 
   if (!is.na(parameters$minSizeMS1)) {
-    filter_conditions <- c(filter_conditions, sprintf("ms1_size < %d", parameters$minSizeMS1))
-    filter_names <- c(filter_names, "minSizeMS1")
+    filter_to_apply[["minSizeMS1"]] <- function(x) x$ms1_size < parameters$minSizeMS1
   }
 
   if (!is.na(parameters$minSizeMS2)) {
-    filter_conditions <- c(filter_conditions, sprintf("ms2_size < %d", parameters$minSizeMS2))
-    filter_names <- c(filter_names, "minSizeMS2")
+    filter_to_apply[["minSizeMS2"]] <- function(x) x$ms2_size < parameters$minSizeMS2
+  }
+
+  # Isotope, adduct, and loss filters
+  if (parameters$removeIsotopes) {
+    filter_to_apply[["removeIsotopes"]] <- function(x) grepl("isotope", x$adduct, fixed = TRUE)
+  }
+
+  if (parameters$removeAdducts) {
+    filter_to_apply[["removeAdducts"]] <- function(x) grepl("adduct", x$adduct, fixed = TRUE)
+  }
+
+  if (parameters$removeLosses) {
+    filter_to_apply[["removeLosses"]] <- function(x) grepl("loss", x$adduct, fixed = TRUE)
   }
 
   # Apply filters
-  if (length(filter_conditions) > 0) {
-    for (i in seq_along(filter_conditions)) {
-      condition <- filter_conditions[i]
-      filter_name <- filter_names[i]
-
-      # Update features that match the condition
-      update_query <- sprintf(
-        "UPDATE Features
-         SET filtered = TRUE,
-             filter = CASE
-               WHEN filter IS NULL OR filter = '' THEN '%s'
-               ELSE filter || ' %s'
-             END
-         WHERE NOT filtered AND (%s)",
-        filter_name, filter_name, condition
-      )
-
-      n_updated <- DBI::dbExecute(conn, update_query)
+  if (length(filter_to_apply) > 0) {
+    for (filter_name in names(filter_to_apply)) {
+      filter_func <- filter_to_apply[[filter_name]]
+      to_filter <- !fts$filtered & filter_func(fts)
+      to_filter[is.na(to_filter)] <- FALSE
+      n_updated <- sum(to_filter)
 
       if (n_updated > 0) {
+        fts$filtered[to_filter] <- TRUE
+        fts$filter[to_filter] <- ifelse(
+          is.na(fts$filter[to_filter]) | fts$filter[to_filter] == "",
+          filter_name,
+          paste(fts$filter[to_filter], filter_name)
+        )
         message(sprintf("\u2713 Filtered %d features by %s", n_updated, filter_name))
       }
     }
   }
 
   # Count features after filtering
-  n_after <- DBI::dbGetQuery(conn, "SELECT COUNT(*) as n FROM Features WHERE NOT filtered")$n
+  n_after <- sum(!fts$filtered, na.rm = TRUE)
   n_filtered <- n_before - n_after
 
   message(sprintf("\u2713 FilterFeatures complete: %d features filtered, %d remaining", n_filtered, n_after))
@@ -380,13 +375,14 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
       name = paste0("DB_FilterFeatures_native"),
       hash = .make_hash(x, nts$db, parameters),
       description = "Features filtered with DB_FilterFeatures_native method",
-      data = TRUE
+      data = as.data.frame(fts)
     )
     message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
   }
 
-  # Update the engine results
-  engine$Results$DB_MassSpecResults_NonTargetAnalysis <- nts
-
-  return(TRUE)
+  invisible(DB_MassSpecResults_NonTargetAnalysis(
+    projectPath = engine$get_project_path(),
+    features = fts
+  ))
+  invisible(TRUE)
 }
