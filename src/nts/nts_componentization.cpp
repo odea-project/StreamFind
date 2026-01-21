@@ -182,31 +182,34 @@ namespace nts
             polarity_suffix = "";
           }
 
-          struct FeatureRT {
+          struct FeatureIntensity {
             int idx;
             float rt;
+            float intensity;
           };
 
-          std::vector<FeatureRT> sorted_features;
+          std::vector<FeatureIntensity> sorted_features;
           sorted_features.reserve(feature_indices.size());
 
           for (int j : feature_indices) {
             const FEATURE &ft = fts.get_feature(j);
-            sorted_features.push_back({j, ft.rt});
+            sorted_features.push_back({j, ft.rt, ft.intensity});
           }
 
+          // Sort by descending intensity
           std::sort(sorted_features.begin(), sorted_features.end(),
-                    [](const FeatureRT &a, const FeatureRT &b) {
-                      return a.rt < b.rt;
+                    [](const FeatureIntensity &a, const FeatureIntensity &b) {
+                      return a.intensity > b.intensity;
                     });
 
-          // Sliding window: each unassigned feature seeds a cluster within RT window
+          // Intensity-based prioritization: each unassigned feature (by intensity) seeds a cluster within its RT window
           std::vector<bool> assigned(sorted_features.size(), false);
 
           for (size_t cluster_idx = 0; cluster_idx < sorted_features.size(); ++cluster_idx) {
             if (assigned[cluster_idx]) continue;
 
             const float seed_rt = sorted_features[cluster_idx].rt;
+            const float seed_intensity = sorted_features[cluster_idx].intensity;
             const float window_start = seed_rt + left_offset;
             const float window_end = seed_rt + right_offset;
 
@@ -214,12 +217,10 @@ namespace nts
             float rt_sum = 0.0f;
 
             // Collect unassigned features within RT window
-            for (size_t j = cluster_idx; j < sorted_features.size(); ++j) {
+            for (size_t j = 0; j < sorted_features.size(); ++j) {
               if (assigned[j]) continue;
 
               const float ft_rt = sorted_features[j].rt;
-
-              if (ft_rt > window_end) break;
 
               // Include if within window
               if (ft_rt >= window_start && ft_rt <= window_end) {
@@ -245,10 +246,9 @@ namespace nts
               }
               if (debug_this_cluster) {
                 DEBUG_LOG("\n--- Analysis " << (i < nts_data.analyses.size() ? nts_data.analyses[i] : std::to_string(i))
-                          << " [Polarity=" << polarity << "]: Processing Cluster starting at RT=" << seed_rt
-                          << " (" << cluster.size() << " features) ---\n");
-                DEBUG_LOG("  Sliding window cluster starting from seed RT=" << seed_rt
-                          << " with window [" << window_start << ", "
+                          << " [Polarity=" << polarity << "]: Processing Cluster starting from highest intensity feature ---\n");
+                DEBUG_LOG("  Seed feature: RT=" << seed_rt << ", intensity=" << seed_intensity
+                          << " with RT window [" << window_start << ", "
                           << window_end << "]\n");
                 for (const int idx : cluster) {
                   const FEATURE &ft = fts.get_feature(idx);

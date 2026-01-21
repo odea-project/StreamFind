@@ -77,7 +77,7 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
 
   cache_manager <- engine$Cache
   if (!is.null(cache_manager)) {
-    hash <- .make_hash(x, analyses, parameters)
+    hash <- .make_hash(x, analyses, parameters, engine$Workflow)
     cache_info <- get_cache_info(cache_manager)
     if (nrow(cache_info) > 0) {
       fts <- load_cache(cache_manager, hash = hash)
@@ -131,7 +131,7 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
     save_cache(
       cache_manager,
       name = paste0("DB_FeatureBlankSubtraction_native"),
-      hash = .make_hash(x, analyses, parameters),
+      hash = .make_hash(x, analyses, parameters, engine$Workflow),
       description = "Features found with DB_FeatureBlankSubtraction_native method",
       data = as.data.frame(fts)
     )

@@ -122,19 +122,19 @@ run.DB_MassSpecMethod_AnnotateComponents_native <- function(x, engine = NULL) {
 
   cache_manager <- engine$Cache
   if (!is.null(cache_manager)) {
-    hash <- .make_hash(x, analyses, parameters, features)
+    hash <- .make_hash(x, analyses, parameters, engine$Workflow)
     cache_info <- get_cache_info(cache_manager)
     if (nrow(cache_info) > 0) {
-        fts <- load_cache(cache_manager, hash = hash)
-        if (!is.null(fts) && nrow(fts) > 0) {
-          message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
-          DB_MassSpecResults_NonTargetAnalysis(
-            projectPath = engine$get_project_path(),
-            features = fts
-          )
-          return(invisible(TRUE))
-        }
+      fts <- load_cache(cache_manager, hash = hash)
+      if (!is.null(fts) && nrow(fts) > 0) {
+        message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+        DB_MassSpecResults_NonTargetAnalysis(
+          projectPath = engine$get_project_path(),
+          features = fts
+        )
+        return(invisible(TRUE))
       }
+    }
   }
 
   fts <- rcpp_nts_annotate_components(
@@ -161,7 +161,7 @@ run.DB_MassSpecMethod_AnnotateComponents_native <- function(x, engine = NULL) {
     save_cache(
       cache_manager,
       name = paste0("DB_AnnotateComponents_native"),
-      hash = .make_hash(x, analyses, parameters, features),
+      hash = .make_hash(x, analyses, parameters, engine$Workflow),
       description = "Components annotated with DB_AnnotateComponents_native method",
       data = as.data.frame(fts)
     )

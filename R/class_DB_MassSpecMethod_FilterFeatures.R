@@ -176,13 +176,13 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
   }
 
   nts <- engine$NonTargetAnalysis
-
+  analyses_info <- info(engine$Analyses)
   parameters <- x$parameters
 
   # Check cache
   cache_manager <- engine$Cache
   if (!is.null(cache_manager)) {
-    hash <- .make_hash(x, nts$db, parameters)
+    hash <- .make_hash(x, analyses_info, parameters, engine$Workflow)
     cache_info <- get_cache_info(cache_manager)
     if (nrow(cache_info) > 0) {
       fts <- load_cache(cache_manager, hash = hash)
@@ -373,7 +373,7 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
     save_cache(
       cache_manager,
       name = paste0("DB_FilterFeatures_native"),
-      hash = .make_hash(x, nts$db, parameters),
+      hash = .make_hash(x, analyses_info, parameters, engine$Workflow),
       description = "Features filtered with DB_FilterFeatures_native method",
       data = as.data.frame(fts)
     )

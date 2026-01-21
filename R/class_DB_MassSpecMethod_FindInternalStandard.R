@@ -89,12 +89,13 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
     return(FALSE)
   }
 
+  analyses_info <- info(engine$Analyses)
   parameters <- x$parameters
 
   # Check if cache exists
   cache_manager <- engine$Cache
   if (!is.null(cache_manager)) {
-    hash <- .make_hash(x, parameters$suspects, parameters)
+    hash <- .make_hash(x, analyses_info, parameters, engine$Workflow)
     cache_info <- get_cache_info(cache_manager)
     if (nrow(cache_info) > 0) {
       internal_standards <- load_cache(cache_manager, hash = hash)
@@ -141,7 +142,7 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
   save_cache(
     cache_manager,
     name = paste0("DB_FindInternalStandard_native"),
-    hash = .make_hash(x, parameters$suspects, parameters),
+    hash = .make_hash(x, analyses_info, parameters, engine$Workflow),
     description = "Internal standards found with DB_FindInternalStandard_native method",
     data = as.data.frame(internal_standards)
   )

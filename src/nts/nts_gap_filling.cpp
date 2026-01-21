@@ -756,32 +756,90 @@ void nts::gap_filling::fill_features_impl(
     // Get headers for first gap (all gaps in same file share same headers)
     const auto &headers = nts_data.headers[gaps[0].analysis_idx];
 
-    // Build MS_TARGETS for all gaps in this file
+
+    // Build MS_TARGETS for all gaps in this file, but skip those already present as filtered features
     sc::MS_TARGETS targets;
-    targets.resize_all(gaps.size());
+    std::vector<size_t> valid_gap_indices;
+    targets.resize_all(gaps.size()); // Will shrink later if needed
 
     for (size_t i = 0; i < gaps.size(); ++i)
     {
       const auto &gap = gaps[i];
-      // Get ranges for this feature group
       const auto &ranges = group_ranges_map[gap.feature_group];
+      nts::FEATURES &analysis_features = nts_data.features[gap.analysis_idx];
+      bool found_filtered_feature = false;
 
-      targets.index[i] = i;
-      targets.id[i] = gap.target_id;
-      targets.level[i] = 1;
-      targets.polarity[i] = gap.polarity;
-      targets.precursor[i] = false;
-      targets.mz[i] = gap.median_mz;
-      // Use feature group min/max mz ranges expanded by mzExpand
-      targets.mzmin[i] = ranges.min_mzmin - mzExpand;
-      targets.mzmax[i] = ranges.max_mzmax + mzExpand;
-      targets.rt[i] = gap.median_rt;
-      // Use feature group min/max RT ranges expanded by rtExpand
-      targets.rtmin[i] = ranges.min_rtmin - rtExpand;
-      targets.rtmax[i] = ranges.max_rtmax + rtExpand;
-      targets.mobility[i] = 0.0f;
-      targets.mobilitymin[i] = 0.0f;
-      targets.mobilitymax[i] = 0.0f;
+      for (int j = 0; j < analysis_features.size(); ++j)
+      {
+        if (analysis_features.filtered[j] &&
+            analysis_features.rt[j] >= ranges.min_rtmin &&
+            analysis_features.rt[j] <= ranges.max_rtmax &&
+            analysis_features.mz[j] >= ranges.min_mzmin &&
+            analysis_features.mz[j] <= ranges.max_mzmax &&
+            analysis_features.polarity[j] == gap.polarity)
+        {
+          // Unfilter this feature
+          analysis_features.filtered[j] = false;
+          analysis_features.filter[j] = "";
+          analysis_features.feature_group[j] = gap.feature_group;
+          filled_gaps++;
+          found_filtered_feature = true;
+          // Add debug log here if this is the debug feature group
+          bool is_debug_fg = debug && (gap.feature_group == debugFG);
+          if (is_debug_fg) {
+            DEBUG_LOG("  -> RECOVERED FILTERED FEATURE: " << analysis_features.feature[j] << std::endl);
+            DEBUG_LOG("    RT: " << analysis_features.rt[j] << ", m/z: " << analysis_features.mz[j] << std::endl);
+            DEBUG_LOG("    Intensity: " << analysis_features.intensity[j] << std::endl);
+            DEBUG_LOG("    Changed filtered=TRUE to FALSE, assigned to feature group" << std::endl);
+            DEBUG_LOG("  -> SKIPPED GAP TARGET: " << gap.target_id << " (filtered feature recovered before EIC extraction)" << std::endl);
+          }
+          break;
+        }
+      }
+
+      if (!found_filtered_feature)
+      {
+        // Only add to targets if not already recovered
+        valid_gap_indices.push_back(i);
+        targets.index[i] = i;
+        targets.id[i] = gap.target_id;
+        targets.level[i] = 1;
+        targets.polarity[i] = gap.polarity;
+        targets.precursor[i] = false;
+        targets.mz[i] = gap.median_mz;
+        targets.mzmin[i] = ranges.min_mzmin - mzExpand;
+        targets.mzmax[i] = ranges.max_mzmax + mzExpand;
+        targets.rt[i] = gap.median_rt;
+        targets.rtmin[i] = ranges.min_rtmin - rtExpand;
+        targets.rtmax[i] = ranges.max_rtmax + rtExpand;
+        targets.mobility[i] = 0.0f;
+        targets.mobilitymin[i] = 0.0f;
+        targets.mobilitymax[i] = 0.0f;
+      }
+    }
+
+    // Shrink targets to only valid gaps
+    if (valid_gap_indices.size() < gaps.size()) {
+      sc::MS_TARGETS shrunk_targets;
+      shrunk_targets.resize_all(valid_gap_indices.size());
+      for (size_t k = 0; k < valid_gap_indices.size(); ++k) {
+        size_t i = valid_gap_indices[k];
+        shrunk_targets.index[k] = k;
+        shrunk_targets.id[k] = targets.id[i];
+        shrunk_targets.level[k] = targets.level[i];
+        shrunk_targets.polarity[k] = targets.polarity[i];
+        shrunk_targets.precursor[k] = targets.precursor[i];
+        shrunk_targets.mz[k] = targets.mz[i];
+        shrunk_targets.mzmin[k] = targets.mzmin[i];
+        shrunk_targets.mzmax[k] = targets.mzmax[i];
+        shrunk_targets.rt[k] = targets.rt[i];
+        shrunk_targets.rtmin[k] = targets.rtmin[i];
+        shrunk_targets.rtmax[k] = targets.rtmax[i];
+        shrunk_targets.mobility[k] = targets.mobility[i];
+        shrunk_targets.mobilitymin[k] = targets.mobilitymin[i];
+        shrunk_targets.mobilitymax[k] = targets.mobilitymax[i];
+      }
+      targets = shrunk_targets;
     }
 
     // Extract all EICs in one batch call (uses OpenMP internally)
@@ -811,6 +869,8 @@ void nts::gap_filling::fill_features_impl(
         DEBUG_LOG("    RT range: " << (ranges.min_rtmin - rtExpand) << " - " << (ranges.max_rtmax + rtExpand) << " s" << std::endl);
         DEBUG_LOG("    m/z range: " << (ranges.min_mzmin - mzExpand) << " - " << (ranges.max_mzmax + mzExpand) << std::endl);
       }
+
+      // ...existing code...
 
       // Get EIC for this specific target
       sc::MS_TARGETS_SPECTRA eic_spec = all_eics[gap.target_id];

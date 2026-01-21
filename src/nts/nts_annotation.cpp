@@ -856,8 +856,8 @@ namespace nts
 
         for (int c = 1; c < number_candidates; ++c)
         {
-          // Skip if already annotated
-          if (chain[c].adduct != chain[0].adduct)
+          // Skip if already annotated (not empty)
+          if (!chain[c].adduct.empty())
           {
             continue;
           }
@@ -953,6 +953,7 @@ namespace nts
 
         Rcpp::Rcout << "Annotating " << component_groups.size() << " components in analysis " << nts_data.analyses[a] << std::endl;
 
+        // MARK: Annotate Isotopes
         // Annotate isotopes for each component
         Rcpp::Rcout << "Annotating isotopes... ";
 
@@ -1110,6 +1111,90 @@ namespace nts
 
         Rcpp::Rcout << "Done! Found " << total_isotopes_found << " isotopes." << std::endl;
 
+        // MARK: Annotate Fragments
+        // Annotate in-source fragments for each component
+        Rcpp::Rcout << "Annotating fragments... ";
+
+        int total_fragments_found = 0;
+
+        for (const auto &comp_pair : component_groups)
+        {
+          const std::string &component_id = comp_pair.first;
+          const std::vector<int> &component_indices = comp_pair.second;
+
+          if (component_indices.size() < 1)
+            continue;
+
+          bool debug_this_component = (should_debug && component_id == debugComponent);
+
+          if (debug_this_component)
+          {
+            DEBUG_LOG("\n=== Fragment Annotation for Component " << component_id << " ===" << std::endl);
+          }
+
+          // Process each feature in the component
+          for (size_t i = 0; i < component_indices.size(); i++)
+          {
+            const int main_ft_idx = component_indices[i];
+            nts::FEATURE main_ft = fts.get_feature(main_ft_idx);
+
+            // Only annotate fragments for features with [M+H]+ or [M-H]- annotation
+            if (main_ft.adduct != "[M+H]+" && main_ft.adduct != "[M-H]-")
+            {
+              continue;
+            }
+
+            CANDIDATE_CHAIN fragment_candidates_chain;
+            // Pass component_indices to restrict search to component features only
+            fragment_candidates_chain.find_fragment_candidates(main_ft, fts, main_ft_idx, &component_indices);
+
+            const int number_candidates = fragment_candidates_chain.size();
+
+            if (debug_this_component && number_candidates > 1)
+            {
+              DEBUG_LOG("\n--- Processing feature [" << i << "] " << main_ft.feature
+                        << " (mz=" << main_ft.mz << ", adduct=\"" << main_ft.adduct << "\") ---" << std::endl);
+              DEBUG_LOG("  Found " << number_candidates << " fragment candidates" << std::endl);
+            }
+
+            if (number_candidates > 1)
+            {
+              fragment_candidates_chain.annotate_fragments(ppm, debug_this_component);
+
+              if (debug_this_component)
+              {
+                DEBUG_LOG("  After fragment annotation:" << std::endl);
+                for (size_t c = 0; c < fragment_candidates_chain.chain.size(); c++)
+                {
+                  const auto &ft = fragment_candidates_chain.chain[c];
+                  DEBUG_LOG("    Chain[" << c << "]: " << ft.feature
+                            << " adduct=\"" << ft.adduct << "\"");
+                  DEBUG_LOG(std::endl);
+                }
+              }
+
+              // Update features with fragment annotations
+              for (size_t c = 1; c < fragment_candidates_chain.chain.size(); c++)
+              {
+                const int idx = fragment_candidates_chain.indices[c];
+                const std::string &old_adduct = fts.get_feature(idx).adduct;
+                fts.set_feature(idx, fragment_candidates_chain.chain[c]);
+                const std::string &new_adduct = fragment_candidates_chain.chain[c].adduct;
+
+                // Count fragment annotations (format: "loss MZXXX -Formula")
+                if (!new_adduct.empty() && new_adduct != old_adduct &&
+                    new_adduct.find("loss MZ") == 0)
+                {
+                  total_fragments_found++;
+                }
+              }
+            }
+          }
+        }
+
+        Rcpp::Rcout << "Done! Found " << total_fragments_found << " fragments." << std::endl;
+
+        // MARK: Annotate Adducts
         // Annotate adducts for each component
         Rcpp::Rcout << "Annotating adducts... ";
 
@@ -1246,10 +1331,11 @@ namespace nts
 
         Rcpp::Rcout << "Done! Found " << total_adducts_found << " adducts." << std::endl;
 
-        // Annotate in-source fragments for each component
-        Rcpp::Rcout << "Annotating fragments... ";
+        // MARK: Annotate Default Adducts
+        // Assign default adducts to features with empty adduct strings
+        Rcpp::Rcout << "Assigning default adducts to remaining features... ";
 
-        int total_fragments_found = 0;
+        int default_adducts_assigned = 0;
 
         for (const auto &comp_pair : component_groups)
         {
@@ -1261,88 +1347,34 @@ namespace nts
 
           bool debug_this_component = (should_debug && component_id == debugComponent);
 
-          if (debug_this_component)
-          {
-            DEBUG_LOG("\n=== Fragment Annotation for Component " << component_id << " ===" << std::endl);
-          }
-
-          // Process each feature in the component
-          for (size_t i = 0; i < component_indices.size(); i++)
-          {
-            const int main_ft_idx = component_indices[i];
-            nts::FEATURE main_ft = fts.get_feature(main_ft_idx);
-
-            // Only annotate fragments for features with [M+H]+ annotation
-            if (main_ft.adduct != "[M+H]+")
-            {
-              continue;
-            }
-
-            CANDIDATE_CHAIN fragment_candidates_chain;
-            // Pass component_indices to restrict search to component features only
-            fragment_candidates_chain.find_fragment_candidates(main_ft, fts, main_ft_idx, &component_indices);
-
-            const int number_candidates = fragment_candidates_chain.size();
-
-            if (debug_this_component && number_candidates > 1)
-            {
-              DEBUG_LOG("\n--- Processing feature [" << i << "] " << main_ft.feature
-                        << " (mz=" << main_ft.mz << ", adduct=\"" << main_ft.adduct << "\") ---" << std::endl);
-              DEBUG_LOG("  Found " << number_candidates << " fragment candidates" << std::endl);
-            }
-
-            if (number_candidates > 1)
-            {
-              fragment_candidates_chain.annotate_fragments(ppm, debug_this_component);
-
-              if (debug_this_component)
-              {
-                DEBUG_LOG("  After fragment annotation:" << std::endl);
-                for (size_t c = 0; c < fragment_candidates_chain.chain.size(); c++)
-                {
-                  const auto &ft = fragment_candidates_chain.chain[c];
-                  DEBUG_LOG("    Chain[" << c << "]: " << ft.feature
-                            << " adduct=\"" << ft.adduct << "\"");
-                  DEBUG_LOG(std::endl);
-                }
-              }
-
-              // Update features with fragment annotations
-              for (size_t c = 1; c < fragment_candidates_chain.chain.size(); c++)
-              {
-                const int idx = fragment_candidates_chain.indices[c];
-                const std::string &old_adduct = fts.get_feature(idx).adduct;
-                fts.set_feature(idx, fragment_candidates_chain.chain[c]);
-                const std::string &new_adduct = fragment_candidates_chain.chain[c].adduct;
-
-                // Count fragment annotations (format: "loss MZXXX -Formula")
-                if (!new_adduct.empty() && new_adduct != old_adduct &&
-                    new_adduct.find("loss MZ") == 0)
-                {
-                  total_fragments_found++;
-                }
-              }
-            }
-          }
-
-          // Assign default adducts to features with empty adduct strings
           // Get polarity from the first feature in the component
           const int polarity = fts.get_feature(component_indices[0]).polarity;
           const std::string default_adduct = (polarity == 1) ? "[M+H]+" : "[M-H]-";
+
+          if (debug_this_component)
+          {
+            DEBUG_LOG("\n=== Assigning Default Adducts for Component " << component_id << " ===" << std::endl);
+          }
+
           for (const int idx : component_indices)
           {
             nts::FEATURE ft = fts.get_feature(idx);
             if (ft.adduct.empty())
             {
+              if (debug_this_component)
+              {
+                DEBUG_LOG("  Assigning " << default_adduct << " to " << ft.feature << std::endl);
+              }
               ft.adduct = default_adduct;
               fts.set_feature(idx, ft);
+              default_adducts_assigned++;
             }
           }
 
-          // Show final annotations for this component after fragments
+          // Show final annotations after default adducts
           if (debug_this_component)
           {
-            DEBUG_LOG("\n=== Final Annotations for Component " << component_id << " (after fragments) ===" << std::endl);
+            DEBUG_LOG("\n=== Final Annotations for Component " << component_id << " (after default adducts) ===" << std::endl);
             for (size_t i = 0; i < component_indices.size(); i++)
             {
               const int idx = component_indices[i];
@@ -1356,7 +1388,7 @@ namespace nts
           }
         }
 
-        Rcpp::Rcout << "Done! Found " << total_fragments_found << " fragments." << std::endl;
+        Rcpp::Rcout << "Done! Assigned " << default_adducts_assigned << " default adducts." << std::endl;
       }
     }
 

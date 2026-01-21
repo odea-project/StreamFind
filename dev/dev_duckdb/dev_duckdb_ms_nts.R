@@ -47,9 +47,9 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
 
 ps_comp <- DB_MassSpecMethod_CreateComponents_native(
   rtWindow = c(-5, 5),
-  minCorrelation = 0.9,
-  debugRT = 968,
-  debugAnalysis = "	02_tof_ww_is_neg_influent-r003"
+  minCorrelation = 0.8,
+  debugRT = 0,
+  debugAnalysis = ""
 )
 
 ps_annot <- DB_MassSpecMethod_AnnotateComponents_native(
@@ -110,7 +110,6 @@ ps_fillf <- DB_MassSpecMethod_FillFeatures_native(
   debugFG = ""
 )
 
-
 # ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
 #   rtWindow = c(-1, 1),
 #   mzWindow = c(-1, 6),
@@ -128,7 +127,7 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   filtered = FALSE
 )
 
-ms$Workflow <- list(ps_ff, ps_comp) #, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_fillf
+ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_fillf) #
 # clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
 clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
 clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
@@ -138,7 +137,6 @@ clear_cache(ms$Cache, value = c("DB_FeatureBlankSubtraction_native"))
 clear_cache(ms$Cache, value = c("DB_FilterFeatures_native"))
 clear_cache(ms$Cache, value = c("DB_FillFeatures_native"))
 ms$run_workflow()
-
 
 ms$run_app()
 
