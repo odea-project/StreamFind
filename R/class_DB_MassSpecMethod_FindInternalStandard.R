@@ -114,8 +114,8 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
     }
   }
 
-  # Run suspect screening using get_suspects
-  internal_standards <- get_suspects(
+  # Run suspect screening using suspect_screening
+  internal_standards <- suspect_screening(
     x = engine$NonTargetAnalysis,
     analyses = NULL,
     suspects = parameters$suspects,
@@ -137,6 +137,9 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
   columns_to_remove <- c("replicate", "feature_group", "feature_component", "adduct")
   columns_to_keep <- setdiff(colnames(internal_standards), columns_to_remove)
   internal_standards <- internal_standards[, ..columns_to_keep]
+  if (!"candidate_rank" %in% colnames(internal_standards)) {
+    internal_standards$candidate_rank <- 1L
+  }
 
   # Cache results
   save_cache(

@@ -90,9 +90,14 @@ ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
 )
 
 ps_filterf1 <- DB_MassSpecMethod_FilterFeatures_native(
+  minIntensity = 100000,
   removeIsotopes = TRUE,
   removeAdducts = TRUE,
   removeLosses = TRUE
+)
+
+ps_filterf2 <- DB_MassSpecMethod_FilterFeatures_native(
+  minRelPresenceReplicate = 1
 )
 
 ps_fillf <- DB_MassSpecMethod_FillFeatures_native(
@@ -110,33 +115,73 @@ ps_fillf <- DB_MassSpecMethod_FillFeatures_native(
   debugFG = ""
 )
 
-# ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
-#   rtWindow = c(-1, 1),
-#   mzWindow = c(-1, 6),
-#   mzClust = 0.008,
-#   presence = 0.8,
-#   minIntensity = 50,
-#   filtered = FALSE
-# )
+ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
+  rtWindow = c(-1, 1),
+  mzWindow = c(-1, 6),
+  mzClust = 0.008,
+  presence = 0.8,
+  minIntensity = 250,
+  filtered = FALSE
+)
 
 ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   isolationWindow = 1.3,
   mzClust = 0.008,
   presence = 0.8,
-  minIntensity = 10,
+  minIntensity = 50,
   filtered = FALSE
 )
 
-ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_fillf) #
+
+# ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
+#   suspects = dbsus,
+#   ppm = 10,
+#   sec = 15,
+#   ppmMS2 = 10,
+#   mzrMS2 = 0.008,
+#   minCosineSimilarity = 0.7,
+#   minSharedFragments = 3,
+#   filtered = TRUE
+# )
+
+ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
+  metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
+  database_type = "LocalCSV",
+  database_path = "C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
+  ppm = 10,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  top_n = 1,
+  filtered = FALSE,
+  n_cores = 10,
+  java_path = "java",
+  metfrag_args = NULL,
+  extra_params = list(),
+  show_progress = TRUE,
+  quiet = TRUE
+)
+
+ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2) # ps_fillf, ps_sus
 # clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
-clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
-clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
-clear_cache(ms$Cache, value = c("DB_FindInternalStandard_native"))
-clear_cache(ms$Cache, value = c("DB_GroupFeatures_native"))
-clear_cache(ms$Cache, value = c("DB_FeatureBlankSubtraction_native"))
-clear_cache(ms$Cache, value = c("DB_FilterFeatures_native"))
-clear_cache(ms$Cache, value = c("DB_FillFeatures_native"))
+# clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
+# clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
+# clear_cache(ms$Cache, value = c("DB_FindInternalStandard_native"))
+# clear_cache(ms$Cache, value = c("DB_GroupFeatures_native"))
+# clear_cache(ms$Cache, value = c("DB_FeatureBlankSubtraction_native"))
+# clear_cache(ms$Cache, value = c("DB_FilterFeatures_native"))
+# clear_cache(ms$Cache, value = c("DB_FillFeatures_native"))
+# clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS1_native"))
+# clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS2_native"))
+# clear_cache(ms$Cache, value = c("DB_SuspectScreening_native"))
+
 ms$run_workflow()
+
+
+metfrag_dir <- list.dirs(file.path(getwd(), "log"), full.names = TRUE)
+fs::dir_delete(metfrag_dir[grepl("metfrag", metfrag_dir)])
+clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
+run(ps_sus, ms)
+
 
 ms$run_app()
 
@@ -145,14 +190,17 @@ ms <- DB_MassSpecEngine$new(projectPath = root)
 ms$run_app()
 
 
+fts <- get_features(ms$NonTargetAnalysis)[, 1:20]
+fts <- fts[order(intensity), ]
+
+plot_suspects_ms2(ms$NonTargetAnalysis, features = get_suspects(ms$NonTargetAnalysis)[1, ], interactive = FALSE)
 
 
+res <- get_suspects(ms$NonTargetAnalysis)
+nrow(res)
 
-
-
-
-
-
+res_istd <- get_internal_standards(ms$NonTargetAnalysis)
+nrow(res_istd)
 
 
 
@@ -191,8 +239,8 @@ plot_debug_log(
 #"02_tof_ww_is_neg_influent-r002", "FG761_M286_RT968_NEG", "FC60_RT968_NEG", mz 285.0802
 #"02_tof_ww_is_neg_influent-r001", "FG761_M286_RT968_NEG", "FC65_RT967_NEG", mz 285.0806
 
-get_suspects(ms$NonTargetAnalysis, suspects = dbis, ppm = 10, sec = 15)
-get_features(ms$NonTargetAnalysis, mass = dbsus[2, ], ppm = 10, sec = 15)[, 1:20]
+get_suspects(ms$NonTargetAnalysis, suspects = dbsus[2, ], ppm = 10, sec = 15)
+
 
 istd_dt <- get_internal_standards(ms$NonTargetAnalysis)
 istd_avg_rt <- istd_dt[, .(avg_exp_rt = mean(exp_rt, na.rm = TRUE)), by = "name"]

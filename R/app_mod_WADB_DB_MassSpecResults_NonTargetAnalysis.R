@@ -100,6 +100,7 @@
       width = 12,
       height = "calc(100vh - 60px - 60px)",
       # MARK: Summary Tab
+      # Summary Tab -----
       shiny::tabPanel(
         title = shiny::tagList(
           shiny::icon("chart-pie", class = "mr-2"),
@@ -207,6 +208,18 @@
                     class = "status-value",
                     shiny::uiOutput(ns_full("has_features_suspects_ui"), inline = TRUE)
                   )
+                ),
+                shiny::div(
+                  class = "status-item",
+                  shiny::span(
+                    class = "status-label",
+                    shiny::icon("vial", class = "mr-2"),
+                    "Internal Standards"
+                  ),
+                  shiny::span(
+                    class = "status-value",
+                    shiny::uiOutput(ns_full("internal_standards_assigned_ui"), inline = TRUE)
+                  )
                 )
               )
             ),
@@ -254,7 +267,8 @@
           )
         )
       ),
-      # MARK: Features Scatter Tab
+      # MARK: Features Tab
+      # Features Tab -----
       shiny::tabPanel(
         title = shiny::tagList(shiny::icon("braille", class = "mr-2"), "Features"),
         shiny::div(
@@ -394,6 +408,19 @@
             )
           )
         )
+      ),
+      # MARK: Suspects Tab
+      # Suspects Tab -----
+      shiny::tabPanel(
+        title = shiny::tagList(shiny::icon("list-check", class = "mr-2"), "Suspects"),
+        shiny::div(
+          class = "tab-content",
+          style = "max-height: calc(100vh - 120px); overflow-y: auto; padding: 0;",
+          shiny::div(
+            class = "p-3",
+            DT::dataTableOutput(ns_full("suspects_table"))
+          )
+        )
       )
     )
   )
@@ -410,6 +437,8 @@
     reactive_volumes) {
   shiny::moduleServer(id, function(input, output, session) {
     ns_full <- session$ns
+
+    # Helpers and Data Reactives ------
 
     # MARK: Helpers
     status_tag <- function(value) {
@@ -454,6 +483,20 @@
         fts[[col]] <- round(fts[[col]], d)
       }
       fts
+    })
+
+    # MARK: internal_standards_data
+    internal_standards_data <- shiny::reactive({
+      nts <- nts_data()
+      istd <- get_internal_standards(nts)
+      istd
+    })
+
+    # MARK: suspects_data
+    suspects_data <- shiny::reactive({
+      nts <- nts_data()
+      sps <- get_suspects(nts)
+      sps
     })
 
     # MARK: chart_color_by
@@ -687,8 +730,20 @@
       status_tag(summary_data()$has_ms2)
     })
     output$has_features_suspects_ui <- shiny::renderUI({
-      # TODO: implement suspect detection once available for DB_MassSpecResults_NonTargetAnalysis
-      status_tag(FALSE)
+      n_suspects <- nrow(suspects_data())
+      if (is.null(n_suspects)) n_suspects <- 0
+      shiny::tags$span(
+        class = ifelse(n_suspects > 0, "status-yes", "status-no"),
+        as.character(n_suspects)
+      )
+    })
+    output$internal_standards_assigned_ui <- shiny::renderUI({
+      n_istd <- nrow(internal_standards_data())
+      if (is.null(n_istd)) n_istd <- 0
+      shiny::tags$span(
+        class = ifelse(n_istd > 0, "status-yes", "status-no"),
+        as.character(n_istd)
+      )
     })
 
     # MARK: summary_chart
@@ -977,18 +1032,21 @@
       sel_cols <- sel_cols[sel_cols %in% colnames(fts)]
       if (length(sel_cols) == 0) sel_cols <- intersect(c("analysis", "feature"), colnames(fts))
       if ("feature_component" %in% sel_cols && "feature_component" %in% colnames(fts)) {
-        fts <- fts[feature_component != "" & !is.na(feature_component)]
+        fts <- fts[fts$feature_component != "", ]
+        fts <- fts[!is.na(fts$feature_component), ]
       }
       if ("feature_group" %in% sel_cols && "feature_group" %in% colnames(fts)) {
-        fts <- fts[feature_group != "" & !is.na(feature_group)]
+        fts <- fts[fts$feature_group != "", ]
+        fts <- fts[!is.na(fts$feature_group), ]
       }
       if (!nrow(fts)) return(NULL)
 
       key_parts <- strsplit(keys, "||", fixed = TRUE)
+      key_parts <- unique(key_parts[[1]])
 
       sel <- rep(TRUE, nrow(fts))
       lapply(seq_along(sel_cols), function(i) {
-        sel <<- sel & fts[[sel_cols[i]]] %in% key_parts[[1]][i]
+        sel <<- sel & (fts[[sel_cols[i]]] %in% key_parts[i])
         invisible(NULL)
       })
 
@@ -1134,6 +1192,21 @@
           ordering = FALSE,
           autoWidth = TRUE
         ),
+        style = "bootstrap",
+        class = "table table-striped table-hover",
+        rownames = FALSE
+      )
+    })
+
+    # Suspects ------
+
+    # MARK: suspects_table
+    output$suspects_table <- DT::renderDT({
+      suspects <- data.table::copy(suspects_data())
+      shiny::validate(shiny::need(nrow(suspects) > 0, "No suspects available."))
+      DT::datatable(
+        suspects,
+        options = list(pageLength = 25, autoWidth = TRUE),
         style = "bootstrap",
         class = "table table-striped table-hover",
         rownames = FALSE

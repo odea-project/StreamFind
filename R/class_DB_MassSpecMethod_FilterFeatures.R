@@ -3,6 +3,7 @@
 #' @description Settings for filtering features in DB_MassSpecResults_NonTargetAnalysis objects based on feature properties.
 #'
 #' @param minSN Numeric (length 1) with the minimum signal-to-noise ratio.
+#' @param minIntensity Numeric (length 1) with the minimum intensity.
 #' @param minArea Numeric (length 1) with the minimum peak area.
 #' @param minWidth Numeric (length 1) with the minimum peak width in seconds.
 #' @param maxWidth Numeric (length 1) with the maximum peak width in seconds.
@@ -28,6 +29,8 @@
 #' @param minSizeEIC Integer (length 1) with the minimum number of EIC data points.
 #' @param minSizeMS1 Integer (length 1) with the minimum number of MS1 data points.
 #' @param minSizeMS2 Integer (length 1) with the minimum number of MS2 data points.
+#' @param minRelPresenceReplicate Numeric (length 1) minimum relative presence of a feature group within a replicate,
+#' computed as the fraction of analyses in that replicate where the feature group is present.
 #' @param removeIsotopes Logical (length 1) with `TRUE` to remove features where adduct contains 'isotope'.
 #' @param removeAdducts Logical (length 1) with `TRUE` to remove features where adduct contains 'adduct'.
 #' @param removeLosses Logical (length 1) with `TRUE` to remove features where adduct contains 'loss'.
@@ -38,6 +41,7 @@
 #'
 DB_MassSpecMethod_FilterFeatures_native <- function(
   minSN = NA_real_,
+  minIntensity = NA_real_,
   minArea = NA_real_,
   minWidth = NA_real_,
   maxWidth = NA_real_,
@@ -63,6 +67,7 @@ DB_MassSpecMethod_FilterFeatures_native <- function(
   minSizeEIC = NA_integer_,
   minSizeMS1 = NA_integer_,
   minSizeMS2 = NA_integer_,
+  minRelPresenceReplicate = NA_real_,
   removeIsotopes = FALSE,
   removeAdducts = FALSE,
   removeLosses = FALSE
@@ -76,6 +81,7 @@ DB_MassSpecMethod_FilterFeatures_native <- function(
     output_class = "DB_MassSpecResults_NonTargetAnalysis",
     parameters = list(
       minSN = as.numeric(minSN),
+      minIntensity = as.numeric(minIntensity),
       minArea = as.numeric(minArea),
       minWidth = as.numeric(minWidth),
       maxWidth = as.numeric(maxWidth),
@@ -101,6 +107,7 @@ DB_MassSpecMethod_FilterFeatures_native <- function(
       minSizeEIC = as.integer(minSizeEIC),
       minSizeMS1 = as.integer(minSizeMS1),
       minSizeMS2 = as.integer(minSizeMS2),
+      minRelPresenceReplicate = as.numeric(minRelPresenceReplicate),
       removeIsotopes = as.logical(removeIsotopes),
       removeAdducts = as.logical(removeAdducts),
       removeLosses = as.logical(removeLosses)
@@ -128,6 +135,7 @@ validate_object.DB_MassSpecMethod_FilterFeatures_native <- function(x) {
   checkmate::assert_choice(x$method, "FilterFeatures")
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_numeric(x$parameters$minSN, len = 1)
+  checkmate::assert_numeric(x$parameters$minIntensity, len = 1)
   checkmate::assert_numeric(x$parameters$minArea, len = 1)
   checkmate::assert_numeric(x$parameters$minWidth, len = 1)
   checkmate::assert_numeric(x$parameters$maxWidth, len = 1)
@@ -152,6 +160,7 @@ validate_object.DB_MassSpecMethod_FilterFeatures_native <- function(x) {
   checkmate::assert_integerish(x$parameters$minSizeEIC, len = 1)
   checkmate::assert_integerish(x$parameters$minSizeMS1, len = 1)
   checkmate::assert_integerish(x$parameters$minSizeMS2, len = 1)
+  checkmate::assert_numeric(x$parameters$minRelPresenceReplicate, len = 1)
   checkmate::assert_logical(x$parameters$removeIsotopes, len = 1)
   checkmate::assert_logical(x$parameters$removeAdducts, len = 1)
   checkmate::assert_logical(x$parameters$removeLosses, len = 1)
@@ -221,6 +230,10 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
   # Numeric filters (minimum thresholds)
   if (!is.na(parameters$minSN)) {
     filter_to_apply[["minSN"]] <- function(x) x$sn < parameters$minSN
+  }
+
+  if (!is.na(parameters$minIntensity)) {
+    filter_to_apply[["minIntensity"]] <- function(x) x$intensity < parameters$minIntensity
   }
 
   if (!is.na(parameters$minArea)) {
@@ -327,6 +340,38 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
 
   if (!is.na(parameters$minSizeMS2)) {
     filter_to_apply[["minSizeMS2"]] <- function(x) x$ms2_size < parameters$minSizeMS2
+  }
+
+  if (!is.na(parameters$minRelPresenceReplicate)) {
+    filter_to_apply[["minRelPresenceReplicate"]] <- function(
+      x,
+      rep_map = data.table::data.table(
+        analysis = analyses_info$analysis,
+        replicate = analyses_info$replicate
+      )
+    ) {
+      fts_rep <- data.table::as.data.table(x)[, .(analysis, feature_group, filtered)]
+      fts_rep[rep_map, replicate := i.replicate, on = "analysis"]
+      rep_counts <- rep_map[, .(n_analyses = .N), by = replicate]
+      grp_counts <- fts_rep[
+        !filtered & !is.na(feature_group) & feature_group != "",
+        .(n_features = data.table::uniqueN(analysis)),
+        by = .(replicate, feature_group)
+      ]
+      grp_counts[rep_counts, n_analyses := i.n_analyses, on = "replicate"]
+      grp_counts$rel_presence <- 0
+      valid_rows <- grp_counts$n_analyses > 0 & grp_counts$n_features > 0
+      grp_counts$rel_presence[valid_rows] <- grp_counts$n_features[valid_rows] / grp_counts$n_analyses[valid_rows]
+      grp_counts <- grp_counts[grp_counts$rel_presence < parameters$minRelPresenceReplicate, ]
+      fts_rep$to_rm <- FALSE
+      fts_rep[grp_counts, to_rm := TRUE, on = .(replicate, feature_group)]
+
+      # browser() #FG4491_M371_RT1332_POS
+
+      # fts_rep[fts_rep$feature_group %in% "FG4491_M371_RT1332_POS", ]
+
+      fts_rep$to_rm
+    }
   }
 
   # Isotope, adduct, and loss filters

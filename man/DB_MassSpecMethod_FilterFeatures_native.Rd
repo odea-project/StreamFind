@@ -6,6 +6,7 @@
 \usage{
 DB_MassSpecMethod_FilterFeatures_native(
   minSN = NA_real_,
+  minIntensity = NA_real_,
   minArea = NA_real_,
   minWidth = NA_real_,
   maxWidth = NA_real_,
@@ -31,6 +32,7 @@ DB_MassSpecMethod_FilterFeatures_native(
   minSizeEIC = NA_integer_,
   minSizeMS1 = NA_integer_,
   minSizeMS2 = NA_integer_,
+  minRelPresenceReplicate = NA_real_,
   removeIsotopes = FALSE,
   removeAdducts = FALSE,
   removeLosses = FALSE
@@ -38,6 +40,8 @@ DB_MassSpecMethod_FilterFeatures_native(
 }
 \arguments{
 \item{minSN}{Numeric (length 1) with the minimum signal-to-noise ratio.}
+
+\item{minIntensity}{Numeric (length 1) with the minimum intensity.}
 
 \item{minArea}{Numeric (length 1) with the minimum peak area.}
 
@@ -88,6 +92,9 @@ DB_MassSpecMethod_FilterFeatures_native(
 \item{minSizeMS1}{Integer (length 1) with the minimum number of MS1 data points.}
 
 \item{minSizeMS2}{Integer (length 1) with the minimum number of MS2 data points.}
+
+\item{minRelPresenceReplicate}{Numeric (length 1) minimum relative presence of a feature group within a replicate,
+computed as the fraction of analyses in that replicate where the feature group is present.}
 
 \item{removeIsotopes}{Logical (length 1) with \code{TRUE} to remove features where adduct contains 'isotope'.}
 

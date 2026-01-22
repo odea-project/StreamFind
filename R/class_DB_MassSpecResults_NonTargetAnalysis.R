@@ -24,6 +24,8 @@ DB_MassSpecResults_NonTargetAnalysis <- function(
   .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
   .create_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema(conn)
   .validate_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema(conn)
+  .create_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema(conn)
+  .validate_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema(conn)
 
   insert_features <- function(features) {
     .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt(features)
@@ -239,7 +241,7 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     if (!is.null(grp_ids)) features$name <- grp_ids[features$feature_group]
     if (!is.null(comp_ids)) features$name <- comp_ids[features$feature_component]
     if ("analysis" %in% colnames(features)) {
-      rep_map <- data.table::data.table(analysis = all_names, replicate = rpls)
+      rep_map <- data.table::data.table(analysis = sel_names, replicate = rpls)
       features <- merge(features, rep_map, by = "analysis", all.x = TRUE)
     }
     return(data.table::as.data.table(features))
@@ -269,7 +271,7 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     query <- sprintf("SELECT * FROM Features WHERE %s", paste(conditions, collapse = " OR "))
     features <- DBI::dbGetQuery(conn, query)
     if ("analysis" %in% colnames(features)) {
-      rep_map <- data.table::data.table(analysis = all_names, replicate = rpls)
+      rep_map <- data.table::data.table(analysis = sel_names, replicate = rpls)
       features <- merge(features, rep_map, by = "analysis", all.x = TRUE)
     }
     for (i in seq_len(nrow(targets))) {
@@ -286,7 +288,7 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     features <- DBI::dbGetQuery(conn, query)
     if (!is.null(ids)) features$name <- ids[features$feature]
     if ("analysis" %in% colnames(features)) {
-      rep_map <- data.table::data.table(analysis = all_names, replicate = rpls)
+      rep_map <- data.table::data.table(analysis = sel_names, replicate = rpls)
       features <- merge(features, rep_map, by = "analysis", all.x = TRUE)
     }
     return(data.table::as.data.table(features))
@@ -1245,7 +1247,7 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
     if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
     if (is.null(yLab)) yLab <- "Intensity / counts"
 
-    ms2$linesize <- 0.01
+    ms2$linesize <- 1
     ms2$linesize[ms2$is_pre] <- 2
 
     ticksMin <- plyr::round_any(min(ms2$mz, na.rm = TRUE) * 0.9, 10)
@@ -1301,7 +1303,6 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
             marker = list(size = 2, color = cl[var_val]),
             text = paste0(seg$text_string, "  "),
             textposition = "top center",
-            textangle = 90,
             textfont = list(size = 9, color = cl[var_val]),
             hoverinfo = "text",
             name = var_val,
@@ -1323,8 +1324,373 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 }
 
+# MARK: plot_suspects_ms2
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot suspect MS2 spectra for selected features.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-features
+#' @template arg-ms-groups
+#' @template arg-ms-components
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-normalized
+#' @template arg-ms-filtered
+#' @template arg-plot-groupBy
+#' @export
+#'
+plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    features = NULL,
+    groups = NULL,
+    components = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    normalized = TRUE,
+    filtered = FALSE,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    groupBy = c("feature", "candidate_rank"),
+    showText = TRUE,
+    interactive = TRUE) {
+  suspects <- get_suspects(x, analyses = analyses)
 
-# MARK: get_suspects
+  if (nrow(suspects) == 0) {
+    message("\u2717 Suspect MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  if (!is.null(features)) {
+    if (is.data.frame(features)) {
+      if ("analysis" %in% colnames(features)) {
+        suspects <- suspects[suspects$analysis %in% unique(features$analysis), ]
+      }
+      if ("feature" %in% colnames(features)) {
+        suspects <- suspects[suspects$feature %in% unique(features$feature), ]
+      }
+    } else {
+      suspects <- suspects[suspects$feature %in% features, ]
+    }
+  }
+
+  if (nrow(suspects) == 0) {
+    message("\u2717 Suspect MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  spec_list <- lapply(
+    seq_len(nrow(suspects)),
+    function(i) {
+      sp <- suspects[i, ]
+      out <- list()
+
+      has_exp <- !is.na(sp$exp_ms2_mz) && nchar(sp$exp_ms2_mz) > 0 &&
+        !is.na(sp$exp_ms2_intensity) && nchar(sp$exp_ms2_intensity) > 0
+      if (has_exp) {
+        mz_dec <- rcpp_streamcraft_decode_string(sp$exp_ms2_mz)
+        int_dec <- rcpp_streamcraft_decode_string(sp$exp_ms2_intensity)
+        if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
+          out[[length(out) + 1]] <- data.table::data.table(
+            mz = mz_dec,
+            intensity = int_dec,
+            analysis = sp$analysis,
+            feature = sp$feature,
+            name = sp$name,
+            candidate_rank = sp$candidate_rank,
+            db_ms2_formula = NA_character_,
+            source = "exp"
+          )
+        }
+      }
+
+      has_db <- !is.na(sp$db_ms2_mz) && nchar(sp$db_ms2_mz) > 0 &&
+        !is.na(sp$db_ms2_intensity) && nchar(sp$db_ms2_intensity) > 0
+      if (has_db) {
+        mz_dec <- rcpp_streamcraft_decode_string(sp$db_ms2_mz)
+        int_dec <- rcpp_streamcraft_decode_string(sp$db_ms2_intensity)
+        if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
+          formula_vec <- rep(NA_character_, length(mz_dec))
+          if (!is.na(sp$db_ms2_formula) && nzchar(sp$db_ms2_formula)) {
+            formula_split <- strsplit(sp$db_ms2_formula, ";", fixed = TRUE)[[1]]
+            formula_split <- trimws(formula_split)
+            if (length(formula_split) > 0) {
+              if (length(formula_split) < length(mz_dec)) {
+                formula_split <- c(formula_split, rep(NA_character_, length(mz_dec) - length(formula_split)))
+              }
+              if (length(formula_split) > length(mz_dec)) {
+                formula_split <- formula_split[seq_len(length(mz_dec))]
+              }
+              formula_vec <- formula_split
+            }
+          }
+          out[[length(out) + 1]] <- data.table::data.table(
+            mz = mz_dec,
+            intensity = -abs(int_dec),
+            analysis = sp$analysis,
+            feature = sp$feature,
+            name = sp$name,
+            candidate_rank = sp$candidate_rank,
+            db_ms2_formula = formula_vec,
+            source = "db"
+          )
+        }
+      }
+
+      if (length(out) == 0) {
+        return(data.table::data.table())
+      }
+      data.table::rbindlist(out, fill = TRUE)
+    }
+  )
+
+  spec_list <- spec_list[!sapply(spec_list, function(z) is.null(z) || nrow(z) == 0)]
+  suspects_ms2 <- data.table::rbindlist(spec_list, fill = TRUE)
+  if (nrow(suspects_ms2) == 0) {
+    message("\u2717 Suspect MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  if (!is.numeric(suspects_ms2$intensity)) {
+    suspects_ms2$intensity <- suppressWarnings(as.numeric(suspects_ms2$intensity))
+  }
+  if (!is.numeric(suspects_ms2$mz)) {
+    suspects_ms2$mz <- suppressWarnings(as.numeric(suspects_ms2$mz))
+  }
+  suspects_ms2 <- suspects_ms2[is.finite(suspects_ms2$mz) & is.finite(suspects_ms2$intensity), ]
+  if (nrow(suspects_ms2) == 0) {
+    message("\u2717 Suspect MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  if (normalized) {
+    suspects_ms2[
+      ,
+      intensity := {
+        max_int <- max(abs(intensity), na.rm = TRUE)
+        if (is.finite(max_int) && max_int > 0) intensity / max_int else intensity
+      },
+      by = .(analysis, feature, name, candidate_rank, source)
+    ]
+  }
+
+  exclude_cols <- c(
+    "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
+    "exp_ms2_mz", "exp_ms2_intensity"
+  )
+  detail_cols <- setdiff(colnames(suspects), exclude_cols)
+  detail_cols <- detail_cols[detail_cols %in% colnames(suspects)]
+  detail_cols <- setdiff(detail_cols, colnames(suspects_ms2))
+  detail_cols <- unique(c("analysis", "feature", "name", "candidate_rank", detail_cols))
+  detail_cols <- detail_cols[detail_cols %in% colnames(suspects)]
+  suspects_details <- suspects[, detail_cols, with = FALSE]
+  suspects_ms2 <- merge(
+    suspects_ms2,
+    suspects_details,
+    by = c("analysis", "feature", "name", "candidate_rank"),
+    all.x = TRUE
+  )
+
+  if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(suspects_ms2)))) {
+    warning("groupBy columns not found in suspect MS2 data")
+    return(NULL)
+  }
+
+  vals <- lapply(groupBy, function(col) as.character(suspects_ms2[[col]]))
+  suspects_ms2$var <- do.call(paste, c(vals, sep = " - "))
+  suspects_ms2$loop <- paste0(
+    suspects_ms2$analysis,
+    suspects_ms2$feature,
+    suspects_ms2$name,
+    suspects_ms2$candidate_rank,
+    suspects_ms2$source,
+    suspects_ms2$var
+  )
+  cl <- .get_colors(unique(suspects_ms2$var))
+  max_abs_int <- max(abs(suspects_ms2$intensity), na.rm = TRUE)
+  if (!is.finite(max_abs_int) || max_abs_int == 0) max_abs_int <- 1
+
+  if (showText) {
+    base_txt <- paste0(round(suspects_ms2$mz, 4))
+    has_formula <- !is.na(suspects_ms2$db_ms2_formula) &
+      nzchar(suspects_ms2$db_ms2_formula) &
+      suspects_ms2$source == "db"
+    base_txt[has_formula] <- paste0(
+      base_txt[has_formula],
+      " - ",
+      suspects_ms2$db_ms2_formula[has_formula]
+    )
+    suspects_ms2$text_string_gg <- base_txt
+    suspects_ms2$text_string_plotly <- base_txt
+  } else {
+    suspects_ms2$text_string_gg <- ""
+    suspects_ms2$text_string_plotly <- ""
+  }
+
+  if (!interactive) {
+    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    suspects_ms2$linesize <- 1
+    suspects_ms2$linesize[suspects_ms2$source == "db"] <- 1.5
+
+    plot <- ggplot2::ggplot(
+      suspects_ms2,
+      ggplot2::aes(x = mz, y = intensity, group = loop)
+    ) +
+      ggplot2::geom_segment(ggplot2::aes(
+        xend = mz,
+        yend = 0,
+        color = var,
+        linewidth = linesize
+      ))
+
+    if (showText) {
+      plot <- plot +
+        ggplot2::geom_text(
+          ggplot2::aes(label = text_string_gg),
+          vjust = 0.2,
+          hjust = -0.2,
+          angle = 90,
+          size = 2,
+          show.legend = FALSE
+        )
+    }
+
+    plot <- plot +
+      ggplot2::scale_y_continuous(
+        expand = c(0, 0),
+        limits = c(-max_abs_int * 1.5, max_abs_int * 1.5)
+      ) +
+      ggplot2::labs(title = title, x = xLab, y = yLab) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::scale_linewidth_continuous(range = c(1, 2), guide = "none") +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = groupBy)
+
+    plot
+  } else {
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    ticksMin <- plyr::round_any(min(suspects_ms2$mz, na.rm = TRUE) * 0.9, 10)
+    ticksMax <- plyr::round_any(max(suspects_ms2$mz, na.rm = TRUE) * 1.1, 10)
+
+    title <- list(text = title, font = list(size = 12, color = "black"))
+
+    xaxis <- list(
+      linecolor = "black",
+      title = xLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(ticksMin, ticksMax),
+      dtick = round((max(suspects_ms2$mz) / 10), -1),
+      ticks = "outside"
+    )
+
+    yaxis <- list(
+      linecolor = "black",
+      title = yLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(-max_abs_int * 1.5, max_abs_int * 1.5)
+    )
+
+    plot <- plot_ly()
+    seen_vars <- character(0)
+    for (lp in unique(suspects_ms2$loop)) {
+      seg <- suspects_ms2[suspects_ms2$loop == lp, ]
+      if (nrow(seg) == 0) next
+      var_val <- seg$var[1]
+      show_leg <- !(var_val %in% seen_vars)
+      if (show_leg) seen_vars <- c(seen_vars, var_val)
+      line_width <- ifelse(seg$source[1] == "db", 1.5, 1)
+      hover_fields <- setdiff(
+        colnames(seg),
+        c(
+          "mz", "intensity", "var", "loop", "text_string",
+          "source", "db_ms2_formula"
+        )
+      )
+      hover_fields <- hover_fields[hover_fields %in% colnames(seg)]
+      hover_text <- apply(seg[, hover_fields, with = FALSE], 1, function(row) {
+        row_vals <- as.character(row)
+        row_vals[is.na(row_vals)] <- ""
+        paste(paste0(hover_fields, ": ", row_vals), collapse = "<br>")
+      })
+      formula_line <- ifelse(
+        seg$source == "db" &
+          !is.na(seg$db_ms2_formula) &
+          nzchar(seg$db_ms2_formula),
+        paste0("<br>formula: ", seg$db_ms2_formula),
+        ""
+      )
+      hover_text <- paste0(
+        "source: ", seg$source,
+        "<br>m/z: ", round(seg$mz, 4),
+        formula_line,
+        "<br>intensity: ", round(seg$intensity, 4),
+        "<br>", hover_text
+      )
+      x_seg <- as.numeric(rbind(seg$mz, seg$mz, rep(NA, nrow(seg))))
+      y_seg <- as.numeric(rbind(rep(0, nrow(seg)), seg$intensity, rep(NA, nrow(seg))))
+      text_seg <- as.vector(rbind(hover_text, hover_text, rep(NA_character_, nrow(seg))))
+      plot <- plot %>%
+        add_trace(
+          x = as.vector(x_seg),
+          y = as.vector(y_seg),
+          type = "scattergl",
+          mode = "lines",
+          line = list(color = cl[var_val], width = line_width),
+          name = var_val,
+          legendgroup = var_val,
+          showlegend = show_leg,
+          hoverinfo = "text",
+          text = text_seg
+        )
+      if (showText) {
+        plot <- plot %>%
+          add_trace(
+            x = seg$mz,
+            y = seg$intensity,
+            type = "scattergl",
+            mode = "markers+text",
+            marker = list(size = 2, color = cl[var_val]),
+            text = seg$text_string_plotly,
+            textposition = ifelse(seg$source[1] == "db", "bottom center", "top center"),
+            textfont = list(size = 9, color = cl[var_val]),
+            hoverinfo = "text",
+            hovertext = hover_text,
+            name = var_val,
+            legendgroup = var_val,
+            showlegend = FALSE
+          )
+      }
+    }
+
+    plot <- plot %>%
+      plotly::layout(
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        uniformtext = list(minsize = 6, mode = "show")
+      )
+
+    plot
+  }
+}
+
+
+# MARK: suspect_screening
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Performs suspect screening on features stored in the DuckDB
 #' against a provided suspect database. Matches features based on mass or *m/z*, retention time, and when available
 #' MS2 spectral similarity.
@@ -1349,7 +1715,7 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' Identification levels: "1" = MS1+RT+MS2 match, "2" = MS1+MS2 match, "3b" = MS1+RT match, "4" = MS1 match only.
 #' @export
 #'
-get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
+suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
     x,
     analyses = NULL,
     suspects = NULL,
@@ -1428,6 +1794,32 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 
   # Process each feature
+  get_optional_char <- function(tbl, field) {
+    if (field %in% colnames(tbl)) {
+      val <- as.character(tbl[[field]][1])
+      if (is.na(val) || length(val) == 0) "" else val
+    } else {
+      ""
+    }
+  }
+
+  get_optional_numeric <- function(tbl, field, default = 0) {
+    if (field %in% colnames(tbl)) {
+      val <- suppressWarnings(as.numeric(tbl[[field]][1]))
+      if (is.na(val)) default else val
+    } else {
+      default
+    }
+  }
+
+  get_database_id <- function(tbl) {
+    for (field in c("database_id", "id", "ID")) {
+      val <- get_optional_char(tbl, field)
+      if (nzchar(val)) return(val)
+    }
+    ""
+  }
+
   suspects_out <- data.table::data.table()
   for (i in seq_len(nrow(features))) {
     # Match to suspect database
@@ -1440,12 +1832,17 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
     )]
     suspect_db <- suspect_db[1, ]
 
+  formula_val <- get_optional_char(suspect_db, "formula")
+  smiles_val <- get_optional_char(suspect_db, "SMILES")
+  cas_val <- get_optional_char(suspect_db, "CAS")
+  score_val <- get_optional_numeric(suspect_db, "score", default = 0)
+  database_id_val <- get_database_id(suspect_db)
+
     # Initialize result row with all columns and default values
     temp <- data.table::data.table(
       analysis = features$analysis[i],
       feature = features$feature[i],
       name = features$name[i],
-      formula = if ("formula" %in% colnames(suspect_db)) suspect_db$formula else NA_character_,
       polarity = features$polarity[i],
       db_mass = NA_real_,
       exp_mass = features$mass[i],
@@ -1456,11 +1853,17 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
       intensity = features$intensity[i],
       area = features$area[i],
       id_level = "4",
+      score = score_val,
       shared_fragments = 0L,
       cosine_similarity = 0,
+      formula = formula_val,
+      SMILES = smiles_val,
+      CAS = cas_val,
+      database_id = database_id_val,
       db_ms2_size = 0L,
       db_ms2_mz = NA_character_,
       db_ms2_intensity = NA_character_,
+      db_ms2_formula = NA_character_,
       exp_ms2_size = features$ms2_size[i],
       exp_ms2_mz = features$ms2_mz[i],
       exp_ms2_intensity = features$ms2_intensity[i]
@@ -1594,6 +1997,7 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
         temp$db_ms2_size <- as.integer(nrow(db_fragments))
         temp$db_ms2_mz <- rcpp_streamcraft_encode_vector(db_fragments$mz)
         temp$db_ms2_intensity <- rcpp_streamcraft_encode_vector(db_fragments$intensity)
+        temp$db_ms2_formula <- paste(db_fragments$formula, collapse = ";")
 
         # Calculate m/z ranges for matching
         mzr <- db_fragments$mz * ppmMS2 / 1E6
@@ -1667,7 +2071,50 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(
     }
     suspects_out <- data.table::rbindlist(list(suspects_out, temp), fill = TRUE)
   }
+  col_order <- c(
+    "analysis", "feature", "name", "polarity",
+    "db_mass", "exp_mass", "error_mass",
+    "db_rt", "exp_rt", "error_rt",
+    "intensity", "area",
+    "id_level", "score", "shared_fragments", "cosine_similarity",
+    "formula", "SMILES", "CAS", "database_id",
+    "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
+    "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
+  )
+  if (nrow(suspects_out) > 0) {
+    keep_cols <- intersect(col_order, colnames(suspects_out))
+    data.table::setcolorder(suspects_out, keep_cols)
+  }
   suspects_out
+}
+
+#' @export
+#' @noRd
+get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(x, analyses = NULL) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  # Check if table exists
+  if (!"Suspects" %in% DBI::dbListTables(conn)) {
+    message("\U2717 No suspects table found in database.")
+    return(data.table::data.table())
+  }
+
+  # Get all suspects or filter by analyses
+  if (is.null(analyses)) {
+    suspects <- DBI::dbGetQuery(conn, "SELECT * FROM Suspects")
+  } else {
+    all_analyses <- info(x$analyses)$analysis
+    sel_analyses <- .resolve_analyses_selection(analyses, all_analyses)
+    if (length(sel_analyses) == 0) {
+      return(data.table::data.table())
+    }
+    placeholders <- paste(rep("?", length(sel_analyses)), collapse = ", ")
+    query <- sprintf("SELECT * FROM Suspects WHERE analysis IN (%s)", placeholders)
+    suspects <- DBI::dbGetQuery(conn, query, params = as.list(sel_analyses))
+  }
+
+  data.table::as.data.table(suspects)
 }
 
 
@@ -1751,6 +2198,433 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
   data.table::setcolorder(internal_standards, col_order)
 
   internal_standards
+}
+
+# MARK: get_fold_change
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Gets a data.table with fold-change analysis between the
+#' `replicatesIn` and `replicatesOut`. This method is adapted from the work of
+#' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
+#' @param replicatesIn Character vector with the names of the replicates to be considered as the denominator.
+#' @param replicatesOut Character vector with the names of the replicates to be considered as the numerator.
+#' @param constantThreshold Numeric of length one. The threshold to consider a feature as constant.
+#' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as eliminated.
+#' @template arg-ms-correctIntensity
+#' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled with the lower limit.
+#' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
+#'
+#' @export
+#'
+#' @references
+#' \insertRef{bader01}{StreamFind}
+#'
+get_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
+  x,
+  replicatesIn = NULL,
+  replicatesOut = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctIntensity = FALSE,
+  fillZerosWithLowerLimit = FALSE,
+  lowerLimit = NA_real_) {
+  info_analyses <- info(x$analyses)
+  all_names <- info_analyses$analysis
+  rpls <- info_analyses$replicate
+
+  if (is.numeric(replicatesIn)) {
+    replicatesIn <- unique(rpls[replicatesIn])
+  }
+  if (is.numeric(replicatesOut)) {
+    replicatesOut <- unique(rpls[replicatesOut])
+  }
+
+  if (any(is.na(replicatesIn)) || any(is.na(replicatesOut))) {
+    message("\u2717 Replicates not found!")
+    return(NULL)
+  }
+
+  if (length(replicatesIn) == 1 && length(replicatesOut) > 1) {
+    replicatesIn <- rep(replicatesIn, length(replicatesOut))
+  }
+
+  fts <- get_features(
+    x = x,
+    analyses = NULL,
+    groups = groups,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    filtered = filtered
+  )
+
+  if (!"feature_group" %in% colnames(fts)) {
+    warning("\u2717 Feature groups not found!")
+    return(NULL)
+  }
+
+  if (correctIntensity && "correction" %in% colnames(fts)) {
+    fts$intensity <- fts$intensity * fts$correction
+  }
+
+  fts <- fts[!is.na(fts$feature_group) & fts$feature_group != "", ]
+  if (nrow(fts) == 0) {
+    message("\u2717 Feature groups not found for the targets!")
+    return(NULL)
+  }
+
+  fts_av <- fts[,
+    .(intensity = max(intensity, na.rm = TRUE)),
+    by = c("feature_group", "analysis")
+  ]
+  fts_av <- data.table::dcast(
+    fts_av,
+    feature_group ~ analysis,
+    value.var = "intensity"
+  )
+  fts_av[is.na(fts_av)] <- 0
+  data.table::setnames(fts_av, "feature_group", "group")
+  groups_dt <- fts_av
+
+  comb <- data.table::data.table()
+  for (rep in seq_len(length(replicatesOut))) {
+    out_temp <- all_names[rpls %in% replicatesOut[rep]]
+    in_temp <- all_names[rpls %in% replicatesIn[rep]]
+    comb_temp <- expand.grid(
+      analysisIn = in_temp,
+      analysisOut = out_temp,
+      replicateIn = replicatesIn[rep],
+      replicateOut = replicatesOut[rep]
+    )
+    comb <- data.table::rbindlist(list(comb, comb_temp), fill = TRUE)
+  }
+
+  if (nrow(comb) == 0) {
+    warning(
+      "\u2717 Combinations could not be made, check replicates IN and OUT!"
+    )
+    return(NULL)
+  }
+
+  fc <- lapply(
+    seq_len(nrow(comb)),
+    function(z, comb, groups_dt, fillZerosWithLowerLimit) {
+      anaIn <- comb$analysisIn[z]
+      anaOut <- comb$analysisOut[z]
+
+      selOut <- colnames(groups_dt) %in% as.character(anaOut)
+      vecOut <- groups_dt[, selOut, with = FALSE][[1]]
+
+      selIn <- colnames(groups_dt) %in% as.character(anaIn)
+      vecIn <- groups_dt[, selIn, with = FALSE][[1]]
+
+      if (fillZerosWithLowerLimit) {
+        if (is.na(lowerLimit)) {
+          vecOut[vecOut == 0] <- min(vecOut[vecOut > 0])
+          vecIn[vecIn == 0] <- min(vecIn[vecIn > 0])
+        } else {
+          vecOut[vecOut == 0] <- lowerLimit
+          vecIn[vecIn == 0] <- lowerLimit
+        }
+      }
+
+      fc_vec <- as.numeric(vecOut) / as.numeric(vecIn)
+
+      res <- data.table::data.table("group" = groups_dt$group, "fc" = fc_vec)
+      res$analysis_in <- anaIn
+      res$analysis_out <- anaOut
+      res$replicate_in <- comb$replicateIn[z]
+      res$replicate_out <- comb$replicateOut[z]
+      res$combination <- z
+      res
+    },
+    comb = comb,
+    groups_dt = groups_dt,
+    fillZerosWithLowerLimit = fillZerosWithLowerLimit
+  )
+
+  fc <- data.table::rbindlist(fc)
+  sel_nan <- is.nan(fc$fc)
+  fc <- fc[!sel_nan, ]
+  fc_category <- list(
+    "Elimination" = c(0, eliminationThreshold),
+    "Decrease" = c(eliminationThreshold, constantThreshold),
+    "Constant" = c(constantThreshold, 1 / constantThreshold),
+    "Increase" = c(1 / constantThreshold, 1 / eliminationThreshold),
+    "Formation" = c(1 / eliminationThreshold, Inf)
+  )
+  fc_boundaries <- c(
+    paste0("(", 0, "-", eliminationThreshold, ")"),
+    paste0("(", eliminationThreshold, "-", constantThreshold, ")"),
+    paste0("(", constantThreshold, "-", 1 / constantThreshold, ")"),
+    paste0("(", 1 / constantThreshold, "-", 1 / eliminationThreshold, ")"),
+    paste0("(", 1 / eliminationThreshold, "-Inf)")
+  )
+  names(fc_boundaries) <- names(fc_category)
+  for (i in seq_along(fc_category)) {
+    fc$category[
+      fc$fc >= fc_category[[i]][1] &
+        fc$fc <= fc_category[[i]][2]
+    ] <- names(fc_category)[i]
+  }
+  sel_na_category <- is.na(fc$category)
+  fc <- fc[!sel_na_category, ]
+  fc$category <- factor(fc$category, levels = names(fc_category))
+  fc$bondaries <- paste(fc$category, fc_boundaries[fc$category], sep = "\n")
+  fc$bondaries <- factor(
+    fc$bondaries,
+    levels = paste(names(fc_category), fc_boundaries, sep = "\n")
+  )
+  fc
+}
+
+# MARK: plot_fold_change
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plots the fold-change analysis between the `replicatesIn`
+#' and `replicatesOut`. This method is adapted from the work of
+#' \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
+#' @param replicatesIn Character vector with the names of the replicates to be considered as the denominator.
+#' @param replicatesOut Character vector with the names of the replicates to be considered as the numerator.
+#' @template arg-ms-groups
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-filtered
+#' @param constantThreshold Numeric of length one. The threshold to consider a feature as constant.
+#' @param eliminationThreshold Numeric of length one. The threshold to consider a feature as eliminated.
+#' @template arg-ms-correctIntensity
+#' @param fillZerosWithLowerLimit Logical of length one. When `TRUE` the zero values are filled with the lower limit.
+#' @param lowerLimit Numeric of length one. The lower limit to fill the zero values.
+#' @template arg-normalized
+#' @template arg-yLab
+#' @template arg-title
+#' @template arg-interactive
+#' @template arg-showLegend
+#' @export
+#'
+plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
+  x,
+  replicatesIn = NULL,
+  replicatesOut = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctIntensity = FALSE,
+  fillZerosWithLowerLimit = FALSE,
+  lowerLimit = NA_real_,
+  normalized = TRUE,
+  yLab = NULL,
+  title = NULL,
+  interactive = TRUE,
+  showLegend = TRUE) {
+  fc <- get_fold_change(
+    x,
+    replicatesIn,
+    replicatesOut,
+    groups,
+    mass,
+    mz,
+    rt,
+    mobility,
+    ppm,
+    sec,
+    millisec,
+    filtered,
+    constantThreshold,
+    eliminationThreshold,
+    correctIntensity,
+    fillZerosWithLowerLimit,
+    lowerLimit
+  )
+
+  if (is.null(fc)) {
+    return(NULL)
+  }
+
+  if (nrow(fc) == 0) {
+    return(NULL)
+  }
+
+  fc_summary_count <- fc[,
+    .(count = .N),
+    by = c("combination", "bondaries", "replicate_out", "replicate_in")
+  ]
+
+  info_analyses <- info(x$analyses)
+  fts_all <- get_features(x, analyses = NULL, filtered = filtered)
+  groups_counts <- data.table::data.table(
+    analysis = info_analyses$analysis,
+    replicate = info_analyses$replicate,
+    groups = 0
+  )
+  if ("feature_group" %in% colnames(fts_all)) {
+    fts_all <- fts_all[!is.na(fts_all$feature_group) & fts_all$feature_group != "", ]
+    if (nrow(fts_all) > 0) {
+      group_counts <- fts_all[,
+        .(groups = data.table::uniqueN(feature_group)),
+        by = analysis
+      ]
+      groups_counts$groups <- group_counts$groups[match(groups_counts$analysis, group_counts$analysis)]
+      groups_counts$groups[is.na(groups_counts$groups)] <- 0
+    }
+  }
+  all_fts <- groups_counts[groups_counts$replicate %in% replicatesIn, ]
+
+  unique_combinations_max <- unique(fc_summary_count[,
+    c("combination", "replicate_out", "replicate_in"),
+    with = FALSE
+  ])
+
+  unique_combinations_min <- unique_combinations_max
+
+  unique_combinations_max$count <- vapply(
+    unique_combinations_max$replicate_in,
+    function(z, all_fts) {
+      max(all_fts$groups[all_fts$replicate == z])
+    },
+    all_fts = all_fts,
+    0
+  )
+
+  unique_combinations_min$count <- vapply(
+    unique_combinations_min$replicate_in,
+    function(z, all_fts) {
+      min(all_fts$groups[all_fts$replicate == z])
+    },
+    all_fts = all_fts,
+    0
+  )
+
+  unique_combinations_max$bondaries <- "Total\nfeatures in"
+  unique_combinations_min$bondaries <- "Total\nfeatures in"
+
+  fc_summary_count <- data.table::rbindlist(
+    list(
+      unique_combinations_max,
+      unique_combinations_min,
+      fc_summary_count
+    ),
+    use.names = TRUE
+  )
+
+  if (is.null(yLab)) {
+    yLab <- "Number of feature groups"
+
+    if (normalized) {
+      yLab <- "Relative number of feature groups"
+    }
+  }
+
+  if (!interactive) {
+    fc_summary_count$bondaries <- paste(
+      fc_summary_count$replicate_out,
+      fc_summary_count$bondaries,
+      sep = "\n"
+    )
+
+    fc_summary_count$bondaries <- factor(
+      fc_summary_count$bondaries,
+      levels = unique(fc_summary_count$bondaries)
+    )
+    replicate_out <- NULL
+    bondaries <- NULL
+    fc_levels <- fc_summary_count[, .(replicate_out, bondaries)]
+    fc_levels <- unique(fc_levels)
+
+    colours <- .get_colors(unique(fc_levels$replicate_out))
+    colours_key <- colours[fc_levels$replicate_out]
+
+    if (normalized) {
+      fc_summary_count$uid <- paste0(
+        fc_summary_count$replicate_out,
+        "_",
+        fc_summary_count$combination
+      )
+
+      for (i in unique(fc_summary_count$uid)) {
+        sel <- fc_summary_count$uid %in% i
+        fc_summary_count$count[sel] <- fc_summary_count$count[sel] /
+          max(fc_summary_count$count[sel])
+      }
+    }
+
+    graphics::boxplot(
+      fc_summary_count$count ~ fc_summary_count$bondaries,
+      data = fc_summary_count,
+      col = paste0(colours_key, "50"),
+      border = colours_key,
+      main = title,
+      xlab = NULL,
+      ylab = yLab,
+      outline = TRUE,
+      ylim = c(0, max(fc_summary_count$count) + 1)
+    )
+    if (showLegend) {
+      legend("topright", legend = names(colours), fill = colours)
+    }
+  } else {
+    if (normalized) {
+      fc_summary_count$uid <- paste0(
+        fc_summary_count$replicate_out,
+        "_",
+        fc_summary_count$combination
+      )
+      for (i in unique(fc_summary_count$uid)) {
+        sel <- fc_summary_count$uid %in% i
+        fc_summary_count$count[sel] <- fc_summary_count$count[sel] /
+          max(fc_summary_count$count[sel])
+      }
+    }
+
+    fig <- plotly::plot_ly(
+      data = fc_summary_count,
+      x = ~bondaries,
+      y = ~count,
+      color = ~replicate_out,
+      colors = .get_colors(unique(fc_summary_count$replicate_out)),
+      type = "box",
+      jitter = 0.03,
+      showlegend = showLegend
+    )
+    fig <- fig %>%
+      plotly::layout(
+        title = title,
+        xaxis = list(title = ""),
+        yaxis = list(
+          title = yLab,
+          range = c(
+            0,
+            max(
+              fc_summary_count$count
+            ) *
+              1.1
+          )
+        )
+      )
+    fig
+  }
 }
 
 
@@ -1904,8 +2778,8 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
   DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS InternalStandards (
     analysis VARCHAR,
     feature VARCHAR,
+    candidate_rank INTEGER,
     name VARCHAR,
-    formula VARCHAR,
     polarity INTEGER,
     db_mass DOUBLE,
     exp_mass DOUBLE,
@@ -1916,15 +2790,21 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
     intensity DOUBLE,
     area DOUBLE,
     id_level VARCHAR,
+    score DOUBLE,
     shared_fragments INTEGER,
     cosine_similarity DOUBLE,
+    formula VARCHAR,
+    SMILES VARCHAR,
+    CAS VARCHAR,
+    database_id VARCHAR,
     db_ms2_size INTEGER,
     db_ms2_mz VARCHAR,
     db_ms2_intensity VARCHAR,
+    db_ms2_formula VARCHAR,
     exp_ms2_size INTEGER,
     exp_ms2_mz VARCHAR,
     exp_ms2_intensity VARCHAR,
-    PRIMARY KEY (analysis, feature)
+    PRIMARY KEY (analysis, feature, candidate_rank)
   )")
 
   invisible(TRUE)
@@ -1941,7 +2821,6 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
         analysis = "VARCHAR",
         feature = "VARCHAR",
         name = "VARCHAR",
-        formula = "VARCHAR",
         polarity = "INTEGER",
         db_mass = "DOUBLE",
         exp_mass = "DOUBLE",
@@ -1952,11 +2831,18 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
         intensity = "DOUBLE",
         area = "DOUBLE",
         id_level = "VARCHAR",
+        score = "DOUBLE",
         shared_fragments = "INTEGER",
         cosine_similarity = "DOUBLE",
+        formula = "VARCHAR",
+        SMILES = "VARCHAR",
+        CAS = "VARCHAR",
+        database_id = "VARCHAR",
         db_ms2_size = "INTEGER",
         db_ms2_mz = "VARCHAR",
         db_ms2_intensity = "VARCHAR",
+        db_ms2_formula = "VARCHAR",
+        candidate_rank = "INTEGER",
         exp_ms2_size = "INTEGER",
         exp_ms2_mz = "VARCHAR",
         exp_ms2_intensity = "VARCHAR"
@@ -1970,6 +2856,168 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(x, analy
     },
     error = function(e) {
       stop("Schema migration check (InternalStandards): ", e$message)
+    }
+  )
+  invisible(TRUE)
+}
+
+
+# MARK: .create_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema
+#' @noRd
+.create_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema <- function(conn) {
+  DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS Suspects (
+    analysis VARCHAR,
+    feature VARCHAR,
+    candidate_rank INTEGER,
+    name VARCHAR,
+    polarity INTEGER,
+    db_mass DOUBLE,
+    exp_mass DOUBLE,
+    error_mass DOUBLE,
+    db_rt DOUBLE,
+    exp_rt DOUBLE,
+    error_rt DOUBLE,
+    intensity DOUBLE,
+    area DOUBLE,
+    id_level VARCHAR,
+    score DOUBLE,
+    shared_fragments INTEGER,
+    cosine_similarity DOUBLE,
+    formula VARCHAR,
+    SMILES VARCHAR,
+    CAS VARCHAR,
+    database_id VARCHAR,
+    db_ms2_size INTEGER,
+    db_ms2_mz VARCHAR,
+    db_ms2_intensity VARCHAR,
+    db_ms2_formula VARCHAR,
+    exp_ms2_size INTEGER,
+    exp_ms2_mz VARCHAR,
+    exp_ms2_intensity VARCHAR,
+    PRIMARY KEY (analysis, feature, candidate_rank)
+  )")
+
+  invisible(TRUE)
+}
+
+
+# MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema
+#' @noRd
+.validate_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema <- function(conn) {
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Suspects)")
+      required <- list(
+        analysis = "VARCHAR",
+        feature = "VARCHAR",
+        candidate_rank = "INTEGER",
+        name = "VARCHAR",
+        polarity = "INTEGER",
+        db_mass = "DOUBLE",
+        exp_mass = "DOUBLE",
+        error_mass = "DOUBLE",
+        db_rt = "DOUBLE",
+        exp_rt = "DOUBLE",
+        error_rt = "DOUBLE",
+        intensity = "DOUBLE",
+        area = "DOUBLE",
+        id_level = "VARCHAR",
+        score = "DOUBLE",
+        shared_fragments = "INTEGER",
+        cosine_similarity = "DOUBLE",
+        formula = "VARCHAR",
+        SMILES = "VARCHAR",
+        CAS = "VARCHAR",
+        database_id = "VARCHAR",
+        db_ms2_size = "INTEGER",
+        db_ms2_mz = "VARCHAR",
+        db_ms2_intensity = "VARCHAR",
+        db_ms2_formula = "VARCHAR",
+        exp_ms2_size = "INTEGER",
+        exp_ms2_mz = "VARCHAR",
+        exp_ms2_intensity = "VARCHAR"
+      )
+      missing_cols <- setdiff(names(required), table_info$name)
+      for (col in missing_cols) {
+        message(sprintf("Adding missing %s column to Suspects table...", col))
+        DBI::dbExecute(conn, sprintf("ALTER TABLE Suspects ADD COLUMN %s %s", col, required[[col]]))
+      }
+
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Suspects)")
+      pk_cols <- table_info$name[table_info$pk > 0]
+      needs_rebuild <- !all(c("analysis", "feature", "candidate_rank") %in% pk_cols)
+      if (needs_rebuild) {
+        message("Rebuilding Suspects table to update primary key...")
+        DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS Suspects_new (
+          analysis VARCHAR,
+          feature VARCHAR,
+          candidate_rank INTEGER,
+          name VARCHAR,
+          polarity INTEGER,
+          db_mass DOUBLE,
+          exp_mass DOUBLE,
+          error_mass DOUBLE,
+          db_rt DOUBLE,
+          exp_rt DOUBLE,
+          error_rt DOUBLE,
+          intensity DOUBLE,
+          area DOUBLE,
+          id_level VARCHAR,
+          score DOUBLE,
+          shared_fragments INTEGER,
+          cosine_similarity DOUBLE,
+          formula VARCHAR,
+          SMILES VARCHAR,
+          CAS VARCHAR,
+          database_id VARCHAR,
+          db_ms2_size INTEGER,
+          db_ms2_mz VARCHAR,
+          db_ms2_intensity VARCHAR,
+          db_ms2_formula VARCHAR,
+          exp_ms2_size INTEGER,
+          exp_ms2_mz VARCHAR,
+          exp_ms2_intensity VARCHAR,
+          PRIMARY KEY (analysis, feature, candidate_rank)
+        )")
+        DBI::dbExecute(conn, "
+          INSERT INTO Suspects_new
+          SELECT
+            analysis,
+            feature,
+            COALESCE(candidate_rank, 1) AS candidate_rank,
+            name,
+            polarity,
+            db_mass,
+            exp_mass,
+            error_mass,
+            db_rt,
+            exp_rt,
+            error_rt,
+            intensity,
+            area,
+            id_level,
+            score,
+            shared_fragments,
+            cosine_similarity,
+            formula,
+            SMILES,
+            CAS,
+            database_id,
+            db_ms2_size,
+            db_ms2_mz,
+            db_ms2_intensity,
+            db_ms2_formula,
+            exp_ms2_size,
+            exp_ms2_mz,
+            exp_ms2_intensity
+          FROM Suspects
+        ")
+        DBI::dbExecute(conn, "DROP TABLE Suspects")
+        DBI::dbExecute(conn, "ALTER TABLE Suspects_new RENAME TO Suspects")
+      }
+    },
+    error = function(e) {
+      stop("Schema migration check (Suspects): ", e$message)
     }
   )
   invisible(TRUE)

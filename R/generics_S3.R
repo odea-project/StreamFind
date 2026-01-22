@@ -520,6 +520,17 @@ get_suspects <- function(x, ...) {
   UseMethod("get_suspects")
 }
 
+#' @title Generic `suspect_screening`
+#' @description S3 generic to perform suspect screening on `x`.
+#' @param x An object from which the suspect screening will be performed.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+suspect_screening <- function(x, ...) {
+  UseMethod("suspect_screening")
+}
+
 #' @title Generic `get_transformation_products`
 #' @description S3 generic to get transformation products from `x`.
 #' @param x An object from which the transformation products will be retrieved.
@@ -799,6 +810,17 @@ plot_features_ms1 <- function(x, ...) {
 #'
 plot_features_ms2 <- function(x, ...) {
   UseMethod("plot_features_ms2")
+}
+
+#' @title Generic `plot_suspects_ms2`
+#' @description S3 generic to plot suspect MS2 spectra from `x`.
+#' @param x An object from which the suspect spectra will be plotted.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+plot_suspects_ms2 <- function(x, ...) {
+  UseMethod("plot_suspects_ms2")
 }
 
 #' @title Generic `plot_fold_change`

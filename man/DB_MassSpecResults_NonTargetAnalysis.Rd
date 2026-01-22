@@ -13,7 +13,10 @@
 \alias{map_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis}
-\alias{get_suspects.DB_MassSpecResults_NonTargetAnalysis}
+\alias{plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis}
+\alias{suspect_screening.DB_MassSpecResults_NonTargetAnalysis}
+\alias{get_fold_change.DB_MassSpecResults_NonTargetAnalysis}
+\alias{plot_fold_change.DB_MassSpecResults_NonTargetAnalysis}
 \title{Constructor and methods to handle non-target analysis (NTA) for mass spectrometry data}
 \usage{
 DB_MassSpecResults_NonTargetAnalysis(
@@ -139,7 +142,30 @@ DB_MassSpecResults_NonTargetAnalysis(
   interactive = TRUE
 )
 
-\method{get_suspects}{DB_MassSpecResults_NonTargetAnalysis}(
+\method{plot_suspects_ms2}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  normalized = TRUE,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = c("feature", "candidate_rank"),
+  showText = TRUE,
+  interactive = TRUE
+)
+
+\method{suspect_screening}{DB_MassSpecResults_NonTargetAnalysis}(
   x,
   analyses = NULL,
   suspects = NULL,
@@ -153,6 +179,51 @@ DB_MassSpecResults_NonTargetAnalysis(
 )
 
 \method{get_internal_standards}{DB_MassSpecResults_NonTargetAnalysis}(x, analyses = NULL)
+
+\method{get_fold_change}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  replicatesIn = NULL,
+  replicatesOut = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctIntensity = FALSE,
+  fillZerosWithLowerLimit = FALSE,
+  lowerLimit = NA_real_
+)
+
+\method{plot_fold_change}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  replicatesIn = NULL,
+  replicatesOut = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 4,
+  sec = 10,
+  millisec = 5,
+  filtered = FALSE,
+  constantThreshold = 0.5,
+  eliminationThreshold = 0.2,
+  correctIntensity = FALSE,
+  fillZerosWithLowerLimit = FALSE,
+  lowerLimit = NA_real_,
+  normalized = TRUE,
+  yLab = NULL,
+  title = NULL,
+  interactive = TRUE,
+  showLegend = TRUE
+)
 }
 \arguments{
 \item{projectPath}{Path to the project directory where this database file will be created/used.}
@@ -202,20 +273,20 @@ time values (in seconds).}
 a two columns data.table or data.frame with minimum and maximum drift
 time values (in milliseconds).}
 
-\item{ppm}{Numeric. Mass tolerance in parts-per-million for matching suspect mass or \emph{m/z} to features. Default: 5.}
+\item{ppm}{Numeric of length one with the mass deviation, in ppm.}
 
-\item{sec}{Numeric. Retention time tolerance in seconds for matching suspect RT to features. Default: 10.}
+\item{sec}{Numeric of length one with the time deviation, in seconds.}
 
 \item{millisec}{Numeric of length one with the drift time deviation,
 in milliseconds.}
 
-\item{filtered}{Logical. If TRUE, includes filtered features in the search. Default: FALSE.}
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
 
 \item{xLab}{A string with the title for the x axis.}
 
 \item{yLab}{A string with the title for the y axis.}
 
-\item{title}{Plot title.}
+\item{title}{A string with the title.}
 
 \item{groupBy}{Column to use for color grouping (default: "analysis").}
 
@@ -241,6 +312,25 @@ identification level. Default: 0.7.}
 
 \item{minSharedFragments}{Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
 Default: 3.}
+
+\item{replicatesIn}{Character vector with the names of the replicates to be considered as the denominator.}
+
+\item{replicatesOut}{Character vector with the names of the replicates to be considered as the numerator.}
+
+\item{constantThreshold}{Numeric of length one. The threshold to consider a feature as constant.}
+
+\item{eliminationThreshold}{Numeric of length one. The threshold to consider a feature as eliminated.}
+
+\item{correctIntensity}{Logical (length 1) with \code{TRUE} for correcting the intensity for matrix
+suppression before applying intensity based filters. Note that suppression factor as obtained by
+the processing method \code{CorrectMatrixSuppression} must be present. When not available the
+correction is ignored even if set to \code{TRUE}.}
+
+\item{fillZerosWithLowerLimit}{Logical of length one. When \code{TRUE} the zero values are filled with the lower limit.}
+
+\item{lowerLimit}{Numeric of length one. The lower limit to fill the zero values.}
+
+\item{showLegend}{Logical (length 1). Set to \code{TRUE} to show legend.}
 }
 \value{
 An object of class \code{DB_MassSpecResults_NonTargetAnalysis} (and \code{DB_Results}) pointing to the feature DuckDB on disk and holding an \code{analyses} field with the linked \code{DB_MassSpecAnalyses}.
@@ -275,10 +365,23 @@ Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_R
 
 \item \code{plot_features_ms2(DB_MassSpecResults_NonTargetAnalysis)}: Plot MS2 spectra for selected features.
 
-\item \code{get_suspects(DB_MassSpecResults_NonTargetAnalysis)}: Performs suspect screening on features stored in the DuckDB
+\item \code{plot_suspects_ms2(DB_MassSpecResults_NonTargetAnalysis)}: Plot suspect MS2 spectra for selected features.
+
+\item \code{suspect_screening(DB_MassSpecResults_NonTargetAnalysis)}: Performs suspect screening on features stored in the DuckDB
 against a provided suspect database. Matches features based on mass or \emph{m/z}, retention time, and when available
 MS2 spectral similarity.
 
 \item \code{get_internal_standards(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves internal standards from the database.
 
+\item \code{get_fold_change(DB_MassSpecResults_NonTargetAnalysis)}: Gets a data.table with fold-change analysis between the
+\code{replicatesIn} and \code{replicatesOut}. This method is adapted from the work of
+\href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
+
+\item \code{plot_fold_change(DB_MassSpecResults_NonTargetAnalysis)}: Plots the fold-change analysis between the \code{replicatesIn}
+and \code{replicatesOut}. This method is adapted from the work of
+\href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
+
 }}
+\references{
+\insertRef{bader01}{StreamFind}
+}
