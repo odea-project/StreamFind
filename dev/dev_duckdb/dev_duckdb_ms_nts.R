@@ -189,11 +189,50 @@ root <- file.path("dev", "dev_duckdb", "data_nts")
 ms <- DB_MassSpecEngine$new(projectPath = root)
 ms$run_app()
 
+# TODO add user questions to install needed packages when lauching the app and not all required packages are installed
+# TODO create a wizard to see with more details each suspect, implemented as a modal that reuses the structure and uses the interactive mode for the plot_suspects_ms2 and also shows the eic and all the details for the selected row, add it via a button in the DT first column with an eye icon
+# TODO implement matrix correction from Tisler et al. also as a DB_MassSpecMethod
+# Todo Add a transformation products suspect screening method
+
+
+plot_features_ms1(
+  ms$NonTargetAnalysis,
+  groupBy = c("replicate", "feature_group"),
+  interactive = TRUE
+)
 
 fts <- get_features(ms$NonTargetAnalysis)[, 1:20]
 fts <- fts[order(intensity), ]
 
-plot_suspects_ms2(ms$NonTargetAnalysis, features = get_suspects(ms$NonTargetAnalysis)[1, ], interactive = FALSE)
+
+plot_suspects_ms2(ms$NonTargetAnalysis, features = get_suspects(ms$NonTargetAnalysis)[1, ], interactive = F)
+
+
+
+
+library(rcdk)
+smiles <- "CC(=O)Oc1ccccc1C(=O)O"  # Aspirin
+mol <- parse.smiles(smiles)[[1]]
+# Generate 2D coordinates
+do.aromaticity(mol)
+set.atom.types(mol)
+do.isotopes(mol)
+generate.2d.coordinates(mol)
+# Plot
+library(rJava)
+library(rcdk)
+rcdk::plot(mol)
+rcdk::draw.molecule(mol)
+view.molecule.2d(mol)
+
+library(rJava)
+library(rcdk)
+smiles <- "CC(=O)Oc1ccccc1C(=O)O"
+mol <- parse.smiles(smiles)[[1]]
+img <- view.image.2d(mol)
+plot.new()
+rasterImage(img, 0, 0, 1, 1)
+
 
 
 res <- get_suspects(ms$NonTargetAnalysis)
@@ -201,6 +240,22 @@ nrow(res)
 
 res_istd <- get_internal_standards(ms$NonTargetAnalysis)
 nrow(res_istd)
+
+
+pos_fc <- get_fold_change(
+  ms$NonTargetAnalysis,
+  replicatesIn = "pos_influent",
+  replicatesOut = "pos_effluent"
+)
+
+plot_fold_change(
+  ms$NonTargetAnalysis,
+  replicatesIn = "pos_influent",
+  replicatesOut = "pos_effluent"
+)
+
+
+
 
 
 

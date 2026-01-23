@@ -13,8 +13,8 @@
 \alias{map_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis}
-\alias{plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis}
 \alias{suspect_screening.DB_MassSpecResults_NonTargetAnalysis}
+\alias{plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_fold_change.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_fold_change.DB_MassSpecResults_NonTargetAnalysis}
 \title{Constructor and methods to handle non-target analysis (NTA) for mass spectrometry data}
@@ -142,6 +142,19 @@ DB_MassSpecResults_NonTargetAnalysis(
   interactive = TRUE
 )
 
+\method{suspect_screening}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  suspects = NULL,
+  ppm = 5,
+  sec = 10,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCosineSimilarity = 0.7,
+  minSharedFragments = 3,
+  filtered = FALSE
+)
+
 \method{plot_suspects_ms2}{DB_MassSpecResults_NonTargetAnalysis}(
   x,
   analyses = NULL,
@@ -162,20 +175,8 @@ DB_MassSpecResults_NonTargetAnalysis(
   title = NULL,
   groupBy = c("feature", "candidate_rank"),
   showText = TRUE,
-  interactive = TRUE
-)
-
-\method{suspect_screening}{DB_MassSpecResults_NonTargetAnalysis}(
-  x,
-  analyses = NULL,
-  suspects = NULL,
-  ppm = 5,
-  sec = 10,
-  ppmMS2 = 10,
-  mzrMS2 = 0.008,
-  minCosineSimilarity = 0.7,
-  minSharedFragments = 3,
-  filtered = FALSE
+  interactive = TRUE,
+  showLegend = TRUE
 )
 
 \method{get_internal_standards}{DB_MassSpecResults_NonTargetAnalysis}(x, analyses = NULL)
@@ -313,6 +314,8 @@ identification level. Default: 0.7.}
 \item{minSharedFragments}{Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
 Default: 3.}
 
+\item{showLegend}{Logical (length 1). Set to \code{TRUE} to show legend.}
+
 \item{replicatesIn}{Character vector with the names of the replicates to be considered as the denominator.}
 
 \item{replicatesOut}{Character vector with the names of the replicates to be considered as the numerator.}
@@ -329,8 +332,6 @@ correction is ignored even if set to \code{TRUE}.}
 \item{fillZerosWithLowerLimit}{Logical of length one. When \code{TRUE} the zero values are filled with the lower limit.}
 
 \item{lowerLimit}{Numeric of length one. The lower limit to fill the zero values.}
-
-\item{showLegend}{Logical (length 1). Set to \code{TRUE} to show legend.}
 }
 \value{
 An object of class \code{DB_MassSpecResults_NonTargetAnalysis} (and \code{DB_Results}) pointing to the feature DuckDB on disk and holding an \code{analyses} field with the linked \code{DB_MassSpecAnalyses}.
@@ -365,11 +366,11 @@ Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_R
 
 \item \code{plot_features_ms2(DB_MassSpecResults_NonTargetAnalysis)}: Plot MS2 spectra for selected features.
 
-\item \code{plot_suspects_ms2(DB_MassSpecResults_NonTargetAnalysis)}: Plot suspect MS2 spectra for selected features.
-
 \item \code{suspect_screening(DB_MassSpecResults_NonTargetAnalysis)}: Performs suspect screening on features stored in the DuckDB
 against a provided suspect database. Matches features based on mass or \emph{m/z}, retention time, and when available
 MS2 spectral similarity.
+
+\item \code{plot_suspects_ms2(DB_MassSpecResults_NonTargetAnalysis)}: Plot suspect MS2 spectra for selected features.
 
 \item \code{get_internal_standards(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves internal standards from the database.
 

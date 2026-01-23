@@ -907,13 +907,21 @@ plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
   if ("feature_group" %in% colnames(fts)) {
     fgs <- fts$feature_group
     names(fgs) <- unique_fts_id
-    ms1$group <- fgs[unique_ms1_id]
-    data.table::setcolorder(ms1, c("analysis", "replicate", "group"))
+    ms1$feature_group <- fgs[unique_ms1_id]
   } else if ("group" %in% colnames(fts)) {
     fgs <- fts$group
     names(fgs) <- unique_fts_id
-    ms1$group <- fgs[unique_ms1_id]
-    data.table::setcolorder(ms1, c("analysis", "replicate", "group"))
+    ms1$feature_group <- fgs[unique_ms1_id]
+  }
+
+  if ("feature_component" %in% colnames(fts)) {
+    fcs <- fts$feature_component
+    names(fcs) <- unique_fts_id
+    ms1$feature_component <- fcs[unique_ms1_id]
+  } else if ("component" %in% colnames(fts)) {
+    fcs <- fts$component
+    names(fcs) <- unique_fts_id
+    ms1$feature_component <- fcs[unique_ms1_id]
   }
 
   if ("name" %in% colnames(fts)) {
@@ -922,6 +930,9 @@ plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
     ms1$name <- tar_ids[unique_ms1_id]
     data.table::setcolorder(ms1, c("analysis", "replicate", "name"))
   }
+
+  desired_order <- c("analysis", "replicate", "feature", "feature_group", "feature_component")
+  data.table::setcolorder(ms1, c(desired_order, setdiff(colnames(ms1), desired_order)))
 
   if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(ms1)))) {
     warning("groupBy columns not found in MS1 data")
@@ -1167,13 +1178,21 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
   if ("feature_group" %in% colnames(fts)) {
     fgs <- fts$feature_group
     names(fgs) <- unique_fts_id
-    ms2$group <- fgs[unique_ms2_id]
-    data.table::setcolorder(ms2, c("analysis", "replicate", "group"))
+    ms2$feature_group <- fgs[unique_ms2_id]
   } else if ("group" %in% colnames(fts)) {
     fgs <- fts$group
     names(fgs) <- unique_fts_id
-    ms2$group <- fgs[unique_ms2_id]
-    data.table::setcolorder(ms2, c("analysis", "replicate", "group"))
+    ms2$feature_group <- fgs[unique_ms2_id]
+  }
+
+  if ("feature_component" %in% colnames(fts)) {
+    fcs <- fts$feature_component
+    names(fcs) <- unique_fts_id
+    ms2$feature_component <- fcs[unique_ms2_id]
+  } else if ("component" %in% colnames(fts)) {
+    fcs <- fts$component
+    names(fcs) <- unique_fts_id
+    ms2$feature_component <- fcs[unique_ms2_id]
   }
 
   if ("name" %in% colnames(fts)) {
@@ -1182,6 +1201,9 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
     ms2$name <- tar_ids[unique_ms2_id]
     data.table::setcolorder(ms2, c("analysis", "replicate", "name"))
   }
+
+  desired_order <- c("analysis", "replicate", "feature", "feature_group", "feature_component")
+  data.table::setcolorder(ms2, c(desired_order, setdiff(colnames(ms2), desired_order)))
 
   if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(ms2)))) {
     warning("groupBy columns not found in MS2 data")
@@ -1323,372 +1345,6 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
     plot
   }
 }
-
-# MARK: plot_suspects_ms2
-#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot suspect MS2 spectra for selected features.
-#' @template arg-ntsdb-x
-#' @template arg-analyses
-#' @template arg-ms-features
-#' @template arg-ms-groups
-#' @template arg-ms-components
-#' @template arg-ms-mass
-#' @template arg-ms-mz
-#' @template arg-ms-rt
-#' @template arg-ms-mobility
-#' @template arg-ms-ppm
-#' @template arg-ms-sec
-#' @template arg-ms-millisec
-#' @template arg-normalized
-#' @template arg-ms-filtered
-#' @template arg-plot-groupBy
-#' @export
-#'
-plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    features = NULL,
-    groups = NULL,
-    components = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    normalized = TRUE,
-    filtered = FALSE,
-    xLab = NULL,
-    yLab = NULL,
-    title = NULL,
-    groupBy = c("feature", "candidate_rank"),
-    showText = TRUE,
-    interactive = TRUE) {
-  suspects <- get_suspects(x, analyses = analyses)
-
-  if (nrow(suspects) == 0) {
-    message("\u2717 Suspect MS2 traces not found for the targets!")
-    return(NULL)
-  }
-
-  if (!is.null(features)) {
-    if (is.data.frame(features)) {
-      if ("analysis" %in% colnames(features)) {
-        suspects <- suspects[suspects$analysis %in% unique(features$analysis), ]
-      }
-      if ("feature" %in% colnames(features)) {
-        suspects <- suspects[suspects$feature %in% unique(features$feature), ]
-      }
-    } else {
-      suspects <- suspects[suspects$feature %in% features, ]
-    }
-  }
-
-  if (nrow(suspects) == 0) {
-    message("\u2717 Suspect MS2 traces not found for the targets!")
-    return(NULL)
-  }
-
-  spec_list <- lapply(
-    seq_len(nrow(suspects)),
-    function(i) {
-      sp <- suspects[i, ]
-      out <- list()
-
-      has_exp <- !is.na(sp$exp_ms2_mz) && nchar(sp$exp_ms2_mz) > 0 &&
-        !is.na(sp$exp_ms2_intensity) && nchar(sp$exp_ms2_intensity) > 0
-      if (has_exp) {
-        mz_dec <- rcpp_streamcraft_decode_string(sp$exp_ms2_mz)
-        int_dec <- rcpp_streamcraft_decode_string(sp$exp_ms2_intensity)
-        if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
-          out[[length(out) + 1]] <- data.table::data.table(
-            mz = mz_dec,
-            intensity = int_dec,
-            analysis = sp$analysis,
-            feature = sp$feature,
-            name = sp$name,
-            candidate_rank = sp$candidate_rank,
-            db_ms2_formula = NA_character_,
-            source = "exp"
-          )
-        }
-      }
-
-      has_db <- !is.na(sp$db_ms2_mz) && nchar(sp$db_ms2_mz) > 0 &&
-        !is.na(sp$db_ms2_intensity) && nchar(sp$db_ms2_intensity) > 0
-      if (has_db) {
-        mz_dec <- rcpp_streamcraft_decode_string(sp$db_ms2_mz)
-        int_dec <- rcpp_streamcraft_decode_string(sp$db_ms2_intensity)
-        if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
-          formula_vec <- rep(NA_character_, length(mz_dec))
-          if (!is.na(sp$db_ms2_formula) && nzchar(sp$db_ms2_formula)) {
-            formula_split <- strsplit(sp$db_ms2_formula, ";", fixed = TRUE)[[1]]
-            formula_split <- trimws(formula_split)
-            if (length(formula_split) > 0) {
-              if (length(formula_split) < length(mz_dec)) {
-                formula_split <- c(formula_split, rep(NA_character_, length(mz_dec) - length(formula_split)))
-              }
-              if (length(formula_split) > length(mz_dec)) {
-                formula_split <- formula_split[seq_len(length(mz_dec))]
-              }
-              formula_vec <- formula_split
-            }
-          }
-          out[[length(out) + 1]] <- data.table::data.table(
-            mz = mz_dec,
-            intensity = -abs(int_dec),
-            analysis = sp$analysis,
-            feature = sp$feature,
-            name = sp$name,
-            candidate_rank = sp$candidate_rank,
-            db_ms2_formula = formula_vec,
-            source = "db"
-          )
-        }
-      }
-
-      if (length(out) == 0) {
-        return(data.table::data.table())
-      }
-      data.table::rbindlist(out, fill = TRUE)
-    }
-  )
-
-  spec_list <- spec_list[!sapply(spec_list, function(z) is.null(z) || nrow(z) == 0)]
-  suspects_ms2 <- data.table::rbindlist(spec_list, fill = TRUE)
-  if (nrow(suspects_ms2) == 0) {
-    message("\u2717 Suspect MS2 traces not found for the targets!")
-    return(NULL)
-  }
-
-  if (!is.numeric(suspects_ms2$intensity)) {
-    suspects_ms2$intensity <- suppressWarnings(as.numeric(suspects_ms2$intensity))
-  }
-  if (!is.numeric(suspects_ms2$mz)) {
-    suspects_ms2$mz <- suppressWarnings(as.numeric(suspects_ms2$mz))
-  }
-  suspects_ms2 <- suspects_ms2[is.finite(suspects_ms2$mz) & is.finite(suspects_ms2$intensity), ]
-  if (nrow(suspects_ms2) == 0) {
-    message("\u2717 Suspect MS2 traces not found for the targets!")
-    return(NULL)
-  }
-
-  if (normalized) {
-    suspects_ms2[
-      ,
-      intensity := {
-        max_int <- max(abs(intensity), na.rm = TRUE)
-        if (is.finite(max_int) && max_int > 0) intensity / max_int else intensity
-      },
-      by = .(analysis, feature, name, candidate_rank, source)
-    ]
-  }
-
-  exclude_cols <- c(
-    "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
-    "exp_ms2_mz", "exp_ms2_intensity"
-  )
-  detail_cols <- setdiff(colnames(suspects), exclude_cols)
-  detail_cols <- detail_cols[detail_cols %in% colnames(suspects)]
-  detail_cols <- setdiff(detail_cols, colnames(suspects_ms2))
-  detail_cols <- unique(c("analysis", "feature", "name", "candidate_rank", detail_cols))
-  detail_cols <- detail_cols[detail_cols %in% colnames(suspects)]
-  suspects_details <- suspects[, detail_cols, with = FALSE]
-  suspects_ms2 <- merge(
-    suspects_ms2,
-    suspects_details,
-    by = c("analysis", "feature", "name", "candidate_rank"),
-    all.x = TRUE
-  )
-
-  if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(suspects_ms2)))) {
-    warning("groupBy columns not found in suspect MS2 data")
-    return(NULL)
-  }
-
-  vals <- lapply(groupBy, function(col) as.character(suspects_ms2[[col]]))
-  suspects_ms2$var <- do.call(paste, c(vals, sep = " - "))
-  suspects_ms2$loop <- paste0(
-    suspects_ms2$analysis,
-    suspects_ms2$feature,
-    suspects_ms2$name,
-    suspects_ms2$candidate_rank,
-    suspects_ms2$source,
-    suspects_ms2$var
-  )
-  cl <- .get_colors(unique(suspects_ms2$var))
-  max_abs_int <- max(abs(suspects_ms2$intensity), na.rm = TRUE)
-  if (!is.finite(max_abs_int) || max_abs_int == 0) max_abs_int <- 1
-
-  if (showText) {
-    base_txt <- paste0(round(suspects_ms2$mz, 4))
-    has_formula <- !is.na(suspects_ms2$db_ms2_formula) &
-      nzchar(suspects_ms2$db_ms2_formula) &
-      suspects_ms2$source == "db"
-    base_txt[has_formula] <- paste0(
-      base_txt[has_formula],
-      " - ",
-      suspects_ms2$db_ms2_formula[has_formula]
-    )
-    suspects_ms2$text_string_gg <- base_txt
-    suspects_ms2$text_string_plotly <- base_txt
-  } else {
-    suspects_ms2$text_string_gg <- ""
-    suspects_ms2$text_string_plotly <- ""
-  }
-
-  if (!interactive) {
-    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
-    if (is.null(yLab)) yLab <- "Intensity / counts"
-
-    suspects_ms2$linesize <- 1
-    suspects_ms2$linesize[suspects_ms2$source == "db"] <- 1.5
-
-    plot <- ggplot2::ggplot(
-      suspects_ms2,
-      ggplot2::aes(x = mz, y = intensity, group = loop)
-    ) +
-      ggplot2::geom_segment(ggplot2::aes(
-        xend = mz,
-        yend = 0,
-        color = var,
-        linewidth = linesize
-      ))
-
-    if (showText) {
-      plot <- plot +
-        ggplot2::geom_text(
-          ggplot2::aes(label = text_string_gg),
-          vjust = 0.2,
-          hjust = -0.2,
-          angle = 90,
-          size = 2,
-          show.legend = FALSE
-        )
-    }
-
-    plot <- plot +
-      ggplot2::scale_y_continuous(
-        expand = c(0, 0),
-        limits = c(-max_abs_int * 1.5, max_abs_int * 1.5)
-      ) +
-      ggplot2::labs(title = title, x = xLab, y = yLab) +
-      ggplot2::scale_color_manual(values = cl) +
-      ggplot2::scale_linewidth_continuous(range = c(1, 2), guide = "none") +
-      ggplot2::theme_classic() +
-      ggplot2::labs(x = xLab, y = yLab, title = title) +
-      ggplot2::labs(color = groupBy)
-
-    plot
-  } else {
-    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
-    if (is.null(yLab)) yLab <- "Intensity / counts"
-
-    ticksMin <- plyr::round_any(min(suspects_ms2$mz, na.rm = TRUE) * 0.9, 10)
-    ticksMax <- plyr::round_any(max(suspects_ms2$mz, na.rm = TRUE) * 1.1, 10)
-
-    title <- list(text = title, font = list(size = 12, color = "black"))
-
-    xaxis <- list(
-      linecolor = "black",
-      title = xLab,
-      titlefont = list(size = 12, color = "black"),
-      range = c(ticksMin, ticksMax),
-      dtick = round((max(suspects_ms2$mz) / 10), -1),
-      ticks = "outside"
-    )
-
-    yaxis <- list(
-      linecolor = "black",
-      title = yLab,
-      titlefont = list(size = 12, color = "black"),
-      range = c(-max_abs_int * 1.5, max_abs_int * 1.5)
-    )
-
-    plot <- plot_ly()
-    seen_vars <- character(0)
-    for (lp in unique(suspects_ms2$loop)) {
-      seg <- suspects_ms2[suspects_ms2$loop == lp, ]
-      if (nrow(seg) == 0) next
-      var_val <- seg$var[1]
-      show_leg <- !(var_val %in% seen_vars)
-      if (show_leg) seen_vars <- c(seen_vars, var_val)
-      line_width <- ifelse(seg$source[1] == "db", 1.5, 1)
-      hover_fields <- setdiff(
-        colnames(seg),
-        c(
-          "mz", "intensity", "var", "loop", "text_string",
-          "source", "db_ms2_formula"
-        )
-      )
-      hover_fields <- hover_fields[hover_fields %in% colnames(seg)]
-      hover_text <- apply(seg[, hover_fields, with = FALSE], 1, function(row) {
-        row_vals <- as.character(row)
-        row_vals[is.na(row_vals)] <- ""
-        paste(paste0(hover_fields, ": ", row_vals), collapse = "<br>")
-      })
-      formula_line <- ifelse(
-        seg$source == "db" &
-          !is.na(seg$db_ms2_formula) &
-          nzchar(seg$db_ms2_formula),
-        paste0("<br>formula: ", seg$db_ms2_formula),
-        ""
-      )
-      hover_text <- paste0(
-        "source: ", seg$source,
-        "<br>m/z: ", round(seg$mz, 4),
-        formula_line,
-        "<br>intensity: ", round(seg$intensity, 4),
-        "<br>", hover_text
-      )
-      x_seg <- as.numeric(rbind(seg$mz, seg$mz, rep(NA, nrow(seg))))
-      y_seg <- as.numeric(rbind(rep(0, nrow(seg)), seg$intensity, rep(NA, nrow(seg))))
-      text_seg <- as.vector(rbind(hover_text, hover_text, rep(NA_character_, nrow(seg))))
-      plot <- plot %>%
-        add_trace(
-          x = as.vector(x_seg),
-          y = as.vector(y_seg),
-          type = "scattergl",
-          mode = "lines",
-          line = list(color = cl[var_val], width = line_width),
-          name = var_val,
-          legendgroup = var_val,
-          showlegend = show_leg,
-          hoverinfo = "text",
-          text = text_seg
-        )
-      if (showText) {
-        plot <- plot %>%
-          add_trace(
-            x = seg$mz,
-            y = seg$intensity,
-            type = "scattergl",
-            mode = "markers+text",
-            marker = list(size = 2, color = cl[var_val]),
-            text = seg$text_string_plotly,
-            textposition = ifelse(seg$source[1] == "db", "bottom center", "top center"),
-            textfont = list(size = 9, color = cl[var_val]),
-            hoverinfo = "text",
-            hovertext = hover_text,
-            name = var_val,
-            legendgroup = var_val,
-            showlegend = FALSE
-          )
-      }
-    }
-
-    plot <- plot %>%
-      plotly::layout(
-        title = title,
-        xaxis = xaxis,
-        yaxis = yaxis,
-        uniformtext = list(minsize = 6, mode = "show")
-      )
-
-    plot
-  }
-}
-
 
 # MARK: suspect_screening
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Performs suspect screening on features stored in the DuckDB
@@ -2117,6 +1773,407 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(x, analyses = NULL
   data.table::as.data.table(suspects)
 }
 
+# MARK: plot_suspects_ms2
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot suspect MS2 spectra for selected features.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-features
+#' @template arg-ms-groups
+#' @template arg-ms-components
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-normalized
+#' @template arg-ms-filtered
+#' @template arg-plot-groupBy
+#' @export
+#'
+plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    features = NULL,
+    groups = NULL,
+    components = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    normalized = TRUE,
+    filtered = FALSE,
+    xLab = NULL,
+    yLab = NULL,
+    title = NULL,
+    groupBy = c("feature", "candidate_rank"),
+    showText = TRUE,
+    interactive = TRUE,
+    showLegend = TRUE) {
+  suspects <- get_suspects(x, analyses = analyses)
+
+  if (nrow(suspects) == 0) {
+    message("\u2717 Suspect MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  if (!is.null(features)) {
+    if (is.data.frame(features)) {
+      if ("analysis" %in% colnames(features)) {
+        suspects <- suspects[suspects$analysis %in% unique(features$analysis), ]
+      }
+      if ("feature" %in% colnames(features)) {
+        suspects <- suspects[suspects$feature %in% unique(features$feature), ]
+      }
+    } else {
+      suspects <- suspects[suspects$feature %in% features, ]
+    }
+  }
+
+  if (nrow(suspects) == 0) {
+    message("\u2717 Suspect MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  spec_list <- lapply(
+    seq_len(nrow(suspects)),
+    function(i) {
+      sp <- suspects[i, ]
+      out <- list()
+
+      has_exp <- !is.na(sp$exp_ms2_mz) && nchar(sp$exp_ms2_mz) > 0 &&
+        !is.na(sp$exp_ms2_intensity) && nchar(sp$exp_ms2_intensity) > 0
+      if (has_exp) {
+        mz_dec <- rcpp_streamcraft_decode_string(sp$exp_ms2_mz)
+        int_dec <- rcpp_streamcraft_decode_string(sp$exp_ms2_intensity)
+        if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
+          out[[length(out) + 1]] <- data.table::data.table(
+            mz = mz_dec,
+            intensity = int_dec,
+            analysis = sp$analysis,
+            feature = sp$feature,
+            name = sp$name,
+            candidate_rank = sp$candidate_rank,
+            db_ms2_formula = NA_character_,
+            source = "exp"
+          )
+        }
+      }
+
+      has_db <- !is.na(sp$db_ms2_mz) && nchar(sp$db_ms2_mz) > 0 &&
+        !is.na(sp$db_ms2_intensity) && nchar(sp$db_ms2_intensity) > 0
+      if (has_db) {
+        mz_dec <- rcpp_streamcraft_decode_string(sp$db_ms2_mz)
+        int_dec <- rcpp_streamcraft_decode_string(sp$db_ms2_intensity)
+        if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
+          formula_vec <- rep(NA_character_, length(mz_dec))
+          if (!is.na(sp$db_ms2_formula) && nzchar(sp$db_ms2_formula)) {
+            formula_split <- strsplit(sp$db_ms2_formula, ";", fixed = TRUE)[[1]]
+            formula_split <- trimws(formula_split)
+            if (length(formula_split) > 0) {
+              if (length(formula_split) < length(mz_dec)) {
+                formula_split <- c(formula_split, rep(NA_character_, length(mz_dec) - length(formula_split)))
+              }
+              if (length(formula_split) > length(mz_dec)) {
+                formula_split <- formula_split[seq_len(length(mz_dec))]
+              }
+              formula_vec <- formula_split
+            }
+          }
+          out[[length(out) + 1]] <- data.table::data.table(
+            mz = mz_dec,
+            intensity = -abs(int_dec),
+            analysis = sp$analysis,
+            feature = sp$feature,
+            name = sp$name,
+            candidate_rank = sp$candidate_rank,
+            db_ms2_formula = formula_vec,
+            source = "db"
+          )
+        }
+      }
+
+      if (length(out) == 0) {
+        return(data.table::data.table())
+      }
+      data.table::rbindlist(out, fill = TRUE)
+    }
+  )
+
+  spec_list <- spec_list[!sapply(spec_list, function(z) is.null(z) || nrow(z) == 0)]
+  suspects_ms2 <- data.table::rbindlist(spec_list, fill = TRUE)
+  if (nrow(suspects_ms2) == 0) {
+    message("\u2717 Suspect MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  if (!is.numeric(suspects_ms2$intensity)) {
+    suspects_ms2$intensity <- suppressWarnings(as.numeric(suspects_ms2$intensity))
+  }
+  if (!is.numeric(suspects_ms2$mz)) {
+    suspects_ms2$mz <- suppressWarnings(as.numeric(suspects_ms2$mz))
+  }
+  suspects_ms2 <- suspects_ms2[is.finite(suspects_ms2$mz) & is.finite(suspects_ms2$intensity), ]
+  if (nrow(suspects_ms2) == 0) {
+    message("\u2717 Suspect MS2 traces not found for the targets!")
+    return(NULL)
+  }
+
+  if (normalized) {
+    suspects_ms2[
+      ,
+      intensity := {
+        max_int <- max(abs(intensity), na.rm = TRUE)
+        if (is.finite(max_int) && max_int > 0) intensity / max_int else intensity
+      },
+      by = .(analysis, feature, name, candidate_rank, source)
+    ]
+  }
+
+  exclude_cols <- c(
+    "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
+    "exp_ms2_mz", "exp_ms2_intensity"
+  )
+  detail_cols <- setdiff(colnames(suspects), exclude_cols)
+  detail_cols <- detail_cols[detail_cols %in% colnames(suspects)]
+  detail_cols <- setdiff(detail_cols, colnames(suspects_ms2))
+  detail_cols <- unique(c("analysis", "feature", "name", "candidate_rank", detail_cols))
+  detail_cols <- detail_cols[detail_cols %in% colnames(suspects)]
+  suspects_details <- suspects[, detail_cols, with = FALSE]
+  suspects_ms2 <- merge(
+    suspects_ms2,
+    suspects_details,
+    by = c("analysis", "feature", "name", "candidate_rank"),
+    all.x = TRUE
+  )
+
+  if (!(is.character(groupBy) && length(groupBy) >= 1 && all(groupBy %in% colnames(suspects_ms2)))) {
+    warning("groupBy columns not found in suspect MS2 data")
+    return(NULL)
+  }
+
+  vals <- lapply(groupBy, function(col) as.character(suspects_ms2[[col]]))
+  suspects_ms2$var <- do.call(paste, c(vals, sep = " - "))
+  suspects_ms2$loop <- paste0(
+    suspects_ms2$analysis,
+    suspects_ms2$feature,
+    suspects_ms2$name,
+    suspects_ms2$candidate_rank,
+    suspects_ms2$source,
+    suspects_ms2$var
+  )
+  cl <- .get_colors(unique(suspects_ms2$var))
+  max_abs_int <- max(abs(suspects_ms2$intensity), na.rm = TRUE)
+  if (!is.finite(max_abs_int) || max_abs_int == 0) max_abs_int <- 1
+
+  if (showText) {
+    base_txt <- paste0(round(suspects_ms2$mz, 4))
+    has_formula <- !is.na(suspects_ms2$db_ms2_formula) &
+      nzchar(suspects_ms2$db_ms2_formula) &
+      suspects_ms2$source == "db"
+    base_txt[has_formula] <- paste0(
+      base_txt[has_formula],
+      " - ",
+      suspects_ms2$db_ms2_formula[has_formula]
+    )
+    suspects_ms2$text_string_gg <- base_txt
+    suspects_ms2$text_string_plotly <- base_txt
+    suspects_ms2$text_vjust <- ifelse(suspects_ms2$intensity < 0, 0.5, 0.2)
+    suspects_ms2$text_hjust <- ifelse(suspects_ms2$intensity < 0, 1, -0.2)
+  } else {
+    suspects_ms2$text_string_gg <- ""
+    suspects_ms2$text_string_plotly <- ""
+    suspects_ms2$text_vjust <- 0.2
+    suspects_ms2$text_hjust <- -0.2
+  }
+
+  if (!interactive) {
+    if (is.null(xLab)) xLab <- expression(italic("m/z ") / " Da")
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    suspects_ms2$linesize <- 1
+    min_mz <- min(suspects_ms2$mz, na.rm = TRUE)
+    max_mz <- max(suspects_ms2$mz, na.rm = TRUE)
+    x_breaks <- scales::pretty_breaks(n = 6)(c(min_mz, max_mz))
+    x_breaks <- x_breaks[x_breaks >= min_mz & x_breaks <= max_mz]
+
+    plot <- ggplot2::ggplot(
+      suspects_ms2,
+      ggplot2::aes(x = mz, y = intensity, group = loop)
+    ) +
+      ggplot2::geom_segment(ggplot2::aes(
+        xend = mz,
+        yend = 0,
+        color = var,
+        linewidth = linesize
+      ))
+
+    if (showText) {
+      plot <- plot +
+        ggplot2::geom_text(
+          ggplot2::aes(
+            label = text_string_gg,
+            vjust = text_vjust,
+            hjust = text_hjust
+          ),
+          angle = 90,
+          size = 4,
+          show.legend = FALSE
+        )
+    }
+
+    plot <- plot +
+      ggplot2::scale_y_continuous(
+        expand = c(0, 0),
+        limits = c(-max_abs_int * 1.5, max_abs_int * 1.5)
+      ) +
+      ggplot2::annotate(
+        "segment",
+        x = min_mz, xend = max_mz, y = 0, yend = 0,
+        color = "black",
+        linewidth = 0.3
+      ) +
+      ggplot2::geom_segment(
+        data = data.table::data.table(x = x_breaks),
+        ggplot2::aes(x = x, xend = x, y = 0, yend = -max_abs_int * 0.04),
+        inherit.aes = FALSE,
+        color = "black",
+        linewidth = 0.3
+      ) +
+      ggplot2::geom_text(
+        data = data.table::data.table(x = x_breaks),
+        ggplot2::aes(x = x, y = -max_abs_int * 0.09, label = round(x, 2)),
+        inherit.aes = FALSE,
+        size = 3
+      ) +
+      ggplot2::labs(title = title, x = xLab, y = yLab) +
+      ggplot2::scale_color_manual(values = cl) +
+      ggplot2::scale_linewidth_continuous(range = c(1, 2), guide = "none") +
+      ggplot2::theme_classic() +
+      ggplot2::theme(
+        axis.line.x = ggplot2::element_blank(),
+        axis.ticks.x = ggplot2::element_blank(),
+        axis.text.x = ggplot2::element_blank(),
+        axis.title.x = ggplot2::element_blank(),
+        legend.position = if (isTRUE(showLegend)) "right" else "none"
+      ) +
+      ggplot2::labs(x = xLab, y = yLab, title = title) +
+      ggplot2::labs(color = groupBy)
+
+    plot
+  } else {
+    if (is.null(xLab)) xLab <- "<i>m/z</i> / Da"
+    if (is.null(yLab)) yLab <- "Intensity / counts"
+
+    ticksMin <- plyr::round_any(min(suspects_ms2$mz, na.rm = TRUE) * 0.9, 10)
+    ticksMax <- plyr::round_any(max(suspects_ms2$mz, na.rm = TRUE) * 1.1, 10)
+
+    title <- list(text = title, font = list(size = 12, color = "black"))
+
+    xaxis <- list(
+      linecolor = "black",
+      title = xLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(ticksMin, ticksMax),
+      dtick = round((max(suspects_ms2$mz) / 10), -1),
+      ticks = "outside"
+    )
+
+    yaxis <- list(
+      linecolor = "black",
+      title = yLab,
+      titlefont = list(size = 12, color = "black"),
+      range = c(-max_abs_int * 1.2, max_abs_int * 1.2)
+    )
+
+    plot <- plot_ly()
+    seen_vars <- character(0)
+    for (lp in unique(suspects_ms2$loop)) {
+      seg <- suspects_ms2[suspects_ms2$loop == lp, ]
+      if (nrow(seg) == 0) next
+      var_val <- seg$var[1]
+      show_leg <- !(var_val %in% seen_vars)
+      if (show_leg) seen_vars <- c(seen_vars, var_val)
+      line_width <- ifelse(seg$source[1] == "db", 1.5, 1)
+      hover_fields <- setdiff(
+        colnames(seg),
+        c(
+          "mz", "intensity", "var", "loop", "text_string",
+          "source", "db_ms2_formula"
+        )
+      )
+      hover_fields <- hover_fields[hover_fields %in% colnames(seg)]
+      hover_text <- apply(seg[, hover_fields, with = FALSE], 1, function(row) {
+        row_vals <- as.character(row)
+        row_vals[is.na(row_vals)] <- ""
+        paste(paste0(hover_fields, ": ", row_vals), collapse = "<br>")
+      })
+      formula_line <- ifelse(
+        seg$source == "db" &
+          !is.na(seg$db_ms2_formula) &
+          nzchar(seg$db_ms2_formula),
+        paste0("<br>formula: ", seg$db_ms2_formula),
+        ""
+      )
+      hover_text <- paste0(
+        "source: ", seg$source,
+        "<br>m/z: ", round(seg$mz, 4),
+        formula_line,
+        "<br>intensity: ", round(seg$intensity, 4),
+        "<br>", hover_text
+      )
+      x_seg <- as.numeric(rbind(seg$mz, seg$mz, rep(NA, nrow(seg))))
+      y_seg <- as.numeric(rbind(rep(0, nrow(seg)), seg$intensity, rep(NA, nrow(seg))))
+      text_seg <- as.vector(rbind(hover_text, hover_text, rep(NA_character_, nrow(seg))))
+      plot <- plot %>%
+        add_trace(
+          x = as.vector(x_seg),
+          y = as.vector(y_seg),
+          type = "scattergl",
+          mode = "lines",
+          line = list(color = cl[var_val], width = line_width),
+          name = var_val,
+          legendgroup = var_val,
+          showlegend = show_leg,
+          hoverinfo = "text",
+          text = text_seg
+        )
+      if (showText) {
+        plot <- plot %>%
+          add_trace(
+            x = seg$mz,
+            y = seg$intensity,
+            type = "scattergl",
+            mode = "markers+text",
+            marker = list(size = 2, color = cl[var_val]),
+            text = seg$text_string_plotly,
+            textposition = ifelse(seg$source[1] == "db", "bottom center", "top center"),
+            textfont = list(size = 9, color = cl[var_val]),
+            hoverinfo = "text",
+            hovertext = hover_text,
+            name = var_val,
+            legendgroup = var_val,
+            showlegend = FALSE
+          )
+      }
+    }
+
+    plot <- plot %>%
+      plotly::layout(
+        title = title,
+        xaxis = xaxis,
+        yaxis = yaxis,
+        uniformtext = list(minsize = 6, mode = "show"),
+        showlegend = showLegend
+      )
+
+    plot
+  }
+}
 
 # MARK: get_internal_standards
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Retrieves internal standards from the database.

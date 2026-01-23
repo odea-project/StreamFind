@@ -56,6 +56,33 @@
       border-color: transparent;
       border-bottom: 3px solid #a2aecf;
     }
+    .suspects-table td {
+      vertical-align: top;
+      padding-top: 12px !important;
+      padding-bottom: 12px !important;
+    }
+    .suspects-table tbody tr,
+    .suspects-table tbody tr td,
+    table.dataTable.display tbody tr,
+    table.dataTable.display tbody tr td,
+    table.dataTable.stripe tbody tr.odd,
+    table.dataTable.stripe tbody tr.even,
+    table.dataTable.stripe tbody tr.odd td,
+    table.dataTable.stripe tbody tr.even td {
+      background-color: #ffffff !important;
+    }
+    .suspect-structure-img {
+      width: 140px;
+      height: 120px;
+      object-fit: contain;
+      display: block;
+    }
+    .suspect-spectra-img {
+      width: 360px;
+      height: 200px;
+      object-fit: contain;
+      display: block;
+    }
     .plot-container {
       border-radius: 8px;
       background-color: white;
@@ -403,6 +430,14 @@
                     style = "height: calc(100vh - 300px); overflow: auto;",
                     DT::dataTableOutput(ns_full("feature_details_table_scatter"))
                   )
+                ),
+                shiny::tabPanel(
+                  title = "Suspects",
+                  shiny::div(
+                    class = "p-3",
+                    style = "height: calc(100vh - 300px); overflow: auto;",
+                    DT::dataTableOutput(ns_full("suspects_table_scatter"))
+                  )
                 )
               )
             )
@@ -411,17 +446,6 @@
       ),
       # MARK: Suspects Tab
       # Suspects Tab -----
-      shiny::tabPanel(
-        title = shiny::tagList(shiny::icon("list-check", class = "mr-2"), "Suspects"),
-        shiny::div(
-          class = "tab-content",
-          style = "max-height: calc(100vh - 120px); overflow-y: auto; padding: 0;",
-          shiny::div(
-            class = "p-3",
-            DT::dataTableOutput(ns_full("suspects_table"))
-          )
-        )
-      )
     )
   )
 }
@@ -498,6 +522,54 @@
       sps <- get_suspects(nts)
       sps
     })
+
+    create_structure_image <- function(smiles, width = 140, height = 120) {
+      if (is.null(smiles) || is.na(smiles) || !nzchar(smiles)) return("")
+      if (!requireNamespace("rcdk", quietly = TRUE)) return("")
+      if (!requireNamespace("rJava", quietly = TRUE)) return("")
+      if (!requireNamespace("base64enc", quietly = TRUE)) return("")
+      tryCatch(
+        {
+          mol <- rcdk::parse.smiles(smiles)[[1]]
+          img <- rcdk::view.image.2d(mol)
+          temp_file <- tempfile(fileext = ".png")
+          grDevices::png(filename = temp_file, width = width, height = height, res = 120, bg = "white")
+          graphics::par(mar = c(0, 0, 0, 0))
+          graphics::plot.new()
+          graphics::rasterImage(img, 0, 0, 1, 1)
+          grDevices::dev.off()
+          img_base64 <- base64enc::base64encode(temp_file)
+          unlink(temp_file)
+          paste0("data:image/png;base64,", img_base64)
+        },
+        error = function(e) {
+          ""
+        }
+      )
+    }
+
+    create_spectra_image <- function(nts, analysis, feature, width = 900, height = 450) {
+      if (is.null(analysis) || is.null(feature)) return("")
+      if (!requireNamespace("base64enc", quietly = TRUE)) return("")
+      if (!requireNamespace("ggplot2", quietly = TRUE)) return("")
+      tryCatch(
+        {
+          sel <- data.table::data.table(analysis = analysis, feature = feature)
+          p <- plot_suspects_ms2(nts, features = sel, interactive = FALSE, showLegend = FALSE)
+          if (is.null(p)) return("")
+          temp_file <- tempfile(fileext = ".png")
+          grDevices::png(filename = temp_file, width = width, height = height, res = 120, bg = "white")
+          print(p)
+          grDevices::dev.off()
+          img_base64 <- base64enc::base64encode(temp_file)
+          unlink(temp_file)
+          paste0("data:image/png;base64,", img_base64)
+        },
+        error = function(e) {
+          ""
+        }
+      )
+    }
 
     # MARK: chart_color_by
     chart_color_by <- shiny::reactiveVal("replicates")
@@ -1065,6 +1137,7 @@
       p <- plot_features(
         nts,
         features = selected_features_scatter(),
+        groupBy = unique(c(scatter_color_cols(), scatter_selection_cols())),
         filtered = TRUE,
         showDetails = TRUE
       )
@@ -1087,7 +1160,12 @@
         )
       )
       nts <- nts_data()
-      p <- plot_features_ms1(nts, features = selected_features_scatter(), filtered = TRUE)
+      p <- plot_features_ms1(
+        nts,
+        features = selected_features_scatter(),
+        groupBy = unique(c(scatter_color_cols(), scatter_selection_cols())),
+        filtered = TRUE
+      )
       shiny::validate(shiny::need(!is.null(p), "No MS1 data for selected features."))
       plotly::layout(
         p,
@@ -1107,7 +1185,12 @@
         )
       )
       nts <- nts_data()
-      p <- plot_features_ms2(nts, features = selected_features_scatter(), filtered = TRUE)
+      p <- plot_features_ms2(
+        nts,
+        features = selected_features_scatter(),
+        groupBy = unique(c(scatter_color_cols(), scatter_selection_cols())),
+        filtered = TRUE
+      )
       shiny::validate(shiny::need(!is.null(p), "No MS2 data for selected features."))
       plotly::layout(
         p,
@@ -1126,7 +1209,13 @@
         )
       )
       nts <- nts_data()
-      p <- map_features(nts, features = selected_features_scatter(), filtered = TRUE, showDetails = TRUE)
+      p <- map_features(
+        nts,
+        features = selected_features_scatter(),
+        groupBy = unique(c(scatter_color_cols(), scatter_selection_cols())),
+        filtered = TRUE,
+        showDetails = TRUE
+      )
       shiny::validate(shiny::need(!is.null(p), "No XIC data for selected features."))
       plotly::layout(
         p,
@@ -1209,6 +1298,85 @@
         options = list(pageLength = 25, autoWidth = TRUE),
         style = "bootstrap",
         class = "table table-striped table-hover",
+        rownames = FALSE
+      )
+    })
+
+    # MARK: suspects_table_scatter
+    output$suspects_table_scatter <- DT::renderDT({
+      nts <- nts_data()
+      suspects <- data.table::copy(suspects_data())
+      sel <- selected_features_scatter()
+      shiny::validate(shiny::need(!is.null(sel) && nrow(sel) > 0, "Select one or more points to view suspects."))
+      if (nrow(suspects) == 0) {
+        shiny::validate(shiny::need(FALSE, "No suspects available."))
+      }
+      suspects <- suspects[analysis %in% sel$analysis & feature %in% sel$feature, ]
+      shiny::validate(shiny::need(nrow(suspects) > 0, "No suspects available for selected features."))
+
+      analyses_info <- info(nts$analyses)
+      rep_map <- analyses_info$replicate
+      names(rep_map) <- analyses_info$analysis
+      suspects$replicate <- rep_map[suspects$analysis]
+
+      smiles_vec <- if ("SMILES" %in% colnames(suspects)) {
+        suspects$SMILES
+      } else {
+        rep(NA_character_, nrow(suspects))
+      }
+      suspects$structure <- vapply(
+        smiles_vec,
+        function(smiles) {
+          img_uri <- create_structure_image(smiles)
+          if (!nzchar(img_uri)) return("")
+          sprintf("<img src='%s' class='suspect-structure-img'/>", img_uri)
+        },
+        character(1)
+      )
+
+      suspects$spectra <- mapply(
+        function(analysis, feature) {
+          img_uri <- create_spectra_image(nts, analysis, feature)
+          if (!nzchar(img_uri)) return("")
+          sprintf("<img src='%s' class='suspect-spectra-img'/>", img_uri)
+        },
+        suspects$analysis,
+        suspects$feature,
+        SIMPLIFY = TRUE,
+        USE.NAMES = FALSE
+      )
+
+      exclude_cols <- c(
+        "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
+        "exp_ms2_mz", "exp_ms2_intensity"
+      )
+      keep_cols <- setdiff(colnames(suspects), exclude_cols)
+      base_cols <- c(
+        "structure", "name", "spectra", "analysis", "replicate",
+        "feature", "feature_component", "feature_group"
+      )
+      base_cols <- base_cols[base_cols %in% keep_cols]
+      rest_cols <- setdiff(keep_cols, base_cols)
+      suspects <- suspects[, c(base_cols, rest_cols), with = FALSE]
+
+      DT::datatable(
+        suspects,
+        options = list(
+          dom = "t",
+          paging = FALSE,
+          autoWidth = TRUE,
+          scrollX = TRUE,
+          scrollY = "calc(100vh - 360px)",
+          rowCallback = DT::JS(
+            "function(row, data, num, index){",
+            "  $(row).css('background-color', '#ffffff');",
+            "  $('td', row).css('background-color', '#ffffff');",
+            "}"
+          )
+        ),
+        escape = FALSE,
+        style = "bootstrap",
+        class = "table table-hover suspects-table",
         rownames = FALSE
       )
     })
