@@ -199,6 +199,17 @@ get_features_count <- function(x, ...) {
   UseMethod("get_features_count")
 }
 
+#' @title S3 generic `get_features_profile`
+#' @description S3 generic to get feature profiles from `x`.
+#' @param x An object from which the feature profiles will be retrieved.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+get_features_profile <- function(x, ...) {
+  UseMethod("get_features_profile")
+}
+
 #' @title S3 generic `get_features_eic`
 #' @description S3 generic to get features EIC from `x`.
 #' @param x An object from which the features EIC will be retrieved.
@@ -777,6 +788,17 @@ plot_features <- function(x, ...) {
 #'
 plot_features_count <- function(x, ...) {
   UseMethod("plot_features_count")
+}
+
+#' @title Generic `plot_features_profile`
+#' @description S3 generic to plot feature profiles from `x`.
+#' @param x An object from which the feature profiles will be plotted.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+plot_features_profile <- function(x, ...) {
+  UseMethod("plot_features_profile")
 }
 
 #' @title Generic `plot_features_eic`

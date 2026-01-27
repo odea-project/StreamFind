@@ -139,6 +139,219 @@ show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
   print(info)
 }
 
+# MARK: get_features_count
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Returns a data table with the number of features for each analysis.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-filtered
+#' @export
+#'
+get_features_count.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    filtered = FALSE) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  info_analyses <- info(x$analyses)
+  all_names <- info_analyses$analysis
+  sel_names <- if (is.null(analyses)) {
+    all_names
+  } else {
+    .resolve_analyses_selection(analyses, all_names)
+  }
+
+  if (length(sel_names) == 0) {
+    return(data.table::data.table())
+  }
+
+  counts <- DBI::dbGetQuery(
+    conn,
+    sprintf(
+      "SELECT analysis,
+        COUNT(*) AS total,
+        SUM(CASE WHEN filtered THEN 1 ELSE 0 END) AS filtered
+      FROM Features
+      WHERE analysis IN ('%s')
+      GROUP BY analysis",
+      paste(sel_names, collapse = "','")
+    )
+  )
+  counts <- data.table::as.data.table(counts)
+
+  info <- data.table::data.table(
+    analysis = sel_names,
+    replicate = info_analyses$replicate[match(sel_names, info_analyses$analysis)]
+  )
+
+  if (nrow(counts) == 0) {
+    info$features <- 0
+    info$filtered <- 0
+    info$components <- 0
+    info$groups <- 0
+    return(info)
+  }
+
+  counts$total[is.na(counts$total)] <- 0
+  counts$filtered[is.na(counts$filtered)] <- 0
+  counts$not_filtered <- counts$total - counts$filtered
+
+  info$features <- if (filtered) {
+    counts$total[match(info$analysis, counts$analysis)]
+  } else {
+    counts$not_filtered[match(info$analysis, counts$analysis)]
+  }
+  info$filtered <- counts$filtered[match(info$analysis, counts$analysis)]
+  info$features[is.na(info$features)] <- 0
+  info$filtered[is.na(info$filtered)] <- 0
+
+  filter_clause <- if (filtered) "" else "AND filtered = FALSE"
+
+  groups <- DBI::dbGetQuery(
+    conn,
+    sprintf(
+      "SELECT analysis, COUNT(DISTINCT feature_group) AS groups
+      FROM Features
+      WHERE analysis IN ('%s')
+        AND feature_group IS NOT NULL
+        AND feature_group != ''
+        %s
+      GROUP BY analysis",
+      paste(sel_names, collapse = "','"),
+      filter_clause
+    )
+  )
+  groups <- data.table::as.data.table(groups)
+
+  components <- DBI::dbGetQuery(
+    conn,
+    sprintf(
+      "SELECT analysis, COUNT(DISTINCT feature_component) AS components
+      FROM Features
+      WHERE analysis IN ('%s')
+        AND feature_component IS NOT NULL
+        AND feature_component != ''
+        %s
+      GROUP BY analysis",
+      paste(sel_names, collapse = "','"),
+      filter_clause
+    )
+  )
+  components <- data.table::as.data.table(components)
+
+  info$groups <- groups$groups[match(info$analysis, groups$analysis)]
+  info$components <- components$components[match(info$analysis, components$analysis)]
+  info$groups[is.na(info$groups)] <- 0
+  info$components[is.na(info$components)] <- 0
+
+  info
+}
+
+# MARK: plot_features_count
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plots the number of features for each analysis as a bar plot.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-filtered
+#' @template arg-yLab
+#' @template arg-title
+#' @template arg-plot-groupBy
+#' @template arg-showLegend
+#' @template arg-showHoverText
+#' @export
+#'
+plot_features_count.DB_MassSpecResults_NonTargetAnalysis <- function(
+  x,
+  analyses = NULL,
+  filtered = FALSE,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "analysis",
+  showLegend = TRUE,
+  showHoverText = TRUE) {
+  info <- get_features_count(x, analyses, filtered)
+
+  if (nrow(info) == 0) {
+    return(NULL)
+  }
+
+  allowed_group_by <- c("analysis", "replicate")
+  if (!is.character(groupBy) || length(groupBy) != 1 || !(groupBy %in% allowed_group_by)) {
+    stop("groupBy must be one of: ", paste(allowed_group_by, collapse = ", "))
+  }
+
+  if (groupBy == "replicate") {
+    info$analysis <- info$replicate
+  }
+
+  features <- NULL
+
+  info <- info[,
+    .(
+      features = round(mean(features), digits = 0),
+      features_sd = round(sd(features), digits = 0),
+      n_analysis = length(features)
+    ),
+    by = c("analysis")
+  ]
+
+  info$features_sd[is.na(info$features_sd)] <- 0
+
+  info <- unique(info)
+
+  if (showHoverText) {
+    info$hover_text <- paste(
+      info$analysis,
+      "<br>",
+      "N.: ",
+      info$n_analysis,
+      "<br>",
+      "Features: ",
+      info$features,
+      " (SD: ",
+      info$features_sd,
+      ")"
+    )
+  } else {
+    info$hover_text <- ""
+  }
+
+  info <- info[order(info$analysis), ]
+
+  colors_tag <- .get_colors(info$analysis)
+
+  if (is.null(yLab)) {
+    yLab <- "Number of features"
+  }
+
+  plot <- plotly::plot_ly(
+    x = info$analysis,
+    y = info$features,
+    marker = list(color = unname(colors_tag)),
+    type = "bar",
+    text = info$hover_text,
+    hoverinfo = "text",
+    error_y = list(
+      type = "data",
+      array = info$features_sd,
+      color = "darkred",
+      symmetric = FALSE,
+      visible = TRUE
+    ),
+    name = names(colors_tag),
+    showlegend = showLegend
+  ) %>%
+    plotly::layout(
+      xaxis = list(title = NULL, tickfont = list(size = 14)),
+      yaxis = list(
+        title = yLab,
+        tickfont = list(size = 14),
+        titlefont = list(size = 18)
+      )
+    )
+
+  plot
+}
+
 # MARK: get_features
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Retrieves features from the DB_MassSpecResults_NonTargetAnalysis object based on specified criteria.
 #' @template arg-ntsdb-x
@@ -293,6 +506,228 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     }
     return(data.table::as.data.table(features))
   }
+}
+
+# MARK: get_features_profile
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Returns a data table with feature-group profiles across analyses.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-groups
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-filtered
+#' @export
+#'
+get_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE) {
+  fts <- get_features(
+    x = x,
+    analyses = analyses,
+    groups = groups,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    filtered = filtered
+  )
+
+  if (nrow(fts) == 0) {
+    return(data.table::data.table())
+  }
+
+  if (!"feature_group" %in% colnames(fts)) {
+    warning("Feature groups not found!")
+    return(data.table::data.table())
+  }
+
+  fts <- fts[!is.na(fts$feature_group) & fts$feature_group != "", ]
+  if (nrow(fts) == 0) {
+    return(data.table::data.table())
+  }
+
+  prof <- fts[, .(intensity = max(intensity, na.rm = TRUE)), by = c("feature_group", "analysis")]
+  prof$intensity[is.na(prof$intensity) | is.infinite(prof$intensity)] <- 0
+
+  if ("replicate" %in% colnames(fts)) {
+    rep_map <- unique(fts[, .(analysis, replicate)])
+    prof <- merge(prof, rep_map, by = "analysis", all.x = TRUE)
+  }
+
+  desired_order <- c("analysis", "replicate", "feature_group", "intensity")
+  desired_order <- desired_order[desired_order %in% colnames(prof)]
+  data.table::setcolorder(prof, c(desired_order, setdiff(colnames(prof), desired_order)))
+  prof
+}
+
+# MARK: plot_features_profile
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plots feature-group profiles across analyses or replicates.
+#' @template arg-ntsdb-x
+#' @template arg-analyses
+#' @template arg-ms-groups
+#' @template arg-ms-mass
+#' @template arg-ms-mz
+#' @template arg-ms-rt
+#' @template arg-ms-mobility
+#' @template arg-ms-ppm
+#' @template arg-ms-sec
+#' @template arg-ms-millisec
+#' @template arg-ms-filtered
+#' @template arg-plot-groupBy
+#' @template arg-normalized
+#' @template arg-yLab
+#' @template arg-title
+#' @template arg-interactive
+#' @template arg-showLegend
+#' @export
+#'
+plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
+    x,
+    analyses = NULL,
+    groups = NULL,
+    mass = NULL,
+    mz = NULL,
+    rt = NULL,
+    mobility = NULL,
+    ppm = 20,
+    sec = 60,
+    millisec = 5,
+    filtered = FALSE,
+    groupBy = "analysis",
+    normalized = FALSE,
+    yLab = NULL,
+    title = NULL,
+    interactive = TRUE,
+    showLegend = TRUE) {
+  prof <- get_features_profile(
+    x = x,
+    analyses = analyses,
+    groups = groups,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    filtered = filtered
+  )
+
+  if (nrow(prof) == 0) {
+    return(NULL)
+  }
+
+  allowed_group_by <- c("analysis", "replicate")
+  if (!is.character(groupBy) || length(groupBy) != 1 || !(groupBy %in% allowed_group_by)) {
+    stop("groupBy must be one of: ", paste(allowed_group_by, collapse = ", "))
+  }
+
+  if (normalized) {
+    prof[, intensity := {
+      max_int <- max(intensity, na.rm = TRUE)
+      if (!is.finite(max_int) || max_int == 0) 0 else intensity / max_int
+    }, by = feature_group]
+  }
+
+  if (groupBy == "replicate") {
+    if (!"replicate" %in% colnames(prof)) {
+      warning("Replicate information not available for feature profiles.")
+      return(NULL)
+    }
+    prof <- prof[,
+      .(
+        intensity = mean(intensity, na.rm = TRUE),
+        analysis_sd = stats::sd(intensity, na.rm = TRUE)
+      ),
+      by = c("feature_group", "replicate")
+    ]
+    prof$analysis_sd[is.na(prof$analysis_sd)] <- 0
+  }
+
+  x_col <- if (groupBy == "replicate") "replicate" else "analysis"
+  prof[[x_col]] <- as.character(prof[[x_col]])
+  prof$feature_group <- as.character(prof$feature_group)
+
+  if (is.null(yLab)) {
+    yLab <- if (normalized) "Relative intensity" else "Intensity"
+  }
+  xLab <- if (groupBy == "replicate") "Replicate" else "Analysis"
+
+  if (!interactive) {
+    plot <- ggplot2::ggplot(
+      prof,
+      ggplot2::aes_string(x = x_col, y = "intensity", group = "feature_group", color = "feature_group")
+    ) +
+      ggplot2::geom_line() +
+      ggplot2::geom_point()
+    if (groupBy == "replicate") {
+      plot <- plot +
+        ggplot2::geom_errorbar(
+          ggplot2::aes_string(
+            ymin = "intensity - analysis_sd",
+            ymax = "intensity + analysis_sd"
+          ),
+          width = 0.2,
+          alpha = 0.6
+        )
+    }
+    plot <- plot +
+      ggplot2::theme_classic() +
+      ggplot2::labs(x = xLab, y = yLab, title = title, color = "feature_group")
+    return(plot)
+  }
+
+  colors_tag <- .get_colors(unique(prof$feature_group))
+  hover_text <- paste0(
+    "group: ", prof$feature_group,
+    "<br>", xLab, ": ", prof[[x_col]],
+    "<br>intensity: ", round(prof$intensity, 3)
+  )
+
+  error_y <- NULL
+  if (groupBy == "replicate") {
+    error_y <- list(type = "data", array = prof$analysis_sd, visible = TRUE)
+  }
+
+  plot <- plotly::plot_ly(
+    data = prof,
+    x = prof[[x_col]],
+    y = ~intensity,
+    type = "scattergl",
+    mode = "lines+markers",
+    color = ~feature_group,
+    colors = colors_tag,
+    text = hover_text,
+    hoverinfo = "text",
+    error_y = error_y,
+    showlegend = showLegend
+  )
+
+    plot <- plot %>%
+      plotly::layout(
+        title = title,
+        xaxis = list(title = NULL, tickfont = list(size = 12)),
+        yaxis = list(title = yLab, tickfont = list(size = 12)),
+        legend = list(title = list(text = "feature_group"))
+      )
+  plot
 }
 
 # MARK: get_internal_standards

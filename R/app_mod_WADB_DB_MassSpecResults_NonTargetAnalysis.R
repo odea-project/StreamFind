@@ -309,19 +309,24 @@
               shiny::div(
                 style = "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;",
                 shiny::span("Group by:", style = "font-weight: 500;"),
-                shiny::checkboxInput(ns_full("scatter_color_analysis"), "Analysis", value = TRUE, width = "auto"),
-                shiny::checkboxInput(ns_full("scatter_color_replicate"), "Replicate", value = FALSE, width = "auto"),
-                shiny::checkboxInput(ns_full("scatter_color_feature"), "Feature", value = FALSE, width = "auto"),
-                shiny::checkboxInput(ns_full("scatter_color_component"), "Component", value = FALSE, width = "auto"),
-                shiny::checkboxInput(ns_full("scatter_color_group"), "Group", value = FALSE, width = "auto")
+                shiny::radioButtons(
+                  ns_full("scatter_color_by"),
+                  label = NULL,
+                  choices = c("Analysis" = "analysis", "Replicate" = "replicate"),
+                  selected = "analysis",
+                  inline = TRUE
+                )
               ),
               shiny::div(
                 style = "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;",
                 shiny::span("Select by:", style = "font-weight: 500;"),
-                shiny::checkboxInput(ns_full("scatter_select_analysis"), "Analysis", value = TRUE, width = "auto"),
-                shiny::checkboxInput(ns_full("scatter_select_feature"), "Feature", value = TRUE, width = "auto"),
-                shiny::checkboxInput(ns_full("scatter_select_component"), "Component", value = FALSE, width = "auto"),
-                shiny::checkboxInput(ns_full("scatter_select_group"), "Group", value = FALSE, width = "auto")
+                shiny::radioButtons(
+                  ns_full("scatter_select_by"),
+                  label = NULL,
+                  choices = c("Feature" = "feature", "Component" = "feature_component", "Group" = "feature_group"),
+                  selected = "feature",
+                  inline = TRUE
+                )
               )
             ),
             shiny::div(
@@ -396,6 +401,18 @@
                   ),
                   plotly::plotlyOutput(
                     ns_full("feature_xic_plot_scatter"),
+                    height = "calc(100vh - 320px)"
+                  )
+                ),
+                shiny::tabPanel(
+                  title = "Profile",
+                  height = "100%",
+                  shiny::div(
+                    style = "height: 30px; position: relative;",
+                    .app_util_create_maximize_button("feature_profile_plot_scatter", ns_full)
+                  ),
+                  plotly::plotlyOutput(
+                    ns_full("feature_profile_plot_scatter"),
                     height = "calc(100vh - 320px)"
                   )
                 ),
@@ -523,6 +540,7 @@
       sps
     })
 
+    # MARK: create_structure_image
     create_structure_image <- function(smiles, width = 140, height = 120) {
       if (is.null(smiles) || is.na(smiles) || !nzchar(smiles)) return("")
       if (!requireNamespace("rcdk", quietly = TRUE)) return("")
@@ -548,6 +566,7 @@
       )
     }
 
+    # MARK: create_spectra_image
     create_spectra_image <- function(nts, analysis, feature, width = 900, height = 450) {
       if (is.null(analysis) || is.null(feature)) return("")
       if (!requireNamespace("base64enc", quietly = TRUE)) return("")
@@ -555,7 +574,7 @@
       tryCatch(
         {
           sel <- data.table::data.table(analysis = analysis, feature = feature)
-          p <- plot_suspects_ms2(nts, features = sel, interactive = FALSE, showLegend = FALSE)
+          p <- plot_suspects_ms2(nts, features = sel, interactive = FALSE, showLegend = FALSE, showText = FALSE)
           if (is.null(p)) return("")
           temp_file <- tempfile(fileext = ".png")
           grDevices::png(filename = temp_file, width = width, height = height, res = 120, bg = "white")
@@ -571,154 +590,14 @@
       )
     }
 
+    # MARK: Summary Tab
+    # Summary Tab ------
+
     # MARK: chart_color_by
     chart_color_by <- shiny::reactiveVal("replicates")
 
     shiny::observeEvent(input$chart_color_by, {
       chart_color_by(input$chart_color_by)
-    })
-
-    # MARK: Layout proportions (features scatter tab)
-    scatter_layout_proportions <- shiny::reactiveVal(c(80, 20))
-    scatter_numeric_cols <- shiny::reactive({
-      fts <- data.table::as.data.table(features_data())
-      names(fts)[sapply(fts, is.numeric)]
-    })
-    shiny::observeEvent(input$scatter_prop_20_80, {
-      scatter_layout_proportions(c(20, 80))
-    })
-    shiny::observeEvent(input$scatter_prop_30_70, {
-      scatter_layout_proportions(c(30, 70))
-    })
-    shiny::observeEvent(input$scatter_prop_40_60, {
-      scatter_layout_proportions(c(40, 60))
-    })
-    shiny::observeEvent(input$scatter_prop_50_50, {
-      scatter_layout_proportions(c(50, 50))
-    })
-    shiny::observeEvent(input$scatter_prop_60_40, {
-      scatter_layout_proportions(c(60, 40))
-    })
-    shiny::observeEvent(input$scatter_prop_70_30, {
-      scatter_layout_proportions(c(70, 30))
-    })
-    shiny::observeEvent(input$scatter_prop_80_20, {
-      scatter_layout_proportions(c(80, 20))
-    })
-    shiny::observe({
-      props <- scatter_layout_proportions()
-      table_width <- props[1]
-      plots_width <- props[2]
-      table_id <- session$ns("features_scatter_panel")
-      plots_id <- session$ns("features_scatter_details_panel")
-      shiny::insertUI(
-        selector = "head",
-        where = "beforeEnd",
-        ui = shiny::tags$style(shiny::HTML(paste0(
-          "
-            #", table_id, " { width: ", table_width, "% !important; }
-            #", plots_id, " { width: ", plots_width, "% !important; }
-          "
-        )))
-      )
-      current_prop <- paste0(table_width, "_", plots_width)
-      button_id <- session$ns(paste0("scatter_prop_", current_prop))
-      shiny::insertUI(
-        selector = "head",
-        where = "beforeEnd",
-        ui = shiny::tags$script(shiny::HTML(paste0(
-          "
-            $('.features-controls-bar .btn').removeClass('active');
-            $('#", button_id, "').addClass('active');
-          "
-        )))
-      )
-    })
-
-    # MARK: UI scatter_numeric_filters
-    output$scatter_numeric_filters <- shiny::renderUI({
-      fts <- data.table::as.data.table(features_data())
-      if (nrow(fts) == 0) return(NULL)
-      num_cols <- names(fts)[sapply(fts, is.numeric)]
-      log_cols <- names(fts)[sapply(fts, is.logical)]
-
-      slider_specs <- function(col, rng) {
-        digits <- 3
-        col_lower <- tolower(col)
-        if (col_lower == "fwhm_mz") {
-          digits <- 4
-        } else if (col_lower == "gaussian_sigma") {
-          digits <- 1
-        } else if (col_lower %in% c("gaussian_mu", "gaussian_a")) {
-          digits <- 0
-        }
-        four_decimals <- grepl("^mz", col, ignore.case = TRUE)
-        four_decimals <- four_decimals || grepl("mzmin|mzmax|mass", col_lower)
-        if (four_decimals) {
-          digits <- 4
-        }
-        if (col_lower == "ppm") {
-          digits <- 1
-        }
-        if (col_lower == "sn") {
-          digits <- 1
-        }
-        zero_decimals <- grepl("intensity|area|size|noise|plates", col_lower)
-        zero_decimals <- zero_decimals || grepl("^rt", col_lower)
-        zero_decimals <- zero_decimals || (grepl("width|fwhm", col_lower) && col_lower != "fwhm_mz")
-        if (zero_decimals) {
-          digits <- 0
-        }
-        if (grepl("gaussian_r2|correction|jaggedness|sharpness|asymmetry", col_lower)) {
-          digits <- 2
-        }
-        step <- if (digits == 0) 1 else 10^-digits
-        list(
-          min = rng[1],
-          max = rng[2],
-          value = rng,
-          step = step
-        )
-      }
-
-      slider_list <- NULL
-      if (length(num_cols) > 0) {
-        slider_list <- lapply(num_cols, function(col) {
-          vals <- fts[[col]]
-          vals <- vals[is.finite(vals)]
-          if (length(vals) == 0) return(NULL)
-          rng <- range(vals, na.rm = TRUE)
-          specs <- slider_specs(col, rng)
-          shiny::sliderInput(
-            ns_full(paste0("scatter_filter_", col)),
-            label = col,
-            min = specs$min,
-            max = specs$max,
-            value = specs$value,
-            step = specs$step
-          )
-        })
-        slider_list <- slider_list[!vapply(slider_list, is.null, logical(1))]
-      }
-
-      logi_list <- NULL
-      if (length(log_cols) > 0) {
-        logi_list <- lapply(log_cols, function(col) {
-          col_lower <- tolower(col)
-          default_sel <- if (col_lower == "filtered") "FALSE" else c("TRUE", "FALSE")
-          shiny::checkboxGroupInput(
-            ns_full(paste0("scatter_filter_", col)),
-            label = paste0(col, " (TRUE/FALSE)"),
-            choices = c("TRUE", "FALSE"),
-            selected = default_sel,
-            inline = TRUE
-          )
-        })
-      }
-
-      ui_elems <- c(logi_list, slider_list)
-      if (length(ui_elems) == 0) return(NULL)
-      shiny::tagList(ui_elems)
     })
 
     # MARK: summary_data
@@ -820,117 +699,171 @@
 
     # MARK: summary_chart
     output$features_chart <- plotly::renderPlotly({
-      counts <- data.table::as.data.table(summary_data()$counts)
-      shiny::validate(
-        shiny::need(nrow(counts) > 0, "No features available to plot.")
-      )
-      color_by <- chart_color_by()
-      if (color_by == "replicates" && "replicate" %in% colnames(counts)) {
-        agg <- counts[
-          ,
-          .(
-            mean_features = mean(not_filtered, na.rm = TRUE),
-            sd_features = stats::sd(not_filtered, na.rm = TRUE),
-            mean_filtered = mean(filtered, na.rm = TRUE)
-          ),
-          by = replicate
-        ]
-        agg$sd_features[is.na(agg$sd_features)] <- 0
-        pal <- .get_colors(agg$replicate)
-        plotly::plot_ly(
-          data = agg,
-          x = ~replicate,
-          y = ~mean_features,
-          type = "bar",
-          color = ~replicate,
-          colors = pal,
-          error_y = list(type = "data", array = agg$sd_features, visible = TRUE),
-          hovertemplate = paste(
-            "Replicate: %{x}<br>",
-            "Mean Features: %{y}<br>",
-            "SD: %{error_y.array}<br>",
-            "Mean Filtered: %{customdata}",
-            "<extra></extra>"
-          ),
-          customdata = agg$mean_filtered
+      nts <- nts_data()
+      shiny::validate(shiny::need(!is.null(nts), "NTA data is not available"))
+      group_by <- if (identical(chart_color_by(), "replicates")) "replicate" else "analysis"
+      p <- plot_features_count(nts, groupBy = group_by, showLegend = FALSE)
+      shiny::validate(shiny::need(!is.null(p), "No features available to plot."))
+      p %>%
+        plotly::layout(
+          margin = list(l = 60, r = 40, t = 40, b = 40),
+          paper_bgcolor = "rgba(0,0,0,0)",
+          plot_bgcolor = "rgba(0,0,0,0)"
         ) %>%
-          plotly::layout(
-            margin = list(l = 60, r = 40, t = 40, b = 40),
-            paper_bgcolor = "rgba(0,0,0,0)",
-            plot_bgcolor = "rgba(0,0,0,0)",
-            xaxis = list(
-              title = NULL,
-              tickfont = list(size = 12),
-              gridcolor = "#eee",
-              categoryorder = "array",
-              categoryarray = agg$replicate
-            ),
-            yaxis = list(
-              title = list(
-                text = "Number of Features",
-                font = list(size = 14, color = "#555")
-              ),
-              tickfont = list(size = 12),
-              gridcolor = "#eee"
-            ),
-            bargap = 0.1,
-            legend = list(
-              title = list(text = "Replicate")
-            )
-          ) %>%
-          plotly::config(
-            displayModeBar = TRUE,
-            displaylogo = FALSE,
-            responsive = TRUE
-          )
-      } else {
-        counts$color_by <- counts$analysis
-        pal <- .get_colors(counts$color_by)
-        plotly::plot_ly(
-          data = counts,
-          x = ~analysis,
-          y = ~not_filtered,
-          type = "bar",
-          color = ~color_by,
-          colors = pal,
-          hovertemplate = paste(
-            "Analysis: %{x}<br>",
-            "Features: %{y}<br>",
-            "Filtered: %{customdata}",
-            "<extra></extra>"
-          ),
-          customdata = counts$filtered
-        ) %>%
-          plotly::layout(
-            margin = list(l = 60, r = 40, t = 40, b = 40),
-            paper_bgcolor = "rgba(0,0,0,0)",
-            plot_bgcolor = "rgba(0,0,0,0)",
-            xaxis = list(
-              title = NULL,
-              tickfont = list(size = 12),
-              gridcolor = "#eee",
-              categoryorder = "total descending"
-            ),
-            yaxis = list(
-              title = list(
-                text = "Number of Features",
-                font = list(size = 14, color = "#555")
-              ),
-              tickfont = list(size = 12),
-              gridcolor = "#eee"
-            ),
-            bargap = 0.1,
-            legend = list(
-              title = list(text = "Analysis")
-            )
-          ) %>%
-          plotly::config(
-            displayModeBar = TRUE,
-            displaylogo = FALSE,
-            responsive = TRUE
-          )
-      }
+        plotly::config(
+          displayModeBar = TRUE,
+          displaylogo = FALSE,
+          responsive = TRUE
+        )
     })
+
+    # MARK: Features Tab
+    # Features Tab ------
+
+    # MARK: Layout proportions
+    scatter_layout_proportions <- shiny::reactiveVal(c(80, 20))
+    scatter_numeric_cols <- shiny::reactive({
+      fts <- data.table::as.data.table(features_data())
+      names(fts)[sapply(fts, is.numeric)]
+    })
+    shiny::observeEvent(input$scatter_prop_20_80, {
+      scatter_layout_proportions(c(20, 80))
+    })
+    shiny::observeEvent(input$scatter_prop_30_70, {
+      scatter_layout_proportions(c(30, 70))
+    })
+    shiny::observeEvent(input$scatter_prop_40_60, {
+      scatter_layout_proportions(c(40, 60))
+    })
+    shiny::observeEvent(input$scatter_prop_50_50, {
+      scatter_layout_proportions(c(50, 50))
+    })
+    shiny::observeEvent(input$scatter_prop_60_40, {
+      scatter_layout_proportions(c(60, 40))
+    })
+    shiny::observeEvent(input$scatter_prop_70_30, {
+      scatter_layout_proportions(c(70, 30))
+    })
+    shiny::observeEvent(input$scatter_prop_80_20, {
+      scatter_layout_proportions(c(80, 20))
+    })
+    shiny::observe({
+      props <- scatter_layout_proportions()
+      table_width <- props[1]
+      plots_width <- props[2]
+      table_id <- session$ns("features_scatter_panel")
+      plots_id <- session$ns("features_scatter_details_panel")
+      shiny::insertUI(
+        selector = "head",
+        where = "beforeEnd",
+        ui = shiny::tags$style(shiny::HTML(paste0(
+          "
+            #", table_id, " { width: ", table_width, "% !important; }
+            #", plots_id, " { width: ", plots_width, "% !important; }
+          "
+        )))
+      )
+      current_prop <- paste0(table_width, "_", plots_width)
+      button_id <- session$ns(paste0("scatter_prop_", current_prop))
+      shiny::insertUI(
+        selector = "head",
+        where = "beforeEnd",
+        ui = shiny::tags$script(shiny::HTML(paste0(
+          "
+            $('.features-controls-bar .btn').removeClass('active');
+            $('#", button_id, "').addClass('active');
+          "
+        )))
+      )
+    })
+
+    # MARK: scatter_numeric_filters
+    output$scatter_numeric_filters <- shiny::renderUI({
+      fts <- data.table::as.data.table(features_data())
+      if (nrow(fts) == 0) return(NULL)
+      num_cols <- names(fts)[sapply(fts, is.numeric)]
+      log_cols <- names(fts)[sapply(fts, is.logical)]
+
+      slider_specs <- function(col, rng) {
+        digits <- 3
+        col_lower <- tolower(col)
+        if (col_lower == "fwhm_mz") {
+          digits <- 4
+        } else if (col_lower == "gaussian_sigma") {
+          digits <- 1
+        } else if (col_lower %in% c("gaussian_mu", "gaussian_a")) {
+          digits <- 0
+        }
+        four_decimals <- grepl("^mz", col, ignore.case = TRUE)
+        four_decimals <- four_decimals || grepl("mzmin|mzmax|mass", col_lower)
+        if (four_decimals) {
+          digits <- 4
+        }
+        if (col_lower == "ppm") {
+          digits <- 1
+        }
+        if (col_lower == "sn") {
+          digits <- 1
+        }
+        zero_decimals <- grepl("intensity|area|size|noise|plates", col_lower)
+        zero_decimals <- zero_decimals || grepl("^rt", col_lower)
+        zero_decimals <- zero_decimals || (grepl("width|fwhm", col_lower) && col_lower != "fwhm_mz")
+        if (zero_decimals) {
+          digits <- 0
+        }
+        if (grepl("gaussian_r2|correction|jaggedness|sharpness|asymmetry", col_lower)) {
+          digits <- 2
+        }
+        step <- if (digits == 0) 1 else 10^-digits
+        list(
+          min = rng[1],
+          max = rng[2],
+          value = rng,
+          step = step
+        )
+      }
+
+      slider_list <- NULL
+      if (length(num_cols) > 0) {
+        slider_list <- lapply(num_cols, function(col) {
+          vals <- fts[[col]]
+          vals <- vals[is.finite(vals)]
+          if (length(vals) == 0) return(NULL)
+          rng <- range(vals, na.rm = TRUE)
+          specs <- slider_specs(col, rng)
+          shiny::sliderInput(
+            ns_full(paste0("scatter_filter_", col)),
+            label = col,
+            min = specs$min,
+            max = specs$max,
+            value = specs$value,
+            step = specs$step
+          )
+        })
+        slider_list <- slider_list[!vapply(slider_list, is.null, logical(1))]
+      }
+
+      logi_list <- NULL
+      if (length(log_cols) > 0) {
+        logi_list <- lapply(log_cols, function(col) {
+          col_lower <- tolower(col)
+          default_sel <- if (col_lower == "filtered") "FALSE" else c("TRUE", "FALSE")
+          shiny::checkboxGroupInput(
+            ns_full(paste0("scatter_filter_", col)),
+            label = paste0(col, " (TRUE/FALSE)"),
+            choices = c("TRUE", "FALSE"),
+            selected = default_sel,
+            inline = TRUE
+          )
+        })
+      }
+
+      ui_elems <- c(logi_list, slider_list)
+      if (length(ui_elems) == 0) return(NULL)
+      shiny::tagList(ui_elems)
+    })
+
+
 
     # MARK: features_scatter_data
     features_scatter_data <- shiny::reactive({
@@ -986,23 +919,26 @@
 
     # MARK: scatter_color_cols & scatter_selection_cols
     scatter_color_cols <- shiny::reactive({
-      cols <- character(0)
-      if (isTRUE(input$scatter_color_analysis)) cols <- c(cols, "analysis")
-      if (isTRUE(input$scatter_color_replicate)) cols <- c(cols, "replicate")
-      if (isTRUE(input$scatter_color_feature)) cols <- c(cols, "feature")
-      if (isTRUE(input$scatter_color_component)) cols <- c(cols, "feature_component")
-      if (isTRUE(input$scatter_color_group)) cols <- c(cols, "feature_group")
-      if (length(cols) == 0) cols <- "analysis"
-      cols
+      sel <- input$scatter_color_by
+      if (is.null(sel) || !nzchar(sel)) sel <- "analysis"
+      sel
     })
     scatter_selection_cols <- shiny::reactive({
-      cols <- character(0)
-      if (isTRUE(input$scatter_select_analysis)) cols <- c(cols, "analysis")
-      if (isTRUE(input$scatter_select_feature)) cols <- c(cols, "feature")
-      if (isTRUE(input$scatter_select_component)) cols <- c(cols, "feature_component")
-      if (isTRUE(input$scatter_select_group)) cols <- c(cols, "feature_group")
-      if (length(cols) == 0) cols <- "feature"
+      sel <- input$scatter_select_by
+      if (is.null(sel) || !nzchar(sel)) sel <- "feature"
+      cols <- sel
+      if (sel %in% c("feature", "feature_component")) {
+        cols <- c("analysis", cols)
+      }
       cols
+    })
+
+    scatter_details_group_by <- shiny::reactive({
+      sel <- input$scatter_select_by
+      if (identical(sel, "feature_component")) {
+        return(c("analysis", "feature"))
+      }
+      unique(c(scatter_color_cols(), scatter_selection_cols()))
     })
 
     # MARK: features_scatter_plot
@@ -1137,7 +1073,7 @@
       p <- plot_features(
         nts,
         features = selected_features_scatter(),
-        groupBy = unique(c(scatter_color_cols(), scatter_selection_cols())),
+        groupBy = scatter_details_group_by(),
         filtered = TRUE,
         showDetails = TRUE
       )
@@ -1163,7 +1099,7 @@
       p <- plot_features_ms1(
         nts,
         features = selected_features_scatter(),
-        groupBy = unique(c(scatter_color_cols(), scatter_selection_cols())),
+        groupBy = scatter_details_group_by(),
         filtered = TRUE
       )
       shiny::validate(shiny::need(!is.null(p), "No MS1 data for selected features."))
@@ -1188,7 +1124,7 @@
       p <- plot_features_ms2(
         nts,
         features = selected_features_scatter(),
-        groupBy = unique(c(scatter_color_cols(), scatter_selection_cols())),
+        groupBy = scatter_details_group_by(),
         filtered = TRUE
       )
       shiny::validate(shiny::need(!is.null(p), "No MS2 data for selected features."))
@@ -1212,11 +1148,45 @@
       p <- map_features(
         nts,
         features = selected_features_scatter(),
-        groupBy = unique(c(scatter_color_cols(), scatter_selection_cols())),
+        groupBy = scatter_details_group_by(),
         filtered = TRUE,
         showDetails = TRUE
       )
       shiny::validate(shiny::need(!is.null(p), "No XIC data for selected features."))
+      plotly::layout(
+        p,
+        margin = list(l = 50, r = 30, t = 30, b = 50),
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(0,0,0,0)"
+      ) %>%
+        plotly::config(displaylogo = FALSE, responsive = TRUE)
+    })
+
+    output$feature_profile_plot_scatter <- plotly::renderPlotly({
+      shiny::validate(
+        shiny::need(
+          nrow(selected_features_scatter()) > 0,
+          "Select one or more points to view profile."
+        )
+      )
+      nts <- nts_data()
+      sel <- selected_features_scatter()
+      fts <- get_features(nts, features = sel, filtered = TRUE)
+      if (nrow(fts) == 0 || !"feature_group" %in% colnames(fts)) {
+        shiny::validate(shiny::need(FALSE, "No feature groups available for selected features."))
+      }
+      groups <- unique(fts$feature_group)
+      groups <- groups[!is.na(groups) & groups != ""]
+      shiny::validate(
+        shiny::need(length(groups) > 0, "No feature groups available for selected features.")
+      )
+      p <- plot_features_profile(
+        nts,
+        groups = groups,
+        groupBy = if (identical(input$scatter_color_by, "replicate")) "replicate" else "analysis",
+        showLegend = FALSE
+      )
+      shiny::validate(shiny::need(!is.null(p), "No profile data for selected features."))
       plotly::layout(
         p,
         margin = list(l = 50, r = 30, t = 30, b = 50),
@@ -1289,19 +1259,6 @@
 
     # Suspects ------
 
-    # MARK: suspects_table
-    output$suspects_table <- DT::renderDT({
-      suspects <- data.table::copy(suspects_data())
-      shiny::validate(shiny::need(nrow(suspects) > 0, "No suspects available."))
-      DT::datatable(
-        suspects,
-        options = list(pageLength = 25, autoWidth = TRUE),
-        style = "bootstrap",
-        class = "table table-striped table-hover",
-        rownames = FALSE
-      )
-    })
-
     # MARK: suspects_table_scatter
     output$suspects_table_scatter <- DT::renderDT({
       nts <- nts_data()
@@ -1347,8 +1304,11 @@
       )
 
       exclude_cols <- c(
-        "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
-        "exp_ms2_mz", "exp_ms2_intensity"
+        "db_ms2_mz",
+        "db_ms2_intensity",
+        "db_ms2_formula",
+        "exp_ms2_mz",
+        "exp_ms2_intensity"
       )
       keep_cols <- setdiff(colnames(suspects), exclude_cols)
       base_cols <- c(

@@ -27,25 +27,25 @@ DB_MassSpecResults_Chromatograms <- function(
   .validate_DB_MassSpecResults_Chromatograms_Chromatograms_db_schema(conn)
   .create_DB_MassSpecResults_Chromatograms_Peaks_db_schema(conn)
   .validate_DB_MassSpecResults_Chromatograms_Peaks_db_schema(conn)
-  
+
   insert_analyses <- function(analyses) {
     .validate_DB_MassSpecAnalyses_analyses_dt(analyses)
     DBI::dbExecute(conn, "DELETE FROM Analyses")
     DBI::dbWriteTable(conn, "Analyses", analyses, overwrite = TRUE)
   }
-  
+
   insert_chromatograms <- function(chromatograms) {
     .validate_DB_MassSpecResults_Chromatograms_chromatograms_dt(chromatograms)
     DBI::dbExecute(conn, "DELETE FROM Chromatograms")
     DBI::dbWriteTable(conn, "Chromatograms", chromatograms, overwrite = TRUE)
   }
-  
+
   insert_peaks <- function(peaks) {
     .validate_DB_MassSpecResults_Chromatograms_peaks_dt(peaks)
     DBI::dbExecute(conn, "DELETE FROM Peaks")
     DBI::dbWriteTable(conn, "Peaks", peaks, overwrite = TRUE)
   }
-  
+
   # insert_calibration_model <- function(calibration_model) {
   #   DBI::dbExecute(conn, "DELETE FROM CalibrationModel")
   #   if (length(calibration_model) > 0) {
@@ -56,11 +56,11 @@ DB_MassSpecResults_Chromatograms <- function(
   #     DBI::dbWriteTable(conn, "CalibrationModel", cal_dt, overwrite = TRUE)
   #   }
   # }
-  
+
   if (nrow(analyses) > 0) insert_analyses(analyses)
   if (nrow(chromatograms) > 0) insert_chromatograms(chromatograms)
   if (nrow(peaks) > 0) insert_peaks(peaks)
-  
+
   x <- structure(
     list(
       db = db,
@@ -125,7 +125,7 @@ get_db_table_info.DB_MassSpecResults_Chromatograms <- function(x, tableName) {
 #' @describeIn DB_MassSpecResults_Chromatograms Prints a summary of the DB_MassSpecResults_Chromatograms object.
 #' @template arg-x-DB_MassSpecResults_Chromatograms
 #' @export
-#' 
+#'
 show.DB_MassSpecResults_Chromatograms <- function(x) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
@@ -178,7 +178,9 @@ get_chromatograms.DB_MassSpecResults_Chromatograms <- function(
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
   sel_names <- .resolve_analyses_selection(analyses, all_names)
-  if (length(sel_names) == 0) return(list())
+  if (length(sel_names) == 0) {
+    return(list())
+  }
   query <- "SELECT * FROM Chromatograms"
   conditions <- c()
   conditions <- c(conditions, sprintf("analysis IN ('%s')", paste(sel_names, collapse = "','")))
@@ -197,7 +199,7 @@ get_chromatograms.DB_MassSpecResults_Chromatograms <- function(
   }
   query <- paste0(query, " WHERE ", paste(conditions, collapse = " AND "))
   chroms <- DBI::dbGetQuery(conn, query)
-  
+
   # Split by analysis and return as list
   chrom_list <- split(data.table::as.data.table(chroms), by = "analysis")
   chrom_list
@@ -469,7 +471,7 @@ plot_chromatograms_baseline.DB_MassSpecResults_Chromatograms <- function(
         color = ~var,
         colors = cl,
         mode = "lines",
-        line = list(dash = 'dash', width = 0.5),
+        line = list(dash = "dash", width = 0.5),
         name = ~var,
         legendgroup = ~var,
         showlegend = FALSE
@@ -509,14 +511,16 @@ get_chromatograms_peaks.DB_MassSpecResults_Chromatograms <- function(
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  
+
   sel_names <- .resolve_analyses_selection(analyses, all_names)
-  if (length(sel_names) == 0) return(data.table::data.table())
-  
+  if (length(sel_names) == 0) {
+    return(data.table::data.table())
+  }
+
   query <- "SELECT * FROM Peaks"
   conditions <- c()
   conditions <- c(conditions, sprintf("analysis IN ('%s')", paste(sel_names, collapse = "','")))
-  
+
   if (!is.null(chromatograms)) {
     if (is.numeric(chromatograms)) {
       conditions <- c(conditions, sprintf("\"index\" IN (%s)", paste(chromatograms, collapse = ",")))
@@ -524,23 +528,23 @@ get_chromatograms_peaks.DB_MassSpecResults_Chromatograms <- function(
       conditions <- c(conditions, sprintf("id IN ('%s')", paste(chromatograms, collapse = "','")))
     }
   }
-  
+
   if (!is.null(minIntensity) && is.numeric(minIntensity)) {
     conditions <- c(conditions, sprintf("intensity > %f", minIntensity))
   }
-  
+
   if (is.numeric(rtmin) && is.numeric(rtmax) && rtmax > 0) {
     conditions <- c(conditions, sprintf("rt >= %f AND rt <= %f", rtmin, rtmax))
   }
-  
+
   query <- paste0(query, " WHERE ", paste(conditions, collapse = " AND "))
   pks <- DBI::dbGetQuery(conn, query)
-  
+
   if (nrow(pks) == 0) {
     message("\U2717 Peaks not found for the targets!")
     return(data.table::data.table())
   }
-  
+
   data.table::as.data.table(pks)
 }
 
@@ -851,31 +855,34 @@ plot_chromatograms_peaks.DB_MassSpecResults_Chromatograms <- function(
 # MARK: .validate_DB_MassSpecResults_Chromatograms_Chromatograms_db_schema
 #' @noRd
 .validate_DB_MassSpecResults_Chromatograms_Chromatograms_db_schema <- function(conn) {
-  tryCatch({
-    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Chromatograms)")
-    required <- list(
-      analysis = "VARCHAR",
-      replicate = "VARCHAR",
-      "index" = "INTEGER",
-      id = "VARCHAR",
-      polarity = "INTEGER",
-      pre_mz = "DOUBLE",
-      pre_ce = "DOUBLE",
-      pro_mz = "DOUBLE",
-      rt = "DOUBLE",
-      intensity = "DOUBLE",
-      baseline = "DOUBLE",
-      raw = "DOUBLE"
-    )
-    for (col in names(required)) {
-      if (!(col %in% table_info$name)) {
-        message(sprintf("Adding missing %s column to Chromatograms table...", col))
-        DBI::dbExecute(conn, sprintf("ALTER TABLE Chromatograms ADD COLUMN \"%s\" %s", col, required[[col]]))
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Chromatograms)")
+      required <- list(
+        analysis = "VARCHAR",
+        replicate = "VARCHAR",
+        "index" = "INTEGER",
+        id = "VARCHAR",
+        polarity = "INTEGER",
+        pre_mz = "DOUBLE",
+        pre_ce = "DOUBLE",
+        pro_mz = "DOUBLE",
+        rt = "DOUBLE",
+        intensity = "DOUBLE",
+        baseline = "DOUBLE",
+        raw = "DOUBLE"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Chromatograms table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Chromatograms ADD COLUMN \"%s\" %s", col, required[[col]]))
+        }
       }
+    },
+    error = function(e) {
+      stop("Schema migration check (Chromatograms): ", e$message)
     }
-  }, error = function(e) {
-    stop("Schema migration check (Chromatograms): ", e$message)
-  })
+  )
   invisible(TRUE)
 }
 
@@ -910,40 +917,41 @@ plot_chromatograms_peaks.DB_MassSpecResults_Chromatograms <- function(
 # MARK: .validate_DB_MassSpecResults_Chromatograms_Peaks_db_schema
 #' @noRd
 .validate_DB_MassSpecResults_Chromatograms_Peaks_db_schema <- function(conn) {
-  tryCatch({
-    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Peaks)")
-    required <- list(
-      analysis = "VARCHAR",
-      replicate = "VARCHAR",
-      "index" = "INTEGER",
-      id = "VARCHAR",
-      peak = "VARCHAR",
-      polarity = "INTEGER",
-      pre_mz = "DOUBLE",
-      pre_ce = "DOUBLE",
-      pro_mz = "DOUBLE",
-      rt = "DOUBLE",
-      rtmin = "DOUBLE",
-      rtmax = "DOUBLE",
-      intensity = "DOUBLE",
-      area = "DOUBLE",
-      sn = "DOUBLE",
-      width = "DOUBLE",
-      fwhm = "DOUBLE",
-      tailing = "DOUBLE",
-      asymmetry = "DOUBLE",
-      gaussian_similarity = "DOUBLE"
-    )
-    for (col in names(required)) {
-      if (!(col %in% table_info$name)) {
-        message(sprintf("Adding missing %s column to Peaks table...", col))
-        DBI::dbExecute(conn, sprintf("ALTER TABLE Peaks ADD COLUMN \"%s\" %s", col, required[[col]]))
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Peaks)")
+      required <- list(
+        analysis = "VARCHAR",
+        replicate = "VARCHAR",
+        "index" = "INTEGER",
+        id = "VARCHAR",
+        peak = "VARCHAR",
+        polarity = "INTEGER",
+        pre_mz = "DOUBLE",
+        pre_ce = "DOUBLE",
+        pro_mz = "DOUBLE",
+        rt = "DOUBLE",
+        rtmin = "DOUBLE",
+        rtmax = "DOUBLE",
+        intensity = "DOUBLE",
+        area = "DOUBLE",
+        sn = "DOUBLE",
+        width = "DOUBLE",
+        fwhm = "DOUBLE",
+        tailing = "DOUBLE",
+        asymmetry = "DOUBLE",
+        gaussian_similarity = "DOUBLE"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Peaks table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Peaks ADD COLUMN \"%s\" %s", col, required[[col]]))
+        }
       }
+    },
+    error = function(e) {
+      stop("Schema migration check (Peaks): ", e$message)
     }
-  }, error = function(e) {
-    stop("Schema migration check (Peaks): ", e$message)
-  })
+  )
   invisible(TRUE)
 }
-
-

@@ -90,7 +90,7 @@ ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
 )
 
 ps_filterf1 <- DB_MassSpecMethod_FilterFeatures_native(
-  minIntensity = 100000,
+  minIntensity = 10000,
   removeIsotopes = TRUE,
   removeAdducts = TRUE,
   removeLosses = TRUE
@@ -176,6 +176,10 @@ ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filter
 
 ms$run_workflow()
 
+
+plot_features_count(ms$NonTargetAnalysis, groupBy = "replicate")
+
+plot_features_profile(ms$NonTargetAnalysis, groupBy = "replicate", interactive = TRUE)
 
 metfrag_dir <- list.dirs(file.path(getwd(), "log"), full.names = TRUE)
 fs::dir_delete(metfrag_dir[grepl("metfrag", metfrag_dir)])

@@ -7,7 +7,11 @@
 \alias{list_db_tables.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_db_table_info.DB_MassSpecResults_NonTargetAnalysis}
 \alias{show.DB_MassSpecResults_NonTargetAnalysis}
+\alias{get_features_count.DB_MassSpecResults_NonTargetAnalysis}
+\alias{plot_features_count.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_features.DB_MassSpecResults_NonTargetAnalysis}
+\alias{get_features_profile.DB_MassSpecResults_NonTargetAnalysis}
+\alias{plot_features_profile.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_internal_standards.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features.DB_MassSpecResults_NonTargetAnalysis}
 \alias{map_features.DB_MassSpecResults_NonTargetAnalysis}
@@ -34,6 +38,19 @@ DB_MassSpecResults_NonTargetAnalysis(
 
 \method{show}{DB_MassSpecResults_NonTargetAnalysis}(x)
 
+\method{get_features_count}{DB_MassSpecResults_NonTargetAnalysis}(x, analyses = NULL, filtered = FALSE)
+
+\method{plot_features_count}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  filtered = FALSE,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "analysis",
+  showLegend = TRUE,
+  showHoverText = TRUE
+)
+
 \method{get_features}{DB_MassSpecResults_NonTargetAnalysis}(
   x,
   analyses = NULL,
@@ -48,6 +65,40 @@ DB_MassSpecResults_NonTargetAnalysis(
   sec = 60,
   millisec = 5,
   filtered = FALSE
+)
+
+\method{get_features_profile}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE
+)
+
+\method{plot_features_profile}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  groupBy = "analysis",
+  normalized = FALSE,
+  yLab = NULL,
+  title = NULL,
+  interactive = TRUE,
+  showLegend = TRUE
 )
 
 \method{get_internal_standards}{DB_MassSpecResults_NonTargetAnalysis}(x, analyses = NULL)
@@ -243,6 +294,18 @@ with the feature IDs. A column named \code{analysis} can be given to specify fro
 \item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
 
+\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
+
+\item{yLab}{A string with the title for the y axis.}
+
+\item{title}{A string with the title.}
+
+\item{groupBy}{Column to use for color grouping (default: "analysis").}
+
+\item{showLegend}{Logical (length 1). Set to \code{TRUE} to show legend.}
+
+\item{showHoverText}{Logical (length 1), set to \code{TRUE} to show hovering text annotations.}
+
 \item{groups}{A numeric or character vector with feature group IDs, or a data.frame/data.table with a \code{feature_group} (or \code{group}) column; an optional \code{analysis} column restricts analyses and a \code{name} column sets custom labels.}
 
 \item{components}{A numeric or character vector with feature component IDs, or a data.frame/data.table with a \code{feature_component} (or \code{component}) column; an optional \code{analysis} column restricts analyses and a \code{name} column sets custom labels.}
@@ -281,21 +344,13 @@ time values (in milliseconds).}
 \item{millisec}{Numeric of length one with the drift time deviation,
 in milliseconds.}
 
-\item{filtered}{Logical (length 1). When \code{TRUE}, filtered features/groups are considered.}
-
-\item{xLab}{A string with the title for the x axis.}
-
-\item{yLab}{A string with the title for the y axis.}
-
-\item{title}{A string with the title.}
-
-\item{groupBy}{Column to use for color grouping (default: "analysis").}
+\item{normalized}{A logical value indicating whether the result should be normalized.}
 
 \item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
 
-\item{showDetails}{Logical, show hover details in interactive plots.}
+\item{xLab}{A string with the title for the x axis.}
 
-\item{normalized}{A logical value indicating whether the result should be normalized.}
+\item{showDetails}{Logical, show hover details in interactive plots.}
 
 \item{suspects}{A data.frame with suspect information. Must contain columns: \code{name} (character) and either \code{mass}
 (neutral monoisotopic mass) or \code{mz} (expected m/z). Optional columns: \code{rt} (retention time in seconds), \code{formula}
@@ -313,8 +368,6 @@ identification level. Default: 0.7.}
 
 \item{minSharedFragments}{Integer. Minimum number of shared fragments for MS2 matching to upgrade identification level.
 Default: 3.}
-
-\item{showLegend}{Logical (length 1). Set to \code{TRUE} to show legend.}
 
 \item{replicatesIn}{Character vector with the names of the replicates to be considered as the denominator.}
 
@@ -354,7 +407,15 @@ Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_R
 
 \item \code{show(DB_MassSpecResults_NonTargetAnalysis)}: Prints a summary of the DB_MassSpecResults_NonTargetAnalysis object.
 
+\item \code{get_features_count(DB_MassSpecResults_NonTargetAnalysis)}: Returns a data table with the number of features for each analysis.
+
+\item \code{plot_features_count(DB_MassSpecResults_NonTargetAnalysis)}: Plots the number of features for each analysis as a bar plot.
+
 \item \code{get_features(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves features from the DB_MassSpecResults_NonTargetAnalysis object based on specified criteria.
+
+\item \code{get_features_profile(DB_MassSpecResults_NonTargetAnalysis)}: Returns a data table with feature-group profiles across analyses.
+
+\item \code{plot_features_profile(DB_MassSpecResults_NonTargetAnalysis)}: Plots feature-group profiles across analyses or replicates.
 
 \item \code{get_internal_standards(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves internal standards from the InternalStandards table.
 
