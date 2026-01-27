@@ -71,6 +71,10 @@
     table.dataTable.stripe tbody tr.even td {
       background-color: #ffffff !important;
     }
+    .suspects-table tbody tr.selected,
+    .suspects-table tbody tr.selected td {
+      color: #000000 !important;
+    }
     .suspect-structure-img {
       width: 140px;
       height: 120px;
@@ -536,7 +540,24 @@
     # MARK: suspects_data
     suspects_data <- shiny::reactive({
       nts <- nts_data()
-      sps <- get_suspects(nts)
+      sps <- data.table::as.data.table(get_suspects(nts))
+      if (nrow(sps) == 0) return(sps)
+      sps <- data.table::copy(sps)
+      digits_for_col <- function(col) {
+        col_lower <- tolower(col)
+        if (col_lower %in% c("candidate_rank", "polarity", "shared_fragments", "db_ms2_size", "exp_ms2_size")) return(0)
+        if (grepl("mass|mz", col_lower)) return(4)
+        if (grepl("^rt|_rt$", col_lower)) return(2)
+        if (col_lower == "error_mass") return(1)
+        if (col_lower %in% c("intensity", "area")) return(0)
+        if (col_lower == "score") return(3)
+        if (col_lower == "cosine_similarity") return(3)
+        2
+      }
+      num_cols <- names(sps)[sapply(sps, is.numeric)]
+      for (col in num_cols) {
+        sps[[col]] <- round(sps[[col]], digits_for_col(col))
+      }
       sps
     })
 
@@ -546,16 +567,20 @@
       if (!requireNamespace("rcdk", quietly = TRUE)) return("")
       if (!requireNamespace("rJava", quietly = TRUE)) return("")
       if (!requireNamespace("base64enc", quietly = TRUE)) return("")
+      if (!requireNamespace("magick", quietly = TRUE)) return("")
       tryCatch(
         {
           mol <- rcdk::parse.smiles(smiles)[[1]]
           img <- rcdk::view.image.2d(mol)
           temp_file <- tempfile(fileext = ".png")
-          grDevices::png(filename = temp_file, width = width, height = height, res = 120, bg = "white")
+          grDevices::png(filename = temp_file, width = width, height = height, res = 120, bg = "transparent")
           graphics::par(mar = c(0, 0, 0, 0))
           graphics::plot.new()
           graphics::rasterImage(img, 0, 0, 1, 1)
           grDevices::dev.off()
+          magick_img <- magick::image_read(temp_file)
+          magick_img <- magick::image_transparent(magick_img, "white", fuzz = 5)
+          magick::image_write(magick_img, path = temp_file, format = "png")
           img_base64 <- base64enc::base64encode(temp_file)
           unlink(temp_file)
           paste0("data:image/png;base64,", img_base64)
@@ -575,9 +600,13 @@
         {
           sel <- data.table::data.table(analysis = analysis, feature = feature)
           p <- plot_suspects_ms2(nts, features = sel, interactive = FALSE, showLegend = FALSE, showText = FALSE)
+          p <- p + ggplot2::theme(
+            panel.background = ggplot2::element_rect(fill = "transparent", colour = NA),
+            plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
+          )
           if (is.null(p)) return("")
           temp_file <- tempfile(fileext = ".png")
-          grDevices::png(filename = temp_file, width = width, height = height, res = 120, bg = "white")
+          grDevices::png(filename = temp_file, width = width, height = height, res = 120, bg = "transparent")
           print(p)
           grDevices::dev.off()
           img_base64 <- base64enc::base64encode(temp_file)

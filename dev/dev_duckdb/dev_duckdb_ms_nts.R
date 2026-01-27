@@ -132,7 +132,6 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   filtered = FALSE
 )
 
-
 # ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
 #   suspects = dbsus,
 #   ppm = 10,
@@ -151,7 +150,7 @@ ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
   ppm = 10,
   ppmMS2 = 10,
   mzrMS2 = 0.008,
-  top_n = 1,
+  top_n = 5,
   filtered = FALSE,
   n_cores = 10,
   java_path = "java",
@@ -161,7 +160,7 @@ ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
   quiet = TRUE
 )
 
-ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2) # ps_fillf, ps_sus
+ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2, ps_sus) # ps_fillf, ps_sus
 # clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
 # clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
 # clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
@@ -178,7 +177,6 @@ ms$run_workflow()
 
 
 plot_features_count(ms$NonTargetAnalysis, groupBy = "replicate")
-
 plot_features_profile(ms$NonTargetAnalysis, groupBy = "replicate", interactive = TRUE)
 
 metfrag_dir <- list.dirs(file.path(getwd(), "log"), full.names = TRUE)
@@ -194,9 +192,16 @@ ms <- DB_MassSpecEngine$new(projectPath = root)
 ms$run_app()
 
 # TODO add user questions to install needed packages when lauching the app and not all required packages are installed
+
 # TODO create a wizard to see with more details each suspect, implemented as a modal that reuses the structure and uses the interactive mode for the plot_suspects_ms2 and also shows the eic and all the details for the selected row, add it via a button in the DT first column with an eye icon
+
 # TODO implement matrix correction from Tisler et al. also as a DB_MassSpecMethod
-# Todo Add a transformation products suspect screening method
+
+# TODO Implement Filters for MS2 spectra in features and filter for suspects
+
+# TODO Add a transformation products suspect screening method, that takes a suspect screening database with transformation products 
+
+# TODO Better documentation for the duckdb structure and how to use it with StreamFind
 
 
 plot_features_ms1(

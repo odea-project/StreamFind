@@ -1903,6 +1903,16 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
     }
   }
 
+  get_optional_numeric_multi <- function(tbl, fields, default = NA_real_) {
+    for (field in fields) {
+      if (field %in% colnames(tbl)) {
+        val <- suppressWarnings(as.numeric(tbl[[field]][1]))
+        if (!is.na(val)) return(val)
+      }
+    }
+    default
+  }
+
   get_database_id <- function(tbl) {
     for (field in c("database_id", "id", "ID")) {
       val <- get_optional_char(tbl, field)
@@ -1926,8 +1936,9 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
   formula_val <- get_optional_char(suspect_db, "formula")
   smiles_val <- get_optional_char(suspect_db, "SMILES")
   cas_val <- get_optional_char(suspect_db, "CAS")
-  score_val <- get_optional_numeric(suspect_db, "score", default = 0)
-  database_id_val <- get_database_id(suspect_db)
+    score_val <- get_optional_numeric(suspect_db, "score", default = 0)
+    xlogp_val <- get_optional_numeric_multi(suspect_db, c("XLogP", "xlogp", "logp"), default = NA_real_)
+    database_id_val <- get_database_id(suspect_db)
 
     # Initialize result row with all columns and default values
     temp <- data.table::data.table(
@@ -1945,6 +1956,7 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
       area = features$area[i],
       id_level = "4",
       score = score_val,
+      XLogP = xlogp_val,
       shared_fragments = 0L,
       cosine_similarity = 0,
       formula = formula_val,
@@ -2168,7 +2180,7 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "CAS", "database_id",
+    "formula", "SMILES", "CAS", "XLogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )
@@ -3288,6 +3300,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
     formula VARCHAR,
     SMILES VARCHAR,
     CAS VARCHAR,
+    XLogP DOUBLE,
     database_id VARCHAR,
     db_ms2_size INTEGER,
     db_ms2_mz VARCHAR,
@@ -3329,6 +3342,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
         formula = "VARCHAR",
         SMILES = "VARCHAR",
         CAS = "VARCHAR",
+        XLogP = "DOUBLE",
         database_id = "VARCHAR",
         db_ms2_size = "INTEGER",
         db_ms2_mz = "VARCHAR",
@@ -3378,6 +3392,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
     formula VARCHAR,
     SMILES VARCHAR,
     CAS VARCHAR,
+    XLogP DOUBLE,
     database_id VARCHAR,
     db_ms2_size INTEGER,
     db_ms2_mz VARCHAR,
@@ -3420,6 +3435,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
         formula = "VARCHAR",
         SMILES = "VARCHAR",
         CAS = "VARCHAR",
+        XLogP = "DOUBLE",
         database_id = "VARCHAR",
         db_ms2_size = "INTEGER",
         db_ms2_mz = "VARCHAR",

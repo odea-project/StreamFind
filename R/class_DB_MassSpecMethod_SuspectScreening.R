@@ -140,6 +140,18 @@ run.DB_MassSpecMethod_SuspectScreening_native <- function(x, engine = NULL) {
   if (!"candidate_rank" %in% colnames(suspects_out)) {
     suspects_out$candidate_rank <- 1L
   }
+  col_order <- c(
+    "analysis", "feature", "candidate_rank", "name", "polarity",
+    "db_mass", "exp_mass", "error_mass",
+    "db_rt", "exp_rt", "error_rt",
+    "intensity", "area",
+    "id_level", "score", "shared_fragments", "cosine_similarity",
+    "formula", "SMILES", "CAS", "XLogP", "database_id",
+    "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
+    "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
+  )
+  keep_cols <- intersect(col_order, colnames(suspects_out))
+  data.table::setcolorder(suspects_out, keep_cols)
 
   # Cache results
   save_cache(
@@ -626,6 +638,7 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     cas_col <- resolve_col(res, c("cas", "casrn", "casnumber"))
     id_col <- resolve_col(res, c("identifier", "database_id", "databaseid", "inchikey", "pubchemcid"))
     score_col <- resolve_col(res, c("score", "metfragscore", "totalscore", "finalscore"))
+    xlogp_col <- resolve_col(res, c("xlogp", "xlogp3", "logp", "xlogp-3"))
     mass_col <- resolve_col(res, c("neutralmass", "monoisotopicmass", "exactmass"))
     expl_col <- resolve_col(res, c("explpeaks", "explainedpeaks"))
     expl_formula_col <- resolve_col(res, c("formulasofexplpeaks", "explpeakformulas"))
@@ -648,6 +661,7 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
       cas_val <- if (!is.null(cas_col)) row[[cas_col]][1] else NA_character_
       database_id_val <- if (!is.null(id_col)) row[[id_col]][1] else NA_character_
       score_val <- if (!is.null(score_col)) suppressWarnings(as.numeric(row[[score_col]][1])) else 0
+      xlogp_val <- if (!is.null(xlogp_col)) suppressWarnings(as.numeric(row[[xlogp_col]][1])) else NA_real_
       db_mass_val <- if (!is.null(mass_col)) suppressWarnings(as.numeric(row[[mass_col]][1])) else NA_real_
 
       expl_peaks_val <- if (!is.null(expl_col)) row[[expl_col]][1] else NA_character_
@@ -694,6 +708,7 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
         area = ft$area,
         id_level = id_level,
         score = score_val,
+        XLogP = xlogp_val,
         shared_fragments = expl_parsed$size,
         cosine_similarity = cosine_similarity,
         formula = formula_val,
@@ -745,11 +760,27 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     }
   }
 
-  suspects_out <- data.table::rbindlist(results, fill = TRUE)
-  if (nrow(suspects_out) == 0) {
-    warning("No suspects found with MetFrag.")
-    return(FALSE)
+    suspects_out <- data.table::rbindlist(results, fill = TRUE)
+    if (nrow(suspects_out) == 0) {
+      warning("No suspects found with MetFrag.")
+      return(FALSE)
+    }
+  if ("score" %in% colnames(suspects_out)) {
+    suspects_out <- suspects_out[order(analysis, feature, -score)]
+    suspects_out[, candidate_rank := seq_len(.N), by = .(analysis, feature)]
   }
+  col_order <- c(
+    "analysis", "feature", "candidate_rank", "name", "polarity",
+    "db_mass", "exp_mass", "error_mass",
+    "db_rt", "exp_rt", "error_rt",
+    "intensity", "area",
+    "id_level", "score", "shared_fragments", "cosine_similarity",
+    "formula", "SMILES", "CAS", "XLogP", "database_id",
+    "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
+    "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
+  )
+  keep_cols <- intersect(col_order, colnames(suspects_out))
+  data.table::setcolorder(suspects_out, keep_cols)
 
   # Cache results
   save_cache(
