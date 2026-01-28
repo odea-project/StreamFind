@@ -24,10 +24,23 @@ DB_MassSpecMethod_SuspectScreening_native <- function(
   filtered = TRUE
 ) {
   if (is.null(suspects)) {
-    stop("Argument 'suspects' is required. Provide a data.frame with at least columns 'name' and 'mass' or 'mz'.")
+    suspects <- data.table::data.table(
+      name = character(),
+      mass = numeric(),
+      rt = numeric(),
+      formula = character(),
+      SMILES = character(),
+      InChI = character(),
+      InChIKey = character(),
+      CAS = character(),
+      LogP = numeric(),
+      fragments_mz = character(),
+      fragments_int = character(),
+      fragments_formula = character()
+    )
+  } else {
+    suspects <- data.table::as.data.table(suspects)
   }
-
-  suspects <- data.table::as.data.table(suspects)
 
   x <- ProcessingStep(
     type = "DB_MassSpec",
@@ -146,7 +159,7 @@ run.DB_MassSpecMethod_SuspectScreening_native <- function(x, engine = NULL) {
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "CAS", "XLogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "CAS", "LogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )
@@ -708,7 +721,7 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
         area = ft$area,
         id_level = id_level,
         score = score_val,
-        XLogP = xlogp_val,
+        LogP = xlogp_val,
         shared_fragments = expl_parsed$size,
         cosine_similarity = cosine_similarity,
         formula = formula_val,
@@ -775,7 +788,7 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "CAS", "XLogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "CAS", "LogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )

@@ -132,33 +132,33 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   filtered = FALSE
 )
 
-# ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
-#   suspects = dbsus,
-#   ppm = 10,
-#   sec = 15,
-#   ppmMS2 = 10,
-#   mzrMS2 = 0.008,
-#   minCosineSimilarity = 0.7,
-#   minSharedFragments = 3,
-#   filtered = TRUE
-# )
-
-ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
-  metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
-  database_type = "LocalCSV",
-  database_path = "C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
+ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
+  suspects = dbsus,
   ppm = 10,
+  sec = 15,
   ppmMS2 = 10,
   mzrMS2 = 0.008,
-  top_n = 5,
-  filtered = FALSE,
-  n_cores = 10,
-  java_path = "java",
-  metfrag_args = NULL,
-  extra_params = list(),
-  show_progress = TRUE,
-  quiet = TRUE
+  minCosineSimilarity = 0.7,
+  minSharedFragments = 3,
+  filtered = TRUE
 )
+
+# ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
+#   metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
+#   database_type = "LocalCSV",
+#   database_path = "C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
+#   ppm = 10,
+#   ppmMS2 = 10,
+#   mzrMS2 = 0.008,
+#   top_n = 5,
+#   filtered = FALSE,
+#   n_cores = 10,
+#   java_path = "java",
+#   metfrag_args = NULL,
+#   extra_params = list(),
+#   show_progress = TRUE,
+#   quiet = TRUE
+# )
 
 ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2, ps_sus) # ps_fillf, ps_sus
 # clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
@@ -199,10 +199,9 @@ ms$run_app()
 
 # TODO Implement Filters for MS2 spectra in features and filter for suspects
 
-# TODO Add a transformation products suspect screening method, that takes a suspect screening database with transformation products 
+# TODO Add a transformation products suspect screening method, that takes a suspect screening database with transformation products
 
 # TODO Better documentation for the duckdb structure and how to use it with StreamFind
-
 
 plot_features_ms1(
   ms$NonTargetAnalysis,
@@ -213,6 +212,20 @@ plot_features_ms1(
 fts <- get_features(ms$NonTargetAnalysis)[, 1:20]
 fts <- fts[order(intensity), ]
 
+
+fts <- get_features(
+  ms$NonTargetAnalysis,
+  mass = dbsus[15, ],
+  ppm = 20,
+  filtered = FALSE
+)[, 1:30]
+
+fts <- get_features(
+  ms$NonTargetAnalysis,
+  mass = dbsus$mass[15],
+  ppm = 20,
+  filtered = FALSE
+)[, 1:30]
 
 plot_suspects_ms2(ms$NonTargetAnalysis, features = get_suspects(ms$NonTargetAnalysis)[1, ], interactive = F)
 
@@ -303,7 +316,7 @@ plot_debug_log(
 #"02_tof_ww_is_neg_influent-r002", "FG761_M286_RT968_NEG", "FC60_RT968_NEG", mz 285.0802
 #"02_tof_ww_is_neg_influent-r001", "FG761_M286_RT968_NEG", "FC65_RT967_NEG", mz 285.0806
 
-get_suspects(ms$NonTargetAnalysis, suspects = dbsus[2, ], ppm = 10, sec = 15)
+get_suspects(ms$NonTargetAnalysis)
 
 
 istd_dt <- get_internal_standards(ms$NonTargetAnalysis)

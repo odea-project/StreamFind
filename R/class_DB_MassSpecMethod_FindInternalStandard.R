@@ -24,10 +24,23 @@ DB_MassSpecMethod_FindInternalStandard_native <- function(
   filtered = TRUE
 ) {
   if (is.null(suspects)) {
-    stop("Argument 'suspects' is required. Provide a data.frame with at least columns 'name' and 'mass' or 'mz'.")
+    suspects <- data.table::data.table(
+      name = character(),
+      mass = numeric(),
+      rt = numeric(),
+      formula = character(),
+      SMILES = character(),
+      InChI = character(),
+      InChIKey = character(),
+      CAS = character(),
+      LogP = numeric(),
+      fragments_mz = character(),
+      fragments_int = character(),
+      fragments_formula = character()
+    )
+  } else {
+    suspects <- data.table::as.data.table(suspects)
   }
-
-  suspects <- data.table::as.data.table(suspects)
 
   x <- ProcessingStep(
     type = "DB_MassSpec",
@@ -140,6 +153,18 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
   if (!"candidate_rank" %in% colnames(internal_standards)) {
     internal_standards$candidate_rank <- 1L
   }
+  col_order <- c(
+    "analysis", "feature", "candidate_rank", "name", "polarity",
+    "db_mass", "exp_mass", "error_mass",
+    "db_rt", "exp_rt", "error_rt",
+    "intensity", "area",
+    "id_level", "score", "shared_fragments", "cosine_similarity",
+    "formula", "SMILES", "InChI", "InChIKey", "CAS", "LogP", "database_id",
+    "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
+    "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
+  )
+  keep_cols <- intersect(col_order, colnames(internal_standards))
+  data.table::setcolorder(internal_standards, keep_cols)
 
   # Cache results
   save_cache(

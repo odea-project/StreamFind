@@ -254,39 +254,29 @@
                 )
               )
             ),
-            shiny::div(
-              style = "height: calc(100vh - 200px); display: flex; flex-direction: column;",
               shiny::div(
-                class = "d-flex justify-content-center align-items-center",
-                style = "height: 60px; background-color: white; padding: 10px;",
+                style = "height: calc(100vh - 200px); display: flex; flex-direction: column;",
                 shiny::div(
-                  class = "btn-group btn-group-sm",
-                  shiny::tags$button(
-                    class = "btn btn-outline-primary active",
-                    style = "margin-right: 10px;",
-                    `data-value` = "replicates",
-                    `data-toggle` = "button",
-                    onclick = paste0(
-                      "Shiny.setInputValue('",
-                      ns_full("chart_color_by"),
-                      "', 'replicates')"
-                    ),
-                    "By Replicates"
-                  ),
-                  shiny::tags$button(
-                    class = "btn btn-outline-primary",
-                    style = "margin-right: 10px;",
-                    `data-value` = "analysis",
-                    `data-toggle` = "button",
-                    onclick = paste0(
-                      "Shiny.setInputValue('",
-                      ns_full("chart_color_by"),
-                      "', 'analysis')"
-                    ),
-                    "By Analysis"
+                  class = "features-controls-bar",
+                  style = "display: flex; align-items: center; justify-content: space-between;",
+                  shiny::div(
+                    style = "display: flex; align-items: center; gap: 10px; flex-wrap: wrap;",
+                    shiny::div(
+                      style = "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;",
+                      shiny::span("Group by:", style = "font-weight: 500;"),
+                      shiny::div(
+                        style = "display: flex; align-items: center;",
+                        shiny::radioButtons(
+                          ns_full("chart_color_by"),
+                          label = NULL,
+                          choices = c("Analysis" = "analysis", "Replicate" = "replicate"),
+                          selected = "analysis",
+                          inline = TRUE
+                        )
+                      )
+                    )
                   )
-                )
-              ),
+                ),
               shiny::column(
                 width = 12,
                 class = "position-relative",
@@ -313,12 +303,15 @@
               shiny::div(
                 style = "display: flex; align-items: center; gap: 8px; flex-wrap: wrap;",
                 shiny::span("Group by:", style = "font-weight: 500;"),
-                shiny::radioButtons(
-                  ns_full("scatter_color_by"),
-                  label = NULL,
-                  choices = c("Analysis" = "analysis", "Replicate" = "replicate"),
-                  selected = "analysis",
-                  inline = TRUE
+                shiny::div(
+                  style = "display: flex; align-items: center;",
+                  shiny::radioButtons(
+                    ns_full("scatter_color_by"),
+                    label = NULL,
+                    choices = c("Analysis" = "analysis", "Replicate" = "replicate"),
+                    selected = "analysis",
+                    inline = TRUE
+                  )
                 )
               ),
               shiny::div(
@@ -370,15 +363,16 @@
                     style = "height: 30px; position: relative;",
                     .app_util_create_maximize_button("features_scatter_plot", ns_full)
                   ),
-                  plotly::plotlyOutput(
-                    ns_full("features_scatter_plot"),
-                    height = "calc(100vh - 320px)",
-                    width = "100%"
+                    plotly::plotlyOutput(
+                      ns_full("features_scatter_plot"),
+                      height = "calc(100vh - 320px)",
+                      width = "100%"
+                    ) %>%
+                      shinycssloaders::withSpinner()
                   )
                 )
-              )
-            ),
-            shiny::div(
+              ),
+              shiny::div(
               id = ns_full("features_scatter_details_panel"),
               style = "height: calc(100vh - 250px); padding: 10px; overflow: hidden; width: 45%;",
               shiny::tabsetPanel(
@@ -394,7 +388,8 @@
                   plotly::plotlyOutput(
                     ns_full("feature_peaks_plot_scatter"),
                     height = "calc(100vh - 320px)"
-                  )
+                  ) %>%
+                    shinycssloaders::withSpinner()
                 ),
                 shiny::tabPanel(
                   title = "XIC",
@@ -406,7 +401,8 @@
                   plotly::plotlyOutput(
                     ns_full("feature_xic_plot_scatter"),
                     height = "calc(100vh - 320px)"
-                  )
+                  ) %>%
+                    shinycssloaders::withSpinner()
                 ),
                 shiny::tabPanel(
                   title = "Profile",
@@ -418,7 +414,8 @@
                   plotly::plotlyOutput(
                     ns_full("feature_profile_plot_scatter"),
                     height = "calc(100vh - 320px)"
-                  )
+                  ) %>%
+                    shinycssloaders::withSpinner()
                 ),
                 shiny::tabPanel(
                   title = "MS1",
@@ -430,7 +427,8 @@
                   plotly::plotlyOutput(
                     ns_full("feature_ms1_plot_scatter"),
                     height = "calc(100vh - 320px)"
-                  )
+                  ) %>%
+                    shinycssloaders::withSpinner()
                 ),
                 shiny::tabPanel(
                   title = "MS2",
@@ -442,14 +440,16 @@
                   plotly::plotlyOutput(
                     ns_full("feature_ms2_plot_scatter"),
                     height = "calc(100vh - 320px)"
-                  )
+                  ) %>%
+                    shinycssloaders::withSpinner()
                 ),
                 shiny::tabPanel(
                   title = "Details",
                   shiny::div(
                     class = "p-3",
                     style = "height: calc(100vh - 300px); overflow: auto;",
-                    DT::dataTableOutput(ns_full("feature_details_table_scatter"))
+                    DT::dataTableOutput(ns_full("feature_details_table_scatter")) %>%
+                      shinycssloaders::withSpinner()
                   )
                 ),
                 shiny::tabPanel(
@@ -457,7 +457,8 @@
                   shiny::div(
                     class = "p-3",
                     style = "height: calc(100vh - 300px); overflow: auto;",
-                    DT::dataTableOutput(ns_full("suspects_table_scatter"))
+                    DT::dataTableOutput(ns_full("suspects_table_scatter")) %>%
+                      shinycssloaders::withSpinner()
                   )
                 )
               )
@@ -623,7 +624,7 @@
     # Summary Tab ------
 
     # MARK: chart_color_by
-    chart_color_by <- shiny::reactiveVal("replicates")
+    chart_color_by <- shiny::reactiveVal("analysis")
 
     shiny::observeEvent(input$chart_color_by, {
       chart_color_by(input$chart_color_by)
@@ -730,7 +731,7 @@
     output$features_chart <- plotly::renderPlotly({
       nts <- nts_data()
       shiny::validate(shiny::need(!is.null(nts), "NTA data is not available"))
-      group_by <- if (identical(chart_color_by(), "replicates")) "replicate" else "analysis"
+      group_by <- if (identical(chart_color_by(), "replicate")) "replicate" else "analysis"
       p <- plot_features_count(nts, groupBy = group_by, showLegend = FALSE)
       shiny::validate(shiny::need(!is.null(p), "No features available to plot."))
       p %>%
@@ -887,7 +888,13 @@
         })
       }
 
-      ui_elems <- c(logi_list, slider_list)
+      suspects_toggle <- shiny::checkboxInput(
+        ns_full("scatter_filter_suspects"),
+        "Suspects",
+        value = FALSE
+      )
+
+      ui_elems <- c(list(suspects_toggle), logi_list, slider_list)
       if (length(ui_elems) == 0) return(NULL)
       shiny::tagList(ui_elems)
     })
@@ -929,6 +936,16 @@
         if (!is.null(sel) && length(sel) > 0) {
           keep_vals <- as.logical(sel)
           fts <- fts[fts[[col]] %in% keep_vals]
+        }
+      }
+
+      # Apply suspects filter
+      if (isTRUE(input$scatter_filter_suspects)) {
+        sps <- data.table::as.data.table(suspects_data())
+        if (nrow(sps) == 0) return(fts[0])
+        if (all(c("analysis", "feature") %in% colnames(sps))) {
+          sps <- unique(sps[, .(analysis = as.character(analysis), feature = as.character(feature))])
+          fts <- fts[sps, on = .(analysis, feature), nomatch = 0]
         }
       }
 
@@ -1272,19 +1289,25 @@
       } else {
         setnames(details_dt, c("Property", "Value"))
       }
-      DT::datatable(
-        details_dt,
-        options = list(
-          dom = "tip",
-          paging = FALSE,
-          ordering = FALSE,
-          autoWidth = TRUE
-        ),
-        style = "bootstrap",
-        class = "table table-striped table-hover",
-        rownames = FALSE
-      )
-    })
+        DT::datatable(
+          details_dt,
+          options = list(
+            dom = "tip",
+            paging = FALSE,
+            ordering = FALSE,
+            autoWidth = FALSE,
+            scrollX = TRUE,
+            scrollCollapse = TRUE,
+            fixedColumns = list(leftColumns = 1)
+          ),
+          selection = "single",
+          extensions = "FixedColumns",
+          style = "bootstrap",
+          class = "table table-striped table-hover",
+          width = "100%",
+          rownames = FALSE
+        )
+      })
 
     # Suspects ------
 

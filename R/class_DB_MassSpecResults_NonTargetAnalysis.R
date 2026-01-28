@@ -429,6 +429,17 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   sel_names <- .resolve_analyses_selection(analyses, all_names)
   rpls <- rpls[sel_names]
   pols <- pols[sel_names]
+  if (!is.null(pols)) {
+    pols_chr <- as.character(pols)
+    if (any(grepl("[,;/ ]", pols_chr))) {
+      pol_tokens <- unique(unlist(strsplit(pols_chr, "[,;/ ]+")))
+      pol_tokens <- pol_tokens[pol_tokens != ""]
+      pol_tokens[pol_tokens %in% "positive"] <- "1"
+      pol_tokens[pol_tokens %in% "negative"] <- "-1"
+      pols <- pol_tokens
+      names(pols) <- NULL
+    }
+  }
   if (length(sel_names) == 0) {
     return(data.table::data.table())
   }
@@ -471,6 +482,34 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       sel_names,
       pols
     )
+    if (nrow(targets) > 0) {
+      needs_bounds <- (targets$rtmin == 0 & targets$rtmax == 0) |
+        (targets$mzmin == 0 & targets$mzmax == 0)
+      if (any(needs_bounds)) {
+        filter_pred <- if (!filtered) "filtered = FALSE" else "1=1"
+        bounds_query <- sprintf(
+          "SELECT analysis, MIN(rt) AS rtmin, MAX(rt) AS rtmax, MIN(mz) AS mzmin, MAX(mz) AS mzmax FROM Features WHERE analysis IN ('%s') AND %s GROUP BY analysis",
+          paste(sel_names, collapse = "','"),
+          filter_pred
+        )
+        bounds <- DBI::dbGetQuery(conn, bounds_query)
+        if (nrow(bounds) > 0) {
+          for (i in seq_len(nrow(targets))) {
+            b <- bounds[bounds$analysis == targets$analysis[i], ]
+            if (nrow(b) == 1) {
+              if (targets$rtmin[i] == 0 && targets$rtmax[i] == 0) {
+                targets$rtmin[i] <- b$rtmin
+                targets$rtmax[i] <- b$rtmax
+              }
+              if (targets$mzmin[i] == 0 && targets$mzmax[i] == 0) {
+                targets$mzmin[i] <- b$mzmin
+                targets$mzmax[i] <- b$mzmax
+              }
+            }
+          }
+        }
+      }
+    }
     conditions <- apply(targets, 1, function(tgt) {
       filter_pred <- if (!filtered) "filtered = FALSE" else "1=1"
       sprintf(
@@ -1935,9 +1974,11 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
 
   formula_val <- get_optional_char(suspect_db, "formula")
   smiles_val <- get_optional_char(suspect_db, "SMILES")
+  inchi_val <- get_optional_char(suspect_db, "InChI")
+  inchikey_val <- get_optional_char(suspect_db, "InChIKey")
   cas_val <- get_optional_char(suspect_db, "CAS")
     score_val <- get_optional_numeric(suspect_db, "score", default = 0)
-    xlogp_val <- get_optional_numeric_multi(suspect_db, c("XLogP", "xlogp", "logp"), default = NA_real_)
+    logp_val <- get_optional_numeric_multi(suspect_db, c("LogP", "XLogP", "xlogp", "logp"), default = NA_real_)
     database_id_val <- get_database_id(suspect_db)
 
     # Initialize result row with all columns and default values
@@ -1956,12 +1997,14 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
       area = features$area[i],
       id_level = "4",
       score = score_val,
-      XLogP = xlogp_val,
       shared_fragments = 0L,
       cosine_similarity = 0,
       formula = formula_val,
       SMILES = smiles_val,
+      InChI = inchi_val,
+      InChIKey = inchikey_val,
       CAS = cas_val,
+      LogP = logp_val,
       database_id = database_id_val,
       db_ms2_size = 0L,
       db_ms2_mz = NA_character_,
@@ -2180,7 +2223,7 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "CAS", "XLogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "CAS", "LogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )
@@ -3299,8 +3342,10 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
     cosine_similarity DOUBLE,
     formula VARCHAR,
     SMILES VARCHAR,
+    InChI VARCHAR,
+    InChIKey VARCHAR,
     CAS VARCHAR,
-    XLogP DOUBLE,
+    LogP DOUBLE,
     database_id VARCHAR,
     db_ms2_size INTEGER,
     db_ms2_mz VARCHAR,
@@ -3341,8 +3386,10 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
         cosine_similarity = "DOUBLE",
         formula = "VARCHAR",
         SMILES = "VARCHAR",
+        InChI = "VARCHAR",
+        InChIKey = "VARCHAR",
         CAS = "VARCHAR",
-        XLogP = "DOUBLE",
+        LogP = "DOUBLE",
         database_id = "VARCHAR",
         db_ms2_size = "INTEGER",
         db_ms2_mz = "VARCHAR",
@@ -3391,8 +3438,10 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
     cosine_similarity DOUBLE,
     formula VARCHAR,
     SMILES VARCHAR,
+    InChI VARCHAR,
+    InChIKey VARCHAR,
     CAS VARCHAR,
-    XLogP DOUBLE,
+    LogP DOUBLE,
     database_id VARCHAR,
     db_ms2_size INTEGER,
     db_ms2_mz VARCHAR,
@@ -3434,8 +3483,10 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
         cosine_similarity = "DOUBLE",
         formula = "VARCHAR",
         SMILES = "VARCHAR",
+        InChI = "VARCHAR",
+        InChIKey = "VARCHAR",
         CAS = "VARCHAR",
-        XLogP = "DOUBLE",
+        LogP = "DOUBLE",
         database_id = "VARCHAR",
         db_ms2_size = "INTEGER",
         db_ms2_mz = "VARCHAR",
@@ -3474,10 +3525,13 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
           score DOUBLE,
           shared_fragments INTEGER,
           cosine_similarity DOUBLE,
-          formula VARCHAR,
-          SMILES VARCHAR,
-          CAS VARCHAR,
-          database_id VARCHAR,
+            formula VARCHAR,
+            SMILES VARCHAR,
+            InChI VARCHAR,
+            InChIKey VARCHAR,
+            CAS VARCHAR,
+            LogP DOUBLE,
+            database_id VARCHAR,
           db_ms2_size INTEGER,
           db_ms2_mz VARCHAR,
           db_ms2_intensity VARCHAR,
@@ -3507,10 +3561,13 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
             score,
             shared_fragments,
             cosine_similarity,
-            formula,
-            SMILES,
-            CAS,
-            database_id,
+              formula,
+              SMILES,
+              InChI,
+              InChIKey,
+              CAS,
+              LogP,
+              database_id,
             db_ms2_size,
             db_ms2_mz,
             db_ms2_intensity,
