@@ -33,7 +33,7 @@ DB_MassSpecMethod_FindInternalStandard_native <- function(
       InChI = character(),
       InChIKey = character(),
       CAS = character(),
-      LogP = numeric(),
+      xLogP = numeric(),
       fragments_mz = character(),
       fragments_int = character(),
       fragments_formula = character()
@@ -159,7 +159,7 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "InChI", "InChIKey", "CAS", "LogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "CAS", "xLogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )

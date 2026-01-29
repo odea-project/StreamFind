@@ -7,8 +7,9 @@
 #' @export
 #'
 DB_MassSpecResults_NonTargetAnalysis <- function(
-    projectPath = ".",
-    features = data.table::data.table()) {
+  projectPath = ".",
+  features = data.table::data.table()
+) {
   if (!requireNamespace("DBI", quietly = TRUE)) stop("DBI package required.")
   if (!requireNamespace("duckdb", quietly = TRUE)) stop("duckdb package required.")
 
@@ -26,6 +27,8 @@ DB_MassSpecResults_NonTargetAnalysis <- function(
   .validate_DB_MassSpecResults_NonTargetAnalysis_InternalStandards_db_schema(conn)
   .create_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema(conn)
   .validate_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema(conn)
+  .create_DB_MassSpecResults_NonTargetAnalysis_TransformationProducts_db_schema(conn)
+  .validate_DB_MassSpecResults_NonTargetAnalysis_TransformationProducts_db_schema(conn)
 
   insert_features <- function(features) {
     .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt(features)
@@ -147,9 +150,10 @@ show.DB_MassSpecResults_NonTargetAnalysis <- function(x) {
 #' @export
 #'
 get_features_count.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    filtered = FALSE) {
+  x,
+  analyses = NULL,
+  filtered = FALSE
+) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
 
@@ -267,7 +271,8 @@ plot_features_count.DB_MassSpecResults_NonTargetAnalysis <- function(
   title = NULL,
   groupBy = "analysis",
   showLegend = TRUE,
-  showHoverText = TRUE) {
+  showHoverText = TRUE
+) {
   info <- get_features_count(x, analyses, filtered)
 
   if (nrow(info) == 0) {
@@ -370,19 +375,20 @@ plot_features_count.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    features = NULL,
-    groups = NULL,
-    components = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    filtered = FALSE) {
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE
+) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   analyses_info <- info(x$analyses)
@@ -393,7 +399,9 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   names(pols) <- all_names
   parse_selection <- function(sel, column, aliases = character(0)) {
     res <- list(values = NULL, analyses = NULL, ids = NULL)
-    if (is.null(sel)) return(res)
+    if (is.null(sel)) {
+      return(res)
+    }
     col_opts <- c(column, aliases)
     if (is.data.frame(sel)) {
       col_match <- col_opts[col_opts %in% colnames(sel)]
@@ -563,17 +571,18 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    groups = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    filtered = FALSE) {
+  x,
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE
+) {
   fts <- get_features(
     x = x,
     analyses = analyses,
@@ -638,23 +647,24 @@ get_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    groups = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    filtered = FALSE,
-    groupBy = "analysis",
-    normalized = FALSE,
-    yLab = NULL,
-    title = NULL,
-    interactive = TRUE,
-    showLegend = TRUE) {
+  x,
+  analyses = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  groupBy = "analysis",
+  normalized = FALSE,
+  yLab = NULL,
+  title = NULL,
+  interactive = TRUE,
+  showLegend = TRUE
+) {
   prof <- get_features_profile(
     x = x,
     analyses = analyses,
@@ -759,13 +769,13 @@ plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
     showlegend = showLegend
   )
 
-    plot <- plot %>%
-      plotly::layout(
-        title = title,
-        xaxis = list(title = NULL, tickfont = list(size = 12)),
-        yaxis = list(title = yLab, tickfont = list(size = 12)),
-        legend = list(title = list(text = "feature_group"))
-      )
+  plot <- plot %>%
+    plotly::layout(
+      title = title,
+      xaxis = list(title = NULL, tickfont = list(size = 12)),
+      yaxis = list(title = yLab, tickfont = list(size = 12)),
+      legend = list(title = list(text = "feature_group"))
+    )
   plot
 }
 
@@ -776,8 +786,9 @@ plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL) {
+  x,
+  analyses = NULL
+) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
 
@@ -827,25 +838,26 @@ get_internal_standards.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    features = NULL,
-    groups = NULL,
-    components = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    filtered = FALSE,
-    xLab = NULL,
-    yLab = NULL,
-    title = NULL,
-    groupBy = "feature",
-    interactive = TRUE,
-    showDetails = FALSE) {
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "feature",
+  interactive = TRUE,
+  showDetails = FALSE
+) {
   fts <- get_features(
     x = x,
     analyses = analyses,
@@ -979,7 +991,9 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
     )
     make_hover_text <- function(pk_row) {
       fmt_num <- function(x, digits = 2) {
-        if (is.null(x)) return(NA_real_)
+        if (is.null(x)) {
+          return(NA_real_)
+        }
         ifelse(is.na(x), NA, round(as.numeric(x), digits))
       }
       base_lines <- c(
@@ -1117,25 +1131,26 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    features = NULL,
-    groups = NULL,
-    components = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    filtered = FALSE,
-    xLab = NULL,
-    yLab = NULL,
-    title = NULL,
-    groupBy = "feature",
-    interactive = TRUE,
-    showDetails = FALSE) {
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "feature",
+  interactive = TRUE,
+  showDetails = FALSE
+) {
   fts <- get_features(
     x = x,
     analyses = analyses,
@@ -1292,26 +1307,27 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    features = NULL,
-    groups = NULL,
-    components = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    normalized = FALSE,
-    filtered = FALSE,
-    xLab = NULL,
-    yLab = NULL,
-    title = NULL,
-    groupBy = "feature",
-    showText = TRUE,
-    interactive = TRUE) {
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  normalized = FALSE,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "feature",
+  showText = TRUE,
+  interactive = TRUE
+) {
   fts <- get_features(
     x = x,
     analyses = analyses,
@@ -1339,7 +1355,9 @@ plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
       ft <- fts[i, ]
       sel <- !is.na(ft$ms1_mz) && nchar(ft$ms1_mz) > 0 &&
         !is.na(ft$ms1_intensity) && nchar(ft$ms1_intensity) > 0
-      if (!sel) return(data.table::data.table())
+      if (!sel) {
+        return(data.table::data.table())
+      }
       mz_dec <- rcpp_streamcraft_decode_string(ft$ms1_mz)
       int_dec <- rcpp_streamcraft_decode_string(ft$ms1_intensity)
       if (length(mz_dec) == 0 || length(mz_dec) != length(int_dec)) {
@@ -1562,26 +1580,27 @@ plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    features = NULL,
-    groups = NULL,
-    components = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    normalized = TRUE,
-    filtered = FALSE,
-    xLab = NULL,
-    yLab = NULL,
-    title = NULL,
-    groupBy = "feature",
-    showText = TRUE,
-    interactive = TRUE) {
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  normalized = TRUE,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = "feature",
+  showText = TRUE,
+  interactive = TRUE
+) {
   fts <- get_features(
     x = x,
     analyses = analyses,
@@ -1609,7 +1628,9 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
       ft <- fts[i, ]
       sel <- !is.na(ft$ms2_mz) && nchar(ft$ms2_mz) > 0 &&
         !is.na(ft$ms2_intensity) && nchar(ft$ms2_intensity) > 0
-      if (!sel) return(data.table::data.table())
+      if (!sel) {
+        return(data.table::data.table())
+      }
       mz_dec <- rcpp_streamcraft_decode_string(ft$ms2_mz)
       int_dec <- rcpp_streamcraft_decode_string(ft$ms2_intensity)
       if (length(mz_dec) == 0 || length(mz_dec) != length(int_dec)) {
@@ -1846,17 +1867,17 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @export
 #'
 suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    suspects = NULL,
-    ppm = 5,
-    sec = 10,
-    ppmMS2 = 10,
-    mzrMS2 = 0.008,
-    minCosineSimilarity = 0.7,
-    minSharedFragments = 3,
-    filtered = FALSE) {
-
+  x,
+  analyses = NULL,
+  suspects = NULL,
+  ppm = 5,
+  sec = 10,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCosineSimilarity = 0.7,
+  minSharedFragments = 3,
+  filtered = FALSE
+) {
   if (is.null(suspects)) {
     stop("Argument 'suspects' is required. Provide a data.frame with at least columns 'name' and 'mass' or 'mz'.")
   }
@@ -1946,7 +1967,9 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
     for (field in fields) {
       if (field %in% colnames(tbl)) {
         val <- suppressWarnings(as.numeric(tbl[[field]][1]))
-        if (!is.na(val)) return(val)
+        if (!is.na(val)) {
+          return(val)
+        }
       }
     }
     default
@@ -1955,7 +1978,9 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
   get_database_id <- function(tbl) {
     for (field in c("database_id", "id", "ID")) {
       val <- get_optional_char(tbl, field)
-      if (nzchar(val)) return(val)
+      if (nzchar(val)) {
+        return(val)
+      }
     }
     ""
   }
@@ -1972,13 +1997,13 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
     )]
     suspect_db <- suspect_db[1, ]
 
-  formula_val <- get_optional_char(suspect_db, "formula")
-  smiles_val <- get_optional_char(suspect_db, "SMILES")
-  inchi_val <- get_optional_char(suspect_db, "InChI")
-  inchikey_val <- get_optional_char(suspect_db, "InChIKey")
-  cas_val <- get_optional_char(suspect_db, "CAS")
+    formula_val <- get_optional_char(suspect_db, "formula")
+    smiles_val <- get_optional_char(suspect_db, "SMILES")
+    inchi_val <- get_optional_char(suspect_db, "InChI")
+    inchikey_val <- get_optional_char(suspect_db, "InChIKey")
+    cas_val <- get_optional_char(suspect_db, "CAS")
     score_val <- get_optional_numeric(suspect_db, "score", default = 0)
-    logp_val <- get_optional_numeric_multi(suspect_db, c("LogP", "XLogP", "xlogp", "logp"), default = NA_real_)
+    logp_val <- get_optional_numeric_multi(suspect_db, c("xLogP", "XLogP", "xlogp", "logp", "LogP"), default = NA_real_)
     database_id_val <- get_database_id(suspect_db)
 
     # Initialize result row with all columns and default values
@@ -2004,7 +2029,7 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
       InChI = inchi_val,
       InChIKey = inchikey_val,
       CAS = cas_val,
-      LogP = logp_val,
+      xLogP = logp_val,
       database_id = database_id_val,
       db_ms2_size = 0L,
       db_ms2_mz = NA_character_,
@@ -2054,7 +2079,7 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
         # Decode experimental MS2 data from encoded strings
         ms2 <- data.table::data.table()
         if (!is.na(features$ms2_mz[i]) && nchar(features$ms2_mz[i]) > 0 &&
-            !is.na(features$ms2_intensity[i]) && nchar(features$ms2_intensity[i]) > 0) {
+          !is.na(features$ms2_intensity[i]) && nchar(features$ms2_intensity[i]) > 0) {
           mz_dec <- rcpp_streamcraft_decode_string(features$ms2_mz[i])
           int_dec <- rcpp_streamcraft_decode_string(features$ms2_intensity[i])
           if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
@@ -2139,19 +2164,19 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
             )
           }
 
-        # Store database MS2 as encoded base64 strings
-        temp$db_ms2_size <- as.integer(nrow(db_fragments))
-        temp$db_ms2_mz <- rcpp_streamcraft_encode_vector(db_fragments$mz)
-        temp$db_ms2_intensity <- rcpp_streamcraft_encode_vector(db_fragments$intensity)
-        temp$db_ms2_formula <- paste(db_fragments$formula, collapse = ";")
+          # Store database MS2 as encoded base64 strings
+          temp$db_ms2_size <- as.integer(nrow(db_fragments))
+          temp$db_ms2_mz <- rcpp_streamcraft_encode_vector(db_fragments$mz)
+          temp$db_ms2_intensity <- rcpp_streamcraft_encode_vector(db_fragments$intensity)
+          temp$db_ms2_formula <- paste(db_fragments$formula, collapse = ";")
 
-        # Calculate m/z ranges for matching
-        mzr <- db_fragments$mz * ppmMS2 / 1E6
-        mzr[mzr < mzrMS2] <- mzrMS2
-        db_fragments$mzmin <- db_fragments$mz - mzr
-        db_fragments$mzmax <- db_fragments$mz + mzr
+          # Calculate m/z ranges for matching
+          mzr <- db_fragments$mz * ppmMS2 / 1E6
+          mzr[mzr < mzrMS2] <- mzrMS2
+          db_fragments$mzmin <- db_fragments$mz - mzr
+          db_fragments$mzmax <- db_fragments$mz + mzr
 
-        # Match suspect fragments to experimental MS2
+          # Match suspect fragments to experimental MS2
           db_fragments$exp_idx <- vapply(
             seq_len(nrow(db_fragments)),
             function(z, ms2, db_fragments) {
@@ -2223,7 +2248,7 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "InChI", "InChIKey", "CAS", "LogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "CAS", "xLogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )
@@ -2283,27 +2308,28 @@ get_suspects.DB_MassSpecResults_NonTargetAnalysis <- function(x, analyses = NULL
 #' @export
 #'
 plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
-    x,
-    analyses = NULL,
-    features = NULL,
-    groups = NULL,
-    components = NULL,
-    mass = NULL,
-    mz = NULL,
-    rt = NULL,
-    mobility = NULL,
-    ppm = 20,
-    sec = 60,
-    millisec = 5,
-    normalized = TRUE,
-    filtered = FALSE,
-    xLab = NULL,
-    yLab = NULL,
-    title = NULL,
-    groupBy = c("feature", "candidate_rank"),
-    showText = TRUE,
-    interactive = TRUE,
-    showLegend = TRUE) {
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  components = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5,
+  normalized = TRUE,
+  filtered = FALSE,
+  xLab = NULL,
+  yLab = NULL,
+  title = NULL,
+  groupBy = c("feature", "candidate_rank"),
+  showText = TRUE,
+  interactive = TRUE,
+  showLegend = TRUE
+) {
   suspects <- get_suspects(x, analyses = analyses)
 
   if (nrow(suspects) == 0) {
@@ -2781,7 +2807,8 @@ get_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
   eliminationThreshold = 0.2,
   correctIntensity = FALSE,
   fillZerosWithLowerLimit = FALSE,
-  lowerLimit = NA_real_) {
+  lowerLimit = NA_real_
+) {
   info_analyses <- info(x$analyses)
   all_names <- info_analyses$analysis
   rpls <- info_analyses$replicate
@@ -2985,7 +3012,8 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
   yLab = NULL,
   title = NULL,
   interactive = TRUE,
-  showLegend = TRUE) {
+  showLegend = TRUE
+) {
   fc <- get_fold_change(
     x,
     replicatesIn,
@@ -3174,6 +3202,29 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 }
 
+#' @export
+#' @noRd
+get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, parents = NULL) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  if (!"TransformationProducts" %in% DBI::dbListTables(conn)) {
+    message("\u2717 No TransformationProducts table found in database.")
+    return(data.table::data.table())
+  }
+
+  tps <- DBI::dbGetQuery(conn, "SELECT * FROM TransformationProducts")
+  tps <- data.table::as.data.table(tps)
+  if (is.null(parents)) {
+    return(tps)
+  }
+
+  if (!"precursor_name" %in% colnames(tps)) {
+    return(data.table::data.table())
+  }
+  tps <- tps[tps$precursor_name %in% parents | tps$name %in% parents, ]
+  tps
+}
 
 # MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt
 #' @noRd
@@ -3345,7 +3396,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
     InChI VARCHAR,
     InChIKey VARCHAR,
     CAS VARCHAR,
-    LogP DOUBLE,
+    xLogP DOUBLE,
     database_id VARCHAR,
     db_ms2_size INTEGER,
     db_ms2_mz VARCHAR,
@@ -3389,7 +3440,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
         InChI = "VARCHAR",
         InChIKey = "VARCHAR",
         CAS = "VARCHAR",
-        LogP = "DOUBLE",
+        xLogP = "DOUBLE",
         database_id = "VARCHAR",
         db_ms2_size = "INTEGER",
         db_ms2_mz = "VARCHAR",
@@ -3414,6 +3465,81 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
   invisible(TRUE)
 }
 
+
+# MARK: .create_DB_MassSpecResults_NonTargetAnalysis_TransformationProducts_db_schema
+#' @noRd
+.create_DB_MassSpecResults_NonTargetAnalysis_TransformationProducts_db_schema <- function(conn) {
+  DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS TransformationProducts (
+    name VARCHAR,
+    formula VARCHAR,
+    mass DOUBLE,
+    SMILES VARCHAR,
+    InChI VARCHAR,
+    InChIKey VARCHAR,
+    xLogP DOUBLE,
+    transformation VARCHAR,
+    precursor_name VARCHAR,
+    precursor_formula VARCHAR,
+    precursor_mass DOUBLE,
+    precursor_SMILES VARCHAR,
+    precursor_InChI VARCHAR,
+    precursor_InChIKey VARCHAR,
+    precursor_xLogP DOUBLE,
+    feature_group VARCHAR,
+    cosine_similarity DOUBLE
+  )")
+
+  invisible(TRUE)
+}
+
+# MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_TransformationProducts_db_schema
+#' @noRd
+.validate_DB_MassSpecResults_NonTargetAnalysis_TransformationProducts_db_schema <- function(conn) {
+  tryCatch(
+    {
+      if (!"TransformationProducts" %in% DBI::dbListTables(conn)) {
+        .create_DB_MassSpecResults_NonTargetAnalysis_TransformationProducts_db_schema(conn)
+      }
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(TransformationProducts)")
+      required <- list(
+        name = "VARCHAR",
+        formula = "VARCHAR",
+        mass = "DOUBLE",
+        SMILES = "VARCHAR",
+        InChI = "VARCHAR",
+        InChIKey = "VARCHAR",
+        xLogP = "DOUBLE",
+        transformation = "VARCHAR",
+        precursor_name = "VARCHAR",
+        precursor_formula = "VARCHAR",
+        precursor_mass = "DOUBLE",
+        precursor_SMILES = "VARCHAR",
+        precursor_InChI = "VARCHAR",
+        precursor_InChIKey = "VARCHAR",
+        precursor_xLogP = "DOUBLE",
+        feature_group = "VARCHAR",
+        cosine_similarity = "DOUBLE"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to TransformationProducts table...", col))
+          DBI::dbExecute(
+            conn,
+            sprintf(
+              "ALTER TABLE TransformationProducts ADD COLUMN %s %s",
+              col,
+              required[[col]]
+            )
+          )
+        }
+      }
+    },
+    error = function(e) {
+      stop("Schema migration check (TransformationProducts): ", e$message)
+    }
+  )
+  invisible(TRUE)
+}
 
 # MARK: .create_DB_MassSpecResults_NonTargetAnalysis_Suspects_db_schema
 #' @noRd
@@ -3441,7 +3567,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
     InChI VARCHAR,
     InChIKey VARCHAR,
     CAS VARCHAR,
-    LogP DOUBLE,
+    xLogP DOUBLE,
     database_id VARCHAR,
     db_ms2_size INTEGER,
     db_ms2_mz VARCHAR,
@@ -3486,7 +3612,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
         InChI = "VARCHAR",
         InChIKey = "VARCHAR",
         CAS = "VARCHAR",
-        LogP = "DOUBLE",
+        xLogP = "DOUBLE",
         database_id = "VARCHAR",
         db_ms2_size = "INTEGER",
         db_ms2_mz = "VARCHAR",
@@ -3500,85 +3626,6 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
       for (col in missing_cols) {
         message(sprintf("Adding missing %s column to Suspects table...", col))
         DBI::dbExecute(conn, sprintf("ALTER TABLE Suspects ADD COLUMN %s %s", col, required[[col]]))
-      }
-
-      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Suspects)")
-      pk_cols <- table_info$name[table_info$pk > 0]
-      needs_rebuild <- !all(c("analysis", "feature", "candidate_rank") %in% pk_cols)
-      if (needs_rebuild) {
-        message("Rebuilding Suspects table to update primary key...")
-        DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS Suspects_new (
-          analysis VARCHAR,
-          feature VARCHAR,
-          candidate_rank INTEGER,
-          name VARCHAR,
-          polarity INTEGER,
-          db_mass DOUBLE,
-          exp_mass DOUBLE,
-          error_mass DOUBLE,
-          db_rt DOUBLE,
-          exp_rt DOUBLE,
-          error_rt DOUBLE,
-          intensity DOUBLE,
-          area DOUBLE,
-          id_level VARCHAR,
-          score DOUBLE,
-          shared_fragments INTEGER,
-          cosine_similarity DOUBLE,
-            formula VARCHAR,
-            SMILES VARCHAR,
-            InChI VARCHAR,
-            InChIKey VARCHAR,
-            CAS VARCHAR,
-            LogP DOUBLE,
-            database_id VARCHAR,
-          db_ms2_size INTEGER,
-          db_ms2_mz VARCHAR,
-          db_ms2_intensity VARCHAR,
-          db_ms2_formula VARCHAR,
-          exp_ms2_size INTEGER,
-          exp_ms2_mz VARCHAR,
-          exp_ms2_intensity VARCHAR,
-          PRIMARY KEY (analysis, feature, candidate_rank)
-        )")
-        DBI::dbExecute(conn, "
-          INSERT INTO Suspects_new
-          SELECT
-            analysis,
-            feature,
-            COALESCE(candidate_rank, 1) AS candidate_rank,
-            name,
-            polarity,
-            db_mass,
-            exp_mass,
-            error_mass,
-            db_rt,
-            exp_rt,
-            error_rt,
-            intensity,
-            area,
-            id_level,
-            score,
-            shared_fragments,
-            cosine_similarity,
-              formula,
-              SMILES,
-              InChI,
-              InChIKey,
-              CAS,
-              LogP,
-              database_id,
-            db_ms2_size,
-            db_ms2_mz,
-            db_ms2_intensity,
-            db_ms2_formula,
-            exp_ms2_size,
-            exp_ms2_mz,
-            exp_ms2_intensity
-          FROM Suspects
-        ")
-        DBI::dbExecute(conn, "DROP TABLE Suspects")
-        DBI::dbExecute(conn, "ALTER TABLE Suspects_new RENAME TO Suspects")
       }
     },
     error = function(e) {

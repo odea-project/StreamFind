@@ -128,6 +128,8 @@ Collate:
     'class_DB_MassSpecAnalyses.R'
     'class_DB_MassSpecMethod_FindFeatures.R'
     'class_DB_MassSpecMethod_FindInternalStandard.R'
+    'class_DB_MassSpecMethod_AssignTransformationProducts.R'
+    'class_DB_MassSpecMethod_CalculateTransformationProductsSimilarity.R'
     'class_DB_MassSpecMethod_SuspectScreening.R'
     'class_DB_MassSpecMethod_GroupFeatures.R'
     'class_DB_MassSpecMethod_LoadFeaturesMS1.R'

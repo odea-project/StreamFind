@@ -175,6 +175,8 @@ ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filter
 
 ms$run_workflow()
 
+r_path <- system.file(package = "StreamFindData", dir = "extdata")
+db <- paste0(r_path, "/tof_spiked_chemicals_ms2.csv")
 
 plot_features_count(ms$NonTargetAnalysis, groupBy = "replicate")
 plot_features_profile(ms$NonTargetAnalysis, groupBy = "replicate", interactive = TRUE)
@@ -228,6 +230,12 @@ fts <- get_features(
 )[, 1:30]
 
 plot_suspects_ms2(ms$NonTargetAnalysis, features = get_suspects(ms$NonTargetAnalysis)[1, ], interactive = F)
+
+
+
+
+
+
 
 
 
