@@ -6,10 +6,15 @@
 #' table and assign feature groups based on matched suspect features. Writes the TransformationProducts table.
 #' @param transformation_products A data.frame with transformation products and parent entries. Uses `SMILES` to
 #' link parents and products via `precursor_SMILES`.
+#' @param chromatographic_phase Character (length 1). Chromatographic phase for RT plausibility checks.
+#' One of: "reverse_phase", "hilic".
+#' @param mzrMS2 Numeric. Absolute m/z tolerance for MS2 fragment matching when computing cosine similarity.
 #' @export
 #'
 DB_MassSpecMethod_AssignTransformationProducts_native <- function(
-  transformation_products = NULL
+  transformation_products = NULL,
+  chromatographic_phase = c("reverse_phase", "hilic"),
+  mzrMS2 = 0.008
 ) {
   if (is.null(transformation_products)) {
     transformation_products <- data.table::data.table(
@@ -33,6 +38,7 @@ DB_MassSpecMethod_AssignTransformationProducts_native <- function(
     transformation_products <- data.table::as.data.table(transformation_products)
   }
 
+  chromatographic_phase <- match.arg(chromatographic_phase)
   x <- ProcessingStep(
     type = "DB_MassSpec",
     method = "AssignTransformationProducts",
@@ -48,7 +54,9 @@ DB_MassSpecMethod_AssignTransformationProducts_native <- function(
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_,
     parameters = list(
-      transformation_products = transformation_products
+      transformation_products = transformation_products,
+      chromatographic_phase = as.character(chromatographic_phase),
+      mzrMS2 = as.numeric(mzrMS2)
     )
   )
   if (is.null(validate_object(x))) {
@@ -64,6 +72,8 @@ validate_object.DB_MassSpecMethod_AssignTransformationProducts_native <- functio
   checkmate::assert_choice(x$type, "DB_MassSpec")
   checkmate::assert_choice(x$method, "AssignTransformationProducts")
   checkmate::assert_choice(x$algorithm, "native")
+  checkmate::assert_choice(x$parameters$chromatographic_phase, c("reverse_phase", "hilic"))
+  checkmate::assert_number(x$parameters$mzrMS2, lower = 0)
   checkmate::assert_data_frame(data.table::as.data.table(x$parameters$transformation_products))
   tps <- data.table::as.data.table(x$parameters$transformation_products)
   if (nrow(tps) > 0) {
@@ -83,42 +93,7 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
 
   parameters <- x$parameters
   analyses_info <- info(engine$Analyses)
-
-  normalize_tp_columns <- function(tp) {
-    col_map <- c(
-      "name" = "name",
-      "inchi" = "InChI",
-      "inchikey" = "InChIKey",
-      "smiles" = "SMILES",
-      "formula" = "formula",
-      "mass" = "mass",
-      "neutralmass" = "mass",
-      "xlogp" = "xLogP",
-      "logp" = "xLogP",
-      "alogp" = "xLogP",
-      "reaction" = "transformation",
-      "precursor_name" = "precursor_name",
-      "precursor_inchi" = "precursor_InChI",
-      "precursor_inchikey" = "precursor_InChIKey",
-      "precursor_mass" = "precursor_mass",
-      "precursor_smiles" = "precursor_SMILES",
-      "precursor_formula" = "precursor_formula",
-      "precursor_xlogp" = "precursor_xLogP",
-      "precursor_logp" = "precursor_xLogP",
-      "precursor_alogp" = "precursor_xLogP"
-    )
-
-    nms <- names(tp)
-    for (i in seq_along(nms)) {
-      key <- tolower(nms[i])
-      if (key %in% names(col_map)) {
-        target <- col_map[[key]]
-        if (!(target %in% names(tp))) {
-          data.table::setnames(tp, nms[i], target)
-        }
-      }
-    }
-
+  ensure_tp_columns <- function(tp) {
     required_cols <- c(
       "name", "formula", "mass", "SMILES", "InChI", "InChIKey", "xLogP",
       "transformation",
@@ -126,27 +101,21 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
       "precursor_SMILES", "precursor_InChI", "precursor_InChIKey",
       "precursor_xLogP"
     )
-
-    for (col in required_cols) {
-      if (!col %in% names(tp)) {
-        tp[[col]] <- if (col %in% c("mass", "xLogP", "precursor_xLogP", "precursor_mass")) {
-          NA_real_
-        } else {
-          NA_character_
-        }
-      }
+    missing_cols <- setdiff(required_cols, names(tp))
+    if (length(missing_cols) > 0) {
+      stop(
+        "transformation_products is missing required columns: ",
+        paste(missing_cols, collapse = ", ")
+      )
     }
-
     tp$mass <- suppressWarnings(as.numeric(tp$mass))
     tp$xLogP <- suppressWarnings(as.numeric(tp$xLogP))
     tp$precursor_mass <- suppressWarnings(as.numeric(tp$precursor_mass))
     tp$precursor_xLogP <- suppressWarnings(as.numeric(tp$precursor_xLogP))
-    tp$cosine_similarity <- suppressWarnings(as.numeric(tp$cosine_similarity))
-
     tp
   }
-
-  tp <- normalize_tp_columns(parameters$transformation_products)
+  tp <- data.table::as.data.table(parameters$transformation_products)
+  tp <- ensure_tp_columns(tp)
 
   # Cache check
   cache_manager <- engine$Cache
@@ -168,34 +137,148 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
     }
   }
 
-  tp$feature_group <- ""
-  tp$cosine_similarity <- NA_real_
   if (nrow(tp) > 0) {
-    conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
-    on.exit(DBI::dbDisconnect(conn), add = TRUE)
+    tp$feature_group <- ""
+    tp$precursor_feature_group <- ""
+    tp$cosine_similarity <- NA_real_
+    tp$rt_plausibility <- NA_real_
+    nts <- engine$NonTargetAnalysis
+    suspects <- data.table::as.data.table(get_suspects(nts))
 
-    if (!"Suspects" %in% DBI::dbListTables(conn)) {
-      warning("No Suspects table found in database! Run SuspectScreening first.")
-    } else {
-      suspects <- data.table::as.data.table(DBI::dbGetQuery(conn, "SELECT * FROM Suspects"))
-      if (nrow(suspects) > 0) {
-        .validate_DB_MassSpecResults_NonTargetAnalysis_Features_db_schema(conn)
-        keys <- unique(paste(suspects$analysis, suspects$feature, sep = "|"))
-        placeholders <- paste(rep("?", length(keys)), collapse = ", ")
-        feature_query <- sprintf(
-          "SELECT analysis, feature, feature_group FROM Features WHERE (analysis || '|' || feature) IN (%s)",
-          placeholders
-        )
-        fts <- data.table::as.data.table(DBI::dbGetQuery(conn, feature_query, params = as.list(keys)))
-        if (nrow(fts) > 0) {
-          fts <- merge(fts, suspects[, .(analysis, feature, SMILES)], by = c("analysis", "feature"), all.x = TRUE)
-          fts$feature_group[is.na(fts$feature_group)] <- ""
-          grp <- fts[feature_group != "" & !is.na(SMILES) & SMILES != "", .(
-            feature_group = paste(unique(feature_group), collapse = ";")
-          ), by = .(SMILES)]
-          tp$feature_group <- grp$feature_group[match(tp$SMILES, grp$SMILES)]
-          tp$feature_group[is.na(tp$feature_group)] <- ""
+    if (nrow(suspects) > 0) {
+      suspects <- suspects[order(analysis, feature, candidate_rank)]
+      fts <- data.table::as.data.table(get_features(nts))
+      fts <- fts[, c("analysis", "feature", "feature_group"), with = FALSE]
+      if (nrow(fts) == 0) {
+        warning("No features found in NonTargetAnalysis for feature_group assignment.")
+        return(FALSE)
+      }
+      suspects <- merge(suspects, fts, by = c("analysis", "feature"), all.x = TRUE)
+
+      fg_map <- suspects[!is.na(SMILES) & SMILES != "" & !is.na(feature_group) & feature_group != "",
+        .(feature_group = paste(unique(feature_group), collapse = ";")),
+        by = .(SMILES)
+      ]
+
+      tp$feature_group <- fg_map$feature_group[match(tp$SMILES, fg_map$SMILES)]
+
+      tp$precursor_feature_group <- apply(tp, 1, function(z) {
+        if (z[["feature_group"]] != "" && !is.na(z[["feature_group"]])) {
+          pg <- suspects$feature_group[suspects$SMILES %in% z[["precursor_SMILES"]]]
+          if (length(pg) == 0) return("")
+          pg <- pg[!is.na(pg) & pg != ""]
+          if (length(pg) == 0) return("")
+          pg <- unique(pg)
+          pg <- paste(pg, collapse = ";")
+          pg
+        } else {
+          ""
         }
+      })
+
+      decode_ms2 <- function(mz_enc, int_enc) {
+        if (is.na(mz_enc) || is.na(int_enc) || nchar(mz_enc) == 0 || nchar(int_enc) == 0) {
+          return(NULL)
+        }
+        mz_dec <- rcpp_streamcraft_decode_string(mz_enc)
+        int_dec <- rcpp_streamcraft_decode_string(int_enc)
+        if (length(mz_dec) == 0 || length(int_dec) == 0 || length(mz_dec) != length(int_dec)) {
+          return(NULL)
+        }
+        data.table::data.table(mz = mz_dec, intensity = int_dec)
+      }
+
+      calc_similarity <- function(spec1, spec2, tol) {
+        if (nrow(spec1) == 0 || nrow(spec2) == 0) return(NA_real_)
+        all_mz <- sort(unique(c(spec1$mz, spec2$mz)))
+        int1 <- numeric(length(all_mz))
+        int2 <- numeric(length(all_mz))
+        for (i in seq_along(all_mz)) {
+          mz_val <- all_mz[i]
+          match1 <- which(abs(spec1$mz - mz_val) <= tol)
+          if (length(match1) > 0) {
+            int1[i] <- max(spec1$intensity[match1])
+          }
+          match2 <- which(abs(spec2$mz - mz_val) <= tol)
+          if (length(match2) > 0) {
+            int2[i] <- max(spec2$intensity[match2])
+          }
+        }
+        dot_product <- sum(int1 * int2)
+        norm1 <- sqrt(sum(int1^2))
+        norm2 <- sqrt(sum(int2^2))
+        if (norm1 == 0 || norm2 == 0) return(0)
+        dot_product / (norm1 * norm2)
+      }
+
+      score_rt_plausibility <- function(prod_logp, prec_logp, prod_rt, prec_rt, phase) {
+        if (is.na(prod_logp) || is.na(prec_logp) || is.na(prod_rt) || is.na(prec_rt)) return(NA_real_)
+        logp_diff <- prod_logp - prec_logp
+        rt_diff <- prod_rt - prec_rt
+        if (phase == "reverse_phase") {
+          return(sign(logp_diff) * sign(rt_diff))
+        }
+        if (phase == "hilic") {
+          return(-sign(logp_diff) * sign(rt_diff))
+        }
+        NA_real_
+      }
+
+      eligible <- tp$feature_group != "" & tp$precursor_feature_group != ""
+
+      for (i in which(eligible)) {
+        prod_fg <- tp$feature_group[i]
+        prod_fg <- unlist(strsplit(prod_fg, ";", fixed = TRUE))
+        prec_fg <- tp$precursor_feature_group[i]
+        prec_fg <- unlist(strsplit(prec_fg, ";", fixed = TRUE))
+
+        prod_sus <- suspects[feature_group %in% prod_fg & SMILES == tp$SMILES[i]]
+        prec_sus <- suspects[feature_group %in% prec_fg & SMILES == tp$precursor_SMILES[i]]
+
+        prod_exp_rt <- prod_sus$exp_rt
+        prec_exp_rt <- prec_sus$exp_rt
+        prod_logp <- tp$xLogP[i]
+        prec_logp <- tp$precursor_xLogP[i]
+        if (length(prod_exp_rt) > 0 && length(prec_exp_rt) > 0 &&
+              !all(is.na(prod_exp_rt)) && !all(is.na(prec_exp_rt)) &&
+              !is.na(prod_logp) && !is.na(prec_logp)) {
+          prod_rt_val <- median(prod_exp_rt, na.rm = TRUE)
+          prec_rt_val <- median(prec_exp_rt, na.rm = TRUE)
+          if (!is.na(prod_rt_val) && !is.na(prec_rt_val)) {
+            tp$rt_plausibility[i] <- score_rt_plausibility(
+              prod_logp, prec_logp, prod_rt_val, prec_rt_val, parameters$chromatographic_phase
+            )
+          }
+        }
+
+        max_cos <- NA_real_
+        has_comparison <- FALSE
+        prod_sus_valid <- prod_sus[exp_ms2_size > 0]
+        prec_sus_valid <- prec_sus[exp_ms2_size > 0]
+        if (nrow(prod_sus_valid) > 0 && nrow(prec_sus_valid) > 0) {
+          for (ps_idx in seq_len(nrow(prod_sus_valid))) {
+            ps_mz <- prod_sus_valid$exp_ms2_mz[ps_idx]
+            ps_int <- prod_sus_valid$exp_ms2_int[ps_idx]
+            ps_spec <- decode_ms2(ps_mz, ps_int)
+            if (is.null(ps_spec) || nrow(ps_spec) == 0) next
+            for (qs_idx in seq_len(nrow(prec_sus_valid))) {
+              qs_mz <- prec_sus_valid$exp_ms2_mz[qs_idx]
+              qs_int <- prec_sus_valid$exp_ms2_int[qs_idx]
+              qs_spec <- decode_ms2(qs_mz, qs_int)
+              if (is.null(qs_spec) || nrow(qs_spec) == 0) next
+              cos_val <- calc_similarity(ps_spec, qs_spec, parameters$mzrMS2)
+              if (!is.na(cos_val)) {
+                if (!has_comparison) {
+                  max_cos <- cos_val
+                  has_comparison <- TRUE
+                } else if (cos_val > max_cos) {
+                  max_cos <- cos_val
+                }
+              }
+            }
+          }
+        }
+        tp$cosine_similarity[i] <- max_cos
       }
     }
   }
@@ -206,11 +289,11 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
     "precursor_name", "precursor_formula", "precursor_mass",
     "precursor_SMILES", "precursor_InChI", "precursor_InChIKey",
     "precursor_xLogP",
-    "feature_group", "cosine_similarity"
+    "feature_group", "precursor_feature_group", "cosine_similarity", "rt_plausibility"
   )
-  data.table::setcolorder(tp, col_order)
 
-  # Cache results
+  tp <- tp[, ..col_order]
+
   save_cache(
     cache_manager,
     name = paste0("DB_AssignTransformationProducts_native"),
@@ -220,13 +303,11 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
   )
   message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
 
-  # Write to database
   conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
   .validate_DB_MassSpecResults_NonTargetAnalysis_TransformationProducts_db_schema(conn)
   DBI::dbExecute(conn, "DELETE FROM TransformationProducts")
   DBI::dbWriteTable(conn, "TransformationProducts", tp, append = TRUE)
-
   message("\u2713 Transformation products written to database.")
   invisible(TRUE)
 }

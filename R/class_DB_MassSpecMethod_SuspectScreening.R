@@ -204,6 +204,7 @@ run.DB_MassSpecMethod_SuspectScreening_native <- function(x, engine = NULL) {
 #' @param database_type Character (length 1). MetFrag database type (e.g., "LocalCSV", "LocalSDF", "PubChem").
 #' @param database_path Character (length 1). Path to the local database file (required for local databases).
 #' @param ppm Numeric. Mass tolerance in parts-per-million for database search (MS1 precursor). Default: 5.
+#' @param sec Numeric. Retention time tolerance in seconds for post-filtering candidates when RT is available. Default: 10.
 #' @param ppmMS2 Numeric. Mass tolerance in ppm for MS2 fragment matching. Default: 10.
 #' @param mzrMS2 Numeric. Minimum absolute m/z deviation for MS2 fragments (used when ppm range is smaller). Default: 0.008.
 #' @param top_n Integer. Maximum number of candidates to consider per feature (top-ranked kept). Default: 1.
@@ -232,6 +233,7 @@ DB_MassSpecMethod_SuspectScreening_metfrag <- function(
   database_type = "LocalCSV",
   database_path = NULL,
   ppm = 5,
+  sec = 10,
   ppmMS2 = 10,
   mzrMS2 = 0.008,
   top_n = 1,
@@ -267,6 +269,7 @@ DB_MassSpecMethod_SuspectScreening_metfrag <- function(
       database_type = as.character(database_type),
       database_path = if (is.null(database_path)) NULL else as.character(database_path),
       ppm = as.numeric(ppm),
+      sec = as.numeric(sec),
       ppmMS2 = as.numeric(ppmMS2),
       mzrMS2 = as.numeric(mzrMS2),
       top_n = as.integer(top_n),
@@ -296,6 +299,7 @@ validate_object.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x) {
   checkmate::assert_character(x$parameters$metfrag_path, len = 1)
   checkmate::assert_character(x$parameters$database_type, len = 1)
   checkmate::assert_numeric(x$parameters$ppm, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$sec, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$ppmMS2, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$mzrMS2, len = 1, lower = 0)
   checkmate::assert_integerish(x$parameters$top_n, len = 1, lower = 1)
@@ -391,6 +395,99 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     data.table::data.table(mz = mz_dec, intensity = int_dec)
   }
 
+  normalize_localcsv <- function(db_path, run_dir = NULL, quiet = TRUE) {
+    if (!file.exists(db_path)) {
+      stop("LocalCSV database file not found: ", db_path)
+    }
+    tbl <- data.table::fread(db_path, check.names = FALSE, showProgress = FALSE)
+    if (nrow(tbl) == 0) {
+      stop("LocalCSV database file is empty: ", db_path)
+    }
+
+    resolve_idx <- function(tbl, options) {
+      nms <- tolower(colnames(tbl))
+      opts <- tolower(options)
+      idx <- match(opts, nms, nomatch = 0)
+      idx <- idx[idx > 0]
+      if (length(idx) == 0) return(NA_integer_)
+      idx[1]
+    }
+
+    rename_if_needed <- function(tbl, target, options) {
+      idx <- resolve_idx(tbl, options)
+      if (is.na(idx)) return(list(tbl = tbl, renamed = FALSE))
+      current <- colnames(tbl)[idx]
+      if (current == target) return(list(tbl = tbl, renamed = FALSE))
+      data.table::setnames(tbl, current, target)
+      list(tbl = tbl, renamed = TRUE)
+    }
+
+    renamed_any <- FALSE
+    rename_map <- list(
+      Name = c("Name", "name"),
+      MolecularFormula = c("MolecularFormula", "formula"),
+      MonoisotopicMass = c("MonoisotopicMass", "mass"),
+      SMILES = c("SMILES", "smiles"),
+      InChI = c("InChI", "inchi"),
+      InChIKey = c("InChIKey", "inchikey"),
+      Identifier = c("Identifier", "identifier", "id", "database_id", "databaseid")
+    )
+
+    for (target in names(rename_map)) {
+      res <- rename_if_needed(tbl, target, rename_map[[target]])
+      tbl <- res$tbl
+      if (isTRUE(res$renamed)) renamed_any <- TRUE
+    }
+
+    if (!"Identifier" %in% colnames(tbl) && "Name" %in% colnames(tbl)) {
+      tbl[, Identifier := Name]
+      renamed_any <- TRUE
+      if (!quiet) {
+        message("LocalCSV: added Identifier column from Name.")
+      }
+    }
+
+    required <- c("MonoisotopicMass", "MolecularFormula", "SMILES", "InChI", "Name", "InChIKey", "Identifier")
+    missing <- setdiff(required, colnames(tbl))
+    if (length(missing) > 0) {
+      stop(
+        "LocalCSV database must contain columns: ",
+        paste(required, collapse = ", "),
+        ". Missing: ",
+        paste(missing, collapse = ", ")
+      )
+    }
+
+    lookup <- NULL
+    if (all(c("Identifier", "Name", "InChI", "InChIKey") %in% colnames(tbl))) {
+      lookup <- tbl[, .(Identifier, Name, InChI, InChIKey)]
+    }
+
+    if (!renamed_any) {
+      return(list(path = db_path, normalized = FALSE, lookup = lookup))
+    }
+
+    out_path <- if (!is.null(run_dir)) {
+      file.path(run_dir, paste0("metfrag_localcsv_", format(Sys.time(), "%Y%m%d_%H%M%S"), ".csv"))
+    } else {
+      tempfile("metfrag_localcsv_", fileext = ".csv")
+    }
+    data.table::fwrite(tbl, out_path)
+    if (!quiet) {
+      message("Normalized LocalCSV columns for MetFrag: ", out_path)
+    }
+    list(path = out_path, normalized = TRUE, lookup = lookup)
+  }
+
+  normalized_db_path <- parameters$database_path
+  localcsv_lookup <- NULL
+  if (!is.null(parameters$database_path) &&
+      identical(tolower(parameters$database_type), "localcsv")) {
+    normalized <- normalize_localcsv(parameters$database_path, run_dir = run_dir, quiet = parameters$quiet)
+    normalized_db_path <- normalized$path
+    localcsv_lookup <- normalized$lookup
+  }
+
   build_params <- function(ft, ms2_path, results_path, sample_name, precursor_mass) {
     is_pos <- isTRUE(as.integer(ft$polarity) > 0)
     params <- list(
@@ -412,8 +509,8 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
       MaximumTreeDepth = 2,
       UseSmiles = "True"
     )
-    if (!is.null(parameters$database_path)) {
-      params$LocalDatabasePath <- parameters$database_path
+    if (!is.null(normalized_db_path)) {
+      params$LocalDatabasePath <- normalized_db_path
     }
     if (!is.null(parameters$n_cores) && parameters$n_cores > 1) {
       params$NumberThreads <- parameters$n_cores
@@ -559,13 +656,13 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     ms2 <- decode_peaklist(ft$ms2_mz, ft$ms2_intensity)
 
     precursor_mass <- NA_real_
-    if (nrow(ms1) > 0) {
+    if (!is.na(ft$mass) && ft$mass > 0) {
+      precursor_mass <- ft$mass
+    } else if (!is.na(ft$mz) && ft$mz > 0) {
+      precursor_mass <- ft$mz - (ft$polarity * 1.007276)
+    } else if (nrow(ms1) > 0) {
       precursor_mz <- ms1$mz[which.max(ms1$intensity)]
       precursor_mass <- precursor_mz - (ft$polarity * 1.007276)
-    } else if (!is.na(ft$mass) && ft$mass > 0) {
-      precursor_mass <- ft$mass
-    } else if (!is.na(ft$mz)) {
-      precursor_mass <- ft$mz - (ft$polarity * 1.007276)
     }
 
     if (is.na(precursor_mass)) {
@@ -620,7 +717,19 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
       run_args <- params_path
     }
 
-    system2(run_cmd, args = run_args, stdout = log_path, stderr = log_path)
+    status <- suppressWarnings(system2(run_cmd, args = run_args, stdout = log_path, stderr = log_path))
+    if (!isTRUE(parameters$quiet)) {
+      if (!is.null(status) && !identical(status, 0)) {
+        message("MetFrag returned non-zero status: ", status)
+      }
+      if (file.exists(log_path)) {
+        log_lines <- readLines(log_path, warn = FALSE)
+        if (any(grepl("ERROR", log_lines, ignore.case = TRUE))) {
+          tail_lines <- utils::tail(log_lines, n = min(20L, length(log_lines)))
+          message("MetFrag log contains ERROR. Last lines:\n", paste(tail_lines, collapse = "\n"))
+        }
+      }
+    }
 
     if (isTRUE(parameters$debug)) {
       debug_lines <- c(
@@ -642,17 +751,27 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
 
     res <- parse_metfrag_results(run_dir, sample_name)
     if (nrow(res) == 0) {
+      if (!isTRUE(parameters$quiet) && file.exists(log_path)) {
+        log_lines <- readLines(log_path, warn = FALSE)
+        if (length(log_lines) > 0) {
+          tail_lines <- utils::tail(log_lines, n = min(20L, length(log_lines)))
+          message("MetFrag produced no candidates. Last log lines:\n", paste(tail_lines, collapse = "\n"))
+        }
+      }
       return(NULL)
     }
 
     name_col <- resolve_col(res, c("name", "compoundname", "compound_name"))
     formula_col <- resolve_col(res, c("formula", "molecularformula"))
     smiles_col <- resolve_col(res, c("smiles", "smile", "canonicalsmiles"))
+    inchi_col <- resolve_col(res, c("inchi", "inchi1", "standardinchi"))
+    inchikey_col <- resolve_col(res, c("inchikey", "inchi_key", "inchi-key"))
     cas_col <- resolve_col(res, c("cas", "casrn", "casnumber"))
     id_col <- resolve_col(res, c("identifier", "database_id", "databaseid", "inchikey", "pubchemcid"))
     score_col <- resolve_col(res, c("score", "metfragscore", "totalscore", "finalscore"))
     xlogp_col <- resolve_col(res, c("xlogp", "xlogp3", "logp", "xlogp-3"))
     mass_col <- resolve_col(res, c("neutralmass", "monoisotopicmass", "exactmass"))
+    rt_col <- resolve_col(res, c("rt", "retentiontime", "retention_time"))
     expl_col <- resolve_col(res, c("explpeaks", "explainedpeaks"))
     expl_formula_col <- resolve_col(res, c("formulasofexplpeaks", "explpeakformulas"))
 
@@ -671,11 +790,46 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
 
       formula_val <- if (!is.null(formula_col)) row[[formula_col]][1] else NA_character_
       smiles_val <- if (!is.null(smiles_col)) row[[smiles_col]][1] else NA_character_
+      inchi_val <- if (!is.null(inchi_col)) row[[inchi_col]][1] else NA_character_
+      inchikey_val <- if (!is.null(inchikey_col)) row[[inchikey_col]][1] else NA_character_
       cas_val <- if (!is.null(cas_col)) row[[cas_col]][1] else NA_character_
       database_id_val <- if (!is.null(id_col)) row[[id_col]][1] else NA_character_
       score_val <- if (!is.null(score_col)) suppressWarnings(as.numeric(row[[score_col]][1])) else 0
       xlogp_val <- if (!is.null(xlogp_col)) suppressWarnings(as.numeric(row[[xlogp_col]][1])) else NA_real_
       db_mass_val <- if (!is.null(mass_col)) suppressWarnings(as.numeric(row[[mass_col]][1])) else NA_real_
+      db_rt_val <- if (!is.null(rt_col)) suppressWarnings(as.numeric(row[[rt_col]][1])) else NA_real_
+
+      if (!is.null(localcsv_lookup)) {
+        has_inchi <- !is.na(inchi_val) && nzchar(as.character(inchi_val))
+        has_inchikey <- !is.na(inchikey_val) && nzchar(as.character(inchikey_val))
+        if (!has_inchi || !has_inchikey) {
+          lookup_row <- NULL
+          if (!is.na(database_id_val) && nzchar(as.character(database_id_val)) &&
+              "Identifier" %in% colnames(localcsv_lookup)) {
+            lookup_row <- localcsv_lookup[Identifier == database_id_val]
+          }
+          if (is.null(lookup_row) || nrow(lookup_row) == 0) {
+            if (!is.na(name_val) && nzchar(as.character(name_val)) &&
+                "Name" %in% colnames(localcsv_lookup)) {
+              lookup_row <- localcsv_lookup[Name == name_val]
+            }
+          }
+          if (!is.null(lookup_row) && nrow(lookup_row) > 0) {
+            if (!has_inchi && "InChI" %in% colnames(lookup_row)) {
+              inchi_val <- lookup_row$InChI[1]
+            }
+            if (!has_inchikey && "InChIKey" %in% colnames(lookup_row)) {
+              inchikey_val <- lookup_row$InChIKey[1]
+            }
+          }
+        }
+      }
+
+      if (!is.na(db_rt_val) && !is.na(ft$rt) && is.finite(db_rt_val) && is.finite(ft$rt)) {
+        if (abs(ft$rt - db_rt_val) > parameters$sec) {
+          next
+        }
+      }
 
       expl_peaks_val <- if (!is.null(expl_col)) row[[expl_col]][1] else NA_character_
       expl_formula_val <- if (!is.null(expl_formula_col)) row[[expl_formula_col]][1] else NA_character_
@@ -714,9 +868,9 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
         db_mass = db_mass_val,
         exp_mass = exp_mass_val,
         error_mass = error_mass_val,
-        db_rt = NA_real_,
+        db_rt = db_rt_val,
         exp_rt = ft$rt,
-        error_rt = NA_real_,
+        error_rt = if (!is.na(db_rt_val) && !is.na(ft$rt)) ft$rt - db_rt_val else NA_real_,
         intensity = ft$intensity,
         area = ft$area,
         id_level = id_level,
@@ -726,6 +880,8 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
         cosine_similarity = cosine_similarity,
         formula = formula_val,
         SMILES = smiles_val,
+        InChI = inchi_val,
+        InChIKey = inchikey_val,
         CAS = cas_val,
         database_id = database_id_val,
         db_ms2_size = expl_parsed$size,
@@ -773,11 +929,11 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     }
   }
 
-    suspects_out <- data.table::rbindlist(results, fill = TRUE)
-    if (nrow(suspects_out) == 0) {
-      warning("No suspects found with MetFrag.")
-      return(FALSE)
-    }
+  suspects_out <- data.table::rbindlist(results, fill = TRUE)
+  if (nrow(suspects_out) == 0) {
+    warning("No suspects found with MetFrag.")
+    return(FALSE)
+  }
   if ("score" %in% colnames(suspects_out)) {
     suspects_out <- suspects_out[order(analysis, feature, -score)]
     suspects_out[, candidate_rank := seq_len(.N), by = .(analysis, feature)]

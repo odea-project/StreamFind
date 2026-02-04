@@ -1142,6 +1142,17 @@ plot_transformation_products_network <- function(x, ...) {
   UseMethod("plot_transformation_products_network")
 }
 
+#' @title Generic `plot_transformation_products`
+#' @description S3 generic to plot transformation products from `x`.
+#' @param x An object from which the transformation products will be plotted.
+#' @param ... Additional arguments passed to the method.
+#' @export
+#' @noRd
+#'
+plot_transformation_products <- function(x, ...) {
+  UseMethod("plot_transformation_products")
+}
+
 #' @title Generic `predict`
 #' @description S3 generic to predict data from `x`.
 #' @param x An object from which the data will be predicted.

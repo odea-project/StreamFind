@@ -491,8 +491,7 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       pols
     )
     if (nrow(targets) > 0) {
-      needs_bounds <- (targets$rtmin == 0 & targets$rtmax == 0) |
-        (targets$mzmin == 0 & targets$mzmax == 0)
+      needs_bounds <- (targets$rtmin == 0 & targets$rtmax == 0) | (targets$mzmin == 0 & targets$mzmax == 0)
       if (any(needs_bounds)) {
         filter_pred <- if (!filtered) "filtered = FALSE" else "1=1"
         bounds_query <- sprintf(
@@ -518,16 +517,18 @@ get_features.DB_MassSpecResults_NonTargetAnalysis <- function(
         }
       }
     }
-    conditions <- apply(targets, 1, function(tgt) {
-      filter_pred <- if (!filtered) "filtered = FALSE" else "1=1"
-      sprintf(
-        "(mz >= %f AND mz <= %f AND rt >= %f AND rt <= %f AND analysis = '%s' AND polarity = %d AND %s)",
-        as.numeric(tgt["mzmin"]), as.numeric(tgt["mzmax"]),
-        as.numeric(tgt["rtmin"]), as.numeric(tgt["rtmax"]),
-        tgt["analysis"], as.integer(tgt["polarity"]),
-        filter_pred
-      )
-    })
+    # Build SQL predicates directly from typed vectors to avoid apply() row coercion.
+    filter_pred <- if (!filtered) "filtered = FALSE" else "1=1"
+    conditions <- sprintf(
+      "(mz >= %.10f AND mz <= %.10f AND rt >= %.10f AND rt <= %.10f AND analysis = '%s' AND polarity = %d AND %s)",
+      as.numeric(targets$mzmin),
+      as.numeric(targets$mzmax),
+      as.numeric(targets$rtmin),
+      as.numeric(targets$rtmax),
+      as.character(targets$analysis),
+      as.integer(targets$polarity),
+      filter_pred
+    )
     query <- sprintf("SELECT * FROM Features WHERE %s", paste(conditions, collapse = " OR "))
     features <- DBI::dbGetQuery(conn, query)
     if ("analysis" %in% colnames(features)) {
@@ -3204,7 +3205,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
 
 #' @export
 #' @noRd
-get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, parents = NULL) {
+get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, parents = NULL, groups = NULL) {
   conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
 
@@ -3215,6 +3216,46 @@ get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, 
 
   tps <- DBI::dbGetQuery(conn, "SELECT * FROM TransformationProducts")
   tps <- data.table::as.data.table(tps)
+  if (!is.null(groups)) {
+    if (length(groups) == 1 && grepl(";", groups, fixed = TRUE)) {
+      groups <- unlist(strsplit(groups, ";", fixed = TRUE))
+    }
+    groups <- trimws(groups)
+    groups <- groups[groups != ""]
+    if (length(groups) > 0) {
+      split_groups <- function(x) {
+        if (is.na(x) || !nzchar(x)) return(character(0))
+        parts <- unlist(strsplit(x, ";", fixed = TRUE))
+        parts <- trimws(parts)
+        parts[parts != ""]
+      }
+      match_group <- function(x) {
+        any(split_groups(x) %in% groups)
+      }
+      seed_rows <- tps[vapply(tps$feature_group, match_group, logical(1)) |
+        vapply(tps$precursor_feature_group, match_group, logical(1)), ]
+      if (nrow(seed_rows) > 0) {
+        nodes <- unique(c(seed_rows$SMILES, seed_rows$precursor_SMILES))
+        nodes <- nodes[!is.na(nodes) & nodes != ""]
+        repeat {
+          sel <- tps[SMILES %in% nodes | precursor_SMILES %in% nodes, ]
+          group_keep <- vapply(sel$feature_group, match_group, logical(1)) |
+            vapply(sel$precursor_feature_group, match_group, logical(1))
+          empty_keep <- (is.na(sel$feature_group) | sel$feature_group == "") &
+            (is.na(sel$precursor_feature_group) | sel$precursor_feature_group == "")
+          sel <- sel[group_keep | empty_keep, ]
+          new_nodes <- unique(c(sel$SMILES, sel$precursor_SMILES))
+          new_nodes <- new_nodes[!is.na(new_nodes) & new_nodes != ""]
+          if (setequal(nodes, new_nodes)) break
+          nodes <- new_nodes
+        }
+        tps <- tps[SMILES %in% nodes | precursor_SMILES %in% nodes, ]
+      } else {
+        tps <- tps[0]
+      }
+    }
+  }
+
   if (is.null(parents)) {
     return(tps)
   }
@@ -3224,6 +3265,204 @@ get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, 
   }
   tps <- tps[tps$precursor_name %in% parents | tps$name %in% parents, ]
   tps
+}
+
+# MARK: plot_transformation_products
+#' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot a transformation products network.
+#' @param groups Optional character vector of feature_group ids to seed the plot. When provided,
+#' the network expands to include all connected precursors/products.
+#' @export
+#'
+plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, groups = NULL) {
+  if (!requireNamespace("visNetwork", quietly = TRUE)) {
+    stop("visNetwork package is required for this function.")
+  }
+  tps <- get_transformation_products(x, parents = NULL, groups = groups)
+  if (nrow(tps) == 0) {
+    message("\u2717 No transformation products to plot.")
+    return(invisible(NULL))
+  }
+
+  node_ids <- unique(c(tps$SMILES, tps$precursor_SMILES))
+  node_ids <- node_ids[!is.na(node_ids) & node_ids != ""]
+
+  if (length(node_ids) == 0) {
+    message("\u2717 No nodes to plot.")
+    return(invisible(NULL))
+  }
+
+  edges <- tps[
+    !is.na(precursor_SMILES) & precursor_SMILES != "" & !is.na(SMILES) & SMILES != "",
+    .(from = precursor_SMILES, to = SMILES, label = transformation)
+  ]
+  edges$label <- gsub(" transformation", "", edges$label, fixed = TRUE)
+
+  edges <- unique(edges)
+  edges$id <- seq_len(nrow(edges))
+  edges$edge_label <- edges$label
+  edges$base_color <- "rgba(120,120,120,0.7)"
+  edges$color <- edges$base_color
+
+  prod_map <- tps[!is.na(SMILES) & SMILES != "", .(id = SMILES, label = name)]
+  prec_map <- tps[
+    !is.na(precursor_SMILES) & precursor_SMILES != "",
+    .(id = precursor_SMILES, label = precursor_name)
+  ]
+
+  name_map <- data.table::rbindlist(list(prod_map, prec_map), fill = TRUE)
+  name_map <- name_map[!is.na(id) & id != ""]
+  name_map <- name_map[!is.na(label) & label != "", .(label = label[1]), by = id]
+
+  nodes <- data.table::data.table(id = node_ids)
+  nodes$label <- name_map$label[match(nodes$id, name_map$id)]
+  nodes$label[is.na(nodes$label) | nodes$label == ""] <- nodes$id
+  fmt_vals <- function(x) {
+    x <- as.character(x)
+    x <- x[!is.na(x) & x != ""]
+    if (length(x) == 0) return("NA")
+    paste(unique(x), collapse = "; ")
+  }
+  node_title <- function(node_id) {
+    prod <- tps[tps$SMILES == node_id, ]
+    prec <- tps[tps$precursor_SMILES == node_id, ]
+    lines <- c(
+      paste0("Name: ", fmt_vals(c(prod$name, prec$precursor_name))),
+      paste0("Formula: ", fmt_vals(c(prod$formula, prec$precursor_formula))),
+      paste0("Mass: ", fmt_vals(c(prod$mass, prec$precursor_mass))),
+      paste0("SMILES: ", fmt_vals(node_id)),
+      paste0("InChI: ", fmt_vals(c(prod$InChI, prec$precursor_InChI))),
+      paste0("InChIKey: ", fmt_vals(c(prod$InChIKey, prec$precursor_InChIKey))),
+      paste0("xLogP: ", fmt_vals(c(prod$xLogP, prec$precursor_xLogP))),
+      paste0("FeatureGroup: ", fmt_vals(prod$feature_group)),
+      paste0("PrecursorFeatureGroup: ", fmt_vals(c(prod$precursor_feature_group, prec$precursor_feature_group))),
+      paste0("CosineSimilarity: ", fmt_vals(prod$cosine_similarity)),
+      paste0("RtPlausibility: ", fmt_vals(prod$rt_plausibility))
+    )
+    paste(lines, collapse = "<br/>")
+  }
+  nodes$title <- vapply(nodes$id, node_title, character(1))
+  nodes$node_label <- nodes$label
+  nodes$group <- "other"
+  node_has_group <- unique(tps$SMILES[!is.na(tps$feature_group) & tps$feature_group != ""])
+  node_has_group <- node_has_group[!is.na(node_has_group) & node_has_group != ""]
+
+  parent_nodes_unassigned <- unique(
+    tps$SMILES[tps$transformation %in% "parent" & (is.na(tps$feature_group) | tps$feature_group == "")]
+  )
+  parent_nodes_unassigned <- parent_nodes_unassigned[!is.na(parent_nodes_unassigned) & parent_nodes_unassigned != ""]
+
+  parent_nodes <- unique(
+    tps$SMILES[tps$transformation %in% "parent" & !is.na(tps$feature_group) & tps$feature_group != ""]
+  )
+  parent_nodes <- parent_nodes[!is.na(parent_nodes) & parent_nodes != ""]
+
+  nodes$group[nodes$id %in% node_has_group] <- "tp"
+  nodes$group[nodes$id %in% parent_nodes_unassigned] <- "parent_unassigned"
+  nodes$group[nodes$id %in% parent_nodes] <- "parent"
+  nodes$base_color <- "forestgreen"
+  nodes$base_color[nodes$group == "parent"] <- "darkred"
+  nodes$base_color[nodes$group == "parent_unassigned"] <- "black"
+  nodes$base_color[nodes$group == "tp"] <- "orange"
+  nodes$color <- nodes$base_color
+
+  visNetwork::visNetwork(nodes, edges, height = "800px", width = "100%") %>%
+    visNetwork::visNodes(
+      font = list(
+        size = 12,
+        strokeWidth = 0,
+        strokeColor = "rgba(0,0,0,0)"
+      )
+    ) %>%
+    visNetwork::visGroups(groupname = "parent", color = "darkred") %>%
+    visNetwork::visGroups(groupname = "parent_unassigned", color = "black") %>%
+    visNetwork::visGroups(groupname = "tp", color = "orange") %>%
+    visNetwork::visGroups(groupname = "other", color = "forestgreen") %>%
+    visNetwork::visEdges(
+      arrows = "to",
+      smooth = TRUE,
+      font = list(strokeWidth = 0, strokeColor = "rgba(0,0,0,0)")
+    ) %>%
+    visNetwork::visOptions(
+      highlightNearest = FALSE,
+      nodesIdSelection = list(enabled = TRUE)
+    ) %>%
+    visNetwork::visLayout(randomSeed = 123) %>%
+    visNetwork::visEvents(
+      selectNode = htmlwidgets::JS(
+        "function(params) {
+          var selected = params.nodes[0];
+          if (!selected) return;
+          var nearNodes = this.getConnectedNodes(selected);
+          nearNodes.push(selected);
+          var nearSet = {};
+          for (var n = 0; n < nearNodes.length; n++) nearSet[nearNodes[n]] = true;
+          var connected = this.getConnectedEdges(selected);
+          var keep = {};
+          for (var i = 0; i < connected.length; i++) keep[connected[i]] = true;
+
+          var allNodes = this.body.data.nodes.getIds();
+          var nodeUpdates = [];
+          for (var k = 0; k < allNodes.length; k++) {
+            var nn = this.body.data.nodes.get(allNodes[k]);
+            nodeUpdates.push({
+              id: allNodes[k],
+              label: nearSet[allNodes[k]] ? nn.node_label : '',
+              font: { color: nearSet[allNodes[k]] ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0)' },
+              color: nearSet[allNodes[k]] ? nn.base_color : 'rgba(200,200,200,0.2)'
+            });
+          }
+          this.body.data.nodes.update(nodeUpdates);
+
+          var allEdges = this.body.data.edges.getIds();
+          var updates = [];
+          for (var j = 0; j < allEdges.length; j++) {
+            var e = this.body.data.edges.get(allEdges[j]);
+            updates.push({
+              id: allEdges[j],
+              hidden: false,
+              label: keep[allEdges[j]] ? e.edge_label : '',
+              color: keep[allEdges[j]] ? e.base_color : 'rgba(200,200,200,0.2)',
+              font: {
+                color: keep[allEdges[j]] ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0)',
+                strokeWidth: 0,
+                strokeColor: 'rgba(0,0,0,0)'
+              }
+            });
+          }
+          this.body.data.edges.update(updates);
+        }"
+      ),
+      deselectNode = htmlwidgets::JS(
+        "function(params) {
+          var allNodes = this.body.data.nodes.getIds();
+          var nodeUpdates = [];
+          for (var k = 0; k < allNodes.length; k++) {
+            var nn = this.body.data.nodes.get(allNodes[k]);
+            nodeUpdates.push({
+              id: allNodes[k],
+              label: nn.node_label,
+              font: { color: 'rgba(0,0,0,1)' },
+              color: nn.base_color
+            });
+          }
+          this.body.data.nodes.update(nodeUpdates);
+
+          var allEdges = this.body.data.edges.getIds();
+          var updates = [];
+          for (var j = 0; j < allEdges.length; j++) {
+            var e = this.body.data.edges.get(allEdges[j]);
+            updates.push({
+              id: allEdges[j],
+              hidden: false,
+              label: e.edge_label,
+              color: e.base_color,
+              font: { color: 'rgba(0,0,0,1)', strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
+            });
+          }
+          this.body.data.edges.update(updates);
+        }"
+      )
+    )
 }
 
 # MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt
@@ -3486,7 +3725,9 @@ get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, 
     precursor_InChIKey VARCHAR,
     precursor_xLogP DOUBLE,
     feature_group VARCHAR,
-    cosine_similarity DOUBLE
+    precursor_feature_group VARCHAR,
+    cosine_similarity DOUBLE,
+    rt_plausibility DOUBLE
   )")
 
   invisible(TRUE)
@@ -3518,7 +3759,9 @@ get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, 
         precursor_InChIKey = "VARCHAR",
         precursor_xLogP = "DOUBLE",
         feature_group = "VARCHAR",
-        cosine_similarity = "DOUBLE"
+        precursor_feature_group = "VARCHAR",
+        cosine_similarity = "DOUBLE",
+        rt_plausibility = "DOUBLE"
       )
       for (col in names(required)) {
         if (!(col %in% table_info$name)) {

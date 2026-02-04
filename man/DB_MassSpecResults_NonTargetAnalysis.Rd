@@ -21,6 +21,7 @@
 \alias{plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_fold_change.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_fold_change.DB_MassSpecResults_NonTargetAnalysis}
+\alias{plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis}
 \title{Constructor and methods to handle non-target analysis (NTA) for mass spectrometry data}
 \usage{
 DB_MassSpecResults_NonTargetAnalysis(
@@ -276,6 +277,8 @@ DB_MassSpecResults_NonTargetAnalysis(
   interactive = TRUE,
   showLegend = TRUE
 )
+
+\method{plot_transformation_products}{DB_MassSpecResults_NonTargetAnalysis}(x, groups = NULL)
 }
 \arguments{
 \item{projectPath}{Path to the project directory where this database file will be created/used.}
@@ -306,7 +309,8 @@ object.}
 
 \item{showHoverText}{Logical (length 1), set to \code{TRUE} to show hovering text annotations.}
 
-\item{groups}{A numeric or character vector with feature group IDs, or a data.frame/data.table with a \code{feature_group} (or \code{group}) column; an optional \code{analysis} column restricts analyses and a \code{name} column sets custom labels.}
+\item{groups}{Optional character vector of feature_group ids to seed the plot. When provided,
+the network expands to include all connected precursors/products.}
 
 \item{components}{A numeric or character vector with feature component IDs, or a data.frame/data.table with a \code{feature_component} (or \code{component}) column; an optional \code{analysis} column restricts analyses and a \code{name} column sets custom labels.}
 
@@ -442,6 +446,8 @@ MS2 spectral similarity.
 \item \code{plot_fold_change(DB_MassSpecResults_NonTargetAnalysis)}: Plots the fold-change analysis between the \code{replicatesIn}
 and \code{replicatesOut}. This method is adapted from the work of
 \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
+
+\item \code{plot_transformation_products(DB_MassSpecResults_NonTargetAnalysis)}: Plot a transformation products network.
 
 }}
 \references{

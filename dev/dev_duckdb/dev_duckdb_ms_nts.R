@@ -1,7 +1,14 @@
 db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
 db <- db[, c("name", "formula", "mass", "rt", "fragments", "tag"), with = FALSE]
 dbis <- db[grepl("IS", db$tag), ]
-dbsus <- db[!grepl("IS", db$tag), ]
+
+dbsus <- data.table::fread(
+  file.path(
+    "dev",
+    "dev_duckdb",
+    "suspects_template.csv"
+  )
+)
 
 ms_files <- StreamFindData::get_ms_file_paths()
 ms_files <- ms_files[grepl("ww_", ms_files)]
@@ -119,7 +126,7 @@ ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
   rtWindow = c(-1, 1),
   mzWindow = c(-1, 6),
   mzClust = 0.008,
-  presence = 0.8,
+  presence = 0.5,
   minIntensity = 250,
   filtered = FALSE
 )
@@ -127,40 +134,54 @@ ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
 ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   isolationWindow = 1.3,
   mzClust = 0.008,
-  presence = 0.8,
-  minIntensity = 50,
+  presence = 0.5,
+  minIntensity = 10,
   filtered = FALSE
 )
 
-ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
-  suspects = dbsus,
+# ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
+#   suspects = dbsus,
+#   ppm = 10,
+#   sec = 15,
+#   ppmMS2 = 10,
+#   mzrMS2 = 0.008,
+#   minCosineSimilarity = 0.7,
+#   minSharedFragments = 3,
+#   filtered = TRUE
+# )
+
+ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
+  metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
+  database_type = "LocalCSV",
+  database_path = file.path("dev", "dev_duckdb", "transformation_products_template.csv"),
+  #"C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
   ppm = 10,
   sec = 15,
   ppmMS2 = 10,
   mzrMS2 = 0.008,
-  minCosineSimilarity = 0.7,
-  minSharedFragments = 3,
-  filtered = TRUE
+  top_n = 5,
+  filtered = FALSE,
+  n_cores = 10,
+  java_path = "java",
+  metfrag_args = NULL,
+  extra_params = list(),
+  show_progress = TRUE,
+  quiet = FALSE
 )
 
-# ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
-#   metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
-#   database_type = "LocalCSV",
-#   database_path = "C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
-#   ppm = 10,
-#   ppmMS2 = 10,
-#   mzrMS2 = 0.008,
-#   top_n = 5,
-#   filtered = FALSE,
-#   n_cores = 10,
-#   java_path = "java",
-#   metfrag_args = NULL,
-#   extra_params = list(),
-#   show_progress = TRUE,
-#   quiet = TRUE
-# )
+ps_tps <- DB_MassSpecMethod_AssignTransformationProducts_native(
+  transformation_products = data.table::fread(
+    file.path(
+      "dev",
+      "dev_duckdb",
+      "transformation_products_template.csv"
+    )
+  ),
+  chromatographic_phase = c("reverse_phase"),
+  mzrMS2 = 0.008
+)
 
-ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2, ps_sus) # ps_fillf, ps_sus
+ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2, ps_sus) # ps_fillf, #
 # clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
 # clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
 # clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
@@ -175,16 +196,32 @@ ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filter
 
 ms$run_workflow()
 
-r_path <- system.file(package = "StreamFindData", dir = "extdata")
-db <- paste0(r_path, "/tof_spiked_chemicals_ms2.csv")
+# sus <- get_suspects(ms$NonTargetAnalysis)
+# sus  <- sus[grepl("MZ219", sus$feature), ]
 
-plot_features_count(ms$NonTargetAnalysis, groupBy = "replicate")
-plot_features_profile(ms$NonTargetAnalysis, groupBy = "replicate", interactive = TRUE)
+clear_cache(ms$Cache, value = c("DB_AssignTransformationProducts_native"))
+#clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
+run(ps_tps, ms)
 
-metfrag_dir <- list.dirs(file.path(getwd(), "log"), full.names = TRUE)
-fs::dir_delete(metfrag_dir[grepl("metfrag", metfrag_dir)])
-clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
-run(ps_sus, ms)
+
+# metfrag_dir <- list.dirs(file.path(getwd(), "log"), full.names = TRUE)
+# fs::dir_delete(metfrag_dir[grepl("metfrag", metfrag_dir)])
+# clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
+# run(ps_sus, ms)
+
+tps <- get_transformation_products(
+  ms$NonTargetAnalysis,
+  groups = "FG2345_M236_RT1079_POS"
+)
+
+
+plot_transformation_products(
+  ms$NonTargetAnalysis,
+  groups = "FG2345_M236_RT1079_POS"
+)
+
+
+
 
 
 ms$run_app()
@@ -213,7 +250,6 @@ plot_features_ms1(
 
 fts <- get_features(ms$NonTargetAnalysis)[, 1:20]
 fts <- fts[order(intensity), ]
-
 
 fts <- get_features(
   ms$NonTargetAnalysis,

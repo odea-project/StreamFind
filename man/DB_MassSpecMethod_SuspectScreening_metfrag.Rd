@@ -9,6 +9,7 @@ DB_MassSpecMethod_SuspectScreening_metfrag(
   database_type = "LocalCSV",
   database_path = NULL,
   ppm = 5,
+  sec = 10,
   ppmMS2 = 10,
   mzrMS2 = 0.008,
   top_n = 1,
@@ -30,6 +31,8 @@ DB_MassSpecMethod_SuspectScreening_metfrag(
 \item{database_path}{Character (length 1). Path to the local database file (required for local databases).}
 
 \item{ppm}{Numeric. Mass tolerance in parts-per-million for database search (MS1 precursor). Default: 5.}
+
+\item{sec}{Numeric. Retention time tolerance in seconds for post-filtering candidates when RT is available. Default: 10.}
 
 \item{ppmMS2}{Numeric. Mass tolerance in ppm for MS2 fragment matching. Default: 10.}
 
