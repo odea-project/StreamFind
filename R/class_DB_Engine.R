@@ -206,6 +206,8 @@ DB_Engine <- R6::R6Class(
           warning("Could not reconstruct workflow: ", e$message)
           wf_obj <- Workflow()
           attr(wf_obj, "type") <- private$.dataType
+          self$Workflow <- wf_obj
+          wf_obj
         }
       )
       wf_obj

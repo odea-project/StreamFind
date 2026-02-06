@@ -7,9 +7,9 @@
 #'
 #' @examples
 #' \dontrun{
-#' getTemplateTransformationProductsScreeningCSV(file = "transformation_products_template.csv")
+#' get_template_transformation_products_screening_csv(file = "transformation_products_template.csv")
 #' }
-getTemplateTransformationProductsScreeningCSV <- function(file) {
+get_template_transformation_products_screening_csv <- function(file) {
   checkmate::assert_character(file, len = 1)
 
   cols <- c(

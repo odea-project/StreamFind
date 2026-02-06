@@ -144,6 +144,7 @@ DB_MassSpecResults_NonTargetAnalysis(
   yLab = NULL,
   title = NULL,
   groupBy = "feature",
+  globalNormalization = FALSE,
   interactive = TRUE,
   showDetails = FALSE
 )
@@ -355,6 +356,8 @@ in milliseconds.}
 \item{xLab}{A string with the title for the x axis.}
 
 \item{showDetails}{Logical, show hover details in interactive plots.}
+
+\item{globalNormalization}{Logical, when TRUE normalize intensities globally across all selected features.}
 
 \item{suspects}{A data.frame with suspect information. Must contain columns: \code{name} (character) and either \code{mass}
 (neutral monoisotopic mass) or \code{mz} (expected m/z). Optional columns: \code{rt} (retention time in seconds), \code{formula}

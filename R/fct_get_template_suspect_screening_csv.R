@@ -7,9 +7,9 @@
 #'
 #' @examples
 #' \dontrun{
-#' getTemplateSuspectScreeningCSV(file = "suspects_template.csv")
+#' get_template_suspect_screening_csv(file = "suspects_template.csv")
 #' }
-getTemplateSuspectScreeningCSV <- function(file) {
+get_template_suspect_screening_csv <- function(file) {
   checkmate::assert_character(file, len = 1)
 
   cols <- c("name", "formula", "mass", "rt", "SMILES", "InChI", "InChIKey", "xLogP", "polarity", "ms2")

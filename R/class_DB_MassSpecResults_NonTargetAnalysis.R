@@ -1128,6 +1128,7 @@ plot_features.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @template arg-plot-title
 #' @template arg-plot-groupBy
 #' @template arg-interactive
+#' @param globalNormalization Logical, when TRUE normalize intensities globally across all selected features.
 #' @param showDetails Logical, show hover details in interactive plots.
 #' @export
 #'
@@ -1149,6 +1150,7 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   yLab = NULL,
   title = NULL,
   groupBy = "feature",
+  globalNormalization = FALSE,
   interactive = TRUE,
   showDetails = FALSE
 ) {
@@ -1212,6 +1214,7 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       adduct = ft$adduct,
       rt = rt_dec,
       mz = mz_dec,
+      raw_intensity = int_dec,
       intensity = norm_int,
       var = ft$var
     )
@@ -1226,6 +1229,12 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 
   pts <- data.table::rbindlist(pt_list, fill = TRUE)
+  if (isTRUE(globalNormalization)) {
+    global_max <- max(pts$raw_intensity, na.rm = TRUE)
+    if (is.finite(global_max) && global_max > 0) {
+      pts[, intensity := raw_intensity / global_max]
+    }
+  }
   size_scaled <- pts$intensity
   size_scaled[is.na(size_scaled)] <- 0
   size_scaled <- size_scaled * 8 + 2
@@ -1265,7 +1274,7 @@ map_features.DB_MassSpecResults_NonTargetAnalysis <- function(
       "<br>adduct: ", pts$adduct,
       "<br>rt: ", round(pts$rt, 2),
       "<br>m/z: ", round(pts$mz, 4),
-      "<br>norm_intensity: ", round(pts$intensity, 3)
+      "<br>intensity: ", round(pts$raw_intensity, 3)
     )
   } else {
     ""

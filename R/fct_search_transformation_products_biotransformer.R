@@ -1,4 +1,4 @@
-# MARK: searchTransformationProductsBioTransformer
+# MARK: search_transformation_products_biotransformer
 
 #' @title Search transformation products with BioTransformer web API
 #' @description Submits parent compounds to the BioTransformer web API, polls for completion,
@@ -22,7 +22,7 @@
 #' `precursor_SMILES`, `precursor_InChI`, `precursor_InChIKey`, `precursor_xLogP`.
 #' The first row(s) correspond to the parent compounds (transformation = "parent").
 #' @export
-searchTransformationProductsBioTransformer <- function(
+search_transformation_products_biotransformer <- function(
   parents,
   biotransformer_option = c(
     "CYP450",
