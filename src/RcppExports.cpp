@@ -153,6 +153,87 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_nts_blank_subtraction_2
+Rcpp::List rcpp_nts_blank_subtraction_2(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, float blankThreshold, float rtExpand, float mzExpand);
+RcppExport SEXP _StreamFind_rcpp_nts_blank_subtraction_2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP blankThresholdSEXP, SEXP rtExpandSEXP, SEXP mzExpandSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< float >::type blankThreshold(blankThresholdSEXP);
+    Rcpp::traits::input_parameter< float >::type rtExpand(rtExpandSEXP);
+    Rcpp::traits::input_parameter< float >::type mzExpand(mzExpandSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_blank_subtraction_2(info, spectra_headers, feature_list, blankThreshold, rtExpand, mzExpand));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_nts_filter_features_2
+Rcpp::List rcpp_nts_filter_features_2(Rcpp::List info, Rcpp::List feature_list, double minSN, double minIntensity, double minArea, double minWidth, double maxWidth, double maxPPM, double minFwhmRT, double maxFwhmRT, double minFwhmMZ, double maxFwhmMZ, double minGaussianA, double minGaussianMu, double maxGaussianMu, double minGaussianSigma, double maxGaussianSigma, double minGaussianR2, double maxJaggedness, double minSharpness, double minAsymmetry, double maxAsymmetry, int maxModality, double minPlates, Rcpp::LogicalVector onlyFilled, bool removeFilled, int minSizeEIC, int minSizeMS1, int minSizeMS2, double minRelPresenceReplicate, bool removeIsotopes, bool removeAdducts, bool removeLosses);
+RcppExport SEXP _StreamFind_rcpp_nts_filter_features_2(SEXP infoSEXP, SEXP feature_listSEXP, SEXP minSNSEXP, SEXP minIntensitySEXP, SEXP minAreaSEXP, SEXP minWidthSEXP, SEXP maxWidthSEXP, SEXP maxPPMSEXP, SEXP minFwhmRTSEXP, SEXP maxFwhmRTSEXP, SEXP minFwhmMZSEXP, SEXP maxFwhmMZSEXP, SEXP minGaussianASEXP, SEXP minGaussianMuSEXP, SEXP maxGaussianMuSEXP, SEXP minGaussianSigmaSEXP, SEXP maxGaussianSigmaSEXP, SEXP minGaussianR2SEXP, SEXP maxJaggednessSEXP, SEXP minSharpnessSEXP, SEXP minAsymmetrySEXP, SEXP maxAsymmetrySEXP, SEXP maxModalitySEXP, SEXP minPlatesSEXP, SEXP onlyFilledSEXP, SEXP removeFilledSEXP, SEXP minSizeEICSEXP, SEXP minSizeMS1SEXP, SEXP minSizeMS2SEXP, SEXP minRelPresenceReplicateSEXP, SEXP removeIsotopesSEXP, SEXP removeAdductsSEXP, SEXP removeLossesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< double >::type minSN(minSNSEXP);
+    Rcpp::traits::input_parameter< double >::type minIntensity(minIntensitySEXP);
+    Rcpp::traits::input_parameter< double >::type minArea(minAreaSEXP);
+    Rcpp::traits::input_parameter< double >::type minWidth(minWidthSEXP);
+    Rcpp::traits::input_parameter< double >::type maxWidth(maxWidthSEXP);
+    Rcpp::traits::input_parameter< double >::type maxPPM(maxPPMSEXP);
+    Rcpp::traits::input_parameter< double >::type minFwhmRT(minFwhmRTSEXP);
+    Rcpp::traits::input_parameter< double >::type maxFwhmRT(maxFwhmRTSEXP);
+    Rcpp::traits::input_parameter< double >::type minFwhmMZ(minFwhmMZSEXP);
+    Rcpp::traits::input_parameter< double >::type maxFwhmMZ(maxFwhmMZSEXP);
+    Rcpp::traits::input_parameter< double >::type minGaussianA(minGaussianASEXP);
+    Rcpp::traits::input_parameter< double >::type minGaussianMu(minGaussianMuSEXP);
+    Rcpp::traits::input_parameter< double >::type maxGaussianMu(maxGaussianMuSEXP);
+    Rcpp::traits::input_parameter< double >::type minGaussianSigma(minGaussianSigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type maxGaussianSigma(maxGaussianSigmaSEXP);
+    Rcpp::traits::input_parameter< double >::type minGaussianR2(minGaussianR2SEXP);
+    Rcpp::traits::input_parameter< double >::type maxJaggedness(maxJaggednessSEXP);
+    Rcpp::traits::input_parameter< double >::type minSharpness(minSharpnessSEXP);
+    Rcpp::traits::input_parameter< double >::type minAsymmetry(minAsymmetrySEXP);
+    Rcpp::traits::input_parameter< double >::type maxAsymmetry(maxAsymmetrySEXP);
+    Rcpp::traits::input_parameter< int >::type maxModality(maxModalitySEXP);
+    Rcpp::traits::input_parameter< double >::type minPlates(minPlatesSEXP);
+    Rcpp::traits::input_parameter< Rcpp::LogicalVector >::type onlyFilled(onlyFilledSEXP);
+    Rcpp::traits::input_parameter< bool >::type removeFilled(removeFilledSEXP);
+    Rcpp::traits::input_parameter< int >::type minSizeEIC(minSizeEICSEXP);
+    Rcpp::traits::input_parameter< int >::type minSizeMS1(minSizeMS1SEXP);
+    Rcpp::traits::input_parameter< int >::type minSizeMS2(minSizeMS2SEXP);
+    Rcpp::traits::input_parameter< double >::type minRelPresenceReplicate(minRelPresenceReplicateSEXP);
+    Rcpp::traits::input_parameter< bool >::type removeIsotopes(removeIsotopesSEXP);
+    Rcpp::traits::input_parameter< bool >::type removeAdducts(removeAdductsSEXP);
+    Rcpp::traits::input_parameter< bool >::type removeLosses(removeLossesSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_filter_features_2(info, feature_list, minSN, minIntensity, minArea, minWidth, maxWidth, maxPPM, minFwhmRT, maxFwhmRT, minFwhmMZ, maxFwhmMZ, minGaussianA, minGaussianMu, maxGaussianMu, minGaussianSigma, maxGaussianSigma, minGaussianR2, maxJaggedness, minSharpness, minAsymmetry, maxAsymmetry, maxModality, minPlates, onlyFilled, removeFilled, minSizeEIC, minSizeMS1, minSizeMS2, minRelPresenceReplicate, removeIsotopes, removeAdducts, removeLosses));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_nts_suspect_screening_2
+Rcpp::List rcpp_nts_suspect_screening_2(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, Rcpp::List suspects, Rcpp::CharacterVector analyses, double ppm, double sec, double ppmMS2, double mzrMS2, double minCosineSimilarity, int minSharedFragments, bool filtered);
+RcppExport SEXP _StreamFind_rcpp_nts_suspect_screening_2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP suspectsSEXP, SEXP analysesSEXP, SEXP ppmSEXP, SEXP secSEXP, SEXP ppmMS2SEXP, SEXP mzrMS2SEXP, SEXP minCosineSimilaritySEXP, SEXP minSharedFragmentsSEXP, SEXP filteredSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type spectra_headers(spectra_headersSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type feature_list(feature_listSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type suspects(suspectsSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< double >::type ppm(ppmSEXP);
+    Rcpp::traits::input_parameter< double >::type sec(secSEXP);
+    Rcpp::traits::input_parameter< double >::type ppmMS2(ppmMS2SEXP);
+    Rcpp::traits::input_parameter< double >::type mzrMS2(mzrMS2SEXP);
+    Rcpp::traits::input_parameter< double >::type minCosineSimilarity(minCosineSimilaritySEXP);
+    Rcpp::traits::input_parameter< int >::type minSharedFragments(minSharedFragmentsSEXP);
+    Rcpp::traits::input_parameter< bool >::type filtered(filteredSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_suspect_screening_2(info, spectra_headers, feature_list, suspects, analyses, ppm, sec, ppmMS2, mzrMS2, minCosineSimilarity, minSharedFragments, filtered));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_fill_bin_spectra
 std::vector<double> rcpp_fill_bin_spectra(Rcpp::DataFrame spectra, Rcpp::DataFrame bin_mat, Rcpp::List bins, double overlap, std::string summaryFunction);
 RcppExport SEXP _StreamFind_rcpp_fill_bin_spectra(SEXP spectraSEXP, SEXP bin_matSEXP, SEXP binsSEXP, SEXP overlapSEXP, SEXP summaryFunctionSEXP) {
@@ -538,6 +619,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_annotate_components", (DL_FUNC) &_StreamFind_rcpp_nts_annotate_components, 9},
     {"_StreamFind_rcpp_nts_group_features_2", (DL_FUNC) &_StreamFind_rcpp_nts_group_features_2, 11},
     {"_StreamFind_rcpp_nts_fill_features_2", (DL_FUNC) &_StreamFind_rcpp_nts_fill_features_2, 15},
+    {"_StreamFind_rcpp_nts_blank_subtraction_2", (DL_FUNC) &_StreamFind_rcpp_nts_blank_subtraction_2, 6},
+    {"_StreamFind_rcpp_nts_filter_features_2", (DL_FUNC) &_StreamFind_rcpp_nts_filter_features_2, 33},
+    {"_StreamFind_rcpp_nts_suspect_screening_2", (DL_FUNC) &_StreamFind_rcpp_nts_suspect_screening_2, 12},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
     {"_StreamFind_rcpp_parse_ms_analysis", (DL_FUNC) &_StreamFind_rcpp_parse_ms_analysis, 1},

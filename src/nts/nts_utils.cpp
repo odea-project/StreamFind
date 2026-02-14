@@ -40,51 +40,6 @@ namespace nts::utils
   };
 }; // namespace nts::utils
 
-// MARK: get_empty_dt
-Rcpp::List nts::utils::get_empty_dt()
-{
-  Rcpp::List out = Rcpp::List::create();
-  out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-  return out;
-}
-
-// MARK: check_list_must_have_names
-bool nts::utils::check_list_must_have_names(
-    const Rcpp::List &list,
-    const std::vector<std::string> &must_have_names)
-{
-  std::vector<std::string> names_list = list.names();
-  const int must_have_names_size = must_have_names.size();
-  if (must_have_names_size == 0)
-    return false;
-  const int names_list_size = names_list.size();
-  if (names_list_size == 0)
-    return false;
-  std::vector<bool> has_must_have_names(must_have_names_size, false);
-
-  for (int i = 0; i < must_have_names_size; ++i)
-  {
-    for (int j = 0; j < names_list_size; ++j)
-    {
-      if (must_have_names[i] == names_list[j])
-        has_must_have_names[i] = true;
-    }
-  }
-
-  bool has_all_must_have_names = true;
-
-  for (int i = 0; i < must_have_names_size; ++i)
-  {
-    if (!has_must_have_names[i])
-    {
-      has_all_must_have_names = false;
-      break;
-    }
-  }
-
-  return has_all_must_have_names;
-}
-
 // MARK:: mean, standard_deviation
 float nts::utils::mean(const std::vector<float> &v)
 {
@@ -145,33 +100,6 @@ float nts::utils::gaussian_function_with_baseline(const float &A,
                                                   const float &x)
 {
   return baseline + A * exp(-pow(x - mu, 2) / (2 * pow(sigma, 2)));
-}
-
-// MARK: as_MS_SPECTRA_HEADERS
-sc::MS_SPECTRA_HEADERS nts::utils::as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
-{
-  sc::MS_SPECTRA_HEADERS headers;
-  const std::vector<int> &hd_index = hd["index"];
-  const std::vector<int> &hd_polarity = hd["polarity"];
-  const std::vector<int> &hd_configuration = hd["configuration"];
-  const std::vector<float> &hd_rt = hd["rt"];
-  const std::vector<int> &hd_level = hd["level"];
-  const std::vector<float> &hd_pre_mz = hd["pre_mz"];
-  const std::vector<float> &hd_pre_mz_low = hd["pre_mzlow"];
-  const std::vector<float> &hd_pre_mz_high = hd["pre_mzhigh"];
-  const std::vector<float> &hd_pre_ce = hd["pre_ce"];
-  const std::vector<float> &hd_mobility = hd["mobility"];
-  const int number_spectra = hd_index.size();
-  headers.resize_all(number_spectra);
-  headers.index = hd_index;
-  headers.rt = hd_rt;
-  headers.polarity = hd_polarity;
-  headers.configuration = hd_configuration;
-  headers.level = hd_level;
-  headers.precursor_mz = hd_pre_mz;
-  headers.activation_ce = hd_pre_ce;
-  headers.mobility = hd_mobility;
-  return headers;
 }
 
 // MARK: get_sort_indices_float

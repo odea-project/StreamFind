@@ -16,7 +16,7 @@ DB_MassSpecMethod_FindInternalStandard_native(
 )
 }
 \arguments{
-\item{suspects}{A data.frame with suspect information. Must contain columns: \code{name} (character) and either \code{mass} (neutral monoisotopic mass) or \code{mz} (expected m/z). Optional columns: \code{rt} (retention time in seconds), \code{formula} (molecular formula), \code{SMILES}, \code{fragments} or \code{fragments_mz} (MS2 fragment m/z values, semicolon-separated), \code{fragments_int} (MS2 fragment intensities, semicolon-separated), \code{fragments_formula} (fragment formulas, semicolon-separated).}
+\item{suspects}{A data.frame with suspect information. Must contain columns: \code{name} (character) and either \code{mass} (neutral monoisotopic mass) or \code{mz} (expected m/z). Optional columns: \code{rt} (retention time in seconds), \code{formula} (molecular formula), \code{SMILES}, \code{ms2_positive}/\code{ms2_negative} (MS2 fragment mz-int pairs separated by \verb{;}), or legacy \code{fragments}/\code{fragments_mz} + \code{fragments_int}.}
 
 \item{ppm}{Numeric. Mass tolerance in parts-per-million for matching suspect mass or \emph{m/z} to features. Default: 5.}
 

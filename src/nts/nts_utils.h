@@ -1,9 +1,10 @@
 #ifndef NTS_UTILS_H
 #define NTS_UTILS_H
 
-#include <Rcpp.h>
 #include "../streamcraft/streamcraft.h"
 #include <vector>
+#include <fstream>
+#include <iostream>
 
 // Forward declaration of nts::FEATURE
 namespace nts
@@ -32,12 +33,8 @@ namespace nts::utils
   // Macro to write important debug output to both console and log file
   #define DEBUG_OUT(x) do { \
     if (nts::utils::debug_log.is_open()) { nts::utils::debug_log << x; nts::utils::debug_log.flush(); } \
-    Rcpp::Rcout << x; \
+    std::cout << x; \
   } while(0)
-
-  Rcpp::List get_empty_dt();
-
-  bool check_list_must_have_names(const Rcpp::List &list, const std::vector<std::string> &must_have_names);
 
   float mean(const std::vector<float> &v);
 
@@ -55,8 +52,6 @@ namespace nts::utils
     const float &sigma,
     const float &baseline,
     const float &x);
-
-  sc::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd);
 
   std::vector<size_t> get_sort_indices_float(const std::vector<float> &data);
 

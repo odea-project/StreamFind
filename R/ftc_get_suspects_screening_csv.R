@@ -195,13 +195,17 @@ get_suspects_screening_csv <- function(suspects, file) {
     InChI = props$inchi,
     InChIKey = props$inchikey,
     xLogP = props$logp,
-    polarity = "",
-    ms2 = ""
+    ms2_positive = "",
+    ms2_negative = ""
   )
 
-  cols <- c("name", "formula", "mass", "rt", "SMILES", "InChI", "InChIKey", "xLogP", "polarity", "ms2")
+  cols <- c(
+    "name", "formula", "mass", "rt", "SMILES", "InChI", "InChIKey", "xLogP",
+    "ms2_positive", "ms2_negative"
+  )
   out <- out[, ..cols]
 
   data.table::fwrite(out, file)
   invisible(file)
 }
+

@@ -1,7 +1,6 @@
 #include "nts_componentization.h"
 #include "nts_utils.h"
 #include "nts.h"
-#include <Rcpp.h>
 #include <iomanip>
 #include <algorithm>
 #include <fstream>
@@ -153,7 +152,7 @@ namespace nts
         if (should_debug && !debug_triggered) {
           debug_triggered = true;
           const std::string analysis_name = i < nts_data.analyses.size() ? nts_data.analyses[i] : std::to_string(i);
-          Rcpp::Rcout << "Debugging components: Analysis '" << analysis_name
+          std::cout << "Debugging components: Analysis '" << analysis_name
                       << "' RT=" << debugRT << " (window " << left_offset << " to " << right_offset
                       << ") -> [" << (debugRT + left_offset) << ", " << (debugRT + right_offset) << "]" << std::endl;
           DEBUG_OUT("\nDebugging analysis: " << analysis_name << "\n");

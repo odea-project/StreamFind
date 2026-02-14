@@ -91,13 +91,17 @@ sus <- data.table::fread(
 #   )
 # )
 
-tps <- searchTransformationProductsBioTransformer(
-  parents = sus,
-  biotransformer_option = "ABIOTICBIO",
-  number_of_steps = 2,
-  throttle_sec = 31,
-  poll_delay = 5,
-  max_poll = 60,
+tps <- search_transformation_products_biotransformer(
+  parents = sus[c(2, 13), ],
+  biotransformerOption = c(
+    "ABIOTICBIO"
+  ),
+  numberOfSteps = 2,
+  throttleSec = 31,
+  pollDelay = 5,
+  maxPoll = 60,
+  excludeWithSameMass = FALSE,
+  ppm = 5,
   debug = FALSE
 )
 
@@ -109,3 +113,68 @@ data.table::fwrite(
     "transformation_products_template.csv"
   )
 )
+
+
+istd <- data.table::fread(
+  file.path(
+    "I:\\internal_standards.csv"
+  )
+)
+
+get_suspects_screening_csv(
+  suspects = istd,
+  file = file.path(
+    "I:\\internal_standards.csv"
+  )
+)
+
+
+
+root <- file.path("dev", "dev_duckdb", "data_nts")
+# file.remove(list.files(root, full.names = TRUE))
+# fs::dir_delete(root)
+ms <- DB_MassSpecEngine$new(projectPath = root, files = "I:\\mzml\\16_pos_mix_10-r002.mzML")
+
+istd <- data.table::fread(
+  file.path(
+    "I:\\internal_standards.csv"
+  )
+)
+
+# plot_spectra_eic(
+#   ms$Analyses,
+#   mass = istd,
+#   ppm = 20
+# )
+
+
+ps_ff <- DB_MassSpecMethod_FindFeatures_native(
+  rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
+  ppmThreshold = 10,
+  noiseThreshold = 250,
+  minSNR = 3,
+  minTraces = 3,
+  baselineWindow = 200,
+  maxWidth = 250,
+  baseQuantile = 0.99,
+  debugAnalysis = "16_pos_mix_10-r002",
+  debugMZ = 299.0418 + 1.007276,
+  debugSpecIdx = -1
+)
+
+ms$Workflow <- list(ps_ff)
+ms$run_workflow()
+
+sus <- suspect_screening(
+  ms$NonTargetAnalysis,
+  suspects = istd,
+  ppm = 10,
+  sec = 60,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  minCosineSimilarity = 0.7,
+  minSharedFragments = 3
+)
+
+sus
+

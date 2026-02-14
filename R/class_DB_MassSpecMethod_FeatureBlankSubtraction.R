@@ -94,38 +94,41 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
     }
   }
 
-  analyses_sel <- analyses[!analyses$replicate %in% analyses$blank, ]
   fts <- query_db(nts, "SELECT * FROM Features")
-  fts_list <- split(fts, fts$analysis)
-  blk_thres <- parameters$blankThreshold
+  if (nrow(fts) == 0) {
+    warning("No features found in DB_MassSpecResults_NonTargetAnalysis.")
+    return(FALSE)
+  }
 
-  fts_list <- lapply(fts_list, function(x) {
-    ana <- x$analysis[1]
-    blk_analyses <- analyses$analysis[analyses$replicate == analyses$blank[analyses$analysis == ana]]
-    targets <- data.table::as.data.table(x[, c("feature", "mz", "mzmin", "mzmax", "rt", "rtmin", "rtmax", "intensity", "polarity")])
-    targets$rtmin <- targets$rtmin - parameters$rtExpand
-    targets$rtmax <- targets$rtmax + parameters$rtExpand
-    targets$mzmin <- targets$mzmin - parameters$mzExpand
-    targets$mzmax <- targets$mzmax + parameters$mzExpand
-    data.table::setnames(targets, "feature", "id")
-    eic_blks <- lapply(blk_analyses, function(blk) {
-      get_spectra_eic(engine$Analyses, analyses = blk, mz = targets)
-    })
-    eic_blks <- data.table::rbindlist(eic_blks)
-    eic_blks <- eic_blks[order(intensity, decreasing = TRUE), ]
-    eic_blks <- eic_blks[, .(intensity_blank = max(head(intensity, 2))), by = .(id, analysis)]
-    eic_blks <- eic_blks[, .(intensity_blank = mean(intensity_blank)), by = .(id)]
-    eic_blks[, id := sub(" .*", "", id)]
-    merged <- merge(targets, eic_blks, by = "id", all.x = TRUE)
-    merged$intensity_blank[is.na(merged$intensity_blank)] <- 0
-    filtered_ids <- merged$id[merged$intensity < (merged$intensity_blank * blk_thres)]
-    x$filtered[x$feature %in% filtered_ids] <- TRUE
-    x$filter[x$feature %in% filtered_ids] <- "blank_subtraction"
-    x
+  analyses_db <- query_db(engine$Analyses, "SELECT * FROM Analyses")
+  spectra_headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
+  headers_list <- split(spectra_headers, spectra_headers$analysis)
+
+  feature_list <- lapply(analyses_db$analysis, function(ana) {
+    ana_features <- fts[fts$analysis == ana, ]
+    if (nrow(ana_features) == 0) {
+      return(fts[0, ])
+    }
+    ana_features
   })
+  names(feature_list) <- analyses_db$analysis
 
-  names(fts_list) <- analyses$analysis
-  fts <- data.table::rbindlist(fts_list, fill = TRUE)
+  fts_list <- rcpp_nts_blank_subtraction_2(
+    info = analyses_db,
+    spectra_headers = headers_list,
+    feature_list = feature_list,
+    blankThreshold = parameters$blankThreshold,
+    rtExpand = parameters$rtExpand,
+    mzExpand = parameters$mzExpand
+  )
+
+  if (is.null(fts_list) || length(fts_list) == 0) {
+    warning("Blank subtraction failed.")
+    return(FALSE)
+  }
+
+  names(fts_list) <- analyses_db$analysis
+  fts <- data.table::rbindlist(fts_list, fill = TRUE, idcol = "analysis")
 
   if (!is.null(cache_manager)) {
     save_cache(

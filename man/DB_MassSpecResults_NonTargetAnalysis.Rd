@@ -198,7 +198,7 @@ DB_MassSpecResults_NonTargetAnalysis(
 \method{suspect_screening}{DB_MassSpecResults_NonTargetAnalysis}(
   x,
   analyses = NULL,
-  suspects = NULL,
+  suspects = data.frame(),
   ppm = 5,
   sec = 10,
   ppmMS2 = 10,
@@ -279,7 +279,7 @@ DB_MassSpecResults_NonTargetAnalysis(
   showLegend = TRUE
 )
 
-\method{plot_transformation_products}{DB_MassSpecResults_NonTargetAnalysis}(x, groups = NULL)
+\method{plot_transformation_products}{DB_MassSpecResults_NonTargetAnalysis}(x, groups = NULL, showMS2 = FALSE)
 }
 \arguments{
 \item{projectPath}{Path to the project directory where this database file will be created/used.}
@@ -392,6 +392,9 @@ correction is ignored even if set to \code{TRUE}.}
 \item{fillZerosWithLowerLimit}{Logical of length one. When \code{TRUE} the zero values are filled with the lower limit.}
 
 \item{lowerLimit}{Numeric of length one. The lower limit to fill the zero values.}
+
+\item{showMS2}{Logical. When TRUE, fetches MS2 spectra from Features table for transformation products
+and precursors to display mirror plots in tooltips. Default: FALSE.}
 }
 \value{
 An object of class \code{DB_MassSpecResults_NonTargetAnalysis} (and \code{DB_Results}) pointing to the feature DuckDB on disk and holding an \code{analyses} field with the linked \code{DB_MassSpecAnalyses}.

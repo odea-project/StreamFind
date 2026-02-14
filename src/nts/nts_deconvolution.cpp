@@ -1057,7 +1057,7 @@ std::vector<nts::FEATURE> nts::deconvolution::process_polarity_clusters(
                     << " (mean: " << cluster_mean_mz << ")" << std::endl);
         DEBUG_LOG("      Target m/z " << debugMZ << " is within cluster range" << std::endl);
         std::string debug_filename = "log/debug_log_peak_detection_" + std::to_string(debugMZ) + ".log";
-        Rcpp::Rcout << "      Processing cluster " << cluster_id << " - detailed output in: " << debug_filename << std::endl;
+        std::cout << "      Processing cluster " << cluster_id << " - detailed output in: " << debug_filename << std::endl;
       }
     }
 
@@ -1984,14 +1984,14 @@ void nts::deconvolution::find_features_impl(
 {
   if (rtWindowsMin.size() != rtWindowsMax.size())
   {
-    Rcpp::Rcout << "Error: rtWindowsMin and rtWindowsMax must have the same length!" << std::endl;
+    std::cout << "Error: rtWindowsMin and rtWindowsMax must have the same length!" << std::endl;
     return;
   }
 
   for (size_t a = 0; a < nts_data.analyses.size(); ++a)
   {
-    Rcpp::Rcout << std::endl;
-    Rcpp::Rcout << a + 1 << "/" << nts_data.analyses.size() << " Processing analysis " << nts_data.analyses[a] << std::endl;
+    std::cout << std::endl;
+    std::cout << a + 1 << "/" << nts_data.analyses.size() << " Processing analysis " << nts_data.analyses[a] << std::endl;
 
     // Only enable debugging for matching analysis
     float current_debugMZ = (debugAnalysis.empty() || debugAnalysis == nts_data.analyses[a]) ? debugMZ : 0.0f;
@@ -2038,7 +2038,7 @@ void nts::deconvolution::find_features_impl(
     std::vector<float> spec_pos_rt, spec_pos_mz, spec_pos_intensity, spec_pos_noise;
     std::vector<float> spec_neg_rt, spec_neg_mz, spec_neg_intensity, spec_neg_noise;
 
-    Rcpp::Rcout << "  1/5 Denoising " << idx_load.size() << " spectra" << std::endl;
+    std::cout << "  1/5 Denoising " << idx_load.size() << " spectra" << std::endl;
 
     size_t total_raw_points = 0;
     size_t total_clean_points = 0;
@@ -2089,13 +2089,13 @@ void nts::deconvolution::find_features_impl(
       }
     }
 
-    Rcpp::Rcout << "      Polarity distribution: " << pos_count << " positive, " << neg_count << " negative spectra" << std::endl;
+    std::cout << "      Polarity distribution: " << pos_count << " positive, " << neg_count << " negative spectra" << std::endl;
 
     // Show denoising statistics
     float denoising_efficiency = total_raw_points > 0 ?
         (1.0f - static_cast<float>(total_clean_points) / static_cast<float>(total_raw_points)) * 100.0f : 0.0f;
 
-    Rcpp::Rcout << "      Denoising stats: " << total_raw_points << " -> " << total_clean_points
+    std::cout << "      Denoising stats: " << total_raw_points << " -> " << total_clean_points
                 << " points (" << std::fixed << std::setprecision(1) << denoising_efficiency
                 << "% noise removed, baseQuantile=" << baseQuantile << ")" << std::endl;
 
@@ -2104,7 +2104,7 @@ void nts::deconvolution::find_features_impl(
 
     // Process positive polarity
     if (spec_pos_rt.size() > 0) {
-      Rcpp::Rcout << "  2a/5 Clustering " << spec_pos_rt.size() << " positive polarity traces by m/z" << std::endl;
+      std::cout << "  2a/5 Clustering " << spec_pos_rt.size() << " positive polarity traces by m/z" << std::endl;
       std::vector<float> pos_clust_rt, pos_clust_mz, pos_clust_intensity, pos_clust_noise;
       std::vector<int> pos_clust_cluster;
       int pos_number_clusters = 0;
@@ -2116,7 +2116,7 @@ void nts::deconvolution::find_features_impl(
         pos_clust_noise, pos_clust_cluster, pos_number_clusters
       );
 
-      Rcpp::Rcout << "  3a/5 Detecting peaks in " << pos_number_clusters << " positive m/z clusters" << std::endl;
+      std::cout << "  3a/5 Detecting peaks in " << pos_number_clusters << " positive m/z clusters" << std::endl;
       pos_features = process_polarity_clusters(
         pos_clust_rt, pos_clust_mz, pos_clust_intensity,
         pos_clust_noise, pos_clust_cluster, pos_number_clusters,
@@ -2129,7 +2129,7 @@ void nts::deconvolution::find_features_impl(
 
     // Process negative polarity
     if (spec_neg_rt.size() > 0) {
-      Rcpp::Rcout << "  2b/5 Clustering " << spec_neg_rt.size() << " negative polarity traces by m/z" << std::endl;
+      std::cout << "  2b/5 Clustering " << spec_neg_rt.size() << " negative polarity traces by m/z" << std::endl;
       std::vector<float> neg_clust_rt, neg_clust_mz, neg_clust_intensity, neg_clust_noise;
       std::vector<int> neg_clust_cluster;
       int neg_number_clusters = 0;
@@ -2141,7 +2141,7 @@ void nts::deconvolution::find_features_impl(
         neg_clust_noise, neg_clust_cluster, neg_number_clusters
       );
 
-      Rcpp::Rcout << "  3b/5 Detecting peaks in " << neg_number_clusters << " negative m/z clusters" << std::endl;
+      std::cout << "  3b/5 Detecting peaks in " << neg_number_clusters << " negative m/z clusters" << std::endl;
       neg_features = process_polarity_clusters(
         neg_clust_rt, neg_clust_mz, neg_clust_intensity,
         neg_clust_noise, neg_clust_cluster, neg_number_clusters,
@@ -2158,7 +2158,7 @@ void nts::deconvolution::find_features_impl(
     all_features.insert(all_features.end(), pos_features.begin(), pos_features.end());
     all_features.insert(all_features.end(), neg_features.begin(), neg_features.end());
 
-    Rcpp::Rcout << "  4/5 Found " << all_features.size() << " total features ("
+    std::cout << "  4/5 Found " << all_features.size() << " total features ("
                 << pos_features.size() << " positive, " << neg_features.size() << " negative)" << std::endl;
 
     nts_data.features[a] = nts::FEATURES();
@@ -2169,6 +2169,6 @@ void nts::deconvolution::find_features_impl(
       nts_data.features[a].append_feature(feature);
     }
 
-    Rcpp::Rcout << "  5/5 Processing complete" << std::endl;
+    std::cout << "  5/5 Processing complete" << std::endl;
   }
 };

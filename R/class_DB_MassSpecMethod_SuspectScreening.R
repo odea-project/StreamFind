@@ -32,11 +32,9 @@ DB_MassSpecMethod_SuspectScreening_native <- function(
       SMILES = character(),
       InChI = character(),
       InChIKey = character(),
-      CAS = character(),
       xLogP = numeric(),
-      fragments_mz = character(),
-      fragments_int = character(),
-      fragments_formula = character()
+      ms2_positive = character(),
+      ms2_negative = character()
     )
   } else {
     suspects <- data.table::as.data.table(suspects)
@@ -83,7 +81,7 @@ validate_object.DB_MassSpecMethod_SuspectScreening_native <- function(x) {
   checkmate::assert_data_frame(data.table::as.data.table(x$parameters$suspects))
   suspects <- data.table::as.data.table(x$parameters$suspects)
   checkmate::assert_true("name" %in% colnames(suspects))
-  checkmate::assert_true(any(c("mass", "mz") %in% colnames(suspects)))
+  checkmate::assert_true("mass" %in% colnames(suspects))
   checkmate::assert_numeric(x$parameters$ppm, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$sec, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$ppmMS2, len = 1, lower = 0)
@@ -159,7 +157,7 @@ run.DB_MassSpecMethod_SuspectScreening_native <- function(x, engine = NULL) {
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "InChI", "InChIKey", "CAS", "xLogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "xLogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )
@@ -766,7 +764,6 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     smiles_col <- resolve_col(res, c("smiles", "smile", "canonicalsmiles"))
     inchi_col <- resolve_col(res, c("inchi", "inchi1", "standardinchi"))
     inchikey_col <- resolve_col(res, c("inchikey", "inchi_key", "inchi-key"))
-    cas_col <- resolve_col(res, c("cas", "casrn", "casnumber"))
     id_col <- resolve_col(res, c("identifier", "database_id", "databaseid", "inchikey", "pubchemcid"))
     score_col <- resolve_col(res, c("score", "metfragscore", "totalscore", "finalscore"))
     xlogp_col <- resolve_col(res, c("xlogp", "xlogp3", "logp", "xlogp-3"))
@@ -792,7 +789,6 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
       smiles_val <- if (!is.null(smiles_col)) row[[smiles_col]][1] else NA_character_
       inchi_val <- if (!is.null(inchi_col)) row[[inchi_col]][1] else NA_character_
       inchikey_val <- if (!is.null(inchikey_col)) row[[inchikey_col]][1] else NA_character_
-      cas_val <- if (!is.null(cas_col)) row[[cas_col]][1] else NA_character_
       database_id_val <- if (!is.null(id_col)) row[[id_col]][1] else NA_character_
       score_val <- if (!is.null(score_col)) suppressWarnings(as.numeric(row[[score_col]][1])) else 0
       xlogp_val <- if (!is.null(xlogp_col)) suppressWarnings(as.numeric(row[[xlogp_col]][1])) else NA_real_
@@ -882,7 +878,6 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
         SMILES = smiles_val,
         InChI = inchi_val,
         InChIKey = inchikey_val,
-        CAS = cas_val,
         database_id = database_id_val,
         db_ms2_size = expl_parsed$size,
         db_ms2_mz = expl_parsed$mz,
@@ -944,7 +939,7 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "InChI", "InChIKey", "CAS", "xLogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "xLogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )

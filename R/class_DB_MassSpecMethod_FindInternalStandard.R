@@ -3,7 +3,7 @@
 
 #' @title DB_MassSpecMethod_FindInternalStandard_native class
 #' @description Native StreamFind method for finding internal standards in non-target analysis results by suspect screening against a provided database.
-#' @param suspects A data.frame with suspect information. Must contain columns: `name` (character) and either `mass` (neutral monoisotopic mass) or `mz` (expected m/z). Optional columns: `rt` (retention time in seconds), `formula` (molecular formula), `SMILES`, `fragments` or `fragments_mz` (MS2 fragment m/z values, semicolon-separated), `fragments_int` (MS2 fragment intensities, semicolon-separated), `fragments_formula` (fragment formulas, semicolon-separated).
+#' @param suspects A data.frame with suspect information. Must contain columns: `name` (character) and either `mass` (neutral monoisotopic mass) or `mz` (expected m/z). Optional columns: `rt` (retention time in seconds), `formula` (molecular formula), `SMILES`, `ms2_positive`/`ms2_negative` (MS2 fragment mz-int pairs separated by `;`), or legacy `fragments`/`fragments_mz` + `fragments_int`.
 #' @param ppm Numeric. Mass tolerance in parts-per-million for matching suspect mass or *m/z* to features. Default: 5.
 #' @param sec Numeric. Retention time tolerance in seconds for matching suspect RT to features. Default: 10.
 #' @param ppmMS2 Numeric. Mass tolerance in ppm for MS2 fragment matching. Default: 10.
@@ -32,7 +32,6 @@ DB_MassSpecMethod_FindInternalStandard_native <- function(
       SMILES = character(),
       InChI = character(),
       InChIKey = character(),
-      CAS = character(),
       xLogP = numeric(),
       fragments_mz = character(),
       fragments_int = character(),
@@ -159,7 +158,7 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "InChI", "InChIKey", "CAS", "xLogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "xLogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )

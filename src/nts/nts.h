@@ -1,25 +1,30 @@
 #ifndef NTS_H
 #define NTS_H
 
-#include <Rcpp.h>
 #include <numeric>
 #include <unordered_map>
+#include <iostream>
 #include "nts_utils.h"
 #include "nts_deconvolution.h"
 #include "nts_annotation.h"
 #include "nts_componentization.h"
 #include "nts_alignment.h"
 #include "nts_gap_filling.h"
+#include "nts_blank_subtraction.h"
+#include "nts_filter_features.h"
+#include "suspect_screening.h"
 #include "../streamcraft/streamcraft.h"
 
 namespace nts
 {
+  // MARK: MS_SPECTRUM
   struct MS_SPECTRUM
   {
     std::vector<float> mz;
     std::vector<float> intensity;
   };
 
+  // MARK: merge_MS_TARGETS_SPECTRA
   MS_SPECTRUM merge_MS_TARGETS_SPECTRA(
     const sc::MS_TARGETS_SPECTRA &spectra,
     const float &mzClust,
@@ -281,139 +286,10 @@ namespace nts
       ms2_intensity.push_back(feature_i.ms2_intensity);
     };
 
-    void import_from_list(const std::string &a, const Rcpp::List &fts)
+    void set_analysis(const std::string &a)
     {
       analysis = a;
-
-      if (fts.size() == 0)
-      {
-        return;
-      }
-
-      std::vector<std::string> must_have_names = {
-          "feature", "feature_group", "feature_component", "adduct", "rt", "mz", "mass",
-          "intensity", "noise", "sn", "area",
-          "rtmin", "rtmax", "width",
-          "mzmin", "mzmax", "ppm",
-          "fwhm_rt", "fwhm_mz",
-          "gaussian_A", "gaussian_mu", "gaussian_sigma", "gaussian_r2",
-          "jaggedness", "sharpness", "asymmetry", "modality", "plates",
-          "polarity", "filtered", "filter", "filled", "correction",
-          "eic_size", "eic_rt", "eic_mz", "eic_intensity", "eic_baseline", "eic_smoothed",
-          "ms1_size", "ms1_mz", "ms1_intensity",
-          "ms2_size", "ms2_mz", "ms2_intensity"};
-
-      if (!utils::check_list_must_have_names(fts, must_have_names))
-      {
-        Rcpp::Rcout << "Error: FEATURES::import_from_list() - missing required names in the list." << std::endl;
-        return;
-      }
-
-      feature = Rcpp::as<std::vector<std::string>>(fts["feature"]);
-      feature_group = Rcpp::as<std::vector<std::string>>(fts["feature_group"]);
-      feature_component = Rcpp::as<std::vector<std::string>>(fts["feature_component"]);
-      adduct = Rcpp::as<std::vector<std::string>>(fts["adduct"]);
-      rt = Rcpp::as<std::vector<float>>(fts["rt"]);
-      mz = Rcpp::as<std::vector<float>>(fts["mz"]);
-      mass = Rcpp::as<std::vector<float>>(fts["mass"]);
-      intensity = Rcpp::as<std::vector<float>>(fts["intensity"]);
-      noise = Rcpp::as<std::vector<float>>(fts["noise"]);
-      sn = Rcpp::as<std::vector<float>>(fts["sn"]);
-      area = Rcpp::as<std::vector<float>>(fts["area"]);
-      rtmin = Rcpp::as<std::vector<float>>(fts["rtmin"]);
-      rtmax = Rcpp::as<std::vector<float>>(fts["rtmax"]);
-      width = Rcpp::as<std::vector<float>>(fts["width"]);
-      mzmin = Rcpp::as<std::vector<float>>(fts["mzmin"]);
-      mzmax = Rcpp::as<std::vector<float>>(fts["mzmax"]);
-      ppm = Rcpp::as<std::vector<float>>(fts["ppm"]);
-      fwhm_rt = Rcpp::as<std::vector<float>>(fts["fwhm_rt"]);
-      fwhm_mz = Rcpp::as<std::vector<float>>(fts["fwhm_mz"]);
-      gaussian_A = Rcpp::as<std::vector<float>>(fts["gaussian_A"]);
-      gaussian_mu = Rcpp::as<std::vector<float>>(fts["gaussian_mu"]);
-      gaussian_sigma = Rcpp::as<std::vector<float>>(fts["gaussian_sigma"]);
-      gaussian_r2 = Rcpp::as<std::vector<float>>(fts["gaussian_r2"]);
-      jaggedness = Rcpp::as<std::vector<float>>(fts["jaggedness"]);
-      sharpness = Rcpp::as<std::vector<float>>(fts["sharpness"]);
-      asymmetry = Rcpp::as<std::vector<float>>(fts["asymmetry"]);
-      modality = Rcpp::as<std::vector<int>>(fts["modality"]);
-      plates = Rcpp::as<std::vector<float>>(fts["plates"]);
-      polarity = Rcpp::as<std::vector<int>>(fts["polarity"]);
-      filtered = Rcpp::as<std::vector<bool>>(fts["filtered"]);
-      filter = Rcpp::as<std::vector<std::string>>(fts["filter"]);
-      filled = Rcpp::as<std::vector<bool>>(fts["filled"]);
-      correction = Rcpp::as<std::vector<float>>(fts["correction"]);
-      eic_size = Rcpp::as<std::vector<int>>(fts["eic_size"]);
-      eic_rt = Rcpp::as<std::vector<std::string>>(fts["eic_rt"]);
-      eic_mz = Rcpp::as<std::vector<std::string>>(fts["eic_mz"]);
-      eic_intensity = Rcpp::as<std::vector<std::string>>(fts["eic_intensity"]);
-      eic_baseline = Rcpp::as<std::vector<std::string>>(fts["eic_baseline"]);
-      eic_smoothed = Rcpp::as<std::vector<std::string>>(fts["eic_smoothed"]);
-      ms1_size = Rcpp::as<std::vector<int>>(fts["ms1_size"]);
-      ms1_mz = Rcpp::as<std::vector<std::string>>(fts["ms1_mz"]);
-      ms1_intensity = Rcpp::as<std::vector<std::string>>(fts["ms1_intensity"]);
-      ms2_size = Rcpp::as<std::vector<int>>(fts["ms2_size"]);
-      ms2_mz = Rcpp::as<std::vector<std::string>>(fts["ms2_mz"]);
-      ms2_intensity = Rcpp::as<std::vector<std::string>>(fts["ms2_intensity"]);
-    };
-
-    Rcpp::List to_list_dt() const
-    {
-      int n = feature.size();
-      if (n == 0)
-      {
-        return utils::get_empty_dt();
-      }
-
-      Rcpp::List out = Rcpp::List::create(
-          Rcpp::Named("feature") = feature,
-          Rcpp::Named("feature_group") = feature_group,
-          Rcpp::Named("feature_component") = feature_component,
-          Rcpp::Named("adduct") = adduct,
-          Rcpp::Named("rt") = rt,
-          Rcpp::Named("mz") = mz,
-          Rcpp::Named("mass") = mass,
-          Rcpp::Named("intensity") = intensity,
-          Rcpp::Named("noise") = noise,
-          Rcpp::Named("sn") = sn,
-          Rcpp::Named("area") = area,
-          Rcpp::Named("rtmin") = rtmin,
-          Rcpp::Named("rtmax") = rtmax,
-          Rcpp::Named("width") = width,
-          Rcpp::Named("mzmin") = mzmin,
-          Rcpp::Named("mzmax") = mzmax,
-          Rcpp::Named("ppm") = ppm,
-          Rcpp::Named("fwhm_rt") = fwhm_rt,
-          Rcpp::Named("fwhm_mz") = fwhm_mz,
-          Rcpp::Named("gaussian_A") = gaussian_A,
-          Rcpp::Named("gaussian_mu") = gaussian_mu,
-          Rcpp::Named("gaussian_sigma") = gaussian_sigma,
-          Rcpp::Named("gaussian_r2") = gaussian_r2,
-          Rcpp::Named("jaggedness") = jaggedness,
-          Rcpp::Named("sharpness") = sharpness,
-          Rcpp::Named("asymmetry") = asymmetry,
-          Rcpp::Named("modality") = modality,
-          Rcpp::Named("plates") = plates,
-          Rcpp::Named("polarity") = polarity,
-          Rcpp::Named("filtered") = filtered,
-          Rcpp::Named("filter") = filter,
-          Rcpp::Named("filled") = filled,
-          Rcpp::Named("correction") = correction,
-          Rcpp::Named("eic_size") = eic_size,
-          Rcpp::Named("eic_rt") = eic_rt,
-          Rcpp::Named("eic_mz") = eic_mz,
-          Rcpp::Named("eic_intensity") = eic_intensity,
-          Rcpp::Named("eic_baseline") = eic_baseline,
-          Rcpp::Named("eic_smoothed") = eic_smoothed,
-          Rcpp::Named("ms1_size") = ms1_size,
-          Rcpp::Named("ms1_mz") = ms1_mz,
-          Rcpp::Named("ms1_intensity") = ms1_intensity,
-          Rcpp::Named("ms2_size") = ms2_size,
-          Rcpp::Named("ms2_mz") = ms2_mz,
-          Rcpp::Named("ms2_intensity") = ms2_intensity);
-
-      out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
-      return out;
-    };
+    }
 
     void sort_by_mz()
     {
@@ -573,6 +449,127 @@ namespace nts
     };
   };
 
+  // MARK: SUSPECTS
+  struct SUSPECT
+  {
+    std::string analysis;
+    std::string feature;
+    int candidate_rank;
+    std::string name;
+    int polarity;
+    double db_mass;
+    double exp_mass;
+    double error_mass;
+    double db_rt;
+    double exp_rt;
+    double error_rt;
+    double intensity;
+    double area;
+    std::string id_level;
+    double score;
+    int shared_fragments;
+    double cosine_similarity;
+    std::string formula;
+    std::string SMILES;
+    std::string InChI;
+    std::string InChIKey;
+    double xLogP;
+    std::string database_id;
+    int db_ms2_size;
+    std::string db_ms2_mz;
+    std::string db_ms2_intensity;
+    std::string db_ms2_formula;
+    int exp_ms2_size;
+    std::string exp_ms2_mz;
+    std::string exp_ms2_intensity;
+  };
+
+  struct SUSPECTS
+  {
+    std::vector<std::string> analysis;
+    std::vector<std::string> feature;
+    std::vector<int> candidate_rank;
+    std::vector<std::string> name;
+    std::vector<int> polarity;
+    std::vector<double> db_mass;
+    std::vector<double> exp_mass;
+    std::vector<double> error_mass;
+    std::vector<double> db_rt;
+    std::vector<double> exp_rt;
+    std::vector<double> error_rt;
+    std::vector<double> intensity;
+    std::vector<double> area;
+    std::vector<std::string> id_level;
+    std::vector<double> score;
+    std::vector<int> shared_fragments;
+    std::vector<double> cosine_similarity;
+    std::vector<std::string> formula;
+    std::vector<std::string> SMILES;
+    std::vector<std::string> InChI;
+    std::vector<std::string> InChIKey;
+    std::vector<double> xLogP;
+    std::vector<std::string> database_id;
+    std::vector<int> db_ms2_size;
+    std::vector<std::string> db_ms2_mz;
+    std::vector<std::string> db_ms2_intensity;
+    std::vector<std::string> db_ms2_formula;
+    std::vector<int> exp_ms2_size;
+    std::vector<std::string> exp_ms2_mz;
+    std::vector<std::string> exp_ms2_intensity;
+
+    int size() const
+    {
+      return analysis.size();
+    }
+
+    void append(const SUSPECT &s)
+    {
+      analysis.push_back(s.analysis);
+      feature.push_back(s.feature);
+      candidate_rank.push_back(s.candidate_rank);
+      name.push_back(s.name);
+      polarity.push_back(s.polarity);
+      db_mass.push_back(s.db_mass);
+      exp_mass.push_back(s.exp_mass);
+      error_mass.push_back(s.error_mass);
+      db_rt.push_back(s.db_rt);
+      exp_rt.push_back(s.exp_rt);
+      error_rt.push_back(s.error_rt);
+      intensity.push_back(s.intensity);
+      area.push_back(s.area);
+      id_level.push_back(s.id_level);
+      score.push_back(s.score);
+      shared_fragments.push_back(s.shared_fragments);
+      cosine_similarity.push_back(s.cosine_similarity);
+      formula.push_back(s.formula);
+      SMILES.push_back(s.SMILES);
+      InChI.push_back(s.InChI);
+      InChIKey.push_back(s.InChIKey);
+      xLogP.push_back(s.xLogP);
+      database_id.push_back(s.database_id);
+      db_ms2_size.push_back(s.db_ms2_size);
+      db_ms2_mz.push_back(s.db_ms2_mz);
+      db_ms2_intensity.push_back(s.db_ms2_intensity);
+      db_ms2_formula.push_back(s.db_ms2_formula);
+      exp_ms2_size.push_back(s.exp_ms2_size);
+      exp_ms2_mz.push_back(s.exp_ms2_mz);
+      exp_ms2_intensity.push_back(s.exp_ms2_intensity);
+    }
+  };
+
+  struct NTS_INFO
+  {
+    std::vector<std::string> analyses;
+    std::vector<std::string> replicates;
+    std::vector<std::string> blanks;
+    std::vector<std::string> files;
+
+    int size() const
+    {
+      return analyses.size();
+    }
+  };
+
   // MARK: NTS_DATA
   struct NTS_DATA
   {
@@ -583,38 +580,29 @@ namespace nts
     std::vector<sc::MS_SPECTRA_HEADERS> headers;
     std::vector<FEATURES> features;
 
-    NTS_DATA(Rcpp::List info,
-             Rcpp::List spectra_headers,
-             Rcpp::List feature_list)
+    NTS_DATA(const NTS_INFO &info,
+             const std::vector<sc::MS_SPECTRA_HEADERS> &spectra_headers,
+             const std::vector<FEATURES> &feature_list)
     {
 
-      std::vector<std::string> info_must_have_names = {
-          "analysis", "replicate", "blank", "file"};
-
-      if (!utils::check_list_must_have_names(info, info_must_have_names))
-      {
-        Rcpp::Rcout << "Error: NTS_DATA() - missing required names in the info list." << std::endl;
-        return;
-      }
-
-      analyses = Rcpp::as<std::vector<std::string>>(info["analysis"]);
-      const int number_analyses = analyses.size();
+      analyses = info.analyses;
+      const size_t number_analyses = analyses.size();
 
       if (number_analyses == 0)
       {
-        Rcpp::Rcout << "Error: No analyses given!" << std::endl;
+        std::cerr << "Error: No analyses given!" << std::endl;
         return;
       }
 
-      replicates = Rcpp::as<std::vector<std::string>>(info["replicate"]);
-      blanks = Rcpp::as<std::vector<std::string>>(info["blank"]);
-      files = Rcpp::as<std::vector<std::string>>(info["file"]);
+      replicates = info.replicates;
+      blanks = info.blanks;
+      files = info.files;
       headers.resize(number_analyses);
       features.resize(number_analyses);
 
       if (spectra_headers.size() == 0 || spectra_headers.size() != number_analyses)
       {
-        for (int i = 0; i < number_analyses; i++)
+        for (size_t i = 0; i < number_analyses; i++)
         {
           sc::MS_FILE ana(files[i]);
           headers[i] = ana.get_spectra_headers();
@@ -622,25 +610,24 @@ namespace nts
       }
       else
       {
-        for (int i = 0; i < number_analyses; i++)
+        for (size_t i = 0; i < number_analyses; i++)
         {
-          const Rcpp::List &header_ref = Rcpp::as<Rcpp::List>(spectra_headers[i]);
-          headers[i] = utils::as_MS_SPECTRA_HEADERS(header_ref);
+          headers[i] = spectra_headers[i];
         }
       }
 
       if (feature_list.size() != 0 && feature_list.size() != number_analyses)
       {
-        Rcpp::Rcout << "Error: No feature list given or size mismatch with analyses!" << std::endl;
+        std::cerr << "Error: No feature list given or size mismatch with analyses!" << std::endl;
         return;
       }
 
       if (feature_list.size() > 0)
       {
-        for (int i = 0; i < number_analyses; i++)
+        for (size_t i = 0; i < number_analyses; i++)
         {
-          const Rcpp::List &feature_ref = Rcpp::as<Rcpp::List>(feature_list[i]);
-          features[i].import_from_list(analyses[i], feature_ref);
+          features[i] = feature_list[i];
+          features[i].set_analysis(analyses[i]);
         }
       }
     };
@@ -648,27 +635,6 @@ namespace nts
     int size() const
     {
       return analyses.size();
-    };
-
-    Rcpp::List features_as_list_of_dt() const
-    {
-      const int n = features.size();
-      Rcpp::List out(n);
-      if (n == 0)
-      {
-        return out;
-      }
-      for (int i = 0; i < n; i++)
-      {
-        out[i] = features[i].to_list_dt();
-      }
-      Rcpp::CharacterVector names(n);
-      for (int i = 0; i < n; i++)
-      {
-        names[i] = analyses[i];
-      }
-      out.attr("names") = names;
-      return out;
     };
 
     void find_features(
@@ -724,7 +690,7 @@ namespace nts
 
     void group_features(
         const std::string &method,
-        const Rcpp::List &internal_standards_list,
+        const std::vector<alignment::InternalStandard> &internal_standards,
         float rtDeviation,
         float ppm,
         int minSamples,
@@ -732,7 +698,7 @@ namespace nts
         bool debug = false,
         float debugRT = 0.0f)
     {
-      alignment::group_features_impl(*this, method, internal_standards_list, rtDeviation, ppm, minSamples, binSize, debug, debugRT);
+      alignment::group_features_impl(*this, method, internal_standards, rtDeviation, ppm, minSamples, binSize, debug, debugRT);
     }
 
     void load_features_ms1(
@@ -780,6 +746,121 @@ namespace nts
           debugFG);
     }
 
+    void subtract_blank(
+        float blankThreshold,
+        float rtExpand,
+        float mzExpand,
+        float minTracesIntensity = 0.0f)
+    {
+      blank_subtraction::subtract_blank_impl(
+          *this,
+          blankThreshold,
+          rtExpand,
+          mzExpand,
+          minTracesIntensity);
+    }
+
+    void filter_features(
+        double minSN,
+        double minIntensity,
+        double minArea,
+        double minWidth,
+        double maxWidth,
+        double maxPPM,
+        double minFwhmRT,
+        double maxFwhmRT,
+        double minFwhmMZ,
+        double maxFwhmMZ,
+        double minGaussianA,
+        double minGaussianMu,
+        double maxGaussianMu,
+        double minGaussianSigma,
+        double maxGaussianSigma,
+        double minGaussianR2,
+        double maxJaggedness,
+        double minSharpness,
+        double minAsymmetry,
+        double maxAsymmetry,
+        int maxModality,
+        bool hasMaxModality,
+        double minPlates,
+        bool hasOnlyFilled,
+        bool onlyFilledValue,
+        bool removeFilled,
+        int minSizeEIC,
+        bool hasMinSizeEIC,
+        int minSizeMS1,
+        bool hasMinSizeMS1,
+        int minSizeMS2,
+        bool hasMinSizeMS2,
+        double minRelPresenceReplicate,
+        bool removeIsotopes,
+        bool removeAdducts,
+        bool removeLosses)
+    {
+      filter_features::filter_features_impl(
+          *this,
+          minSN,
+          minIntensity,
+          minArea,
+          minWidth,
+          maxWidth,
+          maxPPM,
+          minFwhmRT,
+          maxFwhmRT,
+          minFwhmMZ,
+          maxFwhmMZ,
+          minGaussianA,
+          minGaussianMu,
+          maxGaussianMu,
+          minGaussianSigma,
+          maxGaussianSigma,
+          minGaussianR2,
+          maxJaggedness,
+          minSharpness,
+          minAsymmetry,
+          maxAsymmetry,
+          maxModality,
+          hasMaxModality,
+          minPlates,
+          hasOnlyFilled,
+          onlyFilledValue,
+          removeFilled,
+          minSizeEIC,
+          hasMinSizeEIC,
+          minSizeMS1,
+          hasMinSizeMS1,
+          minSizeMS2,
+          hasMinSizeMS2,
+          minRelPresenceReplicate,
+          removeIsotopes,
+          removeAdducts,
+          removeLosses);
+    }
+
+    SUSPECTS suspect_screening(
+        const std::vector<std::string> &analyses,
+        const std::vector<suspect_screening::SuspectQuery> &suspects,
+        double ppm,
+        double sec,
+        double ppmMS2,
+        double mzrMS2,
+        double minCosineSimilarity,
+        int minSharedFragments,
+        bool filtered)
+    {
+      return suspect_screening::suspect_screening_impl(
+          *this,
+          analyses,
+          suspects,
+          ppm,
+          sec,
+          ppmMS2,
+          mzrMS2,
+          minCosineSimilarity,
+          minSharedFragments,
+          filtered);
+    }
   };
 }; // namespace nts
 

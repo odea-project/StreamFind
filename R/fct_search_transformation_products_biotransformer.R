@@ -6,25 +6,29 @@
 #' See \url{https://biotransformer.ca/} for details on BioTransformer.
 #' @param parents data.frame or data.table with required columns:
 #' `name`, `formula`, `mass`, `SMILES`, `InChI`, `InChIKey`, `xLogP`.
-#' Optional columns used when present: `rt`, `polarity`, `fragments`, `LogP`.
-#' @param biotransformer_option Character (length 1). BioTransformer module to use.
+#' Optional columns used when present: `rt`, `ms2_positive`, `ms2_negative`, `LogP`.
+#' @param biotransformerOption Character (length 1). BioTransformer module to use.
 #' One of: "CYP450", "EC-BASED", "PHASEII", "HGUT", "ENVMICRO", "ALLHUMAN",
 #' "SUPERBIO", "MULTIBIO", "ABIOTICBIO".
-#' @param number_of_steps Integer (>=1). Number of reaction iterations.
-#' @param throttle_sec Numeric. Delay (seconds) between POST requests (server limit is 2/min).
-#' @param poll_delay Numeric. Delay (seconds) between status polls.
-#' @param max_poll Integer. Maximum number of polling attempts per query.
+#' @param numberOfSteps Integer (>=1). Number of reaction iterations.
+#' @param throttleSec Numeric. Delay (seconds) between POST requests (server limit is 2/min).
+#' @param pollDelay Numeric. Delay (seconds) between status polls.
+#' @param maxPoll Integer. Maximum number of polling attempts per query.
+#' @param excludeWithSameMass Logical. If TRUE, excludes transformation products that have
+#' the same mass as any parent compound (using ppm tolerance). Default: FALSE.
+#' @param ppm Numeric. Mass tolerance in parts per million for excludeWithSameMass comparison.
+#' Only used when excludeWithSameMass is TRUE. Default: 5.
 #' @param debug Logical. If TRUE, saves the raw BioTransformer JSON response in the temp
 #' directory and prints the path.
 #' @return A data.table with columns:
-#' `name`, `formula`, `mass`, `rt`, `SMILES`, `InChI`, `InChIKey`, `polarity`, `fragments`,
+#' `name`, `formula`, `mass`, `rt`, `SMILES`, `InChI`, `InChIKey`, `ms2_positive`, `ms2_negative`,
 #' `xLogP`, `transformation`, `precursor_name`, `precursor_formula`, `precursor_mass`,
 #' `precursor_SMILES`, `precursor_InChI`, `precursor_InChIKey`, `precursor_xLogP`.
-#' The first row(s) correspond to the parent compounds (transformation = "parent").
+#' The first row(s) correspond to the parent compounds (transformation = "main_precursor").
 #' @export
 search_transformation_products_biotransformer <- function(
   parents,
-  biotransformer_option = c(
+  biotransformerOption = c(
     "CYP450",
     "EC-BASED",
     "PHASEII",
@@ -35,16 +39,18 @@ search_transformation_products_biotransformer <- function(
     "MULTIBIO",
     "ABIOTICBIO"
   ),
-  number_of_steps = 1,
-  throttle_sec = 31,
-  poll_delay = 5,
-  max_poll = 60,
+  numberOfSteps = 1,
+  throttleSec = 31,
+  pollDelay = 5,
+  maxPoll = 60,
+  excludeWithSameMass = TRUE,
+  ppm = 5,
   debug = FALSE
 ) {
-  biotransformer_option <- match.arg(biotransformer_option)
-  number_of_steps <- as.integer(number_of_steps)
-  if (is.na(number_of_steps) || number_of_steps < 1) {
-    stop("number_of_steps must be >= 1.")
+  biotransformerOption <- match.arg(biotransformerOption)
+  numberOfSteps <- as.integer(numberOfSteps)
+  if (is.na(numberOfSteps) || numberOfSteps < 1) {
+    stop("numberOfSteps must be >= 1.")
   }
   parents <- data.table::as.data.table(parents)
   if (!requireNamespace("checkmate", quietly = TRUE)) {
@@ -53,10 +59,12 @@ search_transformation_products_biotransformer <- function(
   required_parent_cols <- c("name", "formula", "mass", "SMILES", "InChI", "InChIKey", "xLogP")
   checkmate::assert_data_frame(parents)
   checkmate::assert_names(names(parents), must.include = required_parent_cols)
-  checkmate::assert_count(number_of_steps, positive = TRUE)
-  checkmate::assert_number(throttle_sec, lower = 0)
-  checkmate::assert_number(poll_delay, lower = 0)
-  checkmate::assert_count(max_poll, positive = TRUE)
+  checkmate::assert_count(numberOfSteps, positive = TRUE)
+  checkmate::assert_number(throttleSec, lower = 0)
+  checkmate::assert_number(pollDelay, lower = 0)
+  checkmate::assert_count(maxPoll, positive = TRUE)
+  checkmate::assert_flag(excludeWithSameMass)
+  checkmate::assert_number(ppm, lower = 0)
   checkmate::assert_flag(debug)
 
   if (!requireNamespace("jsonlite", quietly = TRUE)) {
@@ -69,9 +77,11 @@ search_transformation_products_biotransformer <- function(
   }
 
   tps_cols <- c(
-    "name", "formula", "mass", "SMILES", "InChI", "InChIKey", "xLogP",
+    "name", "formula", "mass", "rt", "SMILES", "InChI", "InChIKey", "ms2_positive", "ms2_negative", "xLogP",
     "transformation", "precursor_name", "precursor_formula", "precursor_mass",
-    "precursor_SMILES", "precursor_InChI", "precursor_InChIKey", "precursor_xLogP"
+    "precursor_SMILES", "precursor_InChI", "precursor_InChIKey", "precursor_xLogP",
+    "main_precursor_name", "main_precursor_formula", "main_precursor_mass",
+    "main_precursor_SMILES", "main_precursor_InChI", "main_precursor_InChIKey", "main_precursor_xLogP"
   )
   extra_parent_cols <- setdiff(names(parents), tps_cols)
   output_cols <- c(tps_cols, extra_parent_cols)
@@ -204,8 +214,7 @@ search_transformation_products_biotransformer <- function(
     need_primary <- c("InChIKey", "SMILES", "InChI", "formula", "mass", "xLogP")
     need_prec <- c("precursor_InChIKey", "precursor_SMILES", "precursor_InChI", "precursor_formula", "precursor_mass", "precursor_xLogP")
     if (!all(c(need_primary, need_prec) %in% names(dt))) return(dt)
-    ref <- dt[!is.na(InChIKey) & InChIKey != "" & !is.na(SMILES) & SMILES != "",
-      .(InChIKey, SMILES, InChI, formula, mass, xLogP)]
+    ref <- dt[!is.na(InChIKey) & InChIKey != "" & !is.na(SMILES) & SMILES != "", .(InChIKey, SMILES, InChI, formula, mass, xLogP)]
     if (nrow(ref) == 0) return(dt)
     ref <- ref[!duplicated(InChIKey)]
     idx <- match(dt$precursor_InChIKey, ref$InChIKey)
@@ -298,17 +307,24 @@ search_transformation_products_biotransformer <- function(
     SMILES = get("SMILES"),
     InChI = get("InChI"),
     InChIKey = get("InChIKey"),
-    polarity = if ("polarity" %in% names(parents)) get("polarity") else NA_character_,
-    fragments = if ("fragments" %in% names(parents)) get("fragments") else NA_character_,
+    ms2_positive = if ("ms2_positive" %in% names(parents)) get("ms2_positive") else NA_character_,
+    ms2_negative = if ("ms2_negative" %in% names(parents)) get("ms2_negative") else NA_character_,
     xLogP = if ("LogP" %in% names(parents)) get("LogP") else get("xLogP"),
-    transformation = "parent",
+    transformation = "main_precursor",
     precursor_name = NA_character_,
     precursor_formula = NA_character_,
     precursor_mass = NA_real_,
     precursor_SMILES = NA_character_,
     precursor_InChI = NA_character_,
     precursor_InChIKey = NA_character_,
-    precursor_xLogP = NA_real_
+    precursor_xLogP = NA_real_,
+    main_precursor_name = get("name"),
+    main_precursor_formula = get("formula"),
+    main_precursor_mass = get("mass"),
+    main_precursor_SMILES = get("SMILES"),
+    main_precursor_InChI = get("InChI"),
+    main_precursor_InChIKey = get("InChIKey"),
+    main_precursor_xLogP = if ("LogP" %in% names(parents)) get("LogP") else get("xLogP")
   )]
   if (length(extra_parent_cols) > 0) {
     parents_rows <- cbind(parents_rows, parents[, ..extra_parent_cols])
@@ -351,8 +367,8 @@ search_transformation_products_biotransformer <- function(
     }
 
     payload <- list(
-      biotransformer_option = biotransformer_option,
-      number_of_steps = number_of_steps,
+      biotransformer_option = biotransformerOption,
+      number_of_steps = numberOfSteps,
       query_input = paste0(name_val, "\t", smiles_val),
       task_type = "PREDICTION"
     )
@@ -367,13 +383,13 @@ search_transformation_products_biotransformer <- function(
     message("Submitted BioTransformer query id ", post_res$id, ". Status page: ", status_url)
 
     if (i < nrow(parents)) {
-      Sys.sleep(throttle_sec)
+      Sys.sleep(throttleSec)
     }
 
     query_url <- paste0("http://biotransformer.ca/queries/", post_res$id, ".json")
     status <- NA_character_
     res <- NULL
-    for (j in seq_len(max_poll)) {
+    for (j in seq_len(maxPoll)) {
       res <- get_json(query_url)
       status <- tolower(as.character(res$status))
       message("Query ", post_res$id, " status: ", status)
@@ -390,7 +406,7 @@ search_transformation_products_biotransformer <- function(
         }
         break
       }
-      Sys.sleep(poll_delay)
+      Sys.sleep(pollDelay)
     }
 
     if (is.null(res) || status != "done") {
@@ -476,8 +492,8 @@ search_transformation_products_biotransformer <- function(
               SMILES = as.character(smiles_out),
               InChI = as.character(inchi_out),
               InChIKey = as.character(inchikey_out),
-              polarity = as.character(if ("polarity" %in% names(parent)) parent$polarity else NA_character_),
-              fragments = NA_character_,
+              ms2_positive = as.character(if ("ms2_positive" %in% names(parent)) parent$ms2_positive else NA_character_),
+              ms2_negative = as.character(if ("ms2_negative" %in% names(parent)) parent$ms2_negative else NA_character_),
               xLogP = as.numeric(props$logp),
               transformation = as.character(transform_label),
               precursor_name = as.character(precursor_name),
@@ -486,7 +502,14 @@ search_transformation_products_biotransformer <- function(
               precursor_SMILES = as.character(precursor_smiles),
               precursor_InChI = as.character(precursor_props$inchi),
               precursor_InChIKey = as.character(if (!is.na(precursor_inchikey) && nzchar(precursor_inchikey)) precursor_inchikey else precursor_props$inchikey),
-              precursor_xLogP = as.numeric(precursor_props$logp)
+              precursor_xLogP = as.numeric(precursor_props$logp),
+              main_precursor_name = as.character(parent$name),
+              main_precursor_formula = as.character(parent$formula),
+              main_precursor_mass = as.numeric(parent$mass),
+              main_precursor_SMILES = as.character(parent$SMILES),
+              main_precursor_InChI = as.character(parent$InChI),
+              main_precursor_InChIKey = as.character(parent$InChIKey),
+              main_precursor_xLogP = if ("LogP" %in% names(parent)) as.numeric(parent$LogP) else as.numeric(parent$xLogP)
             ), extra_na))
           }
         }
@@ -500,6 +523,7 @@ search_transformation_products_biotransformer <- function(
     }
   }
 
+  # Harmonize all compound columns for both products and precursors
   tps_out <- harmonize_compound_columns(tps_out, "")
   tps_out <- harmonize_compound_columns(tps_out, "precursor_")
   tps_out <- harmonize_smiles_by_inchikey(tps_out, "SMILES", "InChIKey")
@@ -507,5 +531,21 @@ search_transformation_products_biotransformer <- function(
   tps_out <- harmonize_precursor_from_primary(tps_out)
   tps_out <- harmonize_names_by_smiles(tps_out, "name", "SMILES", "InChIKey", parent_name_map)
   tps_out <- harmonize_names_by_smiles(tps_out, "precursor_name", "precursor_SMILES", "precursor_InChIKey", parent_name_map)
+
+  # Exclude transformation products with same mass as parents if requested
+  if (excludeWithSameMass && nrow(tps_out) > 0) {
+    parent_masses <- tps_out[transformation == "main_precursor" & !is.na(mass), unique(mass)]
+    if (length(parent_masses) > 0) {
+      # Check each transformation product mass against parent masses
+      matches_parent <- sapply(tps_out$mass, function(tp_mass) {
+        if (is.na(tp_mass)) return(FALSE)  # Keep rows with NA mass
+        ppm_tolerances <- parent_masses * ppm / 1e6
+        any(abs(tp_mass - parent_masses) < ppm_tolerances, na.rm = TRUE)
+      })
+      # Keep parents and transformation products that don't match parent masses
+      tps_out <- tps_out[transformation == "main_precursor" | !matches_parent]
+    }
+  }
+
   tps_out[, ..output_cols]
 }

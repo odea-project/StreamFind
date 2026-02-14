@@ -29,6 +29,18 @@ rcpp_nts_fill_features_2 <- function(info, spectra_headers, feature_list, within
     .Call(`_StreamFind_rcpp_nts_fill_features_2`, info, spectra_headers, feature_list, withinReplicate, filtered, rtExpand, mzExpand, maxPeakWidth, minTracesIntensity, minNumberTraces, minIntensity, rtApexDeviation, minSignalToNoiseRatio, minGaussianFit, debugFG)
 }
 
+rcpp_nts_blank_subtraction_2 <- function(info, spectra_headers, feature_list, blankThreshold = 5.0, rtExpand = 10.0, mzExpand = 0.005) {
+    .Call(`_StreamFind_rcpp_nts_blank_subtraction_2`, info, spectra_headers, feature_list, blankThreshold, rtExpand, mzExpand)
+}
+
+rcpp_nts_filter_features_2 <- function(info, feature_list, minSN = NA_real_, minIntensity = NA_real_, minArea = NA_real_, minWidth = NA_real_, maxWidth = NA_real_, maxPPM = NA_real_, minFwhmRT = NA_real_, maxFwhmRT = NA_real_, minFwhmMZ = NA_real_, maxFwhmMZ = NA_real_, minGaussianA = NA_real_, minGaussianMu = NA_real_, maxGaussianMu = NA_real_, minGaussianSigma = NA_real_, maxGaussianSigma = NA_real_, minGaussianR2 = NA_real_, maxJaggedness = NA_real_, minSharpness = NA_real_, minAsymmetry = NA_real_, maxAsymmetry = NA_real_, maxModality = NA_integer_, minPlates = NA_real_, onlyFilled = as.logical( c(NA_LOGICAL)), removeFilled = FALSE, minSizeEIC = NA_integer_, minSizeMS1 = NA_integer_, minSizeMS2 = NA_integer_, minRelPresenceReplicate = NA_real_, removeIsotopes = FALSE, removeAdducts = FALSE, removeLosses = FALSE) {
+    .Call(`_StreamFind_rcpp_nts_filter_features_2`, info, feature_list, minSN, minIntensity, minArea, minWidth, maxWidth, maxPPM, minFwhmRT, maxFwhmRT, minFwhmMZ, maxFwhmMZ, minGaussianA, minGaussianMu, maxGaussianMu, minGaussianSigma, maxGaussianSigma, minGaussianR2, maxJaggedness, minSharpness, minAsymmetry, maxAsymmetry, maxModality, minPlates, onlyFilled, removeFilled, minSizeEIC, minSizeMS1, minSizeMS2, minRelPresenceReplicate, removeIsotopes, removeAdducts, removeLosses)
+}
+
+rcpp_nts_suspect_screening_2 <- function(info, spectra_headers, feature_list, suspects, analyses = as.character( c("")), ppm = 5.0, sec = 10.0, ppmMS2 = 10.0, mzrMS2 = 0.008, minCosineSimilarity = 0.7, minSharedFragments = 3L, filtered = FALSE) {
+    .Call(`_StreamFind_rcpp_nts_suspect_screening_2`, info, spectra_headers, feature_list, suspects, analyses, ppm, sec, ppmMS2, mzrMS2, minCosineSimilarity, minSharedFragments, filtered)
+}
+
 rcpp_fill_bin_spectra <- function(spectra, bin_mat, bins, overlap = 0, summaryFunction = "max") {
     .Call(`_StreamFind_rcpp_fill_bin_spectra`, spectra, bin_mat, bins, overlap, summaryFunction)
 }

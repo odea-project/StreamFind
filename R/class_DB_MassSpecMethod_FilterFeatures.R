@@ -224,188 +224,60 @@ run.DB_MassSpecMethod_FilterFeatures_native <- function(
     return(FALSE)
   }
 
-  # Build SQL WHERE clauses for each filter
-  filter_to_apply <- list()
+  analyses_db <- query_db(engine$Analyses, "SELECT * FROM Analyses")
 
-  # Numeric filters (minimum thresholds)
-  if (!is.na(parameters$minSN)) {
-    filter_to_apply[["minSN"]] <- function(x) x$sn < parameters$minSN
-  }
-
-  if (!is.na(parameters$minIntensity)) {
-    filter_to_apply[["minIntensity"]] <- function(x) x$intensity < parameters$minIntensity
-  }
-
-  if (!is.na(parameters$minArea)) {
-    filter_to_apply[["minArea"]] <- function(x) x$area < parameters$minArea
-  }
-
-  if (!is.na(parameters$minWidth)) {
-    filter_to_apply[["minWidth"]] <- function(x) x$width < parameters$minWidth
-  }
-
-  if (!is.na(parameters$maxWidth)) {
-    filter_to_apply[["maxWidth"]] <- function(x) x$width > parameters$maxWidth
-  }
-
-  if (!is.na(parameters$maxPPM)) {
-    filter_to_apply[["maxPPM"]] <- function(x) x$ppm > parameters$maxPPM
-  }
-
-  if (!is.na(parameters$minFwhmRT)) {
-    filter_to_apply[["minFwhmRT"]] <- function(x) x$fwhm_rt < parameters$minFwhmRT
-  }
-
-  if (!is.na(parameters$maxFwhmRT)) {
-    filter_to_apply[["maxFwhmRT"]] <- function(x) x$fwhm_rt > parameters$maxFwhmRT
-  }
-
-  if (!is.na(parameters$minFwhmMZ)) {
-    filter_to_apply[["minFwhmMZ"]] <- function(x) x$fwhm_mz < parameters$minFwhmMZ
-  }
-
-  if (!is.na(parameters$maxFwhmMZ)) {
-    filter_to_apply[["maxFwhmMZ"]] <- function(x) x$fwhm_mz > parameters$maxFwhmMZ
-  }
-
-  if (!is.na(parameters$minGaussianA)) {
-    filter_to_apply[["minGaussianA"]] <- function(x) x$gaussian_A < parameters$minGaussianA
-  }
-
-  if (!is.na(parameters$minGaussianMu)) {
-    filter_to_apply[["minGaussianMu"]] <- function(x) x$gaussian_mu < parameters$minGaussianMu
-  }
-
-  if (!is.na(parameters$maxGaussianMu)) {
-    filter_to_apply[["maxGaussianMu"]] <- function(x) x$gaussian_mu > parameters$maxGaussianMu
-  }
-
-  if (!is.na(parameters$minGaussianSigma)) {
-    filter_to_apply[["minGaussianSigma"]] <- function(x) x$gaussian_sigma < parameters$minGaussianSigma
-  }
-
-  if (!is.na(parameters$maxGaussianSigma)) {
-    filter_to_apply[["maxGaussianSigma"]] <- function(x) x$gaussian_sigma > parameters$maxGaussianSigma
-  }
-
-  if (!is.na(parameters$minGaussianR2)) {
-    filter_to_apply[["minGaussianR2"]] <- function(x) x$gaussian_r2 < parameters$minGaussianR2
-  }
-
-  if (!is.na(parameters$maxJaggedness)) {
-    filter_to_apply[["maxJaggedness"]] <- function(x) x$jaggedness > parameters$maxJaggedness
-  }
-
-  if (!is.na(parameters$minSharpness)) {
-    filter_to_apply[["minSharpness"]] <- function(x) x$sharpness < parameters$minSharpness
-  }
-
-  if (!is.na(parameters$minAsymmetry)) {
-    filter_to_apply[["minAsymmetry"]] <- function(x) x$asymmetry < parameters$minAsymmetry
-  }
-
-  if (!is.na(parameters$maxAsymmetry)) {
-    filter_to_apply[["maxAsymmetry"]] <- function(x) x$asymmetry > parameters$maxAsymmetry
-  }
-
-  if (!is.na(parameters$maxModality)) {
-    filter_to_apply[["maxModality"]] <- function(x) x$modality > parameters$maxModality
-  }
-
-  if (!is.na(parameters$minPlates)) {
-    filter_to_apply[["minPlates"]] <- function(x) x$plates < parameters$minPlates
-  }
-
-  # Boolean filters
-  if (!is.na(parameters$onlyFilled)) {
-    if (parameters$onlyFilled) {
-      filter_to_apply[["onlyFilled"]] <- function(x) !x$filled
-    } else {
-      filter_to_apply[["notFilled"]] <- function(x) x$filled
+  feature_list <- lapply(analyses_db$analysis, function(ana) {
+    ana_features <- fts[fts$analysis == ana, ]
+    if (nrow(ana_features) == 0) {
+      return(fts[0, ])
     }
+    ana_features
+  })
+  names(feature_list) <- analyses_db$analysis
+
+  fts_list <- rcpp_nts_filter_features_2(
+    info = analyses_db,
+    feature_list = feature_list,
+    minSN = parameters$minSN,
+    minIntensity = parameters$minIntensity,
+    minArea = parameters$minArea,
+    minWidth = parameters$minWidth,
+    maxWidth = parameters$maxWidth,
+    maxPPM = parameters$maxPPM,
+    minFwhmRT = parameters$minFwhmRT,
+    maxFwhmRT = parameters$maxFwhmRT,
+    minFwhmMZ = parameters$minFwhmMZ,
+    maxFwhmMZ = parameters$maxFwhmMZ,
+    minGaussianA = parameters$minGaussianA,
+    minGaussianMu = parameters$minGaussianMu,
+    maxGaussianMu = parameters$maxGaussianMu,
+    minGaussianSigma = parameters$minGaussianSigma,
+    maxGaussianSigma = parameters$maxGaussianSigma,
+    minGaussianR2 = parameters$minGaussianR2,
+    maxJaggedness = parameters$maxJaggedness,
+    minSharpness = parameters$minSharpness,
+    minAsymmetry = parameters$minAsymmetry,
+    maxAsymmetry = parameters$maxAsymmetry,
+    maxModality = parameters$maxModality,
+    minPlates = parameters$minPlates,
+    onlyFilled = parameters$onlyFilled,
+    removeFilled = parameters$removeFilled,
+    minSizeEIC = parameters$minSizeEIC,
+    minSizeMS1 = parameters$minSizeMS1,
+    minSizeMS2 = parameters$minSizeMS2,
+    minRelPresenceReplicate = parameters$minRelPresenceReplicate,
+    removeIsotopes = parameters$removeIsotopes,
+    removeAdducts = parameters$removeAdducts,
+    removeLosses = parameters$removeLosses
+  )
+
+  if (is.null(fts_list) || length(fts_list) == 0) {
+    warning("Feature filtering failed.")
+    return(FALSE)
   }
 
-  if (parameters$removeFilled) {
-    filter_to_apply[["removeFilled"]] <- function(x) x$filled
-  }
-
-  # Integer filters
-  if (!is.na(parameters$minSizeEIC)) {
-    filter_to_apply[["minSizeEIC"]] <- function(x) x$eic_size < parameters$minSizeEIC
-  }
-
-  if (!is.na(parameters$minSizeMS1)) {
-    filter_to_apply[["minSizeMS1"]] <- function(x) x$ms1_size < parameters$minSizeMS1
-  }
-
-  if (!is.na(parameters$minSizeMS2)) {
-    filter_to_apply[["minSizeMS2"]] <- function(x) x$ms2_size < parameters$minSizeMS2
-  }
-
-  if (!is.na(parameters$minRelPresenceReplicate)) {
-    filter_to_apply[["minRelPresenceReplicate"]] <- function(
-      x,
-      rep_map = data.table::data.table(
-        analysis = analyses_info$analysis,
-        replicate = analyses_info$replicate
-      )
-    ) {
-      fts_rep <- data.table::as.data.table(x)[, .(analysis, feature_group, filtered)]
-      fts_rep[rep_map, replicate := i.replicate, on = "analysis"]
-      rep_counts <- rep_map[, .(n_analyses = .N), by = replicate]
-      grp_counts <- fts_rep[
-        !filtered & !is.na(feature_group) & feature_group != "",
-        .(n_features = data.table::uniqueN(analysis)),
-        by = .(replicate, feature_group)
-      ]
-      grp_counts[rep_counts, n_analyses := i.n_analyses, on = "replicate"]
-      grp_counts$rel_presence <- 0
-      valid_rows <- grp_counts$n_analyses > 0 & grp_counts$n_features > 0
-      grp_counts$rel_presence[valid_rows] <- grp_counts$n_features[valid_rows] / grp_counts$n_analyses[valid_rows]
-      grp_counts <- grp_counts[grp_counts$rel_presence < parameters$minRelPresenceReplicate, ]
-      fts_rep$to_rm <- FALSE
-      fts_rep[grp_counts, to_rm := TRUE, on = .(replicate, feature_group)]
-
-      # browser() #FG4491_M371_RT1332_POS
-
-      # fts_rep[fts_rep$feature_group %in% "FG4491_M371_RT1332_POS", ]
-
-      fts_rep$to_rm
-    }
-  }
-
-  # Isotope, adduct, and loss filters
-  if (parameters$removeIsotopes) {
-    filter_to_apply[["removeIsotopes"]] <- function(x) grepl("isotope", x$adduct, fixed = TRUE)
-  }
-
-  if (parameters$removeAdducts) {
-    filter_to_apply[["removeAdducts"]] <- function(x) grepl("adduct", x$adduct, fixed = TRUE)
-  }
-
-  if (parameters$removeLosses) {
-    filter_to_apply[["removeLosses"]] <- function(x) grepl("loss", x$adduct, fixed = TRUE)
-  }
-
-  # Apply filters
-  if (length(filter_to_apply) > 0) {
-    for (filter_name in names(filter_to_apply)) {
-      filter_func <- filter_to_apply[[filter_name]]
-      to_filter <- !fts$filtered & filter_func(fts)
-      to_filter[is.na(to_filter)] <- FALSE
-      n_updated <- sum(to_filter)
-
-      if (n_updated > 0) {
-        fts$filtered[to_filter] <- TRUE
-        fts$filter[to_filter] <- ifelse(
-          is.na(fts$filter[to_filter]) | fts$filter[to_filter] == "",
-          filter_name,
-          paste(fts$filter[to_filter], filter_name)
-        )
-        message(sprintf("\u2713 Filtered %d features by %s", n_updated, filter_name))
-      }
-    }
-  }
+  names(fts_list) <- analyses_db$analysis
+  fts <- data.table::rbindlist(fts_list, fill = TRUE, idcol = "analysis")
 
   # Count features after filtering
   n_after <- sum(!fts$filtered, na.rm = TRUE)

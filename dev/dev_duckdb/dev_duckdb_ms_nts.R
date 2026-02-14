@@ -1,12 +1,18 @@
-db <- StreamFindData::get_ms_tof_spiked_chemicals_with_ms2()
-db <- db[, c("name", "formula", "mass", "rt", "fragments", "tag"), with = FALSE]
-dbis <- db[grepl("IS", db$tag), ]
+dbis <- data.table::fread(
+  file.path(
+    "dev",
+    "dev_duckdb",
+    "internal_standards.csv"
+  )
+)
+
+dbis <- dbis[!is.na(rt), ]
 
 dbsus <- data.table::fread(
   file.path(
     "dev",
     "dev_duckdb",
-    "suspects_template.csv"
+    "suspects_with_ms2_template.csv"
   )
 )
 
@@ -181,7 +187,7 @@ ps_tps <- DB_MassSpecMethod_AssignTransformationProducts_native(
   mzrMS2 = 0.008
 )
 
-ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2, ps_sus) # ps_fillf, #
+ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2, ps_sus, ps_tps) # ps_fillf, #
 # clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
 # clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
 # clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
@@ -193,8 +199,16 @@ ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filter
 # clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS1_native"))
 # clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS2_native"))
 # clear_cache(ms$Cache, value = c("DB_SuspectScreening_native"))
+# clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
+clear_cache(ms$Cache, value = c("DB_AssignTransformationProducts_native"))
 
 ms$run_workflow()
+
+
+
+
+
+get_internal_standards(ms$NonTargetAnalysis)
 
 # sus <- get_suspects(ms$NonTargetAnalysis)
 # sus  <- sus[grepl("MZ219", sus$feature), ]
@@ -210,19 +224,23 @@ run(ps_tps, ms)
 # run(ps_sus, ms)
 
 tps <- get_transformation_products(
-  ms$NonTargetAnalysis,
-  groups = "FG2345_M236_RT1079_POS"
+  ms$NonTargetAnalysis
 )
 
+htmlwidgets::saveWidget(
+  plot_transformation_products(
+    ms$NonTargetAnalysis,
+    groups = "FG3331_M267_RT925_POS"
+  ),
+  file.path("dev", "dev_duckdb", "transformation_products_plot.html"),
+  selfcontained = TRUE
+)
 
 plot_transformation_products(
   ms$NonTargetAnalysis,
-  groups = "FG2345_M236_RT1079_POS"
+  groups = "FG3331_M267_RT925_POS",
+  showMS2 = TRUE
 )
-
-
-
-
 
 ms$run_app()
 

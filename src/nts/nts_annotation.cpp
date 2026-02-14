@@ -1,7 +1,6 @@
 #include "nts_annotation.h"
 #include "nts_utils.h"
 #include "nts.h"
-#include <Rcpp.h>
 #include <fstream>
 #include <sstream>
 #include <iomanip>
@@ -902,15 +901,15 @@ namespace nts
 
       const int max_number_elements = 5;
 
-      Rcpp::Rcout << "Building combinatorial isotopic chains with length " << max_number_elements << "...";
+      std::cout << "Building combinatorial isotopic chains with length " << max_number_elements << "...";
       ISOTOPE_COMBINATIONS combinations(isotopes, max_number_elements);
-      Rcpp::Rcout << "Done!" << std::endl;
+      std::cout << "Done!" << std::endl;
 
       const int number_analyses = nts_data.features.size();
 
       if (number_analyses == 0)
       {
-        Rcpp::Rcout << "No analyses found for annotation!" << std::endl;
+        std::cout << "No analyses found for annotation!" << std::endl;
         return;
       }
 
@@ -951,11 +950,11 @@ namespace nts
           component_groups[ft.feature_component].push_back(f);
         }
 
-        Rcpp::Rcout << "Annotating " << component_groups.size() << " components in analysis " << nts_data.analyses[a] << std::endl;
+        std::cout << "Annotating " << component_groups.size() << " components in analysis " << nts_data.analyses[a] << std::endl;
 
         // MARK: Annotate Isotopes
         // Annotate isotopes for each component
-        Rcpp::Rcout << "Annotating isotopes... ";
+        std::cout << "Annotating isotopes... ";
 
         int total_isotopes_found = 0;
 
@@ -1109,11 +1108,11 @@ namespace nts
           }
         }
 
-        Rcpp::Rcout << "Done! Found " << total_isotopes_found << " isotopes." << std::endl;
+        std::cout << "Done! Found " << total_isotopes_found << " isotopes." << std::endl;
 
         // MARK: Annotate Fragments
         // Annotate in-source fragments for each component
-        Rcpp::Rcout << "Annotating fragments... ";
+        std::cout << "Annotating fragments... ";
 
         int total_fragments_found = 0;
 
@@ -1192,11 +1191,11 @@ namespace nts
           }
         }
 
-        Rcpp::Rcout << "Done! Found " << total_fragments_found << " fragments." << std::endl;
+        std::cout << "Done! Found " << total_fragments_found << " fragments." << std::endl;
 
         // MARK: Annotate Adducts
         // Annotate adducts for each component
-        Rcpp::Rcout << "Annotating adducts... ";
+        std::cout << "Annotating adducts... ";
 
         int total_adducts_found = 0;
 
@@ -1329,11 +1328,11 @@ namespace nts
           }
         }
 
-        Rcpp::Rcout << "Done! Found " << total_adducts_found << " adducts." << std::endl;
+        std::cout << "Done! Found " << total_adducts_found << " adducts." << std::endl;
 
         // MARK: Annotate Default Adducts
         // Assign default adducts to features with empty adduct strings
-        Rcpp::Rcout << "Assigning default adducts to remaining features... ";
+        std::cout << "Assigning default adducts to remaining features... ";
 
         int default_adducts_assigned = 0;
 
@@ -1388,7 +1387,7 @@ namespace nts
           }
         }
 
-        Rcpp::Rcout << "Done! Assigned " << default_adducts_assigned << " default adducts." << std::endl;
+        std::cout << "Done! Assigned " << default_adducts_assigned << " default adducts." << std::endl;
       }
     }
 

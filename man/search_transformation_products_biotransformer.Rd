@@ -7,38 +7,46 @@
 \usage{
 search_transformation_products_biotransformer(
   parents,
-  biotransformer_option = c("CYP450", "EC-BASED", "PHASEII", "HGUT", "ENVMICRO",
+  biotransformerOption = c("CYP450", "EC-BASED", "PHASEII", "HGUT", "ENVMICRO",
     "ALLHUMAN", "SUPERBIO", "MULTIBIO", "ABIOTICBIO"),
-  number_of_steps = 1,
-  throttle_sec = 31,
-  poll_delay = 5,
-  max_poll = 60,
+  numberOfSteps = 1,
+  throttleSec = 31,
+  pollDelay = 5,
+  maxPoll = 60,
+  excludeWithSameMass = FALSE,
+  ppm = 5,
   debug = FALSE
 )
 }
 \arguments{
 \item{parents}{data.frame or data.table with required columns:
 \code{name}, \code{formula}, \code{mass}, \code{SMILES}, \code{InChI}, \code{InChIKey}, \code{xLogP}.
-Optional columns used when present: \code{rt}, \code{polarity}, \code{fragments}, \code{LogP}.}
+Optional columns used when present: \code{rt}, \code{ms2_positive}, \code{ms2_negative}, \code{LogP}.}
 
-\item{biotransformer_option}{Character (length 1). BioTransformer module to use.
+\item{biotransformerOption}{Character (length 1). BioTransformer module to use.
 One of: "CYP450", "EC-BASED", "PHASEII", "HGUT", "ENVMICRO", "ALLHUMAN",
 "SUPERBIO", "MULTIBIO", "ABIOTICBIO".}
 
-\item{number_of_steps}{Integer (>=1). Number of reaction iterations.}
+\item{numberOfSteps}{Integer (>=1). Number of reaction iterations.}
 
-\item{throttle_sec}{Numeric. Delay (seconds) between POST requests (server limit is 2/min).}
+\item{throttleSec}{Numeric. Delay (seconds) between POST requests (server limit is 2/min).}
 
-\item{poll_delay}{Numeric. Delay (seconds) between status polls.}
+\item{pollDelay}{Numeric. Delay (seconds) between status polls.}
 
-\item{max_poll}{Integer. Maximum number of polling attempts per query.}
+\item{maxPoll}{Integer. Maximum number of polling attempts per query.}
+
+\item{excludeWithSameMass}{Logical. If TRUE, excludes transformation products that have
+the same mass as any parent compound (using ppm tolerance). Default: FALSE.}
+
+\item{ppm}{Numeric. Mass tolerance in parts per million for excludeWithSameMass comparison.
+Only used when excludeWithSameMass is TRUE. Default: 5.}
 
 \item{debug}{Logical. If TRUE, saves the raw BioTransformer JSON response in the temp
 directory and prints the path.}
 }
 \value{
 A data.table with columns:
-\code{name}, \code{formula}, \code{mass}, \code{rt}, \code{SMILES}, \code{InChI}, \code{InChIKey}, \code{polarity}, \code{fragments},
+\code{name}, \code{formula}, \code{mass}, \code{rt}, \code{SMILES}, \code{InChI}, \code{InChIKey}, \code{ms2_positive}, \code{ms2_negative},
 \code{xLogP}, \code{transformation}, \code{precursor_name}, \code{precursor_formula}, \code{precursor_mass},
 \code{precursor_SMILES}, \code{precursor_InChI}, \code{precursor_InChIKey}, \code{precursor_xLogP}.
 The first row(s) correspond to the parent compounds (transformation = "parent").

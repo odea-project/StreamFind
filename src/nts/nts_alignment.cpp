@@ -4,9 +4,10 @@
 #include "nts_alignment.h"
 #include "nts.h"
 #include "nts_utils.h"
-#include <Rcpp.h>
 #include <algorithm>
 #include <cmath>
+#include <sstream>
+#include <iomanip>
 #include <set>
 #include <map>
 #include <unordered_map>
@@ -422,7 +423,7 @@ void group_features(
 void group_features_impl(
     nts::NTS_DATA &nts_data,
     const std::string &method,
-    const Rcpp::List &internal_standards_list,
+    const std::vector<InternalStandard> &internal_standards,
     float rt_deviation,
     float ppm_threshold,
     int min_samples,
@@ -489,28 +490,8 @@ void group_features_impl(
   // Perform RT alignment based on method
   if (method == "internal_standards")
   {
-    // Parse internal standards from R list
-    std::vector<InternalStandard> internal_standards;
-
-    if (internal_standards_list.size() > 0)
+    if (!internal_standards.empty())
     {
-      Rcpp::CharacterVector istd_analysis = internal_standards_list["analysis"];
-      Rcpp::CharacterVector istd_name = internal_standards_list["name"];
-      Rcpp::NumericVector istd_exp_rt = internal_standards_list["exp_rt"];
-      Rcpp::NumericVector istd_avg_rt = internal_standards_list["avg_exp_rt"];
-      Rcpp::NumericVector istd_rt_shift = internal_standards_list["rt_shift"];
-
-      for (int i = 0; i < istd_analysis.size(); ++i)
-      {
-        InternalStandard istd;
-        istd.analysis = Rcpp::as<std::string>(istd_analysis[i]);
-        istd.name = Rcpp::as<std::string>(istd_name[i]);
-        istd.exp_rt = istd_exp_rt[i];
-        istd.avg_rt = istd_avg_rt[i];
-        istd.rt_shift = istd_rt_shift[i];
-        internal_standards.push_back(istd);
-      }
-
       if (debug_log.is_open()) {
         debug_log << "--- Internal Standards Alignment ---" << std::endl;
         // Group by analysis

@@ -1879,7 +1879,7 @@ plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis <- function(
 suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
   x,
   analyses = NULL,
-  suspects = NULL,
+  suspects = data.frame(),
   ppm = 5,
   sec = 10,
   ppmMS2 = 10,
@@ -1888,377 +1888,85 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
   minSharedFragments = 3,
   filtered = FALSE
 ) {
-  if (is.null(suspects)) {
-    stop("Argument 'suspects' is required. Provide a data.frame with at least columns 'name' and 'mass' or 'mz'.")
-  }
 
   suspects <- data.table::as.data.table(suspects)
-  valid_db <- FALSE
 
-  if (is.data.frame(suspects)) {
-    suspects <- data.table::as.data.table(suspects)
-    if (
-      any(c("mass", "neutralMass") %in% colnames(suspects)) |
-        "mz" %in% colnames(suspects)
-    ) {
-      if ("name" %in% colnames(suspects)) {
-        if ("neutralMass" %in% colnames(suspects)) {
-          data.table::setnames(suspects, "neutralMass", "mass")
-        }
-        valid_db <- TRUE
-      }
-    }
-  }
-
-  if (!valid_db) {
-    stop(
-      "Argument 'suspects' must be a data.frame with at least the columns 'name' and 'mass' or 'mz'!"
-    )
+  required_cols <- c(
+    "name", "formula", "mass", "SMILES", "InChI", "InChIKey", "xLogP"
+  )
+  missing_cols <- setdiff(required_cols, colnames(suspects))
+  if (length(missing_cols) > 0) {
+    stop("Suspects table is missing required columns: ", paste(missing_cols, collapse = ", "))
   }
 
   if (!"rt" %in% colnames(suspects)) {
-    suspects$rt <- 0
+    suspects$rt <- NA_real_
   } else {
-    suspects$rt[suspects$rt == ""] <- 0
+    suspects$rt[suspects$rt == ""] <- NA_real_
   }
   suspects$rt <- as.numeric(suspects$rt)
-  suspects$rt[is.na(suspects$rt)] <- 0
 
-  # Query features from database based on suspect mass/mz
-  if ("mass" %in% colnames(suspects)) {
-    features <- get_features(
-      x,
-      analyses,
-      mass = suspects,
-      ppm = ppm,
-      sec = sec,
-      filtered = filtered
-    )
-  } else if ("mz" %in% colnames(suspects)) {
-    features <- get_features(
-      x,
-      analyses,
-      mz = suspects,
-      ppm = ppm,
-      sec = sec,
-      filtered = filtered
-    )
+  if (!"ms2_positive" %in% colnames(suspects)) {
+    suspects$ms2_positive <- ""
   } else {
-    stop(
-      "Argument 'suspects' must be a data.frame with at least the columns 'name' and 'mass' or 'mz'!"
-    )
+    suspects$ms2_positive[is.na(suspects$ms2_positive)] <- ""
   }
 
-  if (nrow(features) == 0) {
+  if (!"ms2_negative" %in% colnames(suspects)) {
+    suspects$ms2_negative <- ""
+  } else {
+    suspects$ms2_negative[is.na(suspects$ms2_negative)] <- ""
+  }
+
+
+  fts <- query_db(x, "SELECT * FROM Features")
+  if (nrow(fts) == 0) {
     message("\U2717 No suspects found!")
     return(data.table::data.table())
   }
 
-  # Process each feature
-  get_optional_char <- function(tbl, field) {
-    if (field %in% colnames(tbl)) {
-      val <- as.character(tbl[[field]][1])
-      if (is.na(val) || length(val) == 0) "" else val
-    } else {
-      ""
+  analyses_info <- query_db(x$analyses, "SELECT * FROM Analyses")
+  feature_list <- lapply(analyses_info$analysis, function(ana) {
+    ana_features <- fts[fts$analysis == ana, ]
+    if (nrow(ana_features) == 0) {
+      return(fts[0, ])
     }
+    ana_features
+  })
+  names(feature_list) <- analyses_info$analysis
+
+  spectra_headers <- query_db(x$analyses, "SELECT * FROM SpectraHeaders")
+  headers_list <- split(spectra_headers, spectra_headers$analysis)
+
+  if (is.null(analyses)) analyses <- ""
+
+  suspects_out <- rcpp_nts_suspect_screening_2(
+    info = analyses_info,
+    spectra_headers = headers_list,
+    feature_list = feature_list,
+    suspects = suspects,
+    analyses = analyses,
+    ppm = ppm,
+    sec = sec,
+    ppmMS2 = ppmMS2,
+    mzrMS2 = mzrMS2,
+    minCosineSimilarity = minCosineSimilarity,
+    minSharedFragments = minSharedFragments,
+    filtered = filtered
+  )
+
+  if (is.null(suspects_out) || nrow(suspects_out) == 0) {
+    message("\U2717 No suspects found!")
+    return(data.table::data.table())
   }
 
-  get_optional_numeric <- function(tbl, field, default = 0) {
-    if (field %in% colnames(tbl)) {
-      val <- suppressWarnings(as.numeric(tbl[[field]][1]))
-      if (is.na(val)) default else val
-    } else {
-      default
-    }
-  }
-
-  get_optional_numeric_multi <- function(tbl, fields, default = NA_real_) {
-    for (field in fields) {
-      if (field %in% colnames(tbl)) {
-        val <- suppressWarnings(as.numeric(tbl[[field]][1]))
-        if (!is.na(val)) {
-          return(val)
-        }
-      }
-    }
-    default
-  }
-
-  get_database_id <- function(tbl) {
-    for (field in c("database_id", "id", "ID")) {
-      val <- get_optional_char(tbl, field)
-      if (nzchar(val)) {
-        return(val)
-      }
-    }
-    ""
-  }
-
-  suspects_out <- data.table::data.table()
-  for (i in seq_len(nrow(features))) {
-    # Match to suspect database
-    suspect_db <- suspects[vapply(
-      suspects$name,
-      function(j) {
-        grepl(j, features$name[i])
-      },
-      FALSE
-    )]
-    suspect_db <- suspect_db[1, ]
-
-    formula_val <- get_optional_char(suspect_db, "formula")
-    smiles_val <- get_optional_char(suspect_db, "SMILES")
-    inchi_val <- get_optional_char(suspect_db, "InChI")
-    inchikey_val <- get_optional_char(suspect_db, "InChIKey")
-    cas_val <- get_optional_char(suspect_db, "CAS")
-    score_val <- get_optional_numeric(suspect_db, "score", default = 0)
-    logp_val <- get_optional_numeric_multi(suspect_db, c("xLogP", "XLogP", "xlogp", "logp", "LogP"), default = NA_real_)
-    database_id_val <- get_database_id(suspect_db)
-
-    # Initialize result row with all columns and default values
-    temp <- data.table::data.table(
-      analysis = features$analysis[i],
-      feature = features$feature[i],
-      name = features$name[i],
-      polarity = features$polarity[i],
-      db_mass = NA_real_,
-      exp_mass = features$mass[i],
-      error_mass = NA_real_,
-      db_rt = suspect_db$rt,
-      exp_rt = features$rt[i],
-      error_rt = NA_real_,
-      intensity = features$intensity[i],
-      area = features$area[i],
-      id_level = "4",
-      score = score_val,
-      shared_fragments = 0L,
-      cosine_similarity = 0,
-      formula = formula_val,
-      SMILES = smiles_val,
-      InChI = inchi_val,
-      InChIKey = inchikey_val,
-      CAS = cas_val,
-      xLogP = logp_val,
-      database_id = database_id_val,
-      db_ms2_size = 0L,
-      db_ms2_mz = NA_character_,
-      db_ms2_intensity = NA_character_,
-      db_ms2_formula = NA_character_,
-      exp_ms2_size = features$ms2_size[i],
-      exp_ms2_mz = features$ms2_mz[i],
-      exp_ms2_intensity = features$ms2_intensity[i]
-    )
-
-    # Calculate mass information
-    if ("mz" %in% colnames(suspect_db) && !is.na(suspect_db$mz)) {
-      temp$db_mass <- suspect_db$mz - (features$polarity[i] * 1.007276)
-    } else if ("mass" %in% colnames(suspect_db) && !is.na(suspect_db$mass)) {
-      temp$db_mass <- suspect_db$mass
-    }
-
-    if (!is.na(temp$db_mass) && !is.na(temp$exp_mass)) {
-      temp$error_mass <- round(
-        ((temp$exp_mass - temp$db_mass) / temp$exp_mass) * 1E6,
-        digits = 1
-      )
-    }
-
-    # Calculate RT error
-    if (!is.na(temp$db_rt) && !is.na(temp$exp_rt)) {
-      temp$error_rt <- round(temp$exp_rt - temp$db_rt, digits = 1)
-    }
-
-    # Upgrade identification level if RT matches
-    if (!is.na(temp$db_rt) && temp$db_rt > 0 && !is.na(temp$exp_rt)) {
-      temp$id_level <- "3b"
-    }
-
-    # MS2 spectral matching
-    if (
-      "fragments" %in% colnames(suspect_db) ||
-        "fragments_mz" %in% colnames(suspect_db)
-    ) {
-      if ("fragments" %in% colnames(suspect_db)) {
-        fragments <- suspect_db$fragments
-      } else {
-        fragments <- suspect_db$fragments_mz
-      }
-
-      if (!is.na(fragments)) {
-        # Decode experimental MS2 data from encoded strings
-        ms2 <- data.table::data.table()
-        if (!is.na(features$ms2_mz[i]) && nchar(features$ms2_mz[i]) > 0 &&
-          !is.na(features$ms2_intensity[i]) && nchar(features$ms2_intensity[i]) > 0) {
-          mz_dec <- rcpp_streamcraft_decode_string(features$ms2_mz[i])
-          int_dec <- rcpp_streamcraft_decode_string(features$ms2_intensity[i])
-          if (length(mz_dec) > 0 && length(mz_dec) == length(int_dec)) {
-            ms2 <- data.table::data.table(
-              mz = mz_dec,
-              intensity = int_dec
-            )
-          }
-        }
-
-        if (nrow(ms2) > 0) {
-          # Parse suspect fragments
-          if ("fragments" %in% colnames(suspect_db)) {
-            fragments <- unlist(strsplit(
-              fragments,
-              split = "; ",
-              fixed = TRUE
-            ))
-            fragments <- strsplit(fragments, " ")
-            db_fragments <- data.table::data.table(
-              "formula" = vapply(
-                fragments,
-                function(x) {
-                  x[1]
-                },
-                NA_character_
-              ),
-              "mz" = vapply(
-                fragments,
-                function(x) {
-                  as.numeric(x[1])
-                },
-                NA_real_
-              ),
-              "intensity" = vapply(
-                fragments,
-                function(x) {
-                  as.numeric(x[2])
-                },
-                NA_real_
-              )
-            )
-          } else {
-            fragments <- unlist(strsplit(
-              fragments,
-              split = ";",
-              fixed = TRUE
-            ))
-            fragments_int <- unlist(strsplit(
-              suspect_db$fragments_int,
-              split = ";",
-              fixed = TRUE
-            ))
-            if ("fragments_formula" %in% colnames(suspect_db)) {
-              if (grepl(";", suspect_db$fragments_formula)) {
-                fragments_formula <- unlist(
-                  strsplit(
-                    suspect_db$fragments_formula,
-                    split = ";",
-                    fixed = TRUE
-                  )
-                )
-              } else if (!suspect_db$fragments_formula %in% "") {
-                fragments_formula <- rep(
-                  suspect_db$fragments_formula,
-                  length(fragments)
-                )
-              } else {
-                fragments_formula <- rep(
-                  NA_character_,
-                  length(fragments)
-                )
-              }
-            } else {
-              fragments_formula <- rep(NA_character_, length(fragments))
-            }
-
-            db_fragments <- data.table::data.table(
-              "formula" = fragments_formula,
-              "mz" = as.numeric(fragments),
-              "intensity" = as.numeric(fragments_int)
-            )
-          }
-
-          # Store database MS2 as encoded base64 strings
-          temp$db_ms2_size <- as.integer(nrow(db_fragments))
-          temp$db_ms2_mz <- rcpp_streamcraft_encode_vector(db_fragments$mz)
-          temp$db_ms2_intensity <- rcpp_streamcraft_encode_vector(db_fragments$intensity)
-          temp$db_ms2_formula <- paste(db_fragments$formula, collapse = ";")
-
-          # Calculate m/z ranges for matching
-          mzr <- db_fragments$mz * ppmMS2 / 1E6
-          mzr[mzr < mzrMS2] <- mzrMS2
-          db_fragments$mzmin <- db_fragments$mz - mzr
-          db_fragments$mzmax <- db_fragments$mz + mzr
-
-          # Match suspect fragments to experimental MS2
-          db_fragments$exp_idx <- vapply(
-            seq_len(nrow(db_fragments)),
-            function(z, ms2, db_fragments) {
-              idx <- which(
-                ms2$mz >= db_fragments$mzmin[z] &
-                  ms2$mz <= db_fragments$mzmax[z]
-              )
-              if (length(idx) == 0) {
-                NA_integer_
-              } else {
-                if (length(idx) > 1) {
-                  candidates <- ms2$mz[idx]
-                  mz_error <- abs(candidates - db_fragments$mz[z])
-                  idx <- idx[which.min(mz_error)]
-                  idx <- idx[1]
-                }
-                as.integer(idx)
-              }
-            },
-            ms2 = ms2,
-            db_fragments = db_fragments,
-            integer(1)
-          )
-
-          number_shared_fragments <- length(db_fragments$exp_idx[
-            !is.na(db_fragments$exp_idx)
-          ])
-
-          if (number_shared_fragments > 0) {
-            # Calculate cosine similarity
-            sel <- !is.na(db_fragments$exp_idx)
-            intensity_db <- db_fragments$intensity[sel]
-            intensity_db <- intensity_db / max(intensity_db)
-            intensity_exp <- ms2$intensity[db_fragments$exp_idx[sel]]
-            intensity_exp <- intensity_exp / max(intensity_exp)
-            dot_pro <- sum(intensity_db * intensity_exp)
-            mag_db <- sqrt(sum(intensity_db^2))
-            mag_exp <- sqrt(sum(intensity_exp^2))
-            cosine_similarity <- round(
-              dot_pro / (mag_db * mag_exp),
-              digits = 4
-            )
-          } else {
-            cosine_similarity <- 0
-          }
-
-          temp$shared_fragments <- as.integer(number_shared_fragments)
-          temp$cosine_similarity <- cosine_similarity
-
-          # Upgrade identification level if MS2 matches well
-          if (
-            number_shared_fragments >= minSharedFragments ||
-              cosine_similarity >= minCosineSimilarity
-          ) {
-            if (temp$id_level == "3b") {
-              temp$id_level <- "1"
-            } else if (temp$id_level == "4") {
-              temp$id_level <- "2"
-            }
-          }
-        }
-      }
-    }
-    suspects_out <- data.table::rbindlist(list(suspects_out, temp), fill = TRUE)
-  }
   col_order <- c(
     "analysis", "feature", "name", "polarity",
     "db_mass", "exp_mass", "error_mass",
     "db_rt", "exp_rt", "error_rt",
     "intensity", "area",
     "id_level", "score", "shared_fragments", "cosine_similarity",
-    "formula", "SMILES", "InChI", "InChIKey", "CAS", "xLogP", "database_id",
+    "formula", "SMILES", "InChI", "InChIKey", "xLogP", "database_id",
     "db_ms2_size", "db_ms2_mz", "db_ms2_intensity", "db_ms2_formula",
     "exp_ms2_size", "exp_ms2_mz", "exp_ms2_intensity"
   )
@@ -2266,6 +1974,7 @@ suspect_screening.DB_MassSpecResults_NonTargetAnalysis <- function(
     keep_cols <- intersect(col_order, colnames(suspects_out))
     data.table::setcolorder(suspects_out, keep_cols)
   }
+
   suspects_out
 }
 
@@ -3280,9 +2989,11 @@ get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, 
 #' @describeIn DB_MassSpecResults_NonTargetAnalysis Plot a transformation products network.
 #' @param groups Optional character vector of feature_group ids to seed the plot. When provided,
 #' the network expands to include all connected precursors/products.
+#' @param showMS2 Logical. When TRUE, fetches MS2 spectra from Features table for transformation products
+#' and precursors to display mirror plots in tooltips. Default: FALSE.
 #' @export
 #'
-plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, groups = NULL) {
+plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, groups = NULL, showMS2 = FALSE) {
   if (!requireNamespace("visNetwork", quietly = TRUE)) {
     stop("visNetwork package is required for this function.")
   }
@@ -3290,6 +3001,38 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   if (nrow(tps) == 0) {
     message("\u2717 No transformation products to plot.")
     return(invisible(NULL))
+  }
+
+  # Fetch MS2 data from Features table if requested
+  ms2_lookup <- NULL
+  if (showMS2) {
+    conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+    on.exit(DBI::dbDisconnect(conn, shutdown = TRUE), add = TRUE)
+
+    # Get unique feature groups for products and precursors
+    product_groups <- unique(tps$feature_group[!is.na(tps$feature_group) & tps$feature_group != ""])
+    precursor_groups <- unique(tps$precursor_feature_group[!is.na(tps$precursor_feature_group) & tps$precursor_feature_group != ""])
+    all_groups <- unique(c(product_groups, precursor_groups))
+
+    if (length(all_groups) > 0) {
+      # Query Features table for ALL MS2 data (including analysis for multiple spectra)
+      placeholders <- paste(rep("?", length(all_groups)), collapse = ", ")
+      query <- sprintf(
+        "SELECT feature_group, analysis, ms2_mz, ms2_intensity FROM Features WHERE feature_group IN (%s) AND ms2_mz IS NOT NULL AND ms2_mz != ''",
+        placeholders
+      )
+      ms2_data <- DBI::dbGetQuery(conn, query, params = as.list(all_groups))
+      ms2_data <- data.table::as.data.table(ms2_data)
+
+      # Create lookup list for MS2 data by feature_group
+      if (nrow(ms2_data) > 0) {
+        ms2_lookup <- split(ms2_data, ms2_data$feature_group)
+      }
+    }
+
+    # Close connection immediately after use
+    DBI::dbDisconnect(conn, shutdown = TRUE)
+    on.exit()  # Clear the on.exit handler since we've already disconnected
   }
 
   node_ids <- unique(c(tps$SMILES, tps$precursor_SMILES))
@@ -3331,23 +3074,281 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     if (length(x) == 0) return("NA")
     paste(unique(x), collapse = "; ")
   }
+
+  # MARK: create_structure_image
+  create_structure_image <- function(smiles, width = 350, height = 250) {
+    if (is.null(smiles) || is.na(smiles) || !nzchar(smiles)) return("")
+    if (!requireNamespace("rcdk", quietly = TRUE)) return("")
+    if (!requireNamespace("rJava", quietly = TRUE)) return("")
+    if (!requireNamespace("base64enc", quietly = TRUE)) return("")
+    if (!requireNamespace("magick", quietly = TRUE)) return("")
+    tryCatch(
+      {
+        mol <- rcdk::parse.smiles(smiles)[[1]]
+        img <- rcdk::view.image.2d(mol)
+        temp_file <- tempfile(fileext = ".png")
+        grDevices::png(filename = temp_file, width = width, height = height, res = 300, bg = "transparent")
+        graphics::par(mar = c(0, 0, 0, 0))
+        graphics::plot.new()
+        graphics::rasterImage(img, -0.01, -0.01, 1.01, 1.01)
+        grDevices::dev.off()
+        magick_img <- magick::image_read(temp_file)
+        magick_img <- magick::image_transparent(magick_img, "white", fuzz = 5)
+        magick_img <- magick::image_trim(magick_img, fuzz = 5)
+        magick::image_write(magick_img, path = temp_file, format = "png")
+        img_base64 <- base64enc::base64encode(temp_file)
+        unlink(temp_file)
+        paste0("data:image/png;base64,", img_base64)
+      },
+      error = function(e) {
+        ""
+      }
+    )
+  }
+
+  # Pre-render all unique structures
+  message("\u2699 Pre-rendering ", length(node_ids), " unique structures...")
+  structure_cache <- setNames(
+    lapply(node_ids, function(smiles) create_structure_image(smiles)),
+    node_ids
+  )
+
+  # MARK: create_ms2_mirror_plot
+  create_ms2_mirror_plot <- function(precursor_spectra_list, product_spectra_list, width = 700, height = 400) {
+    if (!requireNamespace("base64enc", quietly = TRUE)) return("")
+    tryCatch(
+      {
+        # Parse base64 encoded values using streamcraft decoder
+        parse_values <- function(x) {
+          if (is.null(x) || is.na(x) || !nzchar(as.character(x))) return(numeric(0))
+          tryCatch({
+            vals <- rcpp_streamcraft_decode_string(as.character(x))
+            if (length(vals) == 0 || !is.numeric(vals)) return(numeric(0))
+            vals[is.finite(vals)]  # Remove non-finite values
+          }, error = function(e) {
+            numeric(0)
+          })
+        }
+
+        # Parse all precursor spectra
+        prec_spectra <- list()
+        if (!is.null(precursor_spectra_list) && nrow(precursor_spectra_list) > 0) {
+          for (i in seq_len(nrow(precursor_spectra_list))) {
+            mz <- parse_values(precursor_spectra_list$ms2_mz[i])
+            int <- parse_values(precursor_spectra_list$ms2_intensity[i])
+            if (length(mz) > 0 && length(int) > 0 && length(mz) == length(int)) {
+              valid <- is.finite(mz) & is.finite(int) & int > 0
+              if (any(valid)) {
+                prec_spectra[[i]] <- list(mz = mz[valid], int = int[valid])
+              }
+            }
+          }
+        }
+
+        # Parse all product spectra
+        prod_spectra <- list()
+        if (!is.null(product_spectra_list) && nrow(product_spectra_list) > 0) {
+          for (i in seq_len(nrow(product_spectra_list))) {
+            mz <- parse_values(product_spectra_list$ms2_mz[i])
+            int <- parse_values(product_spectra_list$ms2_intensity[i])
+            if (length(mz) > 0 && length(int) > 0 && length(mz) == length(int)) {
+              valid <- is.finite(mz) & is.finite(int) & int > 0
+              if (any(valid)) {
+                prod_spectra[[i]] <- list(mz = mz[valid], int = int[valid])
+              }
+            }
+          }
+        }
+
+        # Validate we have data
+        if (length(prec_spectra) == 0 && length(prod_spectra) == 0) return("")
+
+        # Normalize intensities for each spectrum
+        for (i in seq_along(prec_spectra)) {
+          if (max(prec_spectra[[i]]$int) > 0) {
+            prec_spectra[[i]]$int <- prec_spectra[[i]]$int / max(prec_spectra[[i]]$int)
+          }
+        }
+        for (i in seq_along(prod_spectra)) {
+          if (max(prod_spectra[[i]]$int) > 0) {
+            prod_spectra[[i]]$int <- prod_spectra[[i]]$int / max(prod_spectra[[i]]$int)
+          }
+        }
+
+        # Calculate m/z range
+        all_mz <- c(
+          unlist(lapply(prec_spectra, function(s) s$mz)),
+          unlist(lapply(prod_spectra, function(s) s$mz))
+        )
+        if (length(all_mz) == 0) return("")
+        mz_range <- c(floor(min(all_mz)), ceiling(max(all_mz)))
+
+        # Create plot
+        temp_file <- tempfile(fileext = ".png")
+        grDevices::png(filename = temp_file, width = width, height = height, res = 150, bg = "transparent")
+        graphics::par(mar = c(3, 3, 1, 1), mgp = c(2, 0.5, 0), family = "sans")
+
+        graphics::plot(NULL, xlim = mz_range, ylim = c(-1, 1),
+                      xlab = "m/z", ylab = "Relative Intensity",
+                      las = 1, cex.lab = 1, cex.axis = 0.9, bty = "n")
+        graphics::abline(h = 0, col = "black", lwd = 1)
+
+        # Define colors with transparency for overlaying
+        prec_colors <- grDevices::adjustcolor(c("darkred", "red", "tomato", "indianred"), alpha.f = 0.6)
+        prod_colors <- grDevices::adjustcolor(c("orange", "darkorange", "gold", "yellow"), alpha.f = 0.6)
+
+        # Plot all precursor spectra (below x-axis, negative)
+        for (i in seq_along(prec_spectra)) {
+          col <- prec_colors[((i - 1) %% length(prec_colors)) + 1]
+          for (j in seq_along(prec_spectra[[i]]$mz)) {
+            graphics::segments(
+              prec_spectra[[i]]$mz[j], 0,
+              prec_spectra[[i]]$mz[j], -prec_spectra[[i]]$int[j],
+              col = col, lwd = 1.5
+            )
+          }
+        }
+
+        # Plot all product spectra (above x-axis, positive)
+        for (i in seq_along(prod_spectra)) {
+          col <- prod_colors[((i - 1) %% length(prod_colors)) + 1]
+          for (j in seq_along(prod_spectra[[i]]$mz)) {
+            graphics::segments(
+              prod_spectra[[i]]$mz[j], 0,
+              prod_spectra[[i]]$mz[j], prod_spectra[[i]]$int[j],
+              col = col, lwd = 1.5
+            )
+          }
+        }
+
+        # Add annotations
+        n_prod <- length(prod_spectra)
+        n_prec <- length(prec_spectra)
+        prod_label <- if (n_prod > 1) {
+          sprintf("Product (%d spectra)", n_prod)
+        } else {
+          "Product"
+        }
+        prec_label <- if (n_prec > 1) {
+          sprintf("Precursor (%d spectra)", n_prec)
+        } else {
+          "Precursor"
+        }
+
+        graphics::text(mz_range[1] + diff(mz_range) * 0.02, 0.9, prod_label,
+                      col = "orange", adj = 0, cex = 0.9, font = 2)
+        graphics::text(mz_range[1] + diff(mz_range) * 0.02, -0.9, prec_label,
+                      col = "darkred", adj = 0, cex = 0.9, font = 2)
+        grDevices::dev.off()
+        img_base64 <- base64enc::base64encode(temp_file)
+        unlink(temp_file)
+        paste0("data:image/png;base64,", img_base64)
+      },
+      error = function(e) {
+        ""
+      }
+    )
+  }
+
   node_title <- function(node_id) {
     prod <- tps[tps$SMILES == node_id, ]
     prec <- tps[tps$precursor_SMILES == node_id, ]
-    lines <- c(
-      paste0("Name: ", fmt_vals(c(prod$name, prec$precursor_name))),
-      paste0("Formula: ", fmt_vals(c(prod$formula, prec$precursor_formula))),
-      paste0("Mass: ", fmt_vals(c(prod$mass, prec$precursor_mass))),
-      paste0("SMILES: ", fmt_vals(node_id)),
-      paste0("InChI: ", fmt_vals(c(prod$InChI, prec$precursor_InChI))),
-      paste0("InChIKey: ", fmt_vals(c(prod$InChIKey, prec$precursor_InChIKey))),
-      paste0("xLogP: ", fmt_vals(c(prod$xLogP, prec$precursor_xLogP))),
-      paste0("FeatureGroup: ", fmt_vals(prod$feature_group)),
-      paste0("PrecursorFeatureGroup: ", fmt_vals(c(prod$precursor_feature_group, prec$precursor_feature_group))),
-      paste0("CosineSimilarity: ", fmt_vals(prod$cosine_similarity)),
-      paste0("RtPlausibility: ", fmt_vals(prod$rt_plausibility))
+
+    # Get cached structures
+    prod_structure <- structure_cache[[node_id]]
+    prec_smiles <- unique(c(prod$precursor_SMILES, prec$precursor_SMILES))
+    prec_smiles <- prec_smiles[!is.na(prec_smiles) & prec_smiles != ""][1]
+    prec_structure <- if (!is.na(prec_smiles) && !is.null(prec_smiles)) {
+      structure_cache[[prec_smiles]]
+    } else {
+      ""
+    }
+
+    # Build structure HTML - two columns side by side
+    structures_html <- ""
+    if (nzchar(prod_structure) || nzchar(prec_structure)) {
+      structures_html <- paste0(
+        '<table style="width:100%;border-collapse:collapse;margin:0;padding:0;"><tr>',
+        '<td style="width:50%;vertical-align:top;padding:5px;text-align:center;">',
+        '<div style="font-size:0.75em;font-weight:bold;color:#888;margin-bottom:3px;">Precursor</div>',
+        if (nzchar(prec_structure)) paste0('<img src="', prec_structure, '" style="max-width:100%;height:auto;"/>') else '<div style="color:#ccc;padding:20px;">No structure</div>',
+        '</td>',
+        '<td style="width:50%;vertical-align:top;padding:5px;text-align:center;">',
+        '<div style="font-size:0.75em;font-weight:bold;color:#888;margin-bottom:3px;">Product</div>',
+        if (nzchar(prod_structure)) paste0('<img src="', prod_structure, '" style="max-width:100%;height:auto;"/>') else '<div style="color:#ccc;padding:20px;">No structure</div>',
+        '</td>',
+        '</tr></table>'
+      )
+    }
+
+    # Build metadata HTML - slightly smaller text
+    metadata_lines <- c(
+      paste0("<b>Name:</b> ", fmt_vals(c(prod$name, prec$precursor_name))),
+      paste0("<b>Formula:</b> ", fmt_vals(c(prod$formula, prec$precursor_formula))),
+      paste0("<b>Mass:</b> ", fmt_vals(c(prod$mass, prec$precursor_mass))),
+      paste0("<b>SMILES:</b> ", fmt_vals(node_id)),
+      paste0("<b>InChIKey:</b> ", fmt_vals(c(prod$InChIKey, prec$precursor_InChIKey))),
+      paste0("<b>xLogP:</b> ", fmt_vals(c(prod$xLogP, prec$precursor_xLogP))),
+      paste0("<b>FeatureGroup:</b> ", fmt_vals(prod$feature_group)),
+      paste0("<b>PrecursorFeatureGroup:</b> ", fmt_vals(c(prod$precursor_feature_group, prec$precursor_feature_group))),
+      paste0("<b>CosineSimilarity:</b> ", fmt_vals(prod$cosine_similarity)),
+      paste0("<b>RtPlausibility:</b> ", fmt_vals(prod$rt_plausibility)),
+      paste0("<b>MainPrecursorName:</b> ", fmt_vals(prod$main_precursor_name)),
+      paste0("<b>MainPrecursorFeatureGroup:</b> ", fmt_vals(prod$main_precursor_feature_group)),
+      paste0("<b>MainPrecursorCosineSimilarity:</b> ", fmt_vals(prod$main_precursor_cosine_similarity)),
+      paste0("<b>MainPrecursorRtPlausibility:</b> ", fmt_vals(prod$main_precursor_rt_plausibility))
     )
-    paste(lines, collapse = "<br/>")
+    metadata_html <- paste0(
+      '<div style="font-size:0.75em;line-height:1.3;margin:8px 0;padding:5px;background:rgba(240,240,240,0.3);border-radius:3px;">',
+      paste(metadata_lines, collapse = "<br/>"),
+      '</div>'
+    )
+
+    # Create MS2 mirror plot if MS2 data is available
+    ms2_html <- ""
+    if (!is.null(ms2_lookup)) {
+      # Get MS2 data for product
+      prod_fg <- unique(prod$feature_group[!is.na(prod$feature_group) & prod$feature_group != ""])
+      prod_ms2 <- NULL
+      if (length(prod_fg) > 0) {
+        prod_ms2 <- ms2_lookup[[prod_fg[1]]]
+      }
+
+      # Get MS2 data for precursor
+      prec_fg <- unique(c(prod$precursor_feature_group, prec$precursor_feature_group))
+      prec_fg <- prec_fg[!is.na(prec_fg) & prec_fg != ""][1]
+      prec_ms2 <- NULL
+      if (!is.na(prec_fg) && !is.null(prec_fg) && !is.null(ms2_lookup[[prec_fg]])) {
+        prec_ms2 <- ms2_lookup[[prec_fg]]
+      }
+
+      # Generate mirror plot if we have data
+      if (!is.null(prod_ms2) || !is.null(prec_ms2)) {
+        ms2_plot <- create_ms2_mirror_plot(
+          precursor_spectra_list = prec_ms2,
+          product_spectra_list = prod_ms2,
+          width = 700,
+          height = 400
+        )
+
+        if (nzchar(ms2_plot)) {
+          ms2_html <- paste0(
+            '<div style="margin-top:8px;border-top:1px solid #ddd;padding-top:8px;">',
+            '<img src="', ms2_plot, '" style="width:100%;height:auto;"/>',
+            '</div>'
+          )
+        }
+      }
+    }
+
+    # Combine all parts
+    paste0(
+      '<div style="line-height:1.2;margin:0;padding:0;max-width:700px;">',
+      structures_html,
+      metadata_html,
+      ms2_html,
+      '</div>'
+    )
   }
   nodes$title <- vapply(nodes$id, node_title, character(1))
   nodes$node_label <- nodes$label
@@ -3356,12 +3357,12 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   node_has_group <- node_has_group[!is.na(node_has_group) & node_has_group != ""]
 
   parent_nodes_unassigned <- unique(
-    tps$SMILES[tps$transformation %in% "parent" & (is.na(tps$feature_group) | tps$feature_group == "")]
+    tps$SMILES[tps$transformation %in% "main_precursor" & (is.na(tps$feature_group) | tps$feature_group == "")]
   )
   parent_nodes_unassigned <- parent_nodes_unassigned[!is.na(parent_nodes_unassigned) & parent_nodes_unassigned != ""]
 
   parent_nodes <- unique(
-    tps$SMILES[tps$transformation %in% "parent" & !is.na(tps$feature_group) & tps$feature_group != ""]
+    tps$SMILES[tps$transformation %in% "main_precursor" & !is.na(tps$feature_group) & tps$feature_group != ""]
   )
   parent_nodes <- parent_nodes[!is.na(parent_nodes) & parent_nodes != ""]
 
@@ -3378,6 +3379,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     visNetwork::visNodes(
       font = list(
         size = 12,
+        face = "Arial",
         strokeWidth = 0,
         strokeColor = "rgba(0,0,0,0)"
       )
@@ -3389,7 +3391,13 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     visNetwork::visEdges(
       arrows = "to",
       smooth = TRUE,
-      font = list(strokeWidth = 0, strokeColor = "rgba(0,0,0,0)")
+      font = list(
+        size = 8,
+        face = "Arial",
+        ital = TRUE,
+        strokeWidth = 0,
+        strokeColor = "rgba(0,0,0,0)"
+      )
     ) %>%
     visNetwork::visOptions(
       highlightNearest = FALSE,
@@ -3416,7 +3424,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             nodeUpdates.push({
               id: allNodes[k],
               label: nearSet[allNodes[k]] ? nn.node_label : '',
-              font: { color: nearSet[allNodes[k]] ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0)' },
+              font: { color: nearSet[allNodes[k]] ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0)', face: 'Arial', bold: allNodes[k] === selected },
               color: nearSet[allNodes[k]] ? nn.base_color : 'rgba(200,200,200,0.2)'
             });
           }
@@ -3433,6 +3441,8 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
               color: keep[allEdges[j]] ? e.base_color : 'rgba(200,200,200,0.2)',
               font: {
                 color: keep[allEdges[j]] ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0)',
+                face: 'Arial',
+                ital: true,
                 strokeWidth: 0,
                 strokeColor: 'rgba(0,0,0,0)'
               }
@@ -3450,7 +3460,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             nodeUpdates.push({
               id: allNodes[k],
               label: nn.node_label,
-              font: { color: 'rgba(0,0,0,1)' },
+              font: { color: 'rgba(0,0,0,1)', face: 'Arial', bold: false },
               color: nn.base_color
             });
           }
@@ -3465,7 +3475,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
               hidden: false,
               label: e.edge_label,
               color: e.base_color,
-              font: { color: 'rgba(0,0,0,1)', strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
+              font: { color: 'rgba(0,0,0,1)', face: 'Arial', ital: true, strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
             });
           }
           this.body.data.edges.update(updates);
@@ -3643,7 +3653,6 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     SMILES VARCHAR,
     InChI VARCHAR,
     InChIKey VARCHAR,
-    CAS VARCHAR,
     xLogP DOUBLE,
     database_id VARCHAR,
     db_ms2_size INTEGER,
@@ -3687,7 +3696,6 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
         SMILES = "VARCHAR",
         InChI = "VARCHAR",
         InChIKey = "VARCHAR",
-        CAS = "VARCHAR",
         xLogP = "DOUBLE",
         database_id = "VARCHAR",
         db_ms2_size = "INTEGER",
@@ -3733,10 +3741,20 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     precursor_InChI VARCHAR,
     precursor_InChIKey VARCHAR,
     precursor_xLogP DOUBLE,
+    main_precursor_name VARCHAR,
+    main_precursor_formula VARCHAR,
+    main_precursor_mass DOUBLE,
+    main_precursor_SMILES VARCHAR,
+    main_precursor_InChI VARCHAR,
+    main_precursor_InChIKey VARCHAR,
+    main_precursor_xLogP DOUBLE,
     feature_group VARCHAR,
     precursor_feature_group VARCHAR,
+    main_precursor_feature_group VARCHAR,
     cosine_similarity DOUBLE,
-    rt_plausibility DOUBLE
+    main_precursor_cosine_similarity DOUBLE,
+    rt_plausibility DOUBLE,
+    main_precursor_rt_plausibility DOUBLE
   )")
 
   invisible(TRUE)
@@ -3767,10 +3785,20 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
         precursor_InChI = "VARCHAR",
         precursor_InChIKey = "VARCHAR",
         precursor_xLogP = "DOUBLE",
+        main_precursor_name = "VARCHAR",
+        main_precursor_formula = "VARCHAR",
+        main_precursor_mass = "DOUBLE",
+        main_precursor_SMILES = "VARCHAR",
+        main_precursor_InChI = "VARCHAR",
+        main_precursor_InChIKey = "VARCHAR",
+        main_precursor_xLogP = "DOUBLE",
         feature_group = "VARCHAR",
         precursor_feature_group = "VARCHAR",
+        main_precursor_feature_group = "VARCHAR",
         cosine_similarity = "DOUBLE",
-        rt_plausibility = "DOUBLE"
+        main_precursor_cosine_similarity = "DOUBLE",
+        rt_plausibility = "DOUBLE",
+        main_precursor_rt_plausibility = "DOUBLE"
       )
       for (col in names(required)) {
         if (!(col %in% table_info$name)) {
@@ -3818,7 +3846,6 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     SMILES VARCHAR,
     InChI VARCHAR,
     InChIKey VARCHAR,
-    CAS VARCHAR,
     xLogP DOUBLE,
     database_id VARCHAR,
     db_ms2_size INTEGER,
@@ -3863,7 +3890,6 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
         SMILES = "VARCHAR",
         InChI = "VARCHAR",
         InChIKey = "VARCHAR",
-        CAS = "VARCHAR",
         xLogP = "DOUBLE",
         database_id = "VARCHAR",
         db_ms2_size = "INTEGER",

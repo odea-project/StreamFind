@@ -5,7 +5,6 @@
 #ifndef NTS_DECONVOLUTION_H
 #define NTS_DECONVOLUTION_H
 
-#include <Rcpp.h>
 #include <vector>
 #include <string>
 #include "../streamcraft/streamcraft.h"

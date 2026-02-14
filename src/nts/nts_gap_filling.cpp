@@ -621,7 +621,7 @@ void nts::gap_filling::fill_features_impl(
     DEBUG_LOG("  withinReplicate: " << (withinReplicate ? "true" : "false") << std::endl);
   }
 
-  Rcpp::Rcout << "Starting feature gap filling..." << std::endl;
+  std::cout << "Starting feature gap filling..." << std::endl;
 
   // Analyze feature groups to identify gaps
   auto group_infos = analyze_feature_groups(
@@ -633,11 +633,11 @@ void nts::gap_filling::fill_features_impl(
 
   if (group_infos.empty())
   {
-    Rcpp::Rcout << "No feature groups with gaps found." << std::endl;
+    std::cout << "No feature groups with gaps found." << std::endl;
     return;
   }
 
-  Rcpp::Rcout << "Found " << group_infos.size() << " feature groups with gaps." << std::endl;
+  std::cout << "Found " << group_infos.size() << " feature groups with gaps." << std::endl;
 
   // Track filled features
   int total_gaps = 0;
@@ -743,12 +743,12 @@ void nts::gap_filling::fill_features_impl(
     }
   }
 
-  Rcpp::Rcout << "Processing " << gaps_by_file.size() << " files with gaps..." << std::endl;
+  std::cout << "Processing " << gaps_by_file.size() << " files with gaps..." << std::endl;
 
   // Process each file
   for (const auto &[file_path, gaps] : gaps_by_file)
   {
-    Rcpp::Rcout << "  Processing " << gaps.size() << " gaps in file: " << file_path << std::endl;
+    std::cout << "  Processing " << gaps.size() << " gaps in file: " << file_path << std::endl;
 
     // Open MS file once per file
     sc::MS_FILE ana(file_path);
@@ -1033,7 +1033,7 @@ void nts::gap_filling::fill_features_impl(
     }
   }
 
-  Rcpp::Rcout << "Gap filling complete. Filled " << filled_gaps
+  std::cout << "Gap filling complete. Filled " << filled_gaps
               << " out of " << total_gaps << " gaps." << std::endl;
 
   // Close debug log if it was opened

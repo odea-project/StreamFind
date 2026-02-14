@@ -140,8 +140,11 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
   if (nrow(tp) > 0) {
     tp$feature_group <- ""
     tp$precursor_feature_group <- ""
+    tp$main_precursor_feature_group <- ""
     tp$cosine_similarity <- NA_real_
+    tp$main_precursor_cosine_similarity <- NA_real_
     tp$rt_plausibility <- NA_real_
+    tp$main_precursor_rt_plausibility <- NA_real_
     nts <- engine$NonTargetAnalysis
     suspects <- data.table::as.data.table(get_suspects(nts))
 
@@ -161,6 +164,10 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
       ]
 
       tp$feature_group <- fg_map$feature_group[match(tp$SMILES, fg_map$SMILES)]
+
+      # Assign main_precursor_feature_group
+      tp$main_precursor_feature_group <- fg_map$feature_group[match(tp$main_precursor_SMILES, fg_map$SMILES)]
+      tp$main_precursor_feature_group[is.na(tp$main_precursor_feature_group)] <- ""
 
       tp$precursor_feature_group <- apply(tp, 1, function(z) {
         if (z[["feature_group"]] != "" && !is.na(z[["feature_group"]])) {
@@ -279,6 +286,59 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
           }
         }
         tp$cosine_similarity[i] <- max_cos
+
+        # Calculate main_precursor metrics
+        if (!is.na(tp$main_precursor_SMILES[i]) && tp$main_precursor_SMILES[i] != "") {
+          main_prec_fg <- tp$main_precursor_feature_group[i]
+          if (!is.na(main_prec_fg) && main_prec_fg != "") {
+            main_prec_fg <- unlist(strsplit(main_prec_fg, ";", fixed = TRUE))
+            main_prec_sus <- suspects[feature_group %in% main_prec_fg & SMILES == tp$main_precursor_SMILES[i]]
+
+            # Calculate main_precursor_rt_plausibility
+            main_prec_exp_rt <- main_prec_sus$exp_rt
+            main_prec_logp <- tp$main_precursor_xLogP[i]
+            if (length(prod_exp_rt) > 0 && length(main_prec_exp_rt) > 0 &&
+                  !all(is.na(prod_exp_rt)) && !all(is.na(main_prec_exp_rt)) &&
+                  !is.na(prod_logp) && !is.na(main_prec_logp)) {
+              prod_rt_val <- median(prod_exp_rt, na.rm = TRUE)
+              main_prec_rt_val <- median(main_prec_exp_rt, na.rm = TRUE)
+              if (!is.na(prod_rt_val) && !is.na(main_prec_rt_val)) {
+                tp$main_precursor_rt_plausibility[i] <- score_rt_plausibility(
+                  prod_logp, main_prec_logp, prod_rt_val, main_prec_rt_val, parameters$chromatographic_phase
+                )
+              }
+            }
+
+            # Calculate main_precursor_cosine_similarity
+            max_cos_main <- NA_real_
+            has_comparison_main <- FALSE
+            main_prec_sus_valid <- main_prec_sus[exp_ms2_size > 0]
+            if (nrow(prod_sus_valid) > 0 && nrow(main_prec_sus_valid) > 0) {
+              for (ps_idx in seq_len(nrow(prod_sus_valid))) {
+                ps_mz <- prod_sus_valid$exp_ms2_mz[ps_idx]
+                ps_int <- prod_sus_valid$exp_ms2_int[ps_idx]
+                ps_spec <- decode_ms2(ps_mz, ps_int)
+                if (is.null(ps_spec) || nrow(ps_spec) == 0) next
+                for (ms_idx in seq_len(nrow(main_prec_sus_valid))) {
+                  ms_mz <- main_prec_sus_valid$exp_ms2_mz[ms_idx]
+                  ms_int <- main_prec_sus_valid$exp_ms2_int[ms_idx]
+                  ms_spec <- decode_ms2(ms_mz, ms_int)
+                  if (is.null(ms_spec) || nrow(ms_spec) == 0) next
+                  cos_val <- calc_similarity(ps_spec, ms_spec, parameters$mzrMS2)
+                  if (!is.na(cos_val)) {
+                    if (!has_comparison_main) {
+                      max_cos_main <- cos_val
+                      has_comparison_main <- TRUE
+                    } else if (cos_val > max_cos_main) {
+                      max_cos_main <- cos_val
+                    }
+                  }
+                }
+              }
+            }
+            tp$main_precursor_cosine_similarity[i] <- max_cos_main
+          }
+        }
       }
     }
   }
@@ -289,7 +349,12 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
     "precursor_name", "precursor_formula", "precursor_mass",
     "precursor_SMILES", "precursor_InChI", "precursor_InChIKey",
     "precursor_xLogP",
-    "feature_group", "precursor_feature_group", "cosine_similarity", "rt_plausibility"
+    "main_precursor_name", "main_precursor_formula", "main_precursor_mass",
+    "main_precursor_SMILES", "main_precursor_InChI", "main_precursor_InChIKey",
+    "main_precursor_xLogP",
+    "feature_group", "precursor_feature_group", "main_precursor_feature_group",
+    "cosine_similarity", "main_precursor_cosine_similarity",
+    "rt_plausibility", "main_precursor_rt_plausibility"
   )
 
   tp <- tp[, ..col_order]
