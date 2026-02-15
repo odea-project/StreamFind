@@ -13,7 +13,7 @@ search_transformation_products_biotransformer(
   throttleSec = 31,
   pollDelay = 5,
   maxPoll = 60,
-  excludeWithSameMass = FALSE,
+  excludeWithSameMass = TRUE,
   ppm = 5,
   debug = FALSE
 )
@@ -49,7 +49,7 @@ A data.table with columns:
 \code{name}, \code{formula}, \code{mass}, \code{rt}, \code{SMILES}, \code{InChI}, \code{InChIKey}, \code{ms2_positive}, \code{ms2_negative},
 \code{xLogP}, \code{transformation}, \code{precursor_name}, \code{precursor_formula}, \code{precursor_mass},
 \code{precursor_SMILES}, \code{precursor_InChI}, \code{precursor_InChIKey}, \code{precursor_xLogP}.
-The first row(s) correspond to the parent compounds (transformation = "parent").
+The first row(s) correspond to the parent compounds (transformation = "main_precursor").
 }
 \description{
 Submits parent compounds to the BioTransformer web API, polls for completion,
