@@ -683,6 +683,22 @@
 
     # MARK: Report
     # Report -----
+    output$report_ui <- shiny::renderUI({
+      if (is.null(engine)) {
+        return(htmltools::div("Engine not initialized!"))
+      }
+      if (!inherits(engine, "DB_Engine")) {
+        return(htmltools::div("Reporting is only available for DB engines."))
+      }
+      .mod_WADB_Report_Server(
+        engine,
+        "report",
+        ns,
+        reactive_volumes
+      )
+      .mod_WADB_Report_UI(engine, "report", ns)
+    })
+
     # output$report_ui <- shiny::renderUI({
     #   shinyFiles::shinyFileChoose(
     #     input,

@@ -211,6 +211,7 @@ Collate:
     'app_utils.R'
     'app_mod_WADB.R'
     'app_mod_WADB_Workflow.R'
+    'app_mod_WADB_Report.R'
     'app_mod_WADB_DB_MassSpecAnalyses.R'
     'app_mod_WADB_Explorer_MassSpec.R'
     'app_mod_WADB_DB_MassSpecResults_NonTargetAnalysis.R'

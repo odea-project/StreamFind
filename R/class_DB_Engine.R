@@ -421,6 +421,107 @@ DB_Engine <- R6::R6Class(
       .get_db_table_info(conn, tableName)
     },
 
+    # MARK: report_quarto
+    #' @description Generates a Quarto report using the database project path as execute parameter.
+    #' @param template A string with the full file path to the Quarto (.qmd) template file.
+    #' @param output_file A string with the output file name (without extension). If NULL, uses the template name without extension.
+    #' If a path is included, the output directory is set to `dirname(output_file)`. If only a file name is given, output is written to `execute_dir`.
+    #' @param execute_dir A string with the execution directory. Default is the current working directory.
+    #' @param ... Additional arguments passed to quarto::quarto_render().
+    report_quarto = function(template = NULL, output_file = NULL, execute_dir = getwd(), ...) {
+      if (is.null(template) || !file.exists(template)) {
+        warning("Template not found!")
+        return(invisible(self))
+      }
+      if (!requireNamespace("quarto", quietly = TRUE)) {
+        warning("quarto package not installed! Please install it with: install.packages('quarto')")
+        return(invisible(self))
+      }
+
+      template <- normalizePath(template, mustWork = TRUE)
+      template_dir <- dirname(template)
+
+      if (is.null(execute_dir) || !nzchar(trimws(execute_dir))) {
+        execute_dir <- getwd()
+      } else {
+        execute_dir <- trimws(execute_dir)
+      }
+      execute_dir <- normalizePath(execute_dir, mustWork = FALSE)
+
+      if (is.null(output_file)) {
+        output_file <- tools::file_path_sans_ext(basename(template))
+      } else {
+        checkmate::assert_character(output_file, len = 1)
+        output_file <- trimws(output_file)
+      }
+
+      # Always derive output_dir from output_file. If output_file has no path,
+      # write to execute_dir.
+      output_file_dir <- dirname(output_file)
+      if (identical(output_file_dir, ".")) {
+        output_dir <- execute_dir
+        output_file <- basename(output_file)
+      } else {
+        if (grepl("^([A-Za-z]:|/|\\\\\\\\)", output_file)) {
+          output_file_abs <- normalizePath(output_file, mustWork = FALSE)
+        } else {
+          output_file_abs <- normalizePath(file.path(execute_dir, output_file), mustWork = FALSE)
+        }
+        output_dir <- dirname(output_file_abs)
+        output_file <- basename(output_file_abs)
+      }
+
+      dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+      dots <- list(...)
+      if ("output_dir" %in% names(dots)) {
+        warning("Argument output_dir is deprecated for DB_Engine$report_quarto() and will be ignored.")
+        dots$output_dir <- NULL
+      }
+      execute_params <- dots$execute_params
+      dots$execute_params <- NULL
+      if (is.null(execute_params)) {
+        execute_params <- list()
+      }
+      checkmate::assert_list(execute_params)
+      execute_params$projectPath <- normalizePath(private$.projectPath, mustWork = TRUE)
+
+      quarto_args <- dots$quarto_args
+      dots$quarto_args <- NULL
+      if (is.null(quarto_args)) {
+        quarto_args <- character()
+      } else {
+        checkmate::assert_character(quarto_args)
+      }
+      if (!"--output-dir" %in% quarto_args) {
+        quarto_args <- c(quarto_args, "--output-dir", output_dir)
+      }
+
+      tryCatch(
+        {
+          do.call(
+            quarto::quarto_render,
+            c(
+              list(
+                input = template,
+                output_file = output_file,
+                execute_dir = execute_dir,
+                execute_params = execute_params,
+                quarto_args = quarto_args
+              ),
+              dots
+            )
+          )
+          message("\U2713 Quarto report generated successfully!")
+        },
+        error = function(e) {
+          warning("Error generating Quarto report: ", e$message)
+        }
+      )
+
+      invisible(self)
+    },
+
     # MARK: run_app
     #' @description Runs the StreamFind Shiny app to explore, process and manage the engine data.
     #'

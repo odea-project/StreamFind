@@ -1434,3 +1434,15 @@ validate_object <- function(x, ...) {
 .mod_WADB_Workflow_Server <- function(x, ...) {
   UseMethod(".mod_WADB_Workflow_Server")
 }
+
+#' @export
+#' @noRd
+.mod_WADB_Report_UI <- function(x, ...) {
+  UseMethod(".mod_WADB_Report_UI")
+}
+
+#' @export
+#' @noRd
+.mod_WADB_Report_Server <- function(x, ...) {
+  UseMethod(".mod_WADB_Report_Server")
+}

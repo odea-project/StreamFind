@@ -49,6 +49,7 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \item \href{#method-DB_Engine-query_db}{\code{DB_Engine$query_db()}}
 \item \href{#method-DB_Engine-list_db_tables}{\code{DB_Engine$list_db_tables()}}
 \item \href{#method-DB_Engine-get_db_table_info}{\code{DB_Engine$get_db_table_info()}}
+\item \href{#method-DB_Engine-report_quarto}{\code{DB_Engine$report_quarto()}}
 \item \href{#method-DB_Engine-run_app}{\code{DB_Engine$run_app()}}
 \item \href{#method-DB_Engine-clone}{\code{DB_Engine$clone()}}
 }
@@ -319,6 +320,35 @@ Get information about a specific table.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{tableName}}{Name of the table to query or retrieve information about.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-DB_Engine-report_quarto"></a>}}
+\if{latex}{\out{\hypertarget{method-DB_Engine-report_quarto}{}}}
+\subsection{Method \code{report_quarto()}}{
+Generates a Quarto report using the database project path as execute parameter.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{DB_Engine$report_quarto(
+  template = NULL,
+  output_file = NULL,
+  execute_dir = getwd(),
+  ...
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{template}}{A string with the full file path to the Quarto (.qmd) template file.}
+
+\item{\code{output_file}}{A string with the output file name (without extension). If NULL, uses the template name without extension.
+If a path is included, the output directory is set to \code{dirname(output_file)}. If only a file name is given, output is written to \code{execute_dir}.}
+
+\item{\code{execute_dir}}{A string with the execution directory. Default is the current working directory.}
+
+\item{\code{...}}{Additional arguments passed to quarto::quarto_render().}
 }
 \if{html}{\out{</div>}}
 }

@@ -24,7 +24,14 @@ root <- file.path("dev", "dev_duckdb", "data_nts")
 # file.remove(list.files(root, full.names = TRUE))
 # fs::dir_delete(root)
 
-ms <- DB_MassSpecEngine$new(projectPath = root, files = ms_files)
+ms <- DB_MassSpecEngine$new(
+  projectPath = root,
+  files = ms_files,
+  metadata = list(
+    name = "Demo Non-Target Analysis",
+    author = "Ana Polina Oliveira"
+  )
+)
 
 set_replicate_names(ms$Analyses, c(
   rep("neg_blank", 3),
@@ -43,6 +50,14 @@ set_blank_names(ms$Analyses, c(
   rep("neg_blank", 3),
   rep("pos_blank", 3)
 ))
+
+# ms$report_quarto(
+#   template = file.path("dev", "dev_duckdb", "report_templete.qmd"),
+#   output_file = file.path("dev", "dev_duckdb", "report")
+# )
+# ms <- DB_MassSpecEngine$new(projectPath = root)
+# ms$run_app()
+
 
 ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),

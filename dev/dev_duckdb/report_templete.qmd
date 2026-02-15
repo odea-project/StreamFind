@@ -1,0 +1,188 @@
+---
+toc: true
+format:
+  html:
+    grid:
+      sidebar-width: 300px
+      body-width: 1200px
+      margin-width: 300px
+      gutter-width: 1.5rem
+    other-links:
+      - text: StreamFind
+        href: https://odea-project.github.io/StreamFind/
+        icon: github
+    html-math-method: katex
+    theme: journal
+    code-tools: true
+    anchor-sections: true
+    code-fold: true
+    code-overflow: scroll
+    code-line-numbers: false
+    code-copy: true
+    cap-location: top
+    self-contained: true
+    embed-resources: true
+    toc: true
+    toc-location: left
+execute:
+  warning: false
+params:
+  projectPath: null
+---
+
+```{r}
+#| include: false
+engine <- StreamFind::DB_MassSpecEngine$new(params$projectPath)
+```
+
+```{r}
+#| label: metadata-block
+#| output: asis
+quarto::write_yaml_metadata_block(
+  title = engine$Metadata[["name"]],
+  author = engine$Metadata[["author"]],
+  date = engine$Metadata[["date"]]
+)
+```
+
+# Analyses
+
+```{r}
+#| label: analyses-table
+
+StreamFind::info(engine$Analyses) |> DT::datatable(filter = "top", extensions = "Buttons")
+```
+
+# Workflow
+
+```{r}
+#| label: workflow-display
+
+StreamFind::show(engine$Workflow)
+```
+
+# Quality Control
+
+```{r}
+#| label: internal-standards-plot
+#| fig-height: 10
+
+#plot_internal_standards(engine$Results$MassSpecResults_NonTargetAnalysis)
+```
+
+```{r}
+#| label: internal-standards-plot-eics
+#| fig-height: 10
+
+# istd <- get_internal_standards(engine$Results$MassSpecResults_NonTargetAnalysis)
+# istd <- unique(istd[, c("group", "name")])
+# plot_groups_overview(
+#   engine$Results$MassSpecResults_NonTargetAnalysis,
+#   groups = istd,
+#   legendNames = TRUE,
+#   filtered = TRUE
+# )
+```
+
+```{r}
+#| label: internal-standards-table
+
+# get_internal_standards(engine$Results$MassSpecResults_NonTargetAnalysis) |>
+#   DT::datatable(filter = "top", extensions = "Buttons")
+```
+
+# Results
+
+## Suspects
+
+```{r}
+#| label: suspects-plot
+#| fig-height: 8
+
+# plot_suspects(engine$Results$MassSpecResults_NonTargetAnalysis, colorBy = "targets+replicates")
+```
+
+```{r}
+#| label: suspects-profile
+
+# suspects <- get_suspects(engine$Results$MassSpecResults_NonTargetAnalysis)
+# plot_groups_profile(
+#   engine$Results$MassSpecResults_NonTargetAnalysis,
+#   groups = unique(suspects[, c("group", "name")]),
+#   legendNames = TRUE
+# )
+```
+
+```{r}
+#| label: suspects-table
+
+# get_suspects(engine$Results$MassSpecResults_NonTargetAnalysis) |>
+#   DT::datatable(filter = "top", extensions = "Buttons")
+```
+
+## Features
+
+```{r}
+#| label: groups-table
+
+# get_groups(
+#   engine$Results$MassSpecResults_NonTargetAnalysis,
+#   average = TRUE, metadata = TRUE, sdValues = FALSE) |>
+#   DT::datatable(filter = "top", extensions = "Buttons")
+```
+
+## Transformantion Products
+
+```{r}
+#| label: transformation-products-plot
+#| fig-height: 9
+
+# plot_transformation_products_network(
+#   engine$Results$MassSpecResults_TransformationProducts
+# )
+
+```
+```{r}
+#| label: transformation-products-table
+
+# get_transformation_products(engine$Results$MassSpecResults_TransformationProducts) |>
+#   DT::datatable(filter = "top", extensions = "Buttons")
+```
+
+# Fold Change Analysis
+
+```{r}
+#| label: fold-change-plot
+
+# plot_fold_change(
+#   engine$Results$MassSpecResults_NonTargetAnalysis,
+#   replicatesIn = "02_influent",
+#   replicatesOut = "03_effluent",
+#   constantThreshold = 0.5,
+#   eliminationThreshold = 0.2,
+#   correctIntensity = TRUE,
+#   normalized = TRUE
+# )
+```
+
+```{r}
+#| label: fold-change-table
+
+# get_fold_change(
+#   engine$Results$MassSpecResults_NonTargetAnalysis,
+#   replicatesIn = "02_influent",
+#   replicatesOut = "03_effluent",
+#   constantThreshold = 0.5,
+#   eliminationThreshold = 0.2,
+#   correctIntensity = TRUE
+# ) |>
+#   DT::datatable(filter = "top", extensions = "Buttons")
+```
+
+# Workflow Detailed
+
+```{r}
+#| label: workflow-display-detailed
+
+# lapply(engine$Workflow, function(x) show(x))
+```
