@@ -150,6 +150,7 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
   }
 
   if (nrow(tp) > 0) {
+    # Initialize metric columns (will be filled during expansion)
     tp$feature_group <- ""
     tp$precursor_feature_group <- ""
     tp$main_precursor_feature_group <- ""
@@ -157,44 +158,22 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
     tp$main_precursor_cosine_similarity <- NA_real_
     tp$rt_plausibility <- NA_real_
     tp$main_precursor_rt_plausibility <- NA_real_
+
     nts <- engine$NonTargetAnalysis
     suspects <- data.table::as.data.table(get_suspects(nts))
 
     if (nrow(suspects) > 0) {
       suspects <- suspects[order(analysis, feature, candidate_rank)]
-      fts <- data.table::as.data.table(get_features(nts))
-      fts <- fts[, c("analysis", "feature", "feature_group"), with = FALSE]
-      if (nrow(fts) == 0) {
-        warning("No features found in NonTargetAnalysis for feature_group assignment.")
-        return(FALSE)
-      }
-      suspects <- merge(suspects, fts, by = c("analysis", "feature"), all.x = TRUE)
 
+      # Create a map of SMILES -> list of feature_groups (not concatenated)
       fg_map <- suspects[!is.na(SMILES) & SMILES != "" & !is.na(feature_group) & feature_group != "",
-        .(feature_group = paste(unique(feature_group), collapse = ";")),
+        .(feature_groups = list(unique(feature_group))),
         by = .(SMILES)
       ]
 
-      tp$feature_group <- fg_map$feature_group[match(tp$SMILES, fg_map$SMILES)]
+      cli::cli_alert_info("Calculating assignment from SMILES for {nrow(tp)} transformation products...")
 
-      # Assign main_precursor_feature_group
-      tp$main_precursor_feature_group <- fg_map$feature_group[match(tp$main_precursor_SMILES, fg_map$SMILES)]
-      tp$main_precursor_feature_group[is.na(tp$main_precursor_feature_group)] <- ""
-
-      tp$precursor_feature_group <- apply(tp, 1, function(z) {
-        if (z[["feature_group"]] != "" && !is.na(z[["feature_group"]])) {
-          pg <- suspects$feature_group[suspects$SMILES %in% z[["precursor_SMILES"]]]
-          if (length(pg) == 0) return("")
-          pg <- pg[!is.na(pg) & pg != ""]
-          if (length(pg) == 0) return("")
-          pg <- unique(pg)
-          pg <- paste(pg, collapse = ";")
-          pg
-        } else {
-          ""
-        }
-      })
-
+      # Helper function to decode MS2 spectra
       decode_ms2 <- function(mz_enc, int_enc) {
         if (is.na(mz_enc) || is.na(int_enc) || nchar(mz_enc) == 0 || nchar(int_enc) == 0) {
           return(NULL)
@@ -207,6 +186,7 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
         data.table::data.table(mz = mz_dec, intensity = int_dec)
       }
 
+      # Helper function to calculate cosine similarity
       calc_similarity <- function(spec1, spec2, tol) {
         if (nrow(spec1) == 0 || nrow(spec2) == 0) return(NA_real_)
         all_mz <- sort(unique(c(spec1$mz, spec2$mz)))
@@ -230,6 +210,7 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
         dot_product / (norm1 * norm2)
       }
 
+      # Helper function to score RT plausibility
       score_rt_plausibility <- function(prod_logp, prec_logp, prod_rt, prec_rt, phase) {
         if (is.na(prod_logp) || is.na(prec_logp) || is.na(prod_rt) || is.na(prec_rt)) return(NA_real_)
         logp_diff <- prod_logp - prec_logp
@@ -243,115 +224,178 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
         NA_real_
       }
 
-      eligible <- tp$feature_group != "" & tp$precursor_feature_group != ""
+      # Expand transformation products to create one row per relationship
+      tp_expanded_list <- list()
 
-      for (i in which(eligible)) {
-        prod_fg <- tp$feature_group[i]
-        prod_fg <- unlist(strsplit(prod_fg, ";", fixed = TRUE))
-        prec_fg <- tp$precursor_feature_group[i]
-        prec_fg <- unlist(strsplit(prec_fg, ";", fixed = TRUE))
+      for (i in seq_len(nrow(tp))) {
+        # Get feature_groups for this TP's SMILES
+        prod_match <- match(tp$SMILES[i], fg_map$SMILES)
+        prod_fgs <- if (!is.na(prod_match)) fg_map$feature_groups[[prod_match]] else character(0)
 
-        prod_sus <- suspects[feature_group %in% prod_fg & SMILES == tp$SMILES[i]]
-        prec_sus <- suspects[feature_group %in% prec_fg & SMILES == tp$precursor_SMILES[i]]
+        # Get feature_groups for precursor SMILES
+        prec_match <- match(tp$precursor_SMILES[i], fg_map$SMILES)
+        prec_fgs <- if (!is.na(prec_match)) fg_map$feature_groups[[prec_match]] else character(0)
 
-        prod_exp_rt <- prod_sus$exp_rt
-        prec_exp_rt <- prec_sus$exp_rt
-        prod_logp <- tp$xLogP[i]
-        prec_logp <- tp$precursor_xLogP[i]
-        if (length(prod_exp_rt) > 0 && length(prec_exp_rt) > 0 &&
-              !all(is.na(prod_exp_rt)) && !all(is.na(prec_exp_rt)) &&
-              !is.na(prod_logp) && !is.na(prec_logp)) {
-          prod_rt_val <- median(prod_exp_rt, na.rm = TRUE)
-          prec_rt_val <- median(prec_exp_rt, na.rm = TRUE)
-          if (!is.na(prod_rt_val) && !is.na(prec_rt_val)) {
-            tp$rt_plausibility[i] <- score_rt_plausibility(
-              prod_logp, prec_logp, prod_rt_val, prec_rt_val, parameters$chromatographic_phase
-            )
-          }
+        # Get feature_groups for main_precursor SMILES
+        main_match <- match(tp$main_precursor_SMILES[i], fg_map$SMILES)
+        main_fgs <- if (!is.na(main_match)) fg_map$feature_groups[[main_match]] else character(0)
+
+        # If no feature_groups found, keep one row with empty strings
+        if (length(prod_fgs) == 0 && length(prec_fgs) == 0 && length(main_fgs) == 0) {
+          new_row <- tp[i, ]
+          new_row$feature_group <- ""
+          new_row$precursor_feature_group <- ""
+          new_row$main_precursor_feature_group <- ""
+          new_row$cosine_similarity <- NA_real_
+          new_row$main_precursor_cosine_similarity <- NA_real_
+          new_row$rt_plausibility <- NA_real_
+          new_row$main_precursor_rt_plausibility <- NA_real_
+          tp_expanded_list[[length(tp_expanded_list) + 1]] <- new_row
+          next
         }
 
-        max_cos <- NA_real_
-        has_comparison <- FALSE
-        prod_sus_valid <- prod_sus[exp_ms2_size > 0]
-        prec_sus_valid <- prec_sus[exp_ms2_size > 0]
-        if (nrow(prod_sus_valid) > 0 && nrow(prec_sus_valid) > 0) {
-          for (ps_idx in seq_len(nrow(prod_sus_valid))) {
-            ps_mz <- prod_sus_valid$exp_ms2_mz[ps_idx]
-            ps_int <- prod_sus_valid$exp_ms2_int[ps_idx]
-            ps_spec <- decode_ms2(ps_mz, ps_int)
-            if (is.null(ps_spec) || nrow(ps_spec) == 0) next
-            for (qs_idx in seq_len(nrow(prec_sus_valid))) {
-              qs_mz <- prec_sus_valid$exp_ms2_mz[qs_idx]
-              qs_int <- prec_sus_valid$exp_ms2_int[qs_idx]
-              qs_spec <- decode_ms2(qs_mz, qs_int)
-              if (is.null(qs_spec) || nrow(qs_spec) == 0) next
-              cos_val <- calc_similarity(ps_spec, qs_spec, parameters$mzrMS2)
-              if (!is.na(cos_val)) {
-                if (!has_comparison) {
-                  max_cos <- cos_val
-                  has_comparison <- TRUE
-                } else if (cos_val > max_cos) {
-                  max_cos <- cos_val
+        # Expand to all combinations
+        if (length(prod_fgs) == 0) prod_fgs <- ""
+        if (length(prec_fgs) == 0) prec_fgs <- ""
+        if (length(main_fgs) == 0) main_fgs <- ""
+
+        # Create grid of all combinations
+        combinations <- expand.grid(
+          prod_fg = prod_fgs,
+          prec_fg = prec_fgs,
+          main_fg = main_fgs,
+          stringsAsFactors = FALSE
+        )
+
+        for (j in seq_len(nrow(combinations))) {
+          new_row <- tp[i, ]
+          new_row$feature_group <- as.character(combinations$prod_fg[j])
+          new_row$precursor_feature_group <- as.character(combinations$prec_fg[j])
+          new_row$main_precursor_feature_group <- as.character(combinations$main_fg[j])
+
+          # Initialize metrics
+          new_row$cosine_similarity <- NA_real_
+          new_row$main_precursor_cosine_similarity <- NA_real_
+          new_row$rt_plausibility <- NA_real_
+          new_row$main_precursor_rt_plausibility <- NA_real_
+
+          # Calculate metrics for product vs precursor
+          if (new_row$feature_group != "" && new_row$precursor_feature_group != "") {
+            prod_sus <- suspects[feature_group == new_row$feature_group & SMILES == tp$SMILES[i]]
+            prec_sus <- suspects[feature_group == new_row$precursor_feature_group & SMILES == tp$precursor_SMILES[i]]
+
+            if (nrow(prod_sus) > 0 && nrow(prec_sus) > 0) {
+              # Calculate RT plausibility
+              prod_exp_rt <- prod_sus$exp_rt
+              prec_exp_rt <- prec_sus$exp_rt
+              prod_logp <- tp$xLogP[i]
+              prec_logp <- tp$precursor_xLogP[i]
+              if (length(prod_exp_rt) > 0 && length(prec_exp_rt) > 0 &&
+                    !all(is.na(prod_exp_rt)) && !all(is.na(prec_exp_rt)) &&
+                    !is.na(prod_logp) && !is.na(prec_logp)) {
+                prod_rt_val <- median(prod_exp_rt, na.rm = TRUE)
+                prec_rt_val <- median(prec_exp_rt, na.rm = TRUE)
+                if (!is.na(prod_rt_val) && !is.na(prec_rt_val)) {
+                  new_row$rt_plausibility <- score_rt_plausibility(
+                    prod_logp, prec_logp, prod_rt_val, prec_rt_val, parameters$chromatographic_phase
+                  )
                 }
               }
-            }
-          }
-        }
-        tp$cosine_similarity[i] <- max_cos
 
-        # Calculate main_precursor metrics
-        if (!is.na(tp$main_precursor_SMILES[i]) && tp$main_precursor_SMILES[i] != "") {
-          main_prec_fg <- tp$main_precursor_feature_group[i]
-          if (!is.na(main_prec_fg) && main_prec_fg != "") {
-            main_prec_fg <- unlist(strsplit(main_prec_fg, ";", fixed = TRUE))
-            main_prec_sus <- suspects[feature_group %in% main_prec_fg & SMILES == tp$main_precursor_SMILES[i]]
-
-            # Calculate main_precursor_rt_plausibility
-            main_prec_exp_rt <- main_prec_sus$exp_rt
-            main_prec_logp <- tp$main_precursor_xLogP[i]
-            if (length(prod_exp_rt) > 0 && length(main_prec_exp_rt) > 0 &&
-                  !all(is.na(prod_exp_rt)) && !all(is.na(main_prec_exp_rt)) &&
-                  !is.na(prod_logp) && !is.na(main_prec_logp)) {
-              prod_rt_val <- median(prod_exp_rt, na.rm = TRUE)
-              main_prec_rt_val <- median(main_prec_exp_rt, na.rm = TRUE)
-              if (!is.na(prod_rt_val) && !is.na(main_prec_rt_val)) {
-                tp$main_precursor_rt_plausibility[i] <- score_rt_plausibility(
-                  prod_logp, main_prec_logp, prod_rt_val, main_prec_rt_val, parameters$chromatographic_phase
-                )
-              }
-            }
-
-            # Calculate main_precursor_cosine_similarity
-            max_cos_main <- NA_real_
-            has_comparison_main <- FALSE
-            main_prec_sus_valid <- main_prec_sus[exp_ms2_size > 0]
-            if (nrow(prod_sus_valid) > 0 && nrow(main_prec_sus_valid) > 0) {
-              for (ps_idx in seq_len(nrow(prod_sus_valid))) {
-                ps_mz <- prod_sus_valid$exp_ms2_mz[ps_idx]
-                ps_int <- prod_sus_valid$exp_ms2_int[ps_idx]
-                ps_spec <- decode_ms2(ps_mz, ps_int)
-                if (is.null(ps_spec) || nrow(ps_spec) == 0) next
-                for (ms_idx in seq_len(nrow(main_prec_sus_valid))) {
-                  ms_mz <- main_prec_sus_valid$exp_ms2_mz[ms_idx]
-                  ms_int <- main_prec_sus_valid$exp_ms2_int[ms_idx]
-                  ms_spec <- decode_ms2(ms_mz, ms_int)
-                  if (is.null(ms_spec) || nrow(ms_spec) == 0) next
-                  cos_val <- calc_similarity(ps_spec, ms_spec, parameters$mzrMS2)
-                  if (!is.na(cos_val)) {
-                    if (!has_comparison_main) {
-                      max_cos_main <- cos_val
-                      has_comparison_main <- TRUE
-                    } else if (cos_val > max_cos_main) {
-                      max_cos_main <- cos_val
+              # Calculate cosine similarity
+              max_cos <- NA_real_
+              has_comparison <- FALSE
+              prod_sus_valid <- prod_sus[exp_ms2_size > 0]
+              prec_sus_valid <- prec_sus[exp_ms2_size > 0]
+              if (nrow(prod_sus_valid) > 0 && nrow(prec_sus_valid) > 0) {
+                for (ps_idx in seq_len(nrow(prod_sus_valid))) {
+                  ps_mz <- prod_sus_valid$exp_ms2_mz[ps_idx]
+                  ps_int <- prod_sus_valid$exp_ms2_int[ps_idx]
+                  ps_spec <- decode_ms2(ps_mz, ps_int)
+                  if (is.null(ps_spec) || nrow(ps_spec) == 0) next
+                  for (qs_idx in seq_len(nrow(prec_sus_valid))) {
+                    qs_mz <- prec_sus_valid$exp_ms2_mz[qs_idx]
+                    qs_int <- prec_sus_valid$exp_ms2_int[qs_idx]
+                    qs_spec <- decode_ms2(qs_mz, qs_int)
+                    if (is.null(qs_spec) || nrow(qs_spec) == 0) next
+                    cos_val <- calc_similarity(ps_spec, qs_spec, parameters$mzrMS2)
+                    if (!is.na(cos_val)) {
+                      if (!has_comparison) {
+                        max_cos <- cos_val
+                        has_comparison <- TRUE
+                      } else if (cos_val > max_cos) {
+                        max_cos <- cos_val
+                      }
                     }
                   }
                 }
               }
+              new_row$cosine_similarity <- max_cos
             }
-            tp$main_precursor_cosine_similarity[i] <- max_cos_main
           }
+
+          # Calculate metrics for product vs main_precursor
+          if (new_row$feature_group != "" && new_row$main_precursor_feature_group != "" &&
+              !is.na(tp$main_precursor_SMILES[i]) && tp$main_precursor_SMILES[i] != "") {
+            prod_sus <- suspects[feature_group == new_row$feature_group & SMILES == tp$SMILES[i]]
+            main_prec_sus <- suspects[feature_group == new_row$main_precursor_feature_group & SMILES == tp$main_precursor_SMILES[i]]
+
+            if (nrow(prod_sus) > 0 && nrow(main_prec_sus) > 0) {
+              # Calculate RT plausibility for main_precursor
+              prod_exp_rt <- prod_sus$exp_rt
+              main_prec_exp_rt <- main_prec_sus$exp_rt
+              prod_logp <- tp$xLogP[i]
+              main_prec_logp <- tp$main_precursor_xLogP[i]
+              if (length(prod_exp_rt) > 0 && length(main_prec_exp_rt) > 0 &&
+                    !all(is.na(prod_exp_rt)) && !all(is.na(main_prec_exp_rt)) &&
+                    !is.na(prod_logp) && !is.na(main_prec_logp)) {
+                prod_rt_val <- median(prod_exp_rt, na.rm = TRUE)
+                main_prec_rt_val <- median(main_prec_exp_rt, na.rm = TRUE)
+                if (!is.na(prod_rt_val) && !is.na(main_prec_rt_val)) {
+                  new_row$main_precursor_rt_plausibility <- score_rt_plausibility(
+                    prod_logp, main_prec_logp, prod_rt_val, main_prec_rt_val, parameters$chromatographic_phase
+                  )
+                }
+              }
+
+              # Calculate cosine similarity for main_precursor
+              max_cos_main <- NA_real_
+              has_comparison_main <- FALSE
+              prod_sus_valid <- prod_sus[exp_ms2_size > 0]
+              main_prec_sus_valid <- main_prec_sus[exp_ms2_size > 0]
+              if (nrow(prod_sus_valid) > 0 && nrow(main_prec_sus_valid) > 0) {
+                for (ps_idx in seq_len(nrow(prod_sus_valid))) {
+                  ps_mz <- prod_sus_valid$exp_ms2_mz[ps_idx]
+                  ps_int <- prod_sus_valid$exp_ms2_int[ps_idx]
+                  ps_spec <- decode_ms2(ps_mz, ps_int)
+                  if (is.null(ps_spec) || nrow(ps_spec) == 0) next
+                  for (ms_idx in seq_len(nrow(main_prec_sus_valid))) {
+                    ms_mz <- main_prec_sus_valid$exp_ms2_mz[ms_idx]
+                    ms_int <- main_prec_sus_valid$exp_ms2_int[ms_idx]
+                    ms_spec <- decode_ms2(ms_mz, ms_int)
+                    if (is.null(ms_spec) || nrow(ms_spec) == 0) next
+                    cos_val <- calc_similarity(ps_spec, ms_spec, parameters$mzrMS2)
+                    if (!is.na(cos_val)) {
+                      if (!has_comparison_main) {
+                        max_cos_main <- cos_val
+                        has_comparison_main <- TRUE
+                      } else if (cos_val > max_cos_main) {
+                        max_cos_main <- cos_val
+                      }
+                    }
+                  }
+                }
+              }
+              new_row$main_precursor_cosine_similarity <- max_cos_main
+            }
+          }
+
+          tp_expanded_list[[length(tp_expanded_list) + 1]] <- new_row
         }
       }
+
+      # Combine all expanded rows
+      tp <- data.table::rbindlist(tp_expanded_list, use.names = TRUE, fill = TRUE)
     }
   }
 

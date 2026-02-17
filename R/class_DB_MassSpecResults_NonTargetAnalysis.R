@@ -3121,24 +3121,30 @@ get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, 
       match_group <- function(x) {
         any(split_groups(x) %in% groups)
       }
-      seed_rows <- tps[vapply(tps$feature_group, match_group, logical(1)) |
-        vapply(tps$precursor_feature_group, match_group, logical(1)), ]
+      # Seed with rows matching any of the three feature_group columns
+      seed_rows <- tps[
+        vapply(tps$feature_group, match_group, logical(1)) |
+        vapply(tps$precursor_feature_group, match_group, logical(1)) |
+        vapply(tps$main_precursor_feature_group, match_group, logical(1))
+      ]
       if (nrow(seed_rows) > 0) {
-        nodes <- unique(c(seed_rows$SMILES, seed_rows$precursor_SMILES))
+        nodes <- unique(c(seed_rows$SMILES, seed_rows$precursor_SMILES, seed_rows$main_precursor_SMILES))
         nodes <- nodes[!is.na(nodes) & nodes != ""]
         repeat {
-          sel <- tps[SMILES %in% nodes | precursor_SMILES %in% nodes, ]
+          sel <- tps[SMILES %in% nodes | precursor_SMILES %in% nodes | main_precursor_SMILES %in% nodes, ]
           group_keep <- vapply(sel$feature_group, match_group, logical(1)) |
-            vapply(sel$precursor_feature_group, match_group, logical(1))
+            vapply(sel$precursor_feature_group, match_group, logical(1)) |
+            vapply(sel$main_precursor_feature_group, match_group, logical(1))
           empty_keep <- (is.na(sel$feature_group) | sel$feature_group == "") &
-            (is.na(sel$precursor_feature_group) | sel$precursor_feature_group == "")
+            (is.na(sel$precursor_feature_group) | sel$precursor_feature_group == "") &
+            (is.na(sel$main_precursor_feature_group) | sel$main_precursor_feature_group == "")
           sel <- sel[group_keep | empty_keep, ]
-          new_nodes <- unique(c(sel$SMILES, sel$precursor_SMILES))
+          new_nodes <- unique(c(sel$SMILES, sel$precursor_SMILES, sel$main_precursor_SMILES))
           new_nodes <- new_nodes[!is.na(new_nodes) & new_nodes != ""]
           if (setequal(nodes, new_nodes)) break
           nodes <- new_nodes
         }
-        tps <- tps[SMILES %in% nodes | precursor_SMILES %in% nodes, ]
+        tps <- tps[SMILES %in% nodes | precursor_SMILES %in% nodes | main_precursor_SMILES %in% nodes, ]
       } else {
         tps <- tps[0]
       }
@@ -3180,10 +3186,11 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
     on.exit(DBI::dbDisconnect(conn, shutdown = TRUE), add = TRUE)
 
-    # Get unique feature groups for products and precursors
+    # Get unique feature groups for products, precursors, and main_precursors
     product_groups <- unique(tps$feature_group[!is.na(tps$feature_group) & tps$feature_group != ""])
     precursor_groups <- unique(tps$precursor_feature_group[!is.na(tps$precursor_feature_group) & tps$precursor_feature_group != ""])
-    all_groups <- unique(c(product_groups, precursor_groups))
+    main_precursor_groups <- unique(tps$main_precursor_feature_group[!is.na(tps$main_precursor_feature_group) & tps$main_precursor_feature_group != ""])
+    all_groups <- unique(c(product_groups, precursor_groups, main_precursor_groups))
 
     if (length(all_groups) > 0) {
       # Query Features table for ALL MS2 data (including analysis for multiple spectra)
@@ -3206,7 +3213,8 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     on.exit()  # Clear the on.exit handler since we've already disconnected
   }
 
-  node_ids <- unique(c(tps$SMILES, tps$precursor_SMILES))
+  # Create nodes from all unique SMILES (product, precursor, and main_precursor)
+  node_ids <- unique(c(tps$SMILES, tps$precursor_SMILES, tps$main_precursor_SMILES))
   node_ids <- node_ids[!is.na(node_ids) & node_ids != ""]
 
   if (length(node_ids) == 0) {
@@ -3214,25 +3222,33 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     return(invisible(NULL))
   }
 
+  # Create edges from SMILES -> precursor_SMILES relationships
   edges <- tps[
     !is.na(precursor_SMILES) & precursor_SMILES != "" & !is.na(SMILES) & SMILES != "",
     .(from = precursor_SMILES, to = SMILES, label = transformation)
   ]
   edges$label <- gsub(" transformation", "", edges$label, fixed = TRUE)
 
-  edges <- unique(edges)
+  # Group by from/to and concatenate labels with newline if multiple transformations exist
+  edges <- edges[, .(edge_label = paste(unique(label), collapse = "\n")), by = .(from, to)]
+
   edges$id <- seq_len(nrow(edges))
-  edges$edge_label <- edges$label
+  edges$label <- ""  # Hide labels by default
   edges$base_color <- "rgba(120,120,120,0.7)"
   edges$color <- edges$base_color
 
+  # Build name map from all sources
   prod_map <- tps[!is.na(SMILES) & SMILES != "", .(id = SMILES, label = name)]
   prec_map <- tps[
     !is.na(precursor_SMILES) & precursor_SMILES != "",
     .(id = precursor_SMILES, label = precursor_name)
   ]
+  main_map <- tps[
+    !is.na(main_precursor_SMILES) & main_precursor_SMILES != "",
+    .(id = main_precursor_SMILES, label = main_precursor_name)
+  ]
 
-  name_map <- data.table::rbindlist(list(prod_map, prec_map), fill = TRUE)
+  name_map <- data.table::rbindlist(list(prod_map, prec_map, main_map), fill = TRUE)
   name_map <- name_map[!is.na(id) & id != ""]
   name_map <- name_map[!is.na(label) & label != "", .(label = label[1]), by = id]
 
@@ -3422,12 +3438,16 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   }
 
   node_title <- function(node_id) {
-    prod <- tps[tps$SMILES == node_id, ]
-    prec <- tps[tps$precursor_SMILES == node_id, ]
+    # Get all rows where this node appears as product, precursor, or main_precursor
+    as_product <- tps[tps$SMILES == node_id, ]
+    as_precursor <- tps[tps$precursor_SMILES == node_id, ]
+    as_main_precursor <- tps[tps$main_precursor_SMILES == node_id, ]
 
     # Get cached structures
-    prod_structure <- structure_cache[[node_id]]
-    prec_smiles <- unique(c(prod$precursor_SMILES, prec$precursor_SMILES))
+    node_structure <- structure_cache[[node_id]]
+
+    # Get precursor structure (if this node has a precursor)
+    prec_smiles <- unique(as_product$precursor_SMILES)
     prec_smiles <- prec_smiles[!is.na(prec_smiles) & prec_smiles != ""][1]
     prec_structure <- if (!is.na(prec_smiles) && !is.null(prec_smiles)) {
       structure_cache[[prec_smiles]]
@@ -3435,9 +3455,9 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
       ""
     }
 
-    # Build structure HTML - two columns side by side
+    # Build structure HTML
     structures_html <- ""
-    if (nzchar(prod_structure) || nzchar(prec_structure)) {
+    if (nzchar(node_structure) || nzchar(prec_structure)) {
       structures_html <- paste0(
         '<table style="width:100%;border-collapse:collapse;margin:0;padding:0;"><tr>',
         '<td style="width:50%;vertical-align:top;padding:5px;text-align:center;">',
@@ -3445,29 +3465,50 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
         if (nzchar(prec_structure)) paste0('<img src="', prec_structure, '" style="max-width:100%;height:auto;"/>') else '<div style="color:#ccc;padding:20px;">No structure</div>',
         '</td>',
         '<td style="width:50%;vertical-align:top;padding:5px;text-align:center;">',
-        '<div style="font-size:0.75em;font-weight:bold;color:#888;margin-bottom:3px;">Product</div>',
-        if (nzchar(prod_structure)) paste0('<img src="', prod_structure, '" style="max-width:100%;height:auto;"/>') else '<div style="color:#ccc;padding:20px;">No structure</div>',
+        '<div style="font-size:0.75em;font-weight:bold;color:#888;margin-bottom:3px;">This Compound</div>',
+        if (nzchar(node_structure)) paste0('<img src="', node_structure, '" style="max-width:100%;height:auto;"/>') else '<div style="color:#ccc;padding:20px;">No structure</div>',
         '</td>',
         '</tr></table>'
       )
     }
 
-    # Build metadata HTML - slightly smaller text
+    # Build basic metadata - get properties only for THIS SMILES
+    # Use as_product first since it has the name/formula for this SMILES as the product
+    node_name <- NA_character_
+    node_formula <- NA_character_
+    node_mass <- NA_real_
+    node_inchikey <- NA_character_
+    node_xlogp <- NA_real_
+
+    if (nrow(as_product) > 0) {
+      node_name <- fmt_vals(unique(as_product$name))
+      node_formula <- fmt_vals(unique(as_product$formula))
+      node_mass <- fmt_vals(unique(as_product$mass))
+      node_inchikey <- fmt_vals(unique(as_product$InChIKey))
+      node_xlogp <- fmt_vals(unique(as_product$xLogP))
+    } else if (nrow(as_precursor) > 0) {
+      # If not found as product, get from precursor columns
+      node_name <- fmt_vals(unique(as_precursor$precursor_name))
+      node_formula <- fmt_vals(unique(as_precursor$precursor_formula))
+      node_mass <- fmt_vals(unique(as_precursor$precursor_mass))
+      node_inchikey <- fmt_vals(unique(as_precursor$precursor_InChIKey))
+      node_xlogp <- fmt_vals(unique(as_precursor$precursor_xLogP))
+    } else if (nrow(as_main_precursor) > 0) {
+      # If not found as precursor, get from main_precursor columns
+      node_name <- fmt_vals(unique(as_main_precursor$main_precursor_name))
+      node_formula <- fmt_vals(unique(as_main_precursor$main_precursor_formula))
+      node_mass <- fmt_vals(unique(as_main_precursor$main_precursor_mass))
+      node_inchikey <- fmt_vals(unique(as_main_precursor$main_precursor_InChIKey))
+      node_xlogp <- fmt_vals(unique(as_main_precursor$main_precursor_xLogP))
+    }
+
     metadata_lines <- c(
-      paste0("<b>Name:</b> ", fmt_vals(c(prod$name, prec$precursor_name))),
-      paste0("<b>Formula:</b> ", fmt_vals(c(prod$formula, prec$precursor_formula))),
-      paste0("<b>Mass:</b> ", fmt_vals(c(prod$mass, prec$precursor_mass))),
+      paste0("<b>Name:</b> ", node_name),
+      paste0("<b>Formula:</b> ", node_formula),
+      paste0("<b>Mass:</b> ", node_mass),
       paste0("<b>SMILES:</b> ", fmt_vals(node_id)),
-      paste0("<b>InChIKey:</b> ", fmt_vals(c(prod$InChIKey, prec$precursor_InChIKey))),
-      paste0("<b>xLogP:</b> ", fmt_vals(c(prod$xLogP, prec$precursor_xLogP))),
-      paste0("<b>FeatureGroup:</b> ", fmt_vals(prod$feature_group)),
-      paste0("<b>PrecursorFeatureGroup:</b> ", fmt_vals(c(prod$precursor_feature_group, prec$precursor_feature_group))),
-      paste0("<b>CosineSimilarity:</b> ", fmt_vals(prod$cosine_similarity)),
-      paste0("<b>RtPlausibility:</b> ", fmt_vals(prod$rt_plausibility)),
-      paste0("<b>MainPrecursorName:</b> ", fmt_vals(prod$main_precursor_name)),
-      paste0("<b>MainPrecursorFeatureGroup:</b> ", fmt_vals(prod$main_precursor_feature_group)),
-      paste0("<b>MainPrecursorCosineSimilarity:</b> ", fmt_vals(prod$main_precursor_cosine_similarity)),
-      paste0("<b>MainPrecursorRtPlausibility:</b> ", fmt_vals(prod$main_precursor_rt_plausibility))
+      paste0("<b>InChIKey:</b> ", node_inchikey),
+      paste0("<b>xLogP:</b> ", node_xlogp)
     )
     metadata_html <- paste0(
       '<div style="font-size:0.75em;line-height:1.3;margin:8px 0;padding:5px;background:rgba(240,240,240,0.3);border-radius:3px;">',
@@ -3475,22 +3516,118 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
       '</div>'
     )
 
-    # Create MS2 mirror plot if MS2 data is available
+    # Build relationship tables
+    relationships_html <- ""
+
+    # When this node is a PRODUCT
+    if (nrow(as_product) > 0) {
+      prod_valid <- as_product[!is.na(feature_group) & feature_group != ""]
+      if (nrow(prod_valid) > 0) {
+
+        # First table: FG → Precursor FG relationships
+        prod_prec <- prod_valid[!is.na(precursor_feature_group) & precursor_feature_group != ""]
+        if (nrow(prod_prec) > 0) {
+          # Get unique combinations
+          prod_prec <- unique(prod_prec, by = c("feature_group", "precursor_feature_group", "cosine_similarity", "rt_plausibility"))
+          prec_lines <- vapply(seq_len(nrow(prod_prec)), function(i) {
+            row <- prod_prec[i, ]
+            paste0(
+              '<tr style="border-bottom:1px solid #eee;">',
+              '<td style="padding:2px 4px;">', row$feature_group, '</td>',
+              '<td style="padding:2px 4px;">', row$precursor_feature_group, '</td>',
+              '<td style="padding:2px 4px;">',
+              ifelse(!is.na(row$cosine_similarity), sprintf("%.3f", row$cosine_similarity), "-"),
+              '</td>',
+              '<td style="padding:2px 4px;">',
+              ifelse(!is.na(row$rt_plausibility), sprintf("%.2f", row$rt_plausibility), "-"),
+              '</td>',
+              '</tr>'
+            )
+          }, character(1))
+
+          relationships_html <- paste0(relationships_html,
+            '<div style="margin-top:8px;border-top:1px solid #ddd;padding-top:4px;">',
+            '<div style="font-size:0.75em;font-weight:bold;color:#666;margin-bottom:3px;">Product → Precursor</div>',
+            '<table style="width:100%;font-size:0.7em;border-collapse:collapse;">',
+            '<tr style="background:#f5f5f5;font-weight:bold;">',
+            '<td style="padding:2px 4px;">FG</td>',
+            '<td style="padding:2px 4px;">Prec FG</td>',
+            '<td style="padding:2px 4px;">Cos</td>',
+            '<td style="padding:2px 4px;">RT</td>',
+            '</tr>',
+            paste(prec_lines, collapse = ""),
+            '</table>',
+            '</div>'
+          )
+        }
+
+        # Second table: FG → Main Precursor FG relationships
+        prod_main <- prod_valid[!is.na(main_precursor_feature_group) & main_precursor_feature_group != ""]
+        if (nrow(prod_main) > 0) {
+          # Get unique combinations
+          prod_main <- unique(prod_main, by = c("feature_group", "main_precursor_feature_group", "main_precursor_cosine_similarity", "main_precursor_rt_plausibility"))
+          main_lines <- vapply(seq_len(nrow(prod_main)), function(i) {
+            row <- prod_main[i, ]
+            paste0(
+              '<tr style="border-bottom:1px solid #eee;">',
+              '<td style="padding:2px 4px;">', row$feature_group, '</td>',
+              '<td style="padding:2px 4px;">', row$main_precursor_feature_group, '</td>',
+              '<td style="padding:2px 4px;">',
+              ifelse(!is.na(row$main_precursor_cosine_similarity), sprintf("%.3f", row$main_precursor_cosine_similarity), "-"),
+              '</td>',
+              '<td style="padding:2px 4px;">',
+              ifelse(!is.na(row$main_precursor_rt_plausibility), sprintf("%.2f", row$main_precursor_rt_plausibility), "-"),
+              '</td>',
+              '</tr>'
+            )
+          }, character(1))
+
+          relationships_html <- paste0(relationships_html,
+            '<div style="margin-top:8px;border-top:1px solid #ddd;padding-top:4px;">',
+            '<div style="font-size:0.75em;font-weight:bold;color:#666;margin-bottom:3px;">Product → Main Precursor</div>',
+            '<table style="width:100%;font-size:0.7em;border-collapse:collapse;">',
+            '<tr style="background:#f5f5f5;font-weight:bold;">',
+            '<td style="padding:2px 4px;">FG</td>',
+            '<td style="padding:2px 4px;">Main FG</td>',
+            '<td style="padding:2px 4px;">Cos</td>',
+            '<td style="padding:2px 4px;">RT</td>',
+            '</tr>',
+            paste(main_lines, collapse = ""),
+            '</table>',
+            '</div>'
+          )
+        }
+      }
+    }
+
+    # "As Precursor" and "As Main Precursor" sections removed to simplify tooltip
+
+    # MS2 mirror plot section (keeping existing logic)
     ms2_html <- ""
-    if (!is.null(ms2_lookup)) {
-      # Get MS2 data for product
-      prod_fg <- unique(prod$feature_group[!is.na(prod$feature_group) & prod$feature_group != ""])
+    if (!is.null(ms2_lookup) && nrow(as_product) > 0) {
+      # Get MS2 data for product - try all feature groups until we find one with data
+      prod_fg <- unique(as_product$feature_group[!is.na(as_product$feature_group) & as_product$feature_group != ""])
       prod_ms2 <- NULL
       if (length(prod_fg) > 0) {
-        prod_ms2 <- ms2_lookup[[prod_fg[1]]]
+        for (fg in prod_fg) {
+          if (!is.null(ms2_lookup[[fg]]) && nrow(ms2_lookup[[fg]]) > 0) {
+            prod_ms2 <- ms2_lookup[[fg]]
+            break
+          }
+        }
       }
 
-      # Get MS2 data for precursor
-      prec_fg <- unique(c(prod$precursor_feature_group, prec$precursor_feature_group))
-      prec_fg <- prec_fg[!is.na(prec_fg) & prec_fg != ""][1]
+      # Get MS2 data for precursor - try all precursor feature groups until we find one with data
+      prec_fg <- unique(as_product$precursor_feature_group)
+      prec_fg <- prec_fg[!is.na(prec_fg) & prec_fg != ""]
       prec_ms2 <- NULL
-      if (!is.na(prec_fg) && !is.null(prec_fg) && !is.null(ms2_lookup[[prec_fg]])) {
-        prec_ms2 <- ms2_lookup[[prec_fg]]
+      if (length(prec_fg) > 0) {
+        for (fg in prec_fg) {
+          if (!is.null(ms2_lookup[[fg]]) && nrow(ms2_lookup[[fg]]) > 0) {
+            prec_ms2 <- ms2_lookup[[fg]]
+            break
+          }
+        }
       }
 
       # Generate mirror plot if we have data
@@ -3514,9 +3651,10 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
 
     # Combine all parts
     paste0(
-      '<div style="line-height:1.2;margin:0;padding:0;max-width:700px;">',
+      '<div style="line-height:1.2;margin:0;padding:0;max-width:1200px;">',
       structures_html,
       metadata_html,
+      relationships_html,
       ms2_html,
       '</div>'
     )
@@ -3524,17 +3662,27 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   nodes$title <- vapply(nodes$id, node_title, character(1))
   nodes$node_label <- nodes$label
   nodes$group <- "other"
-  node_has_group <- unique(tps$SMILES[!is.na(tps$feature_group) & tps$feature_group != ""])
+
+  # Nodes that have feature_group assignments (either as product, precursor, or main_precursor)
+  node_has_group <- unique(c(
+    tps$SMILES[!is.na(tps$feature_group) & tps$feature_group != ""],
+    tps$precursor_SMILES[!is.na(tps$precursor_feature_group) & tps$precursor_feature_group != ""],
+    tps$main_precursor_SMILES[!is.na(tps$main_precursor_feature_group) & tps$main_precursor_feature_group != ""]
+  ))
   node_has_group <- node_has_group[!is.na(node_has_group) & node_has_group != ""]
 
-  parent_nodes_unassigned <- unique(
-    tps$SMILES[tps$transformation %in% "main_precursor" & (is.na(tps$feature_group) | tps$feature_group == "")]
-  )
+  # Main precursors (parent compounds) - unassigned
+  parent_nodes_unassigned <- unique(c(
+    tps$SMILES[tps$transformation %in% "main_precursor" & (is.na(tps$feature_group) | tps$feature_group == "")],
+    tps$main_precursor_SMILES[is.na(tps$main_precursor_feature_group) | tps$main_precursor_feature_group == ""]
+  ))
   parent_nodes_unassigned <- parent_nodes_unassigned[!is.na(parent_nodes_unassigned) & parent_nodes_unassigned != ""]
 
-  parent_nodes <- unique(
-    tps$SMILES[tps$transformation %in% "main_precursor" & !is.na(tps$feature_group) & tps$feature_group != ""]
-  )
+  # Main precursors (parent compounds) - assigned to feature groups
+  parent_nodes <- unique(c(
+    tps$SMILES[tps$transformation %in% "main_precursor" & !is.na(tps$feature_group) & tps$feature_group != ""],
+    tps$main_precursor_SMILES[!is.na(tps$main_precursor_feature_group) & tps$main_precursor_feature_group != ""]
+  ))
   parent_nodes <- parent_nodes[!is.na(parent_nodes) & parent_nodes != ""]
 
   nodes$group[nodes$id %in% node_has_group] <- "tp"
@@ -3546,8 +3694,9 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   nodes$base_color[nodes$group == "tp"] <- "orange"
   nodes$color <- nodes$base_color
 
-  visNetwork::visNetwork(nodes, edges, height = "800px", width = "100%") %>%
+  visNetwork::visNetwork(nodes, edges, height = "99vh", width = "100%") %>%
     visNetwork::visNodes(
+      size = 12,
       font = list(
         size = 12,
         face = "Arial",
@@ -3568,11 +3717,28 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
         ital = TRUE,
         strokeWidth = 0,
         strokeColor = "rgba(0,0,0,0)"
-      )
+      ),
+      hoverWidth = 0,
+      selectionWidth = 0
     ) %>%
     visNetwork::visOptions(
       highlightNearest = FALSE,
       nodesIdSelection = list(enabled = TRUE)
+    ) %>%
+    visNetwork::visInteraction(
+      hover = TRUE,
+      hoverConnectedEdges = TRUE,
+      tooltipStyle = 'position: fixed;
+                      visibility: hidden;
+                      padding: 5px;
+                      font-family: verdana;
+                      font-size: 14px;
+                      background-color: rgb(245, 244, 237);
+                      border-radius: 3px;
+                      border: 1px solid rgb(128, 128, 116);
+                      box-shadow: rgba(0, 0, 0, 0.2) 3px 3px 10px;
+                      max-width: 1200px;
+                      word-break: break-word;'
     ) %>%
     visNetwork::visLayout(randomSeed = 123) %>%
     visNetwork::visEvents(
@@ -3644,12 +3810,35 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             updates.push({
               id: allEdges[j],
               hidden: false,
-              label: e.edge_label,
+              label: '',
               color: e.base_color,
-              font: { color: 'rgba(0,0,0,1)', face: 'Arial', ital: true, strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
+              font: { color: 'rgba(0,0,0,0)', face: 'Arial', ital: true, strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
             });
           }
           this.body.data.edges.update(updates);
+        }"
+      ),
+      hoverEdge = htmlwidgets::JS(
+        "function(params) {
+          if (params.edge) {
+            var e = this.body.data.edges.get(params.edge);
+            this.body.data.edges.update({
+              id: params.edge,
+              label: e.edge_label,
+              font: { color: 'rgba(0,0,0,1)', face: 'Arial', ital: true, strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
+            });
+          }
+        }"
+      ),
+      blurEdge = htmlwidgets::JS(
+        "function(params) {
+          if (params.edge) {
+            this.body.data.edges.update({
+              id: params.edge,
+              label: '',
+              font: { color: 'rgba(0,0,0,0)', face: 'Arial', ital: true, strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
+            });
+          }
         }"
       )
     )
