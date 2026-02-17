@@ -32,7 +32,14 @@ DB_MassSpecMethod_AssignTransformationProducts_native <- function(
       precursor_SMILES = character(),
       precursor_InChI = character(),
       precursor_InChIKey = character(),
-      precursor_xLogP = numeric()
+      precursor_xLogP = numeric(),
+      main_precursor_name = character(),
+      main_precursor_formula = character(),
+      main_precursor_mass = numeric(),
+      main_precursor_SMILES = character(),
+      main_precursor_InChI = character(),
+      main_precursor_InChIKey = character(),
+      main_precursor_xLogP = numeric()
     )
   } else {
     transformation_products <- data.table::as.data.table(transformation_products)
@@ -99,7 +106,10 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
       "transformation",
       "precursor_name", "precursor_formula", "precursor_mass",
       "precursor_SMILES", "precursor_InChI", "precursor_InChIKey",
-      "precursor_xLogP"
+      "precursor_xLogP",
+      "main_precursor_name", "main_precursor_formula", "main_precursor_mass",
+      "main_precursor_SMILES", "main_precursor_InChI", "main_precursor_InChIKey",
+      "main_precursor_xLogP"
     )
     missing_cols <- setdiff(required_cols, names(tp))
     if (length(missing_cols) > 0) {
@@ -112,6 +122,8 @@ run.DB_MassSpecMethod_AssignTransformationProducts_native <- function(x, engine 
     tp$xLogP <- suppressWarnings(as.numeric(tp$xLogP))
     tp$precursor_mass <- suppressWarnings(as.numeric(tp$precursor_mass))
     tp$precursor_xLogP <- suppressWarnings(as.numeric(tp$precursor_xLogP))
+    tp$main_precursor_mass <- suppressWarnings(as.numeric(tp$main_precursor_mass))
+    tp$main_precursor_xLogP <- suppressWarnings(as.numeric(tp$main_precursor_xLogP))
     tp
   }
   tp <- data.table::as.data.table(parameters$transformation_products)

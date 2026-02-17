@@ -18,9 +18,11 @@
 \alias{plot_features_ms1.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_features_ms2.DB_MassSpecResults_NonTargetAnalysis}
 \alias{suspect_screening.DB_MassSpecResults_NonTargetAnalysis}
+\alias{get_suspects.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_suspects_ms2.DB_MassSpecResults_NonTargetAnalysis}
 \alias{get_fold_change.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_fold_change.DB_MassSpecResults_NonTargetAnalysis}
+\alias{get_transformation_products.DB_MassSpecResults_NonTargetAnalysis}
 \alias{plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis}
 \title{Constructor and methods to handle non-target analysis (NTA) for mass spectrometry data}
 \usage{
@@ -208,12 +210,25 @@ DB_MassSpecResults_NonTargetAnalysis(
   filtered = FALSE
 )
 
+\method{get_suspects}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  analyses = NULL,
+  features = NULL,
+  groups = NULL,
+  mass = NULL,
+  mz = NULL,
+  rt = NULL,
+  mobility = NULL,
+  ppm = 20,
+  sec = 60,
+  millisec = 5
+)
+
 \method{plot_suspects_ms2}{DB_MassSpecResults_NonTargetAnalysis}(
   x,
   analyses = NULL,
   features = NULL,
   groups = NULL,
-  components = NULL,
   mass = NULL,
   mz = NULL,
   rt = NULL,
@@ -226,7 +241,7 @@ DB_MassSpecResults_NonTargetAnalysis(
   xLab = NULL,
   yLab = NULL,
   title = NULL,
-  groupBy = c("feature", "candidate_rank"),
+  groupBy = c("feature", "name"),
   showText = TRUE,
   interactive = TRUE,
   showLegend = TRUE
@@ -278,6 +293,8 @@ DB_MassSpecResults_NonTargetAnalysis(
   interactive = TRUE,
   showLegend = TRUE
 )
+
+\method{get_transformation_products}{DB_MassSpecResults_NonTargetAnalysis}(x, parents = NULL, groups = NULL)
 
 \method{plot_transformation_products}{DB_MassSpecResults_NonTargetAnalysis}(x, groups = NULL, showMS2 = FALSE)
 }
@@ -393,6 +410,9 @@ correction is ignored even if set to \code{TRUE}.}
 
 \item{lowerLimit}{Numeric of length one. The lower limit to fill the zero values.}
 
+\item{parents}{Optional character vector of parent compound names to filter results. When provided,
+returns only transformation products where the precursor or product name matches one of the specified parents.}
+
 \item{showMS2}{Logical. When TRUE, fetches MS2 spectra from Features table for transformation products
 and precursors to display mirror plots in tooltips. Default: FALSE.}
 }
@@ -401,6 +421,9 @@ An object of class \code{DB_MassSpecResults_NonTargetAnalysis} (and \code{DB_Res
 
 A data.table with matched suspects.
 Identification levels: "1" = MS1+RT+MS2 match, "2" = MS1+MS2 match, "3b" = MS1+RT match, "4" = MS1 match only.
+
+A data.table containing transformation products with their associated metadata, including precursor information,
+transformation types, and structural identifiers (SMILES).
 }
 \description{
 Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_Results}) that reuses an existing \code{DB_MassSpecAnalyses} DuckDB (for analyses and spectra) and stores NTA features in its own DuckDB.
@@ -441,6 +464,8 @@ Create a \code{DB_MassSpecResults_NonTargetAnalysis} object (child of \link{DB_R
 against a provided suspect database. Matches features based on mass or \emph{m/z}, retention time, and when available
 MS2 spectral similarity.
 
+\item \code{get_suspects(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves suspect screening results from the Suspects table in the database.
+
 \item \code{plot_suspects_ms2(DB_MassSpecResults_NonTargetAnalysis)}: Plot suspect MS2 spectra for selected features.
 
 \item \code{get_internal_standards(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves internal standards from the database.
@@ -452,6 +477,8 @@ MS2 spectral similarity.
 \item \code{plot_fold_change(DB_MassSpecResults_NonTargetAnalysis)}: Plots the fold-change analysis between the \code{replicatesIn}
 and \code{replicatesOut}. This method is adapted from the work of
 \href{https://pubs.acs.org/doi/10.1021/acs.analchem.7b03037}{Bader et al. (2017)}.
+
+\item \code{get_transformation_products(DB_MassSpecResults_NonTargetAnalysis)}: Retrieves transformation products from the TransformationProducts table in the database.
 
 \item \code{plot_transformation_products(DB_MassSpecResults_NonTargetAnalysis)}: Plot a transformation products network.
 

@@ -456,13 +456,42 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
       )
     }
 
-    lookup <- NULL
-    if (all(c("Identifier", "Name", "InChI", "InChIKey") %in% colnames(tbl))) {
-      lookup <- tbl[, .(Identifier, Name, InChI, InChIKey)]
+    # Detect if RT column exists in the database
+    rt_idx <- resolve_idx(tbl, c("rt", "retentiontime", "retention_time", "RetentionTime"))
+    has_rt <- !is.na(rt_idx)
+
+    # Deduplicate by SMILES: prefer entries with RT, then keep first
+    n_before <- nrow(tbl)
+    n_after <- n_before
+    if ("SMILES" %in% colnames(tbl) && nrow(tbl) > 0) {
+      if (has_rt) {
+        rt_colname <- colnames(tbl)[rt_idx]
+        # Add helper column for sorting: entries with RT come first
+        tbl[, .has_rt := !is.na(get(rt_colname)) & is.finite(get(rt_colname))]
+        data.table::setorder(tbl, -.has_rt)
+        tbl[, .has_rt := NULL]
+      }
+      # Keep first occurrence of each SMILES
+      tbl <- tbl[!duplicated(SMILES)]
+      n_after <- nrow(tbl)
+      if (n_before > n_after && !quiet) {
+        message("LocalCSV: removed ", n_before - n_after, " duplicate SMILES entries (kept ", n_after, " unique).")
+      }
     }
 
-    if (!renamed_any) {
-      return(list(path = db_path, normalized = FALSE, lookup = lookup))
+    lookup <- NULL
+    if (all(c("Identifier", "Name", "InChI", "InChIKey") %in% colnames(tbl))) {
+      if (has_rt) {
+        rt_colname <- colnames(tbl)[rt_idx]
+        lookup <- tbl[, c("Identifier", "Name", "InChI", "InChIKey", rt_colname), with = FALSE]
+        data.table::setnames(lookup, rt_colname, "RT")
+      } else {
+        lookup <- tbl[, .(Identifier, Name, InChI, InChIKey)]
+      }
+    }
+
+    if (!renamed_any && n_before == n_after) {
+      return(list(path = db_path, normalized = FALSE, lookup = lookup, has_rt = has_rt))
     }
 
     out_path <- if (!is.null(run_dir)) {
@@ -474,16 +503,21 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     if (!quiet) {
       message("Normalized LocalCSV columns for MetFrag: ", out_path)
     }
-    list(path = out_path, normalized = TRUE, lookup = lookup)
+    list(path = out_path, normalized = TRUE, lookup = lookup, has_rt = has_rt)
   }
 
   normalized_db_path <- parameters$database_path
   localcsv_lookup <- NULL
+  db_has_rt <- FALSE
   if (!is.null(parameters$database_path) &&
       identical(tolower(parameters$database_type), "localcsv")) {
     normalized <- normalize_localcsv(parameters$database_path, run_dir = run_dir, quiet = parameters$quiet)
     normalized_db_path <- normalized$path
     localcsv_lookup <- normalized$lookup
+    db_has_rt <- isTRUE(normalized$has_rt)
+    if (db_has_rt && !parameters$quiet) {
+      message("\U2139 RT column detected in database. Will match RT values after MetFrag processing.")
+    }
   }
 
   build_params <- function(ft, ms2_path, results_path, sample_name, precursor_mass) {
@@ -756,6 +790,29 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
           message("MetFrag produced no candidates. Last log lines:\n", paste(tail_lines, collapse = "\n"))
         }
       }
+
+      # Delete files for features without hits
+      files_to_delete <- c(ms2_path, ms1_path, params_path, log_path)
+      if (isTRUE(parameters$debug) && file.exists(debug_path)) {
+        files_to_delete <- c(files_to_delete, debug_path)
+      }
+      # Also delete MetFrag CSV output if it exists
+      csv_candidates <- list.files(
+        run_dir,
+        pattern = paste0("^", sample_name, ".*\\.csv$"),
+        full.names = TRUE,
+        ignore.case = TRUE
+      )
+      if (length(csv_candidates) > 0) {
+        files_to_delete <- c(files_to_delete, csv_candidates)
+      }
+
+      for (f in files_to_delete) {
+        if (file.exists(f)) {
+          unlink(f)
+        }
+      }
+
       return(NULL)
     }
 
@@ -768,7 +825,6 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
     score_col <- resolve_col(res, c("score", "metfragscore", "totalscore", "finalscore"))
     xlogp_col <- resolve_col(res, c("xlogp", "xlogp3", "logp", "xlogp-3"))
     mass_col <- resolve_col(res, c("neutralmass", "monoisotopicmass", "exactmass"))
-    rt_col <- resolve_col(res, c("rt", "retentiontime", "retention_time"))
     expl_col <- resolve_col(res, c("explpeaks", "explainedpeaks"))
     expl_formula_col <- resolve_col(res, c("formulasofexplpeaks", "explpeakformulas"))
 
@@ -793,30 +849,44 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
       score_val <- if (!is.null(score_col)) suppressWarnings(as.numeric(row[[score_col]][1])) else 0
       xlogp_val <- if (!is.null(xlogp_col)) suppressWarnings(as.numeric(row[[xlogp_col]][1])) else NA_real_
       db_mass_val <- if (!is.null(mass_col)) suppressWarnings(as.numeric(row[[mass_col]][1])) else NA_real_
-      db_rt_val <- if (!is.null(rt_col)) suppressWarnings(as.numeric(row[[rt_col]][1])) else NA_real_
+      db_rt_val <- NA_real_
 
+      # Match RT and InChI/InChIKey from localcsv_lookup if available
       if (!is.null(localcsv_lookup)) {
-        has_inchi <- !is.na(inchi_val) && nzchar(as.character(inchi_val))
+        lookup_row <- NULL
         has_inchikey <- !is.na(inchikey_val) && nzchar(as.character(inchikey_val))
-        if (!has_inchi || !has_inchikey) {
-          lookup_row <- NULL
-          if (!is.na(database_id_val) && nzchar(as.character(database_id_val)) &&
-              "Identifier" %in% colnames(localcsv_lookup)) {
-            lookup_row <- localcsv_lookup[Identifier == database_id_val]
+
+        # Try matching by InChIKey first (most reliable)
+        if (has_inchikey && "InChIKey" %in% colnames(localcsv_lookup)) {
+          lookup_row <- localcsv_lookup[InChIKey == inchikey_val]
+        }
+
+        # Fall back to Identifier
+        if ((is.null(lookup_row) || nrow(lookup_row) == 0) &&
+            !is.na(database_id_val) && nzchar(as.character(database_id_val)) &&
+            "Identifier" %in% colnames(localcsv_lookup)) {
+          lookup_row <- localcsv_lookup[Identifier == database_id_val]
+        }
+
+        # Fall back to Name
+        if ((is.null(lookup_row) || nrow(lookup_row) == 0) &&
+            !is.na(name_val) && nzchar(as.character(name_val)) &&
+            "Name" %in% colnames(localcsv_lookup)) {
+          lookup_row <- localcsv_lookup[Name == name_val]
+        }
+
+        # Extract values from lookup if found
+        if (!is.null(lookup_row) && nrow(lookup_row) > 0) {
+          has_inchi <- !is.na(inchi_val) && nzchar(as.character(inchi_val))
+          if (!has_inchi && "InChI" %in% colnames(lookup_row)) {
+            inchi_val <- lookup_row$InChI[1]
           }
-          if (is.null(lookup_row) || nrow(lookup_row) == 0) {
-            if (!is.na(name_val) && nzchar(as.character(name_val)) &&
-                "Name" %in% colnames(localcsv_lookup)) {
-              lookup_row <- localcsv_lookup[Name == name_val]
-            }
+          if (!has_inchikey && "InChIKey" %in% colnames(lookup_row)) {
+            inchikey_val <- lookup_row$InChIKey[1]
           }
-          if (!is.null(lookup_row) && nrow(lookup_row) > 0) {
-            if (!has_inchi && "InChI" %in% colnames(lookup_row)) {
-              inchi_val <- lookup_row$InChI[1]
-            }
-            if (!has_inchikey && "InChIKey" %in% colnames(lookup_row)) {
-              inchikey_val <- lookup_row$InChIKey[1]
-            }
+          # Get RT from database if available
+          if ("RT" %in% colnames(lookup_row)) {
+            db_rt_val <- suppressWarnings(as.numeric(lookup_row$RT[1]))
           }
         }
       }
@@ -852,6 +922,19 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
             parameters$ppmMS2,
             parameters$mzrMS2
           )
+        }
+      }
+
+      # Improve ID level if RT matches within tolerance
+      if (!is.na(db_rt_val) && !is.na(ft$rt) && is.finite(db_rt_val) && is.finite(ft$rt)) {
+        rt_error <- abs(ft$rt - db_rt_val)
+        if (rt_error <= parameters$sec) {
+          # RT matches: can improve confidence
+          if (id_level == "2" && cosine_similarity >= 0.9) {
+            id_level <- "1"  # High confidence with MS2 + RT match
+          } else if (id_level == "4") {
+            id_level <- "3"  # RT match without MS2
+          }
         }
       }
 
