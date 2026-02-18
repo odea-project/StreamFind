@@ -11,7 +11,7 @@
 #include "nts_alignment.h"
 #include "nts_gap_filling.h"
 #include "nts_blank_subtraction.h"
-#include "nts_filter_features.h"
+#include "nts_filters.h"
 #include "suspect_screening.h"
 #include "../streamcraft/streamcraft.h"
 
@@ -26,9 +26,9 @@ namespace nts
 
   // MARK: merge_MS_TARGETS_SPECTRA
   MS_SPECTRUM merge_MS_TARGETS_SPECTRA(
-    const sc::MS_TARGETS_SPECTRA &spectra,
-    const float &mzClust,
-    const float &presence);
+      const sc::MS_TARGETS_SPECTRA &spectra,
+      const float &mzClust,
+      const float &presence);
 
   // MARK: FEATURE
   struct FEATURE
@@ -299,9 +299,8 @@ namespace nts
       std::vector<int> new_order(feature.size());
       std::iota(new_order.begin(), new_order.end(), 0);
 
-      std::sort(new_order.begin(), new_order.end(), [this](int i1, int i2) {
-        return mz[i1] < mz[i2];
-      });
+      std::sort(new_order.begin(), new_order.end(), [this](int i1, int i2)
+                { return mz[i1] < mz[i2]; });
 
       // Create sorted copies of all vectors
       std::vector<std::string> feature_sorted(feature.size());
@@ -465,7 +464,42 @@ namespace nts
     double error_rt;
     double intensity;
     double area;
-    std::string id_level;
+    int id_level;
+    double score;
+    int shared_fragments;
+    double cosine_similarity;
+    std::string formula;
+    std::string SMILES;
+    std::string InChI;
+    std::string InChIKey;
+    double xLogP;
+    std::string database_id;
+    int db_ms2_size;
+    std::string db_ms2_mz;
+    std::string db_ms2_intensity;
+    std::string db_ms2_formula;
+    int exp_ms2_size;
+    std::string exp_ms2_mz;
+    std::string exp_ms2_intensity;
+  };
+
+  // MARK: INTERNAL_STANDARD
+  struct INTERNAL_STANDARD
+  {
+    std::string analysis;
+    std::string feature;
+    int candidate_rank;
+    std::string name;
+    int polarity;
+    double db_mass;
+    double exp_mass;
+    double error_mass;
+    double db_rt;
+    double exp_rt;
+    double error_rt;
+    double intensity;
+    double area;
+    int id_level;
     double score;
     int shared_fragments;
     double cosine_similarity;
@@ -499,7 +533,7 @@ namespace nts
     std::vector<double> error_rt;
     std::vector<double> intensity;
     std::vector<double> area;
-    std::vector<std::string> id_level;
+    std::vector<int> id_level;
     std::vector<double> score;
     std::vector<int> shared_fragments;
     std::vector<double> cosine_similarity;
@@ -557,6 +591,80 @@ namespace nts
     }
   };
 
+  // MARK: INTERNAL_STANDARDS
+  struct INTERNAL_STANDARDS
+  {
+    std::vector<std::string> analysis;
+    std::vector<std::string> feature;
+    std::vector<int> candidate_rank;
+    std::vector<std::string> name;
+    std::vector<int> polarity;
+    std::vector<double> db_mass;
+    std::vector<double> exp_mass;
+    std::vector<double> error_mass;
+    std::vector<double> db_rt;
+    std::vector<double> exp_rt;
+    std::vector<double> error_rt;
+    std::vector<double> intensity;
+    std::vector<double> area;
+    std::vector<int> id_level;
+    std::vector<double> score;
+    std::vector<int> shared_fragments;
+    std::vector<double> cosine_similarity;
+    std::vector<std::string> formula;
+    std::vector<std::string> SMILES;
+    std::vector<std::string> InChI;
+    std::vector<std::string> InChIKey;
+    std::vector<double> xLogP;
+    std::vector<std::string> database_id;
+    std::vector<int> db_ms2_size;
+    std::vector<std::string> db_ms2_mz;
+    std::vector<std::string> db_ms2_intensity;
+    std::vector<std::string> db_ms2_formula;
+    std::vector<int> exp_ms2_size;
+    std::vector<std::string> exp_ms2_mz;
+    std::vector<std::string> exp_ms2_intensity;
+
+    int size() const
+    {
+      return analysis.size();
+    }
+
+    void append(const INTERNAL_STANDARD &is)
+    {
+      analysis.push_back(is.analysis);
+      feature.push_back(is.feature);
+      candidate_rank.push_back(is.candidate_rank);
+      name.push_back(is.name);
+      polarity.push_back(is.polarity);
+      db_mass.push_back(is.db_mass);
+      exp_mass.push_back(is.exp_mass);
+      error_mass.push_back(is.error_mass);
+      db_rt.push_back(is.db_rt);
+      exp_rt.push_back(is.exp_rt);
+      error_rt.push_back(is.error_rt);
+      intensity.push_back(is.intensity);
+      area.push_back(is.area);
+      id_level.push_back(is.id_level);
+      score.push_back(is.score);
+      shared_fragments.push_back(is.shared_fragments);
+      cosine_similarity.push_back(is.cosine_similarity);
+      formula.push_back(is.formula);
+      SMILES.push_back(is.SMILES);
+      InChI.push_back(is.InChI);
+      InChIKey.push_back(is.InChIKey);
+      xLogP.push_back(is.xLogP);
+      database_id.push_back(is.database_id);
+      db_ms2_size.push_back(is.db_ms2_size);
+      db_ms2_mz.push_back(is.db_ms2_mz);
+      db_ms2_intensity.push_back(is.db_ms2_intensity);
+      db_ms2_formula.push_back(is.db_ms2_formula);
+      exp_ms2_size.push_back(is.exp_ms2_size);
+      exp_ms2_mz.push_back(is.exp_ms2_mz);
+      exp_ms2_intensity.push_back(is.exp_ms2_intensity);
+    }
+  };
+
   struct NTS_INFO
   {
     std::vector<std::string> analyses;
@@ -579,10 +687,14 @@ namespace nts
     std::vector<std::string> files;
     std::vector<sc::MS_SPECTRA_HEADERS> headers;
     std::vector<FEATURES> features;
+    std::vector<SUSPECTS> suspects;
+    std::vector<INTERNAL_STANDARDS> internal_standards;
 
     NTS_DATA(const NTS_INFO &info,
              const std::vector<sc::MS_SPECTRA_HEADERS> &spectra_headers,
-             const std::vector<FEATURES> &feature_list)
+             const std::vector<FEATURES> &feature_list,
+             const std::vector<SUSPECTS> &suspects_cpp = std::vector<SUSPECTS>(),
+             const std::vector<INTERNAL_STANDARDS> &internal_standards_cpp = std::vector<INTERNAL_STANDARDS>())
     {
 
       analyses = info.analyses;
@@ -599,6 +711,8 @@ namespace nts
       files = info.files;
       headers.resize(number_analyses);
       features.resize(number_analyses);
+      suspects.resize(number_analyses);
+      internal_standards.resize(number_analyses);
 
       if (spectra_headers.size() == 0 || spectra_headers.size() != number_analyses)
       {
@@ -630,6 +744,22 @@ namespace nts
           features[i].set_analysis(analyses[i]);
         }
       }
+
+      if (suspects_cpp.size() > 0 && suspects_cpp.size() == number_analyses)
+      {
+        for (size_t i = 0; i < number_analyses; i++)
+        {
+          suspects[i] = suspects_cpp[i];
+        }
+      }
+
+      if (internal_standards_cpp.size() > 0 && internal_standards_cpp.size() == number_analyses)
+      {
+        for (size_t i = 0; i < number_analyses; i++)
+        {
+          internal_standards[i] = internal_standards_cpp[i];
+        }
+      }
     };
 
     int size() const
@@ -652,20 +782,19 @@ namespace nts
         const int &debugSpecIdx = -1)
     {
       deconvolution::find_features_impl(
-        *this,
-        rtWindowsMin,
-        rtWindowsMax,
-        ppmThreshold,
-        noiseThreshold,
-        minSNR,
-        minTraces,
-        baselineWindow,
-        maxWidth,
-        baseQuantile,
-        debugAnalysis,
-        debugMZ,
-        debugSpecIdx
-      );
+          *this,
+          rtWindowsMin,
+          rtWindowsMax,
+          ppmThreshold,
+          noiseThreshold,
+          minSNR,
+          minTraces,
+          baselineWindow,
+          maxWidth,
+          baseQuantile,
+          debugAnalysis,
+          debugMZ,
+          debugSpecIdx);
     }
 
     void create_components(
@@ -690,7 +819,6 @@ namespace nts
 
     void group_features(
         const std::string &method,
-        const std::vector<alignment::InternalStandard> &internal_standards,
         float rtDeviation,
         float ppm,
         int minSamples,
@@ -698,7 +826,7 @@ namespace nts
         bool debug = false,
         float debugRT = 0.0f)
     {
-      alignment::group_features_impl(*this, method, internal_standards, rtDeviation, ppm, minSamples, binSize, debug, debugRT);
+      alignment::group_features_impl(*this, method, rtDeviation, ppm, minSamples, binSize, debug, debugRT);
     }
 
     void load_features_ms1(
@@ -838,7 +966,7 @@ namespace nts
           removeLosses);
     }
 
-    SUSPECTS suspect_screening(
+    void suspect_screening(
         const std::vector<std::string> &analyses,
         const std::vector<suspect_screening::SuspectQuery> &suspects,
         double ppm,
@@ -849,7 +977,7 @@ namespace nts
         int minSharedFragments,
         bool filtered)
     {
-      return suspect_screening::suspect_screening_impl(
+      suspect_screening::suspect_screening_impl(
           *this,
           analyses,
           suspects,
@@ -860,6 +988,46 @@ namespace nts
           minCosineSimilarity,
           minSharedFragments,
           filtered);
+    }
+
+    void filter_suspects(
+        const std::vector<std::string> &names,
+        double minScore,
+        double maxErrorRT,
+        double maxErrorMass,
+        const std::vector<int> &idLevels,
+        int minSharedFragments,
+        double minCosineSimilarity)
+    {
+      filter_suspects::filter_suspects_impl(
+          *this,
+          names,
+          minScore,
+          maxErrorRT,
+          maxErrorMass,
+          idLevels,
+          minSharedFragments,
+          minCosineSimilarity);
+    }
+
+    void filter_internal_standards(
+        const std::vector<std::string> &names,
+        double minScore,
+        double maxErrorRT,
+        double maxErrorMass,
+        const std::vector<int> &idLevels,
+        int minSharedFragments,
+        double minCosineSimilarity)
+    {
+      filter_internal_standards::filter_internal_standards_impl(
+          *this,
+          names,
+          minScore,
+          maxErrorRT,
+          maxErrorMass,
+          idLevels,
+          minSharedFragments,
+          minCosineSimilarity);
     }
   };
 }; // namespace nts

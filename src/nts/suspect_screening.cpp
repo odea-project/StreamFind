@@ -59,7 +59,7 @@ namespace nts::suspect_screening
     }
   }
 
-  SUSPECTS suspect_screening_impl(
+  void suspect_screening_impl(
       NTS_DATA &nts_data,
       const std::vector<std::string> &analyses,
       const std::vector<SuspectQuery> &suspects,
@@ -73,7 +73,7 @@ namespace nts::suspect_screening
   {
     SUSPECTS out;
     if (suspects.empty() || nts_data.analyses.empty())
-      return out;
+      return;
 
     std::unordered_set<std::string> analyses_set;
     if (!analyses.empty())
@@ -136,7 +136,7 @@ namespace nts::suspect_screening
     }
 
     if (matched.empty())
-      return out;
+      return;
 
     // Build name -> suspect index (first match by grepl-like)
     auto find_suspect = [&](const std::string &feature_name) -> const SuspectQuery * {
@@ -168,7 +168,7 @@ namespace nts::suspect_screening
       row.exp_rt = static_cast<double>(get_or_default(fts.rt, idx, 0.0f));
       row.intensity = static_cast<double>(get_or_default(fts.intensity, idx, 0.0f));
       row.area = static_cast<double>(get_or_default(fts.area, idx, 0.0f));
-      row.id_level = "4";
+      row.id_level = 4;
       row.shared_fragments = 0;
       row.cosine_similarity = 0.0;
       row.score = sus->score;
@@ -194,12 +194,12 @@ namespace nts::suspect_screening
 
       row.db_rt = sus->rt;
       row.error_rt = std::numeric_limits<double>::quiet_NaN();
-      if (row.db_rt > 0.0 && std::isfinite(row.exp_rt) &&
-          within_sec(row.exp_rt, row.db_rt, sec))
+      bool rt_matched = false;
+      if (row.db_rt > 0.0 && std::isfinite(row.exp_rt))
       {
         double err_rt = row.exp_rt - row.db_rt;
         row.error_rt = std::round(err_rt * 10.0) / 10.0;
-        row.id_level = "3b";
+        rt_matched = within_sec(row.exp_rt, row.db_rt, sec);
       }
 
       row.db_ms2_size = 0;
@@ -227,6 +227,7 @@ namespace nts::suspect_screening
                                   !row.exp_ms2_mz.empty() &&
                                   !row.exp_ms2_intensity.empty());
 
+      bool ms2_matched = false;
       if (can_check_ms2)
       {
         row.db_ms2_size = static_cast<int>(sus_mz->size());
@@ -314,22 +315,86 @@ namespace nts::suspect_screening
             row.cosine_similarity = std::round(cosine * 10000.0) / 10000.0;
             if (row.shared_fragments >= minSharedFragments || row.cosine_similarity >= minCosineSimilarity)
             {
-              if (row.id_level == "3b")
-              {
-                row.id_level = "1";
-              }
-              else if (row.id_level == "4")
-              {
-                row.id_level = "2";
-              }
+              ms2_matched = true;
             }
           }
         }
       }
 
+      // Assign ID level based on what matched
+      // ID 1: mass + RT + MS2
+      // ID 2: mass + MS2
+      // ID 3: mass + RT
+      // ID 4: mass only
+      if (rt_matched && ms2_matched)
+      {
+        row.id_level = 1;
+      }
+      else if (ms2_matched)
+      {
+        row.id_level = 2;
+      }
+      else if (rt_matched)
+      {
+        row.id_level = 3;
+      }
+      else
+      {
+        row.id_level = 4;
+      }
+
       out.append(row);
     }
 
-    return out;
+    // Distribute suspects to the appropriate analysis in nts_data.suspects
+    for (size_t i = 0; i < nts_data.analyses.size(); ++i)
+    {
+      nts_data.suspects[i] = SUSPECTS();
+    }
+
+    for (size_t i = 0; i < out.analysis.size(); ++i)
+    {
+      SUSPECT s;
+      s.analysis = out.analysis[i];
+      s.feature = out.feature[i];
+      s.candidate_rank = out.candidate_rank[i];
+      s.name = out.name[i];
+      s.polarity = out.polarity[i];
+      s.db_mass = out.db_mass[i];
+      s.exp_mass = out.exp_mass[i];
+      s.error_mass = out.error_mass[i];
+      s.db_rt = out.db_rt[i];
+      s.exp_rt = out.exp_rt[i];
+      s.error_rt = out.error_rt[i];
+      s.intensity = out.intensity[i];
+      s.area = out.area[i];
+      s.id_level = out.id_level[i];
+      s.score = out.score[i];
+      s.shared_fragments = out.shared_fragments[i];
+      s.cosine_similarity = out.cosine_similarity[i];
+      s.formula = out.formula[i];
+      s.SMILES = out.SMILES[i];
+      s.InChI = out.InChI[i];
+      s.InChIKey = out.InChIKey[i];
+      s.xLogP = out.xLogP[i];
+      s.database_id = out.database_id[i];
+      s.db_ms2_size = out.db_ms2_size[i];
+      s.db_ms2_mz = out.db_ms2_mz[i];
+      s.db_ms2_intensity = out.db_ms2_intensity[i];
+      s.db_ms2_formula = out.db_ms2_formula[i];
+      s.exp_ms2_size = out.exp_ms2_size[i];
+      s.exp_ms2_mz = out.exp_ms2_mz[i];
+      s.exp_ms2_intensity = out.exp_ms2_intensity[i];
+
+      // Find which analysis index this suspect belongs to
+      for (size_t a = 0; a < nts_data.analyses.size(); ++a)
+      {
+        if (nts_data.analyses[a] == s.analysis)
+        {
+          nts_data.suspects[a].append(s);
+          break;
+        }
+      }
+    }
   }
 } // namespace nts::suspect_screening

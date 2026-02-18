@@ -114,6 +114,8 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
       if (!is.null(internal_standards)) {
         if (nrow(internal_standards) > 0) {
           message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+          # Ensure id_level is integer
+          internal_standards$id_level <- as.integer(internal_standards$id_level)
           conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
           on.exit(DBI::dbDisconnect(conn), add = TRUE)
           DBI::dbExecute(conn, "DELETE FROM InternalStandards")
@@ -165,6 +167,9 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
   keep_cols <- intersect(col_order, colnames(internal_standards))
   data.table::setcolorder(internal_standards, keep_cols)
 
+  # Ensure id_level is integer
+  internal_standards$id_level <- as.integer(internal_standards$id_level)
+
   # Cache results
   save_cache(
     cache_manager,
@@ -181,6 +186,9 @@ run.DB_MassSpecMethod_FindInternalStandard_native <- function(x, engine = NULL) 
 
   # Clear existing data
   DBI::dbExecute(conn, "DELETE FROM InternalStandards")
+
+  # Ensure id_level is integer before writing
+  internal_standards$id_level <- as.integer(internal_standards$id_level)
 
   # Write new data
   DBI::dbWriteTable(conn, "InternalStandards", internal_standards, append = TRUE)

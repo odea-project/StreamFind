@@ -100,6 +100,10 @@ pf_istd <- DB_MassSpecMethod_FindInternalStandard_native(
   filtered = TRUE
 )
 
+ps_filteris <- DB_MassSpecMethod_FilterInternalStandards_native(
+  idLevels = c(1, 3)
+)
+
 ps_gf <- DB_MassSpecMethod_GroupFeatures_native(
   method = "internal_standards", #"obi_warp"
   rtDeviation = 5,
@@ -107,7 +111,7 @@ ps_gf <- DB_MassSpecMethod_GroupFeatures_native(
   minSamples = 1,
   binSize = 5,
   filtered = FALSE,
-  debug = FALSE,
+  debug = TRUE,
   debugRT = 0
 )
 
@@ -160,35 +164,40 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   filtered = FALSE
 )
 
-# ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
-#   suspects = dbsus,
-#   ppm = 10,
-#   sec = 15,
-#   ppmMS2 = 10,
-#   mzrMS2 = 0.008,
-#   minCosineSimilarity = 0.7,
-#   minSharedFragments = 3,
-#   filtered = TRUE
-# )
-
-ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
-  metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
-  database_type = "LocalCSV",
-  database_path = file.path("dev", "dev_duckdb", "transformation_products_template.csv"),
-  #"C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
+ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
+  suspects = dbsus,
   ppm = 10,
   sec = 15,
   ppmMS2 = 10,
   mzrMS2 = 0.008,
-  top_n = 5,
-  filtered = FALSE,
-  n_cores = 10,
-  java_path = "java",
-  metfrag_args = NULL,
-  extra_params = list(),
-  show_progress = TRUE,
-  quiet = FALSE
+  minCosineSimilarity = 0.7,
+  minSharedFragments = 3,
+  filtered = TRUE
 )
+
+ps_filtersus <- DB_MassSpecMethod_FilterSuspects_native(
+  idLevels = c(1, 2, 3)
+)
+
+# ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
+#   metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
+#   database_type = "LocalCSV",
+#   database_path = file.path("dev", "dev_duckdb", "suspects_with_ms2_template.csv"),
+#   # database_path = file.path("dev", "dev_duckdb", "transformation_products_template.csv"),
+#   #"C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
+#   ppm = 10,
+#   sec = 15,
+#   ppmMS2 = 10,
+#   mzrMS2 = 0.008,
+#   top_n = 5,
+#   filtered = FALSE,
+#   n_cores = 10,
+#   java_path = "java",
+#   metfrag_args = NULL,
+#   extra_params = list(),
+#   show_progress = TRUE,
+#   quiet = FALSE
+# )
 
 ps_tps <- DB_MassSpecMethod_AssignTransformationProducts_native(
   transformation_products = data.table::fread(
@@ -202,11 +211,27 @@ ps_tps <- DB_MassSpecMethod_AssignTransformationProducts_native(
   mzrMS2 = 0.008
 )
 
-ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filterf1, ps_filterf2, ps_ms1, ps_ms2, ps_sus, ps_tps) # ps_fillf, #
+ms$Workflow <- list(
+  ps_ff,
+  ps_comp,
+  ps_annot,
+  pf_istd,
+  ps_filteris,
+  ps_gf,
+  ps_bsub,
+  ps_filterf1,
+  ps_filterf2,
+  ps_ms1,
+  ps_ms2,
+  ps_sus,
+  ps_filtersus
+) # ps_fillf, #, ps_tps
+
 # clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
 # clear_cache(ms$Cache, value = c("DB_CreateComponents_native"))
 # clear_cache(ms$Cache, value = c("DB_AnnotateComponents_native"))
 # clear_cache(ms$Cache, value = c("DB_FindInternalStandard_native"))
+# clear_cache(ms$Cache, value = c("DB_FilterInternalStandards_native"))
 # clear_cache(ms$Cache, value = c("DB_GroupFeatures_native"))
 # clear_cache(ms$Cache, value = c("DB_FeatureBlankSubtraction_native"))
 # clear_cache(ms$Cache, value = c("DB_FilterFeatures_native"))
@@ -215,15 +240,25 @@ ms$Workflow <- list(ps_ff, ps_comp, ps_annot, pf_istd, ps_gf, ps_bsub, ps_filter
 # clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS2_native"))
 # clear_cache(ms$Cache, value = c("DB_SuspectScreening_native"))
 # clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
-clear_cache(ms$Cache, value = c("DB_AssignTransformationProducts_native"))
+# clear_cache(ms$Cache, value = c("DB_AssignTransformationProducts_native"))
 
 ms$run_workflow()
 
+.plot_debug_DB_MassSpecMethod_GroupFeatures_native(
+  "log\\debug_log_group_features_methodinternal_standards.log"
+)
 
 
+tps <- get_internal_standards(ms$NonTargetAnalysis)
+tps[54, ]
 
+sus <- get_suspects(ms$NonTargetAnalysis)
 
-get_internal_standards(ms$NonTargetAnalysis)
+plot_suspects_ms2(
+  ms$NonTargetAnalysis,
+  features = sus[34, ],
+  interactive = TRUE
+)
 
 # sus <- get_suspects(ms$NonTargetAnalysis)
 # sus  <- sus[grepl("MZ219", sus$feature), ]

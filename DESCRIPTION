@@ -141,6 +141,8 @@ Collate:
     'class_DB_MassSpecMethod_AnnotateComponents.R'
     'class_DB_MassSpecMethod_FeatureBlankSubtraction.R'
     'class_DB_MassSpecMethod_FilterFeatures.R'
+    'class_DB_MassSpecMethod_FilterSuspects.R'
+    'class_DB_MassSpecMethod_FilterInternalStandards.R'
     'class_DB_MassSpecMethod_FillFeatures.R'
     'class_MassSpecMethod_AnnotateFeatures.R'
     'class_MassSpecMethod_AverageSpectra.R'

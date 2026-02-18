@@ -156,7 +156,7 @@ run.DB_MassSpecMethod_GroupFeatures_native <- function(x, engine = NULL) {
   conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
   on.exit(DBI::dbDisconnect(conn, shutdown = TRUE), add = TRUE)
 
-  # Prepare internal standards list for C++
+  # Get internal standards if needed
   internal_standards_list <- list()
   if (parameters$method == "internal_standards") {
     internal_standards <- tryCatch(
@@ -169,22 +169,8 @@ run.DB_MassSpecMethod_GroupFeatures_native <- function(x, engine = NULL) {
     )
 
     if (!is.null(internal_standards) && nrow(internal_standards) > 0) {
-      # Calculate average RT for each internal standard across all samples
-      istd_avg_rt <- internal_standards[, .(avg_exp_rt = mean(exp_rt, na.rm = TRUE)), by = "name"]
-
-      # Calculate RT shift for each internal standard in each analysis
-      internal_standards <- internal_standards[istd_avg_rt, on = "name"]
-      internal_standards[, rt_shift := exp_rt - avg_exp_rt]
-
-      # Prepare internal standards list for C++
-      internal_standards_list <- list(
-        analysis = internal_standards$analysis,
-        name = internal_standards$name,
-        exp_rt = internal_standards$exp_rt,
-        avg_exp_rt = internal_standards$avg_exp_rt,
-        rt_shift = internal_standards$rt_shift
-      )
-
+      # Split by analysis for C++
+      internal_standards_list <- split(internal_standards, internal_standards$analysis)
       message("\U2139 Using ", nrow(internal_standards), " internal standards for alignment.")
     } else {
       warning("Internal standards not found but required for grouping with internal_standards method.")

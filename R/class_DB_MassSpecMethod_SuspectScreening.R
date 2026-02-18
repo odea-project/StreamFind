@@ -113,6 +113,8 @@ run.DB_MassSpecMethod_SuspectScreening_native <- function(x, engine = NULL) {
       if (!is.null(suspects_out)) {
         if (nrow(suspects_out) > 0) {
           message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+          # Ensure id_level is integer
+          suspects_out$id_level <- as.integer(suspects_out$id_level)
           conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
           on.exit(DBI::dbDisconnect(conn), add = TRUE)
           DBI::dbExecute(conn, "DELETE FROM Suspects")
@@ -164,6 +166,9 @@ run.DB_MassSpecMethod_SuspectScreening_native <- function(x, engine = NULL) {
   keep_cols <- intersect(col_order, colnames(suspects_out))
   data.table::setcolorder(suspects_out, keep_cols)
 
+  # Ensure id_level is integer
+  suspects_out$id_level <- as.integer(suspects_out$id_level)
+
   # Cache results
   save_cache(
     cache_manager,
@@ -181,6 +186,9 @@ run.DB_MassSpecMethod_SuspectScreening_native <- function(x, engine = NULL) {
 
   # Clear existing data
   DBI::dbExecute(conn, "DELETE FROM Suspects")
+
+  # Ensure id_level is integer before writing
+  suspects_out$id_level <- as.integer(suspects_out$id_level)
 
   # Write new data
   DBI::dbWriteTable(conn, "Suspects", suspects_out, append = TRUE)

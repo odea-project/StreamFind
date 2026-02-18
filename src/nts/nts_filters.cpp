@@ -1,7 +1,7 @@
-// nts_filter_features.cpp
-// Feature filtering implementations for NTS_DATA
+// nts_filters.cpp
+// Filtering implementations for NTS_DATA
 
-#include "nts_filter_features.h"
+#include "nts_filters.h"
 #include "nts.h"
 #include <unordered_map>
 #include <unordered_set>
@@ -489,3 +489,277 @@ namespace nts::filter_features
     }
   }
 } // namespace nts::filter_features
+
+// MARK: filter_suspects
+namespace nts::filter_suspects
+{
+  void filter_suspects_impl(
+      NTS_DATA &nts_data,
+      const std::vector<std::string> &names,
+      double minScore,
+      double maxErrorRT,
+      double maxErrorMass,
+      const std::vector<int> &idLevels,
+      int minSharedFragments,
+      double minCosineSimilarity)
+  {
+    for (size_t a = 0; a < nts_data.suspects.size(); ++a)
+    {
+      SUSPECTS &sus = nts_data.suspects[a];
+      if (sus.size() == 0)
+        continue;
+
+      std::vector<bool> keep(sus.size(), true);
+
+      for (size_t i = 0; i < sus.size(); ++i)
+      {
+        // Filter by name
+        if (!names.empty())
+        {
+          bool name_found = false;
+          for (const auto &name : names)
+          {
+            if (sus.name[i].find(name) != std::string::npos)
+            {
+              name_found = true;
+              break;
+            }
+          }
+          if (!name_found)
+            keep[i] = false;
+        }
+
+        // Filter by score
+        if (keep[i] && !std::isnan(minScore) && !std::isnan(sus.score[i]))
+        {
+          if (sus.score[i] < minScore)
+            keep[i] = false;
+        }
+
+        // Filter by error_rt
+        if (keep[i] && !std::isnan(maxErrorRT) && !std::isnan(sus.error_rt[i]))
+        {
+          if (std::abs(sus.error_rt[i]) > maxErrorRT)
+            keep[i] = false;
+        }
+
+        // Filter by error_mass
+        if (keep[i] && !std::isnan(maxErrorMass) && !std::isnan(sus.error_mass[i]))
+        {
+          if (std::abs(sus.error_mass[i]) > maxErrorMass)
+            keep[i] = false;
+        }
+
+        // Filter by id_level
+        if (keep[i] && !idLevels.empty())
+        {
+          bool level_found = false;
+          for (const auto &level : idLevels)
+          {
+            if (sus.id_level[i] == level)
+            {
+              level_found = true;
+              break;
+            }
+          }
+          if (!level_found)
+            keep[i] = false;
+        }
+
+        // Filter by shared_fragments
+        if (keep[i] && minSharedFragments > 0)
+        {
+          if (sus.shared_fragments[i] < minSharedFragments)
+            keep[i] = false;
+        }
+
+        // Filter by cosine_similarity
+        if (keep[i] && !std::isnan(minCosineSimilarity) && !std::isnan(sus.cosine_similarity[i]))
+        {
+          if (sus.cosine_similarity[i] < minCosineSimilarity)
+            keep[i] = false;
+        }
+      }
+
+      // Create filtered suspects
+      SUSPECTS filtered;
+      for (size_t i = 0; i < sus.size(); ++i)
+      {
+        if (keep[i])
+        {
+          SUSPECT s;
+          s.analysis = sus.analysis[i];
+          s.feature = sus.feature[i];
+          s.candidate_rank = sus.candidate_rank[i];
+          s.name = sus.name[i];
+          s.polarity = sus.polarity[i];
+          s.db_mass = sus.db_mass[i];
+          s.exp_mass = sus.exp_mass[i];
+          s.error_mass = sus.error_mass[i];
+          s.db_rt = sus.db_rt[i];
+          s.exp_rt = sus.exp_rt[i];
+          s.error_rt = sus.error_rt[i];
+          s.intensity = sus.intensity[i];
+          s.area = sus.area[i];
+          s.id_level = sus.id_level[i];
+          s.score = sus.score[i];
+          s.shared_fragments = sus.shared_fragments[i];
+          s.cosine_similarity = sus.cosine_similarity[i];
+          s.formula = sus.formula[i];
+          s.SMILES = sus.SMILES[i];
+          s.InChI = sus.InChI[i];
+          s.InChIKey = sus.InChIKey[i];
+          s.xLogP = sus.xLogP[i];
+          s.database_id = sus.database_id[i];
+          s.db_ms2_size = sus.db_ms2_size[i];
+          s.db_ms2_mz = sus.db_ms2_mz[i];
+          s.db_ms2_intensity = sus.db_ms2_intensity[i];
+          s.db_ms2_formula = sus.db_ms2_formula[i];
+          s.exp_ms2_size = sus.exp_ms2_size[i];
+          s.exp_ms2_mz = sus.exp_ms2_mz[i];
+          s.exp_ms2_intensity = sus.exp_ms2_intensity[i];
+          filtered.append(s);
+        }
+      }
+
+      nts_data.suspects[a] = filtered;
+    }
+  }
+} // namespace nts::filter_suspects
+
+// MARK: filter_internal_standards
+namespace nts::filter_internal_standards
+{
+  void filter_internal_standards_impl(
+      NTS_DATA &nts_data,
+      const std::vector<std::string> &names,
+      double minScore,
+      double maxErrorRT,
+      double maxErrorMass,
+      const std::vector<int> &idLevels,
+      int minSharedFragments,
+      double minCosineSimilarity)
+  {
+    for (size_t a = 0; a < nts_data.internal_standards.size(); ++a)
+    {
+      INTERNAL_STANDARDS &istd = nts_data.internal_standards[a];
+      if (istd.size() == 0)
+        continue;
+
+      std::vector<bool> keep(istd.size(), true);
+
+      for (size_t i = 0; i < istd.size(); ++i)
+      {
+        // Filter by name
+        if (!names.empty())
+        {
+          bool name_found = false;
+          for (const auto &name : names)
+          {
+            if (istd.name[i].find(name) != std::string::npos)
+            {
+              name_found = true;
+              break;
+            }
+          }
+          if (!name_found)
+            keep[i] = false;
+        }
+
+        // Filter by score
+        if (keep[i] && !std::isnan(minScore) && !std::isnan(istd.score[i]))
+        {
+          if (istd.score[i] < minScore)
+            keep[i] = false;
+        }
+
+        // Filter by error_rt
+        if (keep[i] && !std::isnan(maxErrorRT) && !std::isnan(istd.error_rt[i]))
+        {
+          if (std::abs(istd.error_rt[i]) > maxErrorRT)
+            keep[i] = false;
+        }
+
+        // Filter by error_mass
+        if (keep[i] && !std::isnan(maxErrorMass) && !std::isnan(istd.error_mass[i]))
+        {
+          if (std::abs(istd.error_mass[i]) > maxErrorMass)
+            keep[i] = false;
+        }
+
+        // Filter by id_level
+        if (keep[i] && !idLevels.empty())
+        {
+          bool level_found = false;
+          for (const auto &level : idLevels)
+          {
+            if (istd.id_level[i] == level)
+            {
+              level_found = true;
+              break;
+            }
+          }
+          if (!level_found)
+            keep[i] = false;
+        }
+
+        // Filter by shared_fragments
+        if (keep[i] && minSharedFragments > 0)
+        {
+          if (istd.shared_fragments[i] < minSharedFragments)
+            keep[i] = false;
+        }
+
+        // Filter by cosine_similarity
+        if (keep[i] && !std::isnan(minCosineSimilarity) && !std::isnan(istd.cosine_similarity[i]))
+        {
+          if (istd.cosine_similarity[i] < minCosineSimilarity)
+            keep[i] = false;
+        }
+      }
+
+      // Create filtered internal standards
+      INTERNAL_STANDARDS filtered;
+      for (size_t i = 0; i < istd.size(); ++i)
+      {
+        if (keep[i])
+        {
+          INTERNAL_STANDARD is;
+          is.analysis = istd.analysis[i];
+          is.feature = istd.feature[i];
+          is.candidate_rank = istd.candidate_rank[i];
+          is.name = istd.name[i];
+          is.polarity = istd.polarity[i];
+          is.db_mass = istd.db_mass[i];
+          is.exp_mass = istd.exp_mass[i];
+          is.error_mass = istd.error_mass[i];
+          is.db_rt = istd.db_rt[i];
+          is.exp_rt = istd.exp_rt[i];
+          is.error_rt = istd.error_rt[i];
+          is.intensity = istd.intensity[i];
+          is.area = istd.area[i];
+          is.id_level = istd.id_level[i];
+          is.score = istd.score[i];
+          is.shared_fragments = istd.shared_fragments[i];
+          is.cosine_similarity = istd.cosine_similarity[i];
+          is.formula = istd.formula[i];
+          is.SMILES = istd.SMILES[i];
+          is.InChI = istd.InChI[i];
+          is.InChIKey = istd.InChIKey[i];
+          is.xLogP = istd.xLogP[i];
+          is.database_id = istd.database_id[i];
+          is.db_ms2_size = istd.db_ms2_size[i];
+          is.db_ms2_mz = istd.db_ms2_mz[i];
+          is.db_ms2_intensity = istd.db_ms2_intensity[i];
+          is.db_ms2_formula = istd.db_ms2_formula[i];
+          is.exp_ms2_size = istd.exp_ms2_size[i];
+          is.exp_ms2_mz = istd.exp_ms2_mz[i];
+          is.exp_ms2_intensity = istd.exp_ms2_intensity[i];
+          filtered.append(is);
+        }
+      }
+
+      nts_data.internal_standards[a] = filtered;
+    }
+  }
+} // namespace nts::filter_internal_standards

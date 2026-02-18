@@ -34,3 +34,6 @@
 *.sf
 *.zip
 *.tar.gz
+
+# Specific folders to exclude -----------------------------------------------------------
+/dev/dev_duckdb/data_nts

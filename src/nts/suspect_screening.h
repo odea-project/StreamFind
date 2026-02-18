@@ -34,7 +34,7 @@ namespace nts
       std::vector<double> fragments_intensity_neg;
     };
 
-    SUSPECTS suspect_screening_impl(
+    void suspect_screening_impl(
         NTS_DATA &nts_data,
         const std::vector<std::string> &analyses,
         const std::vector<SuspectQuery> &suspects,

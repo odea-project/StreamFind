@@ -423,7 +423,6 @@ void group_features(
 void group_features_impl(
     nts::NTS_DATA &nts_data,
     const std::string &method,
-    const std::vector<InternalStandard> &internal_standards,
     float rt_deviation,
     float ppm_threshold,
     int min_samples,
@@ -485,6 +484,53 @@ void group_features_impl(
       debug_log.close();
     }
     return;
+  }
+
+  // Prepare internal standards for alignment if using internal_standards method
+  std::vector<InternalStandard> internal_standards;
+  if (method == "internal_standards" && !nts_data.internal_standards.empty())
+  {
+    // Calculate average RT for each internal standard name across all analyses
+    std::map<std::string, std::vector<float>> istd_rts_by_name;
+    std::map<std::string, std::vector<std::string>> istd_analyses_by_name;
+
+    for (size_t a = 0; a < nts_data.internal_standards.size(); ++a)
+    {
+      const nts::INTERNAL_STANDARDS &istd_data = nts_data.internal_standards[a];
+      for (int i = 0; i < istd_data.size(); ++i)
+      {
+        istd_rts_by_name[istd_data.name[i]].push_back(istd_data.exp_rt[i]);
+        istd_analyses_by_name[istd_data.name[i]].push_back(istd_data.analysis[i]);
+      }
+    }
+
+    // Calculate average RT for each internal standard
+    std::map<std::string, float> avg_rt_by_name;
+    for (const auto &pair : istd_rts_by_name)
+    {
+      float sum = 0.0f;
+      for (float rt : pair.second)
+      {
+        sum += rt;
+      }
+      avg_rt_by_name[pair.first] = sum / pair.second.size();
+    }
+
+    // Create alignment::InternalStandard vector with calculated shifts
+    for (size_t a = 0; a < nts_data.internal_standards.size(); ++a)
+    {
+      const nts::INTERNAL_STANDARDS &istd_data = nts_data.internal_standards[a];
+      for (int i = 0; i < istd_data.size(); ++i)
+      {
+        InternalStandard istd;
+        istd.analysis = istd_data.analysis[i];
+        istd.name = istd_data.name[i];
+        istd.exp_rt = istd_data.exp_rt[i];
+        istd.avg_rt = avg_rt_by_name[istd_data.name[i]];
+        istd.rt_shift = istd.exp_rt - istd.avg_rt;
+        internal_standards.push_back(istd);
+      }
+    }
   }
 
   // Perform RT alignment based on method

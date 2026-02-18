@@ -84,7 +84,6 @@ struct NTS_DATA;
 void group_features_impl(
   nts::NTS_DATA &nts_data,
   const std::string &method,
-  const std::vector<InternalStandard> &internal_standards,
   float rt_deviation,
   float ppm_threshold,
   int min_samples,

@@ -37,6 +37,14 @@ rcpp_nts_filter_features_2 <- function(info, feature_list, minSN = NA_real_, min
     .Call(`_StreamFind_rcpp_nts_filter_features_2`, info, feature_list, minSN, minIntensity, minArea, minWidth, maxWidth, maxPPM, minFwhmRT, maxFwhmRT, minFwhmMZ, maxFwhmMZ, minGaussianA, minGaussianMu, maxGaussianMu, minGaussianSigma, maxGaussianSigma, minGaussianR2, maxJaggedness, minSharpness, minAsymmetry, maxAsymmetry, maxModality, minPlates, onlyFilled, removeFilled, minSizeEIC, minSizeMS1, minSizeMS2, minRelPresenceReplicate, removeIsotopes, removeAdducts, removeLosses)
 }
 
+rcpp_nts_filter_suspects_2 <- function(info, suspect_list, names = as.character( c()), minScore = NA_real_, maxErrorRT = NA_real_, maxErrorMass = NA_real_, idLevels = as.integer( c()), minSharedFragments = 0L, minCosineSimilarity = NA_real_) {
+    .Call(`_StreamFind_rcpp_nts_filter_suspects_2`, info, suspect_list, names, minScore, maxErrorRT, maxErrorMass, idLevels, minSharedFragments, minCosineSimilarity)
+}
+
+rcpp_nts_filter_internal_standards_2 <- function(info, internal_standards_list, names = as.character( c()), minScore = NA_real_, maxErrorRT = NA_real_, maxErrorMass = NA_real_, idLevels = as.integer( c()), minSharedFragments = 0L, minCosineSimilarity = NA_real_) {
+    .Call(`_StreamFind_rcpp_nts_filter_internal_standards_2`, info, internal_standards_list, names, minScore, maxErrorRT, maxErrorMass, idLevels, minSharedFragments, minCosineSimilarity)
+}
+
 rcpp_nts_suspect_screening_2 <- function(info, spectra_headers, feature_list, suspects, analyses = as.character( c("")), ppm = 5.0, sec = 10.0, ppmMS2 = 10.0, mzrMS2 = 0.008, minCosineSimilarity = 0.7, minSharedFragments = 3L, filtered = FALSE) {
     .Call(`_StreamFind_rcpp_nts_suspect_screening_2`, info, spectra_headers, feature_list, suspects, analyses, ppm, sec, ppmMS2, mzrMS2, minCosineSimilarity, minSharedFragments, filtered)
 }

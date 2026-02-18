@@ -212,6 +212,44 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_nts_filter_suspects_2
+Rcpp::List rcpp_nts_filter_suspects_2(Rcpp::List info, Rcpp::List suspect_list, Rcpp::CharacterVector names, double minScore, double maxErrorRT, double maxErrorMass, Rcpp::IntegerVector idLevels, int minSharedFragments, double minCosineSimilarity);
+RcppExport SEXP _StreamFind_rcpp_nts_filter_suspects_2(SEXP infoSEXP, SEXP suspect_listSEXP, SEXP namesSEXP, SEXP minScoreSEXP, SEXP maxErrorRTSEXP, SEXP maxErrorMassSEXP, SEXP idLevelsSEXP, SEXP minSharedFragmentsSEXP, SEXP minCosineSimilaritySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type suspect_list(suspect_listSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type names(namesSEXP);
+    Rcpp::traits::input_parameter< double >::type minScore(minScoreSEXP);
+    Rcpp::traits::input_parameter< double >::type maxErrorRT(maxErrorRTSEXP);
+    Rcpp::traits::input_parameter< double >::type maxErrorMass(maxErrorMassSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type idLevels(idLevelsSEXP);
+    Rcpp::traits::input_parameter< int >::type minSharedFragments(minSharedFragmentsSEXP);
+    Rcpp::traits::input_parameter< double >::type minCosineSimilarity(minCosineSimilaritySEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_filter_suspects_2(info, suspect_list, names, minScore, maxErrorRT, maxErrorMass, idLevels, minSharedFragments, minCosineSimilarity));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_nts_filter_internal_standards_2
+Rcpp::List rcpp_nts_filter_internal_standards_2(Rcpp::List info, Rcpp::List internal_standards_list, Rcpp::CharacterVector names, double minScore, double maxErrorRT, double maxErrorMass, Rcpp::IntegerVector idLevels, int minSharedFragments, double minCosineSimilarity);
+RcppExport SEXP _StreamFind_rcpp_nts_filter_internal_standards_2(SEXP infoSEXP, SEXP internal_standards_listSEXP, SEXP namesSEXP, SEXP minScoreSEXP, SEXP maxErrorRTSEXP, SEXP maxErrorMassSEXP, SEXP idLevelsSEXP, SEXP minSharedFragmentsSEXP, SEXP minCosineSimilaritySEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type info(infoSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List >::type internal_standards_list(internal_standards_listSEXP);
+    Rcpp::traits::input_parameter< Rcpp::CharacterVector >::type names(namesSEXP);
+    Rcpp::traits::input_parameter< double >::type minScore(minScoreSEXP);
+    Rcpp::traits::input_parameter< double >::type maxErrorRT(maxErrorRTSEXP);
+    Rcpp::traits::input_parameter< double >::type maxErrorMass(maxErrorMassSEXP);
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type idLevels(idLevelsSEXP);
+    Rcpp::traits::input_parameter< int >::type minSharedFragments(minSharedFragmentsSEXP);
+    Rcpp::traits::input_parameter< double >::type minCosineSimilarity(minCosineSimilaritySEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_nts_filter_internal_standards_2(info, internal_standards_list, names, minScore, maxErrorRT, maxErrorMass, idLevels, minSharedFragments, minCosineSimilarity));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpp_nts_suspect_screening_2
 Rcpp::List rcpp_nts_suspect_screening_2(Rcpp::List info, Rcpp::List spectra_headers, Rcpp::List feature_list, Rcpp::List suspects, Rcpp::CharacterVector analyses, double ppm, double sec, double ppmMS2, double mzrMS2, double minCosineSimilarity, int minSharedFragments, bool filtered);
 RcppExport SEXP _StreamFind_rcpp_nts_suspect_screening_2(SEXP infoSEXP, SEXP spectra_headersSEXP, SEXP feature_listSEXP, SEXP suspectsSEXP, SEXP analysesSEXP, SEXP ppmSEXP, SEXP secSEXP, SEXP ppmMS2SEXP, SEXP mzrMS2SEXP, SEXP minCosineSimilaritySEXP, SEXP minSharedFragmentsSEXP, SEXP filteredSEXP) {
@@ -621,6 +659,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_fill_features_2", (DL_FUNC) &_StreamFind_rcpp_nts_fill_features_2, 15},
     {"_StreamFind_rcpp_nts_blank_subtraction_2", (DL_FUNC) &_StreamFind_rcpp_nts_blank_subtraction_2, 6},
     {"_StreamFind_rcpp_nts_filter_features_2", (DL_FUNC) &_StreamFind_rcpp_nts_filter_features_2, 33},
+    {"_StreamFind_rcpp_nts_filter_suspects_2", (DL_FUNC) &_StreamFind_rcpp_nts_filter_suspects_2, 9},
+    {"_StreamFind_rcpp_nts_filter_internal_standards_2", (DL_FUNC) &_StreamFind_rcpp_nts_filter_internal_standards_2, 9},
     {"_StreamFind_rcpp_nts_suspect_screening_2", (DL_FUNC) &_StreamFind_rcpp_nts_suspect_screening_2, 12},
     {"_StreamFind_rcpp_fill_bin_spectra", (DL_FUNC) &_StreamFind_rcpp_fill_bin_spectra, 5},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
