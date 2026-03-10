@@ -81,15 +81,15 @@ ms <- MassSpecEngine$new(analyses = ms_files)
 ```
 
 ```{r}
-DT::datatable(ms$analyses$info)
+DT::datatable(info(ms$Analyses))
 ```
 
-<br>  
-<br>  
+<br>
+<br>
 
 ```{r}
-ms$plot_spectra_tic(levels = 1, interactive = TRUE, colorBy = "replicates", title = "Total Ion Chromatograms (TICs)")
+plot_spectra_tic(ms$Analyses, levels = 1, interactive = TRUE, colorBy = "replicates", title = "Total Ion Chromatograms (TICs)")
 ```
 
-<br>  
-<br>  
+<br>
+<br>

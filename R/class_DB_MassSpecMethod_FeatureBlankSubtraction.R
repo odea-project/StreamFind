@@ -29,7 +29,7 @@ DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(
     link = "https://odea-project.github.io/StreamFind",
     doi = NA_character_,
     parameters = list(
-      blankThreshold = 5,
+      blankThreshold = blankThreshold,
       rtExpand = rtExpand,
       mzExpand = mzExpand
     )
@@ -48,6 +48,8 @@ validate_object.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x) 
   checkmate::assert_choice(x$method, "FeatureBlankSubtraction")
   checkmate::assert_choice(x$algorithm, "native")
   checkmate::assert_numeric(x$parameters$blankThreshold, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$rtExpand, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$mzExpand, len = 1, lower = 0)
   NULL
 }
 
