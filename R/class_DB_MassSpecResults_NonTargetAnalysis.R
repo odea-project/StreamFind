@@ -4215,7 +4215,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     exp_ms2_size INTEGER,
     exp_ms2_mz VARCHAR,
     exp_ms2_intensity VARCHAR,
-    PRIMARY KEY (analysis, feature, candidate_rank)
+    PRIMARY KEY (analysis, feature, candidate_rank, name)
   )")
 
   invisible(TRUE)
