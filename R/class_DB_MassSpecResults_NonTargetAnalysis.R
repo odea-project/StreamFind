@@ -3228,7 +3228,16 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
           }
           analyses_info$replicate <- as.character(analyses_info$replicate)
           analyses_info$replicate[is.na(analyses_info$replicate) | analyses_info$replicate == ""] <- analyses_info$analysis[is.na(analyses_info$replicate) | analyses_info$replicate == ""]
+          analyses_info <- unique(analyses_info[, .(analysis, replicate)])
+          analyses_info <- analyses_info[!is.na(analysis) & analysis != "" & !is.na(replicate) & replicate != ""]
+          analyses_info[, analysis_order := seq_len(.N)]
           replicate_order <- unique(analyses_info$replicate)
+
+          # Template used to keep replicate order and force all replicate categories on x-axis.
+          replicate_dt <- data.table::data.table(
+            replicate = replicate_order,
+            replicate_order = seq_along(replicate_order)
+          )
 
           ft_query <- sprintf(
             "SELECT feature_group, analysis, intensity FROM Features WHERE feature_group IN (%s)",
@@ -3241,34 +3250,87 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             ft_dt$analysis <- as.character(ft_dt$analysis)
             ft_dt$intensity <- suppressWarnings(as.numeric(ft_dt$intensity))
             ft_dt <- ft_dt[!is.na(feature_group) & feature_group != "" & !is.na(analysis) & analysis != ""]
-
-            # Collapse to one intensity per feature_group/analysis before zero-filling missing analyses.
-            ft_dt <- ft_dt[, .(intensity = max(intensity, na.rm = TRUE)), by = .(feature_group, analysis)]
+            ft_dt <- ft_dt[, .(intensity = mean(intensity, na.rm = TRUE)), by = .(feature_group, analysis)]
             ft_dt[!is.finite(intensity), intensity := 0]
-
-            full_grid <- data.table::CJ(
-              feature_group = unique(all_groups),
-              analysis = unique(analyses_info$analysis),
-              unique = TRUE
-            )
-            full_dt <- full_grid[ft_dt, on = .(feature_group, analysis)]
-            full_dt[is.na(intensity), intensity := 0]
-
-            full_dt <- analyses_info[full_dt, on = .(analysis)]
-            full_dt <- full_dt[!is.na(replicate) & replicate != ""]
-
-            full_dt[, max_intensity := max(intensity, na.rm = TRUE), by = feature_group]
-            full_dt[, norm_intensity := ifelse(max_intensity > 0, intensity / max_intensity, 0)]
-
-            intensity_profile_dt <- full_dt[
-              , .(
-                mean_norm_intensity = mean(norm_intensity, na.rm = TRUE),
-                sd_norm_intensity = stats::sd(norm_intensity, na.rm = TRUE)
-              ),
-              by = .(feature_group, replicate)
-            ]
-            intensity_profile_dt[is.na(sd_norm_intensity), sd_norm_intensity := 0]
+          } else {
+            ft_dt <- data.table::data.table(feature_group = character(0), analysis = character(0), intensity = numeric(0))
           }
+
+          # Build complete feature_group x analysis table and keep zeros for missing combinations.
+          analysis_grid <- data.table::CJ(
+            feature_group = unique(all_groups),
+            analysis = analyses_info$analysis,
+            sorted = FALSE,
+            unique = TRUE
+          )
+          full_dt <- merge(
+            analysis_grid,
+            ft_dt,
+            by = c("feature_group", "analysis"),
+            all.x = TRUE,
+            sort = FALSE
+          )
+          full_dt[is.na(intensity) | !is.finite(intensity), intensity := 0]
+
+          full_dt <- merge(
+            full_dt,
+            analyses_info,
+            by = "analysis",
+            all.x = TRUE,
+            sort = FALSE
+          )
+          full_dt <- full_dt[!is.na(replicate) & replicate != ""]
+          data.table::setorder(full_dt, feature_group, analysis_order)
+
+          # Average and SD by feature_group within each replicate.
+          intensity_profile_dt <- full_dt[
+            , .(
+              mean_intensity = mean(intensity, na.rm = TRUE),
+              sd_intensity = stats::sd(intensity, na.rm = TRUE)
+            ),
+            by = .(feature_group, replicate)
+          ]
+          intensity_profile_dt[!is.finite(sd_intensity), sd_intensity := 0]
+
+          # Force complete feature_group x replicate table and fill absent groups with zeros.
+          rep_grid <- data.table::CJ(
+            feature_group = unique(all_groups),
+            replicate = replicate_order,
+            sorted = FALSE,
+            unique = TRUE
+          )
+          intensity_profile_dt <- merge(
+            rep_grid,
+            intensity_profile_dt,
+            by = c("feature_group", "replicate"),
+            all.x = TRUE,
+            sort = FALSE
+          )
+          intensity_profile_dt[is.na(mean_intensity) | !is.finite(mean_intensity), mean_intensity := 0]
+          intensity_profile_dt[is.na(sd_intensity) | !is.finite(sd_intensity), sd_intensity := 0]
+          intensity_profile_dt <- merge(
+            intensity_profile_dt,
+            replicate_dt,
+            by = "replicate",
+            all.x = TRUE,
+            sort = FALSE
+          )
+          data.table::setorder(intensity_profile_dt, feature_group, replicate_order)
+
+          # Normalize only after replicate-level summaries are computed.
+          intensity_profile_dt[
+            , max_mean_intensity := max(mean_intensity, na.rm = TRUE),
+            by = feature_group
+          ]
+          intensity_profile_dt[
+            , mean_norm_intensity := ifelse(max_mean_intensity > 0, mean_intensity / max_mean_intensity, 0)
+          ]
+          intensity_profile_dt[
+            , sd_norm_intensity := ifelse(max_mean_intensity > 0, sd_intensity / max_mean_intensity, 0)
+          ]
+          intensity_profile_dt[!is.finite(mean_norm_intensity), mean_norm_intensity := 0]
+          intensity_profile_dt[!is.finite(sd_norm_intensity), sd_norm_intensity := 0]
+          intensity_profile_dt[, max_mean_intensity := NULL]
         }
       }
     }
@@ -3704,7 +3766,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     ord <- replicate_order[replicate_order %in% dt$replicate]
     if (length(ord) == 0) ord <- unique(dt$replicate)
     dt$replicate <- factor(dt$replicate, levels = ord)
-    data.table::setorder(dt, replicate)
+    data.table::setorder(dt, feature_group, replicate)
 
     cols <- .get_colors(unique(dt$feature_group))
     traces <- lapply(unique(dt$feature_group), function(fg) {
@@ -3727,7 +3789,13 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
       layout = list(
         template = "plotly_white",
         margin = list(l = 55, r = 20, t = 20, b = 55),
-        xaxis = list(title = "Replicate Group", tickangle = 35),
+        xaxis = list(
+          title = "Replicate Group",
+          tickangle = 35,
+          type = "category",
+          categoryorder = "array",
+          categoryarray = as.list(ord)
+        ),
         yaxis = list(title = "Normalized Intensity", range = list(0, 1)),
         legend = list(title = list(text = "feature_group"))
       ),
