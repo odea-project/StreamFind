@@ -164,40 +164,40 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   filtered = FALSE
 )
 
-ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
-  suspects = dbsus,
-  ppm = 10,
-  sec = 15,
-  ppmMS2 = 10,
-  mzrMS2 = 0.008,
-  minCosineSimilarity = 0.7,
-  minSharedFragments = 3,
-  filtered = TRUE
-)
-
-ps_filtersus <- DB_MassSpecMethod_FilterSuspects_native(
-  idLevels = c(1, 2, 3)
-)
-
-# ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
-#   metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
-#   database_type = "LocalCSV",
-#   database_path = file.path("dev", "dev_duckdb", "suspects_with_ms2_template.csv"),
-#   # database_path = file.path("dev", "dev_duckdb", "transformation_products_template.csv"),
-#   #"C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
+# ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
+#   suspects = dbsus,
 #   ppm = 10,
 #   sec = 15,
 #   ppmMS2 = 10,
 #   mzrMS2 = 0.008,
-#   top_n = 5,
-#   filtered = FALSE,
-#   n_cores = 10,
-#   java_path = "java",
-#   metfrag_args = NULL,
-#   extra_params = list(),
-#   show_progress = TRUE,
-#   quiet = FALSE
+#   minCosineSimilarity = 0.7,
+#   minSharedFragments = 3,
+#   filtered = TRUE
 # )
+
+# ps_filtersus <- DB_MassSpecMethod_FilterSuspects_native(
+#   idLevels = c(1, 2, 3)
+# )
+
+ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
+  metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
+  database_type = "LocalCSV",
+  # database_path = file.path("dev", "dev_duckdb", "suspects_with_ms2_template.csv"),
+  database_path = file.path("dev", "dev_duckdb", "transformation_products_template.csv"),
+  #"C:/Users/cunha/AppData/Local/R/win-library/4.5/patRoonExt/ext/PubChemLite.csv",
+  ppm = 10,
+  sec = 15,
+  ppmMS2 = 10,
+  mzrMS2 = 0.008,
+  top_n = 5,
+  filtered = FALSE,
+  n_cores = 10,
+  java_path = "java",
+  metfrag_args = NULL,
+  extra_params = list(),
+  show_progress = TRUE,
+  quiet = FALSE
+)
 
 ps_tps <- DB_MassSpecMethod_AssignTransformationProducts_native(
   transformation_products = data.table::fread(
@@ -224,7 +224,8 @@ ms$Workflow <- list(
   ps_ms1,
   ps_ms2,
   ps_sus,
-  ps_filtersus
+  ps_tps
+  # ps_filtersus
 ) # ps_fillf, #, ps_tps
 
 # clear_cache(ms$Cache, value = c("DB_FindFeatures_native"))
@@ -238,14 +239,29 @@ ms$Workflow <- list(
 # clear_cache(ms$Cache, value = c("DB_FillFeatures_native"))
 # clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS1_native"))
 # clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS2_native"))
-# clear_cache(ms$Cache, value = c("DB_SuspectScreening_native"))
-# clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
-# clear_cache(ms$Cache, value = c("DB_AssignTransformationProducts_native"))
+clear_cache(ms$Cache, value = c("DB_SuspectScreening_native"))
+clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
+clear_cache(ms$Cache, value = c("DB_AssignTransformationProducts_native"))
 
 ms$run_workflow()
 
 .plot_debug_DB_MassSpecMethod_GroupFeatures_native(
   "log\\debug_log_group_features_methodinternal_standards.log"
+)
+
+map_features(
+  ms$NonTargetAnalysis,
+  mass = data.table::fread(
+    file.path(
+      "dev",
+      "dev_duckdb",
+      "suspects_with_ms2_template.csv"
+    )
+  ),
+  ppm = 20,
+  sec = 30,
+  groupBy = c("name", "replicate"),
+  showDetails = TRUE
 )
 
 
@@ -280,7 +296,9 @@ tps <- get_transformation_products(
 htmlwidgets::saveWidget(
   plot_transformation_products(
     ms$NonTargetAnalysis,
-    groups = "FG3331_M267_RT925_POS"
+    groups = c("FG5496_M440_RT1097_POS", "FG2985_M267_RT916_POS"),
+    showMS2 = TRUE,
+    showIntensityProfile = TRUE
   ),
   file.path("dev", "dev_duckdb", "transformation_products_plot.html"),
   selfcontained = TRUE
@@ -288,7 +306,7 @@ htmlwidgets::saveWidget(
 
 plot_transformation_products(
   ms$NonTargetAnalysis,
-  groups = "FG3331_M267_RT925_POS",
+  groups = c("FG5496_M440_RT1097_POS", "FG2985_M267_RT916_POS"),
   showMS2 = TRUE
 )
 

@@ -885,6 +885,13 @@ run.DB_MassSpecMethod_SuspectScreening_metfrag <- function(x, engine = NULL) {
 
         # Extract values from lookup if found
         if (!is.null(lookup_row) && nrow(lookup_row) > 0) {
+          # Keep the canonical name from the user-provided LocalCSV database.
+          if ("Name" %in% colnames(lookup_row)) {
+            db_name <- lookup_row$Name[1]
+            if (!is.na(db_name) && nzchar(as.character(db_name))) {
+              name_val <- as.character(db_name)
+            }
+          }
           has_inchi <- !is.na(inchi_val) && nzchar(as.character(inchi_val))
           if (!has_inchi && "InChI" %in% colnames(lookup_row)) {
             inchi_val <- lookup_row$InChI[1]

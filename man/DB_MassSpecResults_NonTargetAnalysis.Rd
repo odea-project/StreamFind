@@ -296,7 +296,12 @@ DB_MassSpecResults_NonTargetAnalysis(
 
 \method{get_transformation_products}{DB_MassSpecResults_NonTargetAnalysis}(x, parents = NULL, groups = NULL)
 
-\method{plot_transformation_products}{DB_MassSpecResults_NonTargetAnalysis}(x, groups = NULL, showMS2 = FALSE)
+\method{plot_transformation_products}{DB_MassSpecResults_NonTargetAnalysis}(
+  x,
+  groups = NULL,
+  showMS2 = FALSE,
+  showIntensityProfile = FALSE
+)
 }
 \arguments{
 \item{projectPath}{Path to the project directory where this database file will be created/used.}
@@ -415,6 +420,10 @@ returns only transformation products where the precursor or product name matches
 
 \item{showMS2}{Logical. When TRUE, fetches MS2 spectra from Features table for transformation products
 and precursors to display mirror plots in tooltips. Default: FALSE.}
+
+\item{showIntensityProfile}{Logical. When TRUE, adds a normalized intensity profile plot by replicate
+group (mean +/- sd) for node feature groups in the tooltip. Missing feature-group/analysis combinations
+are imputed as zero before aggregation. Default: FALSE.}
 }
 \value{
 An object of class \code{DB_MassSpecResults_NonTargetAnalysis} (and \code{DB_Results}) pointing to the feature DuckDB on disk and holding an \code{analyses} field with the linked \code{DB_MassSpecAnalyses}.

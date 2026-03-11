@@ -3168,9 +3168,12 @@ get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, 
 #' the network expands to include all connected precursors/products.
 #' @param showMS2 Logical. When TRUE, fetches MS2 spectra from Features table for transformation products
 #' and precursors to display mirror plots in tooltips. Default: FALSE.
+#' @param showIntensityProfile Logical. When TRUE, adds a normalized intensity profile plot by replicate
+#' group (mean +/- sd) for node feature groups in the tooltip. Missing feature-group/analysis combinations
+#' are imputed as zero before aggregation. Default: FALSE.
 #' @export
 #'
-plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, groups = NULL, showMS2 = FALSE) {
+plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, groups = NULL, showMS2 = FALSE, showIntensityProfile = FALSE) {
   if (!requireNamespace("visNetwork", quietly = TRUE)) {
     stop("visNetwork package is required for this function.")
   }
@@ -3182,7 +3185,9 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
 
   # Fetch MS2 data from Features table if requested
   ms2_lookup <- NULL
-  if (showMS2) {
+  intensity_profile_dt <- NULL
+  replicate_order <- character(0)
+  if (showMS2 || showIntensityProfile) {
     conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
     on.exit(DBI::dbDisconnect(conn, shutdown = TRUE), add = TRUE)
 
@@ -3193,18 +3198,78 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     all_groups <- unique(c(product_groups, precursor_groups, main_precursor_groups))
 
     if (length(all_groups) > 0) {
-      # Query Features table for ALL MS2 data (including analysis for multiple spectra)
       placeholders <- paste(rep("?", length(all_groups)), collapse = ", ")
-      query <- sprintf(
-        "SELECT feature_group, analysis, ms2_mz, ms2_intensity FROM Features WHERE feature_group IN (%s) AND ms2_mz IS NOT NULL AND ms2_mz != ''",
-        placeholders
-      )
-      ms2_data <- DBI::dbGetQuery(conn, query, params = as.list(all_groups))
-      ms2_data <- data.table::as.data.table(ms2_data)
 
-      # Create lookup list for MS2 data by feature_group
-      if (nrow(ms2_data) > 0) {
-        ms2_lookup <- split(ms2_data, ms2_data$feature_group)
+      if (showMS2) {
+        # Query Features table for ALL MS2 data (including analysis for multiple spectra)
+        query <- sprintf(
+          "SELECT feature_group, analysis, ms2_mz, ms2_intensity FROM Features WHERE feature_group IN (%s) AND ms2_mz IS NOT NULL AND ms2_mz != ''",
+          placeholders
+        )
+        ms2_data <- DBI::dbGetQuery(conn, query, params = as.list(all_groups))
+        ms2_data <- data.table::as.data.table(ms2_data)
+
+        # Create lookup list for MS2 data by feature_group
+        if (nrow(ms2_data) > 0) {
+          ms2_lookup <- split(ms2_data, ms2_data$feature_group)
+        }
+      }
+
+      if (showIntensityProfile) {
+        analyses_info <- data.table::as.data.table(info(x$analyses))
+        keep_cols <- intersect(c("analysis", "replicate"), colnames(analyses_info))
+        if (length(keep_cols) > 0) {
+          analyses_info <- analyses_info[, ..keep_cols]
+        }
+        if (nrow(analyses_info) > 0) {
+          analyses_info$analysis <- as.character(analyses_info$analysis)
+          if (!"replicate" %in% colnames(analyses_info)) {
+            analyses_info$replicate <- analyses_info$analysis
+          }
+          analyses_info$replicate <- as.character(analyses_info$replicate)
+          analyses_info$replicate[is.na(analyses_info$replicate) | analyses_info$replicate == ""] <- analyses_info$analysis[is.na(analyses_info$replicate) | analyses_info$replicate == ""]
+          replicate_order <- unique(analyses_info$replicate)
+
+          ft_query <- sprintf(
+            "SELECT feature_group, analysis, intensity FROM Features WHERE feature_group IN (%s)",
+            placeholders
+          )
+          ft_dt <- data.table::as.data.table(DBI::dbGetQuery(conn, ft_query, params = as.list(all_groups)))
+
+          if (nrow(ft_dt) > 0) {
+            ft_dt$feature_group <- as.character(ft_dt$feature_group)
+            ft_dt$analysis <- as.character(ft_dt$analysis)
+            ft_dt$intensity <- suppressWarnings(as.numeric(ft_dt$intensity))
+            ft_dt <- ft_dt[!is.na(feature_group) & feature_group != "" & !is.na(analysis) & analysis != ""]
+
+            # Collapse to one intensity per feature_group/analysis before zero-filling missing analyses.
+            ft_dt <- ft_dt[, .(intensity = max(intensity, na.rm = TRUE)), by = .(feature_group, analysis)]
+            ft_dt[!is.finite(intensity), intensity := 0]
+
+            full_grid <- data.table::CJ(
+              feature_group = unique(all_groups),
+              analysis = unique(analyses_info$analysis),
+              unique = TRUE
+            )
+            full_dt <- full_grid[ft_dt, on = .(feature_group, analysis)]
+            full_dt[is.na(intensity), intensity := 0]
+
+            full_dt <- analyses_info[full_dt, on = .(analysis)]
+            full_dt <- full_dt[!is.na(replicate) & replicate != ""]
+
+            full_dt[, max_intensity := max(intensity, na.rm = TRUE), by = feature_group]
+            full_dt[, norm_intensity := ifelse(max_intensity > 0, intensity / max_intensity, 0)]
+
+            intensity_profile_dt <- full_dt[
+              , .(
+                mean_norm_intensity = mean(norm_intensity, na.rm = TRUE),
+                sd_norm_intensity = stats::sd(norm_intensity, na.rm = TRUE)
+              ),
+              by = .(feature_group, replicate)
+            ]
+            intensity_profile_dt[is.na(sd_norm_intensity), sd_norm_intensity := 0]
+          }
+        }
       }
     }
 
@@ -3263,7 +3328,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   }
 
   # MARK: create_structure_image
-  create_structure_image <- function(smiles, width = 350, height = 250) {
+  create_structure_image <- function(smiles, width_px = 2400, height_px = 1600, dpi = 400) {
     if (is.null(smiles) || is.na(smiles) || !nzchar(smiles)) return("")
     if (!requireNamespace("rcdk", quietly = TRUE)) return("")
     if (!requireNamespace("rJava", quietly = TRUE)) return("")
@@ -3272,16 +3337,28 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     tryCatch(
       {
         mol <- rcdk::parse.smiles(smiles)[[1]]
-        img <- rcdk::view.image.2d(mol)
+        depictor <- rcdk::get.depictor(
+          width = as.integer(width_px),
+          height = as.integer(height_px),
+          fillToFit = TRUE
+        )
+        img <- rcdk::view.image.2d(mol, depictor = depictor)
         temp_file <- tempfile(fileext = ".png")
-        grDevices::png(filename = temp_file, width = width, height = height, res = 300, bg = "transparent")
+        grDevices::png(
+          filename = temp_file,
+          width = width_px,
+          height = height_px,
+          units = "px",
+          res = dpi,
+          bg = "transparent"
+        )
         graphics::par(mar = c(0, 0, 0, 0))
         graphics::plot.new()
-        graphics::rasterImage(img, -0.01, -0.01, 1.01, 1.01)
+        graphics::rasterImage(img, 0, 0, 1, 1, interpolate = FALSE)
         grDevices::dev.off()
         magick_img <- magick::image_read(temp_file)
-        magick_img <- magick::image_transparent(magick_img, "white", fuzz = 5)
-        magick_img <- magick::image_trim(magick_img, fuzz = 5)
+        magick_img <- magick::image_transparent(magick_img, "white", fuzz = 1)
+        magick_img <- magick::image_trim(magick_img, fuzz = 1)
         magick::image_write(magick_img, path = temp_file, format = "png")
         img_base64 <- base64enc::base64encode(temp_file)
         unlink(temp_file)
@@ -3294,11 +3371,12 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   }
 
   # Pre-render all unique structures
-  message("\u2699 Pre-rendering ", length(node_ids), " unique structures...")
+  message("\u2699 Pre-rendering ", length(node_ids), " unique structures...", appendLF = FALSE)
   structure_cache <- setNames(
     lapply(node_ids, function(smiles) create_structure_image(smiles)),
     node_ids
   )
+  message(" Done.")
 
   # MARK: create_ms2_mirror_plot
   create_ms2_mirror_plot <- function(precursor_spectra_list, product_spectra_list, width = 700, height = 400) {
@@ -3370,19 +3448,23 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
         if (length(all_mz) == 0) return("")
         mz_range <- c(floor(min(all_mz)), ceiling(max(all_mz)))
 
-        # Create plot
+        # Create plot with a plotly-like style (light grid, clean axes).
         temp_file <- tempfile(fileext = ".png")
         grDevices::png(filename = temp_file, width = width, height = height, res = 150, bg = "transparent")
-        graphics::par(mar = c(3, 3, 1, 1), mgp = c(2, 0.5, 0), family = "sans")
+        graphics::par(mar = c(3.5, 3.5, 1, 1), mgp = c(2.1, 0.6, 0), family = "sans")
 
         graphics::plot(NULL, xlim = mz_range, ylim = c(-1, 1),
                       xlab = "m/z", ylab = "Relative Intensity",
                       las = 1, cex.lab = 1, cex.axis = 0.9, bty = "n")
-        graphics::abline(h = 0, col = "black", lwd = 1)
+        x_ticks <- pretty(mz_range, n = 8)
+        y_ticks <- seq(-1, 1, by = 0.25)
+        graphics::abline(v = x_ticks, col = grDevices::adjustcolor("#C8D4E3", alpha.f = 0.55), lty = 3, lwd = 0.8)
+        graphics::abline(h = y_ticks, col = grDevices::adjustcolor("#C8D4E3", alpha.f = 0.55), lty = 3, lwd = 0.8)
+        graphics::abline(h = 0, col = "#607D9C", lwd = 1.1)
 
         # Define colors with transparency for overlaying
-        prec_colors <- grDevices::adjustcolor(c("darkred", "red", "tomato", "indianred"), alpha.f = 0.6)
-        prod_colors <- grDevices::adjustcolor(c("orange", "darkorange", "gold", "yellow"), alpha.f = 0.6)
+        prec_colors <- grDevices::adjustcolor(c("#EF553B", "#C0392B", "#FF8A65", "#E57373"), alpha.f = 0.75)
+        prod_colors <- grDevices::adjustcolor(c("#00CC96", "#2E8B57", "#66D19E", "#7BCFA8"), alpha.f = 0.75)
 
         # Plot all precursor spectra (below x-axis, negative)
         for (i in seq_along(prec_spectra)) {
@@ -3391,7 +3473,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             graphics::segments(
               prec_spectra[[i]]$mz[j], 0,
               prec_spectra[[i]]$mz[j], -prec_spectra[[i]]$int[j],
-              col = col, lwd = 1.5
+              col = col, lwd = 1.7
             )
           }
         }
@@ -3403,7 +3485,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             graphics::segments(
               prod_spectra[[i]]$mz[j], 0,
               prod_spectra[[i]]$mz[j], prod_spectra[[i]]$int[j],
-              col = col, lwd = 1.5
+              col = col, lwd = 1.7
             )
           }
         }
@@ -3423,9 +3505,9 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
         }
 
         graphics::text(mz_range[1] + diff(mz_range) * 0.02, 0.9, prod_label,
-                      col = "orange", adj = 0, cex = 0.9, font = 2)
+                col = "#00A67A", adj = 0, cex = 0.88, font = 2)
         graphics::text(mz_range[1] + diff(mz_range) * 0.02, -0.9, prec_label,
-                      col = "darkred", adj = 0, cex = 0.9, font = 2)
+                col = "#D6452F", adj = 0, cex = 0.88, font = 2)
         grDevices::dev.off()
         img_base64 <- base64enc::base64encode(temp_file)
         unlink(temp_file)
@@ -3437,7 +3519,224 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     )
   }
 
-  node_title <- function(node_id) {
+  # MARK: create_intensity_profile_plot
+  create_intensity_profile_plot <- function(profile_dt, replicate_order, width = 700, height = 260) {
+    if (!requireNamespace("base64enc", quietly = TRUE)) return("")
+    if (!requireNamespace("ggplot2", quietly = TRUE)) return("")
+    if (is.null(profile_dt) || nrow(profile_dt) == 0) return("")
+    tryCatch(
+      {
+        plt_dt <- data.table::copy(profile_dt)
+        plt_dt$feature_group <- as.character(plt_dt$feature_group)
+        plt_dt$replicate <- as.character(plt_dt$replicate)
+        if (!is.null(replicate_order) && length(replicate_order) > 0) {
+          ord <- replicate_order[replicate_order %in% plt_dt$replicate]
+          if (length(ord) == 0) ord <- unique(plt_dt$replicate)
+        } else {
+          ord <- unique(plt_dt$replicate)
+        }
+        plt_dt$replicate <- factor(plt_dt$replicate, levels = ord)
+        plt_dt <- plt_dt[order(replicate)]
+
+        if (nrow(plt_dt) == 0) return("")
+
+        cols <- .get_colors(unique(plt_dt$feature_group))
+        plt <- ggplot2::ggplot(
+          plt_dt,
+          ggplot2::aes(x = replicate, y = mean_norm_intensity, color = feature_group, group = feature_group)
+        ) +
+          ggplot2::geom_errorbar(
+            ggplot2::aes(
+              ymin = pmax(0, mean_norm_intensity - sd_norm_intensity),
+              ymax = pmin(1, mean_norm_intensity + sd_norm_intensity)
+            ),
+            width = 0.15,
+            alpha = 0.65,
+            linewidth = 0.45
+          ) +
+          ggplot2::geom_line(linewidth = 0.6) +
+          ggplot2::geom_point(size = 1.8) +
+          ggplot2::scale_color_manual(values = cols) +
+          ggplot2::coord_cartesian(ylim = c(0, 1)) +
+          ggplot2::labs(x = "Replicate Group", y = "Normalized Intensity", color = "feature_group") +
+          ggplot2::theme_minimal(base_size = 10) +
+          ggplot2::theme(
+            legend.position = "right",
+            panel.grid.major = ggplot2::element_line(color = "#DCE3ED", linewidth = 0.35),
+            panel.grid.minor = ggplot2::element_blank(),
+            axis.text.x = ggplot2::element_text(angle = 35, hjust = 1)
+          )
+
+        temp_file <- tempfile(fileext = ".png")
+        ggplot2::ggsave(filename = temp_file, plot = plt, width = width / 150, height = height / 150, dpi = 150, bg = "transparent")
+        img_base64 <- base64enc::base64encode(temp_file)
+        unlink(temp_file)
+        paste0("data:image/png;base64,", img_base64)
+      },
+      error = function(e) {
+        ""
+      }
+    )
+  }
+
+  parse_ms_values <- function(x) {
+    if (is.null(x) || is.na(x) || !nzchar(as.character(x))) return(numeric(0))
+    vals <- tryCatch(rcpp_streamcraft_decode_string(as.character(x)), error = function(e) numeric(0))
+    if (!is.numeric(vals) || length(vals) == 0) return(numeric(0))
+    vals[is.finite(vals)]
+  }
+
+  build_plotly_spectra_payload <- function(as_product) {
+    if (!showMS2 || is.null(ms2_lookup) || nrow(as_product) == 0) return("")
+
+    product_fgs <- unique(as_product$feature_group)
+    product_fgs <- product_fgs[!is.na(product_fgs) & product_fgs != ""]
+    if (length(product_fgs) == 0) return("")
+
+    fg_cols <- .get_colors(product_fgs)
+    traces <- list()
+
+    for (fg in product_fgs) {
+      dt <- ms2_lookup[[fg]]
+      if (is.null(dt) || nrow(dt) == 0) next
+
+      x_seg <- numeric(0)
+      y_seg <- numeric(0)
+      for (i in seq_len(nrow(dt))) {
+        mz <- parse_ms_values(dt$ms2_mz[i])
+        int <- parse_ms_values(dt$ms2_intensity[i])
+        if (length(mz) == 0 || length(int) == 0 || length(mz) != length(int)) next
+        keep <- is.finite(mz) & is.finite(int) & int > 0
+        if (!any(keep)) next
+        mz <- mz[keep]
+        int <- int[keep]
+        max_int <- suppressWarnings(max(int, na.rm = TRUE))
+        if (!is.finite(max_int) || max_int <= 0) next
+        int <- int / max_int
+        x_seg <- c(x_seg, as.vector(rbind(mz, mz, rep(NA_real_, length(mz)))))
+        y_seg <- c(y_seg, as.vector(rbind(rep(0, length(int)), int, rep(NA_real_, length(int)))))
+      }
+      if (length(x_seg) == 0) next
+
+      row_fg <- as_product[as_product$feature_group %in% fg, ]
+      cs <- suppressWarnings(max(as.numeric(row_fg$cosine_similarity), na.rm = TRUE))
+      rt <- suppressWarnings(max(as.numeric(row_fg$rt_plausibility), na.rm = TRUE))
+      cs_lbl <- ifelse(is.finite(cs), sprintf("%.3f", cs), "-")
+      rt_lbl <- ifelse(is.finite(rt), sprintf("%.2f", rt), "-")
+
+      traces[[length(traces) + 1]] <- list(
+        type = "scattergl",
+        mode = "lines",
+        x = as.numeric(x_seg),
+        y = as.numeric(y_seg),
+        name = paste0(fg, " | cos: ", cs_lbl, " | rt: ", rt_lbl),
+        line = list(color = unname(fg_cols[[fg]]), width = 1.5),
+        showlegend = TRUE,
+        hovertemplate = "m/z: %{x:.4f}<br>rel.int: %{y:.3f}<extra></extra>"
+      )
+    }
+
+    precursor_fgs <- unique(as_product$precursor_feature_group)
+    precursor_fgs <- precursor_fgs[!is.na(precursor_fgs) & precursor_fgs != ""]
+    for (fg in precursor_fgs) {
+      dt <- ms2_lookup[[fg]]
+      if (is.null(dt) || nrow(dt) == 0) next
+
+      x_seg <- numeric(0)
+      y_seg <- numeric(0)
+      for (i in seq_len(nrow(dt))) {
+        mz <- parse_ms_values(dt$ms2_mz[i])
+        int <- parse_ms_values(dt$ms2_intensity[i])
+        if (length(mz) == 0 || length(int) == 0 || length(mz) != length(int)) next
+        keep <- is.finite(mz) & is.finite(int) & int > 0
+        if (!any(keep)) next
+        mz <- mz[keep]
+        int <- int[keep]
+        max_int <- suppressWarnings(max(int, na.rm = TRUE))
+        if (!is.finite(max_int) || max_int <= 0) next
+        int <- int / max_int
+        x_seg <- c(x_seg, as.vector(rbind(mz, mz, rep(NA_real_, length(mz)))))
+        y_seg <- c(y_seg, as.vector(rbind(rep(0, length(int)), -int, rep(NA_real_, length(int)))))
+      }
+      if (length(x_seg) == 0) next
+
+      traces[[length(traces) + 1]] <- list(
+        type = "scattergl",
+        mode = "lines",
+        x = as.numeric(x_seg),
+        y = as.numeric(y_seg),
+        name = paste0("Precursor ", fg),
+        line = list(color = "rgba(45,45,45,0.9)", width = 1.8, dash = "dot"),
+        showlegend = FALSE,
+        hovertemplate = "m/z: %{x:.4f}<br>rel.int: %{y:.3f}<extra></extra>"
+      )
+    }
+
+    if (length(traces) == 0) return("")
+
+    payload <- list(
+      traces = traces,
+      layout = list(
+        template = "plotly_white",
+        margin = list(l = 55, r = 20, t = 20, b = 45),
+        xaxis = list(title = "m/z", zeroline = FALSE),
+        yaxis = list(title = "Relative Intensity", range = list(-1, 1), zeroline = TRUE, zerolinecolor = "#607D9C"),
+        legend = list(title = list(text = "Spectra Match"))
+      ),
+      config = list(displayModeBar = TRUE, responsive = TRUE)
+    )
+    jsonlite::toJSON(payload, auto_unbox = TRUE, null = "null", digits = 8)
+  }
+
+  build_plotly_profile_payload <- function(as_product) {
+    if (!showIntensityProfile || is.null(intensity_profile_dt) || nrow(as_product) == 0) return("")
+    node_fgs <- unique(as_product$feature_group)
+    node_fgs <- node_fgs[!is.na(node_fgs) & node_fgs != ""]
+    if (length(node_fgs) == 0) return("")
+
+    dt <- intensity_profile_dt[feature_group %in% node_fgs]
+    if (nrow(dt) == 0) return("")
+
+    dt <- data.table::copy(dt)
+    dt$feature_group <- as.character(dt$feature_group)
+    dt$replicate <- as.character(dt$replicate)
+
+    ord <- replicate_order[replicate_order %in% dt$replicate]
+    if (length(ord) == 0) ord <- unique(dt$replicate)
+    dt$replicate <- factor(dt$replicate, levels = ord)
+    data.table::setorder(dt, replicate)
+
+    cols <- .get_colors(unique(dt$feature_group))
+    traces <- lapply(unique(dt$feature_group), function(fg) {
+      dfg <- dt[feature_group %in% fg]
+      list(
+        type = "scatter",
+        mode = "lines+markers",
+        name = fg,
+        x = as.character(dfg$replicate),
+        y = as.numeric(dfg$mean_norm_intensity),
+        line = list(color = unname(cols[[fg]]), width = 2),
+        marker = list(color = unname(cols[[fg]]), size = 6),
+        error_y = list(type = "data", array = as.numeric(dfg$sd_norm_intensity), visible = TRUE),
+        hovertemplate = "replicate: %{x}<br>norm.int: %{y:.3f}<extra></extra>"
+      )
+    })
+
+    payload <- list(
+      traces = traces,
+      layout = list(
+        template = "plotly_white",
+        margin = list(l = 55, r = 20, t = 20, b = 55),
+        xaxis = list(title = "Replicate Group", tickangle = 35),
+        yaxis = list(title = "Normalized Intensity", range = list(0, 1)),
+        legend = list(title = list(text = "feature_group"))
+      ),
+      config = list(displayModeBar = TRUE, responsive = TRUE)
+    )
+    jsonlite::toJSON(payload, auto_unbox = TRUE, null = "null", digits = 8)
+  }
+
+  node_modal_data <- function(node_id) {
     # Get all rows where this node appears as product, precursor, or main_precursor
     as_product <- tps[tps$SMILES == node_id, ]
     as_precursor <- tps[tps$precursor_SMILES == node_id, ]
@@ -3460,13 +3759,15 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     if (nzchar(node_structure) || nzchar(prec_structure)) {
       structures_html <- paste0(
         '<table style="width:100%;border-collapse:collapse;margin:0;padding:0;"><tr>',
-        '<td style="width:50%;vertical-align:top;padding:5px;text-align:center;">',
+        '<td style="width:38%;vertical-align:middle;padding:4px 6px;text-align:center;">',
         '<div style="font-size:0.75em;font-weight:bold;color:#888;margin-bottom:3px;">Precursor</div>',
-        if (nzchar(prec_structure)) paste0('<img src="', prec_structure, '" style="max-width:100%;height:auto;"/>') else '<div style="color:#ccc;padding:20px;">No structure</div>',
+        if (nzchar(prec_structure)) paste0('<img src="', prec_structure, '" style="width:100%;height:140px;object-fit:contain;"/>') else '<div style="color:#ccc;padding:14px;">No structure</div>',
         '</td>',
-        '<td style="width:50%;vertical-align:top;padding:5px;text-align:center;">',
-        '<div style="font-size:0.75em;font-weight:bold;color:#888;margin-bottom:3px;">This Compound</div>',
-        if (nzchar(node_structure)) paste0('<img src="', node_structure, '" style="max-width:100%;height:auto;"/>') else '<div style="color:#ccc;padding:20px;">No structure</div>',
+        '<td style="width:8%;vertical-align:middle;padding:0 4px;text-align:center;">',
+        '<div style="font-size:2.0em;font-weight:700;color:#5f6b7a;line-height:1;">&#8594;</div>',
+        '</td>',
+        '<td style="width:54%;vertical-align:middle;padding:4px 6px;text-align:center;">',
+        if (nzchar(node_structure)) paste0('<img src="', node_structure, '" style="width:100%;height:220px;object-fit:contain;"/>') else '<div style="color:#ccc;padding:14px;">No structure</div>',
         '</td>',
         '</tr></table>'
       )
@@ -3600,68 +3901,29 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
       }
     }
 
-    # "As Precursor" and "As Main Precursor" sections removed to simplify tooltip
-
-    # MS2 mirror plot section (keeping existing logic)
-    ms2_html <- ""
-    if (!is.null(ms2_lookup) && nrow(as_product) > 0) {
-      # Get MS2 data for product - try all feature groups until we find one with data
-      prod_fg <- unique(as_product$feature_group[!is.na(as_product$feature_group) & as_product$feature_group != ""])
-      prod_ms2 <- NULL
-      if (length(prod_fg) > 0) {
-        for (fg in prod_fg) {
-          if (!is.null(ms2_lookup[[fg]]) && nrow(ms2_lookup[[fg]]) > 0) {
-            prod_ms2 <- ms2_lookup[[fg]]
-            break
-          }
-        }
-      }
-
-      # Get MS2 data for precursor - try all precursor feature groups until we find one with data
-      prec_fg <- unique(as_product$precursor_feature_group)
-      prec_fg <- prec_fg[!is.na(prec_fg) & prec_fg != ""]
-      prec_ms2 <- NULL
-      if (length(prec_fg) > 0) {
-        for (fg in prec_fg) {
-          if (!is.null(ms2_lookup[[fg]]) && nrow(ms2_lookup[[fg]]) > 0) {
-            prec_ms2 <- ms2_lookup[[fg]]
-            break
-          }
-        }
-      }
-
-      # Generate mirror plot if we have data
-      if (!is.null(prod_ms2) || !is.null(prec_ms2)) {
-        ms2_plot <- create_ms2_mirror_plot(
-          precursor_spectra_list = prec_ms2,
-          product_spectra_list = prod_ms2,
-          width = 700,
-          height = 400
-        )
-
-        if (nzchar(ms2_plot)) {
-          ms2_html <- paste0(
-            '<div style="margin-top:8px;border-top:1px solid #ddd;padding-top:8px;">',
-            '<img src="', ms2_plot, '" style="width:100%;height:auto;"/>',
-            '</div>'
-          )
-        }
-      }
-    }
-
-    # Combine all parts
-    paste0(
-      '<div style="line-height:1.2;margin:0;padding:0;max-width:1200px;">',
-      structures_html,
-      metadata_html,
-      relationships_html,
-      ms2_html,
-      '</div>'
+    list(
+      overview_html = paste0(structures_html, metadata_html, relationships_html),
+      spectra_json = build_plotly_spectra_payload(as_product),
+      profile_json = build_plotly_profile_payload(as_product)
     )
   }
-  nodes$title <- vapply(nodes$id, node_title, character(1))
+
+  modal_data <- lapply(nodes$id, node_modal_data)
+  nodes$overview_html <- vapply(modal_data, function(z) z$overview_html, character(1))
+  nodes$spectra_json <- vapply(modal_data, function(z) z$spectra_json, character(1))
+  nodes$profile_json <- vapply(modal_data, function(z) z$profile_json, character(1))
+  nodes$title <- "Double click node to open details"
   nodes$node_label <- nodes$label
-  nodes$group <- "other"
+  nodes$group <- "unassigned"
+
+  # Normalize requested group ids so nodes matching these groups can be highlighted.
+  target_groups <- character(0)
+  if (!is.null(groups)) {
+    groups_chr <- as.character(groups)
+    groups_split <- unlist(strsplit(groups_chr, ";", fixed = TRUE), use.names = FALSE)
+    groups_split <- trimws(groups_split)
+    target_groups <- unique(groups_split[!is.na(groups_split) & groups_split != ""])
+  }
 
   # Nodes that have feature_group assignments (either as product, precursor, or main_precursor)
   node_has_group <- unique(c(
@@ -3671,13 +3933,6 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   ))
   node_has_group <- node_has_group[!is.na(node_has_group) & node_has_group != ""]
 
-  # Main precursors (parent compounds) - unassigned
-  parent_nodes_unassigned <- unique(c(
-    tps$SMILES[tps$transformation %in% "main_precursor" & (is.na(tps$feature_group) | tps$feature_group == "")],
-    tps$main_precursor_SMILES[is.na(tps$main_precursor_feature_group) | tps$main_precursor_feature_group == ""]
-  ))
-  parent_nodes_unassigned <- parent_nodes_unassigned[!is.na(parent_nodes_unassigned) & parent_nodes_unassigned != ""]
-
   # Main precursors (parent compounds) - assigned to feature groups
   parent_nodes <- unique(c(
     tps$SMILES[tps$transformation %in% "main_precursor" & !is.na(tps$feature_group) & tps$feature_group != ""],
@@ -3685,16 +3940,28 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
   ))
   parent_nodes <- parent_nodes[!is.na(parent_nodes) & parent_nodes != ""]
 
-  nodes$group[nodes$id %in% node_has_group] <- "tp"
-  nodes$group[nodes$id %in% parent_nodes_unassigned] <- "parent_unassigned"
+  # Nodes that belong to the groups argument (if provided)
+  nodes_in_target_groups <- character(0)
+  if (length(target_groups) > 0) {
+    nodes_in_target_groups <- unique(c(
+      tps$SMILES[!is.na(tps$feature_group) & tps$feature_group %in% target_groups],
+      tps$precursor_SMILES[!is.na(tps$precursor_feature_group) & tps$precursor_feature_group %in% target_groups],
+      tps$main_precursor_SMILES[!is.na(tps$main_precursor_feature_group) & tps$main_precursor_feature_group %in% target_groups]
+    ))
+    nodes_in_target_groups <- nodes_in_target_groups[!is.na(nodes_in_target_groups) & nodes_in_target_groups != ""]
+  }
+
+  nodes$group[nodes$id %in% node_has_group] <- "assigned"
+  nodes$group[nodes$id %in% nodes_in_target_groups] <- "selected_group"
   nodes$group[nodes$id %in% parent_nodes] <- "parent"
-  nodes$base_color <- "forestgreen"
+
+  nodes$base_color <- "lightgray"
+  nodes$base_color[nodes$group == "assigned"] <- "forestgreen"
+  nodes$base_color[nodes$group == "selected_group"] <- "orange"
   nodes$base_color[nodes$group == "parent"] <- "darkred"
-  nodes$base_color[nodes$group == "parent_unassigned"] <- "black"
-  nodes$base_color[nodes$group == "tp"] <- "orange"
   nodes$color <- nodes$base_color
 
-  visNetwork::visNetwork(nodes, edges, height = "99vh", width = "100%") %>%
+  p <- visNetwork::visNetwork(nodes, edges, height = "99vh", width = "100%") %>%
     visNetwork::visNodes(
       size = 12,
       font = list(
@@ -3705,16 +3972,15 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
       )
     ) %>%
     visNetwork::visGroups(groupname = "parent", color = "darkred") %>%
-    visNetwork::visGroups(groupname = "parent_unassigned", color = "black") %>%
-    visNetwork::visGroups(groupname = "tp", color = "orange") %>%
-    visNetwork::visGroups(groupname = "other", color = "forestgreen") %>%
+    visNetwork::visGroups(groupname = "selected_group", color = "orange") %>%
+    visNetwork::visGroups(groupname = "assigned", color = "forestgreen") %>%
+    visNetwork::visGroups(groupname = "unassigned", color = "lightgray") %>%
     visNetwork::visEdges(
       arrows = "to",
       smooth = TRUE,
       font = list(
         size = 8,
         face = "Arial",
-        ital = TRUE,
         strokeWidth = 0,
         strokeColor = "rgba(0,0,0,0)"
       ),
@@ -3779,13 +4045,22 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
               font: {
                 color: keep[allEdges[j]] ? 'rgba(0,0,0,1)' : 'rgba(0,0,0,0)',
                 face: 'Arial',
-                ital: true,
                 strokeWidth: 0,
                 strokeColor: 'rgba(0,0,0,0)'
               }
             });
           }
           this.body.data.edges.update(updates);
+
+        }"
+      ),
+      doubleClick = htmlwidgets::JS(
+        "function(params) {
+          var selected = (params.nodes && params.nodes.length > 0) ? params.nodes[0] : null;
+          if (!selected) return;
+          if (window.streamfindOpenTPModal) {
+            window.streamfindOpenTPModal(this, selected);
+          }
         }"
       ),
       deselectNode = htmlwidgets::JS(
@@ -3812,7 +4087,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
               hidden: false,
               label: '',
               color: e.base_color,
-              font: { color: 'rgba(0,0,0,0)', face: 'Arial', ital: true, strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
+              font: { color: 'rgba(0,0,0,0)', face: 'Arial', strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
             });
           }
           this.body.data.edges.update(updates);
@@ -3825,7 +4100,7 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             this.body.data.edges.update({
               id: params.edge,
               label: e.edge_label,
-              font: { color: 'rgba(0,0,0,1)', face: 'Arial', ital: true, strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
+              font: { color: 'rgba(0,0,0,1)', face: 'Arial', strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
             });
           }
         }"
@@ -3836,12 +4111,196 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             this.body.data.edges.update({
               id: params.edge,
               label: '',
-              font: { color: 'rgba(0,0,0,0)', face: 'Arial', ital: true, strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
+              font: { color: 'rgba(0,0,0,0)', face: 'Arial', strokeWidth: 0, strokeColor: 'rgba(0,0,0,0)' }
             });
           }
         }"
       )
     )
+
+  modal_markup <- htmltools::tagList(
+    htmltools::tags$style(htmltools::HTML("\
+      #sf-tp-modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,26,38,0.35);z-index:9998;align-items:center;justify-content:center;}\
+      #sf-tp-modal{width:96vw;height:94vh;background:#fff;border-radius:8px;box-shadow:0 20px 50px rgba(0,0,0,0.28);display:flex;flex-direction:column;overflow:hidden;}\
+      #sf-tp-modal-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #e3e3e3;background:#fafafa;}\
+      #sf-tp-modal-title{font-size:15px;font-weight:600;color:#1f2937;}\
+      #sf-tp-modal-close{border:none;background:transparent;font-size:22px;line-height:1;cursor:pointer;color:#666;}\
+      #sf-tp-modal-content{display:grid;grid-template-rows:2fr 1fr 1fr;flex:1 1 auto;min-height:0;height:calc(100% - 0px);}\
+      #sf-tp-overview-row{min-height:0;overflow:auto;padding:8px 12px;border-bottom:1px solid #ececec;}\
+      #sf-tp-overview-content{height:auto;min-height:100%;}  \
+      #sf-tp-spectra-row,#sf-tp-profile-row{min-height:0;overflow:hidden;padding:0;margin:0;}\
+      #sf-tp-spectra-plot,#sf-tp-profile-plot{display:block;box-sizing:border-box;width:100%;height:100%;min-height:0;margin:0;padding:0;overflow:hidden;}\
+      #sf-tp-spectra-plot .js-plotly-plot,#sf-tp-profile-plot .js-plotly-plot{width:100% !important;height:100% !important;}\
+      #sf-tp-spectra-plot .plot-container,#sf-tp-profile-plot .plot-container{width:100% !important;height:100% !important;}\
+      #sf-tp-spectra-plot .svg-container,#sf-tp-profile-plot .svg-container{width:100% !important;height:100% !important;}\
+    ")),
+    htmltools::tags$div(
+      id = "sf-tp-modal-overlay",
+      htmltools::tags$div(
+        id = "sf-tp-modal",
+        htmltools::tags$div(
+          id = "sf-tp-modal-header",
+          htmltools::tags$div(id = "sf-tp-modal-title", "Node Details"),
+          htmltools::tags$button(id = "sf-tp-modal-close", type = "button", "\u00d7")
+        ),
+        htmltools::tags$div(
+          id = "sf-tp-modal-content",
+          htmltools::tags$div(id = "sf-tp-overview-row", htmltools::tags$div(id = "sf-tp-overview-content")),
+          htmltools::tags$div(
+            id = "sf-tp-spectra-row",
+            htmltools::tags$div(id = "sf-tp-spectra-plot")
+          ),
+          htmltools::tags$div(
+            id = "sf-tp-profile-row",
+            htmltools::tags$div(id = "sf-tp-profile-plot")
+          )
+        )
+      )
+    ),
+    htmltools::tags$script(htmltools::HTML("\
+      (function(){\
+        function byId(id){ return document.getElementById(id); }\
+        var init = false;\
+        var resizeObserver = null;\
+        var sfRenderVersion = 0;\
+        function clearPlot(containerId){\
+          var el = byId(containerId);\
+          if (!el) return;\
+          if (window.Plotly) { try { window.Plotly.purge(el); } catch(e){} }\
+          el.innerHTML = '';\
+        }\
+        function resizePlots(){\
+          if (!window.Plotly) return;\
+          var s = byId('sf-tp-spectra-plot');\
+          var p = byId('sf-tp-profile-plot');\
+          if (s) { try { window.Plotly.Plots.resize(s); } catch(e){} }\
+          if (p) { try { window.Plotly.Plots.resize(p); } catch(e){} }\
+        }\
+        function scheduleResize(){\
+          if (!window.requestAnimationFrame) { setTimeout(resizePlots, 0); return; }\
+          window.requestAnimationFrame(function(){\
+            resizePlots();\
+            setTimeout(resizePlots, 40);\
+          });\
+        }\
+        function setNoData(containerId, msg){\
+          var el = byId(containerId);\
+          if (!el) return;\
+          if (window.Plotly) { try { window.Plotly.purge(el); } catch(e){} }\
+          el.innerHTML = '<div style=\"padding:14px;color:#666;font-size:13px;\">' + msg + '</div>';\
+        }\
+        var sfPlotlyLoading = false;\
+        var sfPlotlyWaiters = [];\
+        function withPlotly(ready, fail){\
+          if (window.Plotly) { ready(); return; }\
+          sfPlotlyWaiters.push({ready: ready, fail: fail});\
+          if (sfPlotlyLoading) return;\
+          sfPlotlyLoading = true;\
+          var s = document.createElement('script');\
+          s.src = 'https://cdn.plot.ly/plotly-2.35.2.min.js';\
+          s.async = true;\
+          s.onload = function(){\
+            sfPlotlyLoading = false;\
+            var q = sfPlotlyWaiters.slice(); sfPlotlyWaiters = [];\
+            for (var i = 0; i < q.length; i++) { try { q[i].ready(); } catch(e){} }\
+          };\
+          s.onerror = function(){\
+            sfPlotlyLoading = false;\
+            var q = sfPlotlyWaiters.slice(); sfPlotlyWaiters = [];\
+            for (var i = 0; i < q.length; i++) { if (q[i].fail) { try { q[i].fail(); } catch(e){} } }\
+          };\
+          document.head.appendChild(s);\
+        }\
+        function renderPlot(containerId, payloadJson, noDataMsg, version){\
+          var el = byId(containerId);\
+          if (!el) return;\
+          if (version !== sfRenderVersion) return;\
+          if (!payloadJson){ setNoData(containerId, noDataMsg); return; }\
+          var payload = null;\
+          try { payload = JSON.parse(payloadJson); } catch(e){ payload = null; }\
+          if (!payload || !payload.traces || !payload.traces.length){ setNoData(containerId, noDataMsg); return; }\
+          clearPlot(containerId);\
+          if (!window.Plotly){ setNoData(containerId, 'Loading interactive plot...'); }\
+          withPlotly(function(){\
+            try {\
+              if (version !== sfRenderVersion) return;\
+              var target = byId(containerId);\
+              if (!target) return;\
+              var layout = Object.assign({}, payload.layout || {}, {autosize: true});\
+              var config = Object.assign({responsive: true}, payload.config || {});\
+              window.Plotly.react(target, payload.traces, layout, config).then(function(){\
+                if (version !== sfRenderVersion) return;\
+                scheduleResize();\
+              });\
+            } catch(e){\
+              if (version !== sfRenderVersion) return;\
+              setNoData(containerId, 'Could not render interactive plot.');\
+            }\
+          }, function(){\
+            if (version !== sfRenderVersion) return;\
+            setNoData(containerId, 'Plotly JS not available in this page.');\
+          });\
+        }\
+        function closeModal(){\
+          var ov = byId('sf-tp-modal-overlay');\
+          if (!ov) return;\
+          sfRenderVersion += 1;\
+          clearPlot('sf-tp-spectra-plot');\
+          clearPlot('sf-tp-profile-plot');\
+          ov.style.display = 'none';\
+        }\
+        function ensureInit(){\
+          if (init) return;\
+          init = true;\
+          var ov = byId('sf-tp-modal-overlay');\
+          var close = byId('sf-tp-modal-close');\
+          if (close) close.addEventListener('click', closeModal);\
+          if (ov) ov.addEventListener('click', function(e){ if (e.target === ov) closeModal(); });\
+          document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });\
+          window.addEventListener('resize', scheduleResize);\
+          if (window.ResizeObserver){\
+            resizeObserver = new window.ResizeObserver(function(){ scheduleResize(); });\
+            var target = byId('sf-tp-modal-content');\
+            if (target) resizeObserver.observe(target);\
+          }\
+        }\
+        window.streamfindOpenTPModal = function(network, nodeId){\
+          ensureInit();\
+          sfRenderVersion += 1;\
+          var renderVersion = sfRenderVersion;\
+          var node = null;\
+          try { node = network.body.data.nodes.get(nodeId); } catch(e){ node = null; }\
+          if (!node) return;\
+          var ov = byId('sf-tp-modal-overlay');\
+          if (!ov) return;\
+          byId('sf-tp-modal-title').textContent = node.node_label || node.id || 'Node Details';\
+          byId('sf-tp-overview-content').innerHTML = node.overview_html || '<div style=\"color:#666;\">No overview data.</div>';\
+          renderPlot('sf-tp-spectra-plot', node.spectra_json, 'MS2 spectra not available for this node.', renderVersion);\
+          renderPlot('sf-tp-profile-plot', node.profile_json, 'Intensity profile not available for this node.', renderVersion);\
+          ov.style.display = 'flex';\
+          scheduleResize();\
+        };\
+      })();\
+    "))
+  )
+
+  p <- htmlwidgets::prependContent(p, modal_markup)
+  if (requireNamespace("plotly", quietly = TRUE)) {
+    dep_src <- plotly::plotly_build(
+      plotly::plot_ly(
+        x = c(0, 1),
+        y = c(0, 1),
+        type = "scatter",
+        mode = "lines"
+      )
+    )
+    dep_list <- htmltools::findDependencies(dep_src)
+    if (length(dep_list) > 0) {
+      p <- htmltools::attachDependencies(p, dep_list, append = TRUE)
+    }
+  }
+
+  p
 }
 
 # MARK: .validate_DB_MassSpecResults_NonTargetAnalysis_features_dt

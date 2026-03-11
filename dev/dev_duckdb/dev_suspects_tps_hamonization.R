@@ -92,7 +92,7 @@ sus <- data.table::fread(
 # )
 
 tps <- search_transformation_products_biotransformer(
-  parents = sus[c(2, 13), ],
+  parents = sus[c(2, 9), ],
   biotransformerOption = c(
     "ABIOTICBIO"
   ),
