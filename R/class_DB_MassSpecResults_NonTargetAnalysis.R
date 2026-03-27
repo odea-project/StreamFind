@@ -284,6 +284,18 @@ plot_features_count.DB_MassSpecResults_NonTargetAnalysis <- function(
     stop("groupBy must be one of: ", paste(allowed_group_by, collapse = ", "))
   }
 
+  analyses_info <- data.table::as.data.table(info(x$analyses))
+  analyses_info$analysis <- as.character(analyses_info$analysis)
+  analyses_info$replicate <- as.character(analyses_info$replicate)
+  sel_names <- if (is.null(analyses)) {
+    analyses_info$analysis
+  } else {
+    .resolve_analyses_selection(analyses, analyses_info$analysis)
+  }
+  analyses_info <- analyses_info[analysis %in% sel_names, .(analysis, replicate)]
+  analysis_order <- analyses_info$analysis
+  replicate_order <- unique(analyses_info$replicate)
+
   if (groupBy == "replicate") {
     info$analysis <- info$replicate
   }
@@ -689,6 +701,24 @@ plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
     stop("groupBy must be one of: ", paste(allowed_group_by, collapse = ", "))
   }
 
+  analyses_info <- info(x$analyses)
+  analysis_in_prof <- unique(as.character(prof$analysis))
+  analysis_order <- analyses_info$analysis[analyses_info$analysis %in% analysis_in_prof]
+  missing_analyses <- setdiff(analysis_in_prof, analysis_order)
+  if (length(missing_analyses) > 0) {
+    analysis_order <- c(analysis_order, missing_analyses)
+  }
+
+  replicate_order <- unique(analyses_info$replicate[analyses_info$analysis %in% analysis_order])
+  replicate_order <- as.character(replicate_order[!is.na(replicate_order)])
+  if ("replicate" %in% colnames(prof)) {
+    replicate_in_prof <- unique(as.character(prof$replicate))
+    missing_replicates <- setdiff(replicate_in_prof, replicate_order)
+    if (length(missing_replicates) > 0) {
+      replicate_order <- c(replicate_order, missing_replicates)
+    }
+  }
+
   if (normalized) {
     prof[, intensity := {
       max_int <- max(intensity, na.rm = TRUE)
@@ -712,8 +742,18 @@ plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
   }
 
   x_col <- if (groupBy == "replicate") "replicate" else "analysis"
-  prof[[x_col]] <- as.character(prof[[x_col]])
   prof$feature_group <- as.character(prof$feature_group)
+
+  if (groupBy == "replicate") {
+    ord <- replicate_order[replicate_order %in% as.character(prof$replicate)]
+    if (length(ord) == 0) ord <- unique(as.character(prof$replicate))
+    prof$replicate <- factor(as.character(prof$replicate), levels = ord)
+  } else {
+    ord <- analysis_order[analysis_order %in% as.character(prof$analysis)]
+    if (length(ord) == 0) ord <- unique(as.character(prof$analysis))
+    prof$analysis <- factor(as.character(prof$analysis), levels = ord)
+  }
+  data.table::setorderv(prof, c("feature_group", x_col))
 
   if (is.null(yLab)) {
     yLab <- if (normalized) "Relative intensity" else "Intensity"
@@ -747,7 +787,7 @@ plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
   colors_tag <- .get_colors(unique(prof$feature_group))
   hover_text <- paste0(
     "group: ", prof$feature_group,
-    "<br>", xLab, ": ", prof[[x_col]],
+    "<br>", xLab, ": ", as.character(prof[[x_col]]),
     "<br>intensity: ", round(prof$intensity, 3)
   )
 
@@ -758,7 +798,7 @@ plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
 
   plot <- plotly::plot_ly(
     data = prof,
-    x = prof[[x_col]],
+    x = as.character(prof[[x_col]]),
     y = ~intensity,
     type = "scattergl",
     mode = "lines+markers",
@@ -773,7 +813,13 @@ plot_features_profile.DB_MassSpecResults_NonTargetAnalysis <- function(
   plot <- plot %>%
     plotly::layout(
       title = title,
-      xaxis = list(title = NULL, tickfont = list(size = 12)),
+      xaxis = list(
+        title = NULL,
+        tickfont = list(size = 12),
+        type = "category",
+        categoryorder = "array",
+        categoryarray = as.list(ord)
+      ),
       yaxis = list(title = yLab, tickfont = list(size = 12)),
       legend = list(title = list(text = "feature_group"))
     )
@@ -3089,7 +3135,7 @@ plot_fold_change.DB_MassSpecResults_NonTargetAnalysis <- function(
 #' @param parents Optional character vector of parent compound names to filter results. When provided,
 #' returns only transformation products where the precursor or product name matches one of the specified parents.
 #' @param groups Optional character vector of feature_group IDs to filter results. When provided, the function
-#' expands the network to include all connected precursors and products. Semicolon-separated groups are also supported.
+#' expands the network to include all connected precursors and products.
 #' @return A data.table containing transformation products with their associated metadata, including precursor information,
 #' transformation types, and structural identifiers (SMILES).
 #' @export
@@ -3106,20 +3152,14 @@ get_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x, 
   tps <- DBI::dbGetQuery(conn, "SELECT * FROM TransformationProducts")
   tps <- data.table::as.data.table(tps)
   if (!is.null(groups)) {
-    if (length(groups) == 1 && grepl(";", groups, fixed = TRUE)) {
-      groups <- unlist(strsplit(groups, ";", fixed = TRUE))
-    }
     groups <- trimws(groups)
     groups <- groups[groups != ""]
     if (length(groups) > 0) {
-      split_groups <- function(x) {
-        if (is.na(x) || !nzchar(x)) return(character(0))
-        parts <- unlist(strsplit(x, ";", fixed = TRUE))
-        parts <- trimws(parts)
-        parts[parts != ""]
-      }
+      # TransformationProducts rows store one feature_group per row.
       match_group <- function(x) {
-        any(split_groups(x) %in% groups)
+        if (is.na(x) || !nzchar(x)) return(FALSE)
+        x <- trimws(as.character(x))
+        x %in% groups
       }
       # Seed with rows matching any of the three feature_group columns
       seed_rows <- tps[
@@ -3200,14 +3240,26 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
     if (length(all_groups) > 0) {
       placeholders <- paste(rep("?", length(all_groups)), collapse = ", ")
 
+      # Query Features once and reuse for MS2 and intensity profile payloads.
+      select_cols <- c("feature_group", "analysis")
+      if (showIntensityProfile) {
+        select_cols <- c(select_cols, "intensity")
+      }
       if (showMS2) {
-        # Query Features table for ALL MS2 data (including analysis for multiple spectra)
-        query <- sprintf(
-          "SELECT feature_group, analysis, ms2_mz, ms2_intensity FROM Features WHERE feature_group IN (%s) AND ms2_mz IS NOT NULL AND ms2_mz != ''",
-          placeholders
-        )
-        ms2_data <- DBI::dbGetQuery(conn, query, params = as.list(all_groups))
-        ms2_data <- data.table::as.data.table(ms2_data)
+        select_cols <- c(select_cols, "ms2_mz", "ms2_intensity")
+      }
+      feature_query <- sprintf(
+        "SELECT %s FROM Features WHERE feature_group IN (%s) AND (filtered = FALSE OR filtered IS NULL)",
+        paste(unique(select_cols), collapse = ", "),
+        placeholders
+      )
+      feature_dt <- data.table::as.data.table(DBI::dbGetQuery(conn, feature_query, params = as.list(all_groups)))
+
+      if (showMS2) {
+        ms2_data <- feature_dt[
+          !is.na(ms2_mz) & ms2_mz != "",
+          .(feature_group, analysis, ms2_mz, ms2_intensity)
+        ]
 
         # Create lookup list for MS2 data by feature_group
         if (nrow(ms2_data) > 0) {
@@ -3223,14 +3275,13 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
         }
         if (nrow(analyses_info) > 0) {
           analyses_info$analysis <- as.character(analyses_info$analysis)
-          if (!"replicate" %in% colnames(analyses_info)) {
-            analyses_info$replicate <- analyses_info$analysis
-          }
           analyses_info$replicate <- as.character(analyses_info$replicate)
-          analyses_info$replicate[is.na(analyses_info$replicate) | analyses_info$replicate == ""] <- analyses_info$analysis[is.na(analyses_info$replicate) | analyses_info$replicate == ""]
           analyses_info <- unique(analyses_info[, .(analysis, replicate)])
+          info_order <- as.character(info(x$analyses)$analysis)
+          analyses_info <- analyses_info[match(analyses_info$analysis, info_order), ]
           analyses_info <- analyses_info[!is.na(analysis) & analysis != "" & !is.na(replicate) & replicate != ""]
-          analyses_info[, analysis_order := seq_len(.N)]
+          rpls <- analyses_info$replicate
+          names(rpls) <- analyses_info$analysis
           replicate_order <- unique(analyses_info$replicate)
 
           # Template used to keep replicate order and force all replicate categories on x-axis.
@@ -3239,60 +3290,43 @@ plot_transformation_products.DB_MassSpecResults_NonTargetAnalysis <- function(x,
             replicate_order = seq_along(replicate_order)
           )
 
-          ft_query <- sprintf(
-            "SELECT feature_group, analysis, intensity FROM Features WHERE feature_group IN (%s)",
-            placeholders
-          )
-          ft_dt <- data.table::as.data.table(DBI::dbGetQuery(conn, ft_query, params = as.list(all_groups)))
+          ft_dt <- feature_dt[, .(feature_group, analysis, intensity)]
 
           if (nrow(ft_dt) > 0) {
             ft_dt$feature_group <- as.character(ft_dt$feature_group)
             ft_dt$analysis <- as.character(ft_dt$analysis)
             ft_dt$intensity <- suppressWarnings(as.numeric(ft_dt$intensity))
             ft_dt <- ft_dt[!is.na(feature_group) & feature_group != "" & !is.na(analysis) & analysis != ""]
-            ft_dt <- ft_dt[, .(intensity = mean(intensity, na.rm = TRUE)), by = .(feature_group, analysis)]
+            ft_dt$replicate <- unname(rpls[ft_dt$analysis])
+            ft_dt <- ft_dt[!is.na(replicate) & replicate != ""]
+
+            # Collapse duplicates first at feature_group/analysis level.
+            ft_dt <- ft_dt[
+              , .(intensity = mean(intensity, na.rm = TRUE), replicate = replicate[1]),
+              by = .(feature_group, analysis)
+            ]
             ft_dt[!is.finite(intensity), intensity := 0]
+
+            # Summarize intensities by feature_group within each replicate.
+            intensity_profile_dt <- ft_dt[
+              , .(
+                mean_intensity = mean(intensity, na.rm = TRUE),
+                sd_intensity = stats::sd(intensity, na.rm = TRUE)
+              ),
+              by = .(feature_group, replicate)
+            ]
+            intensity_profile_dt[!is.finite(sd_intensity), sd_intensity := 0]
           } else {
             ft_dt <- data.table::data.table(feature_group = character(0), analysis = character(0), intensity = numeric(0))
+            intensity_profile_dt <- data.table::data.table(
+              feature_group = character(0),
+              replicate = character(0),
+              mean_intensity = numeric(0),
+              sd_intensity = numeric(0)
+            )
           }
 
-          # Build complete feature_group x analysis table and keep zeros for missing combinations.
-          analysis_grid <- data.table::CJ(
-            feature_group = unique(all_groups),
-            analysis = analyses_info$analysis,
-            sorted = FALSE,
-            unique = TRUE
-          )
-          full_dt <- merge(
-            analysis_grid,
-            ft_dt,
-            by = c("feature_group", "analysis"),
-            all.x = TRUE,
-            sort = FALSE
-          )
-          full_dt[is.na(intensity) | !is.finite(intensity), intensity := 0]
-
-          full_dt <- merge(
-            full_dt,
-            analyses_info,
-            by = "analysis",
-            all.x = TRUE,
-            sort = FALSE
-          )
-          full_dt <- full_dt[!is.na(replicate) & replicate != ""]
-          data.table::setorder(full_dt, feature_group, analysis_order)
-
-          # Average and SD by feature_group within each replicate.
-          intensity_profile_dt <- full_dt[
-            , .(
-              mean_intensity = mean(intensity, na.rm = TRUE),
-              sd_intensity = stats::sd(intensity, na.rm = TRUE)
-            ),
-            by = .(feature_group, replicate)
-          ]
-          intensity_profile_dt[!is.finite(sd_intensity), sd_intensity := 0]
-
-          # Force complete feature_group x replicate table and fill absent groups with zeros.
+          # Replicate-level zero imputation: if a feature_group is absent in a replicate, set mean/sd to zero.
           rep_grid <- data.table::CJ(
             feature_group = unique(all_groups),
             replicate = replicate_order,

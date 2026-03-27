@@ -112,6 +112,53 @@ namespace
     return true;
   }
 
+  void validate_per_analysis_list(const Rcpp::List &info,
+                                  const Rcpp::List &input,
+                                  const std::string &arg_name)
+  {
+    if (!info.containsElementNamed("analysis"))
+    {
+      Rcpp::stop("validate_per_analysis_list: info is missing 'analysis' column");
+    }
+
+    std::vector<std::string> analyses = Rcpp::as<std::vector<std::string>>(info["analysis"]);
+    const R_xlen_t expected = static_cast<R_xlen_t>(analyses.size());
+    const R_xlen_t got = input.size();
+
+    if (got != expected)
+    {
+      Rcpp::stop("%s size mismatch: expected %d entries (one per analysis), got %d",
+                 arg_name.c_str(),
+                 static_cast<int>(expected),
+                 static_cast<int>(got));
+    }
+
+    Rcpp::CharacterVector nms = input.names();
+    if (nms.size() != got)
+    {
+      Rcpp::stop("%s must be a named list with one entry per analysis", arg_name.c_str());
+    }
+
+    for (R_xlen_t i = 0; i < got; ++i)
+    {
+      if (nms[i] == NA_STRING)
+      {
+        Rcpp::stop("%s has missing name at position %d", arg_name.c_str(), static_cast<int>(i + 1));
+      }
+
+      std::string got_name = Rcpp::as<std::string>(nms[i]);
+      const std::string &expected_name = analyses[static_cast<size_t>(i)];
+      if (got_name != expected_name)
+      {
+        Rcpp::stop("%s name/order mismatch at position %d: expected '%s', got '%s'",
+                   arg_name.c_str(),
+                   static_cast<int>(i + 1),
+                   expected_name.c_str(),
+                   got_name.c_str());
+      }
+    }
+  }
+
   nts::NTS_INFO as_nts_info(const Rcpp::List &info)
   {
     nts::NTS_INFO out;
@@ -317,34 +364,6 @@ namespace
       const Rcpp::List &feature_ref = Rcpp::as<Rcpp::List>(feature_list[i]);
       out[i] = features_from_list(feature_ref);
     }
-    return out;
-  }
-
-  std::vector<nts::alignment::InternalStandard> as_internal_standards(const Rcpp::List &internal_standards_list)
-  {
-    std::vector<nts::alignment::InternalStandard> out;
-    if (internal_standards_list.size() == 0)
-    {
-      return out;
-    }
-
-    Rcpp::CharacterVector istd_analysis = internal_standards_list["analysis"];
-    Rcpp::CharacterVector istd_name = internal_standards_list["name"];
-    Rcpp::NumericVector istd_exp_rt = internal_standards_list["exp_rt"];
-    Rcpp::NumericVector istd_avg_rt = internal_standards_list["avg_exp_rt"];
-    Rcpp::NumericVector istd_rt_shift = internal_standards_list["rt_shift"];
-
-    for (int i = 0; i < istd_analysis.size(); ++i)
-    {
-      nts::alignment::InternalStandard istd;
-      istd.analysis = Rcpp::as<std::string>(istd_analysis[i]);
-      istd.name = Rcpp::as<std::string>(istd_name[i]);
-      istd.exp_rt = istd_exp_rt[i];
-      istd.avg_rt = istd_avg_rt[i];
-      istd.rt_shift = istd_rt_shift[i];
-      out.push_back(istd);
-    }
-
     return out;
   }
 
@@ -906,6 +925,7 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
                                    std::string debugAnalysis = "",
                                    float debugMZ = 0.0,
                                    int debugSpecIdx = -1) {
+  validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp;
@@ -941,6 +961,8 @@ Rcpp::List rcpp_nts_load_features_ms1_2(Rcpp::List info,
                                         float mzClust,
                                         float presence)
 {
+  validate_per_analysis_list(info, spectra_headers, "spectra_headers");
+  validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
@@ -968,6 +990,8 @@ Rcpp::List rcpp_nts_load_features_ms2_2(Rcpp::List info,
                                         float mzClust,
                                         float presence)
 {
+  validate_per_analysis_list(info, spectra_headers, "spectra_headers");
+  validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
@@ -993,6 +1017,8 @@ Rcpp::List rcpp_nts_create_components(Rcpp::List info,
                                       float debugRT = 0.0,
                                       std::string debugAnalysis = "")
 {
+  validate_per_analysis_list(info, spectra_headers, "spectra_headers");
+  validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
@@ -1015,6 +1041,8 @@ Rcpp::List rcpp_nts_annotate_components(Rcpp::List info,
                                         std::string debugComponent = "",
                                         std::string debugAnalysis = "")
 {
+  validate_per_analysis_list(info, spectra_headers, "spectra_headers");
+  validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
@@ -1039,6 +1067,12 @@ Rcpp::List rcpp_nts_group_features_2(Rcpp::List info,
                                      bool debug = false,
                                      float debugRT = 0.0)
 {
+  validate_per_analysis_list(info, spectra_headers, "spectra_headers");
+  validate_per_analysis_list(info, feature_list, "feature_list");
+  if (!Rf_isNull(internal_standards_list))
+  {
+    validate_per_analysis_list(info, internal_standards_list, "internal_standards_list");
+  }
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
@@ -1067,6 +1101,8 @@ Rcpp::List rcpp_nts_fill_features_2(Rcpp::List info,
                                     float minGaussianFit = 0.2,
                                     std::string debugFG = "")
 {
+  validate_per_analysis_list(info, spectra_headers, "spectra_headers");
+  validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
@@ -1098,6 +1134,8 @@ Rcpp::List rcpp_nts_blank_subtraction_2(Rcpp::List info,
                                         float rtExpand = 10.0,
                                         float mzExpand = 0.005)
 {
+  validate_per_analysis_list(info, spectra_headers, "spectra_headers");
+  validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
@@ -1145,6 +1183,7 @@ Rcpp::List rcpp_nts_filter_features_2(
     bool removeAdducts = false,
     bool removeLosses = false)
 {
+  validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
   std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp;
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);

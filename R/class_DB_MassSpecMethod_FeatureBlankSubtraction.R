@@ -104,7 +104,13 @@ run.DB_MassSpecMethod_FeatureBlankSubtraction_native <- function(x, engine = NUL
 
   analyses_db <- query_db(engine$Analyses, "SELECT * FROM Analyses")
   spectra_headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
-  headers_list <- split(spectra_headers, spectra_headers$analysis)
+  # Keep headers in the exact same analysis order used for info/feature_list.
+  headers_split <- split(spectra_headers, spectra_headers$analysis)
+  headers_list <- lapply(analyses_db$analysis, function(ana) {
+    hd <- headers_split[[ana]]
+    if (is.null(hd)) spectra_headers[0, ] else hd
+  })
+  names(headers_list) <- analyses_db$analysis
 
   feature_list <- lapply(analyses_db$analysis, function(ana) {
     ana_features <- fts[fts$analysis == ana, ]

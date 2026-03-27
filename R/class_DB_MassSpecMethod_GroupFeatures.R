@@ -146,11 +146,20 @@ run.DB_MassSpecMethod_GroupFeatures_native <- function(x, engine = NULL) {
   analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
   spectra_headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
 
-  # Split by analysis
-  headers_list <- split(spectra_headers, spectra_headers$analysis)
+  # Keep per-analysis lists in the exact analysis order passed to Rcpp.
+  headers_split <- split(spectra_headers, spectra_headers$analysis)
+  headers_list <- lapply(analyses$analysis, function(ana) {
+    hd <- headers_split[[ana]]
+    if (is.null(hd)) spectra_headers[0, ] else hd
+  })
+  names(headers_list) <- analyses$analysis
 
-  # Convert features to list format expected by C++
-  feature_list <- split(features, features$analysis)
+  features_split <- split(features, features$analysis)
+  feature_list <- lapply(analyses$analysis, function(ana) {
+    fts <- features_split[[ana]]
+    if (is.null(fts)) features[0, ] else fts
+  })
+  names(feature_list) <- analyses$analysis
 
   # Get database connection for later updates
   conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
@@ -169,8 +178,13 @@ run.DB_MassSpecMethod_GroupFeatures_native <- function(x, engine = NULL) {
     )
 
     if (!is.null(internal_standards) && nrow(internal_standards) > 0) {
-      # Split by analysis for C++
-      internal_standards_list <- split(internal_standards, internal_standards$analysis)
+      # Split by analysis for C++ and align with analyses order.
+      istd_split <- split(internal_standards, internal_standards$analysis)
+      internal_standards_list <- lapply(analyses$analysis, function(ana) {
+        istd <- istd_split[[ana]]
+        if (is.null(istd)) internal_standards[0, ] else istd
+      })
+      names(internal_standards_list) <- analyses$analysis
       message("\U2139 Using ", nrow(internal_standards), " internal standards for alignment.")
     } else {
       warning("Internal standards not found but required for grouping with internal_standards method.")

@@ -91,8 +91,19 @@ run.DB_MassSpecMethod_LoadFeaturesMS1_native <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  headers_list <- split(headers, headers$analysis)
-  features_list <- split(features, features$analysis)
+  headers_split <- split(headers, headers$analysis)
+  headers_list <- lapply(analyses$analysis, function(ana) {
+    hd <- headers_split[[ana]]
+    if (is.null(hd)) headers[0, ] else hd
+  })
+  names(headers_list) <- analyses$analysis
+
+  features_split <- split(features, features$analysis)
+  features_list <- lapply(analyses$analysis, function(ana) {
+    fts <- features_split[[ana]]
+    if (is.null(fts)) features[0, ] else fts
+  })
+  names(features_list) <- analyses$analysis
 
   parameters <- x$parameters
 

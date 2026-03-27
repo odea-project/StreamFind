@@ -149,8 +149,13 @@ run.DB_MassSpecMethod_FillFeatures_native <- function(x, engine = NULL) {
   analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
   spectra_headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
 
-  # Split by analysis
-  headers_list <- split(spectra_headers, spectra_headers$analysis)
+  # Keep headers in the exact same analysis order used for info/feature_list.
+  headers_split <- split(spectra_headers, spectra_headers$analysis)
+  headers_list <- lapply(analyses$analysis, function(ana) {
+    hd <- headers_split[[ana]]
+    if (is.null(hd)) spectra_headers[0, ] else hd
+  })
+  names(headers_list) <- analyses$analysis
 
   # Convert features to list format expected by C++
   # Ensure all analyses are represented, even if they have no features

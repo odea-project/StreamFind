@@ -107,7 +107,12 @@ run.DB_MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
   }
 
   headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
-  headers_list <- split(headers, headers$analysis)
+  headers_split <- split(headers, headers$analysis)
+  headers_list <- lapply(analyses$analysis, function(ana) {
+    hd <- headers_split[[ana]]
+    if (is.null(hd)) headers[0, ] else hd
+  })
+  names(headers_list) <- analyses$analysis
   parameters <- x$parameters
 
   cache_manager <- engine$Cache
