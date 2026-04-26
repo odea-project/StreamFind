@@ -2,9 +2,9 @@
 % Please edit documentation in R/class_Engine.R
 \name{Engine}
 \alias{Engine}
-\title{Generic (top level) Engine class for project management}
+\title{File-based Database Engine for StreamFind}
 \description{
-The \link{Engine} R6 class is used to harmonize the interface across different data types for data management and processing.
+The \link{Engine} R6 class provides file-based storage for StreamFind Engine data using DuckDB.
 }
 \note{
 The engine data is saved in an \strong{rds} file and loaded in the app. If save file is
@@ -15,20 +15,15 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{Metadata}}{A \link{Metadata} object. When setting it can also be a named list with elements of length one.}
+\item{\code{Metadata}}{A \link{Metadata} object loaded from database.}
 
-\item{\code{Workflow}}{A \link{Workflow} S3 class object. When settings can also be a list of \link{ProcessingStep} objects or a full path string to an \strong{rds} or \strong{json} file containing a \link{Workflow} object.}
+\item{\code{Workflow}}{A \link{Workflow} object loaded from database.}
 
-\item{\code{Analyses}}{An \link{Analyses} S3 class object or a child for a specific data type.}
+\item{\code{Analyses}}{A \link{Analyses} child object.}
 
-\item{\code{Results}}{A named list of \link{Results} S3 class objects or a child for specific results.}
+\item{\code{AuditTrail}}{Audit trail from database (read-only).}
 
-\item{\code{AuditTrail}}{An \link{AuditTrail} S3 class object. Only getter method.}
-
-\item{\code{Config}}{An \link{EngineConfig} S3 class object.}
-
-\item{\code{type}}{A character string with the data type of the engine.
-This is a read-only field.}
+\item{\code{Cache}}{A \link{Cache} object for managing cached data.}
 }
 \if{html}{\out{</div>}}
 }
@@ -36,17 +31,24 @@ This is a read-only field.}
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Engine-new}{\code{Engine$new()}}
-\item \href{#method-Engine-clear_cache}{\code{Engine$clear_cache()}}
-\item \href{#method-Engine-clear_results}{\code{Engine$clear_results()}}
-\item \href{#method-Engine-get_cache_info}{\code{Engine$get_cache_info()}}
-\item \href{#method-Engine-get_cache_size}{\code{Engine$get_cache_size()}}
-\item \href{#method-Engine-has_analyses}{\code{Engine$has_analyses()}}
-\item \href{#method-Engine-has_results}{\code{Engine$has_results()}}
-\item \href{#method-Engine-load}{\code{Engine$load()}}
+\item \href{#method-Engine-get_project_path}{\code{Engine$get_project_path()}}
 \item \href{#method-Engine-print}{\code{Engine$print()}}
-\item \href{#method-Engine-save}{\code{Engine$save()}}
+\item \href{#method-Engine-get_metadata}{\code{Engine$get_metadata()}}
+\item \href{#method-Engine-add_metadata}{\code{Engine$add_metadata()}}
+\item \href{#method-Engine-get_workflow}{\code{Engine$get_workflow()}}
+\item \href{#method-Engine-add_workflow}{\code{Engine$add_workflow()}}
 \item \href{#method-Engine-run}{\code{Engine$run()}}
 \item \href{#method-Engine-run_workflow}{\code{Engine$run_workflow()}}
+\item \href{#method-Engine-get_audit_trail}{\code{Engine$get_audit_trail()}}
+\item \href{#method-Engine-add_audit_entry}{\code{Engine$add_audit_entry()}}
+\item \href{#method-Engine-get_cache_info}{\code{Engine$get_cache_info()}}
+\item \href{#method-Engine-get_cache_size}{\code{Engine$get_cache_size()}}
+\item \href{#method-Engine-clear_cache}{\code{Engine$clear_cache()}}
+\item \href{#method-Engine-clear_result_databases}{\code{Engine$clear_result_databases()}}
+\item \href{#method-Engine-get_engine_info}{\code{Engine$get_engine_info()}}
+\item \href{#method-Engine-query_db}{\code{Engine$query_db()}}
+\item \href{#method-Engine-list_db_tables}{\code{Engine$list_db_tables()}}
+\item \href{#method-Engine-get_db_table_info}{\code{Engine$get_db_table_info()}}
 \item \href{#method-Engine-report_quarto}{\code{Engine$report_quarto()}}
 \item \href{#method-Engine-run_app}{\code{Engine$run_app()}}
 \item \href{#method-Engine-clone}{\code{Engine$clone()}}
@@ -56,14 +58,21 @@ This is a read-only field.}
 \if{html}{\out{<a id="method-Engine-new"></a>}}
 \if{latex}{\out{\hypertarget{method-Engine-new}{}}}
 \subsection{Method \code{new()}}{
-Creates an \link{Engine} R6 class object.
+Initialize Engine.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$new(metadata = NULL, workflow = NULL, analyses = NULL, ...)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Engine$new(
+  projectPath = "data",
+  metadata = NULL,
+  workflow = NULL,
+  dataType = "Unknown"
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{projectPath}}{Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing projectPath, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the projectPath does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.}
+
 \item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
 There is no type restrictions except for name (must be type character), author (must be type
 character) and date (must be class POSIXct or POSIXt). A file entry must be a character string
@@ -72,110 +81,22 @@ with a full path to a file.}
 \item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
 with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
 
-\item{\code{analyses}}{An \code{Analyses} child class or a data specific analyses input.
-See each data specific engine for details.}
-
-\item{\code{...}}{Additional arguments passed to the method, internal use only.}
+\item{\code{dataType}}{Engine data type (internal; defaults to "Unknown").}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-clear_cache"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-clear_cache}{}}}
-\subsection{Method \code{clear_cache()}}{
-Clears the cache.
+\if{html}{\out{<a id="method-Engine-get_project_path"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_project_path}{}}}
+\subsection{Method \code{get_project_path()}}{
+Get the project path.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$clear_cache(value = NULL)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_project_path()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A character vector with the names of the cache categories to clear. An integer
-vector with the indices of the categories to clear can alternatively be given to remove
-categories. If \code{NULL} (the default), the entire cache is cleared. Use the method
-\code{get_cache_info} to get the cached categories.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-clear_results"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-clear_results}{}}}
-\subsection{Method \code{clear_results()}}{
-Clears all result objects in the \code{Analyses} field.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$clear_results()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-get_cache_info"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-get_cache_info}{}}}
-\subsection{Method \code{get_cache_info()}}{
-Gets a \code{data.table} with the cached data categories.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$get_cache_info()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-get_cache_size"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-get_cache_size}{}}}
-\subsection{Method \code{get_cache_size()}}{
-Gets the current size of the cache file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$get_cache_size()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-has_analyses"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-has_analyses}{}}}
-\subsection{Method \code{has_analyses()}}{
-Checks if there are analyses files/objects in the \code{Analyses} field.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$has_analyses()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-has_results"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-has_results}{}}}
-\subsection{Method \code{has_results()}}{
-Checks if there are \link{Results} in the \code{Analyses} field.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$has_results(value = NULL)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{A string or a vector of strings with the name/s of the \link{Results}
-child/s for checking the presence.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-load"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-load}{}}}
-\subsection{Method \code{load()}}{
-Loads engine data from an \strong{sqlite} or \strong{rds} file.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$load(file = NA_character_)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{file}}{A string with the full file path of the \strong{sqlite} or \strong{rds} file.}
-}
-\if{html}{\out{</div>}}
-}
 \subsection{Returns}{
-Invisible.
+Character string with the path to the StreamFind (.sf) project directory.
 }
 }
 \if{html}{\out{<hr>}}
@@ -189,26 +110,64 @@ Prints a summary to the console.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-save"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-save}{}}}
-\subsection{Method \code{save()}}{
-Saves the engine data as an \strong{sqlite} or \strong{rds} file. If no file path is
-given, the engine data is saved in the file of the \link{Metadata} field. If no file
-is specified in the \code{Metadata} the engine data is saved as \strong{rds} format with the engine
-class and date in the \code{Metadata} as file name.
+\if{html}{\out{<a id="method-Engine-get_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_metadata}{}}}
+\subsection{Method \code{get_metadata()}}{
+Get metadata from database.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$save(file = NA_character_)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_metadata()}\if{html}{\out{</div>}}
+}
+
+\subsection{Returns}{
+A Metadata object or NULL.
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-add_metadata"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-add_metadata}{}}}
+\subsection{Method \code{add_metadata()}}{
+Set metadata in database.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$add_metadata(metadata)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{file}}{A string with the full file path of the \strong{sqlite} or \strong{rds} file.}
+\item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
+There is no type restrictions except for name (must be type character), author (must be type
+character) and date (must be class POSIXct or POSIXt). A file entry must be a character string
+with a full path to a file.}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-Invisible.
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-get_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_workflow}{}}}
+\subsection{Method \code{get_workflow()}}{
+Get workflow from database.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_workflow()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-add_workflow"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-add_workflow}{}}}
+\subsection{Method \code{add_workflow()}}{
+Set workflow in database.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$add_workflow(workflow)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{workflow}}{A \code{Workflow} object, a list of \code{ProcessingStep} objects or a character string
+with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow}.}
+}
+\if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -239,15 +198,141 @@ Runs all \link{ProcessingStep} objects in the \link{Workflow}.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-get_audit_trail"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_audit_trail}{}}}
+\subsection{Method \code{get_audit_trail()}}{
+Get audit trail from database.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_audit_trail()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-add_audit_entry"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-add_audit_entry}{}}}
+\subsection{Method \code{add_audit_entry()}}{
+Add entry to audit trail.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$add_audit_entry(operation_type, object_type, details = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{operation_type}}{Type of operation performed (e.g., 'create', 'update', 'delete').}
+
+\item{\code{object_type}}{Type of object affected (e.g., 'Metadata', 'Workflow', 'Analyses').}
+
+\item{\code{details}}{Additional details about the operation (as a named list or NULL).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-get_cache_info"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_cache_info}{}}}
+\subsection{Method \code{get_cache_info()}}{
+Clear all cached data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_cache_info()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-get_cache_size"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_cache_size}{}}}
+\subsection{Method \code{get_cache_size()}}{
+Get size of cache in bytes.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_cache_size()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-clear_cache"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-clear_cache}{}}}
+\subsection{Method \code{clear_cache()}}{
+Clear all cached data.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$clear_cache()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-clear_result_databases"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-clear_result_databases}{}}}
+\subsection{Method \code{clear_result_databases()}}{
+Remove all result database files from the project directory.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$clear_result_databases()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-get_engine_info"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_engine_info}{}}}
+\subsection{Method \code{get_engine_info()}}{
+Get basic engine information.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_engine_info()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-query_db"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-query_db}{}}}
+\subsection{Method \code{query_db()}}{
+Execute SQL query on the database.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$query_db(sql, params = NULL)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{sql}}{SQL query string to execute against the database.}
+
+\item{\code{params}}{Query parameters to be used with the SQL query (optional).}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-list_db_tables"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-list_db_tables}{}}}
+\subsection{Method \code{list_db_tables()}}{
+List all tables in the database.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$list_db_tables()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Engine-get_db_table_info"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_db_table_info}{}}}
+\subsection{Method \code{get_db_table_info()}}{
+Get information about a specific table.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_db_table_info(tableName)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{tableName}}{Name of the table to query or retrieve information about.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Engine-report_quarto"></a>}}
 \if{latex}{\out{\hypertarget{method-Engine-report_quarto}{}}}
 \subsection{Method \code{report_quarto()}}{
-Generates a Quarto report from the analysis results based on a predefined template .qmd file.
+Generates a Quarto report using the database project path as execute parameter.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Engine$report_quarto(
   template = NULL,
   output_file = NULL,
-  output_dir = NULL,
   execute_dir = getwd(),
   ...
 )}\if{html}{\out{</div>}}
@@ -258,11 +343,10 @@ Generates a Quarto report from the analysis results based on a predefined templa
 \describe{
 \item{\code{template}}{A string with the full file path to the Quarto (.qmd) template file.}
 
-\item{\code{output_file}}{A string with the output file name (without extension). If NULL, uses the template name without extension.}
+\item{\code{output_file}}{A string with the output file name (without extension). If NULL, uses the template name without extension.
+If a path is included, the output directory is set to \code{dirname(output_file)}. If only a file name is given, output is written to \code{execute_dir}.}
 
-\item{\code{output_dir}}{A string with the directory where the final output files should be moved. If NULL, files remain in the QMD directory.}
-
-\item{\code{execute_dir}}{A string with the directory where the report is executed. Default is the current working directory.}
+\item{\code{execute_dir}}{A string with the execution directory. Default is the current working directory.}
 
 \item{\code{...}}{Additional arguments passed to quarto::quarto_render().}
 }

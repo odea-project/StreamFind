@@ -3,26 +3,18 @@
 %   R/class_MassSpecMethod_QuantifyChromatographicPeaks.R
 \name{MassSpecMethod_QuantifyChromatographicPeaks_native}
 \alias{MassSpecMethod_QuantifyChromatographicPeaks_native}
-\title{MassSpecMethod_QuantifyChromatographicPeaks_native Class}
+\title{MassSpecMethod_QuantifyChromatographicPeaks_native class}
 \usage{
 MassSpecMethod_QuantifyChromatographicPeaks_native(
-  calibration = 0,
   value = "area",
   model = "linear"
 )
 }
 \arguments{
-\item{calibration}{Numeric with the calibration/concentration values for each analysis. When
-concentration is not know use NA_real_.}
+\item{value}{Signal measure to use: "area" (default) or "intensity".}
 
-\item{value}{Character with the value to quantify. Possible values are \emph{intensity} or \emph{area}.}
-
-\item{model}{Character with the model to use for calibration. Possible values are \emph{linear},
-\emph{quadratic}, or \emph{cubic}.}
-}
-\value{
-A MassSpecMethod_QuantifyChromatographicPeaks_native object.
+\item{model}{Regression model: "linear" (default), "quadratic", or "cubic".}
 }
 \description{
-Quantifies chromatographic peaks based on a calibration model.
+Quantify chromatographic peaks via OLS calibration using peak area or intensity.
 }

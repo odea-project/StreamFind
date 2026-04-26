@@ -13,7 +13,9 @@
 #include "nts_blank_subtraction.h"
 #include "nts_filters.h"
 #include "suspect_screening.h"
-#include "../streamcraft/streamcraft.h"
+#include "metfrag_runner.h"
+#include "assign_transformation_products.h"
+#include "../mass_spec/reader.h"
 
 namespace nts
 {
@@ -26,7 +28,7 @@ namespace nts
 
   // MARK: merge_MS_TARGETS_SPECTRA
   MS_SPECTRUM merge_MS_TARGETS_SPECTRA(
-      const sc::MS_TARGETS_SPECTRA &spectra,
+      const ms::MS_TARGETS_SPECTRA &spectra,
       const float &mzClust,
       const float &presence);
 
@@ -685,13 +687,13 @@ namespace nts
     std::vector<std::string> replicates;
     std::vector<std::string> blanks;
     std::vector<std::string> files;
-    std::vector<sc::MS_SPECTRA_HEADERS> headers;
+    std::vector<ms::MS_SPECTRA_HEADERS> headers;
     std::vector<FEATURES> features;
     std::vector<SUSPECTS> suspects;
     std::vector<INTERNAL_STANDARDS> internal_standards;
 
     NTS_DATA(const NTS_INFO &info,
-             const std::vector<sc::MS_SPECTRA_HEADERS> &spectra_headers,
+              const std::vector<ms::MS_SPECTRA_HEADERS> &spectra_headers,
              const std::vector<FEATURES> &feature_list,
              const std::vector<SUSPECTS> &suspects_cpp = std::vector<SUSPECTS>(),
              const std::vector<INTERNAL_STANDARDS> &internal_standards_cpp = std::vector<INTERNAL_STANDARDS>())
@@ -718,7 +720,7 @@ namespace nts
       {
         for (size_t i = 0; i < number_analyses; i++)
         {
-          sc::MS_FILE ana(files[i]);
+          ms::MS_FILE ana(files[i]);
           headers[i] = ana.get_spectra_headers();
         }
       }
@@ -1028,6 +1030,13 @@ namespace nts
           idLevels,
           minSharedFragments,
           minCosineSimilarity);
+    }
+
+    void metfrag_screening(
+        const std::vector<std::string> &analyses,
+        const metfrag_runner::MetFragParams &params)
+    {
+      metfrag_runner::metfrag_screening_impl(*this, analyses, params);
     }
   };
 }; // namespace nts

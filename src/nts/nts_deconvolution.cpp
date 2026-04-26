@@ -217,7 +217,7 @@ void nts::deconvolution::filter_and_cluster(
 
 // MARK: denoise_spectra
 void nts::deconvolution::denoise_spectra(
-  sc::MS_FILE &ana,
+  ms::MS_FILE &ana,
   const int &spectrumIdx,
   const float &rt,
   const float &noiseThreshold,
@@ -1908,17 +1908,17 @@ std::vector<nts::FEATURE> nts::deconvolution::process_polarity_clusters(
       feature.correction = 1.0f;
 
       feature.eic_size = static_cast<int>(peak_rt.size());
-      std::string rt_encoded = sc::encode_little_endian_from_float(peak_rt, 4);
-      std::string mz_encoded = sc::encode_little_endian_from_float(peak_mz, 4);
-      std::string intensity_encoded = sc::encode_little_endian_from_float(peak_intensity, 4);
-      std::string baseline_encoded = sc::encode_little_endian_from_float(peak_baseline, 4);
-      std::string smoothed_encoded = sc::encode_little_endian_from_float(peak_smoothed, 4);
+      std::string rt_encoded = ms::utils::encode_little_endian_from_float(peak_rt, 4);
+      std::string mz_encoded = ms::utils::encode_little_endian_from_float(peak_mz, 4);
+      std::string intensity_encoded = ms::utils::encode_little_endian_from_float(peak_intensity, 4);
+      std::string baseline_encoded = ms::utils::encode_little_endian_from_float(peak_baseline, 4);
+      std::string smoothed_encoded = ms::utils::encode_little_endian_from_float(peak_smoothed, 4);
 
-      feature.eic_rt = sc::encode_base64(rt_encoded);
-      feature.eic_mz = sc::encode_base64(mz_encoded);
-      feature.eic_intensity = sc::encode_base64(intensity_encoded);
-      feature.eic_baseline = sc::encode_base64(baseline_encoded);
-      feature.eic_smoothed = sc::encode_base64(smoothed_encoded);
+      feature.eic_rt = ms::utils::encode_base64(rt_encoded);
+      feature.eic_mz = ms::utils::encode_base64(mz_encoded);
+      feature.eic_intensity = ms::utils::encode_base64(intensity_encoded);
+      feature.eic_baseline = ms::utils::encode_base64(baseline_encoded);
+      feature.eic_smoothed = ms::utils::encode_base64(smoothed_encoded);
 
       // Set MS1 and MS2 as empty for now
       feature.ms1_size = 0;
@@ -1996,7 +1996,7 @@ void nts::deconvolution::find_features_impl(
     // Only enable debugging for matching analysis
     float current_debugMZ = (debugAnalysis.empty() || debugAnalysis == nts_data.analyses[a]) ? debugMZ : 0.0f;
     int current_debugSpecIdx = (debugAnalysis.empty() || debugAnalysis == nts_data.analyses[a]) ? debugSpecIdx : -1;
-    const sc::MS_SPECTRA_HEADERS &header = nts_data.headers[a];
+    const ms::MS_SPECTRA_HEADERS &header = nts_data.headers[a];
     std::vector<int> idx_load;
     std::vector<float> rt_load;
     std::vector<int> polarity_load;
@@ -2032,7 +2032,7 @@ void nts::deconvolution::find_features_impl(
       }
     }
 
-    sc::MS_FILE ana(nts_data.files[a]);
+    ms::MS_FILE ana(nts_data.files[a]);
 
     // Separate data by polarity
     std::vector<float> spec_pos_rt, spec_pos_mz, spec_pos_intensity, spec_pos_noise;

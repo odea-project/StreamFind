@@ -2,36 +2,24 @@
 % Please edit documentation in R/class_MassSpecMethod_CalculateSpectraCharges.R
 \name{MassSpecMethod_CalculateSpectraCharges_native}
 \alias{MassSpecMethod_CalculateSpectraCharges_native}
-\title{MassSpecMethod_CalculateSpectraCharges_native Class}
+\title{MassSpecMethod_CalculateSpectraCharges_native class}
 \usage{
 MassSpecMethod_CalculateSpectraCharges_native(
-  onlyTopScans = FALSE,
-  topScans = 1,
-  roundVal = 35,
-  relLowCut = 0.2,
-  absLowCut = 300,
-  top = 5
+  roundVal = 0.05,
+  relLowCut = 0.05,
+  absLowCut = 500,
+  topCharges = 3L
 )
 }
 \arguments{
-\item{onlyTopScans}{Logical (length 1) to consider only the \emph{n} \code{TopScans} with the highest
-intensity.}
+\item{roundVal}{m/z rounding tolerance for isotope matching.}
 
-\item{topScans}{Numeric (length 1) with the number of top scans to be considered.}
+\item{relLowCut}{Relative intensity cut-off (fraction of base peak).}
 
-\item{roundVal}{Numeric (length 1) with the rounding value for the m/z values before applying
-charge clustering.}
+\item{absLowCut}{Absolute intensity cut-off.}
 
-\item{relLowCut}{Numeric (length 1) with the relative low cut for the charge clustering.}
-
-\item{absLowCut}{Numeric (length 1) with the absolute low cut for the charge clustering.}
-
-\item{top}{Numeric (length 1) with the number of top charges to be considered.}
-}
-\value{
-A MassSpecMethod_CalculateSpectraCharges_native object.
+\item{topCharges}{Maximum number of charge states to return per ion.}
 }
 \description{
-Calculates spectral charges from multi-charged compounds (e.g. proteins and
-monoclonal antibodies) for mass deconvolution.
+Estimate charge states of ions from MS spectra using isotope spacing.
 }

@@ -1,169 +1,239 @@
-#' MassSpecMethod_FillFeatures_StreamFind Class
-#'
-#' @description Settings for filling missing values in features.
-#'
-#' @param withinReplicate Logical of length one to fill within replicates not global.
-#' @param filtered Logical of length one to consider filtered features or not.
-#' @template arg-ms-rtExpand
-#' @template arg-ms-mzExpand
-#' @param minPeakWidth Numeric of length one with the minimum peak width for building feature
-#' extraction targets.
-#' @param maxPeakWidth Numeric of length one with the maximum peak width for building feature
-#' extraction targets.
-#' @param minTracesIntensity Numeric of length one with the minimum intensity to collect spectra
-#' data for extracted ion chromatograms.
-#' @param baseCut Numeric of length one with the base cut for building Gaussian model.
-#' @param maxSearchWindow Numeric of length one with maximum time search window (seconds) from the
-#' averaged group retention time. Default to 5 seconds.
-#' @param minNumberTraces Integer of length one with the minimum number of traces to consider a
-#' feature.
-#' @param minIntensity Numeric of length one with the minimum intensity to consider a feature.
-#' Meaning that the maximum intensity of the extracted ion chromatogram must be greater than the
-#' defined value.
-#' @param minSignalToNoiseRatio Numeric of length one with the minimum signal to noise ratio to
-#' consider a feature.
-#' @param minGaussianFit Numeric of length one with the minimum Gaussian fit to consider a feature.
-#'
-#' @return A MassSpecMethod_FillFeatures_StreamFind class object.
-#'
+#' @title MassSpecMethod_FillFeatures_native class
+#' @description Native StreamFind method for filling missing features across samples by identifying gaps in feature groups and performing recursive integration.
+#' @param withinReplicate Logical. If TRUE, fills features only within replicates. Default: FALSE.
+#' @param filtered Logical. If TRUE, considers filtered features for gap filling. Default: FALSE.
+#' @param rtExpand Numeric. Retention time window expansion in seconds for EIC extraction. Default: 10.
+#' @param mzExpand Numeric. m/z window expansion for EIC extraction. Default: 0.01.
+#' @param maxPeakWidth Numeric. Maximum peak width in seconds for building feature extraction targets. Default: 30.
+#' @param minTracesIntensity Numeric. Minimum intensity to collect spectra data for extracted ion chromatograms. Default: 1000.
+#' @param minNumberTraces Integer. Minimum number of traces to consider a feature. Default: 5.
+#' @param minIntensity Numeric. Minimum intensity to consider a feature (maximum intensity of EIC). Default: 5000.
+#' @param rtApexDeviation Numeric. Maximum RT deviation in seconds from target RT for apex location. Default: 5.
+#' @param minSignalToNoiseRatio Numeric. Minimum signal to noise ratio to consider a feature. Default: 3.
+#' @param minGaussianFit Numeric. Minimum Gaussian fit (R²) to consider a feature. Default: 0.2.
+#' @param debugFG Character specifying feature group ID to debug (empty string to disable). Defaults to "".
 #' @export
 #'
-MassSpecMethod_FillFeatures_StreamFind <- function(
-  withinReplicate = TRUE,
-  filtered = TRUE,
-  rtExpand = 0,
-  mzExpand = 0,
-  minPeakWidth = 6,
-  maxPeakWidth = 30,
-  minTracesIntensity = 1000,
-  minNumberTraces = 5,
-  minIntensity = 5000,
-  baseCut = 0.3,
-  maxSearchWindow = 5,
-  minSignalToNoiseRatio = 3,
-  minGaussianFit = 0.2
+MassSpecMethod_FillFeatures_native <- function(
+	withinReplicate = FALSE,
+	filtered = FALSE,
+	rtExpand = 10,
+	mzExpand = 0.01,
+	maxPeakWidth = 30,
+	minTracesIntensity = 1000,
+	minNumberTraces = 5,
+	minIntensity = 5000,
+	rtApexDeviation = 5,
+	minSignalToNoiseRatio = 3,
+	minGaussianFit = 0.2,
+	debugFG = ""
 ) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "FillFeatures",
-    required = c("FindFeatures", "GroupFeatures"),
-    algorithm = "StreamFind",
-    input_class = "MassSpecResults_NonTargetAnalysis",
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      withinReplicate = as.logical(withinReplicate),
-      filtered = as.logical(filtered),
-      rtExpand = as.numeric(rtExpand),
-      mzExpand = as.numeric(mzExpand),
-      minPeakWidth = as.numeric(minPeakWidth),
-      maxPeakWidth = as.numeric(maxPeakWidth),
-      minTracesIntensity = as.numeric(minTracesIntensity),
-      minNumberTraces = as.numeric(minNumberTraces),
-      minIntensity = as.numeric(minIntensity),
-      baseCut = as.numeric(baseCut),
-      maxSearchWindow = as.numeric(maxSearchWindow),
-      minSignalToNoiseRatio = as.numeric(minSignalToNoiseRatio),
-      minGaussianFit = as.numeric(minGaussianFit)
-    ),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "StreamFind",
-    developer = "Ricardo Cunha",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
-  )
+	x <- ProcessingStep(
+		type = "MassSpec",
+		method = "FillFeatures",
+		required = c("FindFeatures", "GroupFeatures"),
+		algorithm = "native",
+		input_class = "MassSpecResults_NonTargetAnalysis",
+		output_class = "MassSpecResults_NonTargetAnalysis",
+		number_permitted = 1,
+		version = as.character(packageVersion("StreamFind")),
+		software = "StreamFind",
+		developer = "Ricardo Cunha",
+		contact = "cunha@iuta.de",
+		link = "https://odea-project.github.io/StreamFind",
+		doi = NA_character_,
+		parameters = list(
+			withinReplicate = as.logical(withinReplicate),
+			filtered = as.logical(filtered),
+			rtExpand = as.numeric(rtExpand),
+			mzExpand = as.numeric(mzExpand),
+			maxPeakWidth = as.numeric(maxPeakWidth),
+			minTracesIntensity = as.numeric(minTracesIntensity),
+			minNumberTraces = as.integer(minNumberTraces),
+			minIntensity = as.numeric(minIntensity),
+			rtApexDeviation = as.numeric(rtApexDeviation),
+			minSignalToNoiseRatio = as.numeric(minSignalToNoiseRatio),
+			minGaussianFit = as.numeric(minGaussianFit),
+			debugFG = as.character(debugFG)
+		)
+	)
+	if (is.null(validate_object(x))) {
+		x
+	} else {
+		stop("Invalid parameters for MassSpecMethod_FillFeatures_native.")
+	}
 }
 
 #' @export
 #' @noRd
-#'
-validate_object.MassSpecMethod_FillFeatures_StreamFind <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "FillFeatures")
-  checkmate::assert_choice(x$algorithm, "StreamFind")
-  checkmate::assert_logical(x$parameters$withinReplicate, len = 1)
-  checkmate::assert_logical(x$parameters$filtered, len = 1)
-  checkmate::assert_numeric(x$parameters$rtExpand, len = 1)
-  checkmate::assert_numeric(x$parameters$mzExpand, len = 1)
-  checkmate::assert_numeric(x$parameters$minPeakWidth, len = 1)
-  checkmate::assert_numeric(x$parameters$maxPeakWidth, len = 1)
-  checkmate::assert_integer(as.integer(x$parameters$minNumberTraces), len = 1)
-  checkmate::assert_numeric(x$parameters$minTracesIntensity, len = 1)
-  checkmate::assert_numeric(x$parameters$minIntensity, len = 1)
-  checkmate::assert_numeric(x$parameters$baseCut, len = 1)
-  checkmate::assert_numeric(x$parameters$maxSearchWindow, len = 1)
-  checkmate::assert_numeric(x$parameters$minSignalToNoiseRatio, len = 1)
-  checkmate::assert_numeric(x$parameters$minGaussianFit, len = 1)
-  NextMethod()
-  NULL
+validate_object.MassSpecMethod_FillFeatures_native <- function(x) {
+	checkmate::assert_choice(x$type, "MassSpec")
+	checkmate::assert_choice(x$method, "FillFeatures")
+	checkmate::assert_choice(x$algorithm, "native")
+	checkmate::assert_logical(x$parameters$withinReplicate, len = 1)
+	checkmate::assert_logical(x$parameters$filtered, len = 1)
+	checkmate::assert_numeric(x$parameters$rtExpand, len = 1, lower = 0)
+	checkmate::assert_numeric(x$parameters$mzExpand, len = 1, lower = 0)
+	checkmate::assert_numeric(x$parameters$maxPeakWidth, len = 1, lower = 0)
+	checkmate::assert_numeric(x$parameters$minTracesIntensity, len = 1, lower = 0)
+	checkmate::assert_integerish(x$parameters$minNumberTraces, len = 1, lower = 1)
+	checkmate::assert_numeric(x$parameters$minIntensity, len = 1, lower = 0)
+	checkmate::assert_numeric(x$parameters$rtApexDeviation, len = 1, lower = 0)
+	checkmate::assert_numeric(x$parameters$minSignalToNoiseRatio, len = 1, lower = 0)
+	checkmate::assert_numeric(x$parameters$minGaussianFit, len = 1, lower = 0, upper = 1)
+	checkmate::assert_character(x$parameters$debugFG, len = 1, null.ok = FALSE)
+	NULL
 }
-
 
 #' @export
 #' @noRd
-#'
-run.MassSpecMethod_FillFeatures_StreamFind <- function(x, engine = NULL) {
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
-    return(FALSE)
-  }
+run.MassSpecMethod_FillFeatures_native <- function(x, engine = NULL) {
+	if (!"MassSpecResults_NonTargetAnalysis" %in% class(engine$NonTargetAnalysis)) {
+		warning("Engine does not contain MassSpecResults_NonTargetAnalysis.")
+		return(FALSE)
+	}
 
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
+	analyses_info <- info(engine$Analyses)
+	parameters <- x$parameters
 
-  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
-    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
-    return(FALSE)
-  }
+	# Check if cache exists
+	cache_manager <- engine$Cache
+	if (!is.null(cache_manager)) {
+		hash <- .make_hash(x, analyses_info, parameters, engine$Workflow)
+		cache_info <- get_cache_info(cache_manager)
+		if (nrow(cache_info) > 0) {
+			filled_features <- load_cache(cache_manager, hash = hash)
+			if (!is.null(filled_features)) {
+				if (nrow(filled_features) > 0) {
+					message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
 
-  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+					# Insert filled features into database
+					conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
+					on.exit(DBI::dbDisconnect(conn, shutdown = TRUE), add = TRUE)
 
-  if (
-    !any(vapply(
-      nts$features,
-      function(z) any(!(is.na(z$group) | z$group %in% "")),
-      FALSE
-    ))
-  ) {
-    warning(
-      "MassSpecResults_NonTargetAnalysis object does not have feature groups! Not done."
-    )
-    return(FALSE)
-  }
+					# Insert filled features
+					DBI::dbWriteTable(conn, "Features", filled_features, append = TRUE)
 
-  parameters <- x$parameters
+					message("\U2713 Filled features inserted into database (", nrow(filled_features), " features from cache).")
 
-  feature_list <- rcpp_nts_fill_features(
-    nts$info,
-    nts$headers,
-    nts$features,
-    parameters$withinReplicate,
-    parameters$filtered,
-    parameters$rtExpand,
-    parameters$mzExpand,
-    parameters$minPeakWidth,
-    parameters$maxPeakWidth,
-    parameters$minTracesIntensity,
-    as.integer(parameters$minNumberTraces),
-    parameters$minIntensity,
-    parameters$baseCut,
-    parameters$maxSearchWindow,
-    parameters$minSignalToNoiseRatio,
-    parameters$minGaussianFit
-  )
+					DBI::dbDisconnect(conn, shutdown = TRUE)
+					on.exit(NULL)
+					return(invisible(TRUE))
+				}
+			}
+		}
+	}
 
-  nts$features <- feature_list
-  tryCatch(
-    {
-      engine$Results <- nts
-      return(TRUE)
-    },
-    error = function(e) {
-      warning(e)
-      return(FALSE)
-    }
-  )
+	# Get features
+	features <- get_features(
+		x = engine$NonTargetAnalysis,
+		analyses = NULL,
+		filtered = parameters$filtered
+	)
+
+	if (nrow(features) == 0) {
+		warning("No features found for gap filling.")
+		return(FALSE)
+	}
+
+	# Check if feature groups exist
+	if (all(features$feature_group == "" | is.na(features$feature_group))) {
+		warning("No feature groups found. Run GroupFeatures first.")
+		return(FALSE)
+	}
+
+	message("\U2139 Processing ", nrow(features), " features across ", length(unique(features$analysis)), " analyses for gap filling...")
+
+	# Get analyses info and spectra headers
+	analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
+	spectra_headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
+
+	# Keep headers in the exact same analysis order used for info/feature_list.
+	headers_split <- split(spectra_headers, spectra_headers$analysis)
+	headers_list <- lapply(analyses$analysis, function(ana) {
+		hd <- headers_split[[ana]]
+		if (is.null(hd)) spectra_headers[0, ] else hd
+	})
+	names(headers_list) <- analyses$analysis
+
+	# Convert features to list format expected by C++
+	# Ensure all analyses are represented, even if they have no features
+	feature_list <- lapply(analyses$analysis, function(ana) {
+		ana_features <- features[features$analysis == ana, ]
+		if (nrow(ana_features) == 0) {
+			# Return empty data frame with correct columns
+			return(features[0, ])
+		}
+		ana_features
+	})
+	names(feature_list) <- analyses$analysis
+
+	# Get database connection for later updates
+	conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
+	on.exit(DBI::dbDisconnect(conn, shutdown = TRUE), add = TRUE)
+
+	# Call C++ function for gap filling
+	filled_features_list <- rcpp_nts_fill_features(
+		info = analyses,
+		spectra_headers = headers_list,
+		feature_list = feature_list,
+		withinReplicate = parameters$withinReplicate,
+		filtered = parameters$filtered,
+		rtExpand = parameters$rtExpand,
+		mzExpand = parameters$mzExpand,
+		maxPeakWidth = parameters$maxPeakWidth,
+		minTracesIntensity = parameters$minTracesIntensity,
+		minNumberTraces = parameters$minNumberTraces,
+		minIntensity = parameters$minIntensity,
+		rtApexDeviation = parameters$rtApexDeviation,
+		minSignalToNoiseRatio = parameters$minSignalToNoiseRatio,
+		minGaussianFit = parameters$minGaussianFit,
+		debugFG = parameters$debugFG
+	)
+
+	if (is.null(filled_features_list) || length(filled_features_list) == 0) {
+		warning("Feature gap filling failed.")
+		DBI::dbDisconnect(conn, shutdown = TRUE)
+		on.exit(NULL)
+		return(FALSE)
+	}
+
+	names(filled_features_list) <- analyses$analysis
+	filled_features <- data.table::rbindlist(filled_features_list, fill = TRUE, idcol = "analysis")
+
+	# Filter only filled features (those newly added)
+	filled_features <- data.table::as.data.table(filled_features)
+	filled_features_new <- filled_features[filled_features$filled == TRUE, ]
+
+	if (nrow(filled_features_new) == 0) {
+		message("\U2139 No gaps were filled.")
+		DBI::dbDisconnect(conn, shutdown = TRUE)
+		on.exit(NULL)
+		return(TRUE)
+	}
+
+	# Insert filled features into database
+	DBI::dbWriteTable(conn, "Features", as.data.frame(filled_features_new), append = TRUE)
+
+	message("\U2713 Gap filling complete. ", nrow(filled_features_new), " features filled.")
+
+	DBI::dbDisconnect(conn, shutdown = TRUE)
+	on.exit(NULL)
+
+	# Prepare result for caching
+	result <- filled_features_new
+
+	# Cache results
+	if (!is.null(cache_manager)) {
+		save_cache(
+			cache_manager,
+			name = paste0("FillFeatures_native"),
+			hash = .make_hash(x, analyses_info, parameters, engine$Workflow),
+			description = "Filled features from FillFeatures_native method",
+			data = as.data.frame(result)
+		)
+		message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
+	}
+
+	invisible(TRUE)
 }

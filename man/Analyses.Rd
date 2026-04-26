@@ -3,33 +3,47 @@
 \name{Analyses}
 \alias{Analyses}
 \alias{validate_object.Analyses}
-\title{Generic (top level ) Analyses class and methods}
+\alias{query_db.Analyses}
+\alias{list_db_tables.Analyses}
+\alias{get_db_table_info.Analyses}
+\title{Base class for database-backed Analyses}
 \usage{
-Analyses(analyses = list(), results = list())
+Analyses(projectPath = ".")
 
 \method{validate_object}{Analyses}(x)
+
+\method{query_db}{Analyses}(x, sql, params = NULL)
+
+\method{list_db_tables}{Analyses}(x)
+
+\method{get_db_table_info}{Analyses}(x, tableName)
 }
 \arguments{
-\item{analyses}{A list of analyses, where each element is a data entry or a connection to a raw data file.}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
-\item{results}{A list of results, where each element is a specific \code{\link{Results}} child class.}
+\item{x}{A \code{Analyses} object.}
 
-\item{x}{An \code{Analyses} object.}
+\item{sql}{SQL query string to execute against the database.}
+
+\item{params}{Query parameters to be used with the SQL query (optional).}
+
+\item{tableName}{Name of the table to query or retrieve information about.}
 }
 \value{
-An object of class \code{Analyses}, which is a list containing:
-\itemize{
-\item \code{analyses}: A list of analyses, where each element is a data entry or a connection to a raw data file.
-\item \code{results}: A list of results, where each element is a specific \code{\link{Results}} child class.
-\item \code{type}: A character string indicating the type of data contained in the analyses.
-\item \code{formats}: A character vector indicating the possible formats of the analyses.
-}
+An object of class \code{Analyses}.
 }
 \description{
-The \code{Analyses} class is used to harmonize the interface to data or links to raw data files and results across different types of data. \code{Analyses} child classes are used for specific data types, providing dedicated methods.
+Minimal base class to represent analyses stored in a DuckDB file.
+Used internally to expose shared S3 helpers for DB-backed analyses classes.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(Analyses)}: Validate the Analyses object, returning \code{NULL} if valid or an error if not.
+\item \code{validate_object(Analyses)}: Validate the Analyses object.
+
+\item \code{query_db(Analyses)}: Internal: execute a query on the DB.
+
+\item \code{list_db_tables(Analyses)}: Internal: list tables in the DB.
+
+\item \code{get_db_table_info(Analyses)}: Internal: get table info from the DB.
 
 }}

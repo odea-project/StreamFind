@@ -3,29 +3,21 @@
 %   R/class_MassSpecMethod_CorrectChromatogramsBaseline.R
 \name{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als}
 \alias{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als}
-\title{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als Class}
+\title{MassSpecMethod_CorrectChromatogramsBaseline_baseline_als class}
 \usage{
 MassSpecMethod_CorrectChromatogramsBaseline_baseline_als(
-  lambda = 5,
-  p = 0.05,
-  maxit = 10,
-  liftByLowestNegativeToZero = FALSE
+  lambda = 1e+05,
+  p = 0.001,
+  maxit = 10L
 )
 }
 \arguments{
-\item{lambda}{Numeric (length 1) with the 2nd derivative constraint.}
+\item{lambda}{Smoothing penalty.}
 
-\item{p}{Numeric (length 1) with the weighting of positive residuals.}
+\item{p}{Asymmetry parameter (0 < p < 0.5; typically 0.001–0.01).}
 
-\item{maxit}{Integer (length 1) with the maximum number of iterations.}
-
-\item{liftByLowestNegativeToZero}{Logical (length 1) indicating if the corrected chromatogram
-should be lifted by the lowest negative value to zero.}
-}
-\value{
-A MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object.
+\item{maxit}{Maximum number of iterations.}
 }
 \description{
-Performs baseline correction to chromatograms using the Asymmetric Least Squares
-(ALS) algorithm from the \pkg{baseline} package.
+Estimate and subtract chromatogram baselines using the Asymmetric Least Squares (ALS) algorithm (Eilers & Boelens 2005).
 }

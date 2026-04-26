@@ -58,10 +58,10 @@ The file format should be either "json" or "rds".}
 A \code{Metadata} S3 class object which is fundamentally a named list with metadata entries.
 }
 \description{
-The \code{Metadata} S3 class holds information, such as name, date, author and file, as a named list with elements of length one. The \code{Metadata} is essentially a list therefore list methods are also applicable.
+The \code{Metadata} S3 class holds information, such as name, date and author, as a named list with elements of length one. The \code{Metadata} is essentially a list therefore list methods are also applicable.
 }
 \details{
-If not given, elements name, author, date and file are set to \code{NA_character_}, \code{NA_character_}, current system time and \code{NA_character_}, respectively.
+If not given, elements name, author and date are set to \code{NA_character_}, \code{NA_character_} and current system time, respectively.
 }
 \section{Methods (by generic)}{
 \itemize{

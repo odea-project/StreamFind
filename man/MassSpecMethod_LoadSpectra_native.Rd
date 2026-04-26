@@ -2,39 +2,21 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadSpectra.R
 \name{MassSpecMethod_LoadSpectra_native}
 \alias{MassSpecMethod_LoadSpectra_native}
-\title{MassSpecMethod_LoadSpectra_native S3 Class}
+\title{MassSpecMethod_LoadSpectra_native class}
 \usage{
 MassSpecMethod_LoadSpectra_native(
-  levels = 1,
-  mzmin = 0,
-  mzmax = 0,
-  rtmin = 0,
-  rtmax = 0,
-  mobilitymin = 0,
-  mobilitymax = 0,
-  minIntensity = 0
+  levels = c(1L, 2L),
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0
 )
 }
 \arguments{
-\item{levels}{A numeric vector with the levels to be used.}
+\item{levels}{MS levels to load (default c(1L, 2L)).}
 
-\item{mzmin}{A numeric vector with the minimum m/z values to be used.}
+\item{minIntensityMS1}{Minimum intensity for MS1 peaks.}
 
-\item{mzmax}{A numeric vector with the maximum m/z values to be used.}
-
-\item{rtmin}{A numeric vector with the minimum retention time values to be used.}
-
-\item{rtmax}{A numeric vector with the maximum retention time values to be used.}
-
-\item{mobilitymin}{A numeric vector with the minimum mobility values to be used.}
-
-\item{mobilitymax}{A numeric vector with the maximum mobility values to be used.}
-
-\item{minIntensity}{A numeric value with the minimum intensity to be used.}
-}
-\value{
-A \code{MassSpecMethod_LoadSpectra_native} object.
+\item{minIntensityMS2}{Minimum intensity for MS2 peaks.}
 }
 \description{
-Loads spectra from mass spectrometry data using time and m/z dimensions. Ion mobility dimensions are also supported.
+Load MS spectra from analysis files into a DuckDB-backed Spectra results object.
 }

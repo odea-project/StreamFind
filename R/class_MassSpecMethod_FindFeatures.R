@@ -1,946 +1,65 @@
-#' @noRd
-.run_find_features_patRoon <- function(x, engine = NULL) {
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
-    return(FALSE)
-  }
-
-  if (length(engine$Analyses$analyses) == 0) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-
-  anaInfo <- data.frame(
-    "path" = dirname(vapply(engine$Analyses$analyses, function(z) z$file, NA_character_)),
-    "analysis" = vapply(engine$Analyses$analyses, function(z) z$name, NA_character_),
-    "group" = vapply(engine$Analyses$analyses, function(z) z$replicate, NA_character_),
-    "blank" = vapply(engine$Analyses$analyses, function(z) z$blank, NA_character_)
-  )
-
-  anaInfo$blank[is.na(anaInfo$blank)] <- ""
-
-  if (nrow(anaInfo) == 0) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-
-  if (!requireNamespace("patRoon", quietly = TRUE)) {
-    warning("patRoon package not found! Install it for finding features.")
-    return(FALSE)
-  }
-
-  algorithm <- x$algorithm
-
-  if (grepl("_", algorithm, fixed = FALSE)) {
-    algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
-  }
-
-  parameters <- x$parameters
-
-  if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
-    if (!requireNamespace("xcms")) {
-      warning("xcms package is not installed!")
-      return(FALSE)
-    }
-    if (x$method %in% "FindFeatures") {
-      parameters <- do.call(xcms::CentWaveParam, x$parameters)
-    }
-  }
-
-  if (any(grepl("class|Class", names(parameters)))) {
-    parameters[["Class"]] <- parameters$class
-    parameters[["class"]] <- NULL
-
-    parameters <- lapply(parameters, function(z) {
-      if (is.list(z) & length(z) > 0) {
-        z[[1]]
-      } else {
-        z
-      }
-    })
-
-    if (parameters$Class %in% "CentWaveParam") {
-      parameters$roiScales <- as.double()
-      parameters$integrate <- as.integer(parameters$integrate)
-    }
-
-    parameters <- do.call("new", parameters)
-  } else if (is.list(parameters)) {
-    parameters <- lapply(parameters, function(par) {
-      if (is.list(par)) {
-        if ("class" %in% names(par)) {
-          par[["Class"]] <- par$class
-          par[["class"]] <- NULL
-
-          par <- lapply(par, function(z) {
-            if (is.list(z) & length(z) > 0) {
-              z[[1]]
-            } else {
-              z
-            }
-          })
-
-          if (par$Class %in% "CentWaveParam") {
-            par$roiScales <- as.double()
-            par$integrate <- as.integer(par$integrate)
-          }
-
-          par <- do.call("new", par)
-        }
-      }
-      par
-    })
-  }
-
-  if (isS4(parameters)) {
-    parameters <- list("param" = parameters)
-  }
-
-  anaInfo$algorithm <- algorithm
-
-  ag <- list(analysisInfo = anaInfo, algorithm = algorithm)
-
-  pp_fun <- patRoon::findFeatures
-
-  if (!"verbose" %in% names(parameters)) {
-    parameters[["verbose"]] <- TRUE
-  }
-
-  pat <- do.call(pp_fun, c(ag, parameters))
-
-  for (a in patRoon::analyses(pat)) {
-    pol <- paste0(unique(engine$Analyses$analyses[[a]]$spectra_headers$polarity), collapse = ", ")
-
-    if (grepl(",", pol)) {
-      warning(
-        "Multiple polarities in analysis ",
-        a,
-        " not supported by patRoon! Mass for features could not be estimated."
-      )
-      pat@features[[a]]$polarity <- 0
-      pat@features[[a]]$mass <- NA_real_
-      next
-    }
-
-    if (grepl("0", pol)) {
-      warning(
-        "Unknown polarity in analyses",
-        a,
-        "! Mass for features could not be estimated."
-      )
-      pat@features[[a]]$polarity <- 0
-      pat@features[[a]]$mass <- NA_real_
-      next
-    }
-
-    if ("1" %in% pol) {
-      adduct_val <- -1.007276
-      pat@features[[a]]$polarity <- 1
-      pat@features[[a]]$mass <- pat@features[[a]]$mz + adduct_val
-      pat@features[[a]]$adduct <- "[M+H]+"
-    }
-
-    if ("-1" %in% pol) {
-      adduct_val <- 1.007276
-      pat@features[[a]]$polarity <- -1
-      pat@features[[a]]$mass <- pat@features[[a]]$mz + adduct_val
-      pat@features[[a]]$adduct <- "[M-H]-"
-    }
-
-    n_features <- nrow(pat@features[[a]])
-    empty_dt_list <- list(rep(data.table::data.table(), n_features))
-
-    pat@features[[a]]$ID <- paste0(
-      "F",
-      seq_len(n_features),
-      "_MZ",
-      round(pat@features[[a]]$mz, digits = 0),
-      "_RT",
-      round(pat@features[[a]]$ret, digits = 0)
-    )
-
-    pat@features[[a]]$mz <- round(pat@features[[a]]$mz, 5)
-    pat@features[[a]]$mzmin <- round(pat@features[[a]]$mzmin, 5)
-    pat@features[[a]]$mzmax <- round(pat@features[[a]]$mzmax, 5)
-    pat@features[[a]]$mass <- round(pat@features[[a]]$mass, 5)
-    pat@features[[a]]$ret <- round(pat@features[[a]]$ret, 2)
-    pat@features[[a]]$retmin <- round(pat@features[[a]]$retmin, 2)
-    pat@features[[a]]$retmax <- round(pat@features[[a]]$retmax, 2)
-    pat@features[[a]]$intensity <- round(pat@features[[a]]$intensity, 2)
-    pat@features[[a]]$area <- round(pat@features[[a]]$area, 2)
-
-    pat@features[[a]]$filtered <- FALSE
-    pat@features[[a]]$filter <- ""
-    pat@features[[a]]$filled <- FALSE
-    pat@features[[a]]$correction <- 1
-    pat@features[[a]]$group <- ""
-    pat@features[[a]]$quality <- empty_dt_list
-    pat@features[[a]]$annotation <- empty_dt_list
-    pat@features[[a]]$eic <- empty_dt_list
-    pat@features[[a]]$ms1 <- empty_dt_list
-    pat@features[[a]]$ms2 <- empty_dt_list
-    pat@features[[a]]$istd <- empty_dt_list
-    pat@features[[a]]$suspects <- empty_dt_list
-    pat@features[[a]]$formulas <- empty_dt_list
-    pat@features[[a]]$compounds <- empty_dt_list
-  }
-
-  feature_list <- pat@features
-
-  feature_list <- lapply(feature_list, function(z) {
-    data.table::setnames(z, "ID", "feature", skip_absent = TRUE)
-    data.table::setnames(z, "ret", "rt", skip_absent = TRUE)
-    data.table::setnames(z, "retmin", "rtmin", skip_absent = TRUE)
-    data.table::setnames(z, "retmax", "rtmax", skip_absent = TRUE)
-  })
-
-  names(feature_list) <- patRoon::analyses(pat)
-
-  analyses_names <- get_analysis_names(engine$Analyses)
-
-  pols <- vapply(
-    engine$Analyses$analyses, function(a) {
-      paste0(unique(a$spectra_headers$polarity), collapse = ", ")
-    },
-    "0"
-  )
-
-  analyses_info <- data.table::data.table(
-    "analysis" = analyses_names,
-    "replicate" = vapply(engine$Analyses$analyses, function(z) z$replicate, NA_character_),
-    "blank" = vapply(engine$Analyses$analyses, function(z) z$blank, NA_character_),
-    "polarity" = pols,
-    "file" = vapply(engine$Analyses$analyses, function(z) z$file, NA_character_)
-  )
-
-  headers <- lapply(engine$Analyses$analyses, function(a) a$spectra_headers)
-
-  feature_list <- feature_list[analyses_names]
-
-  fp <- c(
-    "feature",
-    "group",
-    "rt",
-    "mz",
-    "intensity",
-    "area",
-    "rtmin",
-    "rtmax",
-    "mzmin",
-    "mzmax",
-    "mass",
-    "polarity",
-    "adduct",
-    "filtered",
-    "filter",
-    "filled",
-    "correction",
-    "eic",
-    "ms1",
-    "ms2",
-    "quality",
-    "annotation",
-    "istd",
-    "suspects",
-    "formulas",
-    "compounds"
-  )
-
-  feature_list <- lapply(
-    feature_list,
-    function(z, fp) {
-      z[, fp, with = FALSE]
-    },
-    fp = fp
-  )
-
-  nts <- MassSpecResults_NonTargetAnalysis(analyses_info, headers, feature_list)
-
-  if (is.null(validate_object(nts))) {
-    engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]] <- nts
-    TRUE
-  } else {
-    FALSE
-  }
-}
-
-#' MassSpecMethod_FindFeatures_xcms3_centwave class
-#'
-#' @description Method for finding features (i.e., chromatographic peaks) in mass spectrometry files
-#' using the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
-#' (version 3) with the algorithm
-#' \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-centWave.html}{centWave}. The function uses
-#' the package \pkg{patRoon} in the background.
-#'
-#' @param ppm numeric(1) defining the maximal tolerated m/z deviation in consecutive scans in parts
-#' per million (ppm) for the initial ROI definition.
-#' @param peakwidth numeric(2) with the expected approximate feature width in chromatographic space.
-#' Given as a range (min, max) in seconds.
-#' @param snthresh numeric(1) defining the signal to noise ratio cutoff.
-#' @param prefilter numeric(2): c(k, I) specifying the prefilter step for the first analysis step
-#' (ROI detection). Mass traces are only retained if they contain at least k peaks with
-#' intensity >= I.
-#' @param mzCenterFun Name of the function to calculate the m/z center of the
-#' chromatographic peak (feature). Allowed are: "wMean": intensity weighted mean
-#' of the peak's m/z values, "mean": mean of the peak's m/z values, "apex": use the
-#' m/z value at the peak apex, "wMeanApex3": intensity weighted mean of the m/z
-#' value at the peak apex and the m/z values left and right of it and
-#' "meanApex3": mean of the m/z value of the peak apex and the m/z values
-#' left and right of it.
-#' @param integrate Integration method. For integrate = 1 peak limits are found
-#' through descent on the mexican hat filtered data, for integrate = 2 the
-#' descent is done on the real data. The latter method is more accurate but
-#' prone to noise, while the former is more robust, but less exact.
-#' @param mzdiff numeric(1) representing the minimum difference in m/z dimension
-#' required for peaks with overlapping retention times; can be negative to
-#' allow overlap. During peak post-processing, peaks defined to be overlapping
-#' are reduced to the one peak with the largest signal.
-#' @param fitgauss logical(1) whether or not a Gaussian should be fitted to each
-#' peak. This affects mostly the retention time position of the peak.
-#' @param noise numeric(1) allowing to set a minimum intensity required for
-#' centroids to be considered in the first analysis step (centroids with
-#' intensity < noise are omitted from ROI detection).
-#' @param verboseColumns logical(1) whether additional peak meta data columns
-#' should be returned.
-#' @param firstBaselineCheck logical(1). If TRUE continuous data within regions
-#' of interest is checked to be above the first baseline.
-#' @param extendLengthMSW Option to force centWave to use all scales when
-#' running centWave rather than truncating with the EIC length. Uses the
-#' "open" method to extend the EIC to a integer base-2 length prior to being
-#' passed to convolve rather than the default "reflect" method.
-#' See https://github.com/sneumann/xcms/issues/445 for more information.
-#'
-#' @details See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for
-#' more information and requirements.
-#'
-#' @return A `MassSpecMethod_FindFeatures_xcms3_centwave` object.
-#'
-#' @references
-#' \insertRef{patroon01}{StreamFind}
-#'
-#' \insertRef{patroon02}{StreamFind}
-#'
-#' \insertRef{xcms01}{StreamFind}
-#'
-#' \insertRef{xcms02}{StreamFind}
-#'
-#' \insertRef{xcms03}{StreamFind}
-#'
-#' @export
-#'
-MassSpecMethod_FindFeatures_xcms3_centwave <- function(
-  ppm = 12,
-  peakwidth = c(5, 60),
-  snthresh = 15,
-  prefilter = c(5, 1500),
-  mzCenterFun = "wMean",
-  integrate = 1,
-  mzdiff = -0.0002,
-  fitgauss = TRUE,
-  noise = 500,
-  verboseColumns = TRUE,
-  firstBaselineCheck = FALSE,
-  extendLengthMSW = FALSE
-) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "FindFeatures",
-    required = NA_character_,
-    algorithm = "xcms3_centwave",
-    input_class = NA_character_,
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      ppm = as.numeric(ppm),
-      peakwidth = as.numeric(peakwidth),
-      snthresh = as.numeric(snthresh),
-      prefilter = as.numeric(prefilter),
-      mzCenterFun = as.character(mzCenterFun),
-      integrate = as.numeric(integrate),
-      mzdiff = as.numeric(mzdiff),
-      fitgauss = as.logical(fitgauss),
-      noise = as.numeric(noise),
-      verboseColumns = as.logical(verboseColumns),
-      firstBaselineCheck = as.logical(firstBaselineCheck),
-      extendLengthMSW = as.logical(extendLengthMSW)
-    ),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "xcms",
-    developer = "Ralf Tautenhahn, Johannes Rainer",
-    contact = "rtautenh@ipb-halle.de",
-    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
-    doi = "https://doi.org/10.1186/1471-2105-9-504"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid parameters for MassSpecMethod_FindFeatures_xcms3_centwave.")
-  }
-}
-
-#' @export
-#' @noRd
-#'
-validate_object.MassSpecMethod_FindFeatures_xcms3_centwave <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "FindFeatures")
-  checkmate::assert_choice(x$algorithm, "xcms3_centwave")
-  checkmate::assert_numeric(x$parameters$ppm, len = 1)
-  checkmate::assert_numeric(x$parameters$peakwidth, len = 2)
-  checkmate::assert_numeric(x$parameters$snthresh, len = 1)
-  checkmate::assert_numeric(x$parameters$prefilter, len = 2)
-  checkmate::assert_choice(
-    x$parameters$mzCenterFun,
-    c("wMean", "mean", "apex", "wMeanApex3", "meanApex3")
-  )
-  checkmate::assert_numeric(x$parameters$integrate, len = 1)
-  checkmate::assert_numeric(x$parameters$mzdiff, len = 1)
-  checkmate::assert_logical(x$parameters$fitgauss, len = 1)
-  checkmate::assert_numeric(x$parameters$noise, len = 1)
-  checkmate::assert_logical(x$parameters$verboseColumns, len = 1)
-  checkmate::assert_logical(x$parameters$firstBaselineCheck, len = 1)
-  checkmate::assert_logical(x$parameters$extendLengthMSW, len = 1)
-  NULL
-}
-
-
-#' @export
-#' @noRd
-run.MassSpecMethod_FindFeatures_xcms3_centwave <- function(x, engine = NULL) {
-  .run_find_features_patRoon(x, engine)
-}
-
-#' MassSpecMethod_FindFeatures_xcms3_matchedfilter class
-#'
-#' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
-#' using the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms}
-#' (version 3) with the algorithm
-#' \href{https://rdrr.io/bioc/xcms/man/findChromPeaks-Chromatogram-MatchedFilter.html}{MatchedFilter},
-#' which is optimal/preferred for low resolution LC-MS data. The function uses the package
-#' \pkg{patRoon} in the background.
-#'
-#' @param binSize numeric(1) specifying the width of the bins/slices in m/z dimension.
-#' @param impute Character string specifying the method to be used for missing
-#' value imputation. Allowed values are "none" (no linear interpolation), "lin"
-#' (linear interpolation), "linbase" (linear interpolation within a certain
-#' bin-neighborhood) and "intlin".
-#' @param baseValue The base value to which empty elements should be set.
-#' This is only considered for `impute` as "linbase" and corresponds to the
-#' profBinLinBase's `baselevel` argument.
-#' @param distance For `impute` as "linbase": number of non-empty neighboring
-#' element of an empty element that should be considered for linear
-#' interpolation. See details section for more information.
-#' @param fwhm numeric(1) specifying the full width at half maximum of matched
-#' filtration gaussian model peak. Only used to calculate the actual sigma,
-#' see below.
-#' @param max numeric(1) representing the maximum number of peaks that are
-#' expected/will be identified per slice.
-#' @param snthresh numeric(1) defining the signal to noise ratio cutoff.
-#' @param steps numeric(1) defining the number of bins to be merged before
-#' filtration (i.e. the number of neighboring bins that will be joined to the
-#' slice in which filtration and peak detection will be performed).
-#' @param mzdiff numeric(1) representing the minimum difference in m/z dimension
-#' required for peaks with overlapping retention times; can be negative to allow
-#' overlap. During peak post-processing, peaks defined to be overlapping are
-#' reduced to the one peak with the largest signal.
-#' @param index logical(1) specifying whether indices should be returned instead of values for m/z
-#' and retention times.
-#'
-#' @details See the \link[patRoon]{findFeaturesXCMS3} function from the \pkg{patRoon} package for
-#' more information and requirements.
-#'
-#' @return A `MassSpecMethod_FindFeatures_xcms3_matchedfilter` object.
-#'
-#' @references
-#' \insertRef{patroon01}{StreamFind}
-#'
-#' \insertRef{patroon02}{StreamFind}
-#'
-#' \insertRef{xcms01}{StreamFind}
-#'
-#' \insertRef{xcms02}{StreamFind}
-#'
-#' \insertRef{xcms03}{StreamFind}
-#'
-#' @export
-#'
-MassSpecMethod_FindFeatures_xcms3_matchedfilter <- function(
-  binSize = 0.5,
-  impute = "none",
-  baseValue = 0,
-  distance = 0,
-  fwhm = 30,
-  max = 5,
-  snthresh = 20,
-  steps = 2,
-  mzdiff = 0.5,
-  index = FALSE
-) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "FindFeatures",
-    required = NA_character_,
-    algorithm = "xcms3_matchedfilter",
-    input_class = NA_character_,
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      class = as.character("MatchedFilterParam"),
-      binSize = as.numeric(binSize),
-      impute = as.character(impute),
-      baseValue = as.numeric(baseValue),
-      distance = as.numeric(distance),
-      fwhm = as.numeric(fwhm),
-      sigma = as.numeric(fwhm / 2.3548),
-      max = as.numeric(max),
-      snthresh = as.numeric(snthresh),
-      steps = as.numeric(steps),
-      mzdiff = as.numeric(mzdiff),
-      index = as.logical(index)
-    ),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "xcms",
-    developer = "Ralf Tautenhahn, Johannes Rainer",
-    contact = "rtautenh@ipb-halle.de",
-    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
-    doi = "https://doi.org/10.1186/1471-2105-9-504"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop(
-      "Invalid parameters for MassSpecMethod_FindFeatures_xcms3_matchedfilter."
-    )
-  }
-}
-
-#' @export
-#' @noRd
-#'
-validate_object.MassSpecMethod_FindFeatures_xcms3_matchedfilter = function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "FindFeatures")
-  checkmate::assert_choice(x$algorithm, "xcms3_matchedfilter")
-  checkmate::assert_numeric(x$parameters$binSize, len = 1)
-  checkmate::assert_choice(
-    x$parameters$impute,
-    c("none", "lin", "linbase", "intlin")
-  )
-  checkmate::assert_numeric(x$parameters$baseValue, len = 1)
-  checkmate::assert_numeric(x$parameters$distance, len = 1)
-  checkmate::assert_numeric(x$parameters$fwhm, len = 1)
-  checkmate::assert_numeric(x$parameters$max, len = 1)
-  checkmate::assert_numeric(x$parameters$snthresh, len = 1)
-  checkmate::assert_numeric(x$parameters$steps, len = 1)
-  checkmate::assert_numeric(x$parameters$mzdiff, len = 1)
-  checkmate::assert_logical(x$parameters$index, len = 1)
-  NULL
-}
-
-#' @export
-#' @noRd
-run.MassSpecMethod_FindFeatures_xcms3_matchedfilter <- function(
-  x,
-  engine = NULL
-) {
-  .run_find_features_patRoon(x, engine)
-}
-
-#' MassSpecMethod_FindFeatures_openms class
-#'
-#' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
-#' using the \href{https://www.openms.org/}{OpenMS}
-#' (\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software with the algorithm
-#' \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/latest/html/TOPP_FeatureFinderMetabo.html}{FeatureFinderMetabo}.
-#' The function uses the package \pkg{patRoon} in the background.
-#'
-#' @param noiseThrInt Intensity threshold below which peaks are regarded as noise.
-#' @param chromSNR Minimum signal-to-noise a mass trace should have.
-#' @param chromFWHM Expected chromatographic peak width (in seconds).
-#' @param mzPPM Allowed mass deviation (in ppm).
-#' @param reEstimateMTSD Enables dynamic re-estimation of m/z variance during
-#' mass trace collection stage.
-#' @param traceTermCriterion Termination criterion for the extension of mass
-#' traces. In 'outlier' mode, trace extension cancels if a predefined number of
-#' consecutive outliers are found (see trace_termination_outliers parameter).
-#' In 'sample_rate' mode, trace extension in both directions stops if ratio of
-#' found peaks versus visited spectra falls below the 'min_sample_rate' threshold.
-#' @param traceTermOutliers Mass trace extension in one direction cancels if
-#' this number of consecutive spectra with no detectable peaks is reached.
-#' @param minSampleRate Minimum fraction of scans along the mass trace that must
-#' contain a peak.
-#' @param minTraceLength Minimum expected length of a mass trace (in seconds).
-#' @param maxTraceLength Maximum expected length of a mass trace (in seconds).
-#' Set to a negative value to disable maximal length check during mass trace
-#' detection.
-#' @param widthFiltering Enable filtering of unlikely peak widths. The fixed
-#' setting filters out mass traces outside the `min_fwhm`, `max_fwhm` interval
-#' (set parameters accordingly!). The auto setting filters with the 5 and 95%
-#' quantiles of the peak width distribution.
-#' @param minFWHM Minimum full-width-at-half-maximum of chromatographic peaks
-#' (in seconds). Ignored if parameter width_filtering is off or auto.
-#' @param maxFWHM Maximum full-width-at-half-maximum of chromatographic peaks
-#' (in seconds). Ignored if parameter width_filtering is off or auto.
-#' @param traceSNRFiltering Apply post-filtering by signal-to-noise ratio after
-#' smoothing.
-#' @param localRTRange RT range where to look for coeluting mass traces.
-#' @param localMZRange MZ range where to look for isotopic mass traces.
-#' @param isotopeFilteringModel Remove/score candidate assemblies based on
-#' isotope intensities. SVM isotope models for metabolites were trained with
-#' either 2% or 5% RMS error. For peptides, an averagine cosine scoring is used.
-#' Select the appropriate noise model according to the quality of measurement
-#' or MS device.
-#' @param MZScoring13C Use the 13C isotope peak position (~1.003355 Da) as the
-#' expected shift in m/z for isotope mass traces (highly recommended for
-#' lipidomics!). Disable for general metabolites
-#' (as described in Kenar et al. 2014, MCP.).
-#' @param useSmoothedInts Use LOWESS intensities instead of raw intensities.
-#' @param intSearchRTWindow Retention time window (in seconds, +/- feature
-#' retention time) that is used to find the closest data point to the retention
-#' time to obtain the intensity of a feature (this is needed since OpenMS does
-#' not provide this data).
-#' @param useFFMIntensities If TRUE then peak intensities are directly loaded
-#' from FeatureFinderMetabo output. Otherwise, intensities are loaded afterwards
-#' from the input ‘mzML’ files, which is potentially much slower, especially
-#' with many analyses files. However, useFFMIntensities=TRUE is still somewhat
-#' experimental, may be less accurate and requires a recent version of OpenMS
-#' (>=2.7).
-#' @param verbose Logical of length one. When TRUE adds processing information to the console.
-#'
-#' @details See the \link[patRoon]{findFeaturesOpenMS} function from the \pkg{patRoon} package for
-#' more information and requirements.
-#'
-#' @return A `MassSpecMethod_FindFeatures_openms` object.
-#'
-#' @references
-#' \insertRef{patroon01}{StreamFind}
-#'
-#' \insertRef{patroon02}{StreamFind}
-#'
-#' \insertRef{openms01}{StreamFind}
-#'
-#' @export
-#'
-MassSpecMethod_FindFeatures_openms <- function(
-  noiseThrInt = 1000,
-  chromSNR = 3,
-  chromFWHM = 7,
-  mzPPM = 15,
-  reEstimateMTSD = TRUE,
-  traceTermCriterion = "sample_rate",
-  traceTermOutliers = 5,
-  minSampleRate = 1,
-  minTraceLength = 4,
-  maxTraceLength = 70,
-  widthFiltering = "fixed",
-  minFWHM = 4,
-  maxFWHM = 35,
-  traceSNRFiltering = TRUE,
-  localRTRange = 0,
-  localMZRange = 0,
-  isotopeFilteringModel = "none",
-  MZScoring13C = FALSE,
-  useSmoothedInts = FALSE,
-  intSearchRTWindow = 3,
-  useFFMIntensities = FALSE,
-  verbose = FALSE
-) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "FindFeatures",
-    required = NA_character_,
-    algorithm = "openms",
-    input_class = NA_character_,
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      noiseThrInt = noiseThrInt,
-      chromSNR = chromSNR,
-      chromFWHM = chromFWHM,
-      mzPPM = mzPPM,
-      reEstimateMTSD = reEstimateMTSD,
-      traceTermCriterion = traceTermCriterion,
-      traceTermOutliers = traceTermOutliers,
-      minSampleRate = minSampleRate,
-      minTraceLength = minTraceLength,
-      maxTraceLength = maxTraceLength,
-      widthFiltering = widthFiltering,
-      minFWHM = minFWHM,
-      maxFWHM = maxFWHM,
-      traceSNRFiltering = traceSNRFiltering,
-      localRTRange = localRTRange,
-      localMZRange = localMZRange,
-      isotopeFilteringModel = isotopeFilteringModel,
-      MZScoring13C = MZScoring13C,
-      useSmoothedInts = useSmoothedInts,
-      intSearchRTWindow = intSearchRTWindow,
-      useFFMIntensities = useFFMIntensities,
-      verbose = verbose
-    ),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "openms",
-    developer = "Oliver Kohlbacher",
-    contact = "oliver.kohlbacher@uni-tuebingen.de",
-    link = "https://openms.de/",
-    doi = "https://doi.org/10.1038/nmeth.3959"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid parameters for MassSpecMethod_FindFeatures_openms.")
-  }
-}
-
-#' @export
-#' @noRd
-#'
-validate_object.MassSpecMethod_FindFeatures_openms <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "FindFeatures")
-  checkmate::assert_choice(x$algorithm, "openms")
-  checkmate::assert_numeric(x$parameters$noiseThrInt, len = 1)
-  checkmate::assert_numeric(x$parameters$chromSNR, len = 1)
-  checkmate::assert_numeric(x$parameters$chromFWHM, len = 1)
-  checkmate::assert_numeric(x$parameters$mzPPM, len = 1)
-  checkmate::assert_logical(x$parameters$reEstimateMTSD, len = 1)
-  checkmate::assert_choice(
-    x$parameters$traceTermCriterion,
-    c("outlier", "sample_rate")
-  )
-  checkmate::assert_numeric(x$parameters$traceTermOutliers, len = 1)
-  checkmate::assert_numeric(x$parameters$minSampleRate, len = 1)
-  checkmate::assert_numeric(x$parameters$minTraceLength, len = 1)
-  checkmate::assert_numeric(x$parameters$maxTraceLength, len = 1)
-  checkmate::assert_choice(x$parameters$widthFiltering, c("fixed", "auto"))
-  checkmate::assert_numeric(x$parameters$minFWHM, len = 1)
-  checkmate::assert_numeric(x$parameters$maxFWHM, len = 1)
-  checkmate::assert_logical(x$parameters$traceSNRFiltering, len = 1)
-  checkmate::assert_numeric(x$parameters$localRTRange, len = 1)
-  checkmate::assert_numeric(x$parameters$localMZRange, len = 1)
-  checkmate::assert_choice(
-    x$parameters$isotopeFilteringModel,
-    c("none", "2%", "5%", "averagine")
-  )
-  checkmate::assert_logical(x$parameters$MZScoring13C, len = 1)
-  checkmate::assert_logical(x$parameters$useSmoothedInts, len = 1)
-  checkmate::assert_numeric(x$parameters$intSearchRTWindow, len = 1)
-  checkmate::assert_logical(x$parameters$useFFMIntensities, len = 1)
-  checkmate::assert_logical(x$parameters$verbose, len = 1)
-  NULL
-}
-
-#' @export
-#' @noRd
-run.MassSpecMethod_FindFeatures_openms <- function(x, engine = NULL) {
-  .run_find_features_patRoon(x, engine)
-}
-
-#' MassSpecMethod_FindFeatures_kpic2 class
-#'
-#' @description Settings for finding features (i.e., chromatographic peaks) in mzML/mzXML files
-#' using the package \href{https://github.com/hcji/KPIC2}{KPIC}. The function uses the package
-#' \pkg{patRoon} in thebackground.
-#'
-#' @param level Mass traces are only retained if their maximum values are over `level`.
-#' @param mztol The initial m/z tolerance.
-#' @param gap The number of gap points of a mass trace.
-#' @param width The minimum length of a mass trace.
-#' @param min_snr Minimum signal to noise ratio.
-#' @param kmeans If `TRUE`, `getPIC.kmeans` is used to obtain
-#' PICs (i.e., features). If `FALSE`, `getPIC` is used.
-#' @param alpha If `kmeans` is `TRUE`, alpha is the parameter of forecasting.
-#' If `kmeans` is `FALSE`, alpha is not used.
-#'
-#' @details See the `findFeaturesKPIC2` function from the \pkg{patRoon} package for
-#' more information and requirements.
-#'
-#' @return A `MassSpecMethod_FindFeatures_kpic2` object.
-#'
-#' @references
-#' \insertRef{patroon01}{StreamFind}
-#'
-#' \insertRef{patroon02}{StreamFind}
-#'
-#' \insertRef{kpic01}{StreamFind}
-#'
-#' @export
-#'
-MassSpecMethod_FindFeatures_kpic2 <- function(
-  level = 500,
-  mztol = 0.01,
-  gap = 2,
-  width = 5,
-  min_snr = 4,
-  kmeans = TRUE,
-  alpha = 0.3
-) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "FindFeatures",
-    required = NA_character_,
-    algorithm = "kpic2",
-    input_class = NA_character_,
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      kmeans = kmeans,
-      level = level,
-      mztol = mztol,
-      gap = gap,
-      width = width,
-      min_snr = min_snr,
-      alpha = alpha
-    ),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "kpic2",
-    developer = "Hongchao Ji",
-    contact = "ji.hongchao@foxmail.com",
-    link = NA_character_,
-    doi = "10.1021/acs.analchem.7b01547"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid parameters for MassSpecMethod_FindFeatures_kpic2.")
-  }
-}
-
-#' @export
-#' @noRd
-#'
-validate_object.MassSpecMethod_FindFeatures_kpic2 <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "FindFeatures")
-  checkmate::assert_choice(x$algorithm, "kpic2")
-  checkmate::assert_numeric(x$parameters$level, len = 1)
-  checkmate::assert_numeric(x$parameters$mztol, len = 1)
-  checkmate::assert_numeric(x$parameters$gap, len = 1)
-  checkmate::assert_numeric(x$parameters$width, len = 1)
-  checkmate::assert_numeric(x$parameters$min_snr, len = 1)
-  checkmate::assert_logical(x$parameters$kmeans, len = 1)
-  if (x$parameters$kmeans) {
-    checkmate::assert_numeric(x$parameters$alpha, len = 1)
-  }
-  NULL
-}
-
-#' @export
-#' @noRd
-run.MassSpecMethod_FindFeatures_kpic2 <- function(x, engine = NULL) {
-  .run_find_features_patRoon(x, engine)
-}
-
-# MARK: qAlgorithms
-# qAlgorithms ------
-
-#' MassSpecMethod_FindFeatures_qalgorithms class
-#'
-#' @description The qAlgorithms uses a comprehensive peak model developed by
-#' \href{https://doi.org/10.1021/acs.analchem.4c00494}{Renner et al.} to
-#' identify peaks within LC-MS data. More information can be found in the
-#' GitHub repository of the \href{https://github.com/odea-project/qAlgorithms}{qAlgorithms} project.
-#' The qAlgorithms is best used with profile data but centroid data is also possible. Yet, a mass
-#' uncertainty should by supplied in parts per million (ppm) to account for the m/z deviation in
-#' centroid data.
-#'
-#' @param ppm numeric(1) defining the maximal tolerated m/z deviation in parts per million (ppm)
-#' only applicable for centroid data. For profile data, the ppm value is ignored.
-#'
-#' @export
-#'
-MassSpecMethod_FindFeatures_qalgorithms <- function(ppm = 5) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "FindFeatures",
-    required = NA_character_,
-    algorithm = "qalgorithms",
-    input_class = NA_character_,
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(ppm = ppm),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "qAlgorithms",
-    developer = "Gerrit Renner",
-    contact = "gerrit.renner@uni-due.de",
-    link = "https://github.com/odea-project/qAlgorithms",
-    doi = "10.1021/acs.analchem.4c00494"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid parameters for MassSpecMethod_FindFeatures_qalgorithms.")
-  }
-}
-
-#' @export
-#' @noRd
-#'
-validate_object.MassSpecMethod_FindFeatures_qalgorithms <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "FindFeatures")
-  checkmate::assert_choice(x$algorithm, "qalgorithms")
-  checkmate::assert_numeric(x$parameters$ppm, len = 1)
-  NULL
-}
-
-#' @export
-#' @noRd
-run.MassSpecMethod_FindFeatures_qalgorithms <- function(x, engine = NULL) {
-  .run_find_features_patRoon(x, engine)
-  FALSE
-}
-
 # MARK: Native
 # Native ------
 
 #' @title MassSpecMethod_FindFeatures_native class
 #' @description Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.
 #' @param rtWindows data.frame with rtmin and rtmax columns for retention time windows for data inclusion.
-#' @param resolution_profile integer(3) vector defining mass resolution at 100, 400, and 1000 Da for calculating m/z clustering thresholds via linear model.
+#' @param ppmThreshold integer(1) maximum allowed mass error in ppm for considering traces in a mass cluster.
 #' @param minSNR numeric(1) minimum signal-to-noise ratio for considering a trace and chromatographic peak.
 #' @param noiseThreshold numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).
 #' @param minTraces numeric(1) minimum number of traces to consider a mass cluster and chromatographic peak.
 #' @param baselineWindow numeric(1) retention time window to build a baseline in a mass cluster.
 #' @param maxWidth numeric(1) expected maximum window for a chromatographic peak.
-#' @param base_quantile numeric(1) quantile to estimate the baseline in a mass cluster.
+#' @param baseQuantile numeric(1) quantile to estimate the baseline in a mass cluster.
+#' @param debugAnalysis character(1) analysis name to enable debugging for (empty string to debug all).
+#' @param debugMZ numeric(1) m/z value to enable debugging for specific mass traces (0 to disable).
+#' @param debugSpecIdx integer(1) spectrum index to enable debugging for denoising (-1 to disable).
 #' @export
 #'
 MassSpecMethod_FindFeatures_native <- function(
-  rtWindows = data.frame(rtmin = 300, rtmax = 3600),
-  resolution_profile = c(35000L, 35000L, 35000L),
+  rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
+  ppmThreshold = 15,
   noiseThreshold = 250,
   minSNR = 3,
   minTraces = 3,
   baselineWindow = 200,
   maxWidth = 100,
-  base_quantile = 0.1,
-  debug_mz = 0
+  baseQuantile = 0.1,
+  debugAnalysis = "",
+  debugMZ = 0,
+  debugSpecIdx = -1
 ) {
+  rtWindows <- data.table::data.table(
+    rtmin = as.numeric(rtWindows$rtmin),
+    rtmax = as.numeric(rtWindows$rtmax)
+  )
   x <- ProcessingStep(
     type = "MassSpec",
     method = "FindFeatures",
     required = NA_character_,
     algorithm = "native",
-    input_class = NA_character_,
-    output_class = "MassSpecResults_NonTargetAnalysis2",
-    parameters = list(
-      rtWindows = rtWindows,
-      resolution_profile = as.integer(resolution_profile),
-      noiseThreshold = as.numeric(noiseThreshold),
-      minSNR = as.numeric(minSNR),
-      minTraces = as.numeric(minTraces),
-      baselineWindow = as.numeric(baselineWindow),
-      maxWidth = as.numeric(maxWidth),
-      base_quantile = as.numeric(base_quantile),
-      debug_mz = as.numeric(debug_mz)
-    ),
+    input_class = "MassSpecAnalyses",
+    output_class = "MassSpecResults_NonTargetAnalysis",
     number_permitted = 1,
     version = as.character(packageVersion("StreamFind")),
     software = "StreamFind",
     developer = "Ricardo Cunha",
     contact = "cunha@iuta.de",
     link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
+    doi = NA_character_,
+    parameters = list(
+      rtWindows = rtWindows,
+      ppmThreshold = as.numeric(ppmThreshold),
+      noiseThreshold = as.numeric(noiseThreshold),
+      minSNR = as.numeric(minSNR),
+      minTraces = as.numeric(minTraces),
+      baselineWindow = as.numeric(baselineWindow),
+      maxWidth = as.numeric(maxWidth),
+      baseQuantile = as.numeric(baseQuantile),
+      debugAnalysis = as.character(debugAnalysis),
+      debugMZ = as.numeric(debugMZ),
+      debugSpecIdx = as.integer(debugSpecIdx)
+    )
   )
   if (is.null(validate_object(x))) {
     x
@@ -955,15 +74,20 @@ validate_object.MassSpecMethod_FindFeatures_native <- function(x) {
   checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "FindFeatures")
   checkmate::assert_choice(x$algorithm, "native")
-  checkmate::assert_data_frame(x$parameters$rtWindows, min.rows = 1)
-  checkmate::assert_names(names(x$parameters$rtWindows), must.include = c("rtmin", "rtmax"))
-  checkmate::assert_integer(x$parameters$resolution_profile, len = 3, lower = 1)
+  checkmate::assert_data_frame(data.table::as.data.table(x$parameters$rtWindows))
+  checkmate::assert_true(all(c("rtmin", "rtmax") %in% colnames(data.table::as.data.table(x$parameters$rtWindows))))
+  checkmate::assert_numeric(x$parameters$rtWindows$rtmin)
+  checkmate::assert_numeric(x$parameters$rtWindows$rtmax)
+  checkmate::assert_numeric(x$parameters$ppmThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$noiseThreshold, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minSNR, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$minTraces, len = 1, lower = 1)
   checkmate::assert_numeric(x$parameters$baselineWindow, len = 1, lower = 0)
   checkmate::assert_numeric(x$parameters$maxWidth, len = 1, lower = 0)
-  checkmate::assert_numeric(x$parameters$base_quantile, len = 1, lower = 0, upper = 1)
+  checkmate::assert_numeric(x$parameters$baseQuantile, len = 1, lower = 0, upper = 1)
+  checkmate::assert_character(x$parameters$debugAnalysis, len = 1)
+  checkmate::assert_numeric(x$parameters$debugMZ, len = 1, lower = 0)
+  checkmate::assert_integerish(x$parameters$debugSpecIdx, len = 1, lower = -1)
   NULL
 }
 
@@ -975,46 +99,56 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  analyses <- info(engine$Analyses)
+  analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
 
   if (nrow(analyses) == 0) {
-    warning("No analyses found in the engine.")
+    warning("No analyses found in the MassSpecAnalyses.")
     return(FALSE)
   }
 
-  analyses_files <- vapply(engine$Analyses$analyses, function(z) z$file, NA_character_)
-
-  analyses_info <- data.table::data.table(
-    analysis = analyses$analysis,
-    replicate = analyses$replicate,
-    blank = analyses$blank,
-    polarity = vapply(engine$Analyses$analyses, function(a) {
-      paste0(unique(a$spectra_headers$polarity), collapse = ", ")
-    }, "0"),
-    file = analyses_files
-  )
-
-  headers <- lapply(
-    engine$Analyses$analyses,
-    function(z) z$spectra_headers
-  )
-
-  # Use parameters from the method object
+  headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
+  headers_split <- split(headers, headers$analysis)
+  headers_list <- lapply(analyses$analysis, function(ana) {
+    hd <- headers_split[[ana]]
+    if (is.null(hd)) headers[0, ] else hd
+  })
+  names(headers_list) <- analyses$analysis
   parameters <- x$parameters
 
-  fts <- rcpp_nts_find_features2(
-    info = analyses_info,
-    spectra_headers = headers,
+  cache_manager <- engine$Cache
+  if (!is.null(cache_manager)) {
+    hash <- .make_hash(x, analyses, parameters, engine$Workflow)
+    cache_info <- get_cache_info(cache_manager)
+    if (nrow(cache_info) > 0) {
+      fts <- load_cache(cache_manager, hash = hash)
+      if (!is.null(fts)) {
+        if (nrow(fts) > 0) {
+          message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+          MassSpecResults_NonTargetAnalysis(
+            projectPath = engine$get_project_path(),
+            features = fts
+          )
+          return(invisible(TRUE))
+        }
+      }
+    }
+  }
+
+  fts <- rcpp_nts_find_features(
+    info = analyses,
+    spectra_headers = headers_list,
     rtWindowsMin = parameters$rtWindows$rtmin,
     rtWindowsMax = parameters$rtWindows$rtmax,
-    resolution_profile = parameters$resolution_profile,
+    ppmThreshold = parameters$ppmThreshold,
     noiseThreshold = parameters$noiseThreshold,
     minSNR = parameters$minSNR,
     minTraces = parameters$minTraces,
     baselineWindow = parameters$baselineWindow,
     maxWidth = parameters$maxWidth,
-    base_quantile = parameters$base_quantile,
-    debug_mz = parameters$debug_mz
+    baseQuantile = parameters$baseQuantile,
+    debugAnalysis = parameters$debugAnalysis,
+    debugMZ = parameters$debugMZ,
+    debugSpecIdx = parameters$debugSpecIdx
   )
 
   if (is.null(fts) || length(fts) == 0) {
@@ -1022,168 +156,33 @@ run.MassSpecMethod_FindFeatures_native <- function(x, engine = NULL) {
     return(FALSE)
   }
 
-  names(fts) <- analyses_info$analysis
+  names(fts) <- analyses$analysis
+  fts <- data.table::rbindlist(fts, fill = TRUE, idcol = "analysis")
 
-  nts <- MassSpecResults_NonTargetAnalysis2(analyses_info, headers, fts)
-
-  if (is.null(validate_object(nts))) {
-    engine$Analyses$results[["MassSpecResults_NonTargetAnalysis2"]] <- nts
-    TRUE
-  } else {
-    FALSE
-  }
+  save_cache(
+    cache_manager,
+    name = paste0("FindFeatures_native"),
+    hash = .make_hash(x, analyses, parameters, engine$Workflow),
+    description = "Features found with FindFeatures_native method",
+    data = as.data.frame(fts)
+  )
+  message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
+  invisible(MassSpecResults_NonTargetAnalysis(
+    projectPath = engine$get_project_path(),
+    features = fts
+  ))
+  invisible(TRUE)
 }
 
-
-plot_peak_profile_plotly <- function(peaks_temp, rect_color = "#da916f", rect_alpha = 0.25) {
-  if (!requireNamespace("plotly", quietly = TRUE)) {
-    stop("plotly package required for interactive plotting")
-  }
-  if (is.null(temp) || nrow(temp) == 0) {
-    stop("`temp` must be a data.frame/data.table with rt and intensity")
-  }
-  # p <- plotly::plot_ly(
-  #   x = temp$rt,
-  #   y = temp$intensity,
-  #   type = "scatter",
-  #   mode = "lines",
-  #   name = "Raw Spectra",
-  #   line = list(color = "black", width = 1)
-  # )
-
-  p <- plotly::plot_ly()
-
-  if (!is.null(peaks_temp) && nrow(peaks_temp) > 0) {
-    peak_ids <- peaks_temp$id
-    peak_colors <- .get_colors(peak_ids)
-    for (i in seq_len(nrow(peaks_temp))) {
-      peak <- peaks_temp[i, ]
-      peak_id <- peak$id
-      peak_color <- peak_colors[peak_id]
-
-      hover_text <- paste0(
-        "Peak ID: ", peak_id, "<br>",
-        "RT: ", round(peak$rt, 2), " s<br>",
-        "m/z: ", round(peak$mz, 4), "<br>",
-        "Intensity: ", round(peak$intensity, 0), "<br>",
-        "Area: ", round(peak$area, 0), "<br>",
-        "Noise: ", round(peak$noise, 0), "<br>",
-        "S/N: ", round(peak$sn, 2), "<br>",
-        "RT Range: ", round(peak$rtmin, 2), " - ", round(peak$rtmax, 2), " s<br>",
-        "m/z Range: ", round(peak$mzmin, 4), " - ", round(peak$mzmax, 4), "<br>",
-        "Width: ", round(peak$width, 2), " s<br>",
-        "PPM: ", round(peak$ppm, 2), "<br>",
-        "FWHM (RT): ", round(peak$fwhm_rt, 2), " s<br>",
-        "FWHM (m/z): ", round(peak$fwhm_mz, 4), "<br>",
-        "Gaussian A: ", round(peak$gaussian_A, 2), "<br>",
-        "Gaussian μ: ", round(peak$gaussian_mu, 2), "<br>",
-        "Gaussian σ: ", round(peak$gaussian_sigma, 2), "<br>",
-        "Gaussian R²: ", round(peak$gaussian_rsquared, 3), "<br>",
-        "Cluster: ", peak$cluster, "<br>",
-        "N Traces: ", peak$n_traces
-      )
-
-      # Create filled area between baseline and smoothed intensity
-      rt_vals <- unlist(peak$profile_rt)
-      raw_vals <- unlist(peak$profile_raw_intensity)
-      baseline_vals <- unlist(peak$profile_baseline)
-      smoothed_vals <- unlist(peak$profile_smoothed_intensity)
-      fitted_vals <- unlist(peak$profile_fitted_intensity)
-      rt_fitted_vals <- unlist(peak$profile_fitted_rt)
-
-      p <- p %>% plotly::add_trace(
-        x = rt_vals,
-        y = raw_vals,
-        type = "scatter", mode = "lines",
-        line = list(color = peak_color, width = 1, dash = "dash"),
-        name = peak_id,
-        legendgroup = peak_id,
-        showlegend = FALSE,
-        hoverinfo = "skip"
-      )
-
-      p <- p %>% plotly::add_trace(
-        x = rt_vals,
-        y = baseline_vals,
-        type = "scatter", mode = "lines",
-        line = list(color = peak_color, width = 2, dash = "dot"),
-        name = peak_id,
-        legendgroup = peak_id,
-        showlegend = FALSE,
-        hoverinfo = "skip"
-      )
-
-      p <- p %>% plotly::add_trace(
-        x = rt_vals,
-        y = smoothed_vals,
-        type = "scatter", mode = "lines",
-        line = list(color = peak_color, width = 3),
-        name = peak_id,
-        legendgroup = peak_id,
-        showlegend = FALSE,
-        hoverinfo = "skip"
-      )
-
-      p <- p %>% plotly::add_trace(
-        x = rt_fitted_vals,
-        y = fitted_vals,
-        type = "scatter", mode = "lines",
-        line = list(color = peak_color, width = 2, dash = "dashdot"),
-        name = peak_id,
-        legendgroup = peak_id,
-        showlegend = FALSE,
-        hoverinfo = "skip"
-      )
-
-      rgb_vals <- grDevices::col2rgb(peak_color)
-      fill_color <- sprintf("rgba(%d,%d,%d,0.3)", rgb_vals[1], rgb_vals[2], rgb_vals[3])
-
-      p <- p %>% plotly::add_trace(
-        x = c(rt_vals, rev(rt_vals)),
-        y = c(baseline_vals, rev(smoothed_vals)),
-        type = "scatter",
-        mode = "lines",
-        fill = "toself",
-        fillcolor = fill_color,
-        line = list(color = "rgba(0,0,0,0)", width = 0),
-        name = peak_id,
-        legendgroup = peak_id,
-        showlegend = FALSE,
-        hoverinfo = "skip"
-      )
-
-      p <- p %>% plotly::add_trace(
-        x = peak$rt,
-        y = peak$intensity,
-        type = "scatter", mode = "markers+lines",
-        marker = list(color = peak_color, size = 8, symbol = "circle"),
-        line = list(color = peak_color, width = 2),
-        name = peak_id,
-        legendgroup = peak_id,
-        showlegend = TRUE,
-        text = hover_text,
-        hoverinfo = "text"
-      )
-    }
-  }
-
-  # Enhanced layout with better styling
-  p <- p %>%
-    plotly::layout(
-      xaxis = list(
-        title = "Retention Time (s)",
-        showgrid = TRUE,
-        gridcolor = "lightgray",
-        gridwidth = 1
-      ),
-      yaxis = list(
-        title = "Intensity",
-        showgrid = TRUE,
-        gridcolor = "lightgray",
-        gridwidth = 1
-      ),
-      hovermode = "closest",
-      showlegend = TRUE
-    )
-  p
+#' @title Plot debug log for MassSpecMethod_FindFeatures_native
+#' @description Plots the debug log generated during the execution of the MassSpecMethod_FindFeatures_native method.
+#' @param x An object of class MassSpecMethod_FindFeatures_native.
+#' @param logFile Character(1) path to the debug log file.
+#' @param plot3D Logical(1) indicating whether to create a 3D plot (default is FALSE).
+#' @return A plot visualizing the debug information.
+#' @export
+#' @noRd
+#'
+plot_debug_log.MassSpecMethod_FindFeatures_native <- function(x, logFile, plot3D = FALSE) {
+  .plot_debug_MassSpecMethod_FindFeatures_native(logFile = logFile, plot3D = plot3D)
 }

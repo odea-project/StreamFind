@@ -2,22 +2,17 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothSpectra.R
 \name{MassSpecMethod_SmoothSpectra_savgol}
 \alias{MassSpecMethod_SmoothSpectra_savgol}
-\title{MassSpecMethod_SmoothSpectra_savgol Class}
+\title{MassSpecMethod_SmoothSpectra_savgol class}
 \usage{
-MassSpecMethod_SmoothSpectra_savgol(fl = 11, forder = 4, dorder = 0)
+MassSpecMethod_SmoothSpectra_savgol(fl = 5L, forder = 2L, dorder = 0L)
 }
 \arguments{
-\item{fl}{Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.}
+\item{fl}{Filter length (odd integer >= 5).}
 
-\item{forder}{Numeric (length 1) with the order of the filter
-(2 = quadratic filter, 4 = quartic).}
+\item{forder}{Polynomial order.}
 
-\item{dorder}{Numeric (length 1) with the order of the derivative
-(0 = smoothing, 1 = first derivative, etc.).}
-}
-\value{
-A MassSpecMethod_SmoothSpectra_savgol object.
+\item{dorder}{Derivative order (0 = smoothing only).}
 }
 \description{
-Smooths spectra using the Savitzky-Golay algorithm from the \pkg{pracma} package.
+Smooth spectra intensity using a Savitzky-Golay filter.
 }

@@ -8,7 +8,7 @@
 #include <vector>
 #include <string>
 #include <unordered_map>
-#include "../streamcraft/streamcraft.h"
+#include "../mass_spec/reader.h"
 
 namespace nts
 {
@@ -99,8 +99,8 @@ namespace nts
 
     // Extract EIC for a specific m/z and RT window
     EIC_DATA extract_eic_for_gap_filling(
-        sc::MS_FILE &ana,
-        const sc::MS_SPECTRA_HEADERS &headers,
+        ms::MS_FILE &ana,
+        const ms::MS_SPECTRA_HEADERS &headers,
         float target_mz,
         float target_rt,
         float mzExpand,

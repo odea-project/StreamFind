@@ -1,32 +1,73 @@
-#' @title Generic (top level) Results class constructor and methods
-#' @description The `Results` class is used to store results of data processing in [StreamFind::Analyses] child classes. Child classes of `Results` are implemented for diverse types of results for a given type of data.
-#' @param type A character string indicating the type of data.
-#' @param name A character string representing the name of the results.
-#' @param software A character string representing the name of the software used to generate the results.
-#' @param version A character string representing the version of the software used to generate the results.
-#' @return A `Results` S3 class object which is a list with the elements `type`, `name`, `software`, and `version`. Other elements are added by child class constructors (e.g. `MassSpecSpectra`).
+# MARK: Results
+#' @title Base class for database-backed Results
+#' @description Minimal base class to represent results stored in a DuckDB file.
+#' Used internally to expose shared S3 helpers for DB-backed results classes.
+#' @template arg-projectPath
+#' @return An object of class `Results`.
 #' @export
-#' 
-Results <- function(type = NA_character_, name = "Results", software = "StreamFind", version = NA_character_) {
+#'
+Results <- function(projectPath = ".") {
+  checkmate::assert_character(projectPath, len = 1, null.ok = FALSE)
+  db <- file.path(projectPath, "Results.duckdb")
+  dataType <- "Generic"
+  dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
   structure(
     list(
-      type = type,
-      name = name,
-      software = software,
-      version = version
+      db = db,
+      dataType = dataType,
+      projectPath = projectPath
     ),
-    class = c("Results"),
+    class = "Results"
   )
 }
 
-#' @describeIn Results Validate the Results object, returning `NULL` if valid.
-#' @param x An object of class `Results`.
+#' @describeIn Results Validate the Results object.
+#' @template arg-x-Results
+#' @export
+#'
+validate_object.Results <- function(x) {
+  checkmate::assert_class(x, "Results")
+  checkmate::assert_names(names(x), must.include = c("db", "dataType"))
+  checkmate::assert_character(x$dataType, len = 1, null.ok = FALSE)
+  checkmate::assert_character(x$db, len = 1, null.ok = FALSE)
+  if (!file.exists(x$db)) {
+    stop("Results file not found: ", x$db)
+  }
+  NULL
+}
+
+# MARK: query_db
+#' @describeIn Results Internal: execute a query on the DB.
+#' @template arg-x-Results
+#' @template arg-sql-sql
+#' @template arg-sql-params
 #' @export
 #' 
-validate_object.Results <- function(x) {
-  checkmate::assert_character(x$type)
-  checkmate::assert_character(x$name)
-  checkmate::assert_character(x$software)
-  checkmate::assert_character(x$version)
-  NULL
+query_db.Results <- function(x, sql, params = NULL) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .query_db(conn, sql, params)
+}
+
+# MARK: list_db_tables
+#' @describeIn Results Internal: list tables in the DB.
+#' @template arg-x-Results
+#' @export
+#' 
+list_db_tables.Results <- function(x) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .list_db_tables(conn)
+}
+
+# MARK: get_db_table_info
+#' @describeIn Results Internal: get table info from the DB.
+#' @template arg-x-Results
+#' @template arg-sql-tableName
+#' @export
+#' 
+get_db_table_info.Results <- function(x, tableName) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .get_db_table_info(conn, tableName)
 }

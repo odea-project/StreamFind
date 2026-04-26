@@ -2,24 +2,21 @@
 % Please edit documentation in R/class_MassSpecMethod_FindSpectraMaxima.R
 \name{MassSpecMethod_FindSpectraMaxima_native}
 \alias{MassSpecMethod_FindSpectraMaxima_native}
-\title{MassSpecMethod_FindSpectraMaxima_native Class}
+\title{MassSpecMethod_FindSpectraMaxima_native class}
 \usage{
 MassSpecMethod_FindSpectraMaxima_native(
-  minWidth = 0,
-  maxWidth = 0,
-  minHeight = 0
+  minWidth = 0.5,
+  maxWidth = 50,
+  minHeight = 500
 )
 }
 \arguments{
-\item{minWidth}{Numeric (length 1) with the minimum width of a peak.}
+\item{minWidth}{Minimum peak width in m/z units.}
 
-\item{maxWidth}{Numeric (length 1) with the maximum width of a peak.}
+\item{maxWidth}{Maximum peak width in m/z units.}
 
-\item{minHeight}{Numeric (length 1) with the minimum height of a peak.}
-}
-\value{
-A MassSpecMethod_FindSpectraMaxima_native object.
+\item{minHeight}{Minimum peak height (absolute intensity).}
 }
 \description{
-Finds maximum peaks in continuous spectra.
+Find local intensity maxima in mass spectra (peak picking in the m/z domain).
 }

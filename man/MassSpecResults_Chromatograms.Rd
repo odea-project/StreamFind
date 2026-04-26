@@ -3,28 +3,33 @@
 \name{MassSpecResults_Chromatograms}
 \alias{MassSpecResults_Chromatograms}
 \alias{validate_object.MassSpecResults_Chromatograms}
+\alias{query_db.MassSpecResults_Chromatograms}
+\alias{list_db_tables.MassSpecResults_Chromatograms}
+\alias{get_db_table_info.MassSpecResults_Chromatograms}
 \alias{show.MassSpecResults_Chromatograms}
-\alias{[.MassSpecResults_Chromatograms}
 \alias{get_chromatograms.MassSpecResults_Chromatograms}
 \alias{plot_chromatograms.MassSpecResults_Chromatograms}
 \alias{plot_chromatograms_baseline.MassSpecResults_Chromatograms}
 \alias{get_chromatograms_peaks.MassSpecResults_Chromatograms}
 \alias{plot_chromatograms_peaks.MassSpecResults_Chromatograms}
-\title{Constructor and methods to handle Mass Spectrometry chromatograms results}
+\title{Constructor and methods to handle Mass Spectrometry chromatograms results using DuckDB}
 \usage{
 MassSpecResults_Chromatograms(
-  chromatograms = list(),
-  replicates = character(),
-  is_averaged = FALSE,
-  peaks = list(),
-  calibration_model = list()
+  projectPath = ".",
+  analyses = data.table::data.table(),
+  chromatograms = data.table::data.table(),
+  peaks = data.table::data.table()
 )
 
 \method{validate_object}{MassSpecResults_Chromatograms}(x)
 
-\method{show}{MassSpecResults_Chromatograms}(x)
+\method{query_db}{MassSpecResults_Chromatograms}(x, sql, params = NULL)
 
-\method{[}{MassSpecResults_Chromatograms}(x, i)
+\method{list_db_tables}{MassSpecResults_Chromatograms}(x)
+
+\method{get_db_table_info}{MassSpecResults_Chromatograms}(x, tableName)
+
+\method{show}{MassSpecResults_Chromatograms}(x)
 
 \method{get_chromatograms}{MassSpecResults_Chromatograms}(
   x,
@@ -90,22 +95,22 @@ MassSpecResults_Chromatograms(
 )
 }
 \arguments{
-\item{chromatograms}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
-
-\item{replicates}{A character vector of replicate identifiers.}
-
-\item{is_averaged}{A logical value indicating whether the chromatograms are averaged across replicates.}
-
-\item{peaks}{A list of peaks, each represented as a data frame.}
-
-\item{calibration_model}{A list representing the calibration model used for the chromatograms.}
-
-\item{x}{An object of class \code{MassSpecResults_Chromatograms}.}
-
-\item{i}{A character or numeric vector to perform subsetting. Check the specific method for details.}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
 \item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
+
+\item{chromatograms}{A character or integer vector with the ID (i.e. name) or the index of the chromatograms.}
+
+\item{peaks}{A data.table containing peak data with columns related to chromatographic peaks.}
+
+\item{x}{An object of class \code{MassSpecResults_Chromatograms}.}
+
+\item{sql}{SQL query string to execute against the database.}
+
+\item{params}{Query parameters to be used with the SQL query (optional).}
+
+\item{tableName}{Name of the table to query or retrieve information about.}
 
 \item{rtmin}{Numeric (length 1) with the minimum retention time.}
 
@@ -135,17 +140,21 @@ the added targets as legend of the plot.}
 An object of class \code{MassSpecResults_Chromatograms}.
 }
 \description{
-The \code{MassSpecResults_Chromatograms} class represents the results of chromatograms from mass spectrometry analyses.
+The \code{MassSpecResults_Chromatograms} class represents chromatograms results from mass spectrometry analyses stored in a DuckDB database. This provides efficient storage and retrieval for large-scale chromatographic data.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(MassSpecResults_Chromatograms)}: Validate the MassSpecResults_Chromatograms object, returning NULL if valid.
+\item \code{validate_object(MassSpecResults_Chromatograms)}: Validates the MassSpecResults_Chromatograms object, returning NULL if valid.
 
-\item \code{show(MassSpecResults_Chromatograms)}: Show the MassSpecResults_Chromatograms object.
+\item \code{query_db(MassSpecResults_Chromatograms)}: Internal: execute a query on the DB (delegates to Results).
 
-\item \code{[}: Subset the chromatograms object.
+\item \code{list_db_tables(MassSpecResults_Chromatograms)}: Internal: list tables in the DB (delegates to Results).
 
-\item \code{get_chromatograms(MassSpecResults_Chromatograms)}: Get chromatograms from the MassSpecResults_Chromatograms object, returning a list of data.table objects for each analysis.
+\item \code{get_db_table_info(MassSpecResults_Chromatograms)}: Internal: get table info from the DB (delegates to Results).
+
+\item \code{show(MassSpecResults_Chromatograms)}: Prints a summary of the MassSpecResults_Chromatograms object.
+
+\item \code{get_chromatograms(MassSpecResults_Chromatograms)}: Get chromatograms from the MassSpecResults_Chromatograms object.
 
 \item \code{plot_chromatograms(MassSpecResults_Chromatograms)}: Plot chromatograms from the MassSpecResults_Chromatograms object.
 

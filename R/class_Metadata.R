@@ -1,9 +1,9 @@
 # MARK: Metadata
 # Metadata -----
 #' @title Generic (top level) Metadata constructor and methods
-#' @description The `Metadata` S3 class holds information, such as name, date, author and file, as a named list with elements of length one. The `Metadata` is essentially a list therefore list methods are also applicable.
+#' @description The `Metadata` S3 class holds information, such as name, date and author, as a named list with elements of length one. The `Metadata` is essentially a list therefore list methods are also applicable.
 #' @param entries A named list of metadata entries as elements. Default is an empty list. Elements must be of type character, numeric or POSIXt and must have length 1.
-#' @details If not given, elements name, author, date and file are set to `NA_character_`, `NA_character_`, current system time and `NA_character_`, respectively.
+#' @details If not given, elements name, author and date are set to `NA_character_`, `NA_character_` and current system time, respectively.
 #' @return A `Metadata` S3 class object which is fundamentally a named list with metadata entries.
 #' @export
 #'
@@ -43,7 +43,6 @@ Metadata <- function(entries = list()) {
   if (!"name" %in% names(entries)) entries[["name"]] <- NA_character_
   if (!"author" %in% names(entries)) entries[["author"]] <- NA_character_
   if (!"date" %in% names(entries)) entries[["date"]] <- format(Sys.time(), "%Y-%m-%d %H:%M:%S")
-  if (!"file" %in% names(entries)) entries[["file"]] <- NA_character_
   entries <- structure(entries, class = c("Metadata"))
   if (is.null(validate_object(entries))) {
     return(entries)
@@ -72,7 +71,7 @@ validate_object.Metadata <- function(x) {
       valid <- FALSE
     }
     if (!all(c("name", "author", "date") %in% names(x))) {
-      warning("Metadata must contain at least entries name, author, file and date!")
+      warning("Metadata must contain at least entries name, author and date!")
       valid <- FALSE
     }
     if ("name" %in% names(x)) {
@@ -103,15 +102,6 @@ validate_object.Metadata <- function(x) {
             }
           )
         }
-      }
-    }
-    if ("file" %in% names(x)) {
-      if (!is.character(x[["file"]])) {
-        warning("Metadata entry file must be character length 1!")
-        valid <- FALSE
-      }
-      if (!is.na(x[["file"]])) {
-        checkmate::assert_true(tools::file_ext(x[["file"]]) %in% c("sqlite", "rds", "json"))
       }
     }
   }

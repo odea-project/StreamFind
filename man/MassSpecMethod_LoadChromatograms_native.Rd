@@ -2,28 +2,24 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadChromatograms.R
 \name{MassSpecMethod_LoadChromatograms_native}
 \alias{MassSpecMethod_LoadChromatograms_native}
-\title{MassSpecMethod_LoadChromatograms_native Class}
+\title{MassSpecMethod_LoadChromatograms_native class}
 \usage{
 MassSpecMethod_LoadChromatograms_native(
-  chromatograms = 1,
+  chromatograms = NULL,
   rtmin = 0,
   rtmax = 0,
   minIntensity = 0
 )
 }
 \arguments{
-\item{chromatograms}{A numeric or character vector with the chromatogram indices or names to be
-used, respectively.}
+\item{chromatograms}{Integer vector of chromatogram indices or character vector of chromatogram IDs to load (NULL = all).}
 
-\item{rtmin}{A numeric vector with the minimum retention time values to be used.}
+\item{rtmin}{Numeric. Minimum retention time in seconds to keep (0 = no lower limit).}
 
-\item{rtmax}{A numeric vector with the maximum retention time values to be used.}
+\item{rtmax}{Numeric. Maximum retention time in seconds to keep (0 = no upper limit).}
 
-\item{minIntensity}{A numeric value with the minimum intensity to be used.}
-}
-\value{
-A \code{MassSpecMethod_LoadChromatograms_native} object.
+\item{minIntensity}{Numeric. Minimum intensity threshold; data points below this value are removed (0 = no filter).}
 }
 \description{
-Loads chromatograms from mass spectrometry analyses.
+Load chromatograms from Mass Spec analysis files into a DuckDB backend.
 }

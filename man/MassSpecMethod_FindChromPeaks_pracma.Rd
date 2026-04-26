@@ -2,7 +2,7 @@
 % Please edit documentation in R/class_MassSpecMethod_FindChromPeaks.R
 \name{MassSpecMethod_FindChromPeaks_pracma}
 \alias{MassSpecMethod_FindChromPeaks_pracma}
-\title{MassSpecMethod_FindChromPeaks_pracma Class}
+\title{MassSpecMethod_FindChromPeaks_pracma class}
 \usage{
 MassSpecMethod_FindChromPeaks_pracma(
   merge = TRUE,
@@ -15,24 +15,20 @@ MassSpecMethod_FindChromPeaks_pracma(
 )
 }
 \arguments{
-\item{merge}{Logical (length 1) indicating if the nearby peaks should be merged.}
+\item{merge}{Merge nearby peaks into one?}
 
-\item{closeByThreshold}{Numeric (length 1) with the maximum distance between peaks to be merged.}
+\item{closeByThreshold}{Merge threshold (same rt units as chromatogram).}
 
-\item{minPeakHeight}{Numeric (length 1) with the minimum peak height to be considered.}
+\item{minPeakHeight}{Minimum apex intensity.}
 
-\item{minPeakDistance}{Numeric (length 1) with the minimum distance between peaks.}
+\item{minPeakDistance}{Minimum distance between apices (rt units).}
 
-\item{minPeakWidth}{Numeric (length 1) with the minimum peak width.}
+\item{minPeakWidth}{Minimum peak width (rt units).}
 
-\item{maxPeakWidth}{Numeric (length 1) with the maximum peak width.}
+\item{maxPeakWidth}{Maximum peak width (rt units).}
 
-\item{minSN}{Numeric (length 1) with the minimum signal-to-noise ratio.}
-}
-\value{
-A MassSpecMethod_FindChromPeaks_pracma object.
+\item{minSN}{Minimum signal-to-noise ratio.}
 }
 \description{
-Integrates chromatograms using the function \code{findpeaks} from the package
-\pkg{pracma} with natively added peak exclusion and evaluation steps.
+Find and integrate chromatographic peaks using a pracma-style algorithm (alias for IntegrateChromatograms_pracma).
 }

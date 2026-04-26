@@ -2,24 +2,21 @@
 % Please edit documentation in R/class_MassSpecMethod_FindChromPeaks.R
 \name{MassSpecMethod_FindChromPeaks_LocalMaxima}
 \alias{MassSpecMethod_FindChromPeaks_LocalMaxima}
-\title{MassSpecMethod_FindChromPeaks_LocalMaxima Class}
+\title{MassSpecMethod_FindChromPeaks_LocalMaxima class}
 \usage{
 MassSpecMethod_FindChromPeaks_LocalMaxima(
+  minHeight = 0,
   minWidth = 0,
-  maxWidth = 0,
-  minHeight = 0
+  maxWidth = 0
 )
 }
 \arguments{
-\item{minWidth}{Numeric (length 1) with the minimum width of a peak.}
+\item{minHeight}{Minimum peak height (0 = no filter).}
 
-\item{maxWidth}{Numeric (length 1) with the maximum width of a peak.}
+\item{minWidth}{Minimum peak width in rt units (0 = no filter).}
 
-\item{minHeight}{Numeric (length 1) with the minimum height of a peak.}
-}
-\value{
-A MassSpecMethod_FindChromPeaks_LocalMaxima object.
+\item{maxWidth}{Maximum peak width in rt units (0 = no filter).}
 }
 \description{
-Finds peak maxima in chromatograms.
+Find chromatographic peaks by local-maxima expansion (DAD / UV chromatograms).
 }

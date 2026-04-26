@@ -6,7 +6,7 @@
 
 #include <vector>
 #include <string>
-#include "../streamcraft/streamcraft.h"
+#include "../mass_spec/reader.h"
 
 namespace nts
 {

@@ -79,8 +79,8 @@ std::string nts::utils::encode_floats_base64(const std::vector<float> &input, in
     return "";
   }
 
-  std::string encoded = sc::encode_little_endian_from_float(input, precision);
-  return sc::encode_base64(encoded);
+  std::string encoded = ms::utils::encode_little_endian_from_float(input, precision);
+  return ms::utils::encode_base64(encoded);
 }
 
 // MARK: gaussian_function

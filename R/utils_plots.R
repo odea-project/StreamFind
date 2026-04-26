@@ -17,7 +17,7 @@
 #' @param colorPalette Optional vector of colors, otherwise uses .get_colors.
 #' @return Plot object (plotly or ggplot2)
 #' @export
-#' 
+#'
 .plot_lines_tabular_data <- function(
   data,
   xvar,
@@ -102,7 +102,7 @@
     library(ggplot2)
     # For static ggplot: color is controlled by `groupBy` (color_group) but
     # each trace should be formed by `basic_group` so use that for grouping.
-    p <- ggplot(data, aes_string(x = xvar, y = yvar, color = "color_group", group = "basic_group")) +
+    p <- ggplot(data, aes(x = .data[[xvar]], y = .data[[yvar]], color = color_group, group = basic_group)) +
       geom_line() +
       scale_color_manual(values = colors) +
       theme_classic() +
@@ -110,45 +110,41 @@
     return(p)
   } else {
     library(plotly)
-    p <- plot_ly()
-    # For interactive plotly: iterate over basic groups (individual traces),
-    # but choose color based on the `color_group` value for that trace.
-    basic_vals <- unique(data$basic_group)
-    # Ensure mapping from color_group value to color index
     color_groups <- unique(data$color_group)
     seen_color_groups <- character(0)
+    traces <- vector("list", length(unique(data$basic_group)))
+    basic_vals <- unique(data$basic_group)
     for (i in seq_along(basic_vals)) {
       trace_data <- data[data$basic_group == basic_vals[i], ]
-      # Build hover text for this trace
       trace_hover_text <- paste0(
         hover_text[data$basic_group == basic_vals[i]],
         "<br>x: ", trace_data[[xvar]],
         "<br>y: ", trace_data[[yvar]]
       )
-      # Determine color: use the most common color_group within this basic group
       cg_vals <- as.character(trace_data$color_group)
       cg_mode <- cg_vals[which.max(tabulate(match(cg_vals, unique(cg_vals))))]
       color_idx <- match(cg_mode, color_groups)
       if (is.na(color_idx) || color_idx > length(colors)) color_val <- colors[1] else color_val <- colors[color_idx]
-      # Determine whether to show legend for this trace: only the first trace of each color_group
       showlegend_flag <- !(cg_mode %in% seen_color_groups)
       if (showlegend_flag) seen_color_groups <- c(seen_color_groups, cg_mode)
-      p <- add_trace(
-        p,
+      traces[[i]] <- list(
         x = trace_data[[xvar]],
         y = trace_data[[yvar]],
-        type = "scatter",
-        mode = "lines+markers",
+        type = "scattergl",
+        mode = "lines",
         name = as.character(cg_mode),
         legendgroup = as.character(cg_mode),
         showlegend = showlegend_flag,
-        line = list(color = color_val, width = 0.5),
-        marker = list(size = 2, color = color_val),
+        line = list(color = color_val, width = 1),
         text = trace_hover_text,
         hoverinfo = "text"
       )
     }
-    p <- layout(
+    p <- plotly::plot_ly()
+    for (tr in traces) {
+      p <- do.call(plotly::add_trace, c(list(p), tr))
+    }
+    p <- plotly::layout(
       p,
       title = list(text = title, font = list(size = 12, color = "black")),
       xaxis = list(title = xLab, linecolor = "black", titlefont = list(size = 12, color = "black")),

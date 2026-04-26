@@ -1,209 +1,117 @@
-#' @title MassSpecMethod_SmoothSpectra_movingaverage Class
-#'
-#' @description Smooths spectra using the moving average algorithm.
-#'
-#' @param windowSize Numeric (length 1) with the window size for the moving average.
-#'
-#' @return A MassSpecMethod_SmoothSpectra_movingaverage object.
-#'
+# MARK: MassSpecMethod_SmoothSpectra_movingaverage
+#' @title MassSpecMethod_SmoothSpectra_movingaverage class
+#' @description Smooth spectra intensity using a moving-average filter.
+#' @param windowSize  Half-window size (odd integer >= 3).
 #' @export
-#'
-MassSpecMethod_SmoothSpectra_movingaverage <- function(windowSize = 5) {
+MassSpecMethod_SmoothSpectra_movingaverage <- function(windowSize = 5L) {
   x <- ProcessingStep(
-    type = "MassSpec",
-    method = "SmoothSpectra",
-    algorithm = "movingaverage",
-    required = "LoadSpectra",
-    parameters = list(windowSize = windowSize),
+    type        = "MassSpec",
+    method      = "SmoothSpectra",
+    required    = "LoadSpectra",
+    algorithm   = "movingaverage",
+    input_class = "MassSpecResults_Spectra",
+    output_class = "MassSpecResults_Spectra",
     number_permitted = Inf,
-    version = as.character(packageVersion("StreamFind")),
-    software = "StreamFind",
-    developer = "Ricardo Cunha",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
+    version     = as.character(packageVersion("StreamFind")),
+    software    = "StreamFind",
+    developer   = "Ricardo Cunha",
+    contact     = "cunha@iuta.de",
+    link        = "https://odea-project.github.io/StreamFind",
+    doi         = NA_character_,
+    parameters  = list(windowSize = as.integer(windowSize))
   )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_SmoothSpectra_movingaverage object!")
-  }
+  if (is.null(validate_object(x))) x else stop("Invalid MassSpecMethod_SmoothSpectra_movingaverage parameters.")
 }
 
 #' @export
 #' @noRd
 validate_object.MassSpecMethod_SmoothSpectra_movingaverage <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "SmoothSpectra")
   checkmate::assert_choice(x$algorithm, "movingaverage")
-  checkmate::assert_number(x$parameters$windowSize)
-  NextMethod()
+  checkmate::assert_int(x$parameters$windowSize, lower = 3)
   NULL
 }
 
 #' @export
 #' @noRd
 run.MassSpecMethod_SmoothSpectra_movingaverage <- function(x, engine = NULL) {
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
+  spec_results <- engine$Spectra
+  if (is.null(spec_results) || !"MassSpecResults_Spectra" %in% class(spec_results)) {
+    warning("Engine does not contain MassSpecResults_Spectra.")
     return(FALSE)
   }
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-  if (is.null(engine$Results[["MassSpecResults_Spectra"]])) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
-  }
-  windowSize <- x$parameters$windowSize
-  spec_obj <- engine$Results[["MassSpecResults_Spectra"]]
-  spec_list <- spec_obj$spectra
-  spec_list <- lapply(
-    spec_list,
-    function(x, windowSize) {
-      if (nrow(x) > 0) {
-        if ("id" %in% colnames(x)) {
-          temp_x <- split(x, x$id)
-
-          temp_x <- lapply(temp_x, function(z) {
-            z$intensity <- .moving_average(z$intensity, windowSize = windowSize)
-            z
-          })
-
-          x <- data.table::rbindlist(temp_x)
-        } else {
-          x$intensity <- .moving_average(x$intensity, windowSize = windowSize)
-        }
-      }
-
-      x
-    },
-    windowSize = windowSize
+  spectra_dt <- query_db(spec_results, "SELECT * FROM Spectra")
+  if (nrow(spectra_dt) == 0) { warning("No spectra found."); return(FALSE) }
+  # Reuse rcpp chromatogram smoother: treat mz as rt axis, intensity as intensity
+  smoothed <- rcpp_ms_smooth_chromatograms(
+    as.data.frame(spectra_dt),
+    method      = "movingaverage",
+    window_size = x$parameters$windowSize
   )
-  spec_obj$spectra <- spec_list
-  engine$Results <- spec_obj
-  message(paste0("\U2713 ", "Spectra smoothed!"))
-  TRUE
+  .update_spectra(spec_results, smoothed)
+  invisible(TRUE)
 }
 
-#' @title MassSpecMethod_SmoothSpectra_savgol Class
-#'
-#' @description Smooths spectra using the Savitzky-Golay algorithm from the \pkg{pracma} package.
-#'
-#' @param fl Numeric (length 1) with the filter length (for instance fl = 51..151), has to be odd.
-#' @param forder Numeric (length 1) with the order of the filter
-#' (2 = quadratic filter, 4 = quartic).
-#' @param dorder Numeric (length 1) with the order of the derivative
-#' (0 = smoothing, 1 = first derivative, etc.).
-#'
-#' @return A MassSpecMethod_SmoothSpectra_savgol object.
-#'
+
+# MARK: MassSpecMethod_SmoothSpectra_savgol
+#' @title MassSpecMethod_SmoothSpectra_savgol class
+#' @description Smooth spectra intensity using a Savitzky-Golay filter.
+#' @param fl      Filter length (odd integer >= 5).
+#' @param forder  Polynomial order.
+#' @param dorder  Derivative order (0 = smoothing only).
 #' @export
-#'
-MassSpecMethod_SmoothSpectra_savgol <- function(
-  fl = 11,
-  forder = 4,
-  dorder = 0
-) {
+MassSpecMethod_SmoothSpectra_savgol <- function(fl = 5L, forder = 2L, dorder = 0L) {
   x <- ProcessingStep(
-    type = "MassSpec",
-    method = "SmoothSpectra",
-    required = "LoadSpectra",
-    algorithm = "savgol",
-    parameters = list(
-      fl = fl,
-      forder = forder,
-      dorder = dorder
-    ),
+    type        = "MassSpec",
+    method      = "SmoothSpectra",
+    required    = "LoadSpectra",
+    algorithm   = "savgol",
+    input_class = "MassSpecResults_Spectra",
+    output_class = "MassSpecResults_Spectra",
     number_permitted = Inf,
-    version = as.character(packageVersion("StreamFind")),
-    software = "pracma",
-    developer = "Hans W. Borchers",
-    contact = NA_character_,
-    link = "https://cran.r-project.org/web/packages/pracma/index.html",
-    doi = NA_character_
+    version     = as.character(packageVersion("StreamFind")),
+    software    = "StreamFind",
+    developer   = "Ricardo Cunha",
+    contact     = "cunha@iuta.de",
+    link        = "https://odea-project.github.io/StreamFind",
+    doi         = NA_character_,
+    parameters  = list(
+      fl     = as.integer(fl),
+      forder = as.integer(forder),
+      dorder = as.integer(dorder)
+    )
   )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_SmoothSpectra_savgol object!")
-  }
+  if (is.null(validate_object(x))) x else stop("Invalid MassSpecMethod_SmoothSpectra_savgol parameters.")
 }
 
 #' @export
 #' @noRd
-validate_object.MassSpecMethod_SmoothSpectra_savgo <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
+validate_object.MassSpecMethod_SmoothSpectra_savgol <- function(x) {
   checkmate::assert_choice(x$method, "SmoothSpectra")
   checkmate::assert_choice(x$algorithm, "savgol")
-  checkmate::assert_number(x$parameters$fl)
-  checkmate::assert_number(x$parameters$forder)
-  checkmate::assert_number(x$parameters$dorder)
-  NextMethod()
+  checkmate::assert_int(x$parameters$fl, lower = 5)
+  checkmate::assert_int(x$parameters$forder, lower = 1)
+  checkmate::assert_int(x$parameters$dorder, lower = 0)
   NULL
 }
 
 #' @export
 #' @noRd
 run.MassSpecMethod_SmoothSpectra_savgol <- function(x, engine = NULL) {
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
+  spec_results <- engine$Spectra
+  if (is.null(spec_results) || !"MassSpecResults_Spectra" %in% class(spec_results)) {
+    warning("Engine does not contain MassSpecResults_Spectra.")
     return(FALSE)
   }
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-  if (is.null(engine$Results[["MassSpecResults_Spectra"]])) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
-  }
-  if (!requireNamespace("pracma", quietly = TRUE)) {
-    warning("Package pracma not found but required! Not done.")
-    return(FALSE)
-  }
-  fl <- x$parameters$fl
-  forder <- x$parameters$forder
-  dorder <- x$parameters$dorder
-  spec_obj <- engine$Results[["MassSpecResults_Spectra"]]
-  spec_list <- spec_obj$spectra
-  spec_list <- lapply(
-    spec_list,
-    function(x, fl, forder, dorder) {
-      if (nrow(x) > 0) {
-        if ("id" %in% colnames(x)) {
-          temp_x <- split(x, x$id)
-
-          temp_x <- lapply(temp_x, function(z) {
-            z$intensity <- pracma::savgol(
-              z$intensity,
-              fl = fl,
-              forder = forder,
-              dorder = dorder
-            )
-            z
-          })
-
-          x <- data.table::rbindlist(temp_x)
-        } else {
-          x$intensity <- pracma::savgol(
-            x$intensity,
-            fl = fl,
-            forder = forder,
-            dorder = dorder
-          )
-        }
-      }
-
-      x
-    },
-    fl = fl,
-    forder = forder,
-    dorder = dorder
+  spectra_dt <- query_db(spec_results, "SELECT * FROM Spectra")
+  if (nrow(spectra_dt) == 0) { warning("No spectra found."); return(FALSE) }
+  smoothed <- rcpp_ms_smooth_chromatograms(
+    as.data.frame(spectra_dt),
+    method  = "savgol",
+    fl      = x$parameters$fl,
+    forder  = x$parameters$forder,
+    dorder  = x$parameters$dorder
   )
-  spec_obj$spectra <- spec_list
-  engine$Results <- spec_obj
-  message(paste0("\U2713 ", "Spectra smoothed!"))
-  TRUE
+  .update_spectra(spec_results, smoothed)
+  invisible(TRUE)
 }

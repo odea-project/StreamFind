@@ -1,16 +1,14 @@
 #PKG_CXXFLAGS += -I"$(R_HOME)/include" $(SHLIB_OPENMP_CXXFLAGS)
 #PKG_LIBS += -L"$(R_HOME)/bin/x64" $(SHLIB_OPENMP_CXXFLAGS) -lz
-ZLIB_CFLAGS := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_CFLAGS'))")
-ZLIB_LIBDIR := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(system.file('libs/x64', package='zlibbioc'))")
 
-PKG_CPPFLAGS += -Isimdutf $(ZLIB_CFLAGS)
+PKG_CPPFLAGS += -Isimdutf
 PKG_CXXFLAGS += -std=c++17
 
 # Source files from different directories
 SOURCES = $(wildcard *.cpp)
 SOURCES += $(wildcard simdutf/*.cpp)
-SOURCES += $(wildcard streamcraft/*.cpp)
 SOURCES += $(wildcard nts/*.cpp)
+SOURCES += $(wildcard mass_spec/*.cpp)
 
 # Exclude simdutf source files from compilation (they're included via simdutf_wrapper.cpp)
 SOURCES := $(filter-out simdutf/simdutf.cpp simdutf/amalgamation_demo.cpp, $(SOURCES))
@@ -21,7 +19,5 @@ OBJECTS = $(SOURCES:.cpp=.o)
 #simdutf_wrapper.o: simdutf_wrapper.cpp
 #	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) -Wno-pedantic -c $< -o $@
 
-RHDF5_LIBS = $(shell "$(R_HOME)/bin${R_ARCH_BIN}/Rscript" -e 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")')
-
 PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS) -D__USE_MINGW_ANSI_STDIO
-PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) $(RHDF5_LIBS) -L$(ZLIB_LIBDIR) -lzbioc
+PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) -lz

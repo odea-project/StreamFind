@@ -3,251 +3,93 @@
 \name{MassSpecResults_Spectra}
 \alias{MassSpecResults_Spectra}
 \alias{validate_object.MassSpecResults_Spectra}
+\alias{query_db.MassSpecResults_Spectra}
+\alias{list_db_tables.MassSpecResults_Spectra}
+\alias{get_db_table_info.MassSpecResults_Spectra}
 \alias{show.MassSpecResults_Spectra}
-\alias{[.MassSpecResults_Spectra}
 \alias{get_spectra.MassSpecResults_Spectra}
-\alias{plot_spectra.MassSpecResults_Spectra}
-\alias{plot_spectra_3d.MassSpecResults_Spectra}
-\alias{plot_spectra_charges.MassSpecResults_Spectra}
-\alias{get_spectra_matrix.MassSpecResults_Spectra}
+\alias{get_spectra_charges.MassSpecResults_Spectra}
+\alias{get_mass_spectra.MassSpecResults_Spectra}
 \alias{get_spectra_peaks.MassSpecResults_Spectra}
-\alias{plot_spectra_peaks.MassSpecResults_Spectra}
-\title{Constructor and methods to handle mass spectrometry spectra results}
+\title{Constructor and methods to handle Mass Spectrometry spectra results using DuckDB}
 \usage{
 MassSpecResults_Spectra(
-  spectra = list(),
-  replicates = character(),
-  is_averaged = FALSE,
-  is_neutralized = FALSE,
-  peaks = list(),
-  charges = list()
+  projectPath = ".",
+  analyses = data.table::data.table(),
+  spectra = data.table::data.table(),
+  charges = data.table::data.table(),
+  mass_spectra = data.table::data.table(),
+  spectra_peaks = data.table::data.table()
 )
 
 \method{validate_object}{MassSpecResults_Spectra}(x)
 
+\method{query_db}{MassSpecResults_Spectra}(x, sql, params = NULL)
+
+\method{list_db_tables}{MassSpecResults_Spectra}(x)
+
+\method{get_db_table_info}{MassSpecResults_Spectra}(x, tableName)
+
 \method{show}{MassSpecResults_Spectra}(x)
 
-\method{[}{MassSpecResults_Spectra}(x, i)
+\method{get_spectra}{MassSpecResults_Spectra}(x, analyses = NULL)
 
-\method{get_spectra}{MassSpecResults_Spectra}(
-  x,
-  analyses = NULL,
-  levels = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  allTraces = TRUE,
-  isolationWindow = 1.3,
-  minIntensityMS1 = 0,
-  minIntensityMS2 = 0
-)
+get_spectra_charges.MassSpecResults_Spectra(x, analyses = NULL)
 
-\method{plot_spectra}{MassSpecResults_Spectra}(
-  x,
-  analyses = NULL,
-  levels = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  allTraces = TRUE,
-  isolationWindow = 1.3,
-  minIntensityMS1 = 0,
-  minIntensityMS2 = 0,
-  legendNames = TRUE,
-  colorBy = "analyses",
-  xVal = "mz",
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  interactive = TRUE,
-  renderEngine = "webgl"
-)
-
-\method{plot_spectra_3d}{MassSpecResults_Spectra}(
-  x,
-  analyses = NULL,
-  levels = NULL,
-  mass = NULL,
-  mz = NULL,
-  rt = NULL,
-  mobility = NULL,
-  ppm = 20,
-  sec = 60,
-  millisec = 5,
-  id = NULL,
-  allTraces = TRUE,
-  isolationWindow = 1.3,
-  minIntensityMS1 = 0,
-  minIntensityMS2 = 0,
-  legendNames = TRUE,
-  colorBy = "analyses",
-  xVal = "rt",
-  yVal = "mz",
-  xLab = NULL,
-  yLab = NULL,
-  zLab = NULL,
-  renderEngine = "webgl"
-)
-
-\method{plot_spectra_charges}{MassSpecResults_Spectra}(
-  x,
-  analyses = NULL,
-  legendNames = NULL,
-  title = NULL,
-  colorBy = "analyses",
-  xLab = NULL,
-  yLab = NULL,
-  interactive = TRUE,
-  renderEngine = "webgl"
-)
-
-\method{get_spectra_matrix}{MassSpecResults_Spectra}(x, analyses = NULL)
+get_mass_spectra.MassSpecResults_Spectra(x, analyses = NULL)
 
 \method{get_spectra_peaks}{MassSpecResults_Spectra}(x, analyses = NULL)
-
-\method{plot_spectra_peaks}{MassSpecResults_Spectra}(
-  x,
-  analyses = NULL,
-  legendNames = TRUE,
-  colorBy = "analyses",
-  xVal = "mz",
-  xLab = NULL,
-  yLab = NULL,
-  title = NULL,
-  interactive = TRUE,
-  renderEngine = "webgl"
-)
 }
 \arguments{
-\item{spectra}{A list of spectra data.table objects.}
-
-\item{replicates}{A character vector of replicate names.}
-
-\item{is_averaged}{Logical indicating if the spectra are averaged.}
-
-\item{is_neutralized}{Logical indicating if the spectra are neutralized.}
-
-\item{peaks}{A list of data.table objects containing peak information for each spectrum.}
-
-\item{charges}{A list of data.table objects containing charge information for each spectrum}
-
-\item{x}{A \code{MassSpecResults_Spectra} object.}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
 \item{analyses}{Character or numeric vector with names or indexes of analyses in the \code{Analyses}
 object.}
 
-\item{levels}{Integer vector with the levels of MS data.}
+\item{spectra}{A data.table with raw spectra data.}
 
-\item{mass}{A vector with target neutral mass value/s (in Da) or a two columns data.table or data.frame named \code{min}
-and \code{max} with minimum and maximum neutral mass values (in Da), respectively. Alternatively, neutral mass (in Da)
-and retention time (in seconds) and/or drift time values (in milliseconds) can be given as one data.table or
-data.frame with columns named \code{mass} and \code{rt} and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec}
-and \code{millisec}  arguments are used to calculate the ranges. Also works with a data.table or data.frame with
-minimum and maximum values of neutral mass, retention time and drift time targets. In this case, the column names
-must be \code{min}, \code{max}, \code{rtmin}, \code{rtmax}, \code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the
-\code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
+\item{charges}{A data.table with charge-state assignments (output of CalculateSpectraCharges).}
 
-\item{mz}{A vector with target \emph{m/z} value/s (in Da) or a two columns data.table or data.frame named \code{mzmin} and
-\code{mzmax} with minimum and maximum \emph{m/z} values (in Da), respectively. Alternatively, \emph{m/z} (in Da) and
-retention time values (in seconds) can be given as one data.table or data.frame with columns named \code{mz} and \code{rt}
-and/or \code{drift}. Then, the deviations given in the \code{ppm}, \code{sec} and \code{millisec} arguments are used to
-calculate the ranges. Also works with a data.table or data.frame with minimum and maximum values of \emph{m/z},
-retention time and drift time targets. In this case, the column names must be \code{mzmin}, \code{mzmax}, \code{rtmin}, \code{rtmax},
-\code{driftmin} and \code{driftmax}. Note that when mass/time ranges are given, the \code{ppm}, \code{sec} and \code{millisec}
-arguments are not used.}
+\item{mass_spectra}{A data.table with deconvoluted mass spectra.}
 
-\item{rt}{A vector with target retention time values (in seconds) or
-a two columns data.table or data.frame with minimum and maximum retention
-time values (in seconds).}
+\item{spectra_peaks}{A data.table with spectral peak maxima (output of FindSpectraMaxima).}
 
-\item{mobility}{A vector with target drift time values (in milliseconds) or
-a two columns data.table or data.frame with minimum and maximum drift
-time values (in milliseconds).}
+\item{x}{An object of class \code{MassSpecResults_Spectra}.}
 
-\item{ppm}{Numeric of length one with the mass deviation, in ppm.}
+\item{sql}{SQL query string to execute against the database.}
 
-\item{sec}{Numeric of length one with the time deviation, in seconds.}
+\item{params}{Query parameters to be used with the SQL query (optional).}
 
-\item{millisec}{Numeric of length one with the drift time deviation,
-in milliseconds.}
-
-\item{id}{Character with the same length as \emph{m/z} and retention time
-targets to be used as identifier/s. When not given, the id is built as a
-combination of the \emph{m/z} and retention time ranges or values.}
-
-\item{allTraces}{Logical, when \code{TRUE} all level 2 data is returned.
-When \code{FALSE} and level has 2, only the MS2 traces of MS1 targets
-are returned, using the \code{isolationWindow} to calculate the mass window.}
-
-\item{isolationWindow}{Numeric value with the isolation window (in Da)
-applied for ion isolation and fragmentation during acquisition of tandem
-data (i.e., MS2 data).}
-
-\item{minIntensityMS1}{Numeric value with the minimum intensity of level 1
-data (i.e., MS1 data).}
-
-\item{minIntensityMS2}{Numeric value with the minimum intensity of level 2
-data (i.e., MS2 data).}
-
-\item{legendNames}{A character vector with the same length as the targets or \code{TRUE} or \code{FALSE} for using the name in
-the added targets as legend of the plot.}
-
-\item{colorBy}{A string defining how to legend the plot. Possible values are \code{analyses}, \code{targets} (the default) or
-\code{replicates}.}
-
-\item{xVal}{A character string indicating the x-axis variable. Options are "mz", "mass", or "mobility".}
-
-\item{xLab}{A string with the title for the x axis.}
-
-\item{yLab}{A string with the title for the y axis.}
-
-\item{title}{A string with the title.}
-
-\item{interactive}{Logical (length 1). When \code{TRUE}, the data is plotted interactively using \pkg{plotly}.}
-
-\item{renderEngine}{The engine to render the data. The default is "webgl".}
-
-\item{yVal}{A character string indicating the y-axis variable. Options are "rt", "mz", "mass", or "mobility".}
-
-\item{zLab}{A character string indicating the z-axis label. Default is "Intensity / counts".}
+\item{tableName}{Name of the table to query or retrieve information about.}
+}
+\value{
+An object of class \code{MassSpecResults_Spectra}.
 }
 \description{
-The \code{MassSpecResults_Spectra} class is a child of \link{Results} and is used to store mass spectrometry spectra results.
+The \code{MassSpecResults_Spectra} class stores raw spectra, charge-state
+assignments, deconvoluted mass spectra, and spectral peak maxima in a DuckDB backend.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(MassSpecResults_Spectra)}: Validate the MassSpecResults_Spectra object, returning NULL if valid.
+\item \code{validate_object(MassSpecResults_Spectra)}: Validate the MassSpecResults_Spectra object.
 
-\item \code{show(MassSpecResults_Spectra)}: Show the MassSpecResults_Spectra object.
+\item \code{query_db(MassSpecResults_Spectra)}: Execute a query on the DB.
 
-\item \code{[}: Subset the MassSpecResults_Spectra object.
+\item \code{list_db_tables(MassSpecResults_Spectra)}: List tables in the DB.
 
-\item \code{get_spectra(MassSpecResults_Spectra)}: Get spectra from the MassSpecResults_Spectra object, returning a list of data.table objects.
+\item \code{get_db_table_info(MassSpecResults_Spectra)}: Get table info from the DB.
 
-\item \code{plot_spectra(MassSpecResults_Spectra)}: Plot spectra from the MassSpecResults_Spectra object.
+\item \code{show(MassSpecResults_Spectra)}: Print summary.
 
-\item \code{plot_spectra_3d(MassSpecResults_Spectra)}: Plot 3D spectra from the MassSpecResults_Spectra object.
+\item \code{get_spectra(MassSpecResults_Spectra)}: Get raw spectra data.
 
-\item \code{plot_spectra_charges(MassSpecResults_Spectra)}: Plot spectra charges from the MassSpecResults_Spectra object.
-
-\item \code{get_spectra_matrix(MassSpecResults_Spectra)}: Get spectra matrix from the MassSpecResults_Spectra object.
-
-\item \code{get_spectra_peaks(MassSpecResults_Spectra)}: Get spectra peaks from the MassSpecResults_Spectra object.
-
-\item \code{plot_spectra_peaks(MassSpecResults_Spectra)}: Plot spectra peaks from the MassSpecResults_Spectra object.
+\item \code{get_spectra_peaks(MassSpecResults_Spectra)}: Get spectral peak maxima.
 
 }}
-\seealso{
-\link{Results}
-}
+\section{Functions}{
+\itemize{
+\item \code{get_spectra_charges.MassSpecResults_Spectra()}: Get charge-state assignments.
+
+\item \code{get_mass_spectra.MassSpecResults_Spectra()}: Get deconvoluted mass spectra.
+
+}}

@@ -3,36 +3,47 @@
 \name{Results}
 \alias{Results}
 \alias{validate_object.Results}
-\title{Generic (top level) Results class constructor and methods}
+\alias{query_db.Results}
+\alias{list_db_tables.Results}
+\alias{get_db_table_info.Results}
+\title{Base class for database-backed Results}
 \usage{
-Results(
-  type = NA_character_,
-  name = "Results",
-  software = "StreamFind",
-  version = NA_character_
-)
+Results(projectPath = ".")
 
 \method{validate_object}{Results}(x)
+
+\method{query_db}{Results}(x, sql, params = NULL)
+
+\method{list_db_tables}{Results}(x)
+
+\method{get_db_table_info}{Results}(x, tableName)
 }
 \arguments{
-\item{type}{A character string indicating the type of data.}
+\item{projectPath}{Path to the project directory where this database file will be created/used.}
 
-\item{name}{A character string representing the name of the results.}
+\item{x}{A \code{Results} object.}
 
-\item{software}{A character string representing the name of the software used to generate the results.}
+\item{sql}{SQL query string to execute against the database.}
 
-\item{version}{A character string representing the version of the software used to generate the results.}
+\item{params}{Query parameters to be used with the SQL query (optional).}
 
-\item{x}{An object of class \code{Results}.}
+\item{tableName}{Name of the table to query or retrieve information about.}
 }
 \value{
-A \code{Results} S3 class object which is a list with the elements \code{type}, \code{name}, \code{software}, and \code{version}. Other elements are added by child class constructors (e.g. \code{MassSpecSpectra}).
+An object of class \code{Results}.
 }
 \description{
-The \code{Results} class is used to store results of data processing in \link{Analyses} child classes. Child classes of \code{Results} are implemented for diverse types of results for a given type of data.
+Minimal base class to represent results stored in a DuckDB file.
+Used internally to expose shared S3 helpers for DB-backed results classes.
 }
 \section{Methods (by generic)}{
 \itemize{
-\item \code{validate_object(Results)}: Validate the Results object, returning \code{NULL} if valid.
+\item \code{validate_object(Results)}: Validate the Results object.
+
+\item \code{query_db(Results)}: Internal: execute a query on the DB.
+
+\item \code{list_db_tables(Results)}: Internal: list tables in the DB.
+
+\item \code{get_db_table_info(Results)}: Internal: get table info from the DB.
 
 }}

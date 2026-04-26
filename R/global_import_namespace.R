@@ -12,17 +12,9 @@
 #'
 #' @importFrom tools file_ext
 #'
-#' @import zlibbioc
-#'
-#' @import reticulate
-#' 
 #' @import ggplot2
-#' 
+#'
 #' @importFrom dplyr group_by
-#' 
-#' @importFrom gridExtra grid.arrange
-#'
-#'
 #'
 #' @importFrom plyr round_any
 #'

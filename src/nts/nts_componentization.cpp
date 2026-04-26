@@ -15,8 +15,8 @@ namespace nts
     std::vector<float> decode_eic_base64(const std::string &base64_str) {
       if (base64_str.empty()) return std::vector<float>();
       try {
-        std::string decoded = sc::decode_base64(base64_str);
-        return sc::decode_little_endian_to_float(decoded, 4);
+        std::string decoded = ms::utils::decode_base64(base64_str);
+        return ms::utils::decode_little_endian_to_float(decoded, 4);
       } catch (...) {
         return std::vector<float>();
       }

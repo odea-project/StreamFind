@@ -45,7 +45,7 @@ namespace nts::blank_subtraction
         continue;
 
       // Build targets for this analysis' features
-      sc::MS_TARGETS targets;
+      ms::MS_TARGETS targets;
       targets.resize_all(n_features);
 
       std::unordered_map<std::string, std::vector<int>> id_to_indices;
@@ -83,9 +83,9 @@ namespace nts::blank_subtraction
         if (blank_idx >= nts_data.files.size() || blank_idx >= nts_data.headers.size())
           continue;
 
-        sc::MS_FILE ana(nts_data.files[blank_idx]);
+        ms::MS_FILE ana(nts_data.files[blank_idx]);
         const auto &headers = nts_data.headers[blank_idx];
-        sc::MS_TARGETS_SPECTRA eics = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0.0f);
+        ms::MS_TARGETS_SPECTRA eics = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0.0f);
 
         std::unordered_map<std::string, float> max_by_id;
         max_by_id.reserve(id_to_indices.size());

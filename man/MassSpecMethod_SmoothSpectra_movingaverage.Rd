@@ -2,16 +2,13 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothSpectra.R
 \name{MassSpecMethod_SmoothSpectra_movingaverage}
 \alias{MassSpecMethod_SmoothSpectra_movingaverage}
-\title{MassSpecMethod_SmoothSpectra_movingaverage Class}
+\title{MassSpecMethod_SmoothSpectra_movingaverage class}
 \usage{
-MassSpecMethod_SmoothSpectra_movingaverage(windowSize = 5)
+MassSpecMethod_SmoothSpectra_movingaverage(windowSize = 5L)
 }
 \arguments{
-\item{windowSize}{Numeric (length 1) with the window size for the moving average.}
-}
-\value{
-A MassSpecMethod_SmoothSpectra_movingaverage object.
+\item{windowSize}{Half-window size (odd integer >= 3).}
 }
 \description{
-Smooths spectra using the moving average algorithm.
+Smooth spectra intensity using a moving-average filter.
 }

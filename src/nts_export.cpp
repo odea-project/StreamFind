@@ -178,9 +178,9 @@ namespace
     return out;
   }
 
-  sc::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
+  ms::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
   {
-    sc::MS_SPECTRA_HEADERS headers;
+    ms::MS_SPECTRA_HEADERS headers;
     const std::vector<int> &hd_index = hd["index"];
     const std::vector<int> &hd_polarity = hd["polarity"];
     const std::vector<int> &hd_configuration = hd["configuration"];
@@ -204,9 +204,9 @@ namespace
     return headers;
   }
 
-  std::vector<sc::MS_SPECTRA_HEADERS> as_spectra_headers(const Rcpp::List &spectra_headers)
+  std::vector<ms::MS_SPECTRA_HEADERS> as_spectra_headers(const Rcpp::List &spectra_headers)
   {
-    std::vector<sc::MS_SPECTRA_HEADERS> out;
+    std::vector<ms::MS_SPECTRA_HEADERS> out;
     if (spectra_headers.size() == 0)
     {
       return out;
@@ -907,11 +907,55 @@ namespace
 
     return out;
   }
+
+  // ── Transformation products ──────────────────────────────────────────────────
+
+  Rcpp::List transformation_products_to_dt(
+      const nts::assign_transformation_products::TRANSFORMATION_PRODUCTS &tp)
+  {
+    int n = tp.size();
+    if (n == 0) return get_empty_dt();
+
+    Rcpp::List out = Rcpp::List::create(
+        Rcpp::Named("name")                              = as_char_vector(tp.name),
+        Rcpp::Named("formula")                           = as_char_vector(tp.formula),
+        Rcpp::Named("mass")                              = as_numeric_vector(tp.mass),
+        Rcpp::Named("SMILES")                            = as_char_vector(tp.SMILES),
+        Rcpp::Named("InChI")                             = as_char_vector(tp.InChI),
+        Rcpp::Named("InChIKey")                          = as_char_vector(tp.InChIKey),
+        Rcpp::Named("xLogP")                             = as_numeric_vector(tp.xLogP),
+        Rcpp::Named("transformation")                    = as_char_vector(tp.transformation),
+        Rcpp::Named("precursor_name")                    = as_char_vector(tp.precursor_name),
+        Rcpp::Named("precursor_formula")                 = as_char_vector(tp.precursor_formula),
+        Rcpp::Named("precursor_mass")                    = as_numeric_vector(tp.precursor_mass),
+        Rcpp::Named("precursor_SMILES")                  = as_char_vector(tp.precursor_SMILES),
+        Rcpp::Named("precursor_InChI")                   = as_char_vector(tp.precursor_InChI),
+        Rcpp::Named("precursor_InChIKey")                = as_char_vector(tp.precursor_InChIKey),
+        Rcpp::Named("precursor_xLogP")                   = as_numeric_vector(tp.precursor_xLogP),
+        Rcpp::Named("main_precursor_name")               = as_char_vector(tp.main_precursor_name),
+        Rcpp::Named("main_precursor_formula")            = as_char_vector(tp.main_precursor_formula),
+        Rcpp::Named("main_precursor_mass")               = as_numeric_vector(tp.main_precursor_mass),
+        Rcpp::Named("main_precursor_SMILES")             = as_char_vector(tp.main_precursor_SMILES),
+        Rcpp::Named("main_precursor_InChI")              = as_char_vector(tp.main_precursor_InChI),
+        Rcpp::Named("main_precursor_InChIKey")           = as_char_vector(tp.main_precursor_InChIKey),
+        Rcpp::Named("main_precursor_xLogP")              = as_numeric_vector(tp.main_precursor_xLogP),
+        Rcpp::Named("feature_group")                     = as_char_vector(tp.feature_group),
+        Rcpp::Named("precursor_feature_group")           = as_char_vector(tp.precursor_feature_group),
+        Rcpp::Named("main_precursor_feature_group")      = as_char_vector(tp.main_precursor_feature_group),
+        Rcpp::Named("cosine_similarity")                 = as_numeric_vector(tp.cosine_similarity),
+        Rcpp::Named("main_precursor_cosine_similarity")  = as_numeric_vector(tp.main_precursor_cosine_similarity),
+        Rcpp::Named("rt_plausibility")                   = as_numeric_vector(tp.rt_plausibility),
+        Rcpp::Named("main_precursor_rt_plausibility")    = as_numeric_vector(tp.main_precursor_rt_plausibility));
+
+    out.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
+    return out;
+  }
+
 } // namespace
 
-// MARK: rcpp_nts_find_features2
+// MARK: rcpp_nts_find_features
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
+Rcpp::List rcpp_nts_find_features(Rcpp::List info,
                                    Rcpp::List spectra_headers,
                                    std::vector<float> rtWindowsMin,
                                    std::vector<float> rtWindowsMax,
@@ -927,7 +971,7 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
                                    int debugSpecIdx = -1) {
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp;
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -949,9 +993,9 @@ Rcpp::List rcpp_nts_find_features2(Rcpp::List info,
   return features_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_load_features_ms1_2
+// MARK: rcpp_nts_load_features_ms1
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_load_features_ms1_2(Rcpp::List info,
+Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
                                         Rcpp::List spectra_headers,
                                         Rcpp::List feature_list,
                                         bool filtered,
@@ -964,7 +1008,7 @@ Rcpp::List rcpp_nts_load_features_ms1_2(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -979,9 +1023,9 @@ Rcpp::List rcpp_nts_load_features_ms1_2(Rcpp::List info,
   return features_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_load_features_ms2_2
+// MARK: rcpp_nts_load_features_ms2
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_load_features_ms2_2(Rcpp::List info,
+Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
                                         Rcpp::List spectra_headers,
                                         Rcpp::List feature_list,
                                         bool filtered,
@@ -993,7 +1037,7 @@ Rcpp::List rcpp_nts_load_features_ms2_2(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1020,7 +1064,7 @@ Rcpp::List rcpp_nts_create_components(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1044,7 +1088,7 @@ Rcpp::List rcpp_nts_annotate_components(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1053,9 +1097,9 @@ Rcpp::List rcpp_nts_annotate_components(Rcpp::List info,
   return features_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_group_features_2
+// MARK: rcpp_nts_group_features
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_group_features_2(Rcpp::List info,
+Rcpp::List rcpp_nts_group_features(Rcpp::List info,
                                      Rcpp::List spectra_headers,
                                      Rcpp::List feature_list,
                                      std::string method = "obi_warp",
@@ -1074,7 +1118,7 @@ Rcpp::List rcpp_nts_group_features_2(Rcpp::List info,
     validate_per_analysis_list(info, internal_standards_list, "internal_standards_list");
   }
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_nts_cpp = as_internal_standards_list(internal_standards_list);
@@ -1083,9 +1127,9 @@ Rcpp::List rcpp_nts_group_features_2(Rcpp::List info,
   return features_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_fill_features_2
+// MARK: rcpp_nts_fill_features
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_fill_features_2(Rcpp::List info,
+Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
                                     Rcpp::List spectra_headers,
                                     Rcpp::List feature_list,
                                     bool withinReplicate = false,
@@ -1104,7 +1148,7 @@ Rcpp::List rcpp_nts_fill_features_2(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1125,9 +1169,9 @@ Rcpp::List rcpp_nts_fill_features_2(Rcpp::List info,
   return features_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_blank_subtraction_2
+// MARK: rcpp_nts_blank_subtraction
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_blank_subtraction_2(Rcpp::List info,
+Rcpp::List rcpp_nts_blank_subtraction(Rcpp::List info,
                                         Rcpp::List spectra_headers,
                                         Rcpp::List feature_list,
                                         float blankThreshold = 5.0,
@@ -1137,7 +1181,7 @@ Rcpp::List rcpp_nts_blank_subtraction_2(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1146,9 +1190,9 @@ Rcpp::List rcpp_nts_blank_subtraction_2(Rcpp::List info,
   return features_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_filter_features_2
+// MARK: rcpp_nts_filter_features
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_filter_features_2(
+Rcpp::List rcpp_nts_filter_features(
     Rcpp::List info,
     Rcpp::List feature_list,
     double minSN = NA_REAL,
@@ -1185,7 +1229,7 @@ Rcpp::List rcpp_nts_filter_features_2(
 {
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp;
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp;
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1238,9 +1282,9 @@ Rcpp::List rcpp_nts_filter_features_2(
   return features_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_filter_suspects_2
+// MARK: rcpp_nts_filter_suspects
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_filter_suspects_2(
+Rcpp::List rcpp_nts_filter_suspects(
     Rcpp::List info,
     Rcpp::List suspect_list,
     Rcpp::CharacterVector names = Rcpp::CharacterVector::create(),
@@ -1252,7 +1296,7 @@ Rcpp::List rcpp_nts_filter_suspects_2(
     double minCosineSimilarity = NA_REAL)
 {
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp;
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp;
   std::vector<nts::FEATURES> features_cpp;
   std::vector<nts::SUSPECTS> suspects_cpp = as_suspects_list(suspect_list);
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1265,9 +1309,9 @@ Rcpp::List rcpp_nts_filter_suspects_2(
   return suspects_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_filter_internal_standards_2
+// MARK: rcpp_nts_filter_internal_standards
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_filter_internal_standards_2(
+Rcpp::List rcpp_nts_filter_internal_standards(
     Rcpp::List info,
     Rcpp::List internal_standards_list,
     Rcpp::CharacterVector names = Rcpp::CharacterVector::create(),
@@ -1279,7 +1323,7 @@ Rcpp::List rcpp_nts_filter_internal_standards_2(
     double minCosineSimilarity = NA_REAL)
 {
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp;
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp;
   std::vector<nts::FEATURES> features_cpp;
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp = as_internal_standards_list(internal_standards_list);
@@ -1292,9 +1336,9 @@ Rcpp::List rcpp_nts_filter_internal_standards_2(
   return internal_standards_as_list_of_dt(nts_data);
 };
 
-// MARK: rcpp_nts_suspect_screening_2
+// MARK: rcpp_nts_suspect_screening
 // [[Rcpp::export]]
-Rcpp::List rcpp_nts_suspect_screening_2(
+Rcpp::List rcpp_nts_suspect_screening(
     Rcpp::List info,
     Rcpp::List spectra_headers,
     Rcpp::List feature_list,
@@ -1309,7 +1353,7 @@ Rcpp::List rcpp_nts_suspect_screening_2(
     bool filtered = false)
 {
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<sc::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_nts_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1376,4 +1420,226 @@ Rcpp::List rcpp_nts_suspect_screening_2(
   }
 
   return suspects_to_list_dt(suspects_combined);
+};
+
+// MARK: rcpp_nts_filter_features_ms2
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_filter_features_ms2(
+    Rcpp::List info,
+    Rcpp::List feature_list,
+    int top = 0,
+    double minIntensity = NA_REAL,
+    double relMinIntensity = NA_REAL,
+    bool blankClean = false,
+    double mzClust = 0.005,
+    double blankPresenceThreshold = 0.8,
+    double globalPresenceThreshold = 0.1)
+{
+  validate_per_analysis_list(info, feature_list, "feature_list");
+  nts::NTS_INFO info_cpp = as_nts_info(info);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp;
+  std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
+  std::vector<nts::SUSPECTS> suspects_cpp;
+  std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
+  nts::NTS_DATA nts_data(info_cpp, headers_cpp, features_cpp, suspects_cpp, internal_standards_cpp);
+
+  nts::filter_features_ms2::filter_features_ms2_impl(
+      nts_data,
+      top,
+      std::isnan(minIntensity) ? std::numeric_limits<float>::quiet_NaN()
+                               : static_cast<float>(minIntensity),
+      std::isnan(relMinIntensity) ? std::numeric_limits<float>::quiet_NaN()
+                                  : static_cast<float>(relMinIntensity),
+      blankClean,
+      static_cast<float>(mzClust),
+      static_cast<float>(blankPresenceThreshold),
+      static_cast<float>(globalPresenceThreshold));
+
+  return features_as_list_of_dt(nts_data);
+};
+
+// MARK: rcpp_nts_metfrag_screening
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_metfrag_screening(
+    Rcpp::List info,
+    Rcpp::List spectra_headers,
+    Rcpp::List feature_list,
+    std::string metfrag_path,
+    std::string database_type = "LocalCSV",
+    std::string database_path = "",
+    Rcpp::CharacterVector analyses = Rcpp::CharacterVector::create(""),
+    double ppm = 5.0,
+    double sec = 10.0,
+    double ppmMS2 = 10.0,
+    double mzrMS2 = 0.008,
+    int top_n = 1,
+    bool filtered = false,
+    std::string java_path = "java",
+    std::string run_dir = "",
+    bool debug = false,
+    Rcpp::List extra_params = R_NilValue)
+{
+  validate_per_analysis_list(info, feature_list, "feature_list");
+  nts::NTS_INFO info_cpp = as_nts_info(info);
+  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
+  std::vector<nts::SUSPECTS> suspects_cpp;
+  std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
+  nts::NTS_DATA nts_data(info_cpp, headers_cpp, features_cpp, suspects_cpp, internal_standards_cpp);
+
+  std::vector<std::string> analyses_sel;
+  if (analyses.size() > 0 && analyses[0] != NA_STRING && Rcpp::as<std::string>(analyses[0]) != "")
+    analyses_sel = Rcpp::as<std::vector<std::string>>(analyses);
+
+  // Convert named R list to extra_params vector of pairs.
+  std::vector<std::pair<std::string, std::string>> extra_params_cpp;
+  if (extra_params.size() > 0)
+  {
+    Rcpp::CharacterVector ep_names = extra_params.names();
+    for (int i = 0; i < extra_params.size(); ++i)
+    {
+      std::string key = Rcpp::as<std::string>(ep_names[i]);
+      std::string val = Rcpp::as<std::string>(extra_params[i]);
+      if (!key.empty())
+        extra_params_cpp.emplace_back(key, val);
+    }
+  }
+
+  nts::metfrag_runner::MetFragParams p;
+  p.metfrag_path   = metfrag_path;
+  p.database_type  = database_type;
+  p.database_path  = database_path;
+  p.ppm            = ppm;
+  p.sec            = sec;
+  p.ppmMS2         = ppmMS2;
+  p.mzrMS2         = mzrMS2;
+  p.top_n          = top_n;
+  p.filtered       = filtered;
+  p.java_path      = java_path;
+  p.run_dir        = run_dir;
+  p.debug          = debug;
+  p.extra_params   = extra_params_cpp;
+
+  nts_data.metfrag_screening(analyses_sel, p);
+  return suspects_as_list_of_dt(nts_data);
+};
+
+// MARK: rcpp_nts_assign_transformation_products
+// [[Rcpp::export]]
+Rcpp::List rcpp_nts_assign_transformation_products(
+    Rcpp::List suspects,
+    Rcpp::List transformation_products,
+    std::string chromatographic_phase = "reverse_phase",
+    double mzrMS2 = 0.008)
+{
+  namespace atp = nts::assign_transformation_products;
+
+  // ── Parse suspects ──────────────────────────────────────────────────────────
+  std::vector<atp::FlatSuspect> suspects_cpp;
+  if (suspects.size() > 0)
+  {
+    Rcpp::CharacterVector smiles_r  = suspects["SMILES"];
+    Rcpp::CharacterVector fg_r      = suspects["feature_group"];
+    Rcpp::NumericVector   exp_rt_r  = suspects["exp_rt"];
+    Rcpp::IntegerVector   ms2sz_r   = suspects["exp_ms2_size"];
+    Rcpp::CharacterVector ms2mz_r   = suspects["exp_ms2_mz"];
+    Rcpp::CharacterVector ms2int_r  = suspects["exp_ms2_intensity"];
+
+    int n = smiles_r.size();
+    suspects_cpp.reserve(n);
+    for (int i = 0; i < n; ++i)
+    {
+      atp::FlatSuspect s;
+      s.SMILES           = (smiles_r[i] == NA_STRING) ? "" : Rcpp::as<std::string>(smiles_r[i]);
+      s.feature_group    = (fg_r[i]     == NA_STRING) ? "" : Rcpp::as<std::string>(fg_r[i]);
+      s.exp_rt           = Rcpp::NumericVector::is_na(exp_rt_r[i]) ? std::numeric_limits<double>::quiet_NaN()
+                                                                    : static_cast<double>(exp_rt_r[i]);
+      s.exp_ms2_size     = Rcpp::IntegerVector::is_na(ms2sz_r[i])  ? 0 : static_cast<int>(ms2sz_r[i]);
+      s.exp_ms2_mz       = (ms2mz_r[i]  == NA_STRING) ? "" : Rcpp::as<std::string>(ms2mz_r[i]);
+      s.exp_ms2_intensity= (ms2int_r[i] == NA_STRING) ? "" : Rcpp::as<std::string>(ms2int_r[i]);
+      suspects_cpp.push_back(s);
+    }
+  }
+
+  // ── Parse transformation products ──────────────────────────────────────────
+  std::vector<atp::TPInputRow> tp_rows;
+  if (transformation_products.size() > 0)
+  {
+    auto get_str = [&](const char *col) {
+      Rcpp::CharacterVector v = transformation_products[col];
+      std::vector<std::string> out;
+      out.reserve(v.size());
+      for (int i = 0; i < v.size(); ++i)
+        out.push_back((v[i] == NA_STRING) ? "" : Rcpp::as<std::string>(v[i]));
+      return out;
+    };
+    auto get_dbl = [&](const char *col) {
+      Rcpp::NumericVector v = transformation_products[col];
+      std::vector<double> out;
+      out.reserve(v.size());
+      for (int i = 0; i < v.size(); ++i)
+        out.push_back(Rcpp::NumericVector::is_na(v[i]) ? std::numeric_limits<double>::quiet_NaN()
+                                                       : static_cast<double>(v[i]));
+      return out;
+    };
+
+    auto name              = get_str("name");
+    auto formula           = get_str("formula");
+    auto mass              = get_dbl("mass");
+    auto SMILES            = get_str("SMILES");
+    auto InChI             = get_str("InChI");
+    auto InChIKey          = get_str("InChIKey");
+    auto xLogP             = get_dbl("xLogP");
+    auto transformation    = get_str("transformation");
+    auto prec_name         = get_str("precursor_name");
+    auto prec_formula      = get_str("precursor_formula");
+    auto prec_mass         = get_dbl("precursor_mass");
+    auto prec_SMILES       = get_str("precursor_SMILES");
+    auto prec_InChI        = get_str("precursor_InChI");
+    auto prec_InChIKey     = get_str("precursor_InChIKey");
+    auto prec_xLogP        = get_dbl("precursor_xLogP");
+    auto main_name         = get_str("main_precursor_name");
+    auto main_formula      = get_str("main_precursor_formula");
+    auto main_mass         = get_dbl("main_precursor_mass");
+    auto main_SMILES       = get_str("main_precursor_SMILES");
+    auto main_InChI        = get_str("main_precursor_InChI");
+    auto main_InChIKey     = get_str("main_precursor_InChIKey");
+    auto main_xLogP        = get_dbl("main_precursor_xLogP");
+
+    int n = static_cast<int>(name.size());
+    tp_rows.reserve(n);
+    for (int i = 0; i < n; ++i)
+    {
+      atp::TPInputRow r;
+      r.name                   = name[i];
+      r.formula                = formula[i];
+      r.mass                   = mass[i];
+      r.SMILES                 = SMILES[i];
+      r.InChI                  = InChI[i];
+      r.InChIKey               = InChIKey[i];
+      r.xLogP                  = xLogP[i];
+      r.transformation         = transformation[i];
+      r.precursor_name         = prec_name[i];
+      r.precursor_formula      = prec_formula[i];
+      r.precursor_mass         = prec_mass[i];
+      r.precursor_SMILES       = prec_SMILES[i];
+      r.precursor_InChI        = prec_InChI[i];
+      r.precursor_InChIKey     = prec_InChIKey[i];
+      r.precursor_xLogP        = prec_xLogP[i];
+      r.main_precursor_name    = main_name[i];
+      r.main_precursor_formula = main_formula[i];
+      r.main_precursor_mass    = main_mass[i];
+      r.main_precursor_SMILES  = main_SMILES[i];
+      r.main_precursor_InChI   = main_InChI[i];
+      r.main_precursor_InChIKey= main_InChIKey[i];
+      r.main_precursor_xLogP   = main_xLogP[i];
+      tp_rows.push_back(r);
+    }
+  }
+
+  atp::TRANSFORMATION_PRODUCTS result =
+      atp::assign_transformation_products_impl(
+          suspects_cpp, tp_rows, chromatographic_phase, mzrMS2);
+
+  return transformation_products_to_dt(result);
 };

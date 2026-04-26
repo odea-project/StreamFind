@@ -1,595 +1,259 @@
-#' @noRd
-.run_group_features_patRoon <- function(x, engine = NULL) {
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
-    return(FALSE)
-  }
+# MARK: Native
+# Native ------
 
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-
-  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
-    warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
-    return(FALSE)
-  }
-
-  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
-
-  if (
-    sum(vapply(nts$features, function(z) nrow(z), 0)) == 0
-  ) {
-    warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
-    return(FALSE)
-  }
-
-  pat_features <- get_patRoon_features(
-    nts,
-    filtered = FALSE,
-    featureGroups = FALSE
+#' @title MassSpecMethod_GroupFeatures_native class
+#' @description Native StreamFind method for grouping features across samples by aligning retention times and matching mass values.
+#' @param method Character. Method for retention time alignment: "internal_standards" uses internal standards for RT correction (requires internal standards to be present), "obi_warp" uses Dynamic Time Warping alignment. Default: "internal_standards".
+#' @param rtDeviation Numeric. Retention time tolerance in seconds for grouping features. Default: 5.
+#' @param ppm Numeric. Mass tolerance in parts-per-million for grouping features. Default: 10.
+#' @param minSamples Integer. Minimum number of samples a feature must appear in to be grouped. Default: 1.
+#' @param binSize Numeric. RT bin size in seconds for harmonizing RT dimension across analyses.
+#' Shifts are calculated per bin instead of per feature. Default: 5.
+#' @param filtered Logical. If TRUE, includes filtered features in grouping. Default: FALSE.
+#' @param debug Logical. If TRUE, creates a debug log file. Default: FALSE.
+#' @param debugRT Numeric. RT value to focus debugging on (logs features within rtDeviation of this value). Default: 0 (disabled).
+#' @export
+#'
+MassSpecMethod_GroupFeatures_native <- function(
+  method = "internal_standards",
+  rtDeviation = 5,
+  ppm = 10,
+  minSamples = 1,
+  binSize = 5,
+  filtered = FALSE,
+  debug = FALSE,
+  debugRT = 0
+) {
+  x <- ProcessingStep(
+    type = "MassSpec",
+    method = "GroupFeatures",
+    required = c("FindFeatures"),
+    algorithm = "native",
+    input_class = "MassSpecResults_NonTargetAnalysis",
+    output_class = "MassSpecResults_NonTargetAnalysis",
+    number_permitted = 1,
+    version = as.character(packageVersion("StreamFind")),
+    software = "StreamFind",
+    developer = "Ricardo Cunha",
+    contact = "cunha@iuta.de",
+    link = "https://odea-project.github.io/StreamFind",
+    doi = NA_character_,
+    parameters = list(
+      method = as.character(method),
+      rtDeviation = as.numeric(rtDeviation),
+      ppm = as.numeric(ppm),
+      minSamples = as.integer(minSamples),
+      binSize = as.numeric(binSize),
+      filtered = as.logical(filtered),
+      debug = as.logical(debug),
+      debugRT = as.numeric(debugRT)
+    )
   )
+  if (is.null(validate_object(x))) {
+    x
+  } else {
+    stop("Invalid parameters for MassSpecMethod_GroupFeatures_native.")
+  }
+}
 
-  algorithm <- x$algorithm
+#' @export
+#' @noRd
+validate_object.MassSpecMethod_GroupFeatures_native <- function(x) {
+  checkmate::assert_choice(x$type, "MassSpec")
+  checkmate::assert_choice(x$method, "GroupFeatures")
+  checkmate::assert_choice(x$algorithm, "native")
+  checkmate::assert_choice(x$parameters$method, c("internal_standards", "obi_warp"))
+  checkmate::assert_numeric(x$parameters$rtDeviation, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$ppm, len = 1, lower = 0)
+  checkmate::assert_integerish(x$parameters$minSamples, len = 1, lower = 1)
+  checkmate::assert_numeric(x$parameters$binSize, len = 1, lower = 0)
+  checkmate::assert_logical(x$parameters$filtered, len = 1)
+  checkmate::assert_logical(x$parameters$debug, len = 1)
+  checkmate::assert_numeric(x$parameters$debugRT, len = 1, lower = 0)
+  NULL
+}
 
-  if (grepl("_", algorithm, fixed = FALSE)) {
-    algorithm <- gsub("^(.*?)_.*$", "\\1", algorithm)
+#' @export
+#' @noRd
+run.MassSpecMethod_GroupFeatures_native <- function(x, engine = NULL) {
+  if (!"MassSpecResults_NonTargetAnalysis" %in% class(engine$NonTargetAnalysis)) {
+    warning("Engine does not contain MassSpecResults_NonTargetAnalysis.")
+    return(FALSE)
   }
 
-  if ("xcms" %in% algorithm || "xcms3" %in% algorithm) {
-    if (!requireNamespace("xcms")) {
-      warning("xcms package is not installed!")
-      return(FALSE)
-    }
-  }
-
+  analyses_info <- info(engine$Analyses)
   parameters <- x$parameters
 
-  if ("class" %in% names(parameters)) {
-    parameters[["Class"]] <- parameters$class
-    parameters[["class"]] <- NULL
+  # Check if cache exists
+  cache_manager <- engine$Cache
+  if (!is.null(cache_manager)) {
+    hash <- .make_hash(x, analyses_info, parameters, engine$Workflow)
+    cache_info <- get_cache_info(cache_manager)
+    if (nrow(cache_info) > 0) {
+      grouped_features <- load_cache(cache_manager, hash = hash)
+      if (!is.null(grouped_features)) {
+        if (nrow(grouped_features) > 0) {
+          message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
 
-    parameters <- lapply(parameters, function(z) {
-      if (is.list(z) & length(z) > 0) {
-        z[[1]]
-      } else {
-        z
-      }
-    })
+          # Update Features table with new feature_group assignments using bulk operations
+          conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
+          on.exit(DBI::dbDisconnect(conn, shutdown = TRUE), add = TRUE)
 
-    if (parameters$Class %in% "PeakGroupsParam") {
-      parameters$peakGroupsMatrix <- as.matrix(parameters$peakGroupsMatrix)
-    }
+          # Create a temporary table with the updates
+          temp_table_name <- paste0("temp_feature_groups_", sample.int(1e9, 1))
+          DBI::dbWriteTable(conn, temp_table_name, grouped_features, temporary = TRUE)
 
-    if (parameters$Class %in% "PeakGroupsParam") {
-      parameters$subset <- as.integer(parameters$subset)
-    }
+          # Perform bulk update using JOIN
+          update_query <- sprintf("
+            UPDATE Features
+            SET feature_group = %s.feature_group
+            FROM %s
+            WHERE Features.analysis = %s.analysis
+              AND Features.feature = %s.feature
+          ", temp_table_name, temp_table_name, temp_table_name, temp_table_name)
 
-    parameters <- do.call("new", parameters)
-  } else if (is.list(parameters)) {
-    parameters <- lapply(parameters, function(par) {
-      if (is.list(par)) {
-        if ("class" %in% names(par)) {
-          par[["Class"]] <- par$class
-          par[["class"]] <- NULL
+          DBI::dbExecute(conn, update_query)
 
-          par <- lapply(par, function(z) {
-            if (is.list(z) & length(z) > 0) {
-              z[[1]]
-            } else {
-              z
-            }
-          })
+          # Clean up temporary table
+          DBI::dbExecute(conn, sprintf("DROP TABLE IF EXISTS %s", temp_table_name))
 
-          if (par$Class %in% "PeakGroupsParam") {
-            par$peakGroupsMatrix <- as.matrix(par$peakGroupsMatrix)
-          }
+          message("\U2713 Feature groups updated in database (", length(unique(grouped_features[grouped_features$feature_group != "", ]$feature_group)), " groups from cache).")
 
-          if (par$Class %in% "PeakGroupsParam") {
-            par$subset <- as.integer(par$subset)
-          }
+          DBI::dbDisconnect(conn, shutdown = TRUE)
+          on.exit(NULL)
 
-          par <- do.call("new", par)
+          return(invisible(TRUE))
         }
       }
-      par
-    })
-  }
-
-  if (algorithm == "xcms3") {
-    if ("Param" %in% is(parameters)) {
-      parameters <- list("groupParam" = parameters)
-    }
-
-    parameters$groupParam@sampleGroups <- get_replicate_names(engine$Analyses)
-
-    if ("rtalign" %in% names(parameters)) {
-      if (parameters$rtalign) {
-        parameters$preGroupParam@sampleGroups <- get_replicate_names(engine$Analyses)
-      }
-    }
-
-    # when multiple polarities it makes setFeatureGroups, no rt alignment possible
-    polarities <- vapply(
-      nts$headers,
-      function(a) {
-        paste0(unique(a$polarity), collapse = ", ")
-      },
-      NA_character_
-    )
-    if (length(unique(polarities)) > 1) {
-      parameters <- parameters["groupParam"]
     }
   }
 
-  ag <- list("obj" = pat_features, "algorithm" = algorithm)
-
-  if (!"verbose" %in% names(parameters)) {
-    parameters[["verbose"]] <- TRUE
-  }
-
-  pat <- do.call(patRoon::groupFeatures, c(ag, parameters))
-
-  pat_fl <- pat@features@features
-
-  pat_fl <- pat_fl[nts$info$analysis]
-
-  fl <- nts$features
-
-  fl <- Map(
-    function(z, y) {
-      z_na <- z[!z$feature %in% y$ID, ]
-
-      if (any(!z_na$filtered)) {
-        z_na$filtered[!z_na$filtered] <- TRUE
-        z_na$filter[!z_na$filtered] <- "GroupFeatures"
-      }
-
-      z <- z[z$feature %in% y$ID, ]
-
-      ID_grps <- y$group
-      names(ID_grps) <- y$ID
-
-      z$group <- ID_grps[z$feature]
-      z <- data.table::rbindlist(list(z, z_na))
-      z$filtered[is.na(z$group) | z$group %in% ""] <- TRUE
-      z$filter[is.na(z$group) | z$group %in% ""] <- "GroupFeatures"
-      z$group[is.na(z$group) | z$group %in% ""] <- ""
-      z
-    },
-    fl,
-    pat_fl
+  # Get features
+  features <- get_features(
+    x = engine$NonTargetAnalysis,
+    analyses = NULL,
+    filtered = parameters$filtered
   )
 
-  names(fl) <- nts$info$analysis
-  nts$features <- fl
-  tryCatch(
-    {
-      engine$Results <- nts
-      return(TRUE)
-    },
-    error = function(e) {
-      warning(e)
+  if (nrow(features) == 0) {
+    warning("No features found for grouping.")
+    return(FALSE)
+  }
+
+  message("\U2139 Processing ", nrow(features), " features across ", length(unique(features$analysis)), " analyses...")
+
+  # Get analyses info and spectra headers
+  analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
+  spectra_headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
+
+  # Keep per-analysis lists in the exact analysis order passed to Rcpp.
+  headers_split <- split(spectra_headers, spectra_headers$analysis)
+  headers_list <- lapply(analyses$analysis, function(ana) {
+    hd <- headers_split[[ana]]
+    if (is.null(hd)) spectra_headers[0, ] else hd
+  })
+  names(headers_list) <- analyses$analysis
+
+  features_split <- split(features, features$analysis)
+  feature_list <- lapply(analyses$analysis, function(ana) {
+    fts <- features_split[[ana]]
+    if (is.null(fts)) features[0, ] else fts
+  })
+  names(feature_list) <- analyses$analysis
+
+  # Get database connection for later updates
+  conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
+  on.exit(DBI::dbDisconnect(conn, shutdown = TRUE), add = TRUE)
+
+  # Get internal standards if needed
+  internal_standards_list <- list()
+  if (parameters$method == "internal_standards") {
+    internal_standards <- tryCatch(
+      {
+        get_internal_standards(engine$NonTargetAnalysis)
+      },
+      error = function(e) {
+        NULL
+      }
+    )
+
+    if (!is.null(internal_standards) && nrow(internal_standards) > 0) {
+      # Split by analysis for C++ and align with analyses order.
+      istd_split <- split(internal_standards, internal_standards$analysis)
+      internal_standards_list <- lapply(analyses$analysis, function(ana) {
+        istd <- istd_split[[ana]]
+        if (is.null(istd)) internal_standards[0, ] else istd
+      })
+      names(internal_standards_list) <- analyses$analysis
+      message("\U2139 Using ", nrow(internal_standards), " internal standards for alignment.")
+    } else {
+      warning("Internal standards not found but required for grouping with internal_standards method.")
       return(FALSE)
     }
-  )
-}
-
-#' MassSpecMethod_GroupFeatures_xcms3_peakdensity Class
-#'
-#' @description Settings for grouping features (i.e., chromatographic peaks) across mzML/mzXML files using the package
-#' \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
-#' \href{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}{peakDensity}.
-#' The function uses the package \pkg{patRoon} in the background.
-#'
-#' @param bw numeric(1) defining the bandwidth (standard deviation of the smoothing kernel) to be used. This argument
-#' is passed to the `density()` method.
-#' @param minFraction numeric(1) defining the minimum fraction of analyses in at least one analysis replicate group in
-#' which the features have to be present to be considered as a feature group.
-#' @param minSamples numeric(1) with the minimum number of analyses in at least one analysis replicate group in which
-#' the features have to be detected to be considered a feature group.
-#' @param binSize numeric(1) defining the size of the overlapping slices in mz dimension.
-#' @param maxFeatures numeric(1) with the maximum number of feature groups to be identified in a single mz slice.
-#'
-#' @details See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for more information and requirements.
-#'
-#' @return A `MassSpecMethod_GroupFeatures_xcms3_peakdensity` object.
-#'
-#' @references
-#' \insertRef{patroon01}{StreamFind}
-#'
-#' \insertRef{patroon02}{StreamFind}
-#'
-#' \insertRef{xcms01}{StreamFind}
-#'
-#' \insertRef{xcms02}{StreamFind}
-#'
-#' \insertRef{xcms03}{StreamFind}
-#'
-#' @export
-#'
-MassSpecMethod_GroupFeatures_xcms3_peakdensity <- function(
-  bw = 5,
-  minFraction = 1,
-  minSamples = 1,
-  binSize = 0.008,
-  maxFeatures = 100
-) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "GroupFeatures",
-    required = "FindFeatures",
-    algorithm = "xcms3_peakdensity",
-    input_class = "MassSpecResults_NonTargetAnalysis",
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      bw = bw,
-      minFraction = minFraction,
-      minSamples = minSamples,
-      binSize = binSize,
-      maxFeatures = maxFeatures
-    ),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "xcms",
-    developer = "Colin Smith, Johannes Rainer",
-    contact = "siuzdak@scripps.edu",
-    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
-    doi = "https://doi.org/10.1021/ac051437y"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_GroupFeatures_xcms3_peakdensity object!")
   }
-}
 
-#' @export
-#' @noRd
-validate_object.MassSpecMethod_GroupFeatures_xcms3_peakdensity <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "GroupFeatures")
-  checkmate::assert_choice(x$algorithm, "xcms3_peakdensity")
-  checkmate::assert_numeric(x$parameters$bw, len = 1)
-  checkmate::assert_numeric(x$parameters$minFraction, len = 1)
-  checkmate::assert_numeric(x$parameters$minSamples, len = 1)
-  checkmate::assert_numeric(x$parameters$binSize, len = 1)
-  checkmate::assert_numeric(x$parameters$maxFeatures, len = 1)
-  NULL
-}
+  # Call C++ function for grouping
+  grouped_features_list <- rcpp_nts_group_features(
+    info = analyses,
+    spectra_headers = headers_list,
+    feature_list = feature_list,
+    method = parameters$method,
+    internal_standards_list = internal_standards_list,
+    rtDeviation = parameters$rtDeviation,
+    ppm = parameters$ppm,
+    minSamples = parameters$minSamples,
+    binSize = parameters$binSize,
+    debug = parameters$debug,
+    debugRT = parameters$debugRT
+  )
 
-#' @export
-#' @noRd
-run.MassSpecMethod_GroupFeatures_xcms3_peakdensity <- function(
-  x,
-  engine = NULL
-) {
-  settings <- list()
+  if (is.null(grouped_features_list) || length(grouped_features_list) == 0) {
+    warning("Feature grouping failed.")
+    return(FALSE)
+  }
 
-  settings[["algorithm"]] <- x$algorithm
+  names(grouped_features_list) <- analyses$analysis
+  grouped_features <- data.table::rbindlist(grouped_features_list, fill = TRUE, idcol = "analysis")
 
-  parameters <- list(
-    "rtalign" = FALSE,
-    "groupParam" = list(
-      class = "PeakDensityParam",
-      sampleGroups = "holder",
-      bw = x$parameters$bw,
-      minFraction = x$parameters$minFraction,
-      minSamples = x$parameters$minSamples,
-      binSize = x$parameters$binSize,
-      maxFeatures = x$parameters$maxFeatures
+  # Prepare result for caching (only necessary columns)
+  result <- grouped_features[, .(analysis, feature, feature_group)]
+
+  # Cache results
+  if (!is.null(cache_manager)) {
+    save_cache(
+      cache_manager,
+      name = paste0("GroupFeatures_native"),
+      hash = .make_hash(x, analyses_info, parameters, engine$Workflow),
+      description = "Feature groups from GroupFeatures_native method",
+      data = as.data.frame(result)
     )
-  )
-
-  settings[["parameters"]] <- parameters
-
-  .run_group_features_patRoon(settings, engine)
-}
-
-#' MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups Class
-#'
-#' @description Settings for aligning and grouping features (i.e., chromatographic peaks) across mzML/mzXML files using
-#' the package \href{https://bioconductor.org/packages/release/bioc/html/xcms.html}{xcms} (version 3) with the algorithm
-#' \href{https://rdrr.io/bioc/xcms/man/adjustRtime-peakGroups.html}{peakGroups} for retention time alignment and the algorithm
-#' \href{https://rdrr.io/bioc/xcms/man/groupChromPeaks-density.html}{peakdensity} for grouping. The function uses the
-#' package \pkg{patRoon} in the background.
-#'
-#' @param bw numeric(1) defining the bandwidth (standard deviation of the
-#' smoothing kernel) to be used. This argument is passed to the `density()`
-#' method.
-#' @param minFraction numeric(1) defining the minimum fraction of analyses in at
-#' least one analysis replicate group in which the features have to be present
-#' to be considered as a feature group.
-#' @param minSamples numeric(1) with the minimum number of analyses in at least
-#' one analysis replicate group in which the features have to be detected to be
-#' considered a feature group.
-#' @param binSize numeric(1) defining the size of the overlapping slices in mz
-#' dimension.
-#' @param pre_bw as `bw` but applied before retention time alignment.
-#' @param pre_minFraction as `minFraction` but applied before retention time
-#' alignment.
-#' @param pre_minSamples as `minSamples` but applied before retention time
-#' alignment.
-#' @param pre_binSize as `binSize` but applied before retention time alignment.
-#' @param maxFeatures numeric(1) with the maximum number of feature groups to be
-#' identified in a single mz slice.
-#' @param rtAlignMinFraction numeric(1) between 0 and 1 defining the minimum
-#' required fraction of samples in which peaks for the peak group were identified.
-#' Peak groups passing this criteria will aligned across samples and retention
-#' times of individual spectra will be adjusted based on this alignment.
-#' For minFraction = 1 the peak group has to contain peaks in all samples of
-#' the experiment. Note that if subset is provided, the specified fraction is
-#' relative to the defined subset of samples and not to the total number of
-#' samples within the experiment (i.e. a peak has to be present in the specified
-#' proportion of subset samples).
-#' @param extraPeaks numeric(1) defining the maximal number of additional peaks
-#' for all samples to be assigned to a peak group (i.e. feature) for retention
-#' time correction. For a data set with 6 samples, extraPeaks = 1 uses all peak
-#' groups with a total peak count <= 6 + 1. The total peak count is the total
-#' number of peaks being assigned to a peak group and considers also multiple
-#' peaks within a sample being assigned to the group.
-#' @param smooth character defining the function to be used, to interpolate
-#' corrected retention times for all peak groups. Either "loess" or "linear".
-#' @param span numeric(1) defining the degree of smoothing (if smooth = "loess").
-#' This parameter is passed to the internal call to loess.
-#' @param family character defining the method to be used for loess smoothing.
-#' Allowed values are "gaussian" and "symmetric".See loess for more information.
-#' @param subset integer with the indices of samples within the experiment on
-#' which the alignment models should be estimated. Samples not part of the subset
-#' are adjusted based on the closest subset sample. See description above
-#' for more details.
-#' @param subsetAdjust character specifying the method with which non-subset
-#' samples should be adjusted. Supported options are "previous" and "average"
-#' (default). See description above for more information.
-#'
-#' @details See the \link[patRoon]{groupFeaturesXCMS3} function from the \pkg{patRoon} package for
-#' more information and requirements.
-#'
-#' @return A `MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups` object.
-#'
-#' @references
-#' \insertRef{patroon01}{StreamFind}
-#'
-#' \insertRef{patroon02}{StreamFind}
-#'
-#' \insertRef{xcms01}{StreamFind}
-#'
-#' \insertRef{xcms02}{StreamFind}
-#'
-#' \insertRef{xcms03}{StreamFind}
-#'
-#' @export
-#'
-MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- function(
-  bw = 5,
-  minFraction = 1,
-  minSamples = 1,
-  binSize = 0.008,
-  pre_bw = 5,
-  pre_minFraction = 1,
-  pre_minSamples = 1,
-  pre_binSize = 0.008,
-  maxFeatures = 100,
-  rtAlignMinFraction = 0.9,
-  extraPeaks = 1,
-  smooth = "loess",
-  span = 0.2,
-  family = "gaussian",
-  subset = integer(),
-  subsetAdjust = "average"
-) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "GroupFeatures",
-    required = "FindFeatures",
-    algorithm = "xcms3_peakdensity_peakgroups",
-    input_class = "MassSpecResults_NonTargetAnalysis",
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      bw = bw,
-      minFraction = minFraction,
-      minSamples = minSamples,
-      binSize = binSize,
-      pre_bw = pre_bw,
-      pre_minFraction = pre_minFraction,
-      pre_minSamples = pre_minSamples,
-      pre_binSize = pre_binSize,
-      maxFeatures = maxFeatures,
-      rtAlignMinFraction = rtAlignMinFraction,
-      extraPeaks = extraPeaks,
-      smooth = smooth,
-      span = span,
-      family = family,
-      subset = subset,
-      subsetAdjust = subsetAdjust
-    ),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "xcms",
-    developer = "Colin Smith, Johannes Rainer",
-    contact = "siuzdak@scripps.edu",
-    link = "https://bioconductor.org/packages/release/bioc/html/xcms.html",
-    doi = "https://doi.org/10.1021/ac051437y"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups object!")
+    message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
   }
-}
 
-#' @export
-#' @noRd
-validate_object.MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- function(
-  x
-) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "GroupFeatures")
-  checkmate::assert_choice(x$algorithm, "xcms3_peakdensity_peakgroups")
-  checkmate::assert_numeric(x$parameters$bw, len = 1)
-  checkmate::assert_numeric(x$parameters$minFraction, len = 1)
-  checkmate::assert_numeric(x$parameters$minSamples, len = 1)
-  checkmate::assert_numeric(x$parameters$binSize, len = 1)
-  checkmate::assert_numeric(x$parameters$pre_bw, len = 1)
-  checkmate::assert_numeric(x$parameters$pre_minFraction, len = 1)
-  checkmate::assert_numeric(x$parameters$pre_minSamples, len = 1)
-  checkmate::assert_numeric(x$parameters$pre_binSize, len = 1)
-  checkmate::assert_numeric(x$parameters$maxFeatures, len = 1)
-  checkmate::assert_numeric(x$parameters$rtAlignMinFraction, len = 1)
-  checkmate::assert_numeric(x$parameters$extraPeaks, len = 1)
-  checkmate::assert_choice(x$parameters$smooth, c("loess", "linear"))
-  checkmate::assert_numeric(x$parameters$span, len = 1)
-  checkmate::assert_choice(x$parameters$family, c("gaussian", "symmetric"))
-  checkmate::assert_integer(x$parameters$subset)
-  checkmate::assert_choice(
-    x$parameters$subsetAdjust,
-    c("previous", "average")
-  )
-  NULL
-}
+  # Update Features table with new feature_group assignments using bulk operations
+  # Create a temporary table with the updates
+  temp_table_name <- paste0("temp_feature_groups_", sample.int(1e9, 1))
 
-#' @export
-#' @noRd
-run.MassSpecMethod_GroupFeatures_xcms3_peakdensity_peakgroups <- function(
-  x,
-  engine = NULL
-) {
-  settings <- list()
+  DBI::dbWriteTable(conn, temp_table_name, result, temporary = TRUE)
 
-  settings[["algorithm"]] <- x$algorithm
+  # Perform bulk update using JOIN
+  update_query <- sprintf("
+    UPDATE Features
+    SET feature_group = %s.feature_group
+    FROM %s
+    WHERE Features.analysis = %s.analysis
+      AND Features.feature = %s.feature
+  ", temp_table_name, temp_table_name, temp_table_name, temp_table_name)
 
-  parameters <- list(
-    "rtalign" = TRUE,
-    "groupParam" = list(
-      class = "PeakDensityParam",
-      sampleGroups = "holder",
-      bw = x$parameters$bw,
-      minFraction = x$parameters$minFraction,
-      minSamples = x$parameters$minSamples,
-      binSize = x$parameters$binSize,
-      maxFeatures = x$parameters$maxFeatures
-    ),
-    "preGroupParam" = list(
-      class = "PeakDensityParam",
-      sampleGroups = "holder",
-      bw = x$parameters$pre_bw,
-      minFraction = x$parameters$pre_minFraction,
-      minSamples = x$parameters$pre_minSamples,
-      binSize = x$parameters$pre_binSize,
-      maxFeatures = x$parameters$maxFeatures
-    ),
-    "retAlignParam" = list(
-      class = "PeakGroupsParam",
-      minFraction = x$parameters$rtAlignMinFraction,
-      extraPeaks = x$parameters$extraPeaks,
-      smooth = x$parameters$smooth,
-      span = x$parameters$span,
-      family = x$parameters$family,
-      peakGroupsMatrix = matrix(nrow = 0, ncol = 0),
-      subset = as.integer(x$parameters$subset),
-      subsetAdjust = x$parameters$subsetAdjust
-    )
-  )
+  DBI::dbExecute(conn, update_query)
 
-  settings[["parameters"]] <- parameters
+  # Clean up temporary table
+  DBI::dbExecute(conn, sprintf("DROP TABLE IF EXISTS %s", temp_table_name))
 
-  .run_group_features_patRoon(settings, engine)
-}
+  message("\U2713 Feature groups updated in database (", length(unique(result[feature_group != ""]$feature_group)), " groups created).")
 
-#' MassSpecMethod_GroupFeatures_openms Class
-#'
-#' @description Settings for grouping features (i.e., chromatographic peaks) in mzML/mzXML files using the
-#' \href{https://www.openms.org/}{OpenMS}(\url{https://abibuilder.cs.uni-tuebingen.de/archive/openms/}) software
-#' with the algorithm \href{https://abibuilder.cs.uni-tuebingen.de/archive/openms/Documentation/release/3.0.0/html/TOPP_FeatureLinkerUnlabeled.html}{FeatureLinkerUnlabeled}.
-#' The function uses the package \pkg{patRoon} in the background.
-#'
-#' @param rtalign Logical length one. Set to TRUE to enable retention time alignment.
-#' @param QT Logical length one. When TRUE the FeatureLinkerUnlabeledQT is used
-#' instead of FeatureLinkerUnlabeled for grouping features.
-#' @param maxAlignRT Numeric length one. Maximum retention time (in seconds) for
-#' feature pairing when performing retention time alignment.
-#' @param maxAlignMZ Numeric length one. Maximum *m/z* (in Da) for
-#' feature pairing when performing retention time alignment.
-#' @param maxGroupRT Numeric length one. Maximum retention time (in seconds) for
-#' feature pairing when performing grouping.
-#' @param maxGroupMZ Numeric length one. Maximum *m/z* (in Da) for
-#' feature pairing when performing grouping.
-#' @param verbose Logical of length one. When TRUE adds processing information
-#' to the console.
-#'
-#' @details See the \link[patRoon]{groupFeaturesOpenMS} function from the \pkg{patRoon} package for
-#' more information and requirements.
-#'
-#' @return A `MassSpecMethod_GroupFeatures_openms` object.
-#'
-#' @references
-#' \insertRef{patroon01}{StreamFind}
-#'
-#' \insertRef{patroon02}{StreamFind}
-#'
-#' \insertRef{openms01}{StreamFind}
-#'
-#' @export
-#'
-MassSpecMethod_GroupFeatures_openms <- function(
-  rtalign = FALSE,
-  QT = FALSE,
-  maxAlignRT = 5,
-  maxAlignMZ = 0.008,
-  maxGroupRT = 5,
-  maxGroupMZ = 0.008,
-  verbose = FALSE
-) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "GroupFeatures",
-    required = "FindFeatures",
-    algorithm = "openms",
-    input_class = "MassSpecResults_NonTargetAnalysis",
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      rtalign = rtalign,
-      QT = QT,
-      maxAlignRT = maxAlignRT,
-      maxAlignMZ = maxAlignMZ,
-      maxGroupRT = maxGroupRT,
-      maxGroupMZ = maxGroupMZ,
-      verbose = verbose
-    ),
-    number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "openms",
-    developer = "Oliver Kohlbacher",
-    contact = "oliver.kohlbacher@uni-tuebingen.de",
-    link = "https://openms.de/",
-    doi = "https://doi.org/10.1038/nmeth.3959"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_GroupFeatures_openms object!")
-  }
-}
+  DBI::dbDisconnect(conn, shutdown = TRUE)
+  on.exit(NULL)
 
-#' @export
-#' @noRd
-validate_object.MassSpecMethod_GroupFeatures_openms <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "GroupFeatures")
-  checkmate::assert_choice(x$algorithm, "openms")
-  checkmate::assert_logical(x$parameters$rtalign, len = 1)
-  checkmate::assert_logical(x$parameters$QT, len = 1)
-  checkmate::assert_numeric(x$parameters$maxAlignRT, len = 1)
-  checkmate::assert_numeric(x$parameters$maxAlignMZ, len = 1)
-  checkmate::assert_numeric(x$parameters$maxGroupRT, len = 1)
-  checkmate::assert_numeric(x$parameters$maxGroupMZ, len = 1)
-  checkmate::assert_logical(x$parameters$verbose, len = 1)
-  NULL
-}
-
-#' @export
-#' @noRd
-#' 
-run.MassSpecMethod_GroupFeatures_openms <- function(x, engine = NULL) {
-  .run_group_features_patRoon(x, engine)
+  invisible(TRUE)
 }

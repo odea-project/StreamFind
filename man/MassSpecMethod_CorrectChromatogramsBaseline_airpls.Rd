@@ -3,29 +3,21 @@
 %   R/class_MassSpecMethod_CorrectChromatogramsBaseline.R
 \name{MassSpecMethod_CorrectChromatogramsBaseline_airpls}
 \alias{MassSpecMethod_CorrectChromatogramsBaseline_airpls}
-\title{MassSpecMethod_CorrectChromatogramsBaseline_airpls Class}
+\title{MassSpecMethod_CorrectChromatogramsBaseline_airpls class}
 \usage{
 MassSpecMethod_CorrectChromatogramsBaseline_airpls(
   lambda = 10,
-  differences = 1,
-  itermax = 20
+  differences = 1L,
+  itermax = 20L
 )
 }
 \arguments{
-\item{lambda}{Numeric (length 1) with the smoothing intensity. the higher the \code{lambda} the
-higher the smoothing.}
+\item{lambda}{Smoothing penalty (larger = smoother baseline).}
 
-\item{differences}{Integer (length 1) indicating the order of the difference of penalties}
+\item{differences}{Order of the finite-difference penalty (1 or 2).}
 
-\item{itermax}{Integer (length 1) with the maximum number of iterations.}
-}
-\value{
-A MassSpecMethod_CorrectChromatogramsBaseline_airpls object.
+\item{itermax}{Maximum number of iterations.}
 }
 \description{
-Performs baseline correction using adaptive iteratively reweighted Penalized Least
-Squares (airPLS) based on the algorithm from Zhi-Min Zhang.
-}
-\references{
-\insertRef{airpls01}{StreamFind}
+Estimate and subtract chromatogram baselines using the airPLS algorithm (Zhang et al. 2010).
 }

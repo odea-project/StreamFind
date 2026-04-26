@@ -2,27 +2,21 @@
 % Please edit documentation in R/class_MassSpecMethod_LoadSpectra.R
 \name{MassSpecMethod_LoadSpectra_chrompeaks}
 \alias{MassSpecMethod_LoadSpectra_chrompeaks}
-\title{MassSpecMethod_LoadSpectra_chrompeaks S3 Class}
+\title{MassSpecMethod_LoadSpectra_chrompeaks class}
 \usage{
 MassSpecMethod_LoadSpectra_chrompeaks(
-  levels = 1,
-  mzmin = 0,
-  mzmax = 0,
-  minIntensity = 0
+  levels = 2L,
+  minIntensityMS1 = 0,
+  minIntensityMS2 = 0
 )
 }
 \arguments{
-\item{levels}{A numeric vector with the levels to be used.}
+\item{levels}{MS levels to load (default 2L for MS2).}
 
-\item{mzmin}{A numeric vector with the minimum m/z values to be used.}
+\item{minIntensityMS1}{Minimum MS1 intensity filter.}
 
-\item{mzmax}{A numeric vector with the maximum m/z values to be used.}
-
-\item{minIntensity}{A numeric value with the minimum intensity to be used.}
-}
-\value{
-A \code{MassSpecMethod_LoadSpectra_chrompeaks} object.
+\item{minIntensityMS2}{Minimum MS2 intensity filter.}
 }
 \description{
-Loads spectra based on retention time dimensions of chromatographic peaks.
+Load MS2 spectra for chromatographic peak windows identified by FindChromPeaks / IntegrateChromatograms.
 }

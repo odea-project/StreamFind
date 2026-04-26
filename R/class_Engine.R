@@ -1,10 +1,17 @@
 # MARK: Engine
 # Engine -----
-#' @title Generic (top level) Engine class for project management
-#' @description The [StreamFind::Engine] R6 class is used to harmonize the interface across different data types for data management and processing.
+#' @title File-based Database Engine for StreamFind
+#' @description The [StreamFind::Engine] R6 class provides file-based storage for StreamFind Engine data using DuckDB.
+#' @template arg-core-projectPath
 #' @template arg-core-metadata
 #' @template arg-core-workflow
-#' @template arg-core-analyses
+#' @template arg-core-audit-trail-operation_type
+#' @template arg-core-audit-trail-object_type
+#' @template arg-core-audit-trail-object_id
+#' @template arg-core-audit-trail-details
+#' @template arg-sql-tableName
+#' @template arg-sql-sql
+#' @template arg-sql-params
 #' @export
 #'
 Engine <- R6::R6Class(
@@ -13,12 +20,8 @@ Engine <- R6::R6Class(
   # MARK: private
   # private -----
   private = list(
-    .type = NULL,
-    .Metadata = NULL,
-    .Workflow = NULL,
-    .Analyses = NULL,
-    .AuditTrail = NULL,
-    .Config = NULL
+    .projectPath = NULL,
+    .dataType = NULL
   ),
 
   # MARK: active bindings
@@ -26,611 +29,216 @@ Engine <- R6::R6Class(
   active = list(
 
     # MARK: Metadata
-    #' @field Metadata A [StreamFind::Metadata] object. When setting it can also be a named list with elements of length one.
+    #' @field Metadata A [StreamFind::Metadata] object loaded from database.
     Metadata = function(value) {
       if (missing(value)) {
-        return(private$.Metadata)
+        return(self$get_metadata())
       }
-      if (is(value, "Metadata")) {
-        if (!is.null(validate_object(value))) {
-          warning("Invalid Metadata object! Not added.")
-        } else {
-          private$.Metadata <- value
-          if (!is.null(private$.AuditTrail)) {
-            private$.AuditTrail <- add(private$.AuditTrail, private$.Metadata)
-          }
-        }
-      } else if (is(value, "list")) {
-        tryCatch(
-          {
-            private$.Metadata <- Metadata(entries = value)
-            if (!is.null(private$.AuditTrail)) {
-              private$.AuditTrail <- add(private$.AuditTrail, private$.Metadata)
-            }
-          },
-          error = function(e) {
-            warning(e)
-          },
-          warning = function(w) {
-            warning(w)
-          }
-        )
-      } else {
-        warning("Invalid Metadata object! Not added.")
-      }
+      self$add_metadata(value)
       invisible(self)
     },
 
     # MARK: Workflow
-    #' @field Workflow A [StreamFind::Workflow] S3 class object. When settings can also be a list of [StreamFind::ProcessingStep] objects or a full path string to an **rds** or **json** file containing a [StreamFind::Workflow] object.
+    #' @field Workflow A [StreamFind::Workflow] object loaded from database.
     Workflow = function(value) {
       if (missing(value)) {
-        return(private$.Workflow)
+        return(self$get_workflow())
       }
-      if (is(value, "Workflow")) {
-        if (!is.null(validate_object(value))) {
-          warning("Invalid Workflow object! Not added.")
-          return(invisible(self))
-        }
-        if (attr(value, "type") %in% private$.type || length(value) == 0) {
-          private$.Workflow <- value
-        } else {
-          warning("Workflow data type not matching with current engine! Not added.")
-          return(invisible(self))
-        }
-        if (!is.null(private$.AuditTrail)) {
-          private$.AuditTrail <- add(private$.AuditTrail, value)
-        }
-      } else if (is(value, "list")) {
-        tryCatch(
-          {
-            wf <- Workflow(value)
-            if (attr(wf, "type") %in% private$.type || length(wf) == 0) {
-              private$.Workflow <- wf
-              if (!is.null(private$.AuditTrail)) {
-                private$.AuditTrail <- add(private$.AuditTrail, private$.Workflow)
-              }
-            } else {
-              warning("Workflow data type not matching with current engine! Not added.")
-            }
-          },
-          error = function(e) {
-            warning(e)
-          },
-          warning = function(w) {
-            warning(w)
-          }
-        )
-      } else if (tools::file_ext(value) %in% c("rds", "json")) {
-        tryCatch(
-          {
-            wf <- read(Workflow(), value)
-            if (attr(wf, "type") %in% private$.type || length(wf) == 0) {
-              private$.Workflow <- wf
-              if (!is.null(private$.AuditTrail)) {
-                private$.AuditTrail <- add(private$.AuditTrail, private$.Workflow)
-              }
-            } else {
-              warning("Workflow data type not matching with current engine! Not added.")
-              return(invisible(self))
-            }
-          },
-          error = function(e) {
-            warning(e)
-          },
-          warning = function(w) {
-            warning(w)
-          }
-        )
-      } else {
-        warning("Invalid Workflow object! Not added.")
-      }
+      self$add_workflow(value)
       invisible(self)
     },
 
     # MARK: Analyses
-    #' @field Analyses An [StreamFind::Analyses] S3 class object or a child for a specific data type.
-    Analyses = function(value) {
-      if (missing(value)) {
-        return(private$.Analyses)
-      }
-      if (is(value, "Analyses")) {
-        if (!is.null(validate_object(value))) {
-          warning("Invalid Analyses or Analyses child object! Not added.")
-          return(invisible(self))
-        }
-        if (!grepl(value$type, private$.type)) {
-          warning("Analyses data type not matching with current engine! Not added.")
-          return(invisible(self))
-        }
-        names_analyses <- get_analysis_names(private$.Analyses)
-        old_results <- list()
-        if (length(names_analyses) > 0) {
-          if (length(private$.Analyses$results) > 0) {
-            old_results <- private$.Analyses$results
-          }
-        }
-        private$.Analyses <- value
-        if (!is.null(private$.AuditTrail)) {
-          if (length(names_analyses) == 0 || !identical(get_analysis_names(private$.Analyses), get_analysis_names(value))) {
-            private$.AuditTrail <- add(private$.AuditTrail, value)
-          }
-          if (length(get_analysis_names(private$.Analyses)) > 0) {
-            if (length(private$.Analyses$results) > 0) {
-              for (r in names(private$.Analyses$results)) {
-                if (!identical(private$.Analyses$results[[r]], old_results[[r]])) {
-                  private$.AuditTrail <- add(private$.AuditTrail, private$.Analyses$results[[r]])
-                }
-              }
-            }
-          }
-        }
-      } else {
-        warning("Invalid Analyses object! Not added.")
-      }
-      invisible(self)
-    },
-
-    # MARK: Results
-    #' @field Results A named list of [StreamFind::Results] S3 class objects or a child for specific results.
-    Results = function(value) {
-      if (missing(value)) {
-        return(private$.Analyses$results)
-      }
-
-      if (is(value, "Results")) {
-        if (!is.null(validate_object(value))) {
-          warning("Invalid Results or Results child object! Not added.")
-          return(invisible(self))
-        }
-        if (grepl(value$type, private$.type)) {
-          private$.Analyses$results[[gsub("StreamFind::", "", is(value)[1])]] <- value
-          if (!is.null(private$.AuditTrail)) {
-            private$.AuditTrail <- add(private$.AuditTrail, value)
-          }
-        } else {
-          warning("Results data type not matching with current engine! Not added.")
-        }
-      } else if (is(value, "list")) {
-        tryCatch(
-          {
-            for (i in seq_along(value)) {
-              if (is(value[[i]], "Results")) {
-                if (!is.null(validate_object(value[[i]]))) {
-                  warning("Invalid Results or Results child object! Not added.")
-                  next
-                }
-                if (grepl(value[[i]]$type, private$.type)) {
-                  private$.Analyses$results[[gsub("StreamFind::", "", is(value)[1])]] <- value[[i]]
-                  if (!is.null(private$.AuditTrail)) {
-                    private$.AuditTrail <- add(private$.AuditTrail, value[[i]])
-                  }
-                } else {
-                  warning("Results data type not matching with current engine! Not added.")
-                }
-              } else {
-                warning("Invalid Results object in list! Not added.")
-              }
-            }
-          },
-          error = function(e) {
-            warning(e)
-          },
-          warning = function(w) {
-            warning(w)
-          }
-        )
-      } else {
-        warning("Invalid Results object! Not added.")
-      }
-      invisible(self)
+    #' @field Analyses A [StreamFind::Analyses] child object.
+    Analyses = function() {
+      NULL
     },
 
     # MARK: AuditTrail
-    #' @field AuditTrail An [StreamFind::AuditTrail] S3 class object. Only getter method.
-    AuditTrail = function(value) {
-      if (!missing(value)) {
-        warning("AuditTrail is read-only! Not set.")
-        return(invisible(self))
-      }
-      private$.AuditTrail
+    #' @field AuditTrail Audit trail from database (read-only).
+    AuditTrail = function() {
+      self$get_audit_trail()
     },
 
-    # MARK: Config
-    #' @field Config An [StreamFind::EngineConfig] S3 class object.
-    Config = function(value) {
-      if (missing(value)) {
-        return(private$.Config)
-      }
-      if (is(value, "EngineConfig")) {
-        if (!is.null(validate_object(value))) {
-          warning("Invalid EngineConfig object! Not added.")
-          return(invisible(self))
-        }
-        private$.Config <- value
-        if (!is.null(private$.AuditTrail)) {
-          private$.AuditTrail <- add(private$.AuditTrail, value)
-        }
-      } else {
-        warning("Invalid Config object! Not added.")
-      }
-      invisible(self)
-    },
-    # MARK: type
-    #' @field type A character string with the data type of the engine.
-    #' This is a read-only field.
-    type = function(value) {
-      if (!missing(value)) {
-        warning("type is read-only! Not set.")
-        return(invisible(self))
-      }
-      private$.type
+    # MARK: Cache
+    #' @field Cache A [StreamFind::Cache] object for managing cached data.
+    Cache = function() {
+      Cache(projectPath = private$.projectPath)
     }
   ),
 
-  # MARK: public
-  # public -----
+  # MARK: public methods
+  # public methods -----
   public = list(
 
     # MARK: initialize
-    #' @description Creates an [StreamFind::Engine] R6 class object.
-    #' @param ... Additional arguments passed to the method, internal use only.
-    initialize = function(metadata = NULL, workflow = NULL, analyses = NULL, ...) {
-      dots <- list(...)
-      if ("type" %in% names(dots)) {
-        type <- dots$type
+    #' @description Initialize Engine.
+    #' @param dataType Engine data type (internal; defaults to "Unknown").
+    initialize = function(projectPath = "data",
+                          metadata = NULL,
+                          workflow = NULL,
+                          dataType = "Unknown") {
+      if (!requireNamespace("duckdb", quietly = TRUE)) {
+        stop("duckdb package is required for Engine")
+      }
+      checkmate::assert_character(projectPath, len = 1)
+      checkmate::assert_character(dataType, len = 1)
+      sf_root <- projectPath
+      engine_db <- projectPath
+      if (tolower(tools::file_ext(sf_root)) == "duckdb") {
+        sf_root <- dirname(sf_root)
+        engine_db <- projectPath
       } else {
-        type <- NA_character_
+        engine_db <- file.path(sf_root, "Engine.duckdb")
       }
-      dots[["type"]] <- NULL
-      checkmate::assert_character(type, len = 1, null.ok = TRUE)
-      checkmate::assert_true(type %in% c(NA_character_, DataTypeObjects()$data_type[1:3]))
-      if (is.na(type) && !is.null(analyses)) {
-        if (grepl("Analyses", class(analyses)[1])) {
-          type <- gsub("Analyses", "", class(analyses)[1])
-        }
-      }
-      checkmate::assert_true(type %in% c(NA_character_, "MassSpec", "Raman", "Statistic"))
-      private$.type <- type
-      private$.Metadata <- Metadata()
-      private$.AuditTrail <- AuditTrail()
-      private$.Config <- EngineConfig()
+      dir.create(sf_root, recursive = TRUE, showWarnings = FALSE)
+      .create_sf_data_project_icon(sf_root)
+      private$.projectPath <- sf_root
+      private$.dataType <- dataType
+      conn <- DBI::dbConnect(duckdb::duckdb(), engine_db)
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      conn_cache <- DBI::dbConnect(duckdb::duckdb(), file.path(sf_root, "Cache.duckdb"))
+      on.exit(DBI::dbDisconnect(conn_cache), add = TRUE)
+      .create_Engine_db_schema(conn, private$.dataType)
+      .validate_Engine_db_schema(conn)
+      .create_Cache_db_schema(conn_cache)
+      .validate_Cache_db_schema(conn_cache)
       if (!is.null(metadata)) {
-        if (is(metadata, "Metadata")) {
-          self$Metadata <- metadata
-        } else if (is(metadata, "list")) {
-          tryCatch(
-            {
-              self$Metadata <- metadata
-            },
-            error = function(e) {
-              warning(e)
-            },
-            warning = function(w) {
-              warning(w)
-            }
-          )
-        }
-      }
-      if (!is.na(self$Metadata[["file"]])) {
-        tryCatch(
-          {
-            self$load()
-            return(invisible(self))
-          },
-          error = function(e) {
-            warning(e)
-          },
-          warning = function(w) {
-            warning(w)
-          }
-        )
+        try(self$add_metadata(metadata), silent = TRUE)
       }
       if (!is.null(workflow)) {
-        if (is(workflow, "Workflow")) {
-          self$Workflow <- workflow
-        } else if (is(workflow, "list")) {
-          tryCatch(
-            {
-              self$Workflow <- Workflow(workflow)
-            },
-            error = function(e) {
-              warning(e)
-            },
-            warning = function(w) {
-              warning(w)
-            }
-          )
-        } else if (is(workflow, "character")) {
-          tryCatch(
-            {
-              self$Workflow <- workflow
-            },
-            error = function(e) {
-              warning(e)
-            },
-            warning = function(w) {
-              warning(w)
-            }
-          )
-        }
-      } else {
-        self$Workflow <- Workflow()
+        try(self$add_workflow(workflow), silent = TRUE)
       }
-      if (is.na(type)) {
-        private$.Analyses <- Analyses()
-      } else {
-        Analyses_call <- paste0(type, "Analyses")
-        private$.Analyses <- do.call(Analyses_call, list())
-        if (!is.null(analyses)) {
-          tryCatch(
-            {
-              if (is(analyses, "Analyses")) {
-                self$Analyses <- analyses
-              } else {
-                self$Analyses <- do.call(Analyses_call, c(list(analyses), dots))
-              }
-            },
-            error = function(e) {
-              warning(e)
-            },
-            warning = function(w) {
-              warning(w)
-            }
-          )
-        } else {
-          private$.Analyses <- do.call(Analyses_call, list())
-        }
-      }
-      message("\U2713 Engine created!")
-      invisible(self)
+      message(private$.dataType, " engine initialized on ", private$.projectPath)
     },
 
-    # MARK: Methods
-    # Methods -----
-
-    # MARK: clear_cache
-    #' @description Clears the cache.
-    #'
-    #' @param value A character vector with the names of the cache categories to clear. An integer
-    #' vector with the indices of the categories to clear can alternatively be given to remove
-    #' categories. If `NULL` (the default), the entire cache is cleared. Use the method
-    #' `get_cache_info` to get the cached categories.
-    #'
-    clear_cache = function(value = NULL) {
-      if (is.null(value)) value <- "all"
-      config_cache <- self$Config[["ConfigCache"]]
-      clear_cache(config_cache, value)
-      message("\U2713 Cache cleared!")
-    },
-
-    #' @description Clears all result objects in the `Analyses` field.
-    clear_results = function() {
-      private$.Analyses$results <- list()
-      message("\U2713 Results cleared!")
-    },
-
-    # MARK: get_cache_info
-    #' @description Gets a `data.table` with the cached data categories.
-    get_cache_info = function() {
-      config_cache <- self$Config[["ConfigCache"]]
-      info(config_cache)
-    },
-
-    # MARK: get_cache_size
-    #' @description Gets the current size of the cache file.
-    get_cache_size = function() {
-      config_cache <- self$Config[["ConfigCache"]]
-      size(config_cache)
-    },
-
-    # MARK: has_analyses
-    #' @description Checks if there are analyses files/objects in the `Analyses` field.
-    has_analyses = function() {
-      length(self$Analyses) > 0
-    },
-
-    # MARK: has_results
-    #' @description Checks if there are [StreamFind::Results] in the `Analyses` field.
-    #'
-    #' @param value A string or a vector of strings with the name/s of the [StreamFind::Results]
-    #' child/s for checking the presence.
-    #'
-    has_results = function(value = NULL) {
-      if (is.null(value)) value <- names(self$Analyses$results)
-      !all(vapply(private$.Analyses$results[value], is.null, FALSE))
-    },
-
-    # MARK: load
-    #' @description Loads engine data from an **sqlite** or **rds** file.
-    #' @param file A string with the full file path of the **sqlite** or **rds** file.
-    #' @return Invisible.
-    #'
-    load = function(file = NA_character_) {
-      if (is.na(file)) file <- self$Metadata[["file"]]
-      if (!file.exists(file)) {
-        warning("File does not exist!")
-        return(invisible(self))
-      }
-      if (!self$Metadata[["file"]] %in% file) {
-        tryCatch(
-          {
-            self$Metadata[["file"]] <- file
-          },
-          error = function(e) {
-            warning("File not valid! Not loaded.")
-            return(invisible(self))
-          },
-          warning = function(w) {
-            warning(w)
-            return(invisible(self))
-          }
-        )
-      }
-      if (tools::file_ext(file) %in% "sqlite") {
-        hash <- .make_hash(paste0("Engine_", private$.type))
-        data <- .load_cache_sqlite_backend(file, paste0("Engine_", private$.type), hash)
-        if (!is.null(data)) {
-          private$.type <- data$type
-          private$.Metadata <- data$Metadata
-          private$.Workflow <- data$Workflow
-          private$.Analyses <- data$Analyses
-          private$.AuditTrail <- data$AuditTrail
-          private$.Config <- data$Config
-          self$Metadata[["file"]] <- file
-          message("\U2713 Engine data loaded from ", file, "!")
-        } else {
-          warning("No data loaded from cache!")
-        }
-      } else if (tools::file_ext(file) %in% "rds") {
-        data <- readRDS(file)
-        if (is(data, "list")) {
-          if (data$type %in% private$.type) {
-            private$.Metadata <- data$Metadata
-            private$.Workflow <- data$Workflow
-            private$.Analyses <- data$Analyses
-            private$.AuditTrail <- data$AuditTrail
-            private$.Config <- data$Config
-            self$Metadata[["file"]] <- file
-            message("\U2713 Engine data loaded from ", file, "!")
-          } else {
-            warning("Engine type not matching with current engine! Not done.")
-          }
-        } else {
-          warning("The object in file is not a list!")
-        }
-      } else if (tools::file_ext(file) %in% "json") {
-        data <- jsonlite::fromJSON(file)
-        if (is(data, "list")) {
-          if (data$type %in% private$.type) {
-            private$.Metadata <- Metadata(entries = data$Metadata)
-            private$.Workflow <- Workflow(data$Workflow)
-
-            warning("Load Analyses or child Analyses objects not yet implemented!")
-            # TODO make a generic as.Analyses method for all analyses types
-
-            private$.AuditTrail <- AuditTrail(data$AuditTrail)
-            private$.Config <- EngineConfig(parameters = data$Config)
-            self$Metadata[["file"]] <- file
-            message("\U2713 Engine data loaded from ", file, "!")
-          } else {
-            warning("Engine type not matching with current engine! Not done.")
-          }
-        } else {
-          warning("The object in file is not a list!")
-        }
-      } else {
-        warning("File format not valid!")
-      }
-      invisible(self)
+    # MARK: get_project_path
+    #' @description Get the project path.
+    #' @return Character string with the path to the StreamFind (.sf) project directory.
+    get_project_path = function() {
+      private$.projectPath
     },
 
     # MARK: print
     #' @description Prints a summary to the console.
     print = function() {
       cat("\n")
-      cat(paste0(private$.type, " Engine\n"))
-      cat("\n")
-      cat("\n")
-      cat("Metadata\n")
+      cat(paste0(private$.dataType, " Engine Overview\n"))
       show(self$Metadata)
+      wf <- self$Workflow
+      show(wf)
+      anas <- self$Analyses
+      if (!is.null(anas)) show(anas)
+      db_files <- list.files(private$.projectPath, pattern = "\\.duckdb$", full.names = TRUE)
       cat("\n")
-      cat("Workflow\n")
-      show(self$Workflow)
-      cat("\n")
-      cat("\n")
-      cat("Analyses\n")
-      show(self$Analyses)
+      cat("Database files (", length(db_files), ")\n")
+      if (length(db_files) > 0) {
+        for (f in db_files) {
+          size_bytes <- file.info(f)$size
+          size_mb <- round(size_bytes / (1024^2), 2)
+          cat(paste0(" - ", basename(f), " (", size_mb, " MB)\n"))
+        }
+      }
     },
 
-    # MARK: save
-    #' @description Saves the engine data as an **sqlite** or **rds** file. If no file path is
-    #' given, the engine data is saved in the file of the [StreamFind::Metadata] field. If no file
-    #' is specified in the `Metadata` the engine data is saved as **rds** format with the engine
-    #' class and date in the `Metadata` as file name.
-    #'
-    #' @param file A string with the full file path of the **sqlite** or **rds** file.
-    #'
-    #' @return Invisible.
-    #'
-    save = function(file = NA_character_) {
-      if (is.na(file)) file <- self$Metadata[["file"]]
-      if (is.na(file)) {
-        file <- paste0(
-          getwd(), "/", is(self), "_", private$.type, "_", format(self$Metadata[["date"]], "%Y%m%d%H%M%S"), ".rds"
-        )
+    # MARK: get_metadata
+    #' @description Get metadata from database.
+    #' @return A Metadata object or NULL.
+    get_metadata = function() {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      metadata_df <- DBI::dbGetQuery(conn, "SELECT metadata FROM Engine LIMIT 1")
+      if (nrow(metadata_df) == 0) {
+        return(NULL)
       }
-      if (!self$Metadata[["file"]] %in% file) {
-        tryCatch(
-          {
-            mtd <- self$Metadata
-            mtd[["file"]] <- file
-            self$Metadata <- mtd
-          },
-          error = function(e) {
-            warning(e)
-            return(invisible(self))
-          },
-          warning = function(w) {
-            warning(w)
-            return(invisible(self))
-          }
-        )
+      json_data <- metadata_df$metadata[1]
+      if (is.na(json_data) || is.null(json_data)) {
+        return(NULL)
       }
+      mtd <- tryCatch(
+        {
+          Metadata(jsonlite::fromJSON(json_data))
+        },
+        error = function(e) {
+          warning("Could not parse metadata JSON: ", e$message)
+          NULL
+        }
+      )
+      mtd
+    },
 
-      if (tools::file_ext(file) %in% "sqlite") {
-        data <- list(
-          type = private$.type,
-          Metadata = self$Metadata,
-          Workflow = self$Workflow,
-          Analyses = self$Analyses,
-          AuditTrail = self$AuditTrail,
-          Config = self$Config
-        )
-        hash <- .make_hash(paste0(private$.type, "Engine"))
-        .save_cache_sqlite(
-          category = paste0(private$.type, "Engine"),
-          data = data,
-          hash = hash,
-          file = file
-        )
-      } else if (tools::file_ext(file) %in% "rds") {
-        data <- list(
-          type = private$.type,
-          Metadata = self$Metadata,
-          Workflow = self$Workflow,
-          Analyses = self$Analyses,
-          AuditTrail = self$AuditTrail,
-          Config = self$Config
-        )
-        saveRDS(data, file)
-      } else if (tools::file_ext(file) %in% "json") {
-        warning("Save Analyses or child Analyses objects not yet implemented!")
-        data <- list(
-          type = private$.type,
-          Metadata = self$Metadata,
-          Workflow = self$Workflow,
-          # Analyses = as.list(self$Analyses),
-          AuditTrail = private$.AuditTrail,
-          Config = private$.Config
-        )
-        data <- .convert_to_json(data)
-        write(data, file)
-      } else {
-        warning("File format not valid!")
+    # MARK: add_metadata
+    #' @description Set metadata in database.
+    add_metadata = function(metadata) {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      DBI::dbExecute(conn, "BEGIN")
+      rollback_needed <- TRUE
+      on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
+      metadata <- Metadata(metadata)
+      json_data <- .convert_to_json(metadata)
+      DBI::dbExecute(conn, "UPDATE Engine SET metadata = ? WHERE rowid = ?", list(json_data, 0))
+      DBI::dbExecute(conn, "COMMIT")
+      rollback_needed <- FALSE
+      invisible(self)
+    },
+
+    # MARK: get_workflow
+    #' @description Get workflow from database.
+    get_workflow = function() {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      workflow_info <- DBI::dbGetQuery(conn, "SELECT methods FROM Workflow LIMIT 1")
+      if (nrow(workflow_info) == 0) {
+        wf_obj <- Workflow()
+        attr(wf_obj, "type") <- private$.dataType
+        return(wf_obj)
+      }
+      methods_json <- workflow_info$methods[1]
+      if (is.na(methods_json) || is.null(methods_json)) {
+        return(NULL)
+      }
+      wf_obj <- tryCatch(
+        {
+          Workflow(jsonlite::fromJSON(methods_json))
+        },
+        error = function(e) {
+          warning("Could not reconstruct workflow: ", e$message)
+          wf_obj <- Workflow()
+          attr(wf_obj, "type") <- private$.dataType
+          self$Workflow <- wf_obj
+          wf_obj
+        }
+      )
+      wf_obj
+    },
+
+    # MARK: add_workflow
+    #' @description Set workflow in database.
+    add_workflow = function(workflow) {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      DBI::dbExecute(conn, "BEGIN")
+      rollback_needed <- TRUE
+      on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
+      wf_obj <- Workflow(workflow)
+      if (length(wf_obj) == 0) attr(wf_obj, "type") <- private$.dataType
+      wf_dataType <- attr(wf_obj, "type")
+      if (is.null(wf_dataType) || wf_dataType != private$.dataType) {
+        warning("Workflow data type (", wf_dataType, ") does not match engine data type (", private$.dataType, ")! Not added.")
         return(invisible(self))
       }
-      if (file.exists(file)) {
-        message("\U2713 Engine data saved in ", file, "!")
-      } else {
-        warning("Data not saved!")
-      }
+      processing_steps <- lapply(wf_obj, function(s) unclass(s))
+      names(processing_steps) <- names(wf_obj)
+      json_processing_steps <- .convert_to_json(processing_steps)
+      DBI::dbExecute(conn, "UPDATE Workflow SET methods = ? WHERE rowid = ?", list(json_processing_steps, 0))
+      DBI::dbExecute(conn, "COMMIT")
+      rollback_needed <- FALSE
       invisible(self)
     },
 
     # MARK: run
     #' @description Runs a processing method defined by the [StreamFind::ProcessingStep] object.
-    #'
     #' @param step A [StreamFind::ProcessingStep] object.
     #'
     run = function(step = NULL) {
@@ -647,7 +255,7 @@ Engine <- R6::R6Class(
         return(invisible(self))
       }
       type <- step$type
-      if (!checkmate::test_true(type %in% private$.type)) {
+      if (!checkmate::test_true(type %in% private$.dataType)) {
         warning("Data type ", type, " not matching with current engine! Not done.")
         return(invisible(self))
       }
@@ -657,94 +265,33 @@ Engine <- R6::R6Class(
         warning(paste0(call, " not available!"))
         return(invisible(self))
       }
-      if (length(private$.Workflow) == 0) {
-        private$.Workflow <- Workflow()
-        attr(private$.Workflow, "type") <- private$.type
+      if (length(self$Workflow) == 0) {
+        self$Workflow <- Workflow()
       }
       message("\U2699 Running ", step$method, " using ", step$algorithm)
-      config_cache <- self$Config[["ConfigCache"]]
-      processed <- FALSE
-      loaded_cached <- FALSE
-      if (config_cache$value) {
-        engine_name <- self$Metadata[["name"]]
-        if (is.null(engine_name) || is.na(engine_name)) engine_name <- is(self)
-        cache_category <- paste0(engine_name, "_results_", step$method, "_", step$algorithm)
-        cache <- load_cache(
-          config_cache,
-          category = cache_category,
-          as.list(self$Workflow),
-          as.list(step),
-          info(self$Analyses),
-          names(self$Analyses$results)
-        )
-        if (!is.null(cache$data)) {
-          message(
-            "\U2139 Results from ",
-            step$method,
-            " using ",
-            step$algorithm, " loaded from cache!"
-          )
-          tryCatch(
-            {
-              self$Analyses$results <- cache$data
-              processed <- TRUE
-              loaded_cached <- TRUE
-            },
-            error = function(e) {
-              warning(
-                "Error when adding results from ",
-                step$method, ":\n", e, "\n",
-                "Results deleted from cache!"
-              )
-              clear_cache(config_cache, cache_category)
-            },
-            warning = function(w) {
-              warning(
-                paste0(
-                  "Warning when adding results from ",
-                  step$method, ":\n", w, "\n",
-                  "Results deleted from cache!"
-                )
-              )
-              clear_cache(config_cache, cache_category)
-            }
-          )
-        }
-      }
-      if (!processed) {
-        processed <- run(step, self)
-      }
+      processed <- run(step, self)
       if (processed) {
-        if (config_cache$value && !loaded_cached) {
-          if (!is.null(cache$hash)) {
-            save_cache(
-              config_cache,
-              category = cache_category,
-              data = self$Analyses$results,
-              hash = cache$hash
-            )
-            message(
-              "\U1f5ab Results from ",
-              step$method,
-              " using ",
-              step$algorithm,
-              " cached!"
-            )
-          }
-        }
         if (step$method %in% get_methods(self$Workflow)) {
           if (step$number_permitted > 1) {
+            # If multiple instances are allowed, append
             self$Workflow[length(self$Workflow) + 1] <- step
           } else {
+            # Otherwise, replace existing
             step_idx <- which(get_methods(self$Workflow) %in% step$method)
             self$Workflow[step_idx] <- step
           }
         } else {
+          # New method, append
           self$Workflow[[length(self$Workflow) + 1]] <- step
         }
-        if (!is.null(private$.AuditTrail)) {
-          private$.AuditTrail <- add(private$.AuditTrail, step)
-        }
+        self$add_audit_entry(
+          operation_type = "run",
+          object_type = "ProcessingStep",
+          details = list(
+            method = step$method,
+            algorithm = step$algorithm
+          )
+        )
       }
       invisible(self)
     },
@@ -754,8 +301,14 @@ Engine <- R6::R6Class(
     run_workflow = function() {
       if (length(self$Workflow) > 0) {
         steps <- self$Workflow
-        if (length(self$Analyses$results) > 0) self$Analyses$results <- list()
-        self$Workflow <- Workflow()
+        results_files <- list.files(private$.projectPath, pattern = "^Results.*\\.duckdb$", full.names = TRUE)
+        if (length(results_files) > 0) {
+          message("\U1F5D1 Removing existing results database files...", appendLF = FALSE)
+          file.remove(results_files)
+          message("Done.")
+        }
+        wf <- Workflow()
+        self$Workflow <- wf
         lapply(steps, function(x) self$run(x))
       } else {
         warning("There are no processing steps to run!")
@@ -763,14 +316,119 @@ Engine <- R6::R6Class(
       invisible(self)
     },
 
+    # MARK: get_audit_trail
+    #' @description Get audit trail from database.
+    get_audit_trail = function() {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      audit_df <- DBI::dbGetQuery(conn, "SELECT * FROM AuditTrail ORDER BY timestamp DESC")
+      audit_df
+    },
+
+    # MARK: add_audit_entry
+    #' @description Add entry to audit trail.
+    add_audit_entry = function(operation_type, object_type, details = NULL) {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      DBI::dbExecute(conn, "BEGIN")
+      rollback_needed <- TRUE
+      on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
+      if (!is.null(details)) {
+        details_json <- .convert_to_json(details)
+      } else {
+        details_json <- "null"
+      }
+      DBI::dbExecute(conn, "
+        INSERT INTO AuditTrail (
+          operation_type, object_type, operation_details
+        ) VALUES (?, ?, ?)
+      ", list(
+        operation_type,
+        object_type,
+        as.character(details_json)
+      ))
+      DBI::dbExecute(conn, "COMMIT")
+      rollback_needed <- FALSE
+      invisible(self)
+    },
+
+    # MARK: clear_cache
+    #' @description Clear all cached data.
+    get_cache_info = function() {
+      get_cache_info(self$Cache)
+    },
+
+    # MARK: get_cache_size
+    #' @description Get size of cache in bytes.
+    get_cache_size = function() {
+      size(self$Cache)
+    },
+
+    # MARK: clear_cache
+    #' @description Clear all cached data.
+    clear_cache = function() {
+      clear_cache(self$Cache)
+      invisible(self)
+    },
+
+    # MARK: clear_result_databases
+    #' @description Remove all result database files from the project directory.
+    clear_result_databases = function() {
+      results_files <- list.files(private$.projectPath, pattern = "Results.*\\.duckdb$", full.names = TRUE)
+      if (length(results_files) > 0) {
+        message("\U1F5D1 Removing existing results database files...", appendLF = FALSE)
+        file.remove(results_files)
+        message("Done.")
+      } else {
+        message("No results database files found.")
+      }
+      invisible(self)
+    },
+
+    # MARK: get_engine_info
+    #' @description Get basic engine information.
+    get_engine_info = function() {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      engine_info <- DBI::dbGetQuery(conn, "SELECT * FROM Engine LIMIT 1")
+      if (nrow(engine_info) == 0) {
+        return(NULL)
+      }
+      as.list(engine_info[1, ])
+    },
+
+    # MARK: query_db
+    #' @description Execute SQL query on the database.
+    query_db = function(sql, params = NULL) {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      .query_db(conn, sql, params)
+    },
+
+    # MARK: list_db_tables
+    #' @description List all tables in the database.
+    list_db_tables = function() {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      .list_db_tables(conn)
+    },
+
+    # MARK: get_db_table_info
+    #' @description Get information about a specific table.
+    get_db_table_info = function(tableName) {
+      conn <- DBI::dbConnect(duckdb::duckdb(), file.path(private$.projectPath, "Engine.duckdb"))
+      on.exit(DBI::dbDisconnect(conn), add = TRUE)
+      .get_db_table_info(conn, tableName)
+    },
+
     # MARK: report_quarto
-    #' @description Generates a Quarto report from the analysis results based on a predefined template .qmd file.
+    #' @description Generates a Quarto report using the database project path as execute parameter.
     #' @param template A string with the full file path to the Quarto (.qmd) template file.
     #' @param output_file A string with the output file name (without extension). If NULL, uses the template name without extension.
-    #' @param output_dir A string with the directory where the final output files should be moved. If NULL, files remain in the QMD directory.
-    #' @param execute_dir A string with the directory where the report is executed. Default is the current working directory.
+    #' If a path is included, the output directory is set to `dirname(output_file)`. If only a file name is given, output is written to `execute_dir`.
+    #' @param execute_dir A string with the execution directory. Default is the current working directory.
     #' @param ... Additional arguments passed to quarto::quarto_render().
-    report_quarto = function(template = NULL, output_file = NULL, output_dir = NULL, execute_dir = getwd(), ...) {
+    report_quarto = function(template = NULL, output_file = NULL, execute_dir = getwd(), ...) {
       if (is.null(template) || !file.exists(template)) {
         warning("Template not found!")
         return(invisible(self))
@@ -780,96 +438,86 @@ Engine <- R6::R6Class(
         return(invisible(self))
       }
 
-      # Prepare output_file (filename only, without extension)
+      template <- normalizePath(template, mustWork = TRUE)
+      template_dir <- dirname(template)
+
+      if (is.null(execute_dir) || !nzchar(trimws(execute_dir))) {
+        execute_dir <- getwd()
+      } else {
+        execute_dir <- trimws(execute_dir)
+      }
+      execute_dir <- normalizePath(execute_dir, mustWork = FALSE)
+
       if (is.null(output_file)) {
         output_file <- tools::file_path_sans_ext(basename(template))
+      } else {
+        checkmate::assert_character(output_file, len = 1)
+        output_file <- trimws(output_file)
       }
 
-      .move_rendered_files = function(qmd_file, output_file, target_dir) {
-        # Common output extensions that Quarto can generate
-        possible_extensions <- c(".html", ".pdf", ".docx", ".pptx", ".tex", ".epub", ".rtf")
-        moved_files <- character(0)
-        qmd_dir <- dirname(qmd_file)
-
-        for (ext in possible_extensions) {
-          rendered_file <- file.path(qmd_dir, paste0(output_file, ext))
-          if (file.exists(rendered_file)) {
-            # Create target directory if it doesn't exist
-            dir.create(target_dir, recursive = TRUE, showWarnings = FALSE)
-
-            # Move the main file
-            target_file <- file.path(target_dir, paste0(output_file, ext))
-            file.copy(rendered_file, target_file, overwrite = TRUE)
-            file.remove(rendered_file)
-            moved_files <- c(moved_files, target_file)
-
-            # For HTML files, also move associated _files directory
-            if (ext == ".html") {
-              files_dir <- file.path(qmd_dir, paste0(output_file, "_files"))
-              if (dir.exists(files_dir)) {
-                target_files_dir <- file.path(target_dir, paste0(output_file, "_files"))
-                if (dir.exists(target_files_dir)) {
-                  unlink(target_files_dir, recursive = TRUE)
-                }
-                file.copy(files_dir, target_dir, recursive = TRUE)
-                unlink(files_dir, recursive = TRUE)
-              }
-            }
-          }
+      # Always derive output_dir from output_file. If output_file has no path,
+      # write to execute_dir.
+      output_file_dir <- dirname(output_file)
+      if (identical(output_file_dir, ".")) {
+        output_dir <- execute_dir
+        output_file <- basename(output_file)
+      } else {
+        if (grepl("^([A-Za-z]:|/|\\\\\\\\)", output_file)) {
+          output_file_abs <- normalizePath(output_file, mustWork = FALSE)
+        } else {
+          output_file_abs <- normalizePath(file.path(execute_dir, output_file), mustWork = FALSE)
         }
-
-        # Also check for any other files that might have been generated with the same base name
-        all_files <- list.files(qmd_dir, pattern = paste0("^", output_file, "\\."), full.names = TRUE)
-        for (file_path in all_files) {
-          if (!file.path(qmd_dir, paste0(output_file, possible_extensions)) %in% file_path) {
-            file_name <- basename(file_path)
-            target_file <- file.path(target_dir, file_name)
-            if (!file.exists(target_file)) {
-              file.copy(file_path, target_file, overwrite = TRUE)
-              file.remove(file_path)
-              moved_files <- c(moved_files, target_file)
-            }
-          }
-        }
-
-        return(moved_files)
+        output_dir <- dirname(output_file_abs)
+        output_file <- basename(output_file_abs)
       }
 
-      # Save engine temporarily for the report
-      engine <- self$clone()
-      temp_engine_file <- file.path(execute_dir, "temp_engine.rds")
-      saveRDS(engine, file = temp_engine_file)
+      dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
 
-      tryCatch({
-        # Render the Quarto document
-        quarto::quarto_render(
-          input = template,
-          output_file = output_file,
-          execute_dir = execute_dir,
-          execute_params = list(
-            engine_rds = basename(temp_engine_file)
-          ),
-          ...
-        )
+      dots <- list(...)
+      if ("output_dir" %in% names(dots)) {
+        warning("Argument output_dir is deprecated for Engine$report_quarto() and will be ignored.")
+        dots$output_dir <- NULL
+      }
+      execute_params <- dots$execute_params
+      dots$execute_params <- NULL
+      if (is.null(execute_params)) {
+        execute_params <- list()
+      }
+      checkmate::assert_list(execute_params)
+      execute_params$projectPath <- normalizePath(private$.projectPath, mustWork = TRUE)
 
-        # Move files to output directory if specified
-        moved_files <- character(0)
-        if (!is.null(output_dir) && nzchar(trimws(output_dir))) {
-          moved_files <- .move_rendered_files(template, output_file, output_dir)
+      quarto_args <- dots$quarto_args
+      dots$quarto_args <- NULL
+      if (is.null(quarto_args)) {
+        quarto_args <- character()
+      } else {
+        checkmate::assert_character(quarto_args)
+      }
+      if (!"--output-dir" %in% quarto_args) {
+        quarto_args <- c(quarto_args, "--output-dir", output_dir)
+      }
 
-          if (length(moved_files) > 0) {
-            message("\U2713 Files moved to: ", output_dir)
-          }
+      tryCatch(
+        {
+          do.call(
+            quarto::quarto_render,
+            c(
+              list(
+                input = template,
+                output_file = output_file,
+                execute_dir = execute_dir,
+                execute_params = execute_params,
+                quarto_args = quarto_args
+              ),
+              dots
+            )
+          )
+          message("\U2713 Quarto report generated successfully!")
+        },
+        error = function(e) {
+          warning("Error generating Quarto report: ", e$message)
         }
-
-        message("\U2713 Quarto report generated successfully!")
-
-      }, error = function(e) {
-        warning("Error generating Quarto report: ", e$message)
-      })
-
-      # Clean up temporary engine file
-      if (file.exists(temp_engine_file)) file.remove(temp_engine_file)
+      )
 
       invisible(self)
     },
@@ -883,34 +531,197 @@ Engine <- R6::R6Class(
     #' in the **rds** file and then loaded to continue working on the engine by scripting.
     #'
     run_app = function() {
-      self$save()
-      file <- self$Metadata[["file"]]
-      type <- private$.type
-      if (!requireNamespace("shiny", quietly = TRUE)) {
-        warning("Shiny package not installed!")
-        return(invisible(self))
-      }
-      if (!requireNamespace("htmltools", quietly = TRUE)) {
-        warning("htmltools package not installed!")
-        return(invisible(self))
-      }
-      if (!requireNamespace("shinydashboard", quietly = TRUE)) {
-        warning("shinydashboard package not installed!")
-        return(invisible(self))
-      }
-      if (!requireNamespace("shinycssloaders", quietly = TRUE)) {
-        warning("shinycssloaders package not installed!")
-        return(invisible(self))
-      }
-      if (!requireNamespace("shinyFiles", quietly = TRUE)) {
-        warning("shinyFiles package not installed!")
-        return(invisible(self))
-      }
-      if (!requireNamespace("sortable", quietly = TRUE)) {
-        warning("sortable package not installed!")
-        return(invisible(self))
-      }
-      run_app(file = file, engine_type = is(self))
+      run_app(projectPath = private$.projectPath, engine_type = is(self))
     }
   )
 )
+
+# MARK: .create_Engine_db_schema
+#' @noRd
+.create_Engine_db_schema <- function(conn, dataType) {
+  tryCatch(
+    {
+      DBI::dbExecute(conn, "INSTALL json")
+      DBI::dbExecute(conn, "LOAD json")
+    },
+    error = function(e) {
+      warning("Could not load JSON extension: ", e$message)
+    }
+  )
+
+  DBI::dbExecute(conn, "
+    CREATE TABLE IF NOT EXISTS Engine (
+      dataType VARCHAR NOT NULL,
+      metadata JSON,
+      configuration JSON,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  ")
+
+  DBI::dbExecute(conn, "
+    CREATE TABLE IF NOT EXISTS Workflow (
+      dataType VARCHAR NOT NULL,
+      methods JSON
+    )
+  ")
+
+  DBI::dbExecute(conn, "
+    CREATE TABLE IF NOT EXISTS AuditTrail (
+      operation_type VARCHAR NOT NULL, -- 'create', 'update', 'delete'
+      object_type VARCHAR NOT NULL, -- 'Metadata', 'Workflow', 'Analyses', etc.
+      operation_details VARCHAR,
+      timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  ")
+
+  # Engine table initialization
+  existing <- DBI::dbGetQuery(conn, "SELECT rowid, dataType FROM Engine")
+  if (nrow(existing) > 0) {
+    sql <- "UPDATE Engine SET dataType = ? WHERE rowid = ?"
+    DBI::dbExecute(conn, sql, list(dataType, existing$rowid[1]))
+  } else {
+    metadata <- Metadata()
+    workflow <- Workflow()
+    attr(workflow, "type") <- dataType
+    json_metadata <- .convert_to_json(metadata)
+    sql <- "INSERT INTO Engine (dataType, metadata) VALUES (?, ?)"
+    DBI::dbExecute(conn, sql, list(dataType, json_metadata))
+    json_workflow <- .convert_to_json(workflow)
+    sql_wf <- "INSERT INTO Workflow (dataType, methods) VALUES (?, ?)"
+    DBI::dbExecute(conn, sql_wf, list(dataType, json_workflow))
+  }
+  invisible(TRUE)
+}
+
+# MARK: .validate_Engine_db_schema
+#' @noRd
+.validate_Engine_db_schema <- function(conn) {
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Engine)")
+      required <- list(
+        metadata = "JSON",
+        configuration = "JSON",
+        created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Engine table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Engine ADD COLUMN %s %s", col, required[[col]]))
+        }
+      }
+    },
+    error = function(e) {
+      stop("Schema migration check (Engine): ", e$message)
+    }
+  )
+
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Workflow)")
+      required <- list(
+        dataType = "VARCHAR NOT NULL",
+        methods = "JSON"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Workflow table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Workflow ADD COLUMN %s %s", col, required[[col]]))
+        }
+      }
+    },
+    error = function(e) {
+      stop("Schema migration check (Workflow): ", e$message)
+    }
+  )
+
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(AuditTrail)")
+      required <- list(
+        operation_type = "VARCHAR NOT NULL",
+        object_type = "VARCHAR NOT NULL",
+        operation_details = "VARCHAR",
+        timestamp = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to AuditTrail table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE AuditTrails ADD COLUMN %s %s", col, required[[col]]))
+        }
+      }
+    },
+    error = function(e) {
+      stop("Schema migration check (AuditTrail): ", e$message)
+    }
+  )
+
+  invisible(TRUE)
+}
+
+# MARK: .create_sf_data_project_icon
+#' @noRd
+.create_sf_data_project_icon <- function(sf_root) {
+  if (.Platform$OS.type != "windows") {
+    return(invisible(FALSE))
+  }
+
+  icon_path <- file.path(sf_root, "streamfind.ico")
+  if (!file.exists(icon_path)) {
+    sf_icon <- c(
+      system.file("app/www/streamfind.ico", package = "StreamFind", mustWork = FALSE),
+      file.path(getwd(), "inst", "app", "www", "streamfind.ico")
+    )
+    sf_icon <- sf_icon[file.exists(sf_icon)]
+    if (length(sf_icon) == 0) {
+      return(invisible(FALSE))
+    }
+    sf_icon <- sf_icon[[1]]
+    icon_path <- file.path(sf_root, basename(sf_icon))
+    if (!file.exists(icon_path)) {
+      file.copy(sf_icon, icon_path, overwrite = TRUE)
+      if (!file.exists(icon_path)) {
+        return(invisible(FALSE))
+      }
+    }
+    try(system2("attrib", c("+h", shQuote(icon_path))), silent = TRUE)
+  }
+
+  ini_path <- file.path(sf_root, "desktop.ini")
+  if (!file.exists(ini_path)) {
+    ini <- c(
+      "[.ShellClassInfo]",
+      sprintf("IconResource=%s,0", basename(sf_icon)),
+      "IconIndex=0"
+    )
+    writeLines(ini, ini_path, useBytes = TRUE)
+    try(system2("attrib", c("+s", shQuote(sf_root))), silent = TRUE)
+    try(system2("attrib", c("+h", shQuote(ini_path))), silent = TRUE)
+  }
+
+  invisible(TRUE)
+
+  # Approach using magick to create icon from PNG
+  # icon_filename <- "streamfind.ico"
+  # icon_path <- file.path(sf_root, icon_filename)
+  # create_icon_from_png <- function(path) {
+  #   if (!requireNamespace("magick", quietly = TRUE)) return(invisible(FALSE))
+  #   icon_candidates <- c(
+  #     system.file("app/www/sf_icon.png", package = "StreamFind", mustWork = FALSE),
+  #     file.path(getwd(), "inst", "app", "www", "sf_icon.png")
+  #   )
+  #   icon_candidates <- icon_candidates[file.exists(icon_candidates)]
+  #   if (length(icon_candidates) == 0) return(invisible(FALSE))
+  #   fav <- icon_candidates[[1]]
+  #   img <- try(magick::image_read(fav), silent = TRUE)
+  #   if (inherits(img, "try-error")) return(invisible(FALSE))
+  #   sizes <- c(16, 20, 24, 32, 48, 64, 128, 256, 512)
+  #   frames <- lapply(sizes, function(px) try(magick::image_scale(img, sprintf("%dx%d", px, px)), silent = TRUE))
+  #   frames <- frames[!vapply(frames, inherits, logical(1), "try-error")]
+  #   if (length(frames) == 0) return(invisible(FALSE))
+  #   icon_stack <- do.call(c, frames)
+  #   ok <- try(magick::image_write(icon_stack, path = path, format = "ico"), silent = TRUE)
+  #   if (inherits(ok, "try-error")) return(invisible(FALSE))
+  #   invisible(TRUE)
+  # }
+}

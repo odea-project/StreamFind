@@ -7,7 +7,7 @@
 
 #include <vector>
 #include <string>
-#include "../streamcraft/streamcraft.h"
+#include "../mass_spec/reader.h"
 #include "nts_utils.h"
 
 namespace nts {
@@ -59,7 +59,7 @@ namespace deconvolution {
     std::vector<float> &final_noise);
 
   void denoise_spectra(
-    sc::MS_FILE &ana,
+    ms::MS_FILE &ana,
     const int &spectrumIdx,
     const float &rt,
     const float &noiseThreshold,

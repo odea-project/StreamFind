@@ -2,16 +2,13 @@
 % Please edit documentation in R/class_MassSpecMethod_SmoothChromatograms.R
 \name{MassSpecMethod_SmoothChromatograms_movingaverage}
 \alias{MassSpecMethod_SmoothChromatograms_movingaverage}
-\title{MassSpecMethod_SmoothChromatograms_movingaverage Class}
+\title{MassSpecMethod_SmoothChromatograms_movingaverage class}
 \usage{
-MassSpecMethod_SmoothChromatograms_movingaverage(windowSize = 5)
+MassSpecMethod_SmoothChromatograms_movingaverage(windowSize = 5L)
 }
 \arguments{
-\item{windowSize}{Numeric (length 1) with the window size for the moving average.}
-}
-\value{
-A MassSpecMethod_SmoothChromatograms_movingaverage object.
+\item{windowSize}{Odd integer; full filter length (e.g. 5 averages ±2 neighbours).}
 }
 \description{
-Smooths chromatograms using the moving average algorithm.
+Smooth chromatogram traces with a symmetric moving-average filter.
 }

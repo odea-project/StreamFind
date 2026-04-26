@@ -511,7 +511,7 @@ namespace nts::filter_suspects
 
       std::vector<bool> keep(sus.size(), true);
 
-      for (size_t i = 0; i < sus.size(); ++i)
+      for (int i = 0; i < sus.size(); ++i)
       {
         // Filter by name
         if (!names.empty())
@@ -583,7 +583,7 @@ namespace nts::filter_suspects
 
       // Create filtered suspects
       SUSPECTS filtered;
-      for (size_t i = 0; i < sus.size(); ++i)
+      for (int i = 0; i < sus.size(); ++i)
       {
         if (keep[i])
         {
@@ -648,7 +648,7 @@ namespace nts::filter_internal_standards
 
       std::vector<bool> keep(istd.size(), true);
 
-      for (size_t i = 0; i < istd.size(); ++i)
+      for (int i = 0; i < istd.size(); ++i)
       {
         // Filter by name
         if (!names.empty())
@@ -720,7 +720,7 @@ namespace nts::filter_internal_standards
 
       // Create filtered internal standards
       INTERNAL_STANDARDS filtered;
-      for (size_t i = 0; i < istd.size(); ++i)
+      for (int i = 0; i < istd.size(); ++i)
       {
         if (keep[i])
         {
@@ -763,3 +763,302 @@ namespace nts::filter_internal_standards
     }
   }
 } // namespace nts::filter_internal_standards
+
+// MARK: filter_features_ms2
+namespace nts::filter_features_ms2
+{
+  namespace
+  {
+    // Decode a base64+little-endian-float encoded string into a float vector.
+    // Returns empty vector if input is empty.
+    static std::vector<float> decode_ms2(const std::string &encoded)
+    {
+      if (encoded.empty())
+        return {};
+      std::string raw = ms::utils::decode_base64(encoded);
+      if (raw.empty())
+        return {};
+      return ms::utils::decode_little_endian_to_float(raw, 4); // 4 bytes = float32
+    }
+
+    // Cluster a flat list of (mz, intensity) pairs from multiple features/analyses.
+    // Returns a vector of representative mz values that appear in >= presenceFraction
+    // of the input uid count.
+    static std::vector<float> cluster_ms2_mz(
+        const std::vector<std::string> &uids,
+        const std::vector<float> &all_mz,
+        float mzClust,
+        float presenceFraction)
+    {
+      if (all_mz.empty())
+        return {};
+
+      const int total_uids = static_cast<int>(
+          std::unordered_set<std::string>(uids.begin(), uids.end()).size());
+      if (total_uids == 0)
+        return {};
+
+      // Sort indices by mz
+      std::vector<size_t> idx(all_mz.size());
+      std::iota(idx.begin(), idx.end(), 0);
+      std::sort(idx.begin(), idx.end(),
+                [&](size_t a, size_t b) { return all_mz[a] < all_mz[b]; });
+
+      std::vector<float> cluster_mz;
+
+      size_t i = 0;
+      while (i < idx.size())
+      {
+        float ref_mz = all_mz[idx[i]];
+        std::unordered_set<std::string> cluster_uids;
+        size_t j = i;
+        while (j < idx.size() && all_mz[idx[j]] <= ref_mz + 2.0f * mzClust)
+        {
+          cluster_uids.insert(uids[idx[j]]);
+          ++j;
+        }
+        float presence = static_cast<float>(cluster_uids.size()) /
+                         static_cast<float>(total_uids);
+        if (presence >= presenceFraction)
+        {
+          // representative mz = mean of cluster
+          float sum = 0.0f;
+          for (size_t k = i; k < j; ++k)
+            sum += all_mz[idx[k]];
+          cluster_mz.push_back(sum / static_cast<float>(j - i));
+        }
+        i = j;
+      }
+      return cluster_mz;
+    }
+
+    // Return true if any value in background_mz is within mzClust of query_mz.
+    static bool in_background(float query_mz,
+                               const std::vector<float> &background_mz,
+                               float mzClust)
+    {
+      for (float b : background_mz)
+      {
+        if (std::abs(query_mz - b) <= mzClust)
+          return true;
+      }
+      return false;
+    }
+
+    // Apply per-spectrum filters (top, minIntensity, relMinIntensity) to a single
+    // decoded mz/intensity pair and return the filtered vectors.
+    static void apply_spectrum_filters(
+        std::vector<float> &mz,
+        std::vector<float> &intensity,
+        int top,
+        float minIntensity,
+        float relMinIntensity)
+    {
+      if (mz.empty())
+        return;
+
+      // top-N by descending intensity
+      if (top > 0 && static_cast<int>(mz.size()) > top)
+      {
+        std::vector<size_t> ord(mz.size());
+        std::iota(ord.begin(), ord.end(), 0);
+        std::sort(ord.begin(), ord.end(),
+                  [&](size_t a, size_t b) { return intensity[a] > intensity[b]; });
+        ord.resize(static_cast<size_t>(top));
+        // Re-sort by mz for consistency
+        std::sort(ord.begin(), ord.end(),
+                  [&](size_t a, size_t b) { return mz[a] < mz[b]; });
+        std::vector<float> new_mz, new_int;
+        new_mz.reserve(ord.size());
+        new_int.reserve(ord.size());
+        for (size_t k : ord)
+        {
+          new_mz.push_back(mz[k]);
+          new_int.push_back(intensity[k]);
+        }
+        mz = std::move(new_mz);
+        intensity = std::move(new_int);
+      }
+
+      // minIntensity
+      if (!std::isnan(minIntensity))
+      {
+        std::vector<float> new_mz, new_int;
+        for (size_t k = 0; k < mz.size(); ++k)
+        {
+          if (intensity[k] >= minIntensity)
+          {
+            new_mz.push_back(mz[k]);
+            new_int.push_back(intensity[k]);
+          }
+        }
+        mz = std::move(new_mz);
+        intensity = std::move(new_int);
+      }
+
+      // relMinIntensity
+      if (!std::isnan(relMinIntensity) && !mz.empty())
+      {
+        float max_int = *std::max_element(intensity.begin(), intensity.end());
+        float threshold = max_int * relMinIntensity;
+        std::vector<float> new_mz, new_int;
+        for (size_t k = 0; k < mz.size(); ++k)
+        {
+          if (intensity[k] >= threshold)
+          {
+            new_mz.push_back(mz[k]);
+            new_int.push_back(intensity[k]);
+          }
+        }
+        mz = std::move(new_mz);
+        intensity = std::move(new_int);
+      }
+    }
+  } // anonymous namespace
+
+  void filter_features_ms2_impl(
+      NTS_DATA &nts_data,
+      int top,
+      float minIntensity,
+      float relMinIntensity,
+      bool blankClean,
+      float mzClust,
+      float blankPresenceThreshold,
+      float globalPresenceThreshold)
+  {
+    if (nts_data.analyses.empty())
+      return;
+
+    // Build blank analysis set
+    std::unordered_set<std::string> blank_analyses_set;
+    for (size_t i = 0; i < nts_data.analyses.size(); ++i)
+    {
+      // An analysis is a blank if its replicate name is listed as blank
+      // (replicates[i] is in blanks[*])
+      for (const auto &b : nts_data.blanks)
+      {
+        if (nts_data.replicates[i] == b)
+        {
+          blank_analyses_set.insert(nts_data.analyses[i]);
+          break;
+        }
+      }
+    }
+
+    std::vector<float> background_mz; // clustered blank mz values
+
+    if (blankClean && !blank_analyses_set.empty())
+    {
+      // Collect all MS2 mz peaks from blank features, deduped by (analysis, feature)
+      std::vector<std::string> blank_uids;
+      std::vector<float> blank_all_mz;
+
+      for (size_t a = 0; a < nts_data.analyses.size(); ++a)
+      {
+        const std::string &ana = nts_data.analyses[a];
+        if (blank_analyses_set.find(ana) == blank_analyses_set.end())
+          continue;
+
+        const FEATURES &fts = nts_data.features[a];
+        for (int i = 0; i < fts.size(); ++i)
+        {
+          if (fts.ms2_size[i] <= 0 || fts.ms2_mz[i].empty())
+            continue;
+
+          std::vector<float> mz = decode_ms2(fts.ms2_mz[i]);
+          std::string uid = ana + "_" + fts.feature[i];
+          for (float m : mz)
+          {
+            blank_uids.push_back(uid);
+            blank_all_mz.push_back(m);
+          }
+        }
+      }
+
+      if (!blank_all_mz.empty())
+      {
+        std::vector<float> blank_clustered =
+            cluster_ms2_mz(blank_uids, blank_all_mz, mzClust, blankPresenceThreshold);
+
+        // Optionally intersect with global background (globalPresenceThreshold)
+        if (!blank_clustered.empty())
+        {
+          // Collect all analyses MS2 for global check
+          std::vector<std::string> global_uids;
+          std::vector<float> global_all_mz;
+          for (size_t a = 0; a < nts_data.analyses.size(); ++a)
+          {
+            const FEATURES &fts = nts_data.features[a];
+            for (int i = 0; i < fts.size(); ++i)
+            {
+              if (fts.ms2_size[i] <= 0 || fts.ms2_mz[i].empty())
+                continue;
+              std::vector<float> mz = decode_ms2(fts.ms2_mz[i]);
+              std::string uid = nts_data.analyses[a] + "_" + fts.feature[i];
+              for (float m : mz)
+              {
+                global_uids.push_back(uid);
+                global_all_mz.push_back(m);
+              }
+            }
+          }
+
+          std::vector<float> global_clustered =
+              cluster_ms2_mz(global_uids, global_all_mz, mzClust, globalPresenceThreshold);
+
+          // Keep blank peaks that are also present globally
+          for (float bm : blank_clustered)
+          {
+            if (in_background(bm, global_clustered, mzClust))
+              background_mz.push_back(bm);
+          }
+        }
+        std::cout << "\u2713 Identified " << background_mz.size()
+                  << " background MS2 traces for removal." << std::endl;
+      }
+    }
+
+    // Apply filters to every feature in every analysis
+    const bool has_background = !background_mz.empty();
+
+    for (size_t a = 0; a < nts_data.analyses.size(); ++a)
+    {
+      FEATURES &fts = nts_data.features[a];
+      for (int i = 0; i < fts.size(); ++i)
+      {
+        if (fts.ms2_size[i] <= 0 || fts.ms2_mz[i].empty())
+          continue;
+
+        std::vector<float> mz = decode_ms2(fts.ms2_mz[i]);
+        std::vector<float> intensity = decode_ms2(fts.ms2_intensity[i]);
+
+        if (mz.empty() || mz.size() != intensity.size())
+          continue;
+
+        // Remove blank background peaks
+        if (has_background)
+        {
+          std::vector<float> new_mz, new_int;
+          for (size_t k = 0; k < mz.size(); ++k)
+          {
+            if (!in_background(mz[k], background_mz, mzClust))
+            {
+              new_mz.push_back(mz[k]);
+              new_int.push_back(intensity[k]);
+            }
+          }
+          mz = std::move(new_mz);
+          intensity = std::move(new_int);
+        }
+
+        // Per-spectrum filters
+        apply_spectrum_filters(mz, intensity, top, minIntensity, relMinIntensity);
+
+        // Re-encode and update FEATURES
+        fts.ms2_mz[i] = nts::utils::encode_floats_base64(mz);
+        fts.ms2_intensity[i] = nts::utils::encode_floats_base64(intensity);
+        fts.ms2_size[i] = static_cast<int>(mz.size());
+      }
+    }
+  }
+} // namespace nts::filter_features_ms2

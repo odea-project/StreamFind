@@ -1,0 +1,995 @@
+/* ============================================================
+   StreamFind App — Custom Dashboard Styles
+   Light/Dark theme via CSS custom properties on #sf-app
+   ============================================================ */
+
+/* ---- CSS Custom Properties: Light (default) ---- */
+#sf-app.sf-light {
+  --sf-topbar-bg:          #ffffff;
+  --sf-topbar-color:       #1e2129;
+  --sf-topbar-border:      #e2e6ef;
+  --sf-topbar-btn-bg:      transparent;
+  --sf-topbar-btn-hover:   rgba(30, 33, 41, 0.10);
+  --sf-submenu-bg:         #ffffff;
+  --sf-submenu-color:      #1e2129;
+  --sf-submenu-border:     rgba(30, 33, 41, 0.18);
+  --sf-submenu-hover-bg:   #e8eaf0;
+  --sf-submenu-active-bg:  #1e2129;
+  --sf-submenu-active-color:#ffffff;
+
+  /* Active nav item: navy bg + white text on light topbar */
+  --sf-nav-active-bg:      #1e2129;
+  --sf-nav-active-color:   #ffffff;
+  --sf-nav-hover-bg:       rgba(30, 33, 41, 0.10);
+
+  --sf-content-bg:         #ffffff;
+  --sf-content-color:      #333333;
+
+  --sf-btn-bg:             #1e2129;
+  --sf-btn-color:          #ffffff;
+  --sf-btn-hover-bg:       #2a2f3a;
+
+  --sf-notif-bg:           #ffffff;
+  --sf-notif-border:       #e0e0e0;
+}
+
+/* ---- CSS Custom Properties: Dark ---- */
+#sf-app.sf-dark {
+  --sf-topbar-bg:          #1e2129;
+  --sf-topbar-color:       #ffffff;
+  --sf-topbar-border:      rgba(255, 255, 255, 0.14);
+  --sf-topbar-btn-bg:      transparent;
+  --sf-topbar-btn-hover:   rgba(255, 255, 255, 0.14);
+  --sf-submenu-bg:         #1e2129;
+  --sf-submenu-color:      #ffffff;
+  --sf-submenu-border:     rgba(255, 255, 255, 0.16);
+  --sf-submenu-hover-bg:   #2a2f3a;
+  --sf-submenu-active-bg:  #ffffff;
+  --sf-submenu-active-color:#1e2129;
+
+  /* Active nav item: white bg + navy text on dark topbar */
+  --sf-nav-active-bg:      #ffffff;
+  --sf-nav-active-color:   #1e2129;
+  --sf-nav-hover-bg:       rgba(255, 255, 255, 0.14);
+
+  --sf-content-bg:         #1e2129;
+  --sf-content-color:      #e0e0e0;
+
+  --sf-btn-bg:             #ffffff;
+  --sf-btn-color:          #1e2129;
+  --sf-btn-hover-bg:       #e8eaf0;
+
+  --sf-notif-bg:           #2a2f3a;
+  --sf-notif-border:       #3a3f4a;
+}
+
+/* ============================================================
+   Base Reset
+   ============================================================ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Source Sans Pro", Helvetica, Arial, sans-serif;
+}
+
+/* ============================================================
+   Root Layout: #sf-app
+   ============================================================ */
+#sf-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+/* ============================================================
+   Top Bar: #sf-topbar
+   ============================================================ */
+#sf-topbar {
+  flex: 0 0 36px;
+  height: 36px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  background: var(--sf-topbar-bg);
+  border-bottom: 1px solid var(--sf-topbar-border);
+  padding: 0 8px 0 0;
+  z-index: 100;
+}
+
+#sf-logo {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  width: 54px;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--sf-topbar-bg);
+}
+
+#sf-logo img {
+  height: 22px;
+  max-width: 40px;
+  object-fit: contain;
+}
+
+/* ============================================================
+   Horizontal Navigation: #sf-nav
+   ============================================================ */
+#sf-nav {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 36px;
+  padding: 0 6px;
+  overflow: hidden;
+  gap: 6px;
+}
+
+/* Nav group: wraps main button + its sub-menu (horizontal) */
+.sf-nav-group {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 36px;
+  flex-shrink: 0;
+}
+
+/* Sub-menu: hidden unless parent group has .active; expands inline horizontally */
+.sf-sub-menu {
+  display: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  margin-left: 4px;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0;
+  box-shadow: none;
+  opacity: 1;
+}
+.sf-nav-group.active .sf-sub-menu {
+  display: flex;
+  opacity: 1;
+}
+
+/* Main nav buttons in topbar */
+.sf-nav-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  min-width: 0;
+  padding: 0 10px;
+  margin: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--sf-topbar-color);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+.sf-nav-btn:hover {
+  background: var(--sf-nav-hover-bg);
+  color: var(--sf-topbar-color);
+}
+.sf-nav-btn.active {
+  background: var(--sf-nav-active-bg);
+  color: var(--sf-nav-active-color);
+}
+.sf-nav-btn svg.svg-inline--fa {
+  width: 1em;
+  height: 1em;
+}
+
+/* Sub-page buttons inside the horizontal sub-menu */
+.sf-sub-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 26px;
+  max-width: 180px;
+  padding: 0 5px;
+  margin: 0;
+  background: transparent !important;
+  border: none;
+  border-radius: 4px;
+  color: var(--sf-submenu-color) !important;
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  opacity: 0.85;
+  flex-shrink: 0;
+}
+.sf-sub-btn:hover {
+  background: var(--sf-submenu-hover-bg) !important;
+  color: var(--sf-submenu-color) !important;
+  opacity: 1;
+}
+.sf-sub-btn.active {
+  background: var(--sf-submenu-active-bg) !important;
+  color: var(--sf-submenu-active-color) !important;
+  opacity: 1;
+}
+.sf-sub-btn i,
+.sf-sub-btn svg,
+.sf-sub-btn .fa,
+.sf-sub-btn .fas,
+.sf-sub-btn .far {
+  color: inherit !important;
+}
+
+.sf-sub-btn svg.svg-inline--fa {
+  width: 0.9em;
+  height: 0.9em;
+}
+
+/* Explorer/Results: make sub-pages visually secondary and add explicit end marker. */
+#sf-nav .sf-nav-group[data-tab="explorer"] .sf-sub-btn,
+#sf-nav .sf-nav-group[data-tab="results"] .sf-sub-btn {
+  font-size: 9px !important;
+  font-weight: 500;
+  height: 18px;
+  padding: 0 4px;
+  opacity: 0.82;
+}
+
+#sf-nav .sf-nav-group[data-tab="explorer"] .sf-sub-menu,
+#sf-nav .sf-nav-group[data-tab="results"] .sf-sub-menu {
+  padding-right: 4px;
+}
+
+#sf-topbar-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 6px;
+  height: 36px;
+  color: var(--sf-topbar-color);
+  margin-left: auto;
+  flex-shrink: 0;
+  padding-right: 2px;
+  white-space: nowrap;
+}
+
+#sf-topbar-right > * {
+  flex: 0 0 auto;
+}
+
+#sf-topbar-right .shiny-input-container {
+  margin: 0;
+  width: auto;
+}
+
+#sf-topbar-right .sf-cache-label {
+  font-size: 11px;
+  color: var(--sf-topbar-color);
+  white-space: nowrap;
+  line-height: 36px;
+  padding: 0 2px 0 6px;
+  opacity: 0.8;
+}
+
+/* Top-bar icon buttons */
+.sf-topbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: var(--sf-topbar-btn-bg);
+  border: none;
+  border-radius: 6px;
+  color: var(--sf-topbar-color);
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: none;
+  transition: background 0.15s;
+  line-height: 1;
+}
+
+.sf-topbar-text-btn {
+  width: auto;
+  min-width: 0;
+  height: 28px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.sf-topbar-btn:hover,
+.sf-topbar-btn:focus {
+  background: var(--sf-topbar-btn-hover) !important;
+  color: var(--sf-topbar-color) !important;
+  box-shadow: none !important;
+  outline: none;
+}
+.sf-topbar-btn:active {
+  background: var(--sf-topbar-btn-hover) !important;
+}
+/* Remove Shiny action button default styles */
+.sf-topbar-btn.btn {
+  background: var(--sf-topbar-btn-bg) !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--sf-topbar-color) !important;
+}
+.sf-topbar-btn.btn:hover,
+.sf-topbar-btn.btn:focus {
+  background: var(--sf-topbar-btn-hover) !important;
+  color: var(--sf-topbar-color) !important;
+  box-shadow: none !important;
+}
+
+/* Notifications dropdown */
+.sf-notif-wrapper {
+  position: relative;
+}
+.sf-notif-count {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  font-size: 8px;
+  width: 12px;
+  height: 12px;
+  line-height: 12px;
+  text-align: center;
+  display: none;
+}
+.sf-notif-count.visible {
+  display: block;
+}
+.sf-notif-dropdown {
+  position: absolute;
+  top: 32px;
+  right: 0;
+  min-width: 260px;
+  max-height: 300px;
+  overflow-y: auto;
+  background: var(--sf-notif-bg);
+  border: 1px solid var(--sf-notif-border);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 9999;
+  display: none;
+}
+.sf-notif-dropdown.open {
+  display: block;
+}
+.sf-notif-item {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--sf-content-color);
+  border-bottom: 1px solid var(--sf-notif-border);
+}
+.sf-notif-item:last-child {
+  border-bottom: none;
+}
+.sf-notif-empty {
+  padding: 10px 12px;
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+}
+
+/* ============================================================
+   Body: #sf-body = full-width content (no sidebar)
+   ============================================================ */
+#sf-body {
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  height: calc(100vh - 36px);
+}
+
+/* ============================================================
+   Content: #sf-content
+   ============================================================ */
+#sf-content {
+  flex: 1;
+  width: 100%;
+  background: var(--sf-content-bg);
+  color: var(--sf-content-color);
+  overflow: hidden;
+  position: relative;
+}
+
+.sf-boot-overlay {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+  background: var(--sf-content-bg);
+  pointer-events: all;
+}
+
+.sf-boot-overlay.visible {
+  display: flex;
+}
+
+.sf-boot-overlay-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: min(50vh, 50vw);
+  height: 50%;
+  aspect-ratio: 1 / 1;
+}
+
+.sf-boot-overlay-inner img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  animation: sf-logo-pulse 1.2s ease-in-out infinite;
+}
+
+/* Conditionally shown page wrappers */
+.sf-page {
+  padding: 5px;
+  height: calc(100vh - 36px);
+  width: 100%;
+  overflow: hidden;
+  background: var(--sf-content-bg);
+  color: var(--sf-content-color);
+}
+
+.sf-settings-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sf-settings-modal h4 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.sf-settings-note {
+  margin: 0;
+  opacity: 0.8;
+}
+
+/* Ensure all text inside content area inherits theme color */
+#sf-content,
+#sf-content p,
+#sf-content span,
+#sf-content div,
+#sf-content h1, #sf-content h2, #sf-content h3,
+#sf-content h4, #sf-content h5, #sf-content h6,
+#sf-content label,
+#sf-content strong {
+  color: inherit;
+}
+
+/* Dark mode: force white text on all content elements, overriding Bootstrap defaults */
+#sf-app.sf-dark #sf-content,
+#sf-app.sf-dark .sf-page,
+#sf-app.sf-dark #sf-content p,
+#sf-app.sf-dark #sf-content span,
+#sf-app.sf-dark #sf-content div,
+#sf-app.sf-dark #sf-content h1,
+#sf-app.sf-dark #sf-content h2,
+#sf-app.sf-dark #sf-content h3,
+#sf-app.sf-dark #sf-content h4,
+#sf-app.sf-dark #sf-content h5,
+#sf-app.sf-dark #sf-content h6,
+#sf-app.sf-dark #sf-content label,
+#sf-app.sf-dark #sf-content strong,
+#sf-app.sf-dark #sf-content small,
+#sf-app.sf-dark #sf-content li,
+#sf-app.sf-dark #sf-content td,
+#sf-app.sf-dark #sf-content th {
+  color: #e0e0e0;
+}
+
+/* Dark mode: inputs and selects */
+#sf-app.sf-dark #sf-content input:not([type="range"]),
+#sf-app.sf-dark #sf-content select,
+#sf-app.sf-dark #sf-content textarea {
+  background-color: #2a2f3a;
+  color: #e0e0e0;
+  border-color: #3a3f4a;
+}
+
+/* Selectize controls keep a white surface, so force dark text in both themes. */
+#sf-app #sf-content .selectize-control .selectize-input,
+#sf-app #sf-content .selectize-control .selectize-input input,
+#sf-app #sf-content .selectize-dropdown,
+#sf-app #sf-content .selectize-dropdown-content,
+#sf-app #sf-content .selectize-dropdown .option,
+#sf-app #sf-content .selectize-dropdown .item,
+#sf-app #sf-content .selectize-control.single .selectize-input .item {
+  background-color: #ffffff !important;
+  color: #1e2129 !important;
+}
+
+#sf-app #sf-content .selectize-control .selectize-input {
+  border-color: #d0d4dc !important;
+}
+
+#sf-app #sf-content .selectize-dropdown .active,
+#sf-app #sf-content .selectize-dropdown .selected,
+#sf-app #sf-content .selectize-dropdown .option:hover {
+  background-color: #e8eaf0 !important;
+  color: #1e2129 !important;
+}
+
+/* ============================================================
+   Plotly Theme Sync (Explorer + Results)
+   Hide chart titles and enforce axis/legend text contrast by app theme.
+   ============================================================ */
+#sf-app #sf-content .js-plotly-plot .g-gtitle,
+#sf-app #sf-content .js-plotly-plot .gtitle {
+  display: none !important;
+}
+
+#sf-app.sf-light #sf-content .js-plotly-plot .xtick text,
+#sf-app.sf-light #sf-content .js-plotly-plot .ytick text,
+#sf-app.sf-light #sf-content .js-plotly-plot .xtitle text,
+#sf-app.sf-light #sf-content .js-plotly-plot .ytitle text,
+#sf-app.sf-light #sf-content .js-plotly-plot .legendtext,
+#sf-app.sf-light #sf-content .js-plotly-plot .legendtitletext,
+#sf-app.sf-light #sf-content .js-plotly-plot .cbaxis .tick text,
+#sf-app.sf-light #sf-content .js-plotly-plot .cbtitle,
+#sf-app.sf-light #sf-content .js-plotly-plot .annotation-text {
+  fill: #1e2129 !important;
+  color: #1e2129 !important;
+}
+
+#sf-app.sf-dark #sf-content .js-plotly-plot .xtick text,
+#sf-app.sf-dark #sf-content .js-plotly-plot .ytick text,
+#sf-app.sf-dark #sf-content .js-plotly-plot .xtitle text,
+#sf-app.sf-dark #sf-content .js-plotly-plot .ytitle text,
+#sf-app.sf-dark #sf-content .js-plotly-plot .legendtext,
+#sf-app.sf-dark #sf-content .js-plotly-plot .legendtitletext,
+#sf-app.sf-dark #sf-content .js-plotly-plot .cbaxis .tick text,
+#sf-app.sf-dark #sf-content .js-plotly-plot .cbtitle,
+#sf-app.sf-dark #sf-content .js-plotly-plot .annotation-text {
+  fill: #e0e0e0 !important;
+  color: #e0e0e0 !important;
+}
+
+/* Plotly frequently renders axis titles in infolayer groups with different classes.
+   Force infolayer text colors per theme so axis titles never disappear. */
+#sf-app.sf-light #sf-content .js-plotly-plot .infolayer text,
+#sf-app.sf-light #sf-content .js-plotly-plot .infolayer .xtitle,
+#sf-app.sf-light #sf-content .js-plotly-plot .infolayer .ytitle {
+  fill: #1e2129 !important;
+  color: #1e2129 !important;
+}
+
+#sf-app.sf-dark #sf-content .js-plotly-plot .infolayer text,
+#sf-app.sf-dark #sf-content .js-plotly-plot .infolayer .xtitle,
+#sf-app.sf-dark #sf-content .js-plotly-plot .infolayer .ytitle {
+  fill: #ffffff !important;
+  color: #ffffff !important;
+}
+
+/* Keep grid lines visually identical in both light/dark modes. */
+#sf-app #sf-content .js-plotly-plot .gridlayer .xgrid,
+#sf-app #sf-content .js-plotly-plot .gridlayer .ygrid,
+#sf-app #sf-content .js-plotly-plot .gridlayer .zgrid {
+  stroke: #e0e0e0 !important;
+  stroke-width: 1px !important;
+  opacity: 1 !important;
+}
+
+/* Dark mode: hide plot grid lines completely. */
+#sf-app.sf-dark #sf-content .js-plotly-plot .gridlayer .xgrid,
+#sf-app.sf-dark #sf-content .js-plotly-plot .gridlayer .ygrid,
+#sf-app.sf-dark #sf-content .js-plotly-plot .gridlayer .zgrid {
+  stroke: transparent !important;
+  opacity: 0 !important;
+}
+
+/* ============================================================
+   bslib navset_card_tab overrides
+   ============================================================ */
+.bslib-card {
+  background: var(--sf-content-bg) !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+}
+.bslib-card .card-header {
+  background: var(--sf-content-bg) !important;
+  border-bottom: 1px solid var(--sf-topbar-border) !important;
+  padding: 0 !important;
+}
+.bslib-card .card-body {
+  padding: 0 !important;
+  background: var(--sf-content-bg) !important;
+  overflow: hidden !important;
+}
+/* Tab labels */
+.nav-tabs .nav-link {
+  padding: 3px 10px !important;
+  font-size: 13px;
+  color: var(--sf-content-color);
+  border: none !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.nav-tabs .nav-link.active {
+  color: var(--sf-nav-active-color) !important;
+  border-bottom: 3px solid var(--sf-nav-active-color) !important;
+  font-weight: 600;
+  background: transparent !important;
+}
+.nav-tabs .nav-link:hover:not(.active) {
+  border-bottom: 2px solid #aaa !important;
+}
+.nav-tabs {
+  border-bottom: 1px solid var(--sf-topbar-border) !important;
+}
+
+/* Remove DataTables borders that contrast with dark bg */
+#sf-app.sf-dark table.dataTable thead th,
+#sf-app.sf-dark table.dataTable thead td {
+  background: #2a2f3a;
+  color: #e0e0e0;
+  border-bottom-color: #3a3f4a;
+}
+#sf-app.sf-dark table.dataTable tbody tr.odd,
+#sf-app.sf-dark table.dataTable tbody tr.odd td {
+  background: #1e2129;
+  color: #e0e0e0;
+}
+#sf-app.sf-dark table.dataTable tbody tr.even,
+#sf-app.sf-dark table.dataTable tbody tr.even td {
+  background: #232830;
+  color: #e0e0e0;
+}
+#sf-app.sf-dark .dataTables_wrapper,
+#sf-app.sf-dark .dataTables_info,
+#sf-app.sf-dark .dataTables_filter label {
+  color: #e0e0e0;
+}
+#sf-app.sf-dark .dataTables_filter input {
+  background: #2a2f3a;
+  color: #e0e0e0;
+  border: 1px solid #3a3f4a;
+}
+
+/* ============================================================
+   Info text — hint/note lines with info icon
+   ============================================================ */
+.sf-info-text {
+  font-size: 0.82em;
+  font-style: italic;
+  opacity: 0.7;
+  line-height: 1.4;
+  list-style: none;
+  padding: 2px 0;
+}
+.sf-info-text .fa {
+  margin-right: 6px;
+  font-style: normal;
+}
+ul.sf-info-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 4px 0 8px 0;
+}
+
+/* ============================================================
+   Project database icon row
+   ============================================================ */
+.sf-db-icon-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  padding: 0;
+}
+
+.sf-db-icon-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 4px;
+  background: #1e2129;
+  color: #ffffff;
+  font-size: 13px;
+  cursor: default;
+  transition: background 0.15s, transform 0.15s;
+}
+.sf-db-icon-wrap:hover {
+  transform: translateY(-1px);
+}
+
+/* Tooltip bubble — shows below-left to avoid right-edge clipping */
+
+/* ============================================================
+   Layout helpers — remove Bootstrap/Shiny padding artifacts
+   ============================================================ */
+.sf-page .container-fluid,
+.sf-page .row {
+  margin: 0 !important;
+  padding: 0 !important;
+}
+.sf-page .col-sm-12,
+.sf-page .col-sm-6,
+.sf-page .col-sm-3,
+.sf-page .col-sm-9 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* ============================================================
+  Global Buttons — enforced across StreamFind app shell and its
+  own Shiny/plot modals, but not shinyFiles dialogs.
+  Scope: all .btn except topbar buttons (.sf-topbar-btn).
+  Trash/danger: always red (#c0392b) with white icon.
+  ============================================================ */
+
+/* ---- Light mode: navy bg (#1e2129) + white text ---- */
+#sf-app .btn:not(.sf-topbar-btn):not(.btn-danger),
+body:not([data-sf-theme="dark"]) #shiny-modal-wrapper .modal .btn:not(.btn-danger),
+body:not([data-sf-theme="dark"]) .plot-modal .btn:not(.btn-danger) {
+  background-color: #1e2129 !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: 1px solid #1e2129 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  border-radius: 3px;
+}
+#sf-app .btn:not(.sf-topbar-btn):not(.btn-danger):hover,
+#sf-app .btn:not(.sf-topbar-btn):not(.btn-danger):focus,
+body:not([data-sf-theme="dark"]) #shiny-modal-wrapper .modal .btn:not(.btn-danger):hover,
+body:not([data-sf-theme="dark"]) #shiny-modal-wrapper .modal .btn:not(.btn-danger):focus,
+body:not([data-sf-theme="dark"]) .plot-modal .btn:not(.btn-danger):hover,
+body:not([data-sf-theme="dark"]) .plot-modal .btn:not(.btn-danger):focus {
+  background-color: #2a2f3a !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border-color: #2a2f3a !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* ---- Dark mode: white bg + navy text (#1e2129) ---- */
+#sf-app.sf-dark .btn:not(.sf-topbar-btn):not(.btn-danger),
+body[data-sf-theme="dark"] #shiny-modal-wrapper .modal .btn:not(.btn-danger),
+body[data-sf-theme="dark"] .plot-modal .btn:not(.btn-danger) {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #1e2129 !important;
+  border: 1px solid #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  border-radius: 3px;
+}
+#sf-app.sf-dark .btn:not(.sf-topbar-btn):not(.btn-danger):hover,
+#sf-app.sf-dark .btn:not(.sf-topbar-btn):not(.btn-danger):focus,
+body[data-sf-theme="dark"] #shiny-modal-wrapper .modal .btn:not(.btn-danger):hover,
+body[data-sf-theme="dark"] #shiny-modal-wrapper .modal .btn:not(.btn-danger):focus,
+body[data-sf-theme="dark"] .plot-modal .btn:not(.btn-danger):hover,
+body[data-sf-theme="dark"] .plot-modal .btn:not(.btn-danger):focus {
+  background-color: #e8eaf0 !important;
+  background-image: none !important;
+  color: #1e2129 !important;
+  border-color: #e8eaf0 !important;
+  box-shadow: none !important;
+  outline: none;
+}
+
+/* ---- Span/icon inside buttons must match button text colour, not the ambient text rule ---- */
+#sf-app .btn:not(.sf-topbar-btn):not(.btn-danger) span,
+#sf-app .btn:not(.sf-topbar-btn):not(.btn-danger) .fa,
+#sf-app .btn:not(.sf-topbar-btn):not(.btn-danger) i,
+#sf-app .btn:not(.sf-topbar-btn):not(.btn-danger) svg,
+body:not([data-sf-theme="dark"]) #shiny-modal-wrapper .modal .btn:not(.btn-danger) span,
+body:not([data-sf-theme="dark"]) #shiny-modal-wrapper .modal .btn:not(.btn-danger) .fa,
+body:not([data-sf-theme="dark"]) #shiny-modal-wrapper .modal .btn:not(.btn-danger) i,
+body:not([data-sf-theme="dark"]) .plot-modal .btn:not(.btn-danger) span,
+body:not([data-sf-theme="dark"]) .plot-modal .btn:not(.btn-danger) .fa,
+body:not([data-sf-theme="dark"]) .plot-modal .btn:not(.btn-danger) i {
+  color: #ffffff !important;
+}
+#sf-app.sf-dark .btn:not(.sf-topbar-btn):not(.btn-danger) span,
+#sf-app.sf-dark .btn:not(.sf-topbar-btn):not(.btn-danger) .fa,
+#sf-app.sf-dark .btn:not(.sf-topbar-btn):not(.btn-danger) i,
+#sf-app.sf-dark .btn:not(.sf-topbar-btn):not(.btn-danger) svg,
+body[data-sf-theme="dark"] #shiny-modal-wrapper .modal .btn:not(.btn-danger) span,
+body[data-sf-theme="dark"] #shiny-modal-wrapper .modal .btn:not(.btn-danger) .fa,
+body[data-sf-theme="dark"] #shiny-modal-wrapper .modal .btn:not(.btn-danger) i,
+body[data-sf-theme="dark"] .plot-modal .btn:not(.btn-danger) span,
+body[data-sf-theme="dark"] .plot-modal .btn:not(.btn-danger) .fa,
+body[data-sf-theme="dark"] .plot-modal .btn:not(.btn-danger) i {
+  color: #1e2129 !important;
+}
+
+/* ---- Disabled buttons: visually dimmed, not hidden ---- */
+#sf-app .btn[disabled]:not(.btn-danger),
+#sf-app .btn.disabled:not(.btn-danger) {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  pointer-events: none;
+}
+
+/* ---- Danger / trash: always red + white icon ---- */
+.btn-danger {
+  background-color: #c0392b !important;
+  background-image: none !important;
+  color: #ffffff !important;
+  border: 1px solid #c0392b !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  border-radius: 3px;
+}
+.btn-danger:hover,
+.btn-danger:focus {
+  background-color: #a93226 !important;
+  background-image: none !important;
+  border: 1px solid #a93226 !important;
+  color: #ffffff !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  outline: none;
+}
+.btn-danger span,
+.btn-danger .fa,
+.btn-danger i,
+.btn-danger svg {
+  color: #ffffff !important;
+}
+
+/* ---- DB icon tiles: same navy/white scheme ---- */
+#sf-app.sf-light .sf-db-icon-wrap { background: #1e2129 !important; color: #ffffff !important; }
+#sf-app.sf-dark  .sf-db-icon-wrap { background: #ffffff !important; color: #1e2129 !important; }
+#sf-app.sf-light .sf-db-icon-wrap:hover { background: #2a2f3a !important; }
+#sf-app.sf-dark  .sf-db-icon-wrap:hover { background: #e8eaf0 !important; }
+
+/* ============================================================
+   Rank-list (sortable)
+   ============================================================ */
+/* Light mode defaults come from sortable's own stylesheet. */
+
+/* Dark mode overrides */
+#sf-app.sf-dark .rank-list-container { color: var(--sf-content-color); }
+#sf-app.sf-dark .rank-list-title     { color: var(--sf-content-color) !important; }
+#sf-app.sf-dark .rank-list {
+  background: #2a2f3a !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+#sf-app.sf-dark .rank-list-item {
+  background: #2a2f3a !important;
+  color: #e0e0e0 !important;
+  border: 1px solid rgba(255,255,255,0.12) !important;
+}
+#sf-app.sf-dark .rank-list-item span,
+#sf-app.sf-dark .rank-list-item .workflow-item span { color: #e0e0e0 !important; }
+#sf-app.sf-dark .rank-list-item .fa,
+#sf-app.sf-dark .rank-list-item .fas,
+#sf-app.sf-dark .rank-list-item .far,
+#sf-app.sf-dark .rank-list-item svg   { color: inherit; }
+
+/* ============================================================
+   Loading Spinner — StreamFind logo pulse on recalculating outputs
+   ============================================================ */
+@keyframes sf-logo-pulse {
+  0%, 100% { opacity: 0.18; transform: scale(0.94); }
+  50%       { opacity: 0.85; transform: scale(1.00); }
+}
+
+/* Add relative positioning so the ::after overlay aligns correctly */
+#sf-content .shiny-bound-output,
+#shiny-modal-wrapper .modal .shiny-bound-output,
+.plot-modal .shiny-bound-output { position: relative; }
+
+/* The overlay: semi-transparent panel + pulsing logo centred at 50% height */
+#sf-content .shiny-bound-output.recalculating::after,
+#shiny-modal-wrapper .modal .shiny-bound-output.recalculating::after,
+.plot-modal .shiny-bound-output.recalculating::after {
+  content:    '';
+  display:    block;
+  position:   absolute;
+  inset:      0;
+  z-index:    8000;
+  pointer-events: none;
+  border-radius: inherit;
+  background-color:  rgba(255, 255, 255, 0.60);
+  background-image:  url('/www/logo_StreamFind.png');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: auto 50%;
+  animation:  sf-logo-pulse 1.2s ease-in-out infinite;
+}
+/* Dark mode: darker overlay tint */
+#sf-app.sf-dark .shiny-bound-output.recalculating::after,
+body[data-sf-theme="dark"] .shiny-bound-output.recalculating::after {
+  background-color: rgba(30, 33, 41, 0.65);
+}
+
+/* ============================================================
+   Shiny Modal Layout (restart/init dialogs)
+   Force modal dialogs to float centered as overlays even when UI
+   is built without fluidPage() bootstrap layout wrappers.
+   ============================================================ */
+#shiny-modal-wrapper {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  pointer-events: none;
+}
+
+#shiny-modal-wrapper .modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1060;
+  display: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  pointer-events: auto;
+}
+
+#shiny-modal-wrapper .modal.in,
+#shiny-modal-wrapper .modal.show {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+#shiny-modal-wrapper .modal-dialog {
+  margin: 0;
+  width: min(640px, calc(100vw - 32px));
+  max-width: 640px;
+}
+
+#shiny-modal-wrapper .modal-content {
+  background: #ffffff;
+  border: 1px solid rgba(30, 33, 41, 0.22);
+  border-radius: 6px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 255, 255, 0.35);
+}
+
+body[data-sf-theme="dark"] #shiny-modal-wrapper .modal-content {
+  background: #2a2f3a;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+body > .modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1050;
+  background: rgba(15, 18, 24, 0.48);
+}
+
+body > .modal-backdrop.in,
+body > .modal-backdrop.show {
+  opacity: 1;
+}
+

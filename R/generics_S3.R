@@ -1446,3 +1446,53 @@ validate_object <- function(x, ...) {
 .mod_WADB_Report_Server <- function(x, ...) {
   UseMethod(".mod_WADB_Report_Server")
 }
+
+#' @noRd
+.mod_Analyses_UI <- function(x, ...) {
+  UseMethod(".mod_Analyses_UI")
+}
+
+#' @noRd
+.mod_Analyses_Server <- function(x, ...) {
+  UseMethod(".mod_Analyses_Server")
+}
+
+#' @noRd
+.mod_Explorer_UI <- function(x, ...) {
+  UseMethod(".mod_Explorer_UI")
+}
+
+#' @noRd
+.mod_Explorer_Server <- function(x, ...) {
+  UseMethod(".mod_Explorer_Server")
+}
+
+#' @noRd
+.mod_Workflow_UI <- function(x, ...) {
+  UseMethod(".mod_Workflow_UI")
+}
+
+#' @noRd
+.mod_Workflow_Server <- function(x, ...) {
+  UseMethod(".mod_Workflow_Server")
+}
+
+#' @noRd
+.mod_Report_UI <- function(x, ...) {
+  UseMethod(".mod_Report_UI")
+}
+
+#' @noRd
+.mod_Report_Server <- function(x, ...) {
+  UseMethod(".mod_Report_Server")
+}
+
+#' @noRd
+.mod_Result_UI <- function(x, ...) {
+  UseMethod(".mod_Result_UI")
+}
+
+#' @noRd
+.mod_Result_Server <- function(x, ...) {
+  UseMethod(".mod_Result_Server")
+}

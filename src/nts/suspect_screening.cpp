@@ -3,7 +3,7 @@
 
 #include "suspect_screening.h"
 #include "nts.h"
-#include "../streamcraft/streamcraft.h"
+#include "../mass_spec/utils.h"
 #include <unordered_map>
 #include <unordered_set>
 #include <algorithm>
@@ -38,16 +38,16 @@ namespace nts::suspect_screening
       tmp.reserve(input.size());
       for (double v : input)
         tmp.push_back(static_cast<float>(v));
-      std::string enc = sc::encode_little_endian_from_float(tmp, 4);
-      return sc::encode_base64(enc);
+       std::string enc = ms::utils::encode_little_endian_from_float(tmp, 4);
+       return ms::utils::encode_base64(enc);
     }
 
     std::vector<float> decode_floats(const std::string &encoded)
     {
       if (encoded.empty())
         return {};
-      std::string decoded = sc::decode_base64(encoded);
-      return sc::decode_little_endian_to_float(decoded, 4);
+       std::string decoded = ms::utils::decode_base64(encoded);
+       return ms::utils::decode_little_endian_to_float(decoded, 4);
     }
 
     template <typename T>

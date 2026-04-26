@@ -1,67 +1,77 @@
-#' MassSpecMethod_FilterSuspects_StreamFind Class
+#' @title MassSpecMethod_FilterSuspects_native class
+#' @description Settings for filtering suspects in MassSpecResults_NonTargetAnalysis objects based on suspect properties.
 #'
-#' @description Settings for filtering of suspects based on screening quality metrics.
+#' @param names Character vector with suspect names to match (via partial matching). Empty vector means no name filtering.
+#' @param minScore Numeric (length 1) with the minimum score.
+#' @param maxErrorRT Numeric (length 1) with the maximum absolute retention time error in seconds.
+#' @param maxErrorMass Numeric (length 1) with the maximum absolute mass error in ppm.
+#' @param idLevels Integer vector with the identification levels to keep (e.g., c(1, 2, 3)). Empty vector means no level filtering.
+#' @param minSharedFragments Integer (length 1) with the minimum number of shared fragments.
+#' @param minCosineSimilarity Numeric (length 1) with the minimum cosine similarity (0-1).
 #'
-#' @param minSharedFragments Numeric (length 1) with the minimum number of shared fragments.
-#' Suspects with shared_fragments below this value will be filtered out.
-#' @param minCuiness Numeric (length 1) with the minimum cuiness score.
-#' Suspects with cusiness below this value will be filtered out.
-#' @param maxIdLevel Numeric (length 1) with the maximum identification level.
-#' Suspects with id_level above this value will be filtered out.
-#'
-#' @return A `MassSpecMethod_FilterSuspects_StreamFind` object.
+#' @return A `MassSpecMethod_FilterSuspects_native` object.
 #'
 #' @export
 #'
-MassSpecMethod_FilterSuspects_StreamFind <- function(
-  minSharedFragments = NA_real_,
-  minCuiness = NA_real_,
-  maxIdLevel = NA_real_
+MassSpecMethod_FilterSuspects_native <- function(
+	names = character(0),
+	minScore = NA_real_,
+	maxErrorRT = NA_real_,
+	maxErrorMass = NA_real_,
+	idLevels = integer(0),
+	minSharedFragments = 0,
+	minCosineSimilarity = NA_real_
 ) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "FilterSuspects",
-    required = "SuspectScreening",
-    algorithm = "StreamFind",
-    input_class = "MassSpecResults_NonTargetAnalysis",
-    output_class = "MassSpecResults_NonTargetAnalysis",
-    parameters = list(
-      minSharedFragments = as.numeric(minSharedFragments),
-      minCuiness = as.numeric(minCuiness),
-      maxIdLevel = as.numeric(maxIdLevel)
-    ),
-    number_permitted = Inf,
-    version = as.character(packageVersion("StreamFind")),
-    software = "StreamFind",
-    developer = "Ricardo Cunha",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_FilterSuspects_StreamFind object!")
-  }
+	x <- ProcessingStep(
+		type = "MassSpec",
+		method = "FilterSuspects",
+		required = "SuspectScreening",
+		algorithm = "native",
+		input_class = "MassSpecResults_NonTargetAnalysis",
+		output_class = "MassSpecResults_NonTargetAnalysis",
+		parameters = list(
+			names = as.character(names),
+			minScore = as.numeric(minScore),
+			maxErrorRT = as.numeric(maxErrorRT),
+			maxErrorMass = as.numeric(maxErrorMass),
+			idLevels = as.integer(idLevels),
+			minSharedFragments = as.integer(minSharedFragments),
+			minCosineSimilarity = as.numeric(minCosineSimilarity)
+		),
+		number_permitted = Inf,
+		version = as.character(packageVersion("StreamFind")),
+		software = "StreamFind",
+		developer = "Ricardo Cunha",
+		contact = "cunha@iuta.de",
+		link = "https://odea-project.github.io/StreamFind",
+		doi = NA_character_
+	)
+	if (is.null(validate_object(x))) {
+		return(x)
+	} else {
+		stop("Invalid MassSpecMethod_FilterSuspects_native object!")
+	}
 }
 
 #' @export
 #' @noRd
-#'
-validate_object.MassSpecMethod_FilterSuspects_StreamFind <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "FilterSuspects")
-  checkmate::assert_choice(x$algorithm, "StreamFind")
-  checkmate::assert_numeric(x$parameters$minSharedFragments, len = 1)
-  checkmate::assert_numeric(x$parameters$minCuiness, len = 1)
-  checkmate::assert_numeric(x$parameters$maxIdLevel, len = 1)
-  NULL
+validate_object.MassSpecMethod_FilterSuspects_native <- function(x) {
+	checkmate::assert_choice(x$type, "MassSpec")
+	checkmate::assert_choice(x$method, "FilterSuspects")
+	checkmate::assert_choice(x$algorithm, "native")
+	checkmate::assert_character(x$parameters$names)
+	checkmate::assert_numeric(x$parameters$minScore, len = 1)
+	checkmate::assert_numeric(x$parameters$maxErrorRT, len = 1)
+	checkmate::assert_numeric(x$parameters$maxErrorMass, len = 1)
+	checkmate::assert_integerish(x$parameters$idLevels)
+	checkmate::assert_integerish(x$parameters$minSharedFragments, len = 1)
+	checkmate::assert_numeric(x$parameters$minCosineSimilarity, len = 1)
+	NULL
 }
 
 #' @export
 #' @noRd
-#'
-run.MassSpecMethod_FilterSuspects_StreamFind <- function(
+run.MassSpecMethod_FilterSuspects_native <- function(
   x,
   engine = NULL
 ) {
@@ -70,203 +80,121 @@ run.MassSpecMethod_FilterSuspects_StreamFind <- function(
     return(FALSE)
   }
 
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-
-  if (is.null(engine$Analyses$results[["MassSpecResults_NonTargetAnalysis"]])) {
+  if (is.null(engine$NonTargetAnalysis)) {
     warning("No MassSpecResults_NonTargetAnalysis object available! Not done.")
     return(FALSE)
   }
 
-  nts <- engine$Results$MassSpecResults_NonTargetAnalysis
+  nts <- engine$NonTargetAnalysis
+  analyses_info <- info(engine$Analyses)
+  parameters <- x$parameters
 
-  if (sum(vapply(nts$features, function(z) nrow(z), 0)) == 0) {
-    warning("MassSpecResults_NonTargetAnalysis object does not have features! Not done.")
+  # Check cache
+  cache_manager <- engine$Cache
+  if (!is.null(cache_manager)) {
+    hash <- .make_hash(x, analyses_info, parameters, engine$Workflow)
+    cache_info <- get_cache_info(cache_manager)
+    if (nrow(cache_info) > 0) {
+      sus <- load_cache(cache_manager, hash = hash)
+      if (!is.null(sus) && is.data.frame(sus)) {
+        if (nrow(sus) > 0) {
+          message("\U2139 Results from ", x$method, " using ", x$algorithm, " loaded from cache!")
+          # Ensure id_level is integer
+          sus$id_level <- as.integer(sus$id_level)
+          conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
+          on.exit(DBI::dbDisconnect(conn), add = TRUE)
+          DBI::dbExecute(conn, "DELETE FROM Suspects")
+          DBI::dbWriteTable(conn, "Suspects", sus, append = TRUE)
+          message("\U2713 Suspects written to database.")
+          return(invisible(TRUE))
+        }
+      }
+    }
+  }
+
+  # Query all suspects from database
+  sus <- query_db(nts, "SELECT * FROM Suspects")
+
+  if (nrow(sus) == 0) {
+    warning("No suspects found in MassSpecResults_NonTargetAnalysis! Not done.")
     return(FALSE)
   }
 
-  parameters <- x$parameters
-  filters <- names(parameters)
+  # Ensure id_level is integer
+  sus$id_level <- as.integer(sus$id_level)
 
-  # Count initial suspects
-  n_suspects_initial <- sum(vapply(
-    nts$features,
-    function(x) {
-      if ("suspects" %in% colnames(x)) {
-        sum(vapply(x$suspects, function(s) {
-          if (is.data.frame(s) && nrow(s) > 0) nrow(s) else 0
-        }, 0))
-      } else {
-        0
-      }
-    },
-    0
-  ))
+  # Count suspects before filtering
+  n_before <- nrow(sus)
+  message("\U2139 Filtering ", n_before, " suspects...")
+  message("\U2139 ID level distribution before filtering: ", paste(names(table(sus$id_level)), "=", table(sus$id_level), collapse = ", "))
 
-  .filter_minSharedFragments <- function(value = NULL, engine) {
-    if (
-      sum(vapply(
-        engine$Results$MassSpecResults_NonTargetAnalysis$features,
-        function(z) nrow(z),
-        0
-      )) > 0 &&
-        is.numeric(value) &&
-        length(value) == 1
-    ) {
-      if (is.na(value)) {
-        return()
-      }
+  analyses_db <- query_db(engine$Analyses, "SELECT * FROM Analyses")
 
-      nts <- engine$Results$MassSpecResults_NonTargetAnalysis
-      features <- nts$features
-
-      features <- lapply(features, function(x) {
-        if ("suspects" %in% colnames(x) && nrow(x) > 0) {
-          x$suspects <- lapply(x$suspects, function(s) {
-            if (is.data.frame(s) && nrow(s) > 0 && "shared_fragments" %in% colnames(s)) {
-              # Filter rows where shared_fragments is below threshold
-              s <- s[s$shared_fragments >= value, ]
-            }
-            s
-          })
-        }
-        x
-      })
-
-      nts$features <- features
-      engine$Results <- nts
-    } else {
-      warning("There are no features in the MassSpecEngine!")
+  suspect_list <- lapply(analyses_db$analysis, function(ana) {
+    ana_suspects <- sus[sus$analysis == ana, ]
+    if (nrow(ana_suspects) == 0) {
+      return(sus[0, ])
     }
+    ana_suspects
+  })
+  names(suspect_list) <- analyses_db$analysis
+
+  sus_list <- rcpp_nts_filter_suspects(
+    info = analyses_db,
+    suspect_list = suspect_list,
+    names = parameters$names,
+    minScore = parameters$minScore,
+    maxErrorRT = parameters$maxErrorRT,
+    maxErrorMass = parameters$maxErrorMass,
+    idLevels = parameters$idLevels,
+    minSharedFragments = parameters$minSharedFragments,
+    minCosineSimilarity = parameters$minCosineSimilarity
+  )
+
+  if (is.null(sus_list) || length(sus_list) == 0) {
+    warning("Suspect filtering failed.")
+    return(FALSE)
   }
 
-  .filter_minCuiness <- function(value = NULL, engine) {
-    if (
-      sum(vapply(
-        engine$Results$MassSpecResults_NonTargetAnalysis$features,
-        function(z) nrow(z),
-        0
-      )) > 0 &&
-        is.numeric(value) &&
-        length(value) == 1
-    ) {
-      if (is.na(value)) {
-        return()
-      }
-
-      nts <- engine$Results$MassSpecResults_NonTargetAnalysis
-      features <- nts$features
-
-      features <- lapply(features, function(x) {
-        if ("suspects" %in% colnames(x) && nrow(x) > 0) {
-          x$suspects <- lapply(x$suspects, function(s) {
-            if (is.data.frame(s) && nrow(s) > 0 && "cusiness" %in% colnames(s)) {
-              # Filter rows where cusiness is below threshold
-              s <- s[s$cusiness >= value, ]
-            }
-            s
-          })
-        }
-        x
-      })
-
-      nts$features <- features
-      engine$Results <- nts
-    } else {
-      warning("There are no features in the MassSpecEngine!")
-    }
-  }
-
-  .filter_maxIdLevel <- function(value = NULL, engine) {
-    if (
-      sum(vapply(
-        engine$Results$MassSpecResults_NonTargetAnalysis$features,
-        function(z) nrow(z),
-        0
-      )) > 0 &&
-        is.numeric(value) &&
-        length(value) == 1
-    ) {
-      if (is.na(value)) {
-        return()
-      }
-
-      nts <- engine$Results$MassSpecResults_NonTargetAnalysis
-      features <- nts$features
-
-      features <- lapply(features, function(x) {
-        if ("suspects" %in% colnames(x) && nrow(x) > 0) {
-          x$suspects <- lapply(x$suspects, function(s) {
-            if (is.data.frame(s) && nrow(s) > 0 && "id_level" %in% colnames(s)) {
-              # Filter rows where id_level is above threshold
-              s <- s[s$id_level <= value, ]
-            }
-            s
-          })
-        }
-        x
-      })
-
-      nts$features <- features
-      engine$Results <- nts
-    } else {
-      warning("There are no features in the MassSpecEngine!")
-    }
-  }
-
-  # MARK: Switch Loop
-  # __Switch Loop ----
-
-  for (i in seq_len(length(filters))) {
-    if (
-      is.na(parameters[[filters[i]]]) || length(parameters[[filters[i]]]) == 0
-    ) {
-      next
-    }
-
-    switch(
-      filters[i],
-      minSharedFragments = .filter_minSharedFragments(
-        parameters[[filters[i]]],
-        engine
-      ),
-      minCuiness = .filter_minCuiness(
-        parameters[[filters[i]]],
-        engine
-      ),
-      maxIdLevel = .filter_maxIdLevel(
-        parameters[[filters[i]]],
-        engine
-      )
-    )
-  }
+  names(sus_list) <- analyses_db$analysis
+  sus <- data.table::rbindlist(sus_list, fill = TRUE)
 
   # Count suspects after filtering
-  n_suspects_after <- sum(vapply(
-    engine$Results$MassSpecResults_NonTargetAnalysis$features,
-    function(x) {
-      if ("suspects" %in% colnames(x)) {
-        sum(vapply(x$suspects, function(s) {
-          if (is.data.frame(s) && nrow(s) > 0) nrow(s) else 0
-        }, 0))
-      } else {
-        0
-      }
-    },
-    0
-  ))
+  n_after <- nrow(sus)
+  n_filtered <- n_before - n_after
 
-  n_suspects_filtered <- n_suspects_initial - n_suspects_after
-
-  if (n_suspects_filtered < 0) {
-    n_suspects_filtered <- 0
+  message(sprintf("\u2713 FilterSuspects complete: %d suspects filtered, %d remaining", n_filtered, n_after))
+  if (n_after > 0) {
+    message("\U2139 ID level distribution after filtering: ", paste(names(table(sus$id_level)), "=", table(sus$id_level), collapse = ", "))
   }
 
-  message(paste0("\U2713 ", n_suspects_filtered, " suspects filtered!"))
+  # Save to cache
+  if (!is.null(cache_manager)) {
+    save_cache(
+      cache_manager,
+      name = paste0("FilterSuspects_native"),
+      hash = .make_hash(x, analyses_info, parameters, engine$Workflow),
+      description = "Suspects filtered with FilterSuspects_native method",
+      data = as.data.frame(sus)
+    )
+    message("\U1f5ab Results from ", x$method, " using ", x$algorithm, " cached!")
+  }
 
-  TRUE
+  # Write to database
+  conn <- DBI::dbConnect(duckdb::duckdb(), engine$NonTargetAnalysis$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  # Clear existing data
+  DBI::dbExecute(conn, "DELETE FROM Suspects")
+
+  # Ensure id_level is integer before writing
+  if (nrow(sus) > 0) {
+    sus$id_level <- as.integer(sus$id_level)
+  }
+
+  # Write new data
+  DBI::dbWriteTable(conn, "Suspects", sus, append = TRUE)
+
+  message("\U2713 Suspects written to database.")
+  invisible(TRUE)
 }
-
-

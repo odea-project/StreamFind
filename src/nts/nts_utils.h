@@ -1,7 +1,7 @@
 #ifndef NTS_UTILS_H
 #define NTS_UTILS_H
 
-#include "../streamcraft/streamcraft.h"
+#include "../mass_spec/utils.h"
 #include <vector>
 #include <fstream>
 #include <iostream>

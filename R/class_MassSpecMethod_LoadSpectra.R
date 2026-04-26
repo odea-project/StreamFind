@@ -1,226 +1,228 @@
-# MARK: MassSpecMethod_LoadSpectra
-#' @title MassSpecMethod_LoadSpectra_native S3 Class
-#' @description Loads spectra from mass spectrometry data using time and m/z dimensions. Ion mobility dimensions are also supported.
-#' @param levels A numeric vector with the levels to be used.
-#' @param mzmin A numeric vector with the minimum m/z values to be used.
-#' @param mzmax A numeric vector with the maximum m/z values to be used.
-#' @param rtmin A numeric vector with the minimum retention time values to be used.
-#' @param rtmax A numeric vector with the maximum retention time values to be used.
-#' @param mobilitymin A numeric vector with the minimum mobility values to be used.
-#' @param mobilitymax A numeric vector with the maximum mobility values to be used.
-#' @param minIntensity A numeric value with the minimum intensity to be used.
-#' @return A `MassSpecMethod_LoadSpectra_native` object.
+# MARK: MassSpecMethod_LoadSpectra_native
+#' @title MassSpecMethod_LoadSpectra_native class
+#' @description Load MS spectra from analysis files into a DuckDB-backed Spectra results object.
+#' @param levels  MS levels to load (default c(1L, 2L)).
+#' @param minIntensityMS1  Minimum intensity for MS1 peaks.
+#' @param minIntensityMS2  Minimum intensity for MS2 peaks.
 #' @export
-#'
 MassSpecMethod_LoadSpectra_native <- function(
-  levels = 1,
-  mzmin = 0,
-  mzmax = 0,
-  rtmin = 0,
-  rtmax = 0,
-  mobilitymin = 0,
-  mobilitymax = 0,
-  minIntensity = 0
-) {
+    levels          = c(1L, 2L),
+    minIntensityMS1 = 0.0,
+    minIntensityMS2 = 0.0) {
   x <- ProcessingStep(
-    type = "MassSpec",
-    method = "LoadSpectra",
-    required = NA_character_,
-    algorithm = "native",
-    input_class = NA_character_,
+    type        = "MassSpec",
+    method      = "LoadSpectra",
+    required    = NA_character_,
+    algorithm   = "native",
+    input_class = "MassSpecAnalyses",
     output_class = "MassSpecResults_Spectra",
-    parameters = list(
-      levels = levels,
-      mzmin = mzmin,
-      mzmax = mzmax,
-      rtmin = rtmin,
-      rtmax = rtmax,
-      mobilitymin = mobilitymin,
-      mobilitymax = mobilitymax,
-      minIntensity = minIntensity
-    ),
     number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "StreamFind",
-    developer = "Ricardo Cunha",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
+    version     = as.character(packageVersion("StreamFind")),
+    software    = "StreamFind",
+    developer   = "Ricardo Cunha",
+    contact     = "cunha@iuta.de",
+    link        = "https://odea-project.github.io/StreamFind",
+    doi         = NA_character_,
+    parameters  = list(
+      levels          = as.integer(levels),
+      minIntensityMS1 = as.numeric(minIntensityMS1),
+      minIntensityMS2 = as.numeric(minIntensityMS2)
+    )
   )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_LoadSpectra_native object!")
-  }
+  if (is.null(validate_object(x))) x else stop("Invalid MassSpecMethod_LoadSpectra_native parameters.")
 }
 
 #' @export
 #' @noRd
 validate_object.MassSpecMethod_LoadSpectra_native <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "LoadSpectra")
   checkmate::assert_choice(x$algorithm, "native")
-  checkmate::assert_numeric(x$parameters$levels)
-  checkmate::assert_numeric(x$parameters$mzmin, len = 1)
-  checkmate::assert_numeric(x$parameters$mzmax, len = 1)
-  checkmate::assert_numeric(x$parameters$rtmin, len = 1)
-  checkmate::assert_numeric(x$parameters$rtmax, len = 1)
-  checkmate::assert_numeric(x$parameters$mobilitymin, len = 1)
-  checkmate::assert_numeric(x$parameters$mobilitymax, len = 1)
-  checkmate::assert_numeric(x$parameters$minIntensity, len = 1)
-  NextMethod()
+  checkmate::assert_integerish(x$parameters$levels, min.len = 1)
+  checkmate::assert_numeric(x$parameters$minIntensityMS1, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$minIntensityMS2, len = 1, lower = 0)
   NULL
 }
 
 #' @export
 #' @noRd
 run.MassSpecMethod_LoadSpectra_native <- function(x, engine = NULL) {
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
+  if (!"MassSpecAnalyses" %in% class(engine$Analyses)) {
+    warning("Engine does not contain MassSpecAnalyses.")
     return(FALSE)
   }
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-  if (sum(vapply(engine$Analyses$analyses, function(z) z$spectra_number, 0)) == 0) {
-    warning("There are no spectra! Not done.")
-    return(FALSE)
-  }
-  parameters <- x$parameters
-  ranges <- data.frame(
-    mzmin = parameters$mzmin,
-    mzmax = parameters$mzmax,
-    rtmin = parameters$rtmin,
-    rtmax = parameters$rtmax,
-    mobilitymin = parameters$mobilitymin,
-    mobilitymax = parameters$mobilitymax
-  )
-  tryCatch(
-    {
-      engine$Analyses <- load_spectra(
-        engine$Analyses,
-        levels = parameters$levels,
-        mz = ranges,
-        minIntensityMS1 = parameters$minIntensity,
-        minIntensityMS2 = parameters$minIntensity
+  analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
+  if (nrow(analyses) == 0) { warning("No analyses found."); return(FALSE) }
+
+  headers <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
+  headers_split <- split(headers, headers$analysis)
+
+  p <- x$parameters
+  targets_empty <- MassSpecTargets()  # default empty targets
+
+  spec_list <- lapply(seq_len(nrow(analyses)), function(i) {
+    aname <- analyses$analysis[i]
+    arep  <- analyses$replicate[i]
+    afile <- analyses$file[i]
+    hd_a  <- headers_split[[aname]]
+    if (is.null(hd_a) || nrow(hd_a) == 0) return(NULL)
+    tryCatch({
+      message("\U2699 Loading spectra from ", basename(afile), "...", appendLF = FALSE)
+      raw <- rcpp_streamcraft_parse_ms_spectra(
+        list(file = afile, spectra_headers = hd_a),
+        p$levels,
+        targets_empty,
+        p$minIntensityMS1,
+        p$minIntensityMS2
       )
-      message(paste0("\U2713 ", "Spectra loaded!"))
-      TRUE
-    },
-    error = function(e) {
-      warning("Error loading spectra! Not done.")
-      return(FALSE)
-    }
+      message(" Done!")
+      if (nrow(raw) == 0) return(NULL)
+      dt <- data.table::as.data.table(raw)
+      dt$analysis  <- aname
+      dt$replicate <- arep
+      if (!"level" %in% colnames(dt)) dt$level <- 1L
+      data.table::setcolorder(dt, c("analysis", "replicate"))
+      dt
+    }, error = function(e) {
+      message(" FAILED: ", e$message)
+      NULL
+    })
+  })
+
+  spec_dt <- data.table::rbindlist(spec_list, fill = TRUE)
+  if (nrow(spec_dt) == 0) { warning("No spectra loaded."); return(FALSE) }
+
+  analyses_for_db <- analyses[, c("analysis", "replicate", "blank", "type",
+                                   "polarity", "concentration"), drop = FALSE]
+
+  engine$Spectra <- MassSpecResults_Spectra(
+    projectPath = engine$get_project_path(),
+    analyses    = analyses_for_db,
+    spectra     = spec_dt
   )
+  invisible(TRUE)
 }
 
-#' @title MassSpecMethod_LoadSpectra_chrompeaks S3 Class
-#' @description Loads spectra based on retention time dimensions of chromatographic peaks.
-#' @param levels A numeric vector with the levels to be used.
-#' @param mzmin A numeric vector with the minimum m/z values to be used.
-#' @param mzmax A numeric vector with the maximum m/z values to be used.
-#' @param minIntensity A numeric value with the minimum intensity to be used.
-#' @return A `MassSpecMethod_LoadSpectra_chrompeaks` object.
+
+# MARK: MassSpecMethod_LoadSpectra_chrompeaks
+#' @title MassSpecMethod_LoadSpectra_chrompeaks class
+#' @description Load MS2 spectra for chromatographic peak windows identified by FindChromPeaks / IntegrateChromatograms.
+#' @param levels   MS levels to load (default 2L for MS2).
+#' @param minIntensityMS1 Minimum MS1 intensity filter.
+#' @param minIntensityMS2 Minimum MS2 intensity filter.
 #' @export
-#'
 MassSpecMethod_LoadSpectra_chrompeaks <- function(
-  levels = 1,
-  mzmin = 0,
-  mzmax = 0,
-  minIntensity = 0
-) {
+    levels          = 2L,
+    minIntensityMS1 = 0.0,
+    minIntensityMS2 = 0.0) {
   x <- ProcessingStep(
-    type = "MassSpec",
-    method = "LoadSpectra",
-    required = "FindChromPeaks",
-    algorithm = "chrompeaks",
-    input_class = NA_character_,
+    type        = "MassSpec",
+    method      = "LoadSpectra",
+    required    = c("LoadChromatograms", "FindChromPeaks"),
+    algorithm   = "chrompeaks",
+    input_class = c("MassSpecAnalyses", "MassSpecResults_Chromatograms"),
     output_class = "MassSpecResults_Spectra",
-    parameters = list(
-      levels = levels,
-      mzmin = mzmin,
-      mzmax = mzmax,
-      minIntensity = minIntensity
-    ),
     number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "StreamFind",
-    developer = "Ricardo Cunha",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
+    version     = as.character(packageVersion("StreamFind")),
+    software    = "StreamFind",
+    developer   = "Ricardo Cunha",
+    contact     = "cunha@iuta.de",
+    link        = "https://odea-project.github.io/StreamFind",
+    doi         = NA_character_,
+    parameters  = list(
+      levels          = as.integer(levels),
+      minIntensityMS1 = as.numeric(minIntensityMS1),
+      minIntensityMS2 = as.numeric(minIntensityMS2)
+    )
   )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_LoadSpectra_chrompeaks object!")
-  }
+  if (is.null(validate_object(x))) x else stop("Invalid MassSpecMethod_LoadSpectra_chrompeaks parameters.")
 }
 
 #' @export
 #' @noRd
 validate_object.MassSpecMethod_LoadSpectra_chrompeaks <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "LoadSpectra")
   checkmate::assert_choice(x$algorithm, "chrompeaks")
-  checkmate::assert_numeric(x$parameters$levels)
-  checkmate::assert_numeric(x$parameters$mzmin, len = 1)
-  checkmate::assert_numeric(x$parameters$mzmax, len = 1)
-  checkmate::assert_numeric(x$parameters$minIntensity, len = 1)
-  NextMethod()
+  checkmate::assert_integerish(x$parameters$levels, min.len = 1)
+  checkmate::assert_numeric(x$parameters$minIntensityMS1, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$minIntensityMS2, len = 1, lower = 0)
   NULL
 }
 
-
 #' @export
 #' @noRd
-run.MassSpecMethod_LoadSpectra_chrompeaks <- function(
-  x,
-  engine = NULL
-) {
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
+run.MassSpecMethod_LoadSpectra_chrompeaks <- function(x, engine = NULL) {
+  if (!"MassSpecAnalyses" %in% class(engine$Analyses)) {
+    warning("Engine does not contain MassSpecAnalyses.")
     return(FALSE)
   }
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-  if (sum(vapply(engine$Analyses$analyses, function(z) z$spectra_number, 0)) == 0) {
-    warning("There are no spectra! Not done.")
-    return(FALSE)
-  }
-  if (is.null(engine$Results[["MassSpecResults_Chromatograms"]])) {
-    warning("No MassSpecResults_Chromatograms available! Not done.")
-    return(FALSE)
-  }
-  chroms_obj <- engine$Results[["MassSpecResults_Chromatograms"]]
-  if (length(chroms_obj$peaks) == 0) {
-    warning("No chromatograms peaks available! Not done.")
-    return(FALSE)
-  }
-  parameters <- x$parameters
-  peaks <- chroms_obj$peaks
-  peaks <- data.table::rbindlist(peaks, idcol = "analysis", fill = TRUE)
-  peaks$mzmin <- parameters$mzmin
-  peaks$mzmax <- parameters$mzmax
-  peaks$id <- peaks$peak
-  tryCatch(
-    {
-      engine$Analyses <- load_spectra(
-        engine$Analyses,
-        levels = parameters$levels,
-        mz = peaks,
-        minIntensityMS1 = parameters$minIntensity,
-        minIntensityMS2 = parameters$minIntensity
+  chrom_results <- engine$Chromatograms
+  if (is.null(chrom_results)) { warning("No Chromatograms results found."); return(FALSE) }
+
+  analyses <- query_db(engine$Analyses, "SELECT * FROM Analyses")
+  if (nrow(analyses) == 0) { warning("No analyses found."); return(FALSE) }
+
+  peaks <- query_db(chrom_results, "SELECT * FROM Peaks")
+  if (nrow(peaks) == 0) { warning("No peaks found in Chromatograms."); return(FALSE) }
+
+  headers  <- query_db(engine$Analyses, "SELECT * FROM SpectraHeaders")
+  headers_split <- split(headers, headers$analysis)
+
+  p <- x$parameters
+
+  # Build per-analysis target windows from chromatographic peaks
+  spec_list <- lapply(seq_len(nrow(analyses)), function(i) {
+    aname <- analyses$analysis[i]
+    arep  <- analyses$replicate[i]
+    afile <- analyses$file[i]
+    hd_a  <- headers_split[[aname]]
+    if (is.null(hd_a) || nrow(hd_a) == 0) return(NULL)
+    pks_a <- peaks[peaks$analysis == aname, ]
+    if (nrow(pks_a) == 0) return(NULL)
+    # Build targets from peaks (rt windows)
+    targets <- data.table::data.table(
+      analysis = aname,
+      mz       = pks_a$pre_mz,
+      mzmin    = 0,
+      mzmax    = max(hd_a$highmz, na.rm = TRUE),
+      rt       = (pks_a$rtmin + pks_a$rtmax) / 2,
+      rtmin    = pks_a$rtmin,
+      rtmax    = pks_a$rtmax,
+      id       = pks_a$id,
+      polarity = pks_a$polarity
+    )
+    targets$mz[is.na(targets$mz)] <- 0
+    tryCatch({
+      message("\U2699 Loading spectra from ", basename(afile), "...", appendLF = FALSE)
+      raw <- rcpp_streamcraft_parse_ms_spectra(
+        list(file = afile, spectra_headers = hd_a),
+        p$levels,
+        as.data.frame(targets),
+        p$minIntensityMS1,
+        p$minIntensityMS2
       )
-      message(paste0("\U2713 ", "Spectra loaded!"))
-      TRUE
-    },
-    error = function(e) {
-      warning("Error loading spectra! Not done.")
-      return(FALSE)
-    }
+      message(" Done!")
+      if (nrow(raw) == 0) return(NULL)
+      dt <- data.table::as.data.table(raw)
+      dt$analysis  <- aname
+      dt$replicate <- arep
+      if (!"level" %in% colnames(dt)) dt$level <- as.integer(p$levels[1])
+      data.table::setcolorder(dt, c("analysis", "replicate"))
+      dt
+    }, error = function(e) {
+      message(" FAILED: ", e$message)
+      NULL
+    })
+  })
+
+  spec_dt <- data.table::rbindlist(spec_list, fill = TRUE)
+  if (nrow(spec_dt) == 0) { warning("No spectra loaded."); return(FALSE) }
+
+  analyses_for_db <- analyses[, c("analysis", "replicate", "blank", "type",
+                                   "polarity", "concentration"), drop = FALSE]
+  engine$Spectra <- MassSpecResults_Spectra(
+    projectPath = engine$get_project_path(),
+    analyses    = analyses_for_db,
+    spectra     = spec_dt
   )
+  invisible(TRUE)
 }

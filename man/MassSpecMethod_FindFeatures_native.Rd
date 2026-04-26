@@ -5,21 +5,23 @@
 \title{MassSpecMethod_FindFeatures_native class}
 \usage{
 MassSpecMethod_FindFeatures_native(
-  rtWindows = data.frame(rtmin = 300, rtmax = 3600),
-  resolution_profile = c(35000L, 35000L, 35000L),
+  rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
+  ppmThreshold = 15,
   noiseThreshold = 250,
   minSNR = 3,
   minTraces = 3,
   baselineWindow = 200,
   maxWidth = 100,
-  base_quantile = 0.1,
-  debug_mz = 0
+  baseQuantile = 0.1,
+  debugAnalysis = "",
+  debugMZ = 0,
+  debugSpecIdx = -1
 )
 }
 \arguments{
 \item{rtWindows}{data.frame with rtmin and rtmax columns for retention time windows for data inclusion.}
 
-\item{resolution_profile}{integer(3) vector defining mass resolution at 100, 400, and 1000 Da for calculating m/z clustering thresholds via linear model.}
+\item{ppmThreshold}{integer(1) maximum allowed mass error in ppm for considering traces in a mass cluster.}
 
 \item{noiseThreshold}{numeric(1) lowest threshold to clean data (i.e., no trace with intensity below this level is kept).}
 
@@ -31,7 +33,13 @@ MassSpecMethod_FindFeatures_native(
 
 \item{maxWidth}{numeric(1) expected maximum window for a chromatographic peak.}
 
-\item{base_quantile}{numeric(1) quantile to estimate the baseline in a mass cluster.}
+\item{baseQuantile}{numeric(1) quantile to estimate the baseline in a mass cluster.}
+
+\item{debugAnalysis}{character(1) analysis name to enable debugging for (empty string to debug all).}
+
+\item{debugMZ}{numeric(1) m/z value to enable debugging for specific mass traces (0 to disable).}
+
+\item{debugSpecIdx}{integer(1) spectrum index to enable debugging for denoising (-1 to disable).}
 }
 \description{
 Native StreamFind method for finding features (i.e., chromatographic peaks) in liquid chromatography coupled to high resolution mass spectrometry files.

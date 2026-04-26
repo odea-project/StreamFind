@@ -4,34 +4,30 @@
 #' @param showProcessingMethods Logical; if TRUE and dataType is provided, includes available processing methods for that data type.
 #' @return An object of class DataTypeObjects containing data types, engines, analyses, results, and formats.
 #' @export
-#' 
+#'
 DataTypeObjects <- function(dataType = NULL, showProcessingMethods = FALSE) {
   res <- structure(
     list(
-      data_types = c("MassSpec", "Raman", "Statistic", "DB_MassSpec"),
+      data_types = c("MassSpec", "Raman", "Statistic"),
       engine = list(
         "MassSpec" = "MassSpecEngine",
         "Raman" = "RamanEngine",
-        "Statistic" = "StatisticEngine",
-        "DB_MassSpec" = "DB_MassSpecEngine"
+        "Statistic" = "StatisticEngine"
       ),
       analyses = list(
         "MassSpec" = "MassSpecAnalyses",
         "Raman" = "RamanAnalyses",
-        "Statistic" = "StatisticAnalyses",
-        "DB_MassSpec" = "DB_MassSpecAnalyses"
+        "Statistic" = "StatisticAnalyses"
       ),
       results = list(
         "MassSpec" = c("MassSpecResults_NonTargetAnalysis", "MassSpecResults_Spectra", "MassSpecResults_Chromatograms"),
         "Raman" = c("RamanResults_Spectra"),
-        "Statistic" = c("StatisticResults"),
-        "DB_MassSpec" = c("DB_MassSpecResults_NonTargetAnalysis", "DB_MassSpecResults_Chromatograms")
+        "Statistic" = c("StatisticResults")
       ),
       formats = list(
         "MassSpec" = c("mzML", "mzXML", "d", "raw"),
         "Raman" = c("asc", "sif", "json", "wdf", "sdf", "csv", "txt"),
-        "Statistic" = c("csv"),
-        "DB_MassSpec" = c("mzML", "mzXML", "d", "raw")
+        "Statistic" = c("csv")
       )
     ),
     class = "DataTypeObjects"

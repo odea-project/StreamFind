@@ -1,297 +1,124 @@
-#' @title MassSpecMethod_CorrectChromatogramsBaseline_baseline_als Class
-#'
-#' @description Performs baseline correction to chromatograms using the Asymmetric Least Squares
-#' (ALS) algorithm from the \pkg{baseline} package.
-#'
-#' @param lambda Numeric (length 1) with the 2nd derivative constraint.
-#' @param p Numeric (length 1) with the weighting of positive residuals.
-#' @param maxit Integer (length 1) with the maximum number of iterations.
-#' @param liftByLowestNegativeToZero Logical (length 1) indicating if the corrected chromatogram
-#' should be lifted by the lowest negative value to zero.
-#'
-#' @return A MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object.
-#'
+# MARK: MassSpecMethod_CorrectChromatogramsBaseline_airpls
+#' @title MassSpecMethod_CorrectChromatogramsBaseline_airpls class
+#' @description Estimate and subtract chromatogram baselines using the airPLS algorithm (Zhang et al. 2010).
+#' @param lambda       Smoothing penalty (larger = smoother baseline).
+#' @param differences  Order of the finite-difference penalty (1 or 2).
+#' @param itermax      Maximum number of iterations.
 #' @export
-#'
-MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- function(
-  lambda = 5,
-  p = 0.05,
-  maxit = 10,
-  liftByLowestNegativeToZero = FALSE
-) {
-  x <- ProcessingStep(
-    type = "MassSpec",
-    method = "CorrectChromatogramsBaseline",
-    required = "LoadChromatograms",
-    algorithm = "baseline_als",
-    parameters = list(
-      lambda = as.numeric(lambda),
-      p = as.numeric(p),
-      maxit = as.numeric(maxit),
-      liftByLowestNegativeToZero = as.logical(liftByLowestNegativeToZero)
-    ),
-    number_permitted = Inf,
-    version = as.character(packageVersion("StreamFind")),
-    software = "baseline",
-    developer = "Kristian Hovde Liland",
-    contact = "kristian.liland@nmbu.no",
-    link = "https://github.com/khliland/baseline/",
-    doi = "10.1366/000370210792434350"
-  )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_CorrectChromatogramsBaseline_baseline_als object!")
-  }
-}
-
-#' @export
-#' @noRd
-#'
-validate_object.MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- function(
-  x
-) {
-  checkmate::assert_choice(x$type, "MassSpec")
-  checkmate::assert_choice(x$method, "CorrectChromatogramsBaseline")
-  checkmate::assert_choice(x$algorithm, "baseline_als")
-  checkmate::assert_number(x$parameters$lambda)
-  checkmate::assert_number(x$parameters$p)
-  checkmate::assert_integer(as.integer(x$parameters$maxit))
-  checkmate::assert_logical(x$parameters$liftByLowestNegativeToZero)
-  NULL
-}
-
-#' @export
-#' @noRd
-run.MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- function(
-  x,
-  engine = NULL
-) {
-  if (!requireNamespace("baseline", quietly = TRUE)) {
-    warning("Package baseline not found but required! Not done.")
-    return(FALSE)
-  }
-
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
-    return(FALSE)
-  }
-
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-
-  if (is.null(engine$Results[["MassSpecResults_Chromatograms"]])) {
-    warning("No chromatograms results object available! Not done.")
-    return(FALSE)
-  }
-
-  baseline_method <- "als"
-
-  baseline_args <- list(
-    lambda = x$parameters$lambda,
-    p = x$parameters$p,
-    maxit = x$parameters$maxit
-  )
-
-  liftByLowestNegativeToZero <- x$parameters$liftByLowestNegativeToZero
-  
-  chrom_obj <- engine$Results[["MassSpecResults_Chromatograms"]]
-  chrom_list <- chrom_obj$chromatograms
-  chrom_list <- lapply(
-    chrom_list,
-    function(z, baseline_method, baseline_args) {
-      if (nrow(z) > 0) {
-        if ("id" %in% colnames(z)) {
-          temp_x <- split(z, z$id)
-
-          temp_x <- lapply(temp_x, function(z) {
-            baseline_data <- .baseline_correction(
-              z$intensity,
-              baseline_method,
-              baseline_args
-            )
-            if (
-              any(baseline_data$corrected < 0) && liftByLowestNegativeToZero
-            ) {
-              baseline_data$corrected <- baseline_data$corrected +
-                abs(min(baseline_data$corrected))
-            }
-            z$baseline <- baseline_data$baseline
-            z$raw <- z$intensity
-            z$intensity <- baseline_data$corrected
-            z
-          })
-
-          z <- data.table::rbindlist(temp_x)
-        } else {
-          baseline_data <- .baseline_correction(
-            z$intensity,
-            baseline_method,
-            baseline_args
-          )
-          if (any(baseline_data$corrected < 0) && liftByLowestNegativeToZero) {
-            baseline_data$corrected <- baseline_data$corrected +
-              abs(min(baseline_data$corrected))
-          }
-          z$baseline <- baseline_data$baseline
-          z$raw <- z$intensity
-          z$intensity <- baseline_data$corrected
-        }
-      }
-
-      z
-    },
-    baseline_method = baseline_method,
-    baseline_args = baseline_args
-  )
-  chrom_obj$chromatograms <- chrom_list
-  engine$Results <- chrom_obj
-  message(paste0("\U2713 ", "Chromatograms beseline corrected!"))
-  TRUE
-}
-
-#' @title MassSpecMethod_CorrectChromatogramsBaseline_airpls Class
-#'
-#' @description Performs baseline correction using adaptive iteratively reweighted Penalized Least
-#' Squares (airPLS) based on the algorithm from Zhi-Min Zhang.
-#'
-#' @param lambda Numeric (length 1) with the smoothing intensity. the higher the `lambda` the
-#' higher the smoothing.
-#' @param differences Integer (length 1) indicating the order of the difference of penalties
-#' @param itermax Integer (length 1) with the maximum number of iterations.
-#'
-#' @return A MassSpecMethod_CorrectChromatogramsBaseline_airpls object.
-#'
-#' @references
-#'
-#' \insertRef{airpls01}{StreamFind}
-#'
-#' @export
-#'
 MassSpecMethod_CorrectChromatogramsBaseline_airpls <- function(
-  lambda = 10,
-  differences = 1,
-  itermax = 20
-) {
+    lambda      = 10.0,
+    differences = 1L,
+    itermax     = 20L) {
   x <- ProcessingStep(
-    type = "MassSpec",
-    method = "CorrectChromatogramsBaseline",
-    required = "LoadChromatograms",
-    algorithm = "airpls",
-    parameters = list(
-      lambda = as.numeric(lambda),
-      differences = as.numeric(differences),
-      itermax = as.numeric(itermax)
-    ),
-    number_permitted = Inf,
-    version = as.character(packageVersion("StreamFind")),
-    software = "airPLS",
-    developer = "Zhi-Min Zhang",
-    contact = "zmzhang@csu.edu.cn",
-    link = "https://github.com/zmzhang/airPLS",
-    doi = "10.1039/b922045c"
+    type        = "MassSpec",
+    method      = "CorrectChromatogramsBaseline",
+    required    = "LoadChromatograms",
+    algorithm   = "airpls",
+    input_class = "MassSpecResults_Chromatograms",
+    output_class = "MassSpecResults_Chromatograms",
+    number_permitted = 1,
+    version     = as.character(packageVersion("StreamFind")),
+    software    = "StreamFind",
+    developer   = "Ricardo Cunha",
+    contact     = "cunha@iuta.de",
+    link        = "https://odea-project.github.io/StreamFind",
+    doi         = "10.1039/b922045c",
+    parameters  = list(
+      lambda      = as.numeric(lambda),
+      differences = as.integer(differences),
+      itermax     = as.integer(itermax)
+    )
   )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_CorrectChromatogramsBaseline_airpls object!")
-  }
+  if (is.null(validate_object(x))) x else stop("Invalid MassSpecMethod_CorrectChromatogramsBaseline_airpls parameters.")
 }
 
 #' @export
 #' @noRd
-#'
-validate_object.MassSpecMethod_CorrectChromatogramsBaseline_airpls <- function(
-  x
-) {
-  checkmate::assert_choice(x$type, "MassSpec")
+validate_object.MassSpecMethod_CorrectChromatogramsBaseline_airpls <- function(x) {
   checkmate::assert_choice(x$method, "CorrectChromatogramsBaseline")
   checkmate::assert_choice(x$algorithm, "airpls")
-  checkmate::assert_number(x$parameters$lambda)
-  checkmate::assert_integer(as.integer(x$parameters$differences))
-  checkmate::assert_integer(as.integer(x$parameters$itermax))
+  checkmate::assert_numeric(x$parameters$lambda,      len = 1, lower = 0)
+  checkmate::assert_integerish(x$parameters$differences, len = 1, lower = 1, upper = 5)
+  checkmate::assert_integerish(x$parameters$itermax,  len = 1, lower = 1)
   NULL
 }
 
 #' @export
 #' @noRd
-run.MassSpecMethod_CorrectChromatogramsBaseline_airpls <- function(
-  x,
-  engine = NULL
-) {
-  if (!requireNamespace("Matrix", quietly = TRUE)) {
-    warning("Package Matrix not found but required! Not done.")
-    return(FALSE)
-  }
-
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
-    return(FALSE)
-  }
-
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-
-  if (is.null(engine$Results[["MassSpecResults_Chromatograms"]])) {
-    warning("No chromatograms results object available! Not done.")
-    return(FALSE)
-  }
-
-  lambda = x$parameters$lambda
-  differences = x$parameters$differences
-  itermax = x$parameters$itermax
-
-  chrom_obj <- engine$Results[["MassSpecResults_Chromatograms"]]
-  chrom_list <- chrom_obj$chromatograms
-
-  chrom_list <- lapply(
-    chrom_list,
-    function(z, lambda, differences, itermax) {
-      if (nrow(z) > 0) {
-        if ("id" %in% colnames(z)) {
-          temp_x <- split(z, z$id)
-
-          temp_x <- lapply(temp_x, function(z) {
-            baseline_data <- .airPLS_by_zmzhang(
-              z$intensity,
-              lambda,
-              differences,
-              itermax
-            )
-            z$baseline <- baseline_data
-            z$raw <- z$intensity
-            # baseline_data[baseline_data > z$intensity] <- z$intensity[baseline_data > z$intensity]
-            z$intensity <- z$intensity - baseline_data
-            z
-          })
-
-          z <- data.table::rbindlist(temp_x)
-        } else {
-          baseline_data <- .airPLS_by_zmzhang(
-            z$intensity,
-            lambda,
-            differences,
-            itermax
-          )
-          z$baseline <- baseline_data
-          z$raw <- z$intensity
-          # baseline_data[baseline_data > z$intensity] <- z$intensity[baseline_data > z$intensity]
-          z$intensity <- z$intensity - baseline_data
-        }
-      }
-
-      z
-    },
-    lambda = lambda,
-    differences = differences,
-    itermax = itermax
+run.MassSpecMethod_CorrectChromatogramsBaseline_airpls <- function(x, engine = NULL) {
+  chrom_results <- engine$Chromatograms
+  if (is.null(chrom_results)) { warning("No Chromatograms results found."); return(FALSE) }
+  chroms <- query_db(chrom_results, "SELECT * FROM Chromatograms")
+  if (nrow(chroms) == 0) { warning("No chromatogram data found."); return(FALSE) }
+  corrected <- rcpp_ms_correct_baseline_airpls(
+    chroms,
+    lambda      = x$parameters$lambda,
+    differences = x$parameters$differences,
+    itermax     = x$parameters$itermax
   )
-  chrom_obj$chromatograms <- chrom_list
-  engine$Results <- chrom_obj
-  message(paste0("\U2713 ", "Chromatograms beseline corrected!"))
-  TRUE
+  .update_chromatograms_intensity(chrom_results, data.table::as.data.table(corrected))
+  invisible(TRUE)
+}
+
+
+# MARK: MassSpecMethod_CorrectChromatogramsBaseline_baseline_als
+#' @title MassSpecMethod_CorrectChromatogramsBaseline_baseline_als class
+#' @description Estimate and subtract chromatogram baselines using the Asymmetric Least Squares (ALS) algorithm (Eilers & Boelens 2005).
+#' @param lambda  Smoothing penalty.
+#' @param p       Asymmetry parameter (0 < p < 0.5; typically 0.001–0.01).
+#' @param maxit   Maximum number of iterations.
+#' @export
+MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- function(
+    lambda = 1e5,
+    p      = 0.001,
+    maxit  = 10L) {
+  x <- ProcessingStep(
+    type        = "MassSpec",
+    method      = "CorrectChromatogramsBaseline",
+    required    = "LoadChromatograms",
+    algorithm   = "baseline_als",
+    input_class = "MassSpecResults_Chromatograms",
+    output_class = "MassSpecResults_Chromatograms",
+    number_permitted = 1,
+    version     = as.character(packageVersion("StreamFind")),
+    software    = "StreamFind",
+    developer   = "Ricardo Cunha",
+    contact     = "cunha@iuta.de",
+    link        = "https://odea-project.github.io/StreamFind",
+    doi         = NA_character_,
+    parameters  = list(
+      lambda = as.numeric(lambda),
+      p      = as.numeric(p),
+      maxit  = as.integer(maxit)
+    )
+  )
+  if (is.null(validate_object(x))) x else stop("Invalid MassSpecMethod_CorrectChromatogramsBaseline_baseline_als parameters.")
+}
+
+#' @export
+#' @noRd
+validate_object.MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- function(x) {
+  checkmate::assert_choice(x$method, "CorrectChromatogramsBaseline")
+  checkmate::assert_choice(x$algorithm, "baseline_als")
+  checkmate::assert_numeric(x$parameters$lambda, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$p,      len = 1, lower = 0, upper = 1)
+  checkmate::assert_integerish(x$parameters$maxit, len = 1, lower = 1)
+  NULL
+}
+
+#' @export
+#' @noRd
+run.MassSpecMethod_CorrectChromatogramsBaseline_baseline_als <- function(x, engine = NULL) {
+  chrom_results <- engine$Chromatograms
+  if (is.null(chrom_results)) { warning("No Chromatograms results found."); return(FALSE) }
+  chroms <- query_db(chrom_results, "SELECT * FROM Chromatograms")
+  if (nrow(chroms) == 0) { warning("No chromatogram data found."); return(FALSE) }
+  corrected <- rcpp_ms_correct_baseline_als(
+    chroms,
+    lambda = x$parameters$lambda,
+    p      = x$parameters$p,
+    maxit  = x$parameters$maxit
+  )
+  .update_chromatograms_intensity(chrom_results, data.table::as.data.table(corrected))
+  invisible(TRUE)
 }

@@ -5,7 +5,7 @@ if (!dir.exists(all_files_dir)) {
   all_files_dir <- "D:\\peak_finding_files_ex"
 }
 if (!dir.exists(all_files_dir)) {
-  all_files_dir <- "E:\\example_ms_files\\peak_finding_files_ex"
+  all_files_dir <- "E:\\example_files\\ms_merck"
 }
 if (!dir.exists(all_files_dir)) {
   stop("Directory with example files not found.")

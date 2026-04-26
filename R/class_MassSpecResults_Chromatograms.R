@@ -1,115 +1,164 @@
 # MARK: MassSpecResults_Chromatograms
-#' @title Constructor and methods to handle Mass Spectrometry chromatograms results
-#' @description The `MassSpecResults_Chromatograms` class represents the results of chromatograms from mass spectrometry analyses.
-#' @param chromatograms A list of chromatograms, each represented as a data frame.
-#' @param replicates A character vector of replicate identifiers.
-#' @param is_averaged A logical value indicating whether the chromatograms are averaged across replicates.
-#' @param peaks A list of peaks, each represented as a data frame.
-#' @param calibration_model A list representing the calibration model used for the chromatograms.
+#' @title Constructor and methods to handle Mass Spectrometry chromatograms results using DuckDB
+#' @description The `MassSpecResults_Chromatograms` class represents chromatograms results from mass spectrometry analyses stored in a DuckDB database. This provides efficient storage and retrieval for large-scale chromatographic data.
+#' @template arg-projectPath
+#' @param analyses A data.table containing information about the analyses.
+#' @param chromatograms A data.table containing chromatogram data with columns: analysis, replicate, index, id, polarity, pre_mz, pre_ce, pro_mz, rt, intensity, and optional baseline/raw columns.
+#' @param peaks A data.table containing peak data with columns related to chromatographic peaks.
 #' @return An object of class `MassSpecResults_Chromatograms`.
 #' @export
 #'
 MassSpecResults_Chromatograms <- function(
-  chromatograms = list(),
-  replicates = character(),
-  is_averaged = FALSE,
-  peaks = list(),
-  calibration_model = list()
+  projectPath = ".",
+  analyses = data.table::data.table(),
+  chromatograms = data.table::data.table(),
+  peaks = data.table::data.table()
 ) {
+  if (!requireNamespace("DBI", quietly = TRUE)) stop("DBI package required.")
+  if (!requireNamespace("duckdb", quietly = TRUE)) stop("duckdb package required.")
+  db <- file.path(projectPath, "MassSpecResults_Chromatograms.duckdb")
+  dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
+  conn <- DBI::dbConnect(duckdb::duckdb(), db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+
+  .create_MassSpecAnalyses_Analyses_db_schema(conn)
+  .validate_MassSpecAnalyses_Analyses_db_schema(conn)
+  .create_MassSpecResults_Chromatograms_Chromatograms_db_schema(conn)
+  .validate_MassSpecResults_Chromatograms_Chromatograms_db_schema(conn)
+  .create_MassSpecResults_Chromatograms_Peaks_db_schema(conn)
+  .validate_MassSpecResults_Chromatograms_Peaks_db_schema(conn)
+
+  insert_analyses <- function(analyses) {
+    .validate_MassSpecAnalyses_analyses_dt(analyses)
+    DBI::dbExecute(conn, "DELETE FROM Analyses")
+    DBI::dbWriteTable(conn, "Analyses", analyses, overwrite = TRUE)
+  }
+
+  insert_chromatograms <- function(chromatograms) {
+    .validate_MassSpecResults_Chromatograms_chromatograms_dt(chromatograms)
+    DBI::dbExecute(conn, "DELETE FROM Chromatograms")
+    DBI::dbWriteTable(conn, "Chromatograms", chromatograms, overwrite = TRUE)
+  }
+
+  insert_peaks <- function(peaks) {
+    .validate_MassSpecResults_Chromatograms_peaks_dt(peaks)
+    DBI::dbExecute(conn, "DELETE FROM Peaks")
+    DBI::dbWriteTable(conn, "Peaks", peaks, overwrite = TRUE)
+  }
+
+  # insert_calibration_model <- function(calibration_model) {
+  #   DBI::dbExecute(conn, "DELETE FROM CalibrationModel")
+  #   if (length(calibration_model) > 0) {
+  #     cal_dt <- data.table::data.table(
+  #       id = 1,
+  #       model_data = list(serialize(calibration_model, NULL))
+  #     )
+  #     DBI::dbWriteTable(conn, "CalibrationModel", cal_dt, overwrite = TRUE)
+  #   }
+  # }
+
+  if (nrow(analyses) > 0) insert_analyses(analyses)
+  if (nrow(chromatograms) > 0) insert_chromatograms(chromatograms)
+  if (nrow(peaks) > 0) insert_peaks(peaks)
+
   x <- structure(
     list(
-      type = "MassSpec",
-      name = "MassSpecResults_Chromatograms",
-      software = "StreamFind",
-      version = as.character(packageVersion("StreamFind")),
-      chromatograms = chromatograms,
-      is_averaged = is_averaged,
-      peaks = peaks,
-      replicates = replicates,
-      calibration_model = calibration_model
+      db = db,
+      dataType = "MassSpec"
     ),
     class = c("MassSpecResults_Chromatograms", "Results")
   )
   if (is.null(validate_object(x))) {
-    return(x)
+    x
   } else {
-    stop("Invalid MassSpecResults_Chromatograms object!")
+    stop("Invalid MassSpecResults_Chromatograms object.")
   }
 }
 
-# MARK: validator
-#' @describeIn MassSpecResults_Chromatograms Validate the MassSpecResults_Chromatograms object, returning NULL if valid.
-#' @template arg-ms-chrom-x
+#' @describeIn MassSpecResults_Chromatograms Validates the MassSpecResults_Chromatograms object, returning NULL if valid.
+#' @template arg-x-MassSpecResults_Chromatograms
 #' @export
 #'
 validate_object.MassSpecResults_Chromatograms <- function(x) {
-  checkmate::assert_true(x$name == "MassSpecResults_Chromatograms")
-  checkmate::assert_true(x$software == "StreamFind")
-  checkmate::assert_list(x$chromatograms)
-  checkmate::assert_character(x$replicates)
-  checkmate::assert_list(x$peaks)
-  checkmate::assert_logical(x$is_averaged, len = 1)
-  checkmate::assert_list(x$calibration_model)
-  if (length(x$chromatograms) > 0) {
-    for (chromatogram in x$chromatograms) {
-      checkmate::assert_data_frame(chromatogram)
-    }
-  }
-  if (length(x$peaks) > 0) {
-    for (peak in x$peaks) {
-      checkmate::assert_data_frame(peak)
-    }
-  }
+  checkmate::assert_class(x, "MassSpecResults_Chromatograms")
+  checkmate::assert_true(identical(x$dataType, "MassSpec"))
+  if (!file.exists(x$db)) stop("MassSpecResults_Chromatograms file not found: ", x$db)
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  required_tables <- c("Analyses", "Chromatograms", "Peaks")
+  present <- DBI::dbListTables(conn)
+  if (!all(required_tables %in% present)) stop("Missing required tables in MassSpecResults_Chromatograms")
+  .validate_MassSpecAnalyses_Analyses_db_schema(conn)
+  .validate_MassSpecResults_Chromatograms_Chromatograms_db_schema(conn)
+  .validate_MassSpecResults_Chromatograms_Peaks_db_schema(conn)
   NextMethod()
-  NULL
 }
 
-# MARK: Methods
-# Methods ------
+# MARK: query_db (dispatch to base)
+#' @describeIn MassSpecResults_Chromatograms Internal: execute a query on the DB (delegates to Results).
+#' @template arg-x-MassSpecResults_Chromatograms
+#' @template arg-sql-sql
+#' @template arg-sql-params
+#' @export
+query_db.MassSpecResults_Chromatograms <- function(x, sql, params = NULL) {
+  NextMethod()
+}
 
-#' @describeIn MassSpecResults_Chromatograms Show the MassSpecResults_Chromatograms object.
-#' @template arg-ms-chrom-x
+# MARK: list_db_tables (dispatch to base)
+#' @describeIn MassSpecResults_Chromatograms Internal: list tables in the DB (delegates to Results).
+#' @template arg-x-MassSpecResults_Chromatograms
+#' @export
+list_db_tables.MassSpecResults_Chromatograms <- function(x) {
+  NextMethod()
+}
+
+# MARK: get_db_table_info (dispatch to base)
+#' @describeIn MassSpecResults_Chromatograms Internal: get table info from the DB (delegates to Results).
+#' @template arg-x-MassSpecResults_Chromatograms
+#' @template arg-sql-tableName
+#' @export
+get_db_table_info.MassSpecResults_Chromatograms <- function(x, tableName) {
+  NextMethod()
+}
+
+# MARK: show
+#' @describeIn MassSpecResults_Chromatograms Prints a summary of the MassSpecResults_Chromatograms object.
+#' @template arg-x-MassSpecResults_Chromatograms
 #' @export
 #'
 show.MassSpecResults_Chromatograms <- function(x) {
-  if (length(x$chromatograms) > 0) {
-    cat("Number chromatograms: ", length(x$chromatograms), "\n")
-    cat("Averaged: ", x$is_averaged, "\n")
-    if (length(x$peaks) > 0) {
-      cat("Number peaks: ", vapply(x$peaks, nrow, 0), "\n")
-    } else {
-      cat("Number peaks: ", 0, "\n")
-    }
-    if (length(x$calibration_model) > 0) {
-      cat("Calibration model: ", class(x$calibration_model), "\n")
-    }
-  } else {
-    cat("Number chromatograms: ", 0, "\n")
-  }
-}
-
-# MARK: `[`
-#' @describeIn MassSpecResults_Chromatograms Subset the chromatograms object.
-#' @template arg-ms-chrom-x
-#' @template arg-i
-#' @export
-#'
-`[.MassSpecResults_Chromatograms` <- function(x, i) {
-  x$chromatograms <- x$chromatograms[i]
-  if (x$has_peaks) {
-    x$peaks <- x$peaks[i]
-  }
-  if (x$is_averaged) {
-    x$replicates <- x$replicates[i]
-  } else {
-    x$replicates <- x$replicates[names(x$spectra)]
-  }
-  x
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  cat("\n")
+  cat(is(x))
+  cat("\n")
+  analyses <- DBI::dbReadTable(conn, "Analyses")
+  chromatograms <- DBI::dbGetQuery(conn, "
+    SELECT analysis, COUNT(*) AS chromatogram_count
+    FROM Chromatograms
+    GROUP BY analysis
+  ")
+  peaks <- DBI::dbGetQuery(conn, "
+    SELECT analysis, COUNT(*) AS peak_count
+    FROM Peaks
+    GROUP BY analysis
+  ")
+  info <- data.table::data.table(
+    "analysis" = analyses$analysis,
+    "replicate" = analyses$replicate,
+    "blank" = analyses$blank,
+    "polarity" = analyses$polarity,
+    "chromatograms" = chromatograms$chromatogram_count[match(analyses$analysis, chromatograms$analysis)],
+    "peaks" = peaks$peak_count[match(analyses$analysis, peaks$analysis)]
+  )
+  info$chromatograms[is.na(info$chromatograms)] <- 0
+  info$peaks[is.na(info$peaks)] <- 0
+  print(info)
 }
 
 # MARK: get_chromatograms
-#' @describeIn MassSpecResults_Chromatograms Get chromatograms from the MassSpecResults_Chromatograms object, returning a list of data.table objects for each analysis.
-#' @template arg-ms-chrom-x
+#' @describeIn MassSpecResults_Chromatograms Get chromatograms from the MassSpecResults_Chromatograms object.
+#' @template arg-x-MassSpecResults_Chromatograms
 #' @template arg-analyses
 #' @template arg-chromatograms
 #' @template arg-ms-rtmin
@@ -125,81 +174,40 @@ get_chromatograms.MassSpecResults_Chromatograms <- function(
   rtmax = 0,
   minIntensity = NULL
 ) {
-  if (length(x$chromatograms) == 0) {
-    warning("No chromatograms results available!")
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
+  sel_names <- .resolve_analyses_selection(analyses, all_names)
+  if (length(sel_names) == 0) {
     return(list())
   }
-  analyses <- .check_analyses_argument(x$chromatograms, analyses)
-  if (is.null(analyses)) {
-    return(list())
+  query <- "SELECT * FROM Chromatograms"
+  conditions <- c()
+  conditions <- c(conditions, sprintf("analysis IN ('%s')", paste(sel_names, collapse = "','")))
+  if (!is.null(chromatograms)) {
+    if (is.numeric(chromatograms)) {
+      conditions <- c(conditions, sprintf("\"index\" IN (%s)", paste(chromatograms, collapse = ",")))
+    } else if (is.character(chromatograms)) {
+      conditions <- c(conditions, sprintf("id IN ('%s')", paste(chromatograms, collapse = "','")))
+    }
   }
-  if (x$is_averaged) {
-    rpl <- x$replicates
-    rpl <- rpl[analyses]
-    x$chromatograms <- x$chromatograms[names(x$chromatograms) %in% unname(rpl)]
-    x$chromatograms <- Map(
-      function(z, y) {
-        if (nrow(z) > 0) {
-          z$replicate <- y
-          data.table::setcolorder(z, c("replicate"))
-        }
-        z
-      },
-      x$chromatograms,
-      names(x$chromatograms)
-    )
-  } else {
-    rpl <- x$replicates[analyses]
-    x$chromatograms <- x$chromatograms[analyses]
-    x$chromatograms <- Map(
-      function(z, y) {
-        if (nrow(z) > 0) {
-          z$analysis <- y
-          z$replicate <- rpl[y]
-          data.table::setcolorder(z, c("analysis", "replicate"))
-        }
-        z
-      },
-      x$chromatograms,
-      names(x$chromatograms)
-    )
+  if (!is.null(minIntensity) && is.numeric(minIntensity)) {
+    conditions <- c(conditions, sprintf("intensity > %f", minIntensity))
   }
-  chroms <- x$chromatograms
-  chrom_list <- lapply(
-    x$chromatograms,
-    function(z, chromatograms, rtmin, rtmax, minIntensity) {
-      if (nrow(z) == 0) {
-        return(data.table::data.table())
-      }
-      if (is.numeric(chromatograms)) {
-        which_chroms <- z$index %in% chromatograms
-        z <- z[which_chroms, ]
-      } else if (is.character(chromatograms)) {
-        which_chroms <- z$id %in% chromatograms
-        z <- z[which_chroms, ]
-      } else if (!is.null(chromatograms)) {
-        return(data.table::data.table())
-      }
-      if (is.numeric(minIntensity)) {
-        z <- z[z$intensity > minIntensity, ]
-      }
-      if (is.numeric(rtmin) && is.numeric(rtmax)) {
-        if (rtmax > 0) z <- z[z$rt >= rtmin & z$rt <= rtmax]
-      }
-      z
-    },
-    chromatograms = chromatograms,
-    rtmin = rtmin,
-    rtmax = rtmax,
-    minIntensity = minIntensity
-  )
-  names(chrom_list) <- names(x$chromatograms)
+  if (is.numeric(rtmin) && is.numeric(rtmax) && rtmax > 0) {
+    conditions <- c(conditions, sprintf("rt >= %f AND rt <= %f", rtmin, rtmax))
+  }
+  query <- paste0(query, " WHERE ", paste(conditions, collapse = " AND "))
+  chroms <- DBI::dbGetQuery(conn, query)
+
+  # Split by analysis and return as list
+  chrom_list <- split(data.table::as.data.table(chroms), by = "analysis")
   chrom_list
 }
 
 # MARK: plot_chromatograms
 #' @describeIn MassSpecResults_Chromatograms Plot chromatograms from the MassSpecResults_Chromatograms object.
-#' @template arg-ms-chrom-x
+#' @template arg-x-MassSpecResults_Chromatograms
 #' @template arg-analyses
 #' @template arg-chromatograms
 #' @template arg-ms-rtmin
@@ -342,7 +350,7 @@ plot_chromatograms.MassSpecResults_Chromatograms <- function(
 
 # MARK: plot_chromatograms_baseline
 #' @describeIn MassSpecResults_Chromatograms Plot chromatograms with baseline from the MassSpecResults_Chromatograms object.
-#' @template arg-ms-chrom-x
+#' @template arg-x-MassSpecResults_Chromatograms
 #' @template arg-analyses
 #' @template arg-chromatograms
 #' @template arg-labs
@@ -463,7 +471,7 @@ plot_chromatograms_baseline.MassSpecResults_Chromatograms <- function(
         color = ~var,
         colors = cl,
         mode = "lines",
-        line = list(dash = 'dash', width = 0.5),
+        line = list(dash = "dash", width = 0.5),
         name = ~var,
         legendgroup = ~var,
         showlegend = FALSE
@@ -484,7 +492,7 @@ plot_chromatograms_baseline.MassSpecResults_Chromatograms <- function(
 
 # MARK: get_chromatograms_peaks
 #' @describeIn MassSpecResults_Chromatograms Get peaks from the chromatograms object.
-#' @template arg-ms-chrom-x
+#' @template arg-x-MassSpecResults_Chromatograms
 #' @template arg-analyses
 #' @template arg-chromatograms
 #' @template arg-ms-rtmin
@@ -500,85 +508,49 @@ get_chromatograms_peaks.MassSpecResults_Chromatograms <- function(
   rtmax = 0,
   minIntensity = NULL
 ) {
-  analyses <- .check_analyses_argument(x$chromatograms, analyses)
-  if (is.null(analyses)) {
-    return(data.table::data.table())
-  }
-  if (length(x$peaks) == 0) {
-    return(data.table::data.table())
-  }
-  pks <- x$peaks
-  if (length(pks) == 0) {
-    return(data.table::data.table())
-  }
-  if (x$is_averaged) {
-    rpl <- x$replicates
-    rpl <- rpl[analyses]
-    pks <- pks[names(pks) %in% unname(rpl)]
-    pks <- Map(
-      function(z, y) {
-        if (nrow(z) > 0) {
-          z$replicate <- y
-          data.table::setcolorder(z, c("replicate"))
-        }
-        z
-      },
-      pks,
-      names(pks)
-    )
-  } else {
-    rpl <- x$replicates[analyses]
-    pks <- pks[analyses]
-    pks <- Map(
-      function(z, y) {
-        if (nrow(z) > 0) {
-          z$analysis <- y
-          z$replicate <- rpl[y]
-          data.table::setcolorder(z, c("analysis", "replicate"))
-        }
-        z
-      },
-      pks,
-      names(pks)
-    )
-  }
-  pks <- data.table::rbindlist(pks, idcol = "analysis", fill = TRUE)
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
 
-  if (TRUE %in% duplicated(colnames(pks))) {
-    dup_cols <- colnames(pks)[duplicated(colnames(pks))]
-    for (dup_col in dup_cols) {
-      cols_to_check <- which(colnames(pks) %in% dup_col)
-      if (all(pks[[cols_to_check[1]]] == pks[[cols_to_check[2]]])) {
-        pks[[cols_to_check[2]]] <- NULL
-      }
+  sel_names <- .resolve_analyses_selection(analyses, all_names)
+  if (length(sel_names) == 0) {
+    return(data.table::data.table())
+  }
+
+  query <- "SELECT * FROM Peaks"
+  conditions <- c()
+  conditions <- c(conditions, sprintf("analysis IN ('%s')", paste(sel_names, collapse = "','")))
+
+  if (!is.null(chromatograms)) {
+    if (is.numeric(chromatograms)) {
+      conditions <- c(conditions, sprintf("\"index\" IN (%s)", paste(chromatograms, collapse = ",")))
+    } else if (is.character(chromatograms)) {
+      conditions <- c(conditions, sprintf("id IN ('%s')", paste(chromatograms, collapse = "','")))
     }
   }
 
-  if (is.numeric(chromatograms)) {
-    which_pks <- pks$index %in% chromatograms
-    pks <- pks[which_pks, ]
-  } else if (is.character(chromatograms)) {
-    which_pks <- pks$id %in% chromatograms
-    pks <- pks[which_pks, ]
-  } else if (!is.null(chromatograms)) {
-    return(data.table::data.table())
+  if (!is.null(minIntensity) && is.numeric(minIntensity)) {
+    conditions <- c(conditions, sprintf("intensity > %f", minIntensity))
   }
-  if (is.numeric(minIntensity)) {
-    pks <- pks[pks$intensity > minIntensity, ]
+
+  if (is.numeric(rtmin) && is.numeric(rtmax) && rtmax > 0) {
+    conditions <- c(conditions, sprintf("rt >= %f AND rt <= %f", rtmin, rtmax))
   }
-  if (is.numeric(rtmin) && is.numeric(rtmax)) {
-    if (rtmax > 0) pks <- pks[pks$rt >= rtmin & pks$rt <= rtmax]
-  }
+
+  query <- paste0(query, " WHERE ", paste(conditions, collapse = " AND "))
+  pks <- DBI::dbGetQuery(conn, query)
+
   if (nrow(pks) == 0) {
     message("\U2717 Peaks not found for the targets!")
     return(data.table::data.table())
   }
-  pks
+
+  data.table::as.data.table(pks)
 }
 
 # MARK: plot_chromatograms_peaks
 #' @describeIn MassSpecResults_Chromatograms Plot peaks from the chromatograms object.
-#' @template arg-ms-chrom-x
+#' @template arg-x-MassSpecResults_Chromatograms
 #' @template arg-analyses
 #' @template arg-chromatograms
 #' @template arg-ms-rtmin
@@ -836,4 +808,174 @@ plot_chromatograms_peaks.MassSpecResults_Chromatograms <- function(
 
     plot
   }
+}
+
+# MARK: .validate_MassSpecResults_Chromatograms_chromatograms_dt
+#' @noRd
+.validate_MassSpecResults_Chromatograms_chromatograms_dt <- function(x) {
+  required_cols <- c("analysis", "replicate", "index", "id", "polarity", "rt", "intensity")
+  missing_cols <- setdiff(required_cols, colnames(x))
+  if (length(missing_cols) > 0) {
+    stop("Missing required columns in chromatograms data.table: ", paste(missing_cols, collapse = ", "))
+  }
+  invisible(TRUE)
+}
+
+# MARK: .validate_MassSpecResults_Chromatograms_peaks_dt
+#' @noRd
+.validate_MassSpecResults_Chromatograms_peaks_dt <- function(x) {
+  required_cols <- c("analysis", "replicate", "index", "peak", "rt", "rtmin", "rtmax", "intensity")
+  missing_cols <- setdiff(required_cols, colnames(x))
+  if (length(missing_cols) > 0) {
+    stop("Missing required columns in peaks data.table: ", paste(missing_cols, collapse = ", "))
+  }
+  invisible(TRUE)
+}
+
+# MARK: .create_MassSpecResults_Chromatograms_Chromatograms_db_schema
+#' @noRd
+.create_MassSpecResults_Chromatograms_Chromatograms_db_schema <- function(conn) {
+  DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS Chromatograms (
+    analysis VARCHAR,
+    replicate VARCHAR,
+    \"index\" INTEGER,
+    id VARCHAR,
+    polarity INTEGER,
+    pre_mz DOUBLE,
+    pre_ce DOUBLE,
+    pro_mz DOUBLE,
+    rt DOUBLE,
+    intensity DOUBLE,
+    baseline DOUBLE,
+    raw DOUBLE
+  )")
+  invisible(TRUE)
+}
+
+# MARK: .validate_MassSpecResults_Chromatograms_Chromatograms_db_schema
+#' @noRd
+.validate_MassSpecResults_Chromatograms_Chromatograms_db_schema <- function(conn) {
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Chromatograms)")
+      required <- list(
+        analysis = "VARCHAR",
+        replicate = "VARCHAR",
+        "index" = "INTEGER",
+        id = "VARCHAR",
+        polarity = "INTEGER",
+        pre_mz = "DOUBLE",
+        pre_ce = "DOUBLE",
+        pro_mz = "DOUBLE",
+        rt = "DOUBLE",
+        intensity = "DOUBLE",
+        baseline = "DOUBLE",
+        raw = "DOUBLE"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Chromatograms table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Chromatograms ADD COLUMN \"%s\" %s", col, required[[col]]))
+        }
+      }
+    },
+    error = function(e) {
+      stop("Schema migration check (Chromatograms): ", e$message)
+    }
+  )
+  invisible(TRUE)
+}
+
+# MARK: .create_MassSpecResults_Chromatograms_Peaks_db_schema
+#' @noRd
+.create_MassSpecResults_Chromatograms_Peaks_db_schema <- function(conn) {
+  DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS Peaks (
+    analysis VARCHAR,
+    replicate VARCHAR,
+    \"index\" INTEGER,
+    id VARCHAR,
+    peak VARCHAR,
+    polarity INTEGER,
+    pre_mz DOUBLE,
+    pre_ce DOUBLE,
+    pro_mz DOUBLE,
+    rt DOUBLE,
+    rtmin DOUBLE,
+    rtmax DOUBLE,
+    intensity DOUBLE,
+    area DOUBLE,
+    sn DOUBLE,
+    width DOUBLE,
+    fwhm DOUBLE,
+    tailing DOUBLE,
+    asymmetry DOUBLE,
+    gaussian_similarity DOUBLE
+  )")
+  invisible(TRUE)
+}
+
+# MARK: .validate_MassSpecResults_Chromatograms_Peaks_db_schema
+#' @noRd
+.validate_MassSpecResults_Chromatograms_Peaks_db_schema <- function(conn) {
+  tryCatch(
+    {
+      table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(Peaks)")
+      required <- list(
+        analysis = "VARCHAR",
+        replicate = "VARCHAR",
+        "index" = "INTEGER",
+        id = "VARCHAR",
+        peak = "VARCHAR",
+        polarity = "INTEGER",
+        pre_mz = "DOUBLE",
+        pre_ce = "DOUBLE",
+        pro_mz = "DOUBLE",
+        rt = "DOUBLE",
+        rtmin = "DOUBLE",
+        rtmax = "DOUBLE",
+        intensity = "DOUBLE",
+        area = "DOUBLE",
+        sn = "DOUBLE",
+        width = "DOUBLE",
+        fwhm = "DOUBLE",
+        tailing = "DOUBLE",
+        asymmetry = "DOUBLE",
+        gaussian_similarity = "DOUBLE"
+      )
+      for (col in names(required)) {
+        if (!(col %in% table_info$name)) {
+          message(sprintf("Adding missing %s column to Peaks table...", col))
+          DBI::dbExecute(conn, sprintf("ALTER TABLE Peaks ADD COLUMN \"%s\" %s", col, required[[col]]))
+        }
+      }
+    },
+    error = function(e) {
+      stop("Schema migration check (Peaks): ", e$message)
+    }
+  )
+  invisible(TRUE)
+}
+
+# MARK: .update_chromatograms_intensity
+#' @noRd
+.update_chromatograms_intensity <- function(x, updated_dt) {
+  stopifnot(inherits(x, "MassSpecResults_Chromatograms"))
+  .validate_MassSpecResults_Chromatograms_chromatograms_dt(updated_dt)
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  DBI::dbExecute(conn, "DELETE FROM Chromatograms")
+  DBI::dbWriteTable(conn, "Chromatograms", as.data.frame(updated_dt), append = TRUE)
+  invisible(x)
+}
+
+# MARK: .update_chromatograms_peaks
+#' @noRd
+.update_chromatograms_peaks <- function(x, updated_peaks_dt) {
+  stopifnot(inherits(x, "MassSpecResults_Chromatograms"))
+  .validate_MassSpecResults_Chromatograms_peaks_dt(updated_peaks_dt)
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  DBI::dbExecute(conn, "DELETE FROM Peaks")
+  DBI::dbWriteTable(conn, "Peaks", as.data.frame(updated_peaks_dt), append = TRUE)
+  invisible(x)
 }

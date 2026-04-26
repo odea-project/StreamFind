@@ -24,7 +24,7 @@ root <- file.path("dev", "dev_duckdb", "data_nts")
 # file.remove(list.files(root, full.names = TRUE))
 # fs::dir_delete(root)
 
-ms <- DB_MassSpecEngine$new(
+ms <- MassSpecEngine$new(
   projectPath = root,
   files = ms_files,
   metadata = list(
@@ -55,11 +55,11 @@ set_blank_names(ms$Analyses, c(
 #   template = file.path("dev", "dev_duckdb", "report_templete.qmd"),
 #   output_file = file.path("dev", "dev_duckdb", "report")
 # )
-# ms <- DB_MassSpecEngine$new(projectPath = root)
+# ms <- MassSpecEngine$new(projectPath = root)
 # ms$run_app()
 
 
-ps_ff <- DB_MassSpecMethod_FindFeatures_native(
+ps_ff <- MassSpecMethod_FindFeatures_native(
   rtWindows = data.frame(rtmin = numeric(), rtmax = numeric()),
   ppmThreshold = 10,
   noiseThreshold = 250,
@@ -73,14 +73,14 @@ ps_ff <- DB_MassSpecMethod_FindFeatures_native(
   debugSpecIdx = -1
 )
 
-ps_comp <- DB_MassSpecMethod_CreateComponents_native(
+ps_comp <- MassSpecMethod_CreateComponents_native(
   rtWindow = c(-5, 5),
   minCorrelation = 0.8,
   debugRT = 0,
   debugAnalysis = ""
 )
 
-ps_annot <- DB_MassSpecMethod_AnnotateComponents_native(
+ps_annot <- MassSpecMethod_AnnotateComponents_native(
   maxIsotopes = 8,
   maxCharge = 1,
   maxGaps = 1,
@@ -89,7 +89,7 @@ ps_annot <- DB_MassSpecMethod_AnnotateComponents_native(
   debugAnalysis = ""
 )
 
-pf_istd <- DB_MassSpecMethod_FindInternalStandard_native(
+pf_istd <- MassSpecMethod_FindInternalStandard_native(
   suspects = dbis,
   ppm = 10,
   sec = 15,
@@ -100,11 +100,11 @@ pf_istd <- DB_MassSpecMethod_FindInternalStandard_native(
   filtered = TRUE
 )
 
-ps_filteris <- DB_MassSpecMethod_FilterInternalStandards_native(
+ps_filteris <- MassSpecMethod_FilterInternalStandards_native(
   idLevels = c(1, 3)
 )
 
-ps_gf <- DB_MassSpecMethod_GroupFeatures_native(
+ps_gf <- MassSpecMethod_GroupFeatures_native(
   method = "internal_standards", #"obi_warp"
   rtDeviation = 5,
   ppm = 10,
@@ -115,24 +115,24 @@ ps_gf <- DB_MassSpecMethod_GroupFeatures_native(
   debugRT = 0
 )
 
-ps_bsub <- DB_MassSpecMethod_FeatureBlankSubtraction_native(
+ps_bsub <- MassSpecMethod_FeatureBlankSubtraction_native(
   blankThreshold = 5,
   rtExpand = 10,
   mzExpand = 0.005
 )
 
-ps_filterf1 <- DB_MassSpecMethod_FilterFeatures_native(
+ps_filterf1 <- MassSpecMethod_FilterFeatures_native(
   minIntensity = 10000,
   removeIsotopes = TRUE,
   removeAdducts = TRUE,
   removeLosses = TRUE
 )
 
-ps_filterf2 <- DB_MassSpecMethod_FilterFeatures_native(
+ps_filterf2 <- MassSpecMethod_FilterFeatures_native(
   minRelPresenceReplicate = 1
 )
 
-ps_fillf <- DB_MassSpecMethod_FillFeatures_native(
+ps_fillf <- MassSpecMethod_FillFeatures_native(
   withinReplicate = TRUE,
   filtered = FALSE,
   rtExpand = 5,
@@ -147,7 +147,7 @@ ps_fillf <- DB_MassSpecMethod_FillFeatures_native(
   debugFG = ""
 )
 
-ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
+ps_ms1 <- MassSpecMethod_LoadFeaturesMS1_native(
   rtWindow = c(-1, 1),
   mzWindow = c(-1, 6),
   mzClust = 0.008,
@@ -156,7 +156,7 @@ ps_ms1 <- DB_MassSpecMethod_LoadFeaturesMS1_native(
   filtered = FALSE
 )
 
-ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
+ps_ms2 <- MassSpecMethod_LoadFeaturesMS2_native(
   isolationWindow = 1.3,
   mzClust = 0.008,
   presence = 0.5,
@@ -164,7 +164,7 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
   filtered = FALSE
 )
 
-# ps_sus <- DB_MassSpecMethod_SuspectScreening_native(
+# ps_sus <- MassSpecMethod_SuspectScreening_native(
 #   suspects = dbsus,
 #   ppm = 10,
 #   sec = 15,
@@ -175,11 +175,11 @@ ps_ms2 <- DB_MassSpecMethod_LoadFeaturesMS2_native(
 #   filtered = TRUE
 # )
 
-# ps_filtersus <- DB_MassSpecMethod_FilterSuspects_native(
+# ps_filtersus <- MassSpecMethod_FilterSuspects_native(
 #   idLevels = c(1, 2, 3)
 # )
 
-ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
+ps_sus <- MassSpecMethod_SuspectScreening_metfrag(
   metfrag_path = "C:\\Users\\cunha\\Documents\\patRoon_deps\\MetFragCommandLine-2.5.0.jar",
   database_type = "LocalCSV",
   # database_path = file.path("dev", "dev_duckdb", "suspects_with_ms2_template.csv"),
@@ -196,10 +196,11 @@ ps_sus <- DB_MassSpecMethod_SuspectScreening_metfrag(
   metfrag_args = NULL,
   extra_params = list(),
   show_progress = TRUE,
-  quiet = FALSE
+  quiet = FALSE,
+  debug = TRUE
 )
 
-ps_tps <- DB_MassSpecMethod_AssignTransformationProducts_native(
+ps_tps <- MassSpecMethod_AssignTransformationProducts_native(
   transformation_products = data.table::fread(
     file.path(
       "dev",
@@ -239,17 +240,18 @@ ms$Workflow <- list(
 # clear_cache(ms$Cache, value = c("DB_FillFeatures_native"))
 # clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS1_native"))
 # clear_cache(ms$Cache, value = c("DB_LoadFeaturesMS2_native"))
-clear_cache(ms$Cache, value = c("DB_SuspectScreening_native"))
-clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
-clear_cache(ms$Cache, value = c("DB_AssignTransformationProducts_native"))
+# clear_cache(ms$Cache, value = c("DB_SuspectScreening_native"))
+# clear_cache(ms$Cache, value = c("DB_SuspectScreening_metfrag"))
+# clear_cache(ms$Cache, value = c("DB_AssignTransformationProducts_native"))
 
 ms$run_workflow()
+
 
 .plot_debug_DB_MassSpecMethod_GroupFeatures_native(
   "log\\debug_log_group_features_methodinternal_standards.log"
 )
 
-map_features(
+get_features(
   ms$NonTargetAnalysis,
   mass = data.table::fread(
     file.path(
@@ -259,10 +261,10 @@ map_features(
     )
   ),
   ppm = 20,
-  sec = 30,
-  groupBy = c("name", "replicate"),
-  showDetails = TRUE
-)
+  sec = 30
+  # groupBy = c("name", "replicate"),
+  # showDetails = TRUE
+)[, 1:10]
 
 
 tps <- get_internal_standards(ms$NonTargetAnalysis)
@@ -270,9 +272,11 @@ tps[54, ]
 
 sus <- get_suspects(ms$NonTargetAnalysis)
 
+sus[, 1:5]
+
 plot_suspects_ms2(
   ms$NonTargetAnalysis,
-  features = sus[34, ],
+  features = sus[21, ],
   interactive = TRUE
 )
 
@@ -313,7 +317,7 @@ plot_transformation_products(
 ms$run_app()
 
 root <- file.path("dev", "dev_duckdb", "data_nts")
-ms <- DB_MassSpecEngine$new(projectPath = root)
+ms <- MassSpecEngine$new(projectPath = root)
 ms$run_app()
 
 # TODO add user questions to install needed packages when lauching the app and not all required packages are installed

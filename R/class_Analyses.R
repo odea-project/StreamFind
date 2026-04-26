@@ -1,140 +1,73 @@
-#' @title Generic (top level ) Analyses class and methods
-#' @description The `Analyses` class is used to harmonize the interface to data or links to raw data files and results across different types of data. `Analyses` child classes are used for specific data types, providing dedicated methods.
-#' @param analyses A list of analyses, where each element is a data entry or a connection to a raw data file.
-#' @param results A list of results, where each element is a specific \code{\link{Results}} child class.
-#' @return
-#' An object of class `Analyses`, which is a list containing:
-#' \itemize{
-#'  \item `analyses`: A list of analyses, where each element is a data entry or a connection to a raw data file.
-#'  \item `results`: A list of results, where each element is a specific \code{\link{Results}} child class.
-#'  \item `type`: A character string indicating the type of data contained in the analyses.
-#'  \item `formats`: A character vector indicating the possible formats of the analyses.
-#' }
+# MARK: Analyses
+#' @title Base class for database-backed Analyses
+#' @description Minimal base class to represent analyses stored in a DuckDB file.
+#' Used internally to expose shared S3 helpers for DB-backed analyses classes.
+#' @template arg-projectPath
+#' @return An object of class `Analyses`.
 #' @export
 #'
-Analyses <- function(analyses = list(), results = list()) {
-  x <- structure(
+Analyses <- function(projectPath = ".") {
+  checkmate::assert_character(projectPath, len = 1, null.ok = FALSE)
+  db <- file.path(projectPath, "Analyses.duckdb")
+  dataType <- "Generic"
+  dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
+  structure(
     list(
-      analyses = analyses,
-      results = results,
-      type = NA_character_,
-      formats = NA_character_
+      db = db,
+      dataType = dataType,
+      projectPath = projectPath
     ),
-    class = c("Analyses")
+    class = "Analyses"
   )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid Analyses object!")
-  }
 }
 
-#' @describeIn Analyses Validate the Analyses object, returning `NULL` if valid or an error if not.
-#' @param x An `Analyses` object.
+#' @describeIn Analyses Validate the Analyses object.
+#' @template arg-x-Analyses
 #' @export
 #'
 validate_object.Analyses <- function(x) {
   checkmate::assert_class(x, "Analyses")
-  checkmate::assert_names(names(x), must.include = c("analyses", "results", "type", "formats"))
-  checkmate::assert_character(x$type, len = 1, null.ok = FALSE)
-  checkmate::assert_character(x$formats, null.ok = FALSE)
-  checkmate::assert_true(grepl(x$type, class(x)[1]) || is.na(x$type))
-  checkmate::assert_true(
-    checkmate::test_list(x$analyses) || checkmate::test_data_frame(x$analyses)
-  )
-  checkmate::assert_list(x$results)
-  if (length(x$results) > 0) {
-    checkmate::assert_class(x$results[[1]], "Results")
-    lapply(x$results, function(z) checkmate::assert_true(is.null(validate_object(z))))
+  checkmate::assert_names(names(x), must.include = c("db", "dataType"))
+  checkmate::assert_character(x$dataType, len = 1, null.ok = FALSE)
+  checkmate::assert_character(x$db, len = 1, null.ok = FALSE)
+  if (!file.exists(x$db)) {
+    stop("Analyses file not found: ", x$db)
   }
   NULL
 }
 
+# MARK: query_db
+#' @describeIn Analyses Internal: execute a query on the DB.
+#' @template arg-x-Analyses
+#' @template arg-sql-sql
+#' @template arg-sql-params
 #' @export
-#' @noRd
-info.Analyses <- function(x) {
-  if (length(x) > 0) {
-    df <- data.table::data.table(
-      "analysis" = names(x),
-      "class" = vapply(x$analyses, function(z) class(z)[1], "")
-    )
-    row.names(df) <- seq_len(nrow(df))
-    df
-  } else {
-    data.frame()
-  }
+#'
+query_db.Analyses <- function(x, sql, params = NULL) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .query_db(conn, sql, params)
 }
 
+# MARK: list_db_tables
+#' @describeIn Analyses Internal: list tables in the DB.
+#' @template arg-x-Analyses
 #' @export
-#' @noRd
-add.Analyses <- function(x, value) {
-  if (!is(value, "list")) {
-    warning("Analysis must be a list!")
-    return(x)
-  }
-  value_names <- names(value)
-  if (length(value_names) == 0) {
-    warning("Analysis names must be provided!")
-    return(x)
-  }
-  if (any(vapply(value_names, function(a) a %in% names(x), FALSE))) {
-    warning("Analysis names already exist!")
-    return(x)
-  }
-  analyses <- c(x$analyses, value)
-  analyses <- analyses[order(names(analyses))]
-  x$analyses <- analyses
-  if (length(x$results) > 0) {
-    warning("All results removed!")
-    x$results <- list()
-  }
-  x
+#'
+list_db_tables.Analyses <- function(x) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .list_db_tables(conn)
 }
 
+# MARK: get_db_table_info
+#' @describeIn Analyses Internal: get table info from the DB.
+#' @template arg-x-Analyses
+#' @template arg-sql-tableName
 #' @export
-#' @noRd
-show.Analyses <- function(x, ...) {
-  if (length(x$analyses) > 0) {
-    overview <- info(x)
-    row.names(overview) <- paste0(" ", seq_len(nrow(overview)), ":")
-    print(overview)
-  } else {
-    cat("empty \n")
-  }
-  if (length(x$results) > 0) {
-    cat("\n")
-    results_class <- vapply(x$results, is, "")
-    cat(paste0("Result ", seq_len(length(results_class)), ": ", results_class), sep = "\n")
-  }
-}
-
-#' @export
-#' @noRd
-save.Analyses <- function(x, file = "analyses.json") {
-  format <- tools::file_ext(file)
-  if (format %in% "json") {
-    x <- .convert_to_json(as.list(x))
-    write(x, file)
-  } else if (format %in% "rds") {
-    saveRDS(x, file)
-  } else {
-    warning("Invalid format!")
-  }
-  invisible(NULL)
-}
-
-#' @export
-#' @noRd
-read.Analyses <- function(x, file) {
-  if (grepl(".json", file)) {
-    if (file.exists(file)) {
-      return(Analyses(jsonlite::fromJSON(file)))
-    }
-  } else if (grepl(".rds", file)) {
-    res <- readRDS(file)
-    if (is(res, "StreamFind::Analyses")) {
-      return(res)
-    }
-  }
-  NULL
+#'
+get_db_table_info.Analyses <- function(x, tableName) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .get_db_table_info(conn, tableName)
 }

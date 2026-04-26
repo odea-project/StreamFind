@@ -1,162 +1,63 @@
-#' @title MassSpecMethod_DeconvoluteSpectra_native Class
-#'
-#' @description Deconvolutes the spectral mass-to-charge ratio (\emph{m/z}) to mass (Da) after
-#' assignment of charges.
-#'
-#' @param clustVal Numeric (length 1) with the clustering value for the charge deconvolution.
-#' @param window Optional numeric (length 1) with the window in \emph{m/z} for collecting traces of
-#' a given charge.
-#'
-#' @return A MassSpecMethod_DeconvoluteSpectra_native object.
-#'
+# MARK: MassSpecMethod_DeconvoluteSpectra_native
+#' @title MassSpecMethod_DeconvoluteSpectra_native class
+#' @description Deconvolute charge-state envelopes into neutral masses.
+#' @param clustVal  m/z clustering tolerance for grouping charge series.
+#' @param window    Mass window for merging redundant deconvoluted masses.
 #' @export
-#'
-MassSpecMethod_DeconvoluteSpectra_native <- function(
-  clustVal = 0.1,
-  window = 20
-) {
+MassSpecMethod_DeconvoluteSpectra_native <- function(clustVal = 0.001, window = 1.5) {
   x <- ProcessingStep(
-    type = "MassSpec",
-    method = "DeconvoluteSpectra",
-    required = c("LoadSpectra", "CalculateSpectraCharges"),
-    algorithm = "native",
-    parameters = list(
-      clustVal = as.numeric(clustVal),
-      window = as.numeric(window)
-    ),
+    type        = "MassSpec",
+    method      = "DeconvoluteSpectra",
+    required    = c("LoadSpectra", "CalculateSpectraCharges"),
+    algorithm   = "native",
+    input_class = "MassSpecResults_Spectra",
+    output_class = "MassSpecResults_Spectra",
     number_permitted = 1,
-    version = as.character(packageVersion("StreamFind")),
-    software = "StreamFind",
-    developer = "Ricardo Cunha",
-    contact = "cunha@iuta.de",
-    link = "https://odea-project.github.io/StreamFind",
-    doi = NA_character_
+    version     = as.character(packageVersion("StreamFind")),
+    software    = "StreamFind",
+    developer   = "Ricardo Cunha",
+    contact     = "cunha@iuta.de",
+    link        = "https://odea-project.github.io/StreamFind",
+    doi         = NA_character_,
+    parameters  = list(
+      clustVal = as.numeric(clustVal),
+      window   = as.numeric(window)
+    )
   )
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid MassSpecMethod_DeconvoluteSpectra_native object!")
-  }
+  if (is.null(validate_object(x))) x else stop("Invalid MassSpecMethod_DeconvoluteSpectra_native parameters.")
 }
 
 #' @export
 #' @noRd
-#'
 validate_object.MassSpecMethod_DeconvoluteSpectra_native <- function(x) {
-  checkmate::assert_choice(x$type, "MassSpec")
   checkmate::assert_choice(x$method, "DeconvoluteSpectra")
   checkmate::assert_choice(x$algorithm, "native")
-  checkmate::assert_number(x$parameters$clustVal)
-  checkmate::assert_number(x$parameters$window)
-  NextMethod()
+  checkmate::assert_numeric(x$parameters$clustVal, len = 1, lower = 0)
+  checkmate::assert_numeric(x$parameters$window,   len = 1, lower = 0)
   NULL
 }
 
 #' @export
 #' @noRd
 run.MassSpecMethod_DeconvoluteSpectra_native <- function(x, engine = NULL) {
-  if (!is(engine, "MassSpecEngine")) {
-    warning("Engine is not a MassSpecEngine object!")
+  spec_results <- engine$Spectra
+  if (is.null(spec_results) || !"MassSpecResults_Spectra" %in% class(spec_results)) {
+    warning("Engine does not contain MassSpecResults_Spectra.")
     return(FALSE)
   }
-  if (!engine$has_analyses()) {
-    warning("There are no analyses! Not done.")
-    return(FALSE)
-  }
-  if (is.null(engine$Results[["MassSpecResults_Spectra"]])) {
-    warning("No spectra results object available! Not done.")
-    return(FALSE)
-  }
-  spec_obj <- engine$Results[["MassSpecResults_Spectra"]]
-  if (length(spec_obj$charges) == 0) {
-    warning("No spectra charge results object available! Not done.")
-    return(FALSE)
-  }
-  spec_list <- spec_obj$spectra
-  charges <- spec_obj$charges
-  parameters <- x$parameters
-  clustVal <- parameters$clustVal
-  windowVal <- parameters$window
-  deconvoluted <- Map(
-    function(z, y) {
-      if (nrow(z) == 0) {
-        return(data.table())
-      }
+  spectra_dt <- query_db(spec_results, "SELECT * FROM Spectra")
+  if (nrow(spectra_dt) == 0) { warning("No spectra found."); return(FALSE) }
+  charges_dt <- query_db(spec_results, "SELECT * FROM SpectraCharges")
+  if (nrow(charges_dt) == 0) { warning("No spectra charges found. Run CalculateSpectraCharges first."); return(FALSE) }
 
-      if (nrow(y) == 0) {
-        return(data.table())
-      }
-
-      profiles <- lapply(seq_len(nrow(y)), function(j) {
-        if (is.na(windowVal) || length(windowVal) == 0) {
-          if (j == nrow(y)) {
-            window <- (y$mz[j] - y$mz[j - 1]) / 2
-          } else {
-            if (y$z[j] - y$z[j + 1] > 1) {
-              window <- (y$mz[j] - y$mz[j - 1]) / 2
-            } else {
-              window <- (y$mz[j + 1] - y$mz[j]) / 2
-            }
-          }
-        } else {
-          window <- windowVal
-        }
-
-        sel <- z$mz >= (y$mz[j] - window) & z$mz <= (y$mz[j] + window)
-
-        prfl <- z[sel, ]
-
-        prfl$mz <- y$z[j] * (prfl$mz - 1.007276)
-
-        prfl
-      })
-
-      profiles <- profiles[vapply(profiles, function(j) nrow(j) > 0, FALSE)]
-
-      max_int <- vapply(profiles, function(j) max(j$intensity), 0)
-
-      idx <- order(max_int, decreasing = TRUE)[1:min(5, length(max_int))]
-
-      profiles <- profiles[idx]
-
-      profiles_dt <- rbindlist(profiles)
-
-      profiles_dt$unique_id <- "var"
-
-      profiles_dt$analysis <- ""
-
-      av_profile <- rcpp_ms_cluster_spectra(
-        profiles_dt,
-        mzClust = clustVal,
-        presence = 0.01
-      )[[1]]
-
-      av_profile <- as.data.table(av_profile)
-
-      if ("analysis" %in% colnames(av_profile)) {
-        av_profile$analysis <- NULL
-      }
-
-      setnames(av_profile, "mz", "mass")
-
-      if (FALSE) {
-        plot(
-          av_profile$mass,
-          av_profile$intensity,
-          type = 'l',
-          main = paste0("Merged spectra")
-        )
-      }
-
-      av_profile
-    },
-    spec_list,
-    charges
+  p <- x$parameters
+  peaks_dt <- rcpp_ms_deconvolute_spectra(
+    as.data.frame(spectra_dt),
+    as.data.frame(charges_dt),
+    clust_val = p$clustVal,
+    window    = p$window
   )
-  names(deconvoluted) <- names(spec_list)
-  spec_obj$spectra <- deconvoluted
-  spec_obj$is_neutralized <- TRUE
-  engine$Results <- spec_obj
-  message(paste0("\U2713 ", "Spectra deconvoluted!"))
-  TRUE
+  if (nrow(peaks_dt) == 0) { warning("Deconvolution returned no peaks."); return(FALSE) }
+  .update_spectra_peaks(spec_results, data.table::as.data.table(peaks_dt))
+  invisible(TRUE)
 }
