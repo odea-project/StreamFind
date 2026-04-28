@@ -3,31 +3,16 @@
 \name{Analyses}
 \alias{Analyses}
 \alias{validate_object.Analyses}
-\alias{query_db.Analyses}
-\alias{list_db_tables.Analyses}
-\alias{get_db_table_info.Analyses}
 \title{Base class for database-backed Analyses}
 \usage{
 Analyses(projectPath = ".")
 
 \method{validate_object}{Analyses}(x)
-
-\method{query_db}{Analyses}(x, sql, params = NULL)
-
-\method{list_db_tables}{Analyses}(x)
-
-\method{get_db_table_info}{Analyses}(x, tableName)
 }
 \arguments{
 \item{projectPath}{Path to the project directory where this database file will be created/used.}
 
 \item{x}{A \code{Analyses} object.}
-
-\item{sql}{SQL query string to execute against the database.}
-
-\item{params}{Query parameters to be used with the SQL query (optional).}
-
-\item{tableName}{Name of the table to query or retrieve information about.}
 }
 \value{
 An object of class \code{Analyses}.
@@ -39,11 +24,5 @@ Used internally to expose shared S3 helpers for DB-backed analyses classes.
 \section{Methods (by generic)}{
 \itemize{
 \item \code{validate_object(Analyses)}: Validate the Analyses object.
-
-\item \code{query_db(Analyses)}: Internal: execute a query on the DB.
-
-\item \code{list_db_tables(Analyses)}: Internal: list tables in the DB.
-
-\item \code{get_db_table_info(Analyses)}: Internal: get table info from the DB.
 
 }}

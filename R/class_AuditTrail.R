@@ -1,212 +1,101 @@
-# MARK: AuditTrailEntry
-# AuditTrailEntry -----
-#' @title Generic Entry for Audit Trail
-#' @description The [StreamFind::AuditTrailEntry] class is used as an element in the [StreamFind::AuditTrail] list.
-#' @param time_stamp A POSIXct timestamp of the entry.
-#' @param value_class A character string representing the class of the entry.
-#' @param value_parent A character string representing the parent class of the entry.
-#' @param value A character string representing the value of the entry.
+#' Database-Backed Audit Logging (S3 class)
+#'
+#' Provides a DB-backed audit trail interface for StreamFind projects: logs create/update/delete/run events automatically,
+#' allows querying of all audit logs, and is intended for use by Engine or other StreamFind components.
+#'
+#' The `AuditTrail` class is an S3 object responsible for ensuring its own table schema and handling all persistence in the unified DuckDB file for this project.
+#' All typical list and data-frame operations are returned for queries. This is the standard audit logging interface for the package.
+#'
+#' @section Table Schema:
+#' Table name: `AuditTrail`; columns: operation_type (str), object_type (str), operation_details (json/str), created_at.
+#'
+#' @section Usage:
+#'   audit <- AuditTrail(db = 'file.duckdb')
+#'   add_audit_entry(audit, 'run', 'ProcessingStep', list(method='algo'))
+#'   get_audit_trail(audit)
+#'
+#' @aliases AuditTrail AuditTrail-class get_audit_trail.AuditTrail add_audit_entry.AuditTrail
+#' @rdname AuditTrail
+#'
+#' @param db Path to DuckDB database file used for audit logging (the unified DB file)
+#' @param x An AuditTrail object (S3)
+#' @param operation_type Type of operation (character: e.g. 'create', 'update', 'delete', 'run' etc)
+#' @param object_type Type of object being acted on (character, e.g. 'Metadata', 'Workflow', ...)
+#' @param details (Optional) Operation details. A list or character; if a list, will be coerced to JSON for DB storage.
+#' @param ... Additional arguments (ignored)
+#' @return The AuditTrail constructor returns an S3 object. `get_audit_trail` returns a data.frame of audit logs. `add_audit_entry` returns the AuditTrail object (invisible).
+#'
 #' @export
 #'
-AuditTrailEntry <- function(time_stamp, value_class, value_parent, value) {
-  x <- structure(
-    list(
-      time_stamp = as.POSIXct(time_stamp),
-      value_class = value_class,
-      value_parent = value_parent,
-      value = value
-    ),
-    class = "AuditTrailEntry"
-  )
-  if (!is.null(validate_object(x))) {
-    stop("Invalid AuditTrailEntry object!")
-  }
-  x
+AuditTrail <- function(db) {
+  if (missing(db) || is.null(db)) stop('AuditTrail requires duckdb filepath in db')
+  if (!requireNamespace("duckdb", quietly = TRUE)) stop("duckdb package is required for AuditTrail")
+  checkmate::assert_character(db, len = 1)
+  dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
+  conn <- DBI::dbConnect(duckdb::duckdb(), db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .create_AuditTrail_db_schema(conn)
+  .validate_AuditTrail_db_schema(conn)
+  structure(list(db = db), class = "AuditTrail")
 }
 
-#' @describeIn AuditTrailEntry Validate the AuditTrailEntry object, returning NULL if valid.
-#' @param x A `AuditTrailEntry` object.
+#' @rdname AuditTrail
 #' @export
 #'
-validate_object.AuditTrailEntry <- function(x) {
-  checkmate::assert_class(x, "AuditTrailEntry")
-  checkmate::assertNames(
-    names(x),
-    must.include = c("time_stamp", "value_class", "value_parent", "value")
-  )
-  checkmate::assert_posixct(x$time_stamp)
-  checkmate::assert_character(x$value_class)
-  checkmate::assert_character(x$value_parent)
-  checkmate::assert_character(x$value)
-  NULL
+get_audit_trail.AuditTrail <- function(x, ...) {
+  stopifnot(inherits(x, "AuditTrail"))
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  audit_df <- DBI::dbGetQuery(conn, "SELECT * FROM AuditTrail ORDER BY created_at DESC")
+  audit_df
 }
 
-# MARK: AuditTrail
-# AuditTrail -----
-#' @title Audit Trail Register
-#'
-#' @description The [StreamFind::AuditTrail] class is a list of [StreamFind::AuditTrailEntry] class
-#' objects.
-#'
+#' @rdname AuditTrail
 #' @export
 #'
-AuditTrail <- function(entries = list()) {
-  if (is.list(entries)) {
-    if (length(entries) > 0) {
-      entries <- lapply(entries, function(x) {
-        if ("AuditTrailEntry" %in% class(x)) {
-          if (is.null(validate_object(x))) {
-            x
-          } else {
-            NULL
-          }
-        } else if (is.list(x)) {
-          x <- do.call("AuditTrailEntry", x)
-        } else {
-          stop("Each entry must be an AuditTrailEntry object or a list that can be converted to one.")
-        }
-      })
-      entry_names <- vapply(entries, function(x) as.character(x$time_stamp), NA_character_)
-      entries <- entries[!is.na(entry_names)]
-      entry_names <- entry_names[!is.na(entry_names)]
-      names(entries) <- entry_names
-    }
+add_audit_entry.AuditTrail <- function(x, operation_type, object_type, details = NULL, ...) {
+  stopifnot(inherits(x, "AuditTrail"))
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  DBI::dbExecute(conn, "BEGIN")
+  rollback_needed <- TRUE
+  on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
+  if (!is.null(details)) {
+    details_json <- .convert_to_json(details)
   } else {
-    stop("Entries must be a list of AuditTrailEntry objects.")
+    details_json <- "null"
   }
-  x <- structure(entries, class = "AuditTrail")
-  if (is.null(validate_object(x))) {
-    return(x)
-  } else {
-    stop("Invalid AuditTrail object!")
-  }
+  DBI::dbExecute(conn, "INSERT INTO AuditTrail (operation_type, object_type, operation_details) VALUES (?, ?, ?)",
+                 list(operation_type, object_type, as.character(details_json)))
+  DBI::dbExecute(conn, "COMMIT")
+  rollback_needed <- FALSE
+  invisible(x)
 }
 
-#' @describeIn AuditTrail Validate the AuditTrail object, returning NULL if valid.
-#' @param x A `AuditTrail` object.
-#' @export
-#'
-validate_object.AuditTrail <- function(x) {
-  checkmate::assert_list(x)
-  if (length(x) > 0) {
-    for (i in seq_along(x)) {
-      if (!is.null(validate_object(x[[i]]))) {
-        stop(sprintf("Element %d is not a valid AuditTrailEntry object.", i))
+# Internal helpers: not documented in user .Rd
+
+.create_AuditTrail_db_schema <- function(conn) {
+  DBI::dbExecute(conn, "CREATE TABLE IF NOT EXISTS AuditTrail (operation_type VARCHAR NOT NULL, object_type VARCHAR NOT NULL, operation_details VARCHAR, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)")
+  invisible(TRUE)
+}
+
+.validate_AuditTrail_db_schema <- function(conn) {
+  tryCatch({
+    table_info <- DBI::dbGetQuery(conn, "PRAGMA table_info(AuditTrail)")
+      required <- list(
+        operation_type = "VARCHAR NOT NULL",
+        object_type = "VARCHAR NOT NULL",
+        operation_details = "VARCHAR",
+        created_at = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+      )
+    for (col in names(required)) {
+      if (!(col %in% table_info$name)) {
+        message(sprintf("Adding missing %s column to AuditTrail table...", col))
+        DBI::dbExecute(conn, sprintf("ALTER TABLE AuditTrail ADD COLUMN %s %s", col, required[[col]]))
       }
     }
-  }
-  NULL
-}
-
-#' @describeIn AuditTrail Add an entry to the `AuditTrail` list,
-#' returning the updated `AuditTrail`.
-#' @param x An `AuditTrail` object.
-#' @param value An object to be added to the `AuditTrail` as an entry.
-#' @export
-#'
-add.AuditTrail <- function(x, value) {
-  time_stamp <- as.POSIXct(Sys.time())
-  value_classes <- class(value)
-  value_class <- class(value)[1]
-  if (length(value_classes) > 1) {
-    value_parent <- class(value)[2]
-  } else {
-    value_parent <- NA_character_
-  }
-  value_str <- capture.output(show(value))
-  value_str <- value_str[!value_str %in% ""]
-  value_str <- value_str[!grepl("<char>|<num>", value_str)]
-  value_str <- paste(value_str, collapse = "\n")
-  entry <- AuditTrailEntry(
-    time_stamp = time_stamp,
-    value_class = value_class,
-    value_parent = value_parent,
-    value = value_str
-  )
-  x[[as.character(time_stamp)]] <- entry
-  x
-}
-
-#' @describeIn AuditTrail Convert the `AuditTrail` object to a data frame.
-#' @method as.data.table AuditTrail
-#' @param x An `AuditTrail` object.
-#' @export
-#'
-as.data.table.AuditTrail <- function(x, ...) {
-  if (length(x) == 0) {
-    return(data.table::data.table())
-  }
-  dt_list <- lapply(x, function(z) {
-    data.table::data.table(
-      time_stamp = z$time_stamp,
-      class = z$value_class,
-      parent = z$value_parent,
-      value = z$value
-    )
+  }, error = function(e) {
+    stop("Schema migration check (AuditTrail): ", e$message)
   })
-  data.table::rbindlist(dt_list, fill = TRUE)
-}
-
-#' @describeIn AuditTrail Show the `AuditTrail` entries in a human-readable format.
-#' @param x An `AuditTrail` object.
-#' @export
-#'
-show.AuditTrail <- function(x, ...) {
-  names <- names(x)
-  for (n in names) {
-    cat(n, "\n")
-    cat("Class:  ", x[[n]]$value_class, "\n")
-    cat("Parent: ", x[[n]]$value_parent, "\n")
-    cat("Value:   ")
-    if (is.na(x[[n]]$value) || "NA" %in% x[[n]]$value) {
-      cat("empty")
-    } else if ("empty" %in% x[[n]]$value) {
-      cat("empty")
-    } else {
-      cat("\n")
-      cat(x[[n]]$value)
-    }
-    cat("\n")
-    cat("\n")
-  }
-}
-
-#' @describeIn AuditTrail Save the `AuditTrail` object to a file.
-#' @param x An `AuditTrail` object.
-#' @param file A character string representing the file path where the `AuditTrail` should be saved.
-#' The file format can be either JSON or RDS.
-#' @export
-#'
-save.AuditTrail <- function(x, file = "entries.json") {
-  format <- tools::file_ext(file)
-  if (format %in% "json") {
-    x <- .convert_to_json(x)
-    write(x, file)
-  } else if (format %in% "rds") {
-    saveRDS(x, file)
-  } else {
-    warning("Invalid format!")
-  }
-  invisible(NULL)
-}
-
-#' @describeIn AuditTrail Read an `AuditTrail` object from a file.
-#' @param x An `AuditTrail` object.
-#' @param file A character string representing the file path from which the `AuditTrail` should be read. The possible formats are JSON or RDS.
-#' @export
-#'
-read.AuditTrail <- function(x, file) {
-  format <- tools::file_ext(file)
-  if (format %in% "json") {
-    x <- jsonlite::fromJSON(file)
-    x <- AuditTrail(entries = x)
-  } else if (format %in% "rds") {
-    x <- readRDS(file)
-    if (!is(x, "AuditTrail")) {
-      stop("File does not contain a valid AuditTrail object.")
-    }
-  } else {
-    stop("Invalid format!")
-  }
-  x
+  invisible(TRUE)
 }

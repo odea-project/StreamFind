@@ -1,8 +1,9 @@
 #include "utils.h"
-
+#include <simdutf.h>
 #include <cstring>
 #include <stdexcept>
 #include <array>
+#include <zlib.h>
 
 namespace ms {
 namespace utils {
@@ -128,6 +129,71 @@ std::string decode_base64(const std::string& input) {
       valb -= 8;
     }
   }
+  return out;
+};
+
+std::string encode_base64_simduft(const std::string &input) {
+  size_t out_len = simdutf::base64_length_from_binary(input.size(), simdutf::base64_default);
+  std::vector<char> outbuf(out_len);
+  size_t written = simdutf::binary_to_base64(input.data(), input.size(), outbuf.data(), simdutf::base64_default);
+  return std::string(outbuf.data(), written);
+};
+
+std::string decode_base64_simduft(const std::string &encoded_string)
+{
+  std::vector<uint8_t> buffer(
+  simdutf::maximal_binary_length_from_base64(encoded_string.data(), encoded_string.size()));
+  simdutf::result r = simdutf::base64_to_binary(
+    encoded_string.data(), encoded_string.size(), (char*)buffer.data()
+  );
+  if(r.error != simdutf::error_code::SUCCESS) {
+    throw std::runtime_error("Base64 decoding failed with error code: " + std::to_string(static_cast<int>(r.error)));
+  } else {
+    buffer.resize(r.count);
+  }
+  return std::string(buffer.begin(), buffer.end());
+};
+
+std::string compress_zlib(const std::string &str)
+{
+  std::vector<char> compressed_data;
+  z_stream zs;
+  memset(&zs, 0, sizeof(zs));
+  if (deflateInit(&zs, Z_DEFAULT_COMPRESSION) != Z_OK)
+  {
+    throw std::runtime_error("deflateInit failed while initializing zlib for compression");
+  }
+  zs.next_in = reinterpret_cast<Bytef *>(const_cast<char *>(str.data()));
+  zs.avail_in = str.size();
+  int ret;
+  char outbuffer[32768];
+  do
+  {
+    zs.next_out = reinterpret_cast<Bytef *>(outbuffer);
+    zs.avail_out = sizeof(outbuffer);
+    ret = deflate(&zs, Z_FINISH);
+    if (compressed_data.size() < zs.total_out)
+    {
+      compressed_data.insert(compressed_data.end(), outbuffer, outbuffer + (zs.total_out - compressed_data.size()));
+    }
+  } while (ret == Z_OK);
+  deflateEnd(&zs);
+  return std::string(compressed_data.begin(), compressed_data.end());
+};
+
+std::string decompress_zlib(const std::string& input) {
+  if (input.empty()) return {};
+  uLongf out_size = static_cast<uLongf>(input.size() * 8 + 1024);
+  std::string out(out_size, '\0');
+  int rc = Z_BUF_ERROR;
+  for (int i = 0; i < 8 && rc == Z_BUF_ERROR; ++i) {
+    out_size = static_cast<uLongf>(out.size());
+    rc = ::uncompress(reinterpret_cast<Bytef*>(&out[0]), &out_size,
+                      reinterpret_cast<const Bytef*>(input.data()), static_cast<uLongf>(input.size()));
+    if (rc == Z_BUF_ERROR) out.resize(out.size() * 2);
+  }
+  if (rc != Z_OK) return {};
+  out.resize(out_size);
   return out;
 }
 

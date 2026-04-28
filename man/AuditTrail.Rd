@@ -2,52 +2,50 @@
 % Please edit documentation in R/class_AuditTrail.R
 \name{AuditTrail}
 \alias{AuditTrail}
-\alias{validate_object.AuditTrail}
-\alias{add.AuditTrail}
-\alias{as.data.table.AuditTrail}
-\alias{show.AuditTrail}
-\alias{save.AuditTrail}
-\alias{read.AuditTrail}
-\title{Audit Trail Register}
+\alias{AuditTrail-class}
+\alias{get_audit_trail.AuditTrail}
+\alias{add_audit_entry.AuditTrail}
+\title{Database-Backed Audit Logging (S3 class)}
 \usage{
-AuditTrail(entries = list())
+AuditTrail(db)
 
-\method{validate_object}{AuditTrail}(x)
+get_audit_trail.AuditTrail(x, ...)
 
-\method{add}{AuditTrail}(x, value)
-
-\method{as.data.table}{AuditTrail}(x, ...)
-
-\method{show}{AuditTrail}(x, ...)
-
-\method{save}{AuditTrail}(x, file = "entries.json")
-
-\method{read}{AuditTrail}(x, file)
+add_audit_entry.AuditTrail(x, operation_type, object_type, details = NULL, ...)
 }
 \arguments{
-\item{x}{An \code{AuditTrail} object.}
+\item{db}{Path to DuckDB database file used for audit logging (the unified DB file)}
 
-\item{value}{An object to be added to the \code{AuditTrail} as an entry.}
+\item{x}{An AuditTrail object (S3)}
 
-\item{file}{A character string representing the file path from which the \code{AuditTrail} should be read. The possible formats are JSON or RDS.}
+\item{...}{Additional arguments (ignored)}
+
+\item{operation_type}{Type of operation (character: e.g. 'create', 'update', 'delete', 'run' etc)}
+
+\item{object_type}{Type of object being acted on (character, e.g. 'Metadata', 'Workflow', ...)}
+
+\item{details}{(Optional) Operation details. A list or character; if a list, will be coerced to JSON for DB storage.}
+}
+\value{
+The AuditTrail constructor returns an S3 object. \code{get_audit_trail} returns a data.frame of audit logs. \code{add_audit_entry} returns the AuditTrail object (invisible).
 }
 \description{
-The \link{AuditTrail} class is a list of \link{AuditTrailEntry} class
-objects.
+Provides a DB-backed audit trail interface for StreamFind projects: logs create/update/delete/run events automatically,
+allows querying of all audit logs, and is intended for use by Engine or other StreamFind components.
 }
-\section{Methods (by generic)}{
-\itemize{
-\item \code{validate_object(AuditTrail)}: Validate the AuditTrail object, returning NULL if valid.
+\details{
+The \code{AuditTrail} class is an S3 object responsible for ensuring its own table schema and handling all persistence in the unified DuckDB file for this project.
+All typical list and data-frame operations are returned for queries. This is the standard audit logging interface for the package.
+}
+\section{Table Schema}{
 
-\item \code{add(AuditTrail)}: Add an entry to the \code{AuditTrail} list,
-returning the updated \code{AuditTrail}.
+Table name: \code{AuditTrail}; columns: operation_type (str), object_type (str), operation_details (json/str), timestamp.
+}
 
-\item \code{as.data.table(AuditTrail)}: Convert the \code{AuditTrail} object to a data frame.
+\section{Usage}{
 
-\item \code{show(AuditTrail)}: Show the \code{AuditTrail} entries in a human-readable format.
+audit <- AuditTrail(db = 'file.duckdb')
+add_audit_entry(audit, 'run', 'ProcessingStep', list(method='algo'))
+get_audit_trail(audit)
+}
 
-\item \code{save(AuditTrail)}: Save the \code{AuditTrail} object to a file.
-
-\item \code{read(AuditTrail)}: Read an \code{AuditTrail} object from a file.
-
-}}

@@ -2,9 +2,12 @@
 % Please edit documentation in R/class_Engine.R
 \name{Engine}
 \alias{Engine}
-\title{File-based Database Engine for StreamFind}
+\title{Unified DuckDB-based Engine for StreamFind}
 \description{
-The \link{Engine} R6 class provides file-based storage for StreamFind Engine data using DuckDB.
+The \link{Engine} R6 class provides project storage in a single unified DuckDB file for all tables and components within StreamFind.
+}
+\details{
+The unified DuckDB file holds all Engine and project-related data for this project (all tables: Engine, Workflow, AuditTrail, Cache, etc).
 }
 \note{
 The engine data is saved in an \strong{rds} file and loaded in the app. If save file is
@@ -21,9 +24,11 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 
 \item{\code{Analyses}}{A \link{Analyses} child object.}
 
-\item{\code{AuditTrail}}{Audit trail from database (read-only).}
+\item{\code{AuditTrail}}{A \link{AuditTrail} object for this engine (DB-backed, see \link{AuditTrail} class)}
 
 \item{\code{Cache}}{A \link{Cache} object for managing cached data.}
+
+\item{\code{db}}{Path to the DuckDB database file (read-only).}
 }
 \if{html}{\out{</div>}}
 }
@@ -31,7 +36,7 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Engine-new}{\code{Engine$new()}}
-\item \href{#method-Engine-get_project_path}{\code{Engine$get_project_path()}}
+\item \href{#method-Engine-get_db_path}{\code{Engine$get_db_path()}}
 \item \href{#method-Engine-print}{\code{Engine$print()}}
 \item \href{#method-Engine-get_metadata}{\code{Engine$get_metadata()}}
 \item \href{#method-Engine-add_metadata}{\code{Engine$add_metadata()}}
@@ -60,18 +65,13 @@ in the \strong{rds} file and then loaded to continue working on the engine by sc
 \subsection{Method \code{new()}}{
 Initialize Engine.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$new(
-  projectPath = "data",
-  metadata = NULL,
-  workflow = NULL,
-  dataType = "Unknown"
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Engine$new(db = NULL, metadata = NULL, workflow = NULL, dataType = "Unknown")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{projectPath}}{Path to StreamFind project folder (.sf). DB_Engine will place main.duckdb inside it. If reusing an existing projectPath, DB_Engine will connect to the existing Engine.duckdb file and preserve previous data. If the projectPath does not exist, DB_Engine will create the directory and initialize a new Engine.duckdb file.}
+\item{\code{db}}{Path to DuckDB file for the project.}
 
 \item{\code{metadata}}{A named list or a \code{Metadata} object. Each list element must have length one.
 There is no type restrictions except for name (must be type character), author (must be type
@@ -87,16 +87,16 @@ with a full path to a \emph{rds} or \emph{json} file containing a \code{Workflow
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Engine-get_project_path"></a>}}
-\if{latex}{\out{\hypertarget{method-Engine-get_project_path}{}}}
-\subsection{Method \code{get_project_path()}}{
+\if{html}{\out{<a id="method-Engine-get_db_path"></a>}}
+\if{latex}{\out{\hypertarget{method-Engine-get_db_path}{}}}
+\subsection{Method \code{get_db_path()}}{
 Get the project path.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Engine$get_project_path()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Engine$get_db_path()}\if{html}{\out{</div>}}
 }
 
 \subsection{Returns}{
-Character string with the path to the StreamFind (.sf) project directory.
+Character string with the path to the DuckDB database file.
 }
 }
 \if{html}{\out{<hr>}}
@@ -201,7 +201,7 @@ Runs all \link{ProcessingStep} objects in the \link{Workflow}.
 \if{html}{\out{<a id="method-Engine-get_audit_trail"></a>}}
 \if{latex}{\out{\hypertarget{method-Engine-get_audit_trail}{}}}
 \subsection{Method \code{get_audit_trail()}}{
-Get audit trail from database.
+Get audit trail via AuditTrail class instance (DB-backed).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Engine$get_audit_trail()}\if{html}{\out{</div>}}
 }
@@ -211,7 +211,7 @@ Get audit trail from database.
 \if{html}{\out{<a id="method-Engine-add_audit_entry"></a>}}
 \if{latex}{\out{\hypertarget{method-Engine-add_audit_entry}{}}}
 \subsection{Method \code{add_audit_entry()}}{
-Add entry to audit trail.
+Add entry to audit trail via AuditTrail class instance (DB-backed).
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Engine$add_audit_entry(operation_type, object_type, details = NULL)}\if{html}{\out{</div>}}
 }

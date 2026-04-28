@@ -35,39 +35,3 @@ validate_object.Analyses <- function(x) {
   }
   NULL
 }
-
-# MARK: query_db
-#' @describeIn Analyses Internal: execute a query on the DB.
-#' @template arg-x-Analyses
-#' @template arg-sql-sql
-#' @template arg-sql-params
-#' @export
-#'
-query_db.Analyses <- function(x, sql, params = NULL) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .query_db(conn, sql, params)
-}
-
-# MARK: list_db_tables
-#' @describeIn Analyses Internal: list tables in the DB.
-#' @template arg-x-Analyses
-#' @export
-#'
-list_db_tables.Analyses <- function(x) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .list_db_tables(conn)
-}
-
-# MARK: get_db_table_info
-#' @describeIn Analyses Internal: get table info from the DB.
-#' @template arg-x-Analyses
-#' @template arg-sql-tableName
-#' @export
-#'
-get_db_table_info.Analyses <- function(x, tableName) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .get_db_table_info(conn, tableName)
-}

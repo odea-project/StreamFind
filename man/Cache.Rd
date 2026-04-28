@@ -7,12 +7,9 @@
 \alias{get_cache_info.Cache}
 \alias{clear_cache.Cache}
 \alias{size.Cache}
-\alias{query_db.Cache}
-\alias{list_db_tables.Cache}
-\alias{get_db_table_info.Cache}
 \title{Cache S3 Class}
 \usage{
-Cache(projectPath = ".")
+Cache(db)
 
 \method{save_cache}{Cache}(x, name, hash, description, data, ...)
 
@@ -23,15 +20,9 @@ Cache(projectPath = ".")
 \method{clear_cache}{Cache}(x, value = NULL, ...)
 
 \method{size}{Cache}(x, unit = "auto", ...)
-
-\method{query_db}{Cache}(x, sql, params = NULL)
-
-\method{list_db_tables}{Cache}(x)
-
-\method{get_db_table_info}{Cache}(x, tableName)
 }
 \arguments{
-\item{projectPath}{Path to the project directory where this database file will be created/used.}
+\item{db}{Full path to the unified DuckDB file.}
 
 \item{x}{Cache object}
 
@@ -46,12 +37,6 @@ Cache(projectPath = ".")
 \item{value}{Character vector of cache entry names to delete. If NULL (default), deletes entire cache database.}
 
 \item{unit}{Optional unit for size, possible values: "bytes", "KB", "MB", "GB" or "auto" (default).}
-
-\item{sql}{SQL query string}
-
-\item{params}{Query parameters (optional)}
-
-\item{tableName}{Table name}
 }
 \value{
 An object of class \code{Cache}.
@@ -63,7 +48,7 @@ Data.frame with cache metadata
 Integer
 }
 \description{
-S3 class to manage \code{Cache.duckdb} for caching and loading data.
+S3 class to manage the \code{Cache} table in a unified project DuckDB file for caching and loading data.
 }
 \section{Methods (by generic)}{
 \itemize{
@@ -76,11 +61,5 @@ S3 class to manage \code{Cache.duckdb} for caching and loading data.
 \item \code{clear_cache(Cache)}: Reset cache (delete all cache entries or specific entries by name)
 
 \item \code{size(Cache)}: Get size of Cache.duckdb file in bytes.
-
-\item \code{query_db(Cache)}: Internal: execute a query on the DB.
-
-\item \code{list_db_tables(Cache)}: Internal: list tables in the DB.
-
-\item \code{get_db_table_info(Cache)}: Internal: get table info from the DB.
 
 }}

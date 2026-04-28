@@ -13,6 +13,10 @@ std::vector<float> decode_little_endian_to_float(const std::string& str, int pre
 std::vector<double> decode_little_endian_to_double(const std::string& str, int precision);
 std::string encode_base64(const std::string& input);
 std::string decode_base64(const std::string& input);
+std::string decode_base64_simduft(const std::string &encoded_string);
+std::string encode_base64_simduft(const std::string &input);
+std::string compress_zlib(const std::string &str);
+std::string decompress_zlib(const std::string& input);
 
 } // namespace utils
 } // namespace ms

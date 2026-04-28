@@ -1,11 +1,10 @@
 #define PUGIXML_HEADER_ONLY
-#include "../pugixml-1.14/src/pugixml.hpp"
+#include "../external/pugixml-1.14/src/pugixml.hpp"
 
 #include "mzxml.h"
 #include "utils.h"
 
 #include <filesystem>
-#include <zlib.h>
 
 namespace ms {
 namespace mzxml {
@@ -20,27 +19,11 @@ float parse_rt(const std::string& rt) {
   return 0.0f;
 }
 
-std::string decompress_zlib(const std::string& input) {
-  if (input.empty()) return {};
-  uLongf out_size = static_cast<uLongf>(input.size() * 8 + 1024);
-  std::string out(out_size, '\0');
-  int rc = Z_BUF_ERROR;
-  for (int i = 0; i < 8 && rc == Z_BUF_ERROR; ++i) {
-    out_size = static_cast<uLongf>(out.size());
-    rc = ::uncompress(reinterpret_cast<Bytef*>(&out[0]), &out_size,
-                      reinterpret_cast<const Bytef*>(input.data()), static_cast<uLongf>(input.size()));
-    if (rc == Z_BUF_ERROR) out.resize(out.size() * 2);
-  }
-  if (rc != Z_OK) return {};
-  out.resize(out_size);
-  return out;
-}
-
 std::vector<float> decode_peaks(const pugi::xml_node& peaks_node, int precision, bool compressed) {
   std::string encoded = peaks_node.child_value();
   if (encoded.empty()) return {};
   std::string decoded = utils::decode_base64(encoded);
-  if (compressed) decoded = decompress_zlib(decoded);
+  if (compressed) decoded = ms::utils::decompress_zlib(decoded);
   if (decoded.empty()) return {};
   return utils::decode_little_endian_to_float(decoded, precision);
 }

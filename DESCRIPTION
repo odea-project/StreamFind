@@ -74,8 +74,7 @@ RdMacros:
 VignetteBuilder:
     knitr
 SystemRequirements: GNU make, C++17
-LinkingTo: Rcpp,
-    RcppArmadillo
+LinkingTo: Rcpp
 Collate:
     'global_import_namespace.R'
     'RcppExports.R'
@@ -92,11 +91,13 @@ Collate:
     'fct_load_template_engine.R'
     'fct_search_transformation_products_biotransformer.R'
     'fct_ms_convert_trim_files.R'
-    'class_DataTypeObjects.R'
-    'class_internal_MassSpecTargets.R'
-    'class_Cache.R'
-    'class_AuditTrail.R'
-    'class_Metadata.R'
+     'class_DataTypeObjects.R'
+     'class_internal_MassSpecTargets.R'
+     'class_Cache.R'
+     'fct_db_methods.R'
+     'class_AuditTrail.R'
+     'class_Project.R'
+     'class_Metadata.R'
     'class_ProcessingStep.R'
     'class_Workflow.R'
     'class_Results.R'
