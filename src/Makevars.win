@@ -1,34 +1,27 @@
-#PKG_CXXFLAGS += -I"$(R_HOME)/include" $(SHLIB_OPENMP_CXXFLAGS)
-#PKG_LIBS += -L"$(R_HOME)/bin/x64" $(SHLIB_OPENMP_CXXFLAGS) -lz
-ZLIB_CFLAGS := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(zlibbioc::pkgconfig('PKG_CFLAGS'))")
-ZLIB_LIBDIR := $(shell "${R_HOME}/bin/R" --vanilla --slave -e "cat(system.file('libs/x64', package='zlibbioc'))")
-
-PKG_CPPFLAGS += -Iexternal -Iexternal/simdutf $(ZLIB_CFLAGS)
+# Compile all C++ sources with C++17 and OpenMP support.
+PKG_CPPFLAGS += -Iexternal -Iexternal/simdutf -Iexternal/nlohmann -Iexternal/json-schema-validator/src
 PKG_CXXFLAGS += -std=c++17
 
-# Source files from different directories
+# Pull in package sources, vendored dependencies, and the new generic JSON layer.
 SOURCES = $(wildcard *.cpp)
 SOURCES += external/simdutf_wrapper.cpp
+SOURCES += $(wildcard external/json-schema-validator/src/*.cpp)
+SOURCES += $(wildcard json/*.cpp)
+SOURCES += $(wildcard asm/*.cpp)
 SOURCES += $(wildcard project/*.cpp)
 SOURCES += $(wildcard external/simdutf/*.cpp)
 SOURCES += $(wildcard nts/*.cpp)
 SOURCES += $(wildcard mass_spec/*.cpp)
 
-# Exclude simdutf source files from compilation when not using the wrapper
-# (we compile the bundled simdutf via external/simdutf_wrapper.cpp)
+# Keep simdutf compiled through the wrapper rather than as raw source files.
 SOURCES := $(filter-out external/simdutf/simdutf.cpp external/simdutf/amalgamation_demo.cpp, $(SOURCES))
 
 OBJECTS = $(SOURCES:.cpp=.o)
 
-# Compile simdutf_wrapper without pedantic warnings (third-party code)
-#simdutf_wrapper.o: simdutf_wrapper.cpp
-#	$(CXX) $(ALL_CPPFLAGS) $(ALL_CXXFLAGS) -Wno-pedantic -c $< -o $@
-
-RHDF5_LIBS = $(shell "$(R_HOME)/bin${R_ARCH_BIN}/Rscript" -e 'Rhdf5lib::pkgconfig("PKG_CXX_LIBS")')
-
+# Link against OpenMP and system zlib.
 PKG_CXXFLAGS += $(SHLIB_OPENMP_CXXFLAGS) -D__USE_MINGW_ANSI_STDIO
-PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) $(RHDF5_LIBS) -L$(ZLIB_LIBDIR) -lzbioc
+PKG_LIBS += $(SHLIB_OPENMP_CXXFLAGS) -lz
 
-# DuckDB (vendored cross-platform) - use vendored copy under src/external/duckdb
+# Link against the vendored DuckDB build.
 PKG_CPPFLAGS += -Iexternal/duckdb/windows/
 PKG_LIBS += -Lexternal/duckdb/windows/ -lduckdb
