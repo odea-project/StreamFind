@@ -5,7 +5,7 @@
 namespace project {
 
 /** Row representation of the `Cache` table, extending Row with cache-specific fields. */
-struct CacheRow : public Row {
+struct CACHE_ROW : public ROW {
   /** Cache entry name. */
   std::string name;
   /** Human-readable description. */
@@ -17,26 +17,26 @@ struct CacheRow : public Row {
 };
 
 /** Project-scoped cache table wrapper. */
-class Cache : public TableBase<CacheRow> {
+class CACHE : public TABLE_BASE<CACHE_ROW> {
  public:
-  using Row = CacheRow;
+  using ROW_TYPE = CACHE_ROW;
 
   /** Open the cache wrapper for the current project context. */
-  explicit Cache(std::shared_ptr<Context> ctx);
+  explicit CACHE(std::shared_ptr<CONTEXT> ctx);
 
   /** Create the cache table schema if needed. */
-  static void create_schema(const std::shared_ptr<Context>& ctx);
+  static void create_schema(const std::shared_ptr<CONTEXT>& ctx);
   /** Validate the cache table schema. */
-  static void validate_schema(const std::shared_ptr<Context>& ctx);
+  static void validate_schema(const std::shared_ptr<CONTEXT>& ctx);
 
   /** Return all cache rows for the active project. */
-  std::vector<Row> all() const override;
+  std::vector<ROW_TYPE> all() const override;
   /** Load one cache row by hash. */
-  std::optional<Row> get(const std::string& hash) const;
+  std::optional<ROW_TYPE> get(const std::string& hash) const;
   /** Load only the cached byte payload for a cache entry. */
   std::optional<std::vector<std::uint8_t>> get_bytes(const std::string& hash) const;
   /** Insert or update a cache row. */
-  void put(const Row& row);
+  void put(const ROW_TYPE& row);
   /** Convenience insert/update using scalar arguments and raw bytes. */
   void put(const std::string& name,
            const std::string& hash,
@@ -61,7 +61,7 @@ class Cache : public TableBase<CacheRow> {
 };
 
 template <typename T>
-void Cache::put_object(const std::string& name,
+void CACHE::put_object(const std::string& name,
                        const std::string& hash,
                        const std::string& description,
                        const T& value) {
@@ -70,7 +70,7 @@ void Cache::put_object(const std::string& name,
 }
 
 template <typename T>
-std::optional<T> Cache::get_object(const std::string& hash) const {
+std::optional<T> CACHE::get_object(const std::string& hash) const {
   auto bytes = get_bytes(hash);
   if (!bytes || bytes->empty()) {
     return std::nullopt;

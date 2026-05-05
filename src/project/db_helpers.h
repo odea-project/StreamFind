@@ -10,22 +10,22 @@
 namespace project::detail {
 
 /** RAII connection wrapper for a DuckDB connection. */
-struct ConnectionGuard {
-  explicit ConnectionGuard(const std::shared_ptr<Context>& ctx) {
+struct CONNECTION_GUARD {
+  explicit CONNECTION_GUARD(const std::shared_ptr<CONTEXT>& ctx) {
     if (!ctx || ctx->db_path.empty()) {
-      throw Error(ErrorCode::InvalidArgument, "Project context is not initialized");
+      throw ERROR(ERROR_CODE::InvalidArgument, "Project context is not initialized");
     }
     if (duckdb_open(ctx->db_path.c_str(), &db_) != DuckDBSuccess) {
-      throw Error(ErrorCode::DuckDB, "Failed to open DuckDB database");
+      throw ERROR(ERROR_CODE::DuckDB, "Failed to open DuckDB database");
     }
     if (duckdb_connect(db_, &con_) != DuckDBSuccess) {
       duckdb_close(&db_);
       db_ = nullptr;
-      throw Error(ErrorCode::DuckDB, "Failed to connect to DuckDB database");
+      throw ERROR(ERROR_CODE::DuckDB, "Failed to connect to DuckDB database");
     }
   }
 
-  ~ConnectionGuard() {
+  ~CONNECTION_GUARD() {
     if (con_) {
       duckdb_disconnect(&con_);
     }
@@ -34,15 +34,15 @@ struct ConnectionGuard {
     }
   }
 
-  ConnectionGuard(const ConnectionGuard&) = delete;
-  ConnectionGuard& operator=(const ConnectionGuard&) = delete;
+  CONNECTION_GUARD(const CONNECTION_GUARD&) = delete;
+  CONNECTION_GUARD& operator=(const CONNECTION_GUARD&) = delete;
 
-  ConnectionGuard(ConnectionGuard&& other) noexcept : db_(other.db_), con_(other.con_) {
+  CONNECTION_GUARD(CONNECTION_GUARD&& other) noexcept : db_(other.db_), con_(other.con_) {
     other.db_ = nullptr;
     other.con_ = nullptr;
   }
 
-  ConnectionGuard& operator=(ConnectionGuard&& other) noexcept {
+  CONNECTION_GUARD& operator=(CONNECTION_GUARD&& other) noexcept {
     if (this != &other) {
       if (con_) {
         duckdb_disconnect(&con_);
@@ -66,22 +66,22 @@ struct ConnectionGuard {
 };
 
 /** RAII wrapper for duckdb_result. */
-struct ResultGuard {
-  explicit ResultGuard(duckdb_result* result) : result_(result) {}
-  ~ResultGuard() {
+struct RESULT_GUARD {
+  explicit RESULT_GUARD(duckdb_result* result) : result_(result) {}
+  ~RESULT_GUARD() {
     if (result_) {
       duckdb_destroy_result(result_);
     }
   }
 
-  ResultGuard(const ResultGuard&) = delete;
-  ResultGuard& operator=(const ResultGuard&) = delete;
+  RESULT_GUARD(const RESULT_GUARD&) = delete;
+  RESULT_GUARD& operator=(const RESULT_GUARD&) = delete;
 
-  ResultGuard(ResultGuard&& other) noexcept : result_(other.result_) {
+  RESULT_GUARD(RESULT_GUARD&& other) noexcept : result_(other.result_) {
     other.result_ = nullptr;
   }
 
-  ResultGuard& operator=(ResultGuard&& other) noexcept {
+  RESULT_GUARD& operator=(RESULT_GUARD&& other) noexcept {
     if (this != &other) {
       if (result_) {
         duckdb_destroy_result(result_);
@@ -97,22 +97,22 @@ struct ResultGuard {
 };
 
 /** RAII wrapper for duckdb_prepared_statement. */
-struct PrepareGuard {
-  explicit PrepareGuard(duckdb_prepared_statement* statement) : statement_(statement) {}
-  ~PrepareGuard() {
+struct PREPARE_GUARD {
+  explicit PREPARE_GUARD(duckdb_prepared_statement* statement) : statement_(statement) {}
+  ~PREPARE_GUARD() {
     if (statement_ && *statement_) {
       duckdb_destroy_prepare(statement_);
     }
   }
 
-  PrepareGuard(const PrepareGuard&) = delete;
-  PrepareGuard& operator=(const PrepareGuard&) = delete;
+  PREPARE_GUARD(const PREPARE_GUARD&) = delete;
+  PREPARE_GUARD& operator=(const PREPARE_GUARD&) = delete;
 
-  PrepareGuard(PrepareGuard&& other) noexcept : statement_(other.statement_) {
+  PREPARE_GUARD(PREPARE_GUARD&& other) noexcept : statement_(other.statement_) {
     other.statement_ = nullptr;
   }
 
-  PrepareGuard& operator=(PrepareGuard&& other) noexcept {
+  PREPARE_GUARD& operator=(PREPARE_GUARD&& other) noexcept {
     if (this != &other) {
       if (statement_ && *statement_) {
         duckdb_destroy_prepare(statement_);
@@ -128,7 +128,7 @@ struct PrepareGuard {
 };
 
 /** Expected column definition used during schema validation. */
-struct ColumnSpec {
+struct COLUMN_SPEC {
   const char* name;
   const char* type;
   bool not_null;
@@ -160,7 +160,7 @@ inline json json_from_text(const std::string& value) {
   try {
     return json::parse(value);
   } catch (const std::exception& e) {
-    throw Error(ErrorCode::SchemaMismatch, std::string("Invalid JSON payload: ") + e.what());
+    throw ERROR(ERROR_CODE::SchemaMismatch, std::string("Invalid JSON payload: ") + e.what());
   }
 }
 
@@ -170,7 +170,7 @@ inline std::vector<std::uint8_t> serialize_object(const T& value) {
   std::ostringstream oss;
   oss << value;
   if (!oss) {
-    throw Error(ErrorCode::Unknown, "Failed to serialize cached object");
+    throw ERROR(ERROR_CODE::Unknown, "Failed to serialize cached object");
   }
   const std::string payload = oss.str();
   return std::vector<std::uint8_t>(payload.begin(), payload.end());
@@ -184,7 +184,7 @@ inline T deserialize_object(const std::vector<std::uint8_t>& bytes) {
   T value{};
   iss >> value;
   if (!iss) {
-    throw Error(ErrorCode::Unknown, "Failed to deserialize cached object");
+    throw ERROR(ERROR_CODE::Unknown, "Failed to deserialize cached object");
   }
   return value;
 }
@@ -248,20 +248,20 @@ inline void run_prepared(duckdb_connection con,
     if (statement) {
       duckdb_destroy_prepare(&statement);
     }
-    throw Error(ErrorCode::DuckDB, std::string(context) + ": " + message);
+     throw ERROR(ERROR_CODE::DuckDB, std::string(context) + ": " + message);
   }
 
-  PrepareGuard statement_guard(&statement);
+  PREPARE_GUARD statement_guard(&statement);
   binder(statement);
 
   duckdb_result result{};
   if (duckdb_execute_prepared(statement, &result) == DuckDBError) {
     std::string message = result_error(&result);
     duckdb_destroy_result(&result);
-    throw Error(ErrorCode::DuckDB, std::string(context) + ": " + message);
+    throw ERROR(ERROR_CODE::DuckDB, std::string(context) + ": " + message);
   }
 
-  ResultGuard result_guard(&result);
+  RESULT_GUARD result_guard(&result);
   consumer(result);
 }
 
@@ -271,7 +271,7 @@ inline void run_sql(duckdb_connection con, const std::string& sql, const char* c
   if (duckdb_query(con, sql.c_str(), &result) == DuckDBError) {
     std::string message = result_error(&result);
     duckdb_destroy_result(&result);
-    throw Error(ErrorCode::DuckDB, std::string(context) + ": " + message);
+    throw ERROR(ERROR_CODE::DuckDB, std::string(context) + ": " + message);
   }
   duckdb_destroy_result(&result);
 }
@@ -279,7 +279,7 @@ inline void run_sql(duckdb_connection con, const std::string& sql, const char* c
 /** Verify that the table schema matches the expected column list. */
 inline void validate_columns(duckdb_connection con,
                              const char* table_name,
-                             const std::vector<ColumnSpec>& expected) {
+                             const std::vector<COLUMN_SPEC>& expected) {
   std::ostringstream sql;
   sql << "PRAGMA table_info('" << table_name << "')";
 
@@ -287,13 +287,13 @@ inline void validate_columns(duckdb_connection con,
   if (duckdb_query(con, sql.str().c_str(), &result) == DuckDBError) {
     std::string message = result_error(&result);
     duckdb_destroy_result(&result);
-    throw Error(ErrorCode::SchemaMismatch, std::string("Schema check failed for ") + table_name + ": " + message);
+    throw ERROR(ERROR_CODE::SchemaMismatch, std::string("Schema check failed for ") + table_name + ": " + message);
   }
-  ResultGuard guard(&result);
+  RESULT_GUARD guard(&result);
 
   const idx_t count = duckdb_row_count(&result);
   if (count != expected.size()) {
-    throw Error(ErrorCode::SchemaMismatch,
+    throw ERROR(ERROR_CODE::SchemaMismatch,
                 std::string("Schema mismatch for ") + table_name + ": unexpected column count");
   }
 
@@ -303,7 +303,7 @@ inline void validate_columns(duckdb_connection con,
     const bool not_null = duckdb_value_int32(&result, 3, row) != 0;
     const auto& spec = expected[static_cast<std::size_t>(row)];
     if (name != spec.name || !same_text(type, spec.type) || not_null != spec.not_null) {
-      throw Error(ErrorCode::SchemaMismatch,
+      throw ERROR(ERROR_CODE::SchemaMismatch,
                   std::string("Schema mismatch for ") + table_name + ": column " + spec.name + " does not match");
     }
   }

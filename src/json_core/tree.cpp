@@ -2,7 +2,7 @@
 
 #include <cstddef>
 
-namespace asm_json {
+namespace json_core {
 
 std::string unescape_pointer_token(const std::string& token) {
   std::string out;
@@ -78,4 +78,4 @@ std::vector<std::string> json_child_paths(const json& node) {
   return out;
 }
 
-}  // namespace asm_json
+}  // namespace json_core

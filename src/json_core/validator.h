@@ -6,17 +6,17 @@
 
 #include <nlohmann/json-schema.hpp>
 
-namespace asm_json {
+namespace json_core {
 
 using json = nlohmann::json;
 
 /** Cached JSON-schema validator for repeated instance validation. */
-class SchemaValidator {
+class JSON_SCHEMA_VALIDATOR {
  public:
   /** Build a validator from an already parsed schema. */
-  SchemaValidator(const json& schema, std::filesystem::path root_dir = {});
+  JSON_SCHEMA_VALIDATOR(const json& schema, std::filesystem::path root_dir = {});
   /** Build a validator by loading a schema file. */
-  SchemaValidator(const std::filesystem::path& schema_path, std::filesystem::path root_dir = {});
+  JSON_SCHEMA_VALIDATOR(const std::filesystem::path& schema_path, std::filesystem::path root_dir = {});
 
   /** Replace the compiled schema. */
   void set_schema(const json& schema);
@@ -45,4 +45,4 @@ class SchemaValidator {
   nlohmann::json_schema::json_validator validator_;
 };
 
-}  // namespace asm_json
+}  // namespace json_core

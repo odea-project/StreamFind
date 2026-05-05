@@ -4,7 +4,7 @@
 
 #include <nlohmann/json.hpp>
 
-namespace asm_json {
+namespace json_core {
 
 using json = nlohmann::json;
 
@@ -14,4 +14,4 @@ json load_json_file(const std::filesystem::path& path);
 /** Write JSON to disk using either compact or pretty formatting. */
 void write_json_file(const std::filesystem::path& path, const json& value, int indent = 2);
 
-}  // namespace asm_json
+}  // namespace json_core

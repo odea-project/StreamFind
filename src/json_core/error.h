@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <string>
 
-namespace asm_json {
+namespace json_core {
 
 /** Error categories raised by the generic JSON helpers. */
 enum class ErrorCode {
@@ -27,4 +27,4 @@ class Error : public std::runtime_error {
   ErrorCode code_;
 };
 
-}  // namespace asm_json
+}  // namespace json_core

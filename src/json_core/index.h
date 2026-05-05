@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace asm_json {
+namespace json_core {
 
 class Index;
 class SaxIndexBuilder;
@@ -85,4 +85,4 @@ class Index {
   std::string manifest_uri_;
 };
 
-}  // namespace asm_json
+}  // namespace json_core

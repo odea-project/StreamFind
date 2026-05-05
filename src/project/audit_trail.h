@@ -5,7 +5,7 @@
 namespace project {
 
 /** Row representation of the `AuditTrail` table, extending Row with audit-specific fields. */
-struct AuditTrailRow : public Row {
+struct AUDIT_TRAIL_ROW : public ROW {
   /** Operation type such as create/update/delete/run. */
   std::string operation_type;
   /** Object type affected by the operation. */
@@ -17,25 +17,25 @@ struct AuditTrailRow : public Row {
 };
 
 /** Convert an audit row to JSON. */
-void to_json(json& j, const AuditTrailRow& x);
+void to_json(json& j, const AUDIT_TRAIL_ROW& x);
 /** Convert JSON into an audit row. */
-void from_json(const json& j, AuditTrailRow& x);
+void from_json(const json& j, AUDIT_TRAIL_ROW& x);
 
 /** Project-scoped audit trail table wrapper. */
-class AuditTrail : public TableBase<AuditTrailRow> {
+class AUDIT_TRAIL : public TABLE_BASE<AUDIT_TRAIL_ROW> {
  public:
-  using Row = AuditTrailRow;
+  using ROW_TYPE = AUDIT_TRAIL_ROW;
 
   /** Open the audit trail wrapper for the current project context. */
-  explicit AuditTrail(std::shared_ptr<Context> ctx);
+  explicit AUDIT_TRAIL(std::shared_ptr<CONTEXT> ctx);
 
   /** Create the audit trail table schema if needed. */
-  static void create_schema(const std::shared_ptr<Context>& ctx);
+  static void create_schema(const std::shared_ptr<CONTEXT>& ctx);
   /** Validate the audit trail table schema. */
-  static void validate_schema(const std::shared_ptr<Context>& ctx);
+  static void validate_schema(const std::shared_ptr<CONTEXT>& ctx);
 
   /** Return all audit rows for the active project. */
-  std::vector<Row> all() const override;
+  std::vector<ROW_TYPE> all() const override;
   /** Append a new audit entry. */
   void add(const std::string& operation_type,
            const std::string& object_type,

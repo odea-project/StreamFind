@@ -121,10 +121,22 @@ istd <- data.table::fread(
   )
 )
 
+stds <- data.table::fread(
+  file.path(
+    getwd(),
+    "dev",
+    "dev_duckdb",
+    "Standards_M1234.csv"
+  )
+)
+
 get_suspects_screening_csv(
-  suspects = istd,
+  suspects = stds,
   file = file.path(
-    "I:\\internal_standards.csv"
+    getwd(),
+    "dev",
+    "dev_duckdb",
+    "Standards_M1234_V2.csv"
   )
 )
 

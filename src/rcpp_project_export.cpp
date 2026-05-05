@@ -8,19 +8,19 @@ using namespace Rcpp;
 
 namespace {
 
-std::string error_code_to_string(project::ErrorCode code) {
+std::string error_code_to_string(project::ERROR_CODE code) {
   switch (code) {
-    case project::ErrorCode::DuckDB:
+    case project::ERROR_CODE::DuckDB:
       return "DuckDB";
-    case project::ErrorCode::InvalidArgument:
+    case project::ERROR_CODE::InvalidArgument:
       return "InvalidArgument";
-    case project::ErrorCode::SchemaMismatch:
+    case project::ERROR_CODE::SchemaMismatch:
       return "SchemaMismatch";
-    case project::ErrorCode::NotFound:
+    case project::ERROR_CODE::NotFound:
       return "NotFound";
-    case project::ErrorCode::Io:
+    case project::ERROR_CODE::Io:
       return "Io";
-    case project::ErrorCode::Unknown:
+    case project::ERROR_CODE::Unknown:
     default:
       return "Unknown";
   }
@@ -30,22 +30,22 @@ template <typename Fn>
 auto project_call(Fn&& fn) {
   try {
     return fn();
-  } catch (const project::Error& e) {
+  } catch (const project::ERROR& e) {
     stop("Project error [" + error_code_to_string(e.code()) + "]: " + e.what());
   } catch (const std::exception& e) {
     stop(std::string("Project error [Unknown]: ") + e.what());
   }
 }
 
-project::Project& project_from_xptr(SEXP extptr) {
-  Rcpp::XPtr<project::Project> ptr(extptr);
+project::PROJECT& project_from_xptr(SEXP extptr) {
+  Rcpp::XPtr<project::PROJECT> ptr(extptr);
   if (ptr.get() == nullptr) {
     stop("Project pointer is null");
   }
   return *ptr;
 }
 
-DataFrame audit_rows_to_df(const std::vector<project::AuditTrail::Row>& rows) {
+DataFrame audit_rows_to_df(const std::vector<project::AUDIT_TRAIL::ROW_TYPE>& rows) {
   CharacterVector project_id(rows.size());
   CharacterVector operation_type(rows.size());
   CharacterVector object_type(rows.size());
@@ -70,8 +70,8 @@ DataFrame audit_rows_to_df(const std::vector<project::AuditTrail::Row>& rows) {
 // [[Rcpp::export]]
 SEXP rcpp_project_new(std::string db_path, std::string project_id) {
   return project_call([&]() {
-    auto* ptr = new project::Project(std::move(db_path), std::move(project_id));
-    Rcpp::XPtr<project::Project> out(ptr, true);
+    auto* ptr = new project::PROJECT(std::move(db_path), std::move(project_id));
+    Rcpp::XPtr<project::PROJECT> out(ptr, true);
     out.attr("class") = "StreamFindProject";
     return SEXP(out);
   });
@@ -81,7 +81,7 @@ SEXP rcpp_project_new(std::string db_path, std::string project_id) {
 SEXP rcpp_project_copy(SEXP project_xptr, std::string db_path, std::string project_id) {
   return project_call([&]() {
     auto* ptr = project_from_xptr(project_xptr).copy(std::move(db_path), std::move(project_id));
-    Rcpp::XPtr<project::Project> out(ptr, true);
+    Rcpp::XPtr<project::PROJECT> out(ptr, true);
     out.attr("class") = "StreamFindProject";
     return SEXP(out);
   });

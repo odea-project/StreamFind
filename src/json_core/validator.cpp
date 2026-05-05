@@ -10,7 +10,7 @@
 
 namespace fs = std::filesystem;
 
-namespace asm_json {
+namespace json_core {
 
 namespace {
 
@@ -44,7 +44,7 @@ std::string json_string_or_empty(const json& value) {
 
 }  // namespace
 
-SchemaValidator::SchemaIndex SchemaValidator::build_schema_index(const fs::path& root_dir) {
+JSON_SCHEMA_VALIDATOR::SchemaIndex JSON_SCHEMA_VALIDATOR::build_schema_index(const fs::path& root_dir) {
   SchemaIndex index;
   if (root_dir.empty() || !fs::exists(root_dir)) {
     return index;
@@ -63,7 +63,7 @@ SchemaValidator::SchemaIndex SchemaValidator::build_schema_index(const fs::path&
   return index;
 }
 
-void SchemaValidator::index_schema_file(SchemaIndex& index, const fs::path& path) {
+void JSON_SCHEMA_VALIDATOR::index_schema_file(SchemaIndex& index, const fs::path& path) {
   try {
     const json doc = load_json_file(path);
     if (doc.is_object()) {
@@ -81,8 +81,8 @@ void SchemaValidator::index_schema_file(SchemaIndex& index, const fs::path& path
   }
 }
 
-nlohmann::json_schema::schema_loader SchemaValidator::make_loader(const SchemaIndex& index,
-                                                                  const fs::path& root_dir) {
+nlohmann::json_schema::schema_loader JSON_SCHEMA_VALIDATOR::make_loader(const SchemaIndex& index,
+                                                                        const fs::path& root_dir) {
   return [root_dir, index](const nlohmann::json_uri& id, json& value) {
     const fs::path path = resolve_schema_file(index, root_dir, id);
     if (path.empty()) {
@@ -92,9 +92,9 @@ nlohmann::json_schema::schema_loader SchemaValidator::make_loader(const SchemaIn
   };
 }
 
-fs::path SchemaValidator::resolve_schema_file(const SchemaIndex& index,
-                                              const fs::path& root_dir,
-                                              const nlohmann::json_uri& id) {
+fs::path JSON_SCHEMA_VALIDATOR::resolve_schema_file(const SchemaIndex& index,
+                                                    const fs::path& root_dir,
+                                                    const nlohmann::json_uri& id) {
   const std::string location = id.location();
   if (location.empty()) {
     return {};
@@ -130,7 +130,7 @@ fs::path SchemaValidator::resolve_schema_file(const SchemaIndex& index,
   return {};
 }
 
-SchemaValidator::SchemaValidator(const json& schema, std::filesystem::path root_dir)
+JSON_SCHEMA_VALIDATOR::JSON_SCHEMA_VALIDATOR(const json& schema, std::filesystem::path root_dir)
     : root_dir_(std::move(root_dir)),
       schema_index_(build_schema_index(root_dir_)),
       loader_(make_loader(schema_index_, root_dir_)),
@@ -138,20 +138,20 @@ SchemaValidator::SchemaValidator(const json& schema, std::filesystem::path root_
   set_schema(schema);
 }
 
-SchemaValidator::SchemaValidator(const std::filesystem::path& schema_path, std::filesystem::path root_dir)
-    : SchemaValidator(load_json_file(schema_path), std::move(root_dir)) {}
+JSON_SCHEMA_VALIDATOR::JSON_SCHEMA_VALIDATOR(const std::filesystem::path& schema_path, std::filesystem::path root_dir)
+    : JSON_SCHEMA_VALIDATOR(load_json_file(schema_path), std::move(root_dir)) {}
 
-void SchemaValidator::set_schema(const json& schema) {
+void JSON_SCHEMA_VALIDATOR::set_schema(const json& schema) {
   schema_ = schema;
   validator_.set_root_schema(schema_);
 }
 
-void SchemaValidator::validate(const json& instance) const {
+void JSON_SCHEMA_VALIDATOR::validate(const json& instance) const {
   validator_.validate(instance);
 }
 
-const json& SchemaValidator::schema() const noexcept {
+const json& JSON_SCHEMA_VALIDATOR::schema() const noexcept {
   return schema_;
 }
 
-}  // namespace asm_json
+}  // namespace json_core

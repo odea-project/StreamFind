@@ -1,6 +1,6 @@
 #include "error.h"
 
-namespace asm_json {
+namespace json_core {
 
 // Store the category separately from the human-readable message.
 Error::Error(ErrorCode code, std::string message)
@@ -10,4 +10,4 @@ ErrorCode Error::code() const noexcept {
   return code_;
 }
 
-}  // namespace asm_json
+}  // namespace json_core

@@ -2,20 +2,20 @@
 
 namespace project {
 
-Cache::Cache(std::shared_ptr<Context> ctx) : TableBase<CacheRow>(std::move(ctx)) {
+CACHE::CACHE(std::shared_ptr<CONTEXT> ctx) : TABLE_BASE<CACHE_ROW>(std::move(ctx)) {
   create_schema(context());
   validate_schema(context());
 }
 
-void Cache::create_schema(const std::shared_ptr<Context>& ctx) {
-  auto guard = project::detail::ConnectionGuard(ctx);
+void CACHE::create_schema(const std::shared_ptr<CONTEXT>& ctx) {
+  auto guard = project::detail::CONNECTION_GUARD(ctx);
   project::detail::run_sql(guard.get(),
           "CREATE TABLE IF NOT EXISTS Cache (project_id VARCHAR NOT NULL, name VARCHAR NOT NULL, description VARCHAR NOT NULL, hash VARCHAR NOT NULL, data BLOB NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(project_id, hash))",
           "create Cache table");
 }
 
-void Cache::validate_schema(const std::shared_ptr<Context>& ctx) {
-  auto guard = project::detail::ConnectionGuard(ctx);
+void CACHE::validate_schema(const std::shared_ptr<CONTEXT>& ctx) {
+  auto guard = project::detail::CONNECTION_GUARD(ctx);
   project::detail::validate_columns(guard.get(), table_name(), {{"project_id", "VARCHAR", true},
                                                                 {"name", "VARCHAR", true},
                                                                 {"description", "VARCHAR", true},
@@ -24,16 +24,16 @@ void Cache::validate_schema(const std::shared_ptr<Context>& ctx) {
                                                                 {"created_at", "TIMESTAMP", false}});
 }
 
-std::vector<Cache::Row> Cache::all() const {
-  auto guard = project::detail::ConnectionGuard(context());
-  std::vector<Row> out;
+std::vector<CACHE::ROW_TYPE> CACHE::all() const {
+  auto guard = project::detail::CONNECTION_GUARD(context());
+  std::vector<ROW_TYPE> out;
   project::detail::run_prepared(guard.get(),
                 "SELECT project_id, name, description, hash, data, created_at FROM Cache WHERE project_id = ? ORDER BY created_at DESC",
                 "query Cache",
                 [&](duckdb_prepared_statement statement) { duckdb_bind_varchar(statement, 1, context()->project_id.c_str()); },
                 [&](duckdb_result& result) {
                   out = project::detail::rows_from_result(&result, [&](idx_t row) {
-                    Row value;
+                    ROW_TYPE value;
                     value.project_id = project::detail::result_varchar(&result, 0, row);
                     value.name = project::detail::result_varchar(&result, 1, row);
                     value.description = project::detail::result_varchar(&result, 2, row);
@@ -46,9 +46,9 @@ std::vector<Cache::Row> Cache::all() const {
   return out;
 }
 
-std::optional<Cache::Row> Cache::get(const std::string& hash) const {
-  auto guard = project::detail::ConnectionGuard(context());
-  std::optional<Row> out;
+std::optional<CACHE::ROW_TYPE> CACHE::get(const std::string& hash) const {
+  auto guard = project::detail::CONNECTION_GUARD(context());
+  std::optional<ROW_TYPE> out;
   project::detail::run_prepared(guard.get(),
                 "SELECT project_id, name, description, hash, data, created_at FROM Cache WHERE project_id = ? AND hash = ? LIMIT 1",
                 "select Cache entry",
@@ -60,7 +60,7 @@ std::optional<Cache::Row> Cache::get(const std::string& hash) const {
                   if (duckdb_row_count(&result) == 0) {
                     return;
                   }
-                  Row row;
+                  ROW_TYPE row;
                   row.project_id = project::detail::result_varchar(&result, 0, 0);
                   row.name = project::detail::result_varchar(&result, 1, 0);
                   row.description = project::detail::result_varchar(&result, 2, 0);
@@ -72,7 +72,7 @@ std::optional<Cache::Row> Cache::get(const std::string& hash) const {
   return out;
 }
 
-std::optional<std::vector<std::uint8_t>> Cache::get_bytes(const std::string& hash) const {
+std::optional<std::vector<std::uint8_t>> CACHE::get_bytes(const std::string& hash) const {
   auto row = get(hash);
   if (!row) {
     return std::nullopt;
@@ -80,16 +80,16 @@ std::optional<std::vector<std::uint8_t>> Cache::get_bytes(const std::string& has
   return row->data;
 }
 
-void Cache::put(const Row& row) {
-  Row value = row;
+void CACHE::put(const ROW_TYPE& row) {
+  ROW_TYPE value = row;
   if (value.project_id.empty()) {
     value.project_id = context()->project_id;
   }
   if (value.project_id != context()->project_id) {
-    throw Error(ErrorCode::InvalidArgument, "Cache row id does not match the active project");
+    throw ERROR(ERROR_CODE::InvalidArgument, "Cache row id does not match the active project");
   }
   if (value.hash.empty()) {
-    throw Error(ErrorCode::InvalidArgument, "Cache hash must not be empty");
+    throw ERROR(ERROR_CODE::InvalidArgument, "Cache hash must not be empty");
   }
   if (value.name.empty()) {
     value.name = value.hash;
@@ -98,7 +98,7 @@ void Cache::put(const Row& row) {
     value.description = "cache entry";
   }
 
-  auto guard = project::detail::ConnectionGuard(context());
+  auto guard = project::detail::CONNECTION_GUARD(context());
   project::detail::run_prepared(guard.get(),
                 "INSERT INTO Cache (project_id, name, description, hash, data) VALUES (?, ?, ?, ?, ?) ON CONFLICT(project_id, hash) DO UPDATE SET name = excluded.name, description = excluded.description, data = excluded.data",
                 "upsert Cache entry",
@@ -113,11 +113,11 @@ void Cache::put(const Row& row) {
                 [](duckdb_result&) {});
 }
 
-void Cache::put(const std::string& name,
+void CACHE::put(const std::string& name,
                 const std::string& hash,
                 const std::string& description,
                 const std::vector<std::uint8_t>& data) {
-  Row row;
+  ROW_TYPE row;
   row.project_id = context()->project_id;
   row.name = name;
   row.hash = hash;
@@ -126,8 +126,8 @@ void Cache::put(const std::string& name,
   put(row);
 }
 
-void Cache::remove(const std::string& hash) {
-  auto guard = project::detail::ConnectionGuard(context());
+void CACHE::remove(const std::string& hash) {
+  auto guard = project::detail::CONNECTION_GUARD(context());
   project::detail::run_prepared(guard.get(),
                 "DELETE FROM Cache WHERE project_id = ? AND hash = ?",
                 "delete Cache entry",
@@ -138,8 +138,8 @@ void Cache::remove(const std::string& hash) {
                [](duckdb_result&) {});
 }
 
-void Cache::clear() {
-  auto guard = project::detail::ConnectionGuard(context());
+void CACHE::clear() {
+  auto guard = project::detail::CONNECTION_GUARD(context());
   project::detail::run_prepared(guard.get(),
                 "DELETE FROM Cache WHERE project_id = ?",
                 "clear Cache",

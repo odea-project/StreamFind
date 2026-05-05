@@ -1,12 +1,12 @@
 #pragma once
 
-#include <filesystem>
+#include "../json_core/file.h"
 
-#include <nlohmann/json.hpp>
+#include <filesystem>
 
 namespace asm_json {
 
-using json = nlohmann::json;
+using json_core::json;
 
 /** Write a JSON document to disk. */
 void write_document(const std::filesystem::path& json_path, const json& document, int indent = 2);

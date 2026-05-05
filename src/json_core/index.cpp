@@ -8,7 +8,7 @@
 #include <utility>
 #include <tuple>
 
-namespace asm_json {
+namespace json_core {
 
 using json = nlohmann::json;
 
@@ -225,4 +225,4 @@ void Index::add_node(const std::string& path, const std::string& key, const std:
   }
 }
 
-}  // namespace asm_json
+}  // namespace json_core

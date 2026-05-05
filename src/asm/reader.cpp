@@ -1,11 +1,14 @@
 #include "reader.h"
 
-#include "../json/io.h"
-#include "../json/validator.h"
+#include "../json_core/io.h"
+#include "../json_core/validator.h"
 
 #include <vector>
 
 namespace asm_json {
+
+using json_core::JSON_SCHEMA_VALIDATOR;
+using json_core::json;
 
 namespace {
 
@@ -52,11 +55,11 @@ std::string bundle_base_name(const std::filesystem::path& path) {
 }  // namespace
 
 json load_document(const std::filesystem::path& json_path) {
-  return load_json_file(json_path);
+  return json_core::load_json_file(json_path);
 }
 
 json load_schema_document(const std::filesystem::path& schema_path) {
-  return load_json_file(schema_path);
+  return json_core::load_json_file(schema_path);
 }
 
 json select_schema_from_bundle(const json& bundle,
@@ -100,7 +103,7 @@ bool validate_document(const std::filesystem::path& json_path,
   const json instance = load_document(json_path);
   const json schema_bundle = load_schema_document(schema_path);
   const json effective_schema = select_schema_from_bundle(schema_bundle, instance, schema_path);
-  SchemaValidator validator(effective_schema, root);
+  JSON_SCHEMA_VALIDATOR validator(effective_schema, root);
   validator.validate(instance);
   return true;
 }
@@ -112,7 +115,7 @@ json read_and_validate(const std::filesystem::path& json_path,
   json document = load_document(json_path);
   const json schema_bundle = load_schema_document(schema_path);
   const json effective_schema = select_schema_from_bundle(schema_bundle, document, schema_path);
-  SchemaValidator validator(effective_schema, root);
+  JSON_SCHEMA_VALIDATOR validator(effective_schema, root);
   validator.validate(document);
   return document;
 }

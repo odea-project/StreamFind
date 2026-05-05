@@ -1,12 +1,13 @@
 #pragma once
 
-#include "../json/validator.h"
+#include "../json_core/validator.h"
 
 #include <filesystem>
 
 namespace asm_json {
 
-using json = nlohmann::json;
+using json_core::JSON_SCHEMA_VALIDATOR;
+using json_core::json;
 
 /** Load an ASM instance document from disk. */
 json load_document(const std::filesystem::path& json_path);

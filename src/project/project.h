@@ -15,7 +15,7 @@ namespace project {
 using json = nlohmann::json;
 
 /** Shared project state for an open DuckDB-backed project. */
-struct Context {
+struct CONTEXT {
   /** Absolute path to the DuckDB file. */
   std::string db_path;
   /** Active project identifier within the database. */
@@ -23,7 +23,7 @@ struct Context {
 };
 
 /** Error categories used by the project layer. */
-enum class ErrorCode {
+enum class ERROR_CODE {
   DuckDB,
   InvalidArgument,
   SchemaMismatch,
@@ -33,19 +33,19 @@ enum class ErrorCode {
 };
 
 /** Exception type thrown by project operations. */
-class Error : public std::runtime_error {
+class ERROR : public std::runtime_error {
  public:
   /** Create an error with a category and message. */
-  Error(ErrorCode code, std::string message);
+  ERROR(ERROR_CODE code, std::string message);
   /** Return the error category. */
-  ErrorCode code() const noexcept;
+  ERROR_CODE code() const noexcept;
 
  private:
-  ErrorCode code_;
+  ERROR_CODE code_;
 };
 
 /** Common base row fields shared by project-scoped tables. */
-struct Row {
+struct ROW {
   /** Primary key for the owning project. */
   std::string project_id;
   /** Creation time stored by DuckDB. */
@@ -53,25 +53,25 @@ struct Row {
 };
 
 /** Row representation of the `Project` table, extending Row with JSON columns. */
-struct ProjectRow : public Row {
+struct PROJECT_ROW : public ROW {
   /** Project metadata stored as JSON. */
   json metadata = json::object();
   /** Project workflow stored as JSON. */
   json workflow = json::array();
 };
 
-struct AuditTrailRow;
+struct AUDIT_TRAIL_ROW;
 
 /** Minimal base class for typed table wrappers. */
 template <typename RowT>
-class TableBase {
+class TABLE_BASE {
  public:
-  using Row = RowT;
+  using ROW_TYPE = RowT;
 
-  virtual ~TableBase() = default;
+  virtual ~TABLE_BASE() = default;
 
   /** Return all rows in the table. */
-  virtual std::vector<Row> all() const = 0;
+  virtual std::vector<ROW_TYPE> all() const = 0;
 
   /** Return the table as JSON. */
   json json_all() const { return all(); }
@@ -82,26 +82,26 @@ class TableBase {
 
  protected:
   /** Store the shared project context. */
-  explicit TableBase(std::shared_ptr<Context> ctx) : ctx_(std::move(ctx)) {}
+  explicit TABLE_BASE(std::shared_ptr<CONTEXT> ctx) : ctx_(std::move(ctx)) {}
 
   /** Access the shared project context. */
-  const std::shared_ptr<Context>& context() const noexcept { return ctx_; }
+  const std::shared_ptr<CONTEXT>& context() const noexcept { return ctx_; }
 
-  std::shared_ptr<Context> ctx_;
+  std::shared_ptr<CONTEXT> ctx_;
 };
 
 /** Open and manage a single DuckDB-backed StreamFind project. */
-class Project {
+class PROJECT {
  public:
   /** Open or create a project database for the given project id. */
-  explicit Project(std::string db_path, std::string project_id);
+  explicit PROJECT(std::string db_path, std::string project_id);
   /** Close the database handle and release owned table wrappers. */
-  ~Project();
+  ~PROJECT();
 
-  Project(const Project&) = delete;
-  Project& operator=(const Project&) = delete;
-  Project(Project&&) = delete;
-  Project& operator=(Project&&) = delete;
+  PROJECT(const PROJECT&) = delete;
+  PROJECT& operator=(const PROJECT&) = delete;
+  PROJECT(PROJECT&&) = delete;
+  PROJECT& operator=(PROJECT&&) = delete;
 
   /** Return the database file path. */
   const std::string& db_path() const noexcept;
@@ -109,9 +109,9 @@ class Project {
   const std::string& project_id() const noexcept;
 
   /** Load the current project row. */
-  ProjectRow row() const;
+  PROJECT_ROW row() const;
   /** Replace the current project row. */
-  void set_row(const ProjectRow& row);
+  void set_row(const PROJECT_ROW& row);
 
   /** Return the project metadata JSON. */
   json metadata() const;
@@ -129,24 +129,24 @@ class Project {
   std::vector<std::string> list_tables() const;
 
   /** Return audit rows for the active project. */
-  std::vector<AuditTrailRow> get_audit() const;
+  std::vector<AUDIT_TRAIL_ROW> get_audit() const;
 
   /** Copy the project into another database and/or project id. */
-  Project* copy(std::string db_path, std::string project_id) const;
+  PROJECT* copy(std::string db_path, std::string project_id) const;
 
  private:
   /** Create the project table schema if needed. */
-  static void create_schema(const std::shared_ptr<Context>& ctx);
+  static void create_schema(const std::shared_ptr<CONTEXT>& ctx);
   /** Validate the project table schema. */
-  static void validate_schema(const std::shared_ptr<Context>& ctx);
+  static void validate_schema(const std::shared_ptr<CONTEXT>& ctx);
   /** Insert a default project row when none exists. */
-  static void ensure_row_exists(const std::shared_ptr<Context>& ctx);
+  static void ensure_row_exists(const std::shared_ptr<CONTEXT>& ctx);
   /** Read the current project row. */
-  static ProjectRow read_row(const std::shared_ptr<Context>& ctx);
+  static PROJECT_ROW read_row(const std::shared_ptr<CONTEXT>& ctx);
   /** Persist an updated project row. */
-  static void update_row(const std::shared_ptr<Context>& ctx, const ProjectRow& row);
+  static void update_row(const std::shared_ptr<CONTEXT>& ctx, const PROJECT_ROW& row);
 
-  std::shared_ptr<Context> ctx_;
+  std::shared_ptr<CONTEXT> ctx_;
 };
 
 }  // namespace project

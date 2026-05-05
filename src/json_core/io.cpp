@@ -4,7 +4,7 @@
 
 #include <fstream>
 
-namespace asm_json {
+namespace json_core {
 
 namespace {
 
@@ -40,4 +40,4 @@ void write_json_file(const std::filesystem::path& path, const json& value, int i
   }
 }
 
-}  // namespace asm_json
+}  // namespace json_core

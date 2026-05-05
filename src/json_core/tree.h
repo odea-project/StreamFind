@@ -5,7 +5,7 @@
 
 #include <nlohmann/json.hpp>
 
-namespace asm_json {
+namespace json_core {
 
 using json = nlohmann::json;
 
@@ -18,4 +18,4 @@ const json* descend_json_pointer(const json& root, const std::string& path);
 /** Return the immediate child keys or array indices for a JSON node. */
 std::vector<std::string> json_child_paths(const json& node);
 
-}  // namespace asm_json
+}  // namespace json_core

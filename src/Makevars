@@ -6,7 +6,7 @@ PKG_CXXFLAGS += -std=c++17
 SOURCES = $(wildcard *.cpp)
 SOURCES += external/simdutf_wrapper.cpp
 SOURCES += $(wildcard external/json-schema-validator/src/*.cpp)
-SOURCES += $(wildcard json/*.cpp)
+SOURCES += $(wildcard json_core/*.cpp)
 SOURCES += $(wildcard asm/*.cpp)
 SOURCES += $(wildcard project/*.cpp)
 SOURCES += $(wildcard nts/*.cpp)
