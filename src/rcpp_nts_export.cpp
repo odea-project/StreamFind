@@ -178,9 +178,9 @@ namespace
     return out;
   }
 
-  ms::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
+  mass_spec::MS_SPECTRA_HEADERS as_MS_SPECTRA_HEADERS(const Rcpp::List &hd)
   {
-    ms::MS_SPECTRA_HEADERS headers;
+    mass_spec::MS_SPECTRA_HEADERS headers;
     const std::vector<int> &hd_index = hd["index"];
     const std::vector<int> &hd_polarity = hd["polarity"];
     const std::vector<int> &hd_configuration = hd["configuration"];
@@ -204,9 +204,9 @@ namespace
     return headers;
   }
 
-  std::vector<ms::MS_SPECTRA_HEADERS> as_spectra_headers(const Rcpp::List &spectra_headers)
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> as_spectra_headers(const Rcpp::List &spectra_headers)
   {
-    std::vector<ms::MS_SPECTRA_HEADERS> out;
+    std::vector<mass_spec::MS_SPECTRA_HEADERS> out;
     if (spectra_headers.size() == 0)
     {
       return out;
@@ -971,7 +971,7 @@ Rcpp::List rcpp_nts_find_features(Rcpp::List info,
                                    int debugSpecIdx = -1) {
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp;
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1008,7 +1008,7 @@ Rcpp::List rcpp_nts_load_features_ms1(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1037,7 +1037,7 @@ Rcpp::List rcpp_nts_load_features_ms2(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1064,7 +1064,7 @@ Rcpp::List rcpp_nts_create_components(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1088,7 +1088,7 @@ Rcpp::List rcpp_nts_annotate_components(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1118,7 +1118,7 @@ Rcpp::List rcpp_nts_group_features(Rcpp::List info,
     validate_per_analysis_list(info, internal_standards_list, "internal_standards_list");
   }
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_nts_cpp = as_internal_standards_list(internal_standards_list);
@@ -1148,7 +1148,7 @@ Rcpp::List rcpp_nts_fill_features(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1181,7 +1181,7 @@ Rcpp::List rcpp_nts_blank_subtraction(Rcpp::List info,
   validate_per_analysis_list(info, spectra_headers, "spectra_headers");
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1229,7 +1229,7 @@ Rcpp::List rcpp_nts_filter_features(
 {
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp;
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp;
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1296,7 +1296,7 @@ Rcpp::List rcpp_nts_filter_suspects(
     double minCosineSimilarity = NA_REAL)
 {
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp;
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp;
   std::vector<nts::FEATURES> features_cpp;
   std::vector<nts::SUSPECTS> suspects_cpp = as_suspects_list(suspect_list);
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1323,7 +1323,7 @@ Rcpp::List rcpp_nts_filter_internal_standards(
     double minCosineSimilarity = NA_REAL)
 {
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp;
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp;
   std::vector<nts::FEATURES> features_cpp;
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp = as_internal_standards_list(internal_standards_list);
@@ -1353,7 +1353,7 @@ Rcpp::List rcpp_nts_suspect_screening(
     bool filtered = false)
 {
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_nts_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1437,7 +1437,7 @@ Rcpp::List rcpp_nts_filter_features_ms2(
 {
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp;
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp;
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;
@@ -1481,7 +1481,7 @@ Rcpp::List rcpp_nts_metfrag_screening(
 {
   validate_per_analysis_list(info, feature_list, "feature_list");
   nts::NTS_INFO info_cpp = as_nts_info(info);
-  std::vector<ms::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
+  std::vector<mass_spec::MS_SPECTRA_HEADERS> headers_cpp = as_spectra_headers(spectra_headers);
   std::vector<nts::FEATURES> features_cpp = as_feature_list(feature_list);
   std::vector<nts::SUSPECTS> suspects_cpp;
   std::vector<nts::INTERNAL_STANDARDS> internal_standards_cpp;

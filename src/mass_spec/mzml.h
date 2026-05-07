@@ -4,7 +4,7 @@
 #include "reader.h"
 #include <memory>
 
-namespace ms {
+namespace mass_spec {
 namespace mzml {
 
 struct Impl;

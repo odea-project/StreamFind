@@ -186,10 +186,6 @@ rcpp_streamcraft_decode_string <- function(base64_encoded) {
     .Call(`_StreamFind_rcpp_streamcraft_decode_string`, base64_encoded)
 }
 
-rcpp_streamcraft_encode_vector <- function(numeric_vector) {
-    .Call(`_StreamFind_rcpp_streamcraft_encode_vector`, numeric_vector)
-}
-
 rcpp_streamcraft_parse_ms_analysis_from_files <- function(file_path) {
     .Call(`_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files`, file_path)
 }
@@ -204,6 +200,70 @@ rcpp_streamcraft_parse_ms_chromatograms <- function(analysis, idx) {
 
 rcpp_ms_cluster_spectra <- function(spectra, mzClust = 0.005, presence = 0.8, verbose = FALSE) {
     .Call(`_StreamFind_rcpp_ms_cluster_spectra`, spectra, mzClust, presence, verbose)
+}
+
+rcpp_project_mass_spec_new <- function(project_xptr) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_new`, project_xptr)
+}
+
+rcpp_project_mass_spec_import_files <- function(mass_spec_xptr, file_paths, analyses, replicates, blanks) {
+    invisible(.Call(`_StreamFind_rcpp_project_mass_spec_import_files`, mass_spec_xptr, file_paths, analyses, replicates, blanks))
+}
+
+rcpp_project_mass_spec_remove_analysis <- function(mass_spec_xptr, analysis) {
+    invisible(.Call(`_StreamFind_rcpp_project_mass_spec_remove_analysis`, mass_spec_xptr, analysis))
+}
+
+rcpp_project_mass_spec_list_analyses <- function(mass_spec_xptr) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_list_analyses`, mass_spec_xptr)
+}
+
+rcpp_project_mass_spec_get_analysis_names <- function(mass_spec_xptr) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_get_analysis_names`, mass_spec_xptr)
+}
+
+rcpp_project_mass_spec_get_replicate_names <- function(mass_spec_xptr) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_get_replicate_names`, mass_spec_xptr)
+}
+
+rcpp_project_mass_spec_set_replicate_names <- function(mass_spec_xptr, values) {
+    invisible(.Call(`_StreamFind_rcpp_project_mass_spec_set_replicate_names`, mass_spec_xptr, values))
+}
+
+rcpp_project_mass_spec_get_blank_names <- function(mass_spec_xptr) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_get_blank_names`, mass_spec_xptr)
+}
+
+rcpp_project_mass_spec_set_blank_names <- function(mass_spec_xptr, values) {
+    invisible(.Call(`_StreamFind_rcpp_project_mass_spec_set_blank_names`, mass_spec_xptr, values))
+}
+
+rcpp_project_mass_spec_get_concentrations <- function(mass_spec_xptr) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_get_concentrations`, mass_spec_xptr)
+}
+
+rcpp_project_mass_spec_set_concentrations <- function(mass_spec_xptr, values) {
+    invisible(.Call(`_StreamFind_rcpp_project_mass_spec_set_concentrations`, mass_spec_xptr, values))
+}
+
+rcpp_project_mass_spec_get_spectra_headers <- function(mass_spec_xptr, analyses) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_get_spectra_headers`, mass_spec_xptr, analyses)
+}
+
+rcpp_project_mass_spec_get_chromatograms_headers <- function(mass_spec_xptr, analyses) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_get_chromatograms_headers`, mass_spec_xptr, analyses)
+}
+
+rcpp_project_mass_spec_get_spectra_tic <- function(mass_spec_xptr, analyses, levels, rt) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_get_spectra_tic`, mass_spec_xptr, analyses, levels, rt)
+}
+
+rcpp_project_mass_spec_get_raw_spectra <- function(mass_spec_xptr, analyses, levels, mass, mz, rt, mobility, id, ppm, sec, millisec, all_traces, isolation_window, min_intensity_ms1, min_intensity_ms2) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_get_raw_spectra`, mass_spec_xptr, analyses, levels, mass, mz, rt, mobility, id, ppm, sec, millisec, all_traces, isolation_window, min_intensity_ms1, min_intensity_ms2)
+}
+
+rcpp_project_mass_spec_extract_chromatograms <- function(mass_spec_xptr, analysis, indices) {
+    .Call(`_StreamFind_rcpp_project_mass_spec_extract_chromatograms`, mass_spec_xptr, analysis, indices)
 }
 
 rcpp_nts_find_features <- function(info, spectra_headers, rtWindowsMin, rtWindowsMax, ppmThreshold = 15.0, noiseThreshold = 15.0, minSNR = 3.0, minTraces = 3L, baselineWindow = 200.0, maxWidth = 100.0, baseQuantile = 0.10, debugAnalysis = "", debugMZ = 0.0, debugSpecIdx = -1L) {
@@ -268,6 +328,14 @@ rcpp_nts_assign_transformation_products <- function(suspects, transformation_pro
 
 rcpp_project_new <- function(db_path, project_id) {
     .Call(`_StreamFind_rcpp_project_new`, db_path, project_id)
+}
+
+rcpp_project_get_domain <- function(project_xptr) {
+    .Call(`_StreamFind_rcpp_project_get_domain`, project_xptr)
+}
+
+rcpp_project_set_domain <- function(project_xptr, domain) {
+    invisible(.Call(`_StreamFind_rcpp_project_set_domain`, project_xptr, domain))
 }
 
 rcpp_project_copy <- function(project_xptr, db_path, project_id) {

@@ -4,9 +4,10 @@
 #include "mzml.h"
 #include "utils.h"
 
+#include <limits>
 #include <filesystem>
 
-namespace ms {
+namespace mass_spec {
 namespace mzml {
 
 namespace {
@@ -38,7 +39,12 @@ float parse_scan_time(const pugi::xml_node& scan_node) {
   for (auto cv : scan_node.children("cvParam")) {
     const std::string name = cv.attribute("name").as_string();
     if (name.find("scan start time") != std::string::npos) {
-      return static_cast<float>(cv.attribute("value").as_double());
+      const std::string unit = cv.attribute("unitName").as_string();
+      const float value = static_cast<float>(cv.attribute("value").as_double());
+      if (unit.find("minute") != std::string::npos) {
+        return value * 60.0f;
+      }
+      return value;
     }
   }
   return 0.0f;
@@ -57,7 +63,7 @@ std::vector<float> decode_binary(const pugi::xml_node& array_node) {
   }
 
   std::string decoded = utils::decode_base64(encoded);
-  if (compressed) decoded = ms::utils::decompress_zlib(decoded);
+  if (compressed) decoded = mass_spec::utils::decompress_zlib(decoded);
   if (decoded.empty()) return {};
   return utils::decode_little_endian_to_float(decoded, precision64 ? 8 : 4);
 }
@@ -94,6 +100,11 @@ MS_SPECTRUM make_spectrum(const pugi::xml_node& spectrum_node) {
     if (name == "ms level") ms_level = cv.attribute("value").as_int(1);
     else if (name.find("positive scan") != std::string::npos) polarity = 1;
     else if (name.find("negative scan") != std::string::npos) polarity = -1;
+    else if (name.find("lowest observed m/z") != std::string::npos) s.lowmz = cv.attribute("value").as_float(0.0f);
+    else if (name.find("highest observed m/z") != std::string::npos) s.highmz = cv.attribute("value").as_float(0.0f);
+    else if (name.find("base peak m/z") != std::string::npos) s.bpmz = cv.attribute("value").as_float(0.0f);
+    else if (name.find("base peak intensity") != std::string::npos) s.bpint = cv.attribute("value").as_float(0.0f);
+    else if (name.find("total ion current") != std::string::npos) s.tic = cv.attribute("value").as_float(0.0f);
   }
   s.level = ms_level;
   s.polarity = polarity;
@@ -141,6 +152,30 @@ MS_SPECTRUM make_spectrum(const pugi::xml_node& spectrum_node) {
     s.binary_names = {"mz", "intensity"};
     s.binary_data = {std::move(mz), std::move(intensity)};
     s.binary_arrays_count = static_cast<int>(s.binary_data.size());
+    if (!s.binary_data.empty() && !s.binary_data[0].empty()) {
+      if (s.lowmz == 0.0f) {
+        s.lowmz = *std::min_element(s.binary_data[0].begin(), s.binary_data[0].end());
+      }
+      if (s.highmz == 0.0f) {
+        s.highmz = *std::max_element(s.binary_data[0].begin(), s.binary_data[0].end());
+      }
+    }
+    if (s.tic == 0.0f && s.binary_data.size() > 1) {
+      for (float intensity_value : s.binary_data[1]) {
+        s.tic += intensity_value;
+        if (intensity_value > s.bpint) {
+          s.bpint = intensity_value;
+        }
+      }
+    }
+    if (s.bpmz == 0.0f && s.bpint > 0.0f && s.binary_data.size() > 1) {
+      for (size_t i = 0; i < s.binary_data[1].size() && i < s.binary_data[0].size(); ++i) {
+        if (s.binary_data[1][i] == s.bpint) {
+          s.bpmz = s.binary_data[0][i];
+          break;
+        }
+      }
+    }
   }
   return s;
 }
@@ -255,10 +290,34 @@ std::vector<int> Reader::get_polarity() { std::vector<int> out; for (const auto&
 std::vector<int> Reader::get_mode() { return std::vector<int>(pimpl->spectra.size(), 0); }
 std::vector<int> Reader::get_level() { std::vector<int> out; for (const auto& s : pimpl->spectra) out.push_back(s.level); return out; }
 std::vector<int> Reader::get_configuration() { return std::vector<int>(pimpl->spectra.size(), 0); }
-float Reader::get_min_mz() { return 0.0f; }
-float Reader::get_max_mz() { return 0.0f; }
-float Reader::get_start_rt() { return 0.0f; }
-float Reader::get_end_rt() { return 0.0f; }
+float Reader::get_min_mz() {
+  float out = std::numeric_limits<float>::max();
+  for (const auto& s : pimpl->spectra) {
+    if (s.lowmz > 0.0f && s.lowmz < out) out = s.lowmz;
+  }
+  return out == std::numeric_limits<float>::max() ? 0.0f : out;
+}
+float Reader::get_max_mz() {
+  float out = 0.0f;
+  for (const auto& s : pimpl->spectra) {
+    if (s.highmz > out) out = s.highmz;
+  }
+  return out;
+}
+float Reader::get_start_rt() {
+  float out = std::numeric_limits<float>::max();
+  for (const auto& s : pimpl->spectra) {
+    if (s.rt > 0.0f && s.rt < out) out = s.rt;
+  }
+  return out == std::numeric_limits<float>::max() ? 0.0f : out;
+}
+float Reader::get_end_rt() {
+  float out = 0.0f;
+  for (const auto& s : pimpl->spectra) {
+    if (s.rt > out) out = s.rt;
+  }
+  return out;
+}
 bool Reader::has_ion_mobility() { return false; }
 MS_SUMMARY Reader::get_summary() {
   MS_SUMMARY s{};
@@ -271,6 +330,10 @@ MS_SUMMARY Reader::get_summary() {
   s.number_spectra_binary_arrays = get_number_spectra_binary_arrays();
   s.format = "mzML";
   s.type = "MS";
+  s.min_mz = get_min_mz();
+  s.max_mz = get_max_mz();
+  s.start_rt = get_start_rt();
+  s.end_rt = get_end_rt();
   s.has_ion_mobility = false;
   return s;
 }

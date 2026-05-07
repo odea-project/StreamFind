@@ -38,16 +38,16 @@ namespace nts::suspect_screening
       tmp.reserve(input.size());
       for (double v : input)
         tmp.push_back(static_cast<float>(v));
-       std::string enc = ms::utils::encode_little_endian_from_float(tmp, 4);
-       return ms::utils::encode_base64(enc);
+       std::string enc = mass_spec::utils::encode_little_endian_from_float(tmp, 4);
+       return mass_spec::utils::encode_base64(enc);
     }
 
     std::vector<float> decode_floats(const std::string &encoded)
     {
       if (encoded.empty())
         return {};
-       std::string decoded = ms::utils::decode_base64(encoded);
-       return ms::utils::decode_little_endian_to_float(decoded, 4);
+       std::string decoded = mass_spec::utils::decode_base64(encoded);
+       return mass_spec::utils::decode_little_endian_to_float(decoded, 4);
     }
 
     template <typename T>

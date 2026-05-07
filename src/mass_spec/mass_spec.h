@@ -8,7 +8,7 @@
 #include "clustering.h"
 #include "reader.h"
 
-namespace ms
+namespace mass_spec
 {
 
     // Re-export common types from submodules for convenience
@@ -79,6 +79,6 @@ namespace ms
         double clust_val = 0.1,
         double window = 20.0);
 
-} // namespace ms
+} // namespace mass_spec
 
 #endif // MASS_SPEC_H

@@ -11,7 +11,7 @@
 
 // MARK: merge_MS_TARGETS_SPECTRA
 nts::MS_SPECTRUM nts::merge_MS_TARGETS_SPECTRA(
-  const ms::MS_TARGETS_SPECTRA &spectra,
+  const mass_spec::MS_TARGETS_SPECTRA &spectra,
   const float &mzClust,
   const float &presence)
 {
@@ -128,7 +128,7 @@ void nts::NTS_DATA::load_features_ms1(
     if (fts_i.size() == 0)
       continue;
 
-    ms::MS_TARGETS targets;
+    mass_spec::MS_TARGETS targets;
     int counter = 0;
 
     for (int j = 0; j < fts_i.size(); j++)
@@ -182,10 +182,10 @@ void nts::NTS_DATA::load_features_ms1(
     if (!std::filesystem::exists(file_i))
       continue;
 
-    const ms::MS_SPECTRA_HEADERS &header_i = headers[i];
+    const mass_spec::MS_SPECTRA_HEADERS &header_i = headers[i];
 
-    ms::MS_FILE ana(file_i);
-    ms::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, minTracesIntensity, 0);
+    mass_spec::MS_FILE ana(file_i);
+    mass_spec::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, minTracesIntensity, 0);
 
     for (int j = 0; j < fts_i.size(); j++)
     {
@@ -197,7 +197,7 @@ void nts::NTS_DATA::load_features_ms1(
       if (ft_j.ms1_size > 0 && !ft_j.ms1_mz.empty() && !ft_j.ms1_intensity.empty())
         continue;
 
-      const ms::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
+      const mass_spec::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
 
       const auto clustered = merge_MS_TARGETS_SPECTRA(res_j, mzClust, presence);
       const int n_res_j = static_cast<int>(clustered.mz.size());
@@ -229,7 +229,7 @@ void nts::NTS_DATA::load_features_ms2(
     if (fts_i.size() == 0)
       continue;
 
-    ms::MS_TARGETS targets;
+    mass_spec::MS_TARGETS targets;
     int counter = 0;
 
     for (int j = 0; j < fts_i.size(); j++)
@@ -264,10 +264,10 @@ void nts::NTS_DATA::load_features_ms2(
     if (!std::filesystem::exists(file_i))
       continue;
 
-    const ms::MS_SPECTRA_HEADERS &header_i = headers[i];
+    const mass_spec::MS_SPECTRA_HEADERS &header_i = headers[i];
 
-    ms::MS_FILE ana(file_i);
-    ms::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, 0, minTracesIntensity);
+    mass_spec::MS_FILE ana(file_i);
+    mass_spec::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(targets, header_i, 0, minTracesIntensity);
 
     for (int j = 0; j < fts_i.size(); j++)
     {
@@ -279,7 +279,7 @@ void nts::NTS_DATA::load_features_ms2(
       if (ft_j.ms2_size > 0 && !ft_j.ms2_mz.empty() && !ft_j.ms2_intensity.empty())
         continue;
 
-      const ms::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
+      const mass_spec::MS_TARGETS_SPECTRA &res_j = res[ft_j.feature];
 
       const auto clustered = merge_MS_TARGETS_SPECTRA(res_j, mzClust, presence);
       const int n_res_j = static_cast<int>(clustered.mz.size());

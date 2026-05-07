@@ -99,8 +99,8 @@ namespace nts
 
     // Extract EIC for a specific m/z and RT window
     EIC_DATA extract_eic_for_gap_filling(
-        ms::MS_FILE &ana,
-        const ms::MS_SPECTRA_HEADERS &headers,
+        mass_spec::MS_FILE &ana,
+        const mass_spec::MS_SPECTRA_HEADERS &headers,
         float target_mz,
         float target_rt,
         float mzExpand,

@@ -7,7 +7,7 @@
 #include <fstream>
 #include <filesystem>
 
-namespace ms {
+namespace mass_spec {
 
 std::string detect_format(const std::string& file_path) {
   std::string lower = file_path;

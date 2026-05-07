@@ -171,8 +171,8 @@ std::vector<nts::gap_filling::FEATURE_GROUP_INFO> nts::gap_filling::analyze_feat
 
 // MARK: extract_eic_for_gap_filling
 nts::gap_filling::EIC_DATA nts::gap_filling::extract_eic_for_gap_filling(
-    ms::MS_FILE &ana,
-    const ms::MS_SPECTRA_HEADERS &headers,
+    mass_spec::MS_FILE &ana,
+    const mass_spec::MS_SPECTRA_HEADERS &headers,
     float target_mz,
     float target_rt,
     float mzExpand,
@@ -751,14 +751,14 @@ void nts::gap_filling::fill_features_impl(
     std::cout << "  Processing " << gaps.size() << " gaps in file: " << file_path << std::endl;
 
     // Open MS file once per file
-    ms::MS_FILE ana(file_path);
+    mass_spec::MS_FILE ana(file_path);
 
     // Get headers for first gap (all gaps in same file share same headers)
     const auto &headers = nts_data.headers[gaps[0].analysis_idx];
 
 
     // Build MS_TARGETS for all gaps in this file, but skip those already present as filtered features
-    ms::MS_TARGETS targets;
+    mass_spec::MS_TARGETS targets;
     std::vector<size_t> valid_gap_indices;
     targets.resize_all(gaps.size()); // Will shrink later if needed
 
@@ -820,7 +820,7 @@ void nts::gap_filling::fill_features_impl(
 
     // Shrink targets to only valid gaps
     if (valid_gap_indices.size() < gaps.size()) {
-      ms::MS_TARGETS shrunk_targets;
+      mass_spec::MS_TARGETS shrunk_targets;
       shrunk_targets.resize_all(valid_gap_indices.size());
       for (size_t k = 0; k < valid_gap_indices.size(); ++k) {
         size_t i = valid_gap_indices[k];
@@ -843,7 +843,7 @@ void nts::gap_filling::fill_features_impl(
     }
 
     // Extract all EICs in one batch call (uses OpenMP internally)
-    ms::MS_TARGETS_SPECTRA all_eics = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
+    mass_spec::MS_TARGETS_SPECTRA all_eics = ana.get_spectra_targets(targets, headers, minTracesIntensity, 0);
 
     // Process each gap using extracted EICs
     for (const auto &gap : gaps)
@@ -873,7 +873,7 @@ void nts::gap_filling::fill_features_impl(
       // ...existing code...
 
       // Get EIC for this specific target
-      ms::MS_TARGETS_SPECTRA eic_spec = all_eics[gap.target_id];
+      mass_spec::MS_TARGETS_SPECTRA eic_spec = all_eics[gap.target_id];
 
       if (is_debug_fg)
       {

@@ -4,7 +4,7 @@
 #include <vector>
 #include <string>
 
-namespace ms {
+namespace mass_spec {
 namespace processing {
 
 // ============================================================================

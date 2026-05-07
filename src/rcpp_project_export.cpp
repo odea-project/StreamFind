@@ -78,6 +78,19 @@ SEXP rcpp_project_new(std::string db_path, std::string project_id) {
 }
 
 // [[Rcpp::export]]
+std::string rcpp_project_get_domain(SEXP project_xptr) {
+  return project_call([&]() { return project_from_xptr(project_xptr).domain(); });
+}
+
+// [[Rcpp::export]]
+void rcpp_project_set_domain(SEXP project_xptr, std::string domain) {
+  project_call([&]() {
+    project_from_xptr(project_xptr).set_domain(domain);
+    return 0;
+  });
+}
+
+// [[Rcpp::export]]
 SEXP rcpp_project_copy(SEXP project_xptr, std::string db_path, std::string project_id) {
   return project_call([&]() {
     auto* ptr = project_from_xptr(project_xptr).copy(std::move(db_path), std::move(project_id));

@@ -134,6 +134,13 @@ struct COLUMN_SPEC {
   bool not_null;
 };
 
+/** Materialized table column metadata from DuckDB PRAGMA table_info. */
+struct COLUMN_INFO {
+  std::string name;
+  std::string type;
+  bool not_null;
+};
+
 /** Convert a string to uppercase for schema comparison. */
 inline std::string upper_copy(std::string value) {
   std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
@@ -303,6 +310,50 @@ inline void validate_columns(duckdb_connection con,
     const bool not_null = duckdb_value_int32(&result, 3, row) != 0;
     const auto& spec = expected[static_cast<std::size_t>(row)];
     if (name != spec.name || !same_text(type, spec.type) || not_null != spec.not_null) {
+      throw ERROR(ERROR_CODE::SchemaMismatch,
+                  std::string("Schema mismatch for ") + table_name + ": column " + spec.name + " does not match");
+    }
+  }
+}
+
+/** Return table column metadata from DuckDB PRAGMA table_info. */
+inline std::vector<COLUMN_INFO> table_columns(duckdb_connection con, const char* table_name) {
+  std::ostringstream sql;
+  sql << "PRAGMA table_info('" << table_name << "')";
+
+  duckdb_result result{};
+  if (duckdb_query(con, sql.str().c_str(), &result) == DuckDBError) {
+    std::string message = result_error(&result);
+    duckdb_destroy_result(&result);
+    throw ERROR(ERROR_CODE::SchemaMismatch, std::string("Schema check failed for ") + table_name + ": " + message);
+  }
+  RESULT_GUARD guard(&result);
+
+  const idx_t count = duckdb_row_count(&result);
+  std::vector<COLUMN_INFO> out;
+  out.reserve(static_cast<std::size_t>(count));
+  for (idx_t row = 0; row < count; ++row) {
+    out.push_back(COLUMN_INFO{result_varchar(&result, 1, row),
+                              result_varchar(&result, 2, row),
+                              duckdb_value_int32(&result, 3, row) != 0});
+  }
+  return out;
+}
+
+/** Verify that the required columns exist, allowing any order. */
+inline void validate_columns_present(duckdb_connection con,
+                                     const char* table_name,
+                                     const std::vector<COLUMN_SPEC>& expected) {
+  const auto actual = table_columns(con, table_name);
+  for (const auto& spec : expected) {
+    const auto it = std::find_if(actual.begin(), actual.end(), [&](const COLUMN_INFO& info) {
+      return info.name == spec.name;
+    });
+    if (it == actual.end()) {
+      throw ERROR(ERROR_CODE::SchemaMismatch,
+                  std::string("Schema mismatch for ") + table_name + ": missing column " + spec.name);
+    }
+    if (!same_text(it->type, spec.type) || it->not_null != spec.not_null) {
       throw ERROR(ERROR_CODE::SchemaMismatch,
                   std::string("Schema mismatch for ") + table_name + ": column " + spec.name + " does not match");
     }

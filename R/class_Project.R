@@ -35,6 +35,14 @@ Project <- R6::R6Class(
       self$set_metadata(value)
       invisible(self)
     },
+    #' @field domain Project domain stored in DuckDB.
+    domain = function(value) {
+      if (missing(value)) {
+        return(self$get_domain())
+      }
+      self$set_domain(value)
+      invisible(self)
+    },
     #' @field workflow Project workflow JSON stored in DuckDB.
     workflow = function(value) {
       if (missing(value)) {
@@ -48,6 +56,7 @@ Project <- R6::R6Class(
     #' @description Create a new `Project` handle.
     #' @param db Path to the DuckDB project file.
     #' @param project_id Active project identifier.
+    #' @param .ptr Existing native project pointer for internal use.
     initialize = function(db, project_id, .ptr = NULL) {
       if (!requireNamespace("duckdb", quietly = TRUE)) {
         stop("duckdb package is required for Project")
@@ -89,6 +98,20 @@ Project <- R6::R6Class(
       rcpp_project_set_metadata(private$.ptr, metadata_json)
       invisible(self)
     },
+    #' @description Get the project domain.
+    #' @return A character scalar or `NULL`.
+    get_domain = function() {
+      value <- rcpp_project_get_domain(private$.ptr)
+      if (is.null(value) || identical(value, "")) NULL else value
+    },
+    #' @description Set the project domain.
+    #' @param value A character scalar.
+    #' @return The `Project` object invisibly.
+    set_domain = function(value) {
+      checkmate::assert_character(value, len = 1, any.missing = FALSE)
+      rcpp_project_set_domain(private$.ptr, value)
+      invisible(self)
+    },
     #' @description Get the project workflow.
     #' @return A list or `NULL`.
     get_workflow = function() {
@@ -128,10 +151,15 @@ Project <- R6::R6Class(
       Project$new(db, project_id, .ptr = copied_ptr)
     },
     #' @description Print a short summary.
+    #' @param ... Additional arguments ignored.
     print = function(...) {
       cat("\nProject\n")
       cat("db: ", private$.db, "\n", sep = "")
       cat("project_id: ", private$.project_id, "\n", sep = "")
+      domain <- try(self$get_domain(), silent = TRUE)
+      if (!inherits(domain, "try-error") && !is.null(domain)) {
+        cat("domain: ", domain, "\n", sep = "")
+      }
       audit_info <- try(self$get_audit(), silent = TRUE)
       if (!inherits(audit_info, "try-error")) {
         cat("audit entries: ", nrow(audit_info), "\n", sep = "")
@@ -139,6 +167,7 @@ Project <- R6::R6Class(
       invisible(self)
     },
     #' @description Show a short summary.
+    #' @param ... Additional arguments ignored.
     show = function(...) {
       self$print(...)
     }

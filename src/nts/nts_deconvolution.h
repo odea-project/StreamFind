@@ -59,7 +59,7 @@ namespace deconvolution {
     std::vector<float> &final_noise);
 
   void denoise_spectra(
-    ms::MS_FILE &ana,
+    mass_spec::MS_FILE &ana,
     const int &spectrumIdx,
     const float &rt,
     const float &noiseThreshold,

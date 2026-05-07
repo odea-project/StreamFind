@@ -4,9 +4,10 @@
 #include "mzxml.h"
 #include "utils.h"
 
+#include <limits>
 #include <filesystem>
 
-namespace ms {
+namespace mass_spec {
 namespace mzxml {
 
 namespace {
@@ -23,7 +24,7 @@ std::vector<float> decode_peaks(const pugi::xml_node& peaks_node, int precision,
   std::string encoded = peaks_node.child_value();
   if (encoded.empty()) return {};
   std::string decoded = utils::decode_base64(encoded);
-  if (compressed) decoded = ms::utils::decompress_zlib(decoded);
+  if (compressed) decoded = mass_spec::utils::decompress_zlib(decoded);
   if (decoded.empty()) return {};
   return utils::decode_little_endian_to_float(decoded, precision);
 }
@@ -114,10 +115,34 @@ std::vector<int> Reader::get_level() {
   return out;
 }
 std::vector<int> Reader::get_configuration() { return std::vector<int>(pimpl->spectra.size(), 0); }
-float Reader::get_min_mz() { return 0.0f; }
-float Reader::get_max_mz() { return 0.0f; }
-float Reader::get_start_rt() { return 0.0f; }
-float Reader::get_end_rt() { return 0.0f; }
+float Reader::get_min_mz() {
+  float out = std::numeric_limits<float>::max();
+  for (const auto& s : pimpl->spectra) {
+    if (s.lowmz > 0.0f && s.lowmz < out) out = s.lowmz;
+  }
+  return out == std::numeric_limits<float>::max() ? 0.0f : out;
+}
+float Reader::get_max_mz() {
+  float out = 0.0f;
+  for (const auto& s : pimpl->spectra) {
+    if (s.highmz > out) out = s.highmz;
+  }
+  return out;
+}
+float Reader::get_start_rt() {
+  float out = std::numeric_limits<float>::max();
+  for (const auto& s : pimpl->spectra) {
+    if (s.rt > 0.0f && s.rt < out) out = s.rt;
+  }
+  return out == std::numeric_limits<float>::max() ? 0.0f : out;
+}
+float Reader::get_end_rt() {
+  float out = 0.0f;
+  for (const auto& s : pimpl->spectra) {
+    if (s.rt > out) out = s.rt;
+  }
+  return out;
+}
 bool Reader::has_ion_mobility() { return false; }
 
 MS_SUMMARY Reader::get_summary() {
@@ -131,6 +156,10 @@ MS_SUMMARY Reader::get_summary() {
   s.number_spectra_binary_arrays = get_number_spectra_binary_arrays();
   s.format = "mzXML";
   s.type = "MS";
+  s.min_mz = get_min_mz();
+  s.max_mz = get_max_mz();
+  s.start_rt = get_start_rt();
+  s.end_rt = get_end_rt();
   s.has_ion_mobility = false;
   return s;
 }

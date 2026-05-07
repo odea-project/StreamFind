@@ -322,17 +322,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// rcpp_streamcraft_encode_vector
-std::string rcpp_streamcraft_encode_vector(Rcpp::NumericVector numeric_vector);
-RcppExport SEXP _StreamFind_rcpp_streamcraft_encode_vector(SEXP numeric_vectorSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::NumericVector >::type numeric_vector(numeric_vectorSEXP);
-    rcpp_result_gen = Rcpp::wrap(rcpp_streamcraft_encode_vector(numeric_vector));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpp_streamcraft_parse_ms_analysis_from_files
 Rcpp::List rcpp_streamcraft_parse_ms_analysis_from_files(std::string file_path);
 RcppExport SEXP _StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files(SEXP file_pathSEXP) {
@@ -382,6 +371,206 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type presence(presenceSEXP);
     Rcpp::traits::input_parameter< bool >::type verbose(verboseSEXP);
     rcpp_result_gen = Rcpp::wrap(rcpp_ms_cluster_spectra(spectra, mzClust, presence, verbose));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_new
+SEXP rcpp_project_mass_spec_new(SEXP project_xptr);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_new(SEXP project_xptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type project_xptr(project_xptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_new(project_xptr));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_import_files
+void rcpp_project_mass_spec_import_files(SEXP mass_spec_xptr, CharacterVector file_paths, CharacterVector analyses, CharacterVector replicates, CharacterVector blanks);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_import_files(SEXP mass_spec_xptrSEXP, SEXP file_pathsSEXP, SEXP analysesSEXP, SEXP replicatesSEXP, SEXP blanksSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type file_paths(file_pathsSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type replicates(replicatesSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type blanks(blanksSEXP);
+    rcpp_project_mass_spec_import_files(mass_spec_xptr, file_paths, analyses, replicates, blanks);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_project_mass_spec_remove_analysis
+void rcpp_project_mass_spec_remove_analysis(SEXP mass_spec_xptr, std::string analysis);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_remove_analysis(SEXP mass_spec_xptrSEXP, SEXP analysisSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< std::string >::type analysis(analysisSEXP);
+    rcpp_project_mass_spec_remove_analysis(mass_spec_xptr, analysis);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_project_mass_spec_list_analyses
+DataFrame rcpp_project_mass_spec_list_analyses(SEXP mass_spec_xptr);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_list_analyses(SEXP mass_spec_xptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_list_analyses(mass_spec_xptr));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_get_analysis_names
+CharacterVector rcpp_project_mass_spec_get_analysis_names(SEXP mass_spec_xptr);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_get_analysis_names(SEXP mass_spec_xptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_get_analysis_names(mass_spec_xptr));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_get_replicate_names
+CharacterVector rcpp_project_mass_spec_get_replicate_names(SEXP mass_spec_xptr);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_get_replicate_names(SEXP mass_spec_xptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_get_replicate_names(mass_spec_xptr));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_set_replicate_names
+void rcpp_project_mass_spec_set_replicate_names(SEXP mass_spec_xptr, CharacterVector values);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_set_replicate_names(SEXP mass_spec_xptrSEXP, SEXP valuesSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type values(valuesSEXP);
+    rcpp_project_mass_spec_set_replicate_names(mass_spec_xptr, values);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_project_mass_spec_get_blank_names
+CharacterVector rcpp_project_mass_spec_get_blank_names(SEXP mass_spec_xptr);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_get_blank_names(SEXP mass_spec_xptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_get_blank_names(mass_spec_xptr));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_set_blank_names
+void rcpp_project_mass_spec_set_blank_names(SEXP mass_spec_xptr, CharacterVector values);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_set_blank_names(SEXP mass_spec_xptrSEXP, SEXP valuesSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type values(valuesSEXP);
+    rcpp_project_mass_spec_set_blank_names(mass_spec_xptr, values);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_project_mass_spec_get_concentrations
+NumericVector rcpp_project_mass_spec_get_concentrations(SEXP mass_spec_xptr);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_get_concentrations(SEXP mass_spec_xptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_get_concentrations(mass_spec_xptr));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_set_concentrations
+void rcpp_project_mass_spec_set_concentrations(SEXP mass_spec_xptr, NumericVector values);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_set_concentrations(SEXP mass_spec_xptrSEXP, SEXP valuesSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type values(valuesSEXP);
+    rcpp_project_mass_spec_set_concentrations(mass_spec_xptr, values);
+    return R_NilValue;
+END_RCPP
+}
+// rcpp_project_mass_spec_get_spectra_headers
+DataFrame rcpp_project_mass_spec_get_spectra_headers(SEXP mass_spec_xptr, CharacterVector analyses);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_get_spectra_headers(SEXP mass_spec_xptrSEXP, SEXP analysesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type analyses(analysesSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_get_spectra_headers(mass_spec_xptr, analyses));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_get_chromatograms_headers
+DataFrame rcpp_project_mass_spec_get_chromatograms_headers(SEXP mass_spec_xptr, CharacterVector analyses);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_get_chromatograms_headers(SEXP mass_spec_xptrSEXP, SEXP analysesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type analyses(analysesSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_get_chromatograms_headers(mass_spec_xptr, analyses));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_get_spectra_tic
+DataFrame rcpp_project_mass_spec_get_spectra_tic(SEXP mass_spec_xptr, CharacterVector analyses, std::vector<int> levels, NumericVector rt);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_get_spectra_tic(SEXP mass_spec_xptrSEXP, SEXP analysesSEXP, SEXP levelsSEXP, SEXP rtSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type levels(levelsSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type rt(rtSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_get_spectra_tic(mass_spec_xptr, analyses, levels, rt));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_get_raw_spectra
+DataFrame rcpp_project_mass_spec_get_raw_spectra(SEXP mass_spec_xptr, CharacterVector analyses, std::vector<int> levels, SEXP mass, SEXP mz, SEXP rt, SEXP mobility, CharacterVector id, double ppm, double sec, double millisec, bool all_traces, double isolation_window, float min_intensity_ms1, float min_intensity_ms2);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_get_raw_spectra(SEXP mass_spec_xptrSEXP, SEXP analysesSEXP, SEXP levelsSEXP, SEXP massSEXP, SEXP mzSEXP, SEXP rtSEXP, SEXP mobilitySEXP, SEXP idSEXP, SEXP ppmSEXP, SEXP secSEXP, SEXP millisecSEXP, SEXP all_tracesSEXP, SEXP isolation_windowSEXP, SEXP min_intensity_ms1SEXP, SEXP min_intensity_ms2SEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type analyses(analysesSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type levels(levelsSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type mass(massSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type mz(mzSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type rt(rtSEXP);
+    Rcpp::traits::input_parameter< SEXP >::type mobility(mobilitySEXP);
+    Rcpp::traits::input_parameter< CharacterVector >::type id(idSEXP);
+    Rcpp::traits::input_parameter< double >::type ppm(ppmSEXP);
+    Rcpp::traits::input_parameter< double >::type sec(secSEXP);
+    Rcpp::traits::input_parameter< double >::type millisec(millisecSEXP);
+    Rcpp::traits::input_parameter< bool >::type all_traces(all_tracesSEXP);
+    Rcpp::traits::input_parameter< double >::type isolation_window(isolation_windowSEXP);
+    Rcpp::traits::input_parameter< float >::type min_intensity_ms1(min_intensity_ms1SEXP);
+    Rcpp::traits::input_parameter< float >::type min_intensity_ms2(min_intensity_ms2SEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_get_raw_spectra(mass_spec_xptr, analyses, levels, mass, mz, rt, mobility, id, ppm, sec, millisec, all_traces, isolation_window, min_intensity_ms1, min_intensity_ms2));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_mass_spec_extract_chromatograms
+DataFrame rcpp_project_mass_spec_extract_chromatograms(SEXP mass_spec_xptr, std::string analysis, std::vector<int> indices);
+RcppExport SEXP _StreamFind_rcpp_project_mass_spec_extract_chromatograms(SEXP mass_spec_xptrSEXP, SEXP analysisSEXP, SEXP indicesSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type mass_spec_xptr(mass_spec_xptrSEXP);
+    Rcpp::traits::input_parameter< std::string >::type analysis(analysisSEXP);
+    Rcpp::traits::input_parameter< std::vector<int> >::type indices(indicesSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_mass_spec_extract_chromatograms(mass_spec_xptr, analysis, indices));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -719,6 +908,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// rcpp_project_get_domain
+std::string rcpp_project_get_domain(SEXP project_xptr);
+RcppExport SEXP _StreamFind_rcpp_project_get_domain(SEXP project_xptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type project_xptr(project_xptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(rcpp_project_get_domain(project_xptr));
+    return rcpp_result_gen;
+END_RCPP
+}
+// rcpp_project_set_domain
+void rcpp_project_set_domain(SEXP project_xptr, std::string domain);
+RcppExport SEXP _StreamFind_rcpp_project_set_domain(SEXP project_xptrSEXP, SEXP domainSEXP) {
+BEGIN_RCPP
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< SEXP >::type project_xptr(project_xptrSEXP);
+    Rcpp::traits::input_parameter< std::string >::type domain(domainSEXP);
+    rcpp_project_set_domain(project_xptr, domain);
+    return R_NilValue;
+END_RCPP
+}
 // rcpp_project_copy
 SEXP rcpp_project_copy(SEXP project_xptr, std::string db_path, std::string project_id);
 RcppExport SEXP _StreamFind_rcpp_project_copy(SEXP project_xptrSEXP, SEXP db_pathSEXP, SEXP project_idSEXP) {
@@ -835,11 +1046,26 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_ms_deconvolute_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_deconvolute_spectra, 4},
     {"_StreamFind_rcpp_ms_find_spectra_maxima", (DL_FUNC) &_StreamFind_rcpp_ms_find_spectra_maxima, 4},
     {"_StreamFind_rcpp_streamcraft_decode_string", (DL_FUNC) &_StreamFind_rcpp_streamcraft_decode_string, 1},
-    {"_StreamFind_rcpp_streamcraft_encode_vector", (DL_FUNC) &_StreamFind_rcpp_streamcraft_encode_vector, 1},
     {"_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_analysis_from_files, 1},
     {"_StreamFind_rcpp_streamcraft_parse_ms_spectra", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_spectra, 5},
     {"_StreamFind_rcpp_streamcraft_parse_ms_chromatograms", (DL_FUNC) &_StreamFind_rcpp_streamcraft_parse_ms_chromatograms, 2},
     {"_StreamFind_rcpp_ms_cluster_spectra", (DL_FUNC) &_StreamFind_rcpp_ms_cluster_spectra, 4},
+    {"_StreamFind_rcpp_project_mass_spec_new", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_new, 1},
+    {"_StreamFind_rcpp_project_mass_spec_import_files", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_import_files, 5},
+    {"_StreamFind_rcpp_project_mass_spec_remove_analysis", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_remove_analysis, 2},
+    {"_StreamFind_rcpp_project_mass_spec_list_analyses", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_list_analyses, 1},
+    {"_StreamFind_rcpp_project_mass_spec_get_analysis_names", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_get_analysis_names, 1},
+    {"_StreamFind_rcpp_project_mass_spec_get_replicate_names", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_get_replicate_names, 1},
+    {"_StreamFind_rcpp_project_mass_spec_set_replicate_names", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_set_replicate_names, 2},
+    {"_StreamFind_rcpp_project_mass_spec_get_blank_names", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_get_blank_names, 1},
+    {"_StreamFind_rcpp_project_mass_spec_set_blank_names", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_set_blank_names, 2},
+    {"_StreamFind_rcpp_project_mass_spec_get_concentrations", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_get_concentrations, 1},
+    {"_StreamFind_rcpp_project_mass_spec_set_concentrations", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_set_concentrations, 2},
+    {"_StreamFind_rcpp_project_mass_spec_get_spectra_headers", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_get_spectra_headers, 2},
+    {"_StreamFind_rcpp_project_mass_spec_get_chromatograms_headers", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_get_chromatograms_headers, 2},
+    {"_StreamFind_rcpp_project_mass_spec_get_spectra_tic", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_get_spectra_tic, 4},
+    {"_StreamFind_rcpp_project_mass_spec_get_raw_spectra", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_get_raw_spectra, 15},
+    {"_StreamFind_rcpp_project_mass_spec_extract_chromatograms", (DL_FUNC) &_StreamFind_rcpp_project_mass_spec_extract_chromatograms, 3},
     {"_StreamFind_rcpp_nts_find_features", (DL_FUNC) &_StreamFind_rcpp_nts_find_features, 14},
     {"_StreamFind_rcpp_nts_load_features_ms1", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms1, 9},
     {"_StreamFind_rcpp_nts_load_features_ms2", (DL_FUNC) &_StreamFind_rcpp_nts_load_features_ms2, 8},
@@ -856,6 +1082,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_StreamFind_rcpp_nts_metfrag_screening", (DL_FUNC) &_StreamFind_rcpp_nts_metfrag_screening, 17},
     {"_StreamFind_rcpp_nts_assign_transformation_products", (DL_FUNC) &_StreamFind_rcpp_nts_assign_transformation_products, 4},
     {"_StreamFind_rcpp_project_new", (DL_FUNC) &_StreamFind_rcpp_project_new, 2},
+    {"_StreamFind_rcpp_project_get_domain", (DL_FUNC) &_StreamFind_rcpp_project_get_domain, 1},
+    {"_StreamFind_rcpp_project_set_domain", (DL_FUNC) &_StreamFind_rcpp_project_set_domain, 2},
     {"_StreamFind_rcpp_project_copy", (DL_FUNC) &_StreamFind_rcpp_project_copy, 3},
     {"_StreamFind_rcpp_project_validate", (DL_FUNC) &_StreamFind_rcpp_project_validate, 1},
     {"_StreamFind_rcpp_project_get_metadata", (DL_FUNC) &_StreamFind_rcpp_project_get_metadata, 1},

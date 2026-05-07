@@ -1,4 +1,4 @@
-// mass_spec.cpp — implementations of ms:: algorithms
+// mass_spec.cpp — implementations of mass_spec:: algorithms
 // C++17, no Rcpp dependency.
 
 #include "mass_spec.h"
@@ -37,7 +37,7 @@ static inline double trap(double x0, double y0, double x1, double y1) {
 // MARK: calculate_spectra_charges
 // ============================================================================
 
-std::vector<ms::ChargeRow> ms::calculate_spectra_charges(
+std::vector<mass_spec::ChargeRow> mass_spec::calculate_spectra_charges(
     const std::vector<SpectrumPoint>& pts,
     int   polarity,
     double round_val,
@@ -151,7 +151,7 @@ std::vector<ms::ChargeRow> ms::calculate_spectra_charges(
 // MARK: cluster_masses
 // ============================================================================
 
-std::vector<ms::MassPoint> ms::cluster_masses(
+std::vector<mass_spec::MassPoint> mass_spec::cluster_masses(
     const std::vector<MassPoint>& pts,
     double clust_val)
 {
@@ -192,7 +192,7 @@ std::vector<ms::MassPoint> ms::cluster_masses(
 // MARK: deconvolute_spectrum
 // ============================================================================
 
-std::vector<ms::MassPoint> ms::deconvolute_spectrum(
+std::vector<mass_spec::MassPoint> mass_spec::deconvolute_spectrum(
     const std::vector<SpectrumPoint>& spectrum_pts,
     const std::vector<ChargeRow>&     charges,
     double clust_val,

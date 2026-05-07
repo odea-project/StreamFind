@@ -10,7 +10,7 @@
 #include <cmath>
 #include <algorithm>
 
-namespace ms {
+namespace mass_spec {
 namespace processing {
 
 // ============================================================================

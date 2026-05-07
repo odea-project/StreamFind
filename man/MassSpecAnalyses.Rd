@@ -18,15 +18,15 @@
 \alias{info.MassSpecAnalyses}
 \alias{show.MassSpecAnalyses}
 \alias{get_spectra_headers.MassSpecAnalyses}
-\alias{get_spectra_tic.MassSpecAnalyses}
+\alias{get_raw_spectra_tic.MassSpecAnalyses}
 \alias{plot_spectra_tic.MassSpecAnalyses}
-\alias{get_spectra_bpc.MassSpecAnalyses}
+\alias{get_raw_spectra_bpc.MassSpecAnalyses}
 \alias{plot_spectra_bpc.MassSpecAnalyses}
 \alias{get_raw_spectra.MassSpecAnalyses}
-\alias{get_spectra_eic.MassSpecAnalyses}
+\alias{get_raw_spectra_eic.MassSpecAnalyses}
 \alias{plot_spectra_eic.MassSpecAnalyses}
-\alias{get_spectra_ms1.MassSpecAnalyses}
-\alias{get_spectra_ms2.MassSpecAnalyses}
+\alias{get_raw_spectra_ms1.MassSpecAnalyses}
+\alias{get_raw_spectra_ms2.MassSpecAnalyses}
 \alias{get_chromatograms_headers.MassSpecAnalyses}
 \alias{get_chromatograms.MassSpecAnalyses}
 \alias{plot_chromatograms.MassSpecAnalyses}
@@ -71,7 +71,7 @@ MassSpecAnalyses(
 
 \method{get_spectra_headers}{MassSpecAnalyses}(x, analyses = NULL)
 
-\method{get_spectra_tic}{MassSpecAnalyses}(x, analyses = NULL, levels = c(1, 2), rt = NULL)
+\method{get_raw_spectra_tic}{MassSpecAnalyses}(x, analyses = NULL, levels = c(1, 2), rt = NULL)
 
 \method{plot_spectra_tic}{MassSpecAnalyses}(
   x,
@@ -87,7 +87,7 @@ MassSpecAnalyses(
   colorPalette = NULL
 )
 
-\method{get_spectra_bpc}{MassSpecAnalyses}(x, analyses = NULL, levels = c(1, 2), rt = NULL)
+\method{get_raw_spectra_bpc}{MassSpecAnalyses}(x, analyses = NULL, levels = c(1, 2), rt = NULL)
 
 \method{plot_spectra_bpc}{MassSpecAnalyses}(
   x,
@@ -121,7 +121,7 @@ MassSpecAnalyses(
   minIntensityMS2 = 0
 )
 
-\method{get_spectra_eic}{MassSpecAnalyses}(
+\method{get_raw_spectra_eic}{MassSpecAnalyses}(
   x,
   analyses = NULL,
   mass = NULL,
@@ -154,7 +154,7 @@ MassSpecAnalyses(
   colorPalette = NULL
 )
 
-\method{get_spectra_ms1}{MassSpecAnalyses}(
+\method{get_raw_spectra_ms1}{MassSpecAnalyses}(
   x,
   analyses = NULL,
   mass = NULL,
@@ -170,7 +170,7 @@ MassSpecAnalyses(
   minIntensity = 1000
 )
 
-\method{get_spectra_ms2}{MassSpecAnalyses}(
+\method{get_raw_spectra_ms2}{MassSpecAnalyses}(
   x,
   analyses = NULL,
   mass = NULL,
@@ -361,23 +361,23 @@ The \code{MassSpecAnalyses} class stores MassSpec analyses metadata and headers 
 
 \item \code{get_spectra_headers(MassSpecAnalyses)}: Fetch spectra headers for a given analysis.
 
-\item \code{get_spectra_tic(MassSpecAnalyses)}: Get the total ion current (TIC) spectra for the specified analyses.
+\item \code{get_raw_spectra_tic(MassSpecAnalyses)}: Get the total ion current (TIC) spectra for the specified analyses.
 
 \item \code{plot_spectra_tic(MassSpecAnalyses)}: Plot total ion current (TIC) spectra for the specified analyses.
 
-\item \code{get_spectra_bpc(MassSpecAnalyses)}: Get the base peak chromatograms (BPC) spectra for the specified analyses.
+\item \code{get_raw_spectra_bpc(MassSpecAnalyses)}: Get the base peak chromatograms (BPC) spectra for the specified analyses.
 
 \item \code{plot_spectra_bpc(MassSpecAnalyses)}: Plot base peak chromatogram (BPC) spectra for the specified analyses.
 
 \item \code{get_raw_spectra(MassSpecAnalyses)}: Get raw spectra data from specified analyses, returning a \code{data.table} with the spectra data.
 
-\item \code{get_spectra_eic(MassSpecAnalyses)}: Get extracted ion chromatograms (EIC) for the specified analyses and targets.
+\item \code{get_raw_spectra_eic(MassSpecAnalyses)}: Get extracted ion chromatograms (EIC) for the specified analyses and targets.
 
 \item \code{plot_spectra_eic(MassSpecAnalyses)}: Plot extracted ion chromatograms (EIC) for the specified analyses and targets.
 
-\item \code{get_spectra_ms1(MassSpecAnalyses)}: Get MS1 spectra for the specified analyses and targets.
+\item \code{get_raw_spectra_ms1(MassSpecAnalyses)}: Get MS1 spectra for the specified analyses and targets.
 
-\item \code{get_spectra_ms2(MassSpecAnalyses)}: Get MS2 spectra for the specified analyses and targets.
+\item \code{get_raw_spectra_ms2(MassSpecAnalyses)}: Get MS2 spectra for the specified analyses and targets.
 
 \item \code{get_chromatograms_headers(MassSpecAnalyses)}: Fetch chromatograms headers for a given analysis.
 

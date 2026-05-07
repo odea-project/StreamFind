@@ -97,6 +97,7 @@ Collate:
      'fct_db_methods.R'
      'class_AuditTrail.R'
      'class_Project.R'
+     'class_ProjectMassSpec.R'
      'class_Metadata.R'
     'class_ProcessingStep.R'
     'class_Workflow.R'

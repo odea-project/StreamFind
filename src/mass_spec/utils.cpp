@@ -5,7 +5,7 @@
 #include <array>
 #include <zlib.h>
 
-namespace ms {
+namespace mass_spec {
 namespace utils {
 
 namespace {

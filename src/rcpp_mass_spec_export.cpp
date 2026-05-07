@@ -1,9 +1,12 @@
-// mass_spec_export.cpp — Rcpp bridge for ms:: algorithms
+// mass_spec_export.cpp — Rcpp bridge for mass_spec:: algorithms
 // Provides 9 exported functions callable from R via .Call.
 
 #include <Rcpp.h>
 #include "mass_spec/mass_spec.h"
+#include "mass_spec/project_mass_spec.h"
+#include "mass_spec/targets.h"
 #include "mass_spec/utils.h"
+#include "project/project.h"
 #include <string>
 #include <vector>
 #include <map>
@@ -18,6 +21,484 @@ using namespace Rcpp;
 // ============================================================================
 
 namespace {
+
+mass_spec::MS_TARGETS_INPUT ms_targets_input_from_object(SEXP value);
+
+std::string project_error_code_to_string(project::ERROR_CODE code) {
+    switch (code) {
+        case project::ERROR_CODE::DuckDB:
+            return "DuckDB";
+        case project::ERROR_CODE::InvalidArgument:
+            return "InvalidArgument";
+        case project::ERROR_CODE::SchemaMismatch:
+            return "SchemaMismatch";
+        case project::ERROR_CODE::NotFound:
+            return "NotFound";
+        case project::ERROR_CODE::Io:
+            return "Io";
+        case project::ERROR_CODE::Unknown:
+        default:
+            return "Unknown";
+    }
+}
+
+template <typename Fn>
+auto project_call(Fn&& fn) {
+    try {
+        return fn();
+    } catch (const project::ERROR& e) {
+        stop("Project error [" + project_error_code_to_string(e.code()) + "]: " + e.what());
+    } catch (const std::exception& e) {
+        stop(std::string("Project error [Unknown]: ") + e.what());
+    }
+}
+
+project::PROJECT& project_from_xptr(SEXP extptr) {
+    Rcpp::XPtr<project::PROJECT> ptr(extptr);
+    if (ptr.get() == nullptr) {
+        stop("Project pointer is null");
+    }
+    return *ptr;
+}
+
+mass_spec::PROJECT_MASS_SPEC& project_mass_spec_from_xptr(SEXP extptr) {
+    Rcpp::XPtr<mass_spec::PROJECT_MASS_SPEC> ptr(extptr);
+    if (ptr.get() == nullptr) {
+        stop("Project Mass Spec pointer is null");
+    }
+    return *ptr;
+}
+
+DataFrame ms_analysis_rows_to_df(const std::vector<mass_spec::MS_ANALYSIS_ROW>& rows) {
+    CharacterVector project_id(rows.size());
+    CharacterVector analysis(rows.size());
+    CharacterVector replicate(rows.size());
+    CharacterVector blank(rows.size());
+    CharacterVector file_name(rows.size());
+    CharacterVector file_path(rows.size());
+    CharacterVector file_dir(rows.size());
+    CharacterVector file_extension(rows.size());
+    CharacterVector format(rows.size());
+    CharacterVector type(rows.size());
+    CharacterVector time_stamp(rows.size());
+    IntegerVector number_spectra(rows.size());
+    IntegerVector number_chromatograms(rows.size());
+    IntegerVector number_spectra_binary_arrays(rows.size());
+    NumericVector min_mz(rows.size());
+    NumericVector max_mz(rows.size());
+    NumericVector start_rt(rows.size());
+    NumericVector end_rt(rows.size());
+    LogicalVector has_ion_mobility(rows.size());
+    NumericVector concentration(rows.size());
+    CharacterVector created_at(rows.size());
+    for (std::size_t i = 0; i < rows.size(); ++i) {
+        project_id[i] = rows[i].project_id;
+        analysis[i] = rows[i].analysis;
+        if (rows[i].replicate.empty()) replicate[i] = CharacterVector::get_na(); else replicate[i] = rows[i].replicate;
+        if (rows[i].blank.empty()) blank[i] = CharacterVector::get_na(); else blank[i] = rows[i].blank;
+        if (rows[i].file_name.empty()) file_name[i] = CharacterVector::get_na(); else file_name[i] = rows[i].file_name;
+        file_path[i] = rows[i].file_path;
+        if (rows[i].file_dir.empty()) file_dir[i] = CharacterVector::get_na(); else file_dir[i] = rows[i].file_dir;
+        if (rows[i].file_extension.empty()) file_extension[i] = CharacterVector::get_na(); else file_extension[i] = rows[i].file_extension;
+        if (rows[i].format.empty()) format[i] = CharacterVector::get_na(); else format[i] = rows[i].format;
+        if (rows[i].type.empty()) type[i] = CharacterVector::get_na(); else type[i] = rows[i].type;
+        if (rows[i].time_stamp.empty()) time_stamp[i] = CharacterVector::get_na(); else time_stamp[i] = rows[i].time_stamp;
+        number_spectra[i] = rows[i].number_spectra;
+        number_chromatograms[i] = rows[i].number_chromatograms;
+        number_spectra_binary_arrays[i] = rows[i].number_spectra_binary_arrays;
+        min_mz[i] = rows[i].min_mz;
+        max_mz[i] = rows[i].max_mz;
+        start_rt[i] = rows[i].start_rt;
+        end_rt[i] = rows[i].end_rt;
+        has_ion_mobility[i] = rows[i].has_ion_mobility;
+        concentration[i] = rows[i].concentration;
+        created_at[i] = rows[i].created_at;
+    }
+    return DataFrame::create(Named("project_id") = project_id,
+                             Named("analysis") = analysis,
+                             Named("replicate") = replicate,
+                             Named("blank") = blank,
+                             Named("file_name") = file_name,
+                             Named("file_path") = file_path,
+                             Named("file_dir") = file_dir,
+                             Named("file_extension") = file_extension,
+                             Named("format") = format,
+                             Named("type") = type,
+                             Named("time_stamp") = time_stamp,
+                             Named("number_spectra") = number_spectra,
+                             Named("number_chromatograms") = number_chromatograms,
+                             Named("number_spectra_binary_arrays") = number_spectra_binary_arrays,
+                             Named("min_mz") = min_mz,
+                             Named("max_mz") = max_mz,
+                             Named("start_rt") = start_rt,
+                             Named("end_rt") = end_rt,
+                             Named("has_ion_mobility") = has_ion_mobility,
+                             Named("concentration") = concentration,
+                             Named("created_at") = created_at);
+}
+
+DataFrame ms_spectra_header_rows_to_df(const std::vector<mass_spec::MS_SPECTRA_HEADER_ROW>& rows) {
+    CharacterVector project_id(rows.size());
+    CharacterVector analysis(rows.size());
+    IntegerVector index(rows.size());
+    IntegerVector scan(rows.size());
+    IntegerVector array_length(rows.size());
+    IntegerVector level(rows.size());
+    IntegerVector mode(rows.size());
+    IntegerVector polarity(rows.size());
+    IntegerVector configuration(rows.size());
+    NumericVector lowmz(rows.size());
+    NumericVector highmz(rows.size());
+    NumericVector bpmz(rows.size());
+    NumericVector bpint(rows.size());
+    NumericVector tic(rows.size());
+    NumericVector rt(rows.size());
+    NumericVector mobility(rows.size());
+    NumericVector window_mz(rows.size());
+    NumericVector pre_mzlow(rows.size());
+    NumericVector pre_mzhigh(rows.size());
+    NumericVector pre_mz(rows.size());
+    NumericVector pre_intensity(rows.size());
+    IntegerVector pre_charge(rows.size());
+    NumericVector pre_ce(rows.size());
+    for (std::size_t i = 0; i < rows.size(); ++i) {
+        project_id[i] = rows[i].project_id;
+        analysis[i] = rows[i].analysis;
+        index[i] = rows[i].index;
+        scan[i] = rows[i].scan;
+        array_length[i] = rows[i].array_length;
+        level[i] = rows[i].level;
+        mode[i] = rows[i].mode;
+        polarity[i] = rows[i].polarity;
+        configuration[i] = rows[i].configuration;
+        lowmz[i] = rows[i].lowmz;
+        highmz[i] = rows[i].highmz;
+        bpmz[i] = rows[i].bpmz;
+        bpint[i] = rows[i].bpint;
+        tic[i] = rows[i].tic;
+        rt[i] = rows[i].rt;
+        mobility[i] = rows[i].mobility;
+        window_mz[i] = rows[i].window_mz;
+        pre_mzlow[i] = rows[i].window_mzlow;
+        pre_mzhigh[i] = rows[i].window_mzhigh;
+        pre_mz[i] = rows[i].precursor_mz;
+        pre_intensity[i] = rows[i].precursor_intensity;
+        pre_charge[i] = rows[i].precursor_charge;
+        pre_ce[i] = rows[i].activation_ce;
+    }
+    return DataFrame::create(Named("project_id") = project_id,
+                             Named("analysis") = analysis,
+                             Named("index") = index,
+                             Named("scan") = scan,
+                             Named("array_length") = array_length,
+                             Named("level") = level,
+                             Named("mode") = mode,
+                             Named("polarity") = polarity,
+                             Named("configuration") = configuration,
+                             Named("lowmz") = lowmz,
+                             Named("highmz") = highmz,
+                             Named("bpmz") = bpmz,
+                             Named("bpint") = bpint,
+                             Named("tic") = tic,
+                             Named("rt") = rt,
+                             Named("mobility") = mobility,
+                             Named("window_mz") = window_mz,
+                             Named("pre_mzlow") = pre_mzlow,
+                             Named("pre_mzhigh") = pre_mzhigh,
+                             Named("pre_mz") = pre_mz,
+                             Named("pre_intensity") = pre_intensity,
+                             Named("pre_charge") = pre_charge,
+                             Named("pre_ce") = pre_ce);
+}
+
+DataFrame ms_chromatogram_header_rows_to_df(const std::vector<mass_spec::MS_CHROMATOGRAM_HEADER_ROW>& rows) {
+    CharacterVector project_id(rows.size());
+    CharacterVector analysis(rows.size());
+    IntegerVector index(rows.size());
+    CharacterVector id(rows.size());
+    IntegerVector array_length(rows.size());
+    IntegerVector polarity(rows.size());
+    NumericVector pre_mz(rows.size());
+    NumericVector pre_ce(rows.size());
+    NumericVector pro_mz(rows.size());
+    for (std::size_t i = 0; i < rows.size(); ++i) {
+        project_id[i] = rows[i].project_id;
+        analysis[i] = rows[i].analysis;
+        index[i] = rows[i].index;
+        if (rows[i].id.empty()) id[i] = CharacterVector::get_na(); else id[i] = rows[i].id;
+        array_length[i] = rows[i].array_length;
+        polarity[i] = rows[i].polarity;
+        pre_mz[i] = rows[i].precursor_mz;
+        pre_ce[i] = rows[i].activation_ce;
+        pro_mz[i] = rows[i].product_mz;
+    }
+    return DataFrame::create(Named("project_id") = project_id,
+                             Named("analysis") = analysis,
+                             Named("index") = index,
+                             Named("id") = id,
+                             Named("array_length") = array_length,
+                             Named("polarity") = polarity,
+                             Named("pre_mz") = pre_mz,
+                             Named("pre_ce") = pre_ce,
+                             Named("pro_mz") = pro_mz);
+}
+
+DataFrame ms_spectra_tic_rows_to_df(const std::vector<mass_spec::MS_SPECTRA_TIC_ROW>& rows) {
+    CharacterVector analysis(rows.size());
+    CharacterVector replicate(rows.size());
+    IntegerVector polarity(rows.size());
+    IntegerVector level(rows.size());
+    NumericVector rt(rows.size());
+    NumericVector tic(rows.size());
+    NumericVector bpmz(rows.size());
+    NumericVector bpint(rows.size());
+    for (std::size_t i = 0; i < rows.size(); ++i) {
+        analysis[i] = rows[i].analysis;
+        if (rows[i].replicate.empty()) replicate[i] = CharacterVector::get_na(); else replicate[i] = rows[i].replicate;
+        polarity[i] = rows[i].polarity;
+        level[i] = rows[i].level;
+        rt[i] = rows[i].rt;
+        tic[i] = rows[i].tic;
+        bpmz[i] = rows[i].bpmz;
+        bpint[i] = rows[i].bpint;
+    }
+    return DataFrame::create(Named("analysis") = analysis,
+                             Named("replicate") = replicate,
+                             Named("polarity") = polarity,
+                             Named("level") = level,
+                             Named("rt") = rt,
+                             Named("tic") = tic,
+                             Named("bpmz") = bpmz,
+                             Named("bpint") = bpint);
+}
+
+DataFrame ms_raw_spectrum_rows_to_df(const std::vector<mass_spec::MS_RAW_SPECTRUM_ROW>& rows) {
+    CharacterVector analysis(rows.size());
+    CharacterVector replicate(rows.size());
+    CharacterVector id(rows.size());
+    IntegerVector polarity(rows.size());
+    IntegerVector level(rows.size());
+    NumericVector pre_mz(rows.size());
+    NumericVector pre_mzlow(rows.size());
+    NumericVector pre_mzhigh(rows.size());
+    NumericVector pre_ce(rows.size());
+    NumericVector rt(rows.size());
+    NumericVector mobility(rows.size());
+    NumericVector mz(rows.size());
+    NumericVector intensity(rows.size());
+    for (std::size_t i = 0; i < rows.size(); ++i) {
+        analysis[i] = rows[i].analysis;
+        if (rows[i].replicate.empty()) replicate[i] = CharacterVector::get_na(); else replicate[i] = rows[i].replicate;
+        if (rows[i].id.empty()) id[i] = CharacterVector::get_na(); else id[i] = rows[i].id;
+        polarity[i] = rows[i].polarity;
+        level[i] = rows[i].level;
+        pre_mz[i] = rows[i].pre_mz;
+        pre_mzlow[i] = rows[i].pre_mzlow;
+        pre_mzhigh[i] = rows[i].pre_mzhigh;
+        pre_ce[i] = rows[i].pre_ce;
+        rt[i] = rows[i].rt;
+        mobility[i] = rows[i].mobility;
+        mz[i] = rows[i].mz;
+        intensity[i] = rows[i].intensity;
+    }
+    return DataFrame::create(Named("analysis") = analysis,
+                             Named("replicate") = replicate,
+                             Named("id") = id,
+                             Named("polarity") = polarity,
+                             Named("level") = level,
+                             Named("pre_mz") = pre_mz,
+                             Named("pre_mzlow") = pre_mzlow,
+                             Named("pre_mzhigh") = pre_mzhigh,
+                             Named("pre_ce") = pre_ce,
+                             Named("rt") = rt,
+                             Named("mobility") = mobility,
+                             Named("mz") = mz,
+                             Named("intensity") = intensity);
+}
+
+CharacterVector named_character_vector(const std::vector<std::string>& values, const std::vector<std::string>& names) {
+    CharacterVector out(values.size());
+    CharacterVector out_names(names.size());
+    for (std::size_t i = 0; i < values.size(); ++i) {
+        if (values[i].empty()) {
+            out[i] = CharacterVector::get_na();
+        } else {
+            out[i] = values[i];
+        }
+    }
+    for (std::size_t i = 0; i < names.size(); ++i) {
+        out_names[i] = names[i];
+    }
+    out.attr("names") = out_names;
+    return out;
+}
+
+NumericVector named_numeric_vector(const std::vector<double>& values, const std::vector<std::string>& names) {
+    NumericVector out(values.size());
+    CharacterVector out_names(names.size());
+    for (std::size_t i = 0; i < values.size(); ++i) {
+        out[i] = values[i];
+    }
+    for (std::size_t i = 0; i < names.size(); ++i) {
+        out_names[i] = names[i];
+    }
+    out.attr("names") = out_names;
+    return out;
+}
+
+std::vector<std::string> analyses_from_character_vector(CharacterVector analyses) {
+    std::vector<std::string> out;
+    out.reserve(analyses.size());
+    for (const auto& analysis : analyses) {
+        if (analysis == NA_STRING) {
+            continue;
+        }
+        out.push_back(as<std::string>(analysis));
+    }
+    return out;
+}
+
+std::vector<double> doubles_from_numeric_vector(const NumericVector& values) {
+    std::vector<double> out(values.size());
+    for (R_xlen_t i = 0; i < values.size(); ++i) {
+        out[static_cast<std::size_t>(i)] = NumericVector::is_na(values[i]) ? 0.0 : static_cast<double>(values[i]);
+    }
+    return out;
+}
+
+std::vector<std::string> strings_from_character_vector(const CharacterVector& values) {
+    std::vector<std::string> out(values.size());
+    for (R_xlen_t i = 0; i < values.size(); ++i) {
+        out[static_cast<std::size_t>(i)] = CharacterVector::is_na(values[i]) ? std::string() : as<std::string>(values[i]);
+    }
+    return out;
+}
+
+template <typename T>
+void assign_if_present(DataFrame df, const char* name, T& target);
+
+template <>
+void assign_if_present(DataFrame df, const char* name, std::vector<double>& target) {
+    if (df.containsElementNamed(name)) {
+        target = doubles_from_numeric_vector(df[name]);
+    }
+}
+
+template <>
+void assign_if_present(DataFrame df, const char* name, std::vector<std::string>& target) {
+    if (df.containsElementNamed(name)) {
+        target = strings_from_character_vector(df[name]);
+    }
+}
+
+mass_spec::MS_TARGETS_INPUT ms_targets_input_from_df(DataFrame df) {
+    mass_spec::MS_TARGETS_INPUT out;
+    out.size = static_cast<std::size_t>(df.nrows());
+    if (out.size == 0) {
+        return out;
+    }
+    assign_if_present(df, "id", out.id);
+    assign_if_present(df, "analysis", out.analysis);
+    assign_if_present(df, "polarity", out.polarity);
+    assign_if_present(df, "mass", out.mass);
+    assign_if_present(df, "min", out.mass_min);
+    assign_if_present(df, "max", out.mass_max);
+    assign_if_present(df, "mz", out.mz);
+    assign_if_present(df, "mzmin", out.mzmin);
+    assign_if_present(df, "mzmax", out.mzmax);
+    assign_if_present(df, "rt", out.rt);
+    assign_if_present(df, "rtmin", out.rtmin);
+    assign_if_present(df, "rtmax", out.rtmax);
+    assign_if_present(df, "mobility", out.mobility);
+    assign_if_present(df, "mobilitymin", out.mobilitymin);
+    assign_if_present(df, "mobilitymax", out.mobilitymax);
+    if (df.containsElementNamed("name") && out.id.empty()) {
+        out.id = strings_from_character_vector(df["name"]);
+    }
+    return out;
+}
+
+mass_spec::MS_TARGETS_INPUT ms_targets_input_from_object(SEXP value) {
+    if (Rf_isNull(value)) {
+        return {};
+    }
+    if (Rf_isNumeric(value) && !Rf_isMatrix(value)) {
+        DataFrame df = DataFrame::create(Named("mz") = NumericVector(value));
+        return ms_targets_input_from_df(df);
+    }
+    if (Rf_isString(value) && !Rf_isObject(value)) {
+        return {};
+    }
+    if (Rf_inherits(value, "data.frame")) {
+        return ms_targets_input_from_df(as<DataFrame>(value));
+    }
+    return {};
+}
+
+DataFrame ms_chromatograms_to_df(const std::string& analysis,
+                                 const std::string& replicate,
+                                 const std::vector<mass_spec::MS_CHROMATOGRAM_HEADER_ROW>& headers,
+                                 const std::vector<std::vector<std::vector<float>>>& chromatograms) {
+    std::size_t n = 0;
+    for (const auto& chrom : chromatograms) {
+        if (chrom.size() >= 2) {
+            n += std::min(chrom[0].size(), chrom[1].size());
+        }
+    }
+
+    CharacterVector analysis_col(n);
+    CharacterVector replicate_col(n);
+    IntegerVector index_col(n);
+    CharacterVector id_col(n);
+    IntegerVector polarity_col(n);
+    NumericVector pre_mz_col(n);
+    NumericVector pre_ce_col(n);
+    NumericVector pro_mz_col(n);
+    NumericVector rt_col(n);
+    NumericVector intensity_col(n);
+
+    std::size_t row = 0;
+    for (std::size_t i = 0; i < chromatograms.size() && i < headers.size(); ++i) {
+        if (chromatograms[i].size() < 2) {
+            continue;
+        }
+        const auto& rt = chromatograms[i][0];
+        const auto& intensity = chromatograms[i][1];
+        const std::size_t size = std::min(rt.size(), intensity.size());
+        for (std::size_t j = 0; j < size; ++j) {
+            analysis_col[row] = analysis;
+            if (replicate.empty()) {
+                replicate_col[row] = CharacterVector::get_na();
+            } else {
+                replicate_col[row] = replicate;
+            }
+            index_col[row] = headers[i].index;
+            if (headers[i].id.empty()) {
+                id_col[row] = CharacterVector::get_na();
+            } else {
+                id_col[row] = headers[i].id;
+            }
+            polarity_col[row] = headers[i].polarity;
+            pre_mz_col[row] = headers[i].precursor_mz;
+            pre_ce_col[row] = headers[i].activation_ce;
+            pro_mz_col[row] = headers[i].product_mz;
+            rt_col[row] = rt[j];
+            intensity_col[row] = intensity[j];
+            ++row;
+        }
+    }
+
+    return DataFrame::create(Named("analysis") = analysis_col,
+                             Named("replicate") = replicate_col,
+                             Named("index") = index_col,
+                             Named("id") = id_col,
+                             Named("polarity") = polarity_col,
+                             Named("pre_mz") = pre_mz_col,
+                             Named("pre_ce") = pre_ce_col,
+                             Named("pro_mz") = pro_mz_col,
+                             Named("rt") = rt_col,
+                             Named("intensity") = intensity_col);
+}
 
 struct GroupKey {
     std::string analysis;
@@ -90,9 +571,9 @@ DataFrame rcpp_ms_smooth_chromatograms(
 
         std::vector<double> smoothed;
         if (method == "savgol") {
-            smoothed = ms::processing::savitzky_golay(y, fl, forder, dorder);
+            smoothed = mass_spec::processing::savitzky_golay(y, fl, forder, dorder);
         } else {
-            smoothed = ms::processing::moving_average(y, window_size);
+            smoothed = mass_spec::processing::moving_average(y, window_size);
         }
         for (int k = 0; k < (int)idx.size(); ++k)
             out_int[idx[k]] = smoothed[k];
@@ -149,7 +630,7 @@ DataFrame rcpp_ms_correct_baseline_airpls(
         std::vector<double> y(idx.size());
         for (int k = 0; k < (int)idx.size(); ++k) y[k] = out_raw[idx[k]];
 
-        std::vector<double> baseline = ms::processing::airpls_baseline(y, lambda, differences, itermax);
+        std::vector<double> baseline = mass_spec::processing::airpls_baseline(y, lambda, differences, itermax);
 
         for (int k = 0; k < (int)idx.size(); ++k) {
             double corrected = y[k] - baseline[k];
@@ -210,7 +691,7 @@ DataFrame rcpp_ms_correct_baseline_als(
         std::vector<double> y(idx.size());
         for (int k = 0; k < (int)idx.size(); ++k) y[k] = out_raw[idx[k]];
 
-        std::vector<double> baseline = ms::processing::als_baseline(y, lambda, p, maxit);
+        std::vector<double> baseline = mass_spec::processing::als_baseline(y, lambda, p, maxit);
 
         for (int k = 0; k < (int)idx.size(); ++k) {
             double corrected = y[k] - baseline[k];
@@ -297,7 +778,7 @@ DataFrame rcpp_ms_find_chrom_peaks_local_maxima(
             y[k]  = int_col[idx[k]];
         }
 
-        auto peaks = ms::processing::find_peaks_local_maxima(rt, y, min_height, min_width, max_width);
+        auto peaks = mass_spec::processing::find_peaks_local_maxima(rt, y, min_height, min_width, max_width);
 
         int pk_num = 1;
         for (auto& pk : peaks) {
@@ -425,7 +906,7 @@ DataFrame rcpp_ms_integrate_chromatograms(
             y[k]  = int_col[idx[k]];
         }
 
-        auto peaks = ms::processing::find_peaks_pracma(rt, y, merge, close_by_threshold,
+        auto peaks = mass_spec::processing::find_peaks_pracma(rt, y, merge, close_by_threshold,
                                             min_peak_height, min_peak_distance,
                                             min_peak_width, max_peak_width, min_sn);
 
@@ -539,12 +1020,12 @@ DataFrame rcpp_ms_quantify_peaks_ols(
     if (model == "quadratic") degree = 2;
     if (model == "cubic")     degree = 3;
 
-    std::map<std::string, ms::processing::OLSResult> models;
+    std::map<std::string, mass_spec::processing::OLSResult> models;
     for (auto& kv : calib) {
         if ((int)kv.second.size() < degree + 1) continue;
         std::vector<double> xs, ys;
         for (auto& p : kv.second) { xs.push_back(p.first); ys.push_back(p.second); }
-        models[kv.first] = ms::processing::ols_fit(xs, ys, degree);
+        models[kv.first] = mass_spec::processing::ols_fit(xs, ys, degree);
     }
 
     // Predict
@@ -565,7 +1046,7 @@ DataFrame rcpp_ms_quantify_peaks_ols(
         if (m > 2) {
             // Newton iterations
             for (int iter = 0; iter < 20; ++iter) {
-                double fc = ms::processing::ols_predict(it->second, c) - sig;
+                double fc = mass_spec::processing::ols_predict(it->second, c) - sig;
                 // derivative: f'(c) = b1 + 2*b2*c + ...
                 double dfc = 0.0;
                 double cpow = 1.0;
@@ -647,13 +1128,13 @@ DataFrame rcpp_ms_calculate_spectra_charges(
         }
 
         // Build spectrum points
-        std::vector<ms::SpectrumPoint> pts;
+        std::vector<mass_spec::SpectrumPoint> pts;
         pts.reserve(merged.size());
         for (auto& mv : merged)
             pts.push_back({mv.first, mv.second.first / (double)cnt[mv.first]});
 
         // Sort by mz
-        std::sort(pts.begin(), pts.end(), [](const ms::SpectrumPoint& a, const ms::SpectrumPoint& b){
+        std::sort(pts.begin(), pts.end(), [](const mass_spec::SpectrumPoint& a, const mass_spec::SpectrumPoint& b){
             return a.mz < b.mz;
         });
 
@@ -661,7 +1142,7 @@ DataFrame rcpp_ms_calculate_spectra_charges(
         for (int k : idx) avg_rt += rt_col[k];
         avg_rt /= idx.size();
 
-        auto charges = ms::calculate_spectra_charges(pts, pol, round_val, rel_low_cut, abs_low_cut, top_charges);
+        auto charges = mass_spec::calculate_spectra_charges(pts, pol, round_val, rel_low_cut, abs_low_cut, top_charges);
 
         for (auto& ch : charges) {
             out_analysis.push_back(gkey.analysis);
@@ -729,10 +1210,10 @@ DataFrame rcpp_ms_deconvolute_spectra(
     NumericVector   c_mass      = charges["mass"];
 
     // Index charge rows by (analysis, id)
-    std::map<GroupKey, std::vector<ms::ChargeRow>> charge_map;
+    std::map<GroupKey, std::vector<mass_spec::ChargeRow>> charge_map;
     for (int i = 0; i < (int)c_analysis.size(); ++i) {
         GroupKey gk = {as<std::string>(c_analysis[i]), as<std::string>(c_id[i])};
-        ms::ChargeRow cr;
+        mass_spec::ChargeRow cr;
         cr.mz         = c_mz[i];
         cr.intensity  = 0.0;
         cr.cluster_mz = c_cmz[i];
@@ -765,14 +1246,14 @@ DataFrame rcpp_ms_deconvolute_spectra(
         avg_rt /= idx.size();
 
         // Build sorted spectrum
-        std::vector<ms::SpectrumPoint> pts;
+        std::vector<mass_spec::SpectrumPoint> pts;
         pts.reserve(idx.size());
         for (int k : idx) pts.push_back({s_mz[k], s_int[k]});
-        std::sort(pts.begin(), pts.end(), [](const ms::SpectrumPoint& a, const ms::SpectrumPoint& b){
+        std::sort(pts.begin(), pts.end(), [](const mass_spec::SpectrumPoint& a, const mass_spec::SpectrumPoint& b){
             return a.mz < b.mz;
         });
 
-        auto mass_pts = ms::deconvolute_spectrum(pts, crows, clust_val, window);
+        auto mass_pts = mass_spec::deconvolute_spectrum(pts, crows, clust_val, window);
 
         for (auto& mp : mass_pts) {
             out_analysis.push_back(gkey.analysis);
@@ -864,7 +1345,7 @@ DataFrame rcpp_ms_find_spectra_maxima(
         for (int k : idx) avg_rt += rt_col[k];
         avg_rt /= idx.size();
 
-        auto peaks = ms::processing::find_peaks_local_maxima(mass, y, min_height, min_width, max_width);
+        auto peaks = mass_spec::processing::find_peaks_local_maxima(mass, y, min_height, min_width, max_width);
 
         for (auto& pk : peaks) {
             out_analysis.push_back(gkey.analysis);
@@ -907,24 +1388,11 @@ DataFrame rcpp_ms_find_spectra_maxima(
 std::vector<float> rcpp_streamcraft_decode_string(std::string base64_encoded) {
     if (base64_encoded.empty()) return std::vector<float>();
     try {
-        std::string decoded_binary = ms::utils::decode_base64(base64_encoded);
-        return ms::utils::decode_little_endian_to_float(decoded_binary, 4);
+        std::string decoded_binary = mass_spec::utils::decode_base64(base64_encoded);
+        return mass_spec::utils::decode_little_endian_to_float(decoded_binary, 4);
     } catch (const std::exception& e) {
         Rcpp::warning(std::string("Failed to decode string: ") + e.what());
         return std::vector<float>();
-    }
-}
-
-// [[Rcpp::export]]
-std::string rcpp_streamcraft_encode_vector(Rcpp::NumericVector numeric_vector) {
-    if (numeric_vector.size() == 0) return "";
-    try {
-        std::vector<float> float_vector = Rcpp::as<std::vector<float>>(numeric_vector);
-        std::string encoded_binary = ms::utils::encode_little_endian_from_float(float_vector, 4);
-        return ms::utils::encode_base64(encoded_binary);
-    } catch (const std::exception& e) {
-        Rcpp::warning(std::string("Failed to encode vector: ") + e.what());
-        return "";
     }
 }
 
@@ -936,7 +1404,7 @@ Rcpp::List rcpp_streamcraft_parse_ms_analysis_from_files(std::string file_path) 
     empty_df.attr("class") = Rcpp::CharacterVector::create("data.table", "data.frame");
     Rcpp::List empty_list;
 
-    ms::MS_FILE ana(file_path);
+    mass_spec::MS_FILE ana(file_path);
 
     list_out["name"] = ana.file_name;
     list_out["replicate"] = na_charvec;
@@ -947,7 +1415,7 @@ Rcpp::List rcpp_streamcraft_parse_ms_analysis_from_files(std::string file_path) 
     list_out["spectra_number"] = ana.get_number_spectra();
 
     if (ana.get_number_spectra() > 0) {
-        ms::MS_SPECTRA_HEADERS hd = ana.get_spectra_headers();
+        mass_spec::MS_SPECTRA_HEADERS hd = ana.get_spectra_headers();
         Rcpp::List hdl;
         hdl["index"] = hd.index;
         hdl["scan"] = hd.scan;
@@ -980,7 +1448,7 @@ Rcpp::List rcpp_streamcraft_parse_ms_analysis_from_files(std::string file_path) 
     list_out["chromatograms_number"] = ana.get_number_chromatograms();
 
     if (ana.get_number_chromatograms() > 0) {
-        ms::MS_CHROMATOGRAMS_HEADERS hd2 = ana.get_chromatograms_headers();
+        mass_spec::MS_CHROMATOGRAMS_HEADERS hd2 = ana.get_chromatograms_headers();
         Rcpp::List hdl2;
         hdl2["index"] = hd2.index;
         hdl2["id"] = hd2.id;
@@ -1018,7 +1486,7 @@ Rcpp::List rcpp_streamcraft_parse_ms_spectra(Rcpp::List analysis,
     const int number_levels = levels.size();
     if (number_spectra == 0) return empty_df;
 
-    ms::MS_FILE ana(file);
+    mass_spec::MS_FILE ana(file);
 
     if (targets.nrow() == 0) {
         const std::vector<int>& polarity = hd["polarity"];
@@ -1099,7 +1567,7 @@ Rcpp::List rcpp_streamcraft_parse_ms_spectra(Rcpp::List analysis,
     const std::vector<float> df_mobilitymin = targets["mobilitymin"];
     const std::vector<float> df_mobilitymax = targets["mobilitymax"];
 
-    ms::MS_TARGETS tg{tg_idx, df_id, df_level, df_polarity, df_precursor, df_mz, df_mzmin, df_mzmax, df_rt, df_rtmin, df_rtmax, df_mobility, df_mobilitymin, df_mobilitymax};
+    mass_spec::MS_TARGETS tg{tg_idx, df_id, df_level, df_polarity, df_precursor, df_mz, df_mzmin, df_mzmax, df_rt, df_rtmin, df_rtmax, df_mobility, df_mobilitymin, df_mobilitymax};
     const std::vector<int>& hd_index = hd["index"];
     const std::vector<int>& hd_polarity = hd["polarity"];
     const std::vector<int>& hd_configuration = hd["configuration"];
@@ -1109,7 +1577,7 @@ Rcpp::List rcpp_streamcraft_parse_ms_spectra(Rcpp::List analysis,
     const std::vector<float>& hd_pre_mz_high = hd["pre_mzhigh"];
     const std::vector<float>& hd_pre_ce = hd["pre_ce"];
     const std::vector<float>& hd_mobility = hd["mobility"];
-    ms::MS_SPECTRA_HEADERS headers;
+    mass_spec::MS_SPECTRA_HEADERS headers;
     headers.resize_all(number_spectra);
     headers.index = hd_index;
     headers.rt = rt;
@@ -1119,7 +1587,7 @@ Rcpp::List rcpp_streamcraft_parse_ms_spectra(Rcpp::List analysis,
     headers.precursor_mz = hd_pre_mz;
     headers.activation_ce = hd_pre_ce;
     headers.mobility = hd_mobility;
-    ms::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(tg, headers, minIntensityMS1, minIntensityMS2);
+    mass_spec::MS_TARGETS_SPECTRA res = ana.get_spectra_targets(tg, headers, minIntensityMS1, minIntensityMS2);
     out["id"] = res.id;
     out["polarity"] = res.polarity;
     out["level"] = res.level;
@@ -1149,7 +1617,7 @@ Rcpp::List rcpp_streamcraft_parse_ms_chromatograms(Rcpp::List analysis, std::vec
     const std::vector<float> pre_ce = hd["pre_ce"];
     const std::vector<float> pro_mz = hd["pro_mz"];
     if (index.empty()) return empty_df;
-    ms::MS_FILE ana(file);
+    mass_spec::MS_FILE ana(file);
     if (idx.empty()) idx = index;
     const std::vector<std::vector<std::vector<float>>> chromatograms = ana.get_chromatograms(idx);
     if (chromatograms.empty()) return empty_df;
@@ -1348,4 +1816,215 @@ Rcpp::List rcpp_ms_cluster_spectra(Rcpp::DataFrame spectra,
         }
     }
     return spectra_out;
+}
+
+// ==========================================================================
+// MARK: project-backed mass spec exports
+// ==========================================================================
+
+// [[Rcpp::export]]
+SEXP rcpp_project_mass_spec_new(SEXP project_xptr) {
+    return project_call([&]() {
+        auto* ptr = new mass_spec::PROJECT_MASS_SPEC(project_from_xptr(project_xptr).context());
+        Rcpp::XPtr<mass_spec::PROJECT_MASS_SPEC> out(ptr, true);
+        out.attr("class") = "StreamFindProjectMassSpec";
+        return SEXP(out);
+    });
+}
+
+// [[Rcpp::export]]
+void rcpp_project_mass_spec_import_files(SEXP mass_spec_xptr,
+                                         CharacterVector file_paths,
+                                         CharacterVector analyses,
+                                         CharacterVector replicates,
+                                         CharacterVector blanks) {
+    project_call([&]() {
+        project_mass_spec_from_xptr(mass_spec_xptr).import_files(as<std::vector<std::string>>(file_paths),
+                                                                 as<std::vector<std::string>>(analyses),
+                                                                 as<std::vector<std::string>>(replicates),
+                                                                 as<std::vector<std::string>>(blanks));
+        return 0;
+    });
+}
+
+// [[Rcpp::export]]
+void rcpp_project_mass_spec_remove_analysis(SEXP mass_spec_xptr, std::string analysis) {
+    project_call([&]() {
+        project_mass_spec_from_xptr(mass_spec_xptr).remove_analysis(analysis);
+        return 0;
+    });
+}
+
+// [[Rcpp::export]]
+DataFrame rcpp_project_mass_spec_list_analyses(SEXP mass_spec_xptr) {
+    return project_call([&]() {
+        return ms_analysis_rows_to_df(project_mass_spec_from_xptr(mass_spec_xptr).get_analyses());
+    });
+}
+
+// [[Rcpp::export]]
+CharacterVector rcpp_project_mass_spec_get_analysis_names(SEXP mass_spec_xptr) {
+    return project_call([&]() {
+        const auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        const auto names = mass_spec.get_analysis_names();
+        return CharacterVector(names.begin(), names.end());
+    });
+}
+
+// [[Rcpp::export]]
+CharacterVector rcpp_project_mass_spec_get_replicate_names(SEXP mass_spec_xptr) {
+    return project_call([&]() {
+        const auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        return named_character_vector(mass_spec.get_replicate_names(), mass_spec.get_analysis_names());
+    });
+}
+
+// [[Rcpp::export]]
+void rcpp_project_mass_spec_set_replicate_names(SEXP mass_spec_xptr, CharacterVector values) {
+    project_call([&]() {
+        project_mass_spec_from_xptr(mass_spec_xptr).set_replicate_names(as<std::vector<std::string>>(values));
+        return 0;
+    });
+}
+
+// [[Rcpp::export]]
+CharacterVector rcpp_project_mass_spec_get_blank_names(SEXP mass_spec_xptr) {
+    return project_call([&]() {
+        const auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        return named_character_vector(mass_spec.get_blank_names(), mass_spec.get_analysis_names());
+    });
+}
+
+// [[Rcpp::export]]
+void rcpp_project_mass_spec_set_blank_names(SEXP mass_spec_xptr, CharacterVector values) {
+    project_call([&]() {
+        project_mass_spec_from_xptr(mass_spec_xptr).set_blank_names(as<std::vector<std::string>>(values));
+        return 0;
+    });
+}
+
+// [[Rcpp::export]]
+NumericVector rcpp_project_mass_spec_get_concentrations(SEXP mass_spec_xptr) {
+    return project_call([&]() {
+        const auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        return named_numeric_vector(mass_spec.get_concentrations(), mass_spec.get_analysis_names());
+    });
+}
+
+// [[Rcpp::export]]
+void rcpp_project_mass_spec_set_concentrations(SEXP mass_spec_xptr, NumericVector values) {
+    project_call([&]() {
+        project_mass_spec_from_xptr(mass_spec_xptr).set_concentrations(as<std::vector<double>>(values));
+        return 0;
+    });
+}
+
+// [[Rcpp::export]]
+DataFrame rcpp_project_mass_spec_get_spectra_headers(SEXP mass_spec_xptr, CharacterVector analyses) {
+    return project_call([&]() {
+        auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        return ms_spectra_header_rows_to_df(mass_spec.get_spectra_headers(analyses_from_character_vector(analyses)));
+    });
+}
+
+// [[Rcpp::export]]
+DataFrame rcpp_project_mass_spec_get_chromatograms_headers(SEXP mass_spec_xptr, CharacterVector analyses) {
+    return project_call([&]() {
+        auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        return ms_chromatogram_header_rows_to_df(mass_spec.get_chromatograms_headers(analyses_from_character_vector(analyses)));
+    });
+}
+
+// [[Rcpp::export]]
+DataFrame rcpp_project_mass_spec_get_spectra_tic(SEXP mass_spec_xptr,
+                                                 CharacterVector analyses,
+                                                 std::vector<int> levels,
+                                                 NumericVector rt) {
+    return project_call([&]() {
+        auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        double rt_min = 0.0;
+        double rt_max = 0.0;
+        if (rt.size() == 2) {
+            rt_min = std::min(rt[0], rt[1]);
+            rt_max = std::max(rt[0], rt[1]);
+        }
+        return ms_spectra_tic_rows_to_df(
+            mass_spec.get_spectra_tic(analyses_from_character_vector(analyses), levels, rt_min, rt_max));
+    });
+}
+
+// [[Rcpp::export]]
+DataFrame rcpp_project_mass_spec_get_raw_spectra(SEXP mass_spec_xptr,
+                                                 CharacterVector analyses,
+                                                 std::vector<int> levels,
+                                                 SEXP mass,
+                                                 SEXP mz,
+                                                 SEXP rt,
+                                                 SEXP mobility,
+                                                 CharacterVector id,
+                                                 double ppm,
+                                                 double sec,
+                                                 double millisec,
+                                                 bool all_traces,
+                                                 double isolation_window,
+                                                 float min_intensity_ms1,
+                                                 float min_intensity_ms2) {
+    return project_call([&]() {
+        auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        mass_spec::MS_TARGETS_REQUEST request;
+        request.analyses = analyses_from_character_vector(analyses);
+        request.levels = std::move(levels);
+        request.mass = ms_targets_input_from_object(mass);
+        request.mz = ms_targets_input_from_object(mz);
+        request.rt = ms_targets_input_from_object(rt);
+        request.mobility = ms_targets_input_from_object(mobility);
+        request.id = analyses_from_character_vector(id);
+        request.ppm = ppm;
+        request.sec = sec;
+        request.millisec = millisec;
+        request.all_traces = all_traces;
+        request.isolation_window = isolation_window;
+        request.min_intensity_ms1 = min_intensity_ms1;
+        request.min_intensity_ms2 = min_intensity_ms2;
+        return ms_raw_spectrum_rows_to_df(
+            mass_spec.get_raw_spectra(request));
+    });
+}
+
+// [[Rcpp::export]]
+DataFrame rcpp_project_mass_spec_extract_chromatograms(SEXP mass_spec_xptr,
+                                                       std::string analysis,
+                                                       std::vector<int> indices) {
+    return project_call([&]() {
+        auto& mass_spec = project_mass_spec_from_xptr(mass_spec_xptr);
+        const auto analyses = mass_spec.get_analyses();
+        const auto analysis_it = std::find_if(analyses.begin(), analyses.end(), [&](const auto& row) {
+            return row.analysis == analysis;
+        });
+        if (analysis_it == analyses.end()) {
+            stop("Mass spec analysis not found: " + analysis);
+        }
+        const auto all_headers = mass_spec.get_chromatograms_headers({analysis});
+        std::vector<mass_spec::MS_CHROMATOGRAM_HEADER_ROW> selected_headers;
+        if (indices.empty()) {
+            selected_headers = all_headers;
+            indices.reserve(all_headers.size());
+            for (const auto& header : all_headers) {
+                indices.push_back(header.index);
+            }
+        } else {
+            for (int index : indices) {
+                const auto it = std::find_if(all_headers.begin(), all_headers.end(), [&](const auto& header) {
+                    return header.index == index;
+                });
+                if (it != all_headers.end()) {
+                    selected_headers.push_back(*it);
+                }
+            }
+        }
+        return ms_chromatograms_to_df(analysis,
+                                      analysis_it->replicate,
+                                      selected_headers,
+                                      mass_spec.get_chromatograms_data(analysis, indices));
+    });
 }

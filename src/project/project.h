@@ -54,6 +54,8 @@ struct ROW {
 
 /** Row representation of the `Project` table, extending Row with JSON columns. */
 struct PROJECT_ROW : public ROW {
+  /** Domain code stored for this project, such as MS or RAMAN. */
+  std::string domain;
   /** Project metadata stored as JSON. */
   json metadata = json::object();
   /** Project workflow stored as JSON. */
@@ -107,6 +109,8 @@ class PROJECT {
   const std::string& db_path() const noexcept;
   /** Return the active project id. */
   const std::string& project_id() const noexcept;
+  /** Return the shared context used by project-scoped wrappers. */
+  const std::shared_ptr<CONTEXT>& context() const noexcept;
 
   /** Load the current project row. */
   PROJECT_ROW row() const;
@@ -115,8 +119,12 @@ class PROJECT {
 
   /** Return the project metadata JSON. */
   json metadata() const;
+  /** Return the project domain code. */
+  std::string domain() const;
   /** Replace the project metadata JSON. */
   void set_metadata(const json& value);
+  /** Set the project domain code. */
+  void set_domain(const std::string& value);
 
   /** Return the project workflow JSON. */
   json workflow() const;

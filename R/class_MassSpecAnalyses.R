@@ -14,26 +14,27 @@ MassSpecAnalyses <- function(
     files = NULL,
     centroid = FALSE,
     levels = c(1, 2)) {
-  db <- file.path(projectPath, "MassSpecAnalyses.duckdb")
+  projectPath <- .normalize_massspec_project_db_path(projectPath)
+  db <- projectPath
   dir.create(dirname(db), recursive = TRUE, showWarnings = FALSE)
-  conn <- DBI::dbConnect(duckdb::duckdb(), db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  .create_MassSpecAnalyses_Analyses_db_schema(conn)
-  .validate_MassSpecAnalyses_Analyses_db_schema(conn)
-  .validate_MassSpecAnalyses_Spectra_db_schema(conn)
-  .validate_MassSpecAnalyses_Chromatograms_db_schema(conn)
+  project_id <- .project_id_from_db_path(db)
+  project <- Project$new(db = db, project_id = project_id)
+  mass_spec <- ProjectMassSpec$new(db = db, project_id = project_id, .ptr = project$get_ptr())
   if (!is.null(files)) {
     cache_db <- file.path(dirname(db), "Cache.duckdb")
     analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels, cache_db = cache_db)
     if (is.null(analyses) || length(analyses) == 0) {
       stop("No analyses parsed from files.")
     }
-    .write_massspec_analyses_to_db(conn, analyses, truncate = TRUE)
+    .write_massspec_analyses_to_project(mass_spec, analyses, truncate = TRUE)
   }
   obj <- structure(
     list(
       db = db,
-      dataType = "MassSpec"
+      dataType = "MassSpec",
+      project = project,
+      project_mass_spec = mass_spec,
+      project_id = project_id
     ),
     class = c("MassSpecAnalyses", "Analyses")
   )
@@ -50,9 +51,10 @@ validate_object.MassSpecAnalyses <- function(x) {
   checkmate::assert_class(x, "MassSpecAnalyses")
   checkmate::assert_true(identical(x$dataType, "MassSpec"))
   if (!file.exists(x$db)) stop("MassSpecAnalyses file not found: ", x$db)
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  required_tables <- c("Analyses", "SpectraHeaders", "ChromatogramsHeaders")
+  .ensure_massspec_project_views(conn, x)
+  required_tables <- c("MS_ANALYSES", "MS_SPECTRA_HEADERS", "MS_CHROMATOGRAMS_HEADERS")
   present <- DBI::dbListTables(conn)
   if (!all(required_tables %in% present)) stop("Missing required tables in MassSpecAnalyses")
   NextMethod()
@@ -93,14 +95,12 @@ get_db_table_info.MassSpecAnalyses <- function(x, tableName) {
 #' @template arg-ms-levels
 #' @export
 add_analyses.MassSpecAnalyses <- function(x, files, centroid = FALSE, levels = c(1, 2)) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
   cache_db <- file.path(dirname(x$db), "Cache.duckdb")
   analyses <- .parse_ms_from_files(files, centroid = centroid, levels = levels, cache_db = cache_db)
   if (is.null(analyses) || length(analyses) == 0) {
     stop("No analyses parsed from files.")
   }
-  .write_massspec_analyses_to_db(conn, analyses, truncate = FALSE)
+  .write_massspec_analyses_to_project(x$project_mass_spec, analyses, truncate = FALSE)
   message("Analyses added to DB.")
   invisible(x)
 }
@@ -112,24 +112,18 @@ add_analyses.MassSpecAnalyses <- function(x, files, centroid = FALSE, levels = c
 #' @export
 #'
 remove_analyses.MassSpecAnalyses <- function(x, analyses) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
   sel_names <- .resolve_analyses_selection(analyses, all_names)
   if (length(sel_names) == 0) {
     message("No analyses to remove.")
     return(invisible(x))
   }
-  DBI::dbExecute(conn, "BEGIN")
-  rollback_needed <- TRUE
-  on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
   for (aname in sel_names) {
-    DBI::dbExecute(conn, "DELETE FROM Analyses WHERE analysis = ?", params = list(aname))
-    DBI::dbExecute(conn, "DELETE FROM SpectraHeaders WHERE analysis = ?", params = list(aname))
-    DBI::dbExecute(conn, "DELETE FROM ChromatogramsHeaders WHERE analysis = ?", params = list(aname))
+    x$project_mass_spec$remove_analysis(aname)
   }
-  DBI::dbExecute(conn, "COMMIT")
-  rollback_needed <- FALSE
   message("Analyses removed from DB.")
   invisible(x)
 }
@@ -140,8 +134,9 @@ remove_analyses.MassSpecAnalyses <- function(x, analyses) {
 #' @export
 #'
 get_analysis_names.MassSpecAnalyses <- function(x) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   res <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   names(res) <- all_analyses
@@ -154,8 +149,9 @@ get_analysis_names.MassSpecAnalyses <- function(x) {
 #' @export
 #'
 get_replicate_names.MassSpecAnalyses <- function(x) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   res <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses ORDER BY lower(analysis), analysis")$replicate
   names(res) <- all_analyses
@@ -168,8 +164,9 @@ get_replicate_names.MassSpecAnalyses <- function(x) {
 #' @export
 #'
 get_blank_names.MassSpecAnalyses <- function(x) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   res <- DBI::dbGetQuery(conn, "SELECT blank FROM Analyses ORDER BY lower(analysis), analysis")$blank
   names(res) <- all_analyses
@@ -183,8 +180,9 @@ get_blank_names.MassSpecAnalyses <- function(x) {
 #' @export
 #'
 set_replicate_names.MassSpecAnalyses <- function(x, value) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   if (length(value) != length(current)) {
     stop("Length of value must equal the number of analyses.")
@@ -194,8 +192,8 @@ set_replicate_names.MassSpecAnalyses <- function(x, value) {
   on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
   for (i in seq_along(current)) {
     DBI::dbExecute(conn,
-      "UPDATE Analyses SET replicate = ? WHERE analysis = ?",
-      params = list(value[i], current[i])
+      "UPDATE MS_ANALYSES SET replicate = ? WHERE project_id = ? AND analysis = ?",
+      params = list(value[i], x$project_id, current[i])
     )
   }
   DBI::dbExecute(conn, "COMMIT")
@@ -211,8 +209,9 @@ set_replicate_names.MassSpecAnalyses <- function(x, value) {
 #' @export
 #'
 set_blank_names.MassSpecAnalyses <- function(x, value) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   if (length(value) != length(current)) {
     stop("Length of value must equal the number of analyses.")
@@ -222,8 +221,8 @@ set_blank_names.MassSpecAnalyses <- function(x, value) {
   on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
   for (i in seq_along(current)) {
     DBI::dbExecute(conn,
-      "UPDATE Analyses SET blank = ? WHERE analysis = ?",
-      params = list(value[i], current[i])
+      "UPDATE MS_ANALYSES SET blank = ? WHERE project_id = ? AND analysis = ?",
+      params = list(value[i], x$project_id, current[i])
     )
   }
   DBI::dbExecute(conn, "COMMIT")
@@ -238,8 +237,9 @@ set_blank_names.MassSpecAnalyses <- function(x, value) {
 #' @export
 #'
 get_concentrations.MassSpecAnalyses <- function(x) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   all_analyses <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   res <- DBI::dbGetQuery(conn, "SELECT concentration FROM Analyses ORDER BY lower(analysis), analysis")$concentration
   names(res) <- all_analyses
@@ -254,8 +254,9 @@ get_concentrations.MassSpecAnalyses <- function(x) {
 #'
 set_concentrations.MassSpecAnalyses <- function(x, value) {
   if (!is.numeric(value)) stop("value must be numeric.")
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   current <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses ORDER BY lower(analysis), analysis")$analysis
   if (length(value) != length(current)) {
     stop("Length of value must equal the number of analyses.")
@@ -265,8 +266,8 @@ set_concentrations.MassSpecAnalyses <- function(x, value) {
   on.exit(if (rollback_needed) try(DBI::dbExecute(conn, "ROLLBACK"), silent = TRUE), add = TRUE)
   for (i in seq_along(current)) {
     DBI::dbExecute(conn,
-      "UPDATE Analyses SET concentration = ? WHERE analysis = ?",
-      params = list(value[i], current[i])
+      "UPDATE MS_ANALYSES SET concentration = ? WHERE project_id = ? AND analysis = ?",
+      params = list(value[i], x$project_id, current[i])
     )
   }
   DBI::dbExecute(conn, "COMMIT")
@@ -281,17 +282,18 @@ set_concentrations.MassSpecAnalyses <- function(x, value) {
 #' @export
 #'
 info.MassSpecAnalyses <- function(x) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  conn <- .massspec_project_connection(x)
   on.exit(DBI::dbDisconnect(conn), add = TRUE)
+  .ensure_massspec_project_views(conn, x)
   DBI::dbGetQuery(conn, "
     SELECT
       analysis,
       replicate,
       blank,
       type,
-      polarity,
-      spectra_number AS spectra,
-      chromatograms_number AS chromatograms,
+      format,
+      number_spectra AS spectra,
+      number_chromatograms AS chromatograms,
       concentration
     FROM Analyses
     ORDER BY lower(analysis), analysis
@@ -319,34 +321,10 @@ show.MassSpecAnalyses <- function(x, ...) {
 #' @export
 #'
 get_spectra_headers.MassSpecAnalyses <- function(x, analyses = NULL) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  if (!"SpectraHeaders" %in% DBI::dbListTables(conn)) {
-    return(NULL)
-  }
-  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  sel_names <- .resolve_analyses_selection(analyses, all_names)
-  rpls <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses")$replicate
-  names(rpls) <- all_names
-  if (length(sel_names) == 0) {
-    return(data.table::data.table())
-  }
-  if (length(sel_names) == length(all_names)) {
-    hd <- DBI::dbGetQuery(conn, "SELECT * FROM SpectraHeaders")
-    hd$replicate <- rpls[hd$analysis]
-    data.table::setcolorder(hd, c("analysis", "replicate"))
-    return(hd)
-  }
-  res_list <- lapply(sel_names, function(aname) {
-    hd <- DBI::dbGetQuery(conn, "SELECT * FROM SpectraHeaders WHERE analysis = ?", params = list(aname))
-    hd$replicate <- rpls[aname]
-    data.table::setcolorder(hd, c("analysis", "replicate"))
-    hd
-  })
-  data.table::rbindlist(res_list, fill = TRUE)
+  get_spectra_headers(x$project_mass_spec, analyses = analyses)
 }
 
-# MARK: get_spectra_tic
+# MARK: get_raw_spectra_tic
 #' @describeIn MassSpecAnalyses Get the total ion current (TIC) spectra for the specified analyses.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-analyses
@@ -354,36 +332,12 @@ get_spectra_headers.MassSpecAnalyses <- function(x, analyses = NULL) {
 #' @template arg-ms-rt
 #' @export
 #'
-get_spectra_tic.MassSpecAnalyses <- function(
+get_raw_spectra_tic.MassSpecAnalyses <- function(
     x,
     analyses = NULL,
     levels = c(1, 2),
     rt = NULL) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  sel_names <- .resolve_analyses_selection(analyses, all_names)
-  rpls <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses")$replicate
-  names(rpls) <- all_names
-  value <- lapply(sel_names, function(aname) {
-    q <- "SELECT analysis, polarity, level, rt, tic FROM SpectraHeaders WHERE analysis = ?"
-    res <- DBI::dbGetQuery(conn, q, params = list(aname))
-    if (nrow(res) == 0) {
-      return(data.table::data.table())
-    }
-    res$replicate <- rpls[aname]
-    data.table::setcolorder(res, c("analysis", "replicate"))
-    res <- res[res$level %in% levels, ]
-    if (!is.null(rt)) {
-      if (length(rt) == 2 && is.numeric(rt)) {
-        rt <- sort(rt)
-        sel <- res$rt >= rt[1] & res$rt <= rt[2]
-        res <- res[sel, ]
-      }
-    }
-    res
-  })
-  data.table::rbindlist(value, fill = TRUE)
+  get_raw_spectra_tic(x$project_mass_spec, analyses = analyses, levels = levels, rt = rt)
 }
 
 # MARK: plot_spectra_tic
@@ -413,41 +367,22 @@ plot_spectra_tic.MassSpecAnalyses <- function(
     groupBy = "analysis",
     interactive = TRUE,
     colorPalette = NULL) {
-  tic <- get_spectra_tic(x, analyses, levels, rt)
-  if (nrow(tic) == 0) {
-    message("\U2717 TIC not found for the analyses!")
-    return(NULL)
-  }
-  if (!is.null(downsize) && downsize > 0 && nrow(tic) > downsize) {
-    tic <- as.data.table(tic)
-    tic$rt <- floor(tic$rt / downsize) * downsize
-    tic <- tic[, lapply(.SD, function(col) {
-      if (is.numeric(col)) {
-        mean(col, na.rm = TRUE)
-      } else if (is.character(col)) {
-        col[1]
-      } else {
-        col[1]
-      }
-    }), by = .(rt, analysis)]
-  }
-  if (is.null(xLab)) xLab <- "Retention time / seconds"
-  if (is.null(yLab)) yLab <- "Intensity / counts"
-  .plot_lines_tabular_data(
-    data = tic,
-    xvar = "rt",
-    yvar = "tic",
-    groupBy = groupBy,
-    basicGroupBy = "analysis",
-    interactive = interactive,
-    title = title,
+  plot_spectra_tic(
+    x$project_mass_spec,
+    analyses = analyses,
+    levels = levels,
+    rt = rt,
+    downsize = downsize,
     xLab = xLab,
     yLab = yLab,
+    title = title,
+    groupBy = groupBy,
+    interactive = interactive,
     colorPalette = colorPalette
   )
 }
 
-# MARK: get_spectra_bpc
+# MARK: get_raw_spectra_bpc
 #' @describeIn MassSpecAnalyses Get the base peak chromatograms (BPC) spectra for the specified analyses.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-analyses
@@ -455,36 +390,12 @@ plot_spectra_tic.MassSpecAnalyses <- function(
 #' @template arg-ms-rt
 #' @export
 #'
-get_spectra_bpc.MassSpecAnalyses <- function(
+get_raw_spectra_bpc.MassSpecAnalyses <- function(
     x,
     analyses = NULL,
     levels = c(1, 2),
     rt = NULL) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  sel_names <- .resolve_analyses_selection(analyses, all_names)
-  rpls <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses")$replicate
-  names(rpls) <- all_names
-  value <- lapply(sel_names, function(aname) {
-    q <- "SELECT analysis, polarity, level, rt, bpmz, bpint FROM SpectraHeaders WHERE analysis = ?"
-    res <- DBI::dbGetQuery(conn, q, params = list(aname))
-    if (nrow(res) == 0) {
-      return(data.table::data.table())
-    }
-    res$replicate <- rpls[aname]
-    data.table::setcolorder(res, c("analysis", "replicate"))
-    res <- res[res$level %in% levels, ]
-    if (!is.null(rt)) {
-      if (length(rt) == 2 && is.numeric(rt)) {
-        rt <- sort(rt)
-        sel <- res$rt >= rt[1] & res$rt <= rt[2]
-        res <- res[sel, ]
-      }
-    }
-    res
-  })
-  data.table::rbindlist(value, fill = TRUE)
+  get_raw_spectra_bpc(x$project_mass_spec, analyses = analyses, levels = levels, rt = rt)
 }
 
 # MARK: plot_spectra_bpc
@@ -514,36 +425,17 @@ plot_spectra_bpc.MassSpecAnalyses <- function(
     groupBy = "analysis",
     interactive = TRUE,
     colorPalette = NULL) {
-  bpc <- get_spectra_bpc(x, analyses, levels, rt)
-  if (nrow(bpc) == 0) {
-    message("\U2717 BPC not found for the analyses!")
-    return(NULL)
-  }
-  if (!is.null(downsize) && downsize > 0 && nrow(bpc) > downsize) {
-    bpc <- as.data.table(bpc)
-    bpc[, rt := floor(rt / downsize) * downsize]
-    bpc <- bpc[, lapply(.SD, function(col) {
-      if (is.numeric(col)) {
-        mean(col, na.rm = TRUE)
-      } else if (is.character(col)) {
-        col[1]
-      } else {
-        col[1]
-      }
-    }), by = .(rt, analysis)]
-  }
-  if (is.null(xLab)) xLab <- "Retention time / seconds"
-  if (is.null(yLab)) yLab <- "Intensity / counts"
-  .plot_lines_tabular_data(
-    data = bpc,
-    xvar = "rt",
-    yvar = "bpint",
-    groupBy = groupBy,
-    basicGroupBy = "analysis",
-    interactive = interactive,
-    title = title,
+  plot_spectra_bpc(
+    x$project_mass_spec,
+    analyses = analyses,
+    levels = levels,
+    rt = rt,
+    downsize = downsize,
     xLab = xLab,
     yLab = yLab,
+    title = title,
+    groupBy = groupBy,
+    interactive = interactive,
     colorPalette = colorPalette
   )
 }
@@ -583,107 +475,26 @@ get_raw_spectra.MassSpecAnalyses <- function(
     isolationWindow = 1.3,
     minIntensityMS1 = 0,
     minIntensityMS2 = 0) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  if (!any(is.numeric(minIntensityMS1) | is.integer(minIntensityMS1))) minIntensityMS1 <- 0
-  if (!any(is.numeric(minIntensityMS2) | is.integer(minIntensityMS2))) minIntensityMS2 <- 0
-  if (is.data.frame(mz)) if ("analysis" %in% colnames(mz)) analyses <- mz$analysis
-  if (is.data.frame(mass)) if ("analysis" %in% colnames(mass)) analyses <- mass$analysis
-  sel_names <- .resolve_analyses_selection(analyses, all_names)
-  if (length(sel_names) == 0) {
-    return(data.table::data.table())
-  }
-  hd <- lapply(sel_names, function(aname) {
-    q <- "SELECT * FROM SpectraHeaders WHERE analysis = ?"
-    DBI::dbGetQuery(conn, q, params = list(aname))
-  })
-  hd <- data.table::rbindlist(hd)
-  polarities <- as.character(unique(hd$polarity))
-  highmz <- max(hd$highmz, na.rm = TRUE)
-  lowmz <- min(hd$lowmz, na.rm = TRUE)
-  highest_rt <- max(hd$rt, na.rm = TRUE)
-  lowest_rt <- min(hd$rt, na.rm = TRUE)
-  highest_mobility <- max(hd$mobility, na.rm = TRUE)
-  lowest_mobility <- min(hd$mobility, na.rm = TRUE)
-  has_ion_mobility <- any(hd$mobility > 0, na.rm = TRUE)
-  targets <- MassSpecTargets(mass, mz, rt, mobility, ppm, sec, millisec, id, sel_names, polarities)
-  if (!.is_targets_empty(targets)) {
-    targets$mz[is.na(targets$mz)] <- 0
-    targets$mzmax[is.na(targets$mzmax)] <- highmz
-    targets$mzmin[is.na(targets$mzmin)] <- lowmz
-    targets$mzmax[targets$mzmax == 0] <- highmz
-    targets$rt[is.na(targets$rt)] <- 0
-    targets$rtmax[is.na(targets$rtmax)] <- highest_rt
-    targets$rtmin[is.na(targets$rtmin)] <- lowest_rt
-    targets$rtmax[targets$rtmax == 0] <- highest_rt
-    targets$mobility[is.na(targets$mobility)] <- 0
-    if (has_ion_mobility) {
-      targets$mobilitymax[is.na(targets$mobilitymax)] <- highest_mobility
-      targets$mobilitymin[is.na(targets$mobilitymin)] <- lowest_mobility
-      targets$mobilitymax[targets$mobilitymax == 0] <- highest_mobility
-    }
-  }
-  targets$id[targets$id == 0] <- targets$analysis[targets$id == 0]
-  if (is.null(levels)) levels <- unique(hd_summary$level)
-  if (!2 %in% levels) allTraces <- TRUE
-  if (!is.logical(allTraces)) allTraces <- TRUE
-  if (nrow(targets) > 0) {
-    if ("polarity" %in% colnames(targets)) {
-      targets$polarity <- as.numeric(targets$polarity)
-    }
-    targets$precursor <- FALSE
-    if (!allTraces) {
-      if (!any(is.numeric(isolationWindow) | is.integer(isolationWindow))) {
-        isolationWindow <- 0
-      }
-      targets$precursor <- TRUE
-      targets$mzmin <- targets$mzmin - (isolationWindow / 2)
-      targets$mzmax <- targets$mzmax + (isolationWindow / 2)
-      # TODO make case for DIA when pre_mz is not available
-    }
-  }
-  spec_list <- lapply(sel_names, function(a, levels, targets, hd, conn) {
-    if ("analysis" %in% colnames(targets)) targets <- targets[targets$analysis %in% a, ]
-    if (nrow(targets) == 0) {
-      return(data.table::data.table())
-    }
-    q <- "SELECT * FROM Analyses WHERE analysis = ?"
-    a_info <- DBI::dbGetQuery(conn, q, params = list(a))
-    hd_a <- hd[hd$analysis == a, ]
-    message("\U2699 Parsing spectra from ", basename(a_info$file), "...", appendLF = FALSE)
-    if (.is_targets_empty(targets)) targets <- targets[0, ]
-    spec <- rcpp_streamcraft_parse_ms_spectra(
-      list(
-        file = a_info$file,
-        spectra_headers = hd_a
-      ),
-      levels,
-      targets,
-      minIntensityMS1,
-      minIntensityMS2
-    )
-    message(" Done!")
-    if (nrow(spec) == 0) {
-      return(data.table::data.table())
-    }
-    if (!any(spec$mobility > 0)) spec$mobility <- NULL
-    if (!"analysis" %in% colnames(spec)) spec$analysis <- a
-    if (!"replicate" %in% colnames(spec)) spec$replicate <- a_info$replicate
-    if ("id" %in% colnames(spec)) {
-      data.table::setorder(spec, id, rt, mz)
-    } else {
-      data.table::setorder(spec, rt, mz)
-    }
-  }, levels = levels, targets = targets, hd = hd, conn = conn)
-  spec <- data.table::rbindlist(spec_list, fill = TRUE)
-  if (nrow(spec) > 0) {
-    data.table::setcolorder(spec, c("analysis", "replicate"))
-  }
-  spec
+  get_raw_spectra(
+    x$project_mass_spec,
+    analyses = analyses,
+    levels = levels,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    id = id,
+    allTraces = allTraces,
+    isolationWindow = isolationWindow,
+    minIntensityMS1 = minIntensityMS1,
+    minIntensityMS2 = minIntensityMS2
+  )
 }
 
-# MARK: get_spectra_eic
+# MARK: get_raw_spectra_eic
 #' @describeIn MassSpecAnalyses Get extracted ion chromatograms (EIC) for the specified analyses and targets.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-analyses
@@ -697,7 +508,7 @@ get_raw_spectra.MassSpecAnalyses <- function(
 #' @template arg-ms-id
 #' @export
 #'
-get_spectra_eic.MassSpecAnalyses <- function(
+get_raw_spectra_eic.MassSpecAnalyses <- function(
     x,
     analyses = NULL,
     mass = NULL,
@@ -708,41 +519,18 @@ get_spectra_eic.MassSpecAnalyses <- function(
     sec = 60,
     millisec = 5,
     id = NULL) {
-  eic <- get_raw_spectra(
-    x,
-    analyses,
-    levels = 1,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    id,
-    allTraces = TRUE,
-    isolationWindow = 1.3,
-    minIntensityMS1 = 0,
-    minIntensityMS2 = 0
+  get_raw_spectra_eic(
+    x$project_mass_spec,
+    analyses = analyses,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    id = id
   )
-  if (nrow(eic) > 0) {
-    intensity <- NULL
-    eic <- data.table::as.data.table(eic)
-    if (!"id" %in% colnames(eic)) {
-      eic$id <- NA_character_
-    }
-    if (!"polarity" %in% colnames(eic)) {
-      eic$polarity <- 0
-    }
-    cols_summary <- c("analysis", "replicate", "polarity", "id", "rt")
-    intensity <- NULL
-    mz <- NULL
-    eic <- eic[, .(intensity = max(intensity), mz = mean(mz)), by = cols_summary]
-    sel_cols <- c("analysis", "replicate", "id", "polarity", "rt", "mz", "intensity")
-    eic <- eic[, sel_cols, with = FALSE]
-    eic <- unique(eic)
-  }
-  eic
 }
 
 # MARK: plot_spectra_eic
@@ -784,53 +572,28 @@ plot_spectra_eic.MassSpecAnalyses <- function(
     groupBy = c("analysis", "id"),
     interactive = TRUE,
     colorPalette = NULL) {
-  eic <- get_spectra_eic(
-    x,
-    analyses,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    id
-  )
-  if (nrow(eic) == 0) {
-    message("\U2717 EIC not found for the analyses!")
-    return(NULL)
-  }
-  if (!is.null(downsize) && downsize > 0 && nrow(eic) > downsize) {
-    eic <- data.table::as.data.table(eic)
-    eic$rt <- floor(eic$rt / downsize) * downsize
-    group_cols <- c("rt", "analysis", "id")
-    eic <- eic[, lapply(.SD, function(col) {
-      if (is.numeric(col)) {
-        mean(col, na.rm = TRUE)
-      } else if (is.character(col)) {
-        col[1]
-      } else {
-        col[1]
-      }
-    }), by = group_cols]
-  }
-  if (is.null(xLab)) xLab <- "Retention time / seconds"
-  if (is.null(yLab)) yLab <- "Intensity / counts"
-  .plot_lines_tabular_data(
-    data = eic,
-    xvar = "rt",
-    yvar = "intensity",
-    groupBy = groupBy,
-    basicGroupBy = c("analysis", "id"),
-    interactive = interactive,
-    title = title,
+  plot_spectra_eic(
+    x$project_mass_spec,
+    analyses = analyses,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    id = id,
+    downsize = downsize,
     xLab = xLab,
     yLab = yLab,
+    title = title,
+    groupBy = groupBy,
+    interactive = interactive,
     colorPalette = colorPalette
   )
 }
 
-# MARK: get_spectra_ms1
+# MARK: get_raw_spectra_ms1
 #' @describeIn MassSpecAnalyses Get MS1 spectra for the specified analyses and targets.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-analyses
@@ -847,7 +610,7 @@ plot_spectra_eic.MassSpecAnalyses <- function(
 #' @template arg-ms-minIntensity
 #' @export
 #'
-get_spectra_ms1.MassSpecAnalyses <- function(
+get_raw_spectra_ms1.MassSpecAnalyses <- function(
     x,
     analyses = NULL,
     mass = NULL,
@@ -861,64 +624,24 @@ get_spectra_ms1.MassSpecAnalyses <- function(
     mzClust = 0.003,
     presence = 0.8,
     minIntensity = 1000) {
-  ms1 <- get_raw_spectra(
-    x,
-    analyses,
-    levels = 1,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    id,
-    allTraces = TRUE,
-    minIntensityMS1 = minIntensity,
-    minIntensityMS2 = 0
+  get_raw_spectra_ms1(
+    x$project_mass_spec,
+    analyses = analyses,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    id = id,
+    mzClust = mzClust,
+    presence = presence,
+    minIntensity = minIntensity
   )
-  if (nrow(ms1) == 0) {
-    return(ms1)
-  }
-  if (!"id" %in% colnames(ms1)) {
-    hd <- get_spectra_headers(x, analyses)
-    has_ion_mobility <- any(hd$mobility > 0)
-    if (has_ion_mobility) {
-      ms1$id <- paste(
-        round(min(ms1$mz), 4), "-",
-        round(max(ms1$mz), 4), "/",
-        round(max(ms1$rt), 0), "-",
-        round(min(ms1$rt), 0), "/",
-        round(max(ms1$mobility), 0), "-",
-        round(min(ms1$mobility), 0),
-        sep = ""
-      )
-    } else {
-      ms1$id <- paste(
-        round(min(ms1$mz), 4), "-",
-        round(max(ms1$mz), 4), "/",
-        round(max(ms1$rt), 0), "-",
-        round(min(ms1$rt), 0),
-        sep = ""
-      )
-    }
-  }
-  if (!is.numeric(mzClust)) {
-    mzClust <- 0.01
-  }
-  ms1$unique_id <- paste0(ms1$analysis, "_", ms1$id, "_", ms1$polarity)
-  ms1_list <- rcpp_ms_cluster_spectra(ms1, mzClust, presence, FALSE)
-  ms1_df <- data.table::rbindlist(ms1_list, fill = TRUE)
-  ms1_df <- ms1_df[order(ms1_df$mz), ]
-  ms1_df <- ms1_df[order(ms1_df$id), ]
-  ms1_df <- ms1_df[order(ms1_df$analysis), ]
-  rpls <- get_replicate_names(x)
-  ms1_df$replicate <- rpls[ms1_df$analysis]
-  data.table::setcolorder(ms1_df, c("analysis", "replicate"))
-  ms1_df
 }
 
-# MARK: get_spectra_ms2
+# MARK: get_raw_spectra_ms2
 #' @describeIn MassSpecAnalyses Get MS2 spectra for the specified analyses and targets.
 #' @template arg-x-MassSpecAnalyses
 #' @template arg-analyses
@@ -936,7 +659,7 @@ get_spectra_ms1.MassSpecAnalyses <- function(
 #' @template arg-ms-minIntensity
 #' @export
 #'
-get_spectra_ms2.MassSpecAnalyses <- function(
+get_raw_spectra_ms2.MassSpecAnalyses <- function(
     x,
     analyses = NULL,
     mass = NULL,
@@ -951,62 +674,22 @@ get_spectra_ms2.MassSpecAnalyses <- function(
     mzClust = 0.005,
     presence = 0.8,
     minIntensity = 0) {
-  ms2 <- get_raw_spectra(
-    x,
-    analyses,
-    levels = 2,
-    mass,
-    mz,
-    rt,
-    mobility,
-    ppm,
-    sec,
-    millisec,
-    id,
+  get_raw_spectra_ms2(
+    x$project_mass_spec,
+    analyses = analyses,
+    mass = mass,
+    mz = mz,
+    rt = rt,
+    mobility = mobility,
+    ppm = ppm,
+    sec = sec,
+    millisec = millisec,
+    id = id,
     isolationWindow = isolationWindow,
-    allTraces = FALSE,
-    minIntensityMS1 = 0,
-    minIntensityMS2 = minIntensity
+    mzClust = mzClust,
+    presence = presence,
+    minIntensity = minIntensity
   )
-  if (nrow(ms2) == 0) {
-    return(ms2)
-  }
-  if (!"id" %in% colnames(ms2)) {
-    hd <- get_spectra_headers(x, analyses)
-    has_ion_mobility <- any(hd$mobility > 0)
-    if (has_ion_mobility) {
-      ms2$id <- paste(
-        round(min(ms2$mz), 4), "-",
-        round(max(ms2$mz), 4), "/",
-        round(max(ms2$rt), 0), "-",
-        round(min(ms2$rt), 0), "/",
-        round(max(ms2$mobility), 0), "-",
-        round(min(ms2$mobility), 0),
-        sep = ""
-      )
-    } else {
-      ms2$id <- paste(
-        round(min(ms2$mz), 4), "-",
-        round(max(ms2$mz), 4), "/",
-        round(max(ms2$rt), 0), "-",
-        round(min(ms2$rt), 0),
-        sep = ""
-      )
-    }
-  }
-  if (!is.numeric(mzClust)) {
-    mzClust <- 0.01
-  }
-  ms2$unique_id <- paste0(ms2$analysis, "_", ms2$id, "_", ms2$polarity)
-  ms2_list <- rcpp_ms_cluster_spectra(ms2, mzClust, presence, FALSE)
-  ms2_df <- data.table::rbindlist(ms2_list, fill = TRUE)
-  ms2_df <- ms2_df[order(ms2_df$mz), ]
-  ms2_df <- ms2_df[order(ms2_df$id), ]
-  ms2_df <- ms2_df[order(ms2_df$analysis), ]
-  rpls <- get_replicate_names(x)
-  ms2_df$replicate <- rpls[ms2_df$analysis]
-  data.table::setcolorder(ms2_df, c("analysis", "replicate"))
-  ms2_df
 }
 
 # MARK: get_chromatograms_headers
@@ -1016,31 +699,7 @@ get_spectra_ms2.MassSpecAnalyses <- function(
 #' @export
 #'
 get_chromatograms_headers.MassSpecAnalyses <- function(x, analyses = NULL) {
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  if (!"ChromatogramsHeaders" %in% DBI::dbListTables(conn)) {
-    return(NULL)
-  }
-  all_names <- DBI::dbGetQuery(conn, "SELECT analysis FROM Analyses")$analysis
-  sel_names <- .resolve_analyses_selection(analyses, all_names)
-  rpls <- DBI::dbGetQuery(conn, "SELECT replicate FROM Analyses")$replicate
-  names(rpls) <- all_names
-  if (length(sel_names) == 0) {
-    return(data.table::data.table())
-  }
-  if (length(sel_names) == length(all_names)) {
-    hd <- DBI::dbGetQuery(conn, "SELECT * FROM ChromatogramsHeaders")
-    hd$replicate <- rpls[hd$analysis]
-    data.table::setcolorder(hd, c("analysis", "replicate"))
-    return(hd)
-  }
-  res_list <- lapply(sel_names, function(aname) {
-    hd <- DBI::dbGetQuery(conn, "SELECT * FROM ChromatogramsHeaders WHERE analysis = ?", params = list(aname))
-    hd$replicate <- rpls[hd$analysis]
-    data.table::setcolorder(hd, c("analysis", "replicate"))
-    hd
-  })
-  data.table::rbindlist(res_list, fill = TRUE)
+  get_chromatograms_headers(x$project_mass_spec, analyses = analyses)
 }
 
 # MARK: get_chromatograms
@@ -1060,52 +719,14 @@ get_chromatograms.MassSpecAnalyses <- function(
     rtmin = 0,
     rtmax = 0,
     minIntensity = NULL) {
-  chrom_hd <- get_chromatograms_headers(x, analyses)
-  if (nrow(chrom_hd) == 0) {
-    message("\U2717 No chromatograms found for the analyses!")
-    return(data.table::data.table())
-  }
-  if (is.numeric(chromatograms)) {
-    chrom_hd <- chrom_hd[as.integer(chrom_hd$index) == as.integer(chromatograms), ]
-  } else if (is.character(chromatograms)) {
-    chrom_hd <- chrom_hd[chrom_hd$id %in% chromatograms, ]
-  }
-  if (nrow(chrom_hd) == 0) {
-    message("\U2717 No chromatograms found for the specified IDs/indices!")
-    return(data.table::data.table())
-  }
-  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
-  on.exit(DBI::dbDisconnect(conn), add = TRUE)
-  analyses_info <- DBI::dbGetQuery(conn, "SELECT analysis, replicate, file FROM Analyses")
-  sel_analyses <- unique(chrom_hd$analysis)
-  chrom_hd_list <- split(chrom_hd, chrom_hd$analysis)
-  chrom_list <- lapply(sel_analyses, function(aname) {
-    message("\U2699 Parsing chromatograms from ", aname, "...", appendLF = FALSE)
-    chrom <- rcpp_streamcraft_parse_ms_chromatograms(
-      list(
-        file = analyses_info$file[analyses_info$analysis == aname],
-        chromatograms_headers = chrom_hd_list[[aname]]
-      ),
-      as.integer(chrom_hd_list[[aname]]$index)
-    )
-    message(" Done!")
-    chrom$analysis <- aname
-    chrom$replicate <- analyses_info$replicate[analyses_info$analysis == aname]
-    chrom
-  })
-  chrom_dt <- data.table::rbindlist(chrom_list, fill = TRUE)
-  if (nrow(chrom_dt) == 0) {
-    message("\U2717 No chromatogram data found for the specified analyses!")
-    return(data.table::data.table())
-  }
-  if (is.numeric(minIntensity)) {
-    chrom_dt <- chrom_dt[chrom_dt$intensity > minIntensity, ]
-  }
-  if (is.numeric(rtmin) && is.numeric(rtmax)) {
-    if (rtmax > 0) chrom_dt <- chrom_dt[chrom_dt$rt >= rtmin & chrom_dt$rt <= rtmax]
-  }
-  data.table::setcolorder(chrom_dt, c("analysis", "replicate"))
-  chrom_dt
+  get_chromatograms(
+    x$project_mass_spec,
+    analyses = analyses,
+    chromatograms = chromatograms,
+    rtmin = rtmin,
+    rtmax = rtmax,
+    minIntensity = minIntensity
+  )
 }
 
 # MARK: plot_chromatograms
@@ -1139,43 +760,19 @@ plot_chromatograms.MassSpecAnalyses <- function(
     groupBy = "analysis",
     interactive = TRUE,
     colorPalette = NULL) {
-  chrom <- get_chromatograms(
-    x,
-    analyses,
-    chromatograms,
-    rtmin,
-    rtmax,
-    minIntensity
-  )
-  if (nrow(chrom) == 0) {
-    message("\U2717 No chromatogram data found for plotting!")
-    return(NULL)
-  }
-  if (!is.null(downsize) && downsize > 0 && nrow(chrom) > downsize) {
-    chrom <- as.data.table(chrom)
-    chrom$rt <- floor(chrom$rt / downsize) * downsize
-    chrom <- chrom[, lapply(.SD, function(col) {
-      if (is.numeric(col)) {
-        mean(col, na.rm = TRUE)
-      } else if (is.character(col)) {
-        col[1]
-      } else {
-        col[1]
-      }
-    }), by = .(rt, analysis, id)]
-  }
-  if (is.null(xLab)) xLab <- "Retention time / seconds"
-  if (is.null(yLab)) yLab <- "Intensity / counts"
-  .plot_lines_tabular_data(
-    data = chrom,
-    xvar = "rt",
-    yvar = "intensity",
-    groupBy = groupBy,
-    basicGroupBy = "id",
-    interactive = interactive,
-    title = title,
+  plot_chromatograms(
+    x$project_mass_spec,
+    analyses = analyses,
+    chromatograms = chromatograms,
+    rtmin = rtmin,
+    rtmax = rtmax,
+    minIntensity = minIntensity,
+    downsize = downsize,
     xLab = xLab,
     yLab = yLab,
+    title = title,
+    groupBy = groupBy,
+    interactive = interactive,
     colorPalette = colorPalette
   )
 }
@@ -1191,6 +788,93 @@ plot_chromatograms.MassSpecAnalyses <- function(
   missing_cols <- setdiff(cols, colnames(x))
   if (length(missing_cols) > 0) {
     stop("Missing required columns in analyses data.table: ", paste(missing_cols, collapse = ", "))
+  }
+  invisible(TRUE)
+}
+
+# MARK: shared-project helpers
+#' @noRd
+.normalize_massspec_project_db_path <- function(projectPath) {
+  checkmate::assert_character(projectPath, len = 1, null.ok = FALSE)
+  ext <- tolower(tools::file_ext(projectPath))
+  if (ext %in% c("duckdb", "db")) {
+    return(projectPath)
+  }
+  file.path(projectPath, "StreamFind.duckdb")
+}
+
+#' @noRd
+.project_id_from_db_path <- function(db) {
+  tools::file_path_sans_ext(basename(db))
+}
+
+#' @noRd
+.massspec_project_connection <- function(x) {
+  conn <- DBI::dbConnect(duckdb::duckdb(), x$db)
+  .ensure_massspec_project_views(conn, x)
+  conn
+}
+
+#' @noRd
+.ensure_massspec_project_views <- function(conn, x) {
+  project_id_sql <- as.character(DBI::dbQuoteString(conn, x$project_id))
+  DBI::dbExecute(conn, paste0(
+    "CREATE OR REPLACE TEMP VIEW Analyses AS ",
+    "SELECT analysis, replicate, blank, file_path AS file, format, type, NULL::VARCHAR AS polarity, ",
+    "number_spectra AS spectra_number, number_chromatograms AS chromatograms_number, concentration ",
+    "FROM MS_ANALYSES WHERE project_id = ", project_id_sql
+  ))
+  DBI::dbExecute(conn, paste0(
+    "CREATE OR REPLACE TEMP VIEW SpectraHeaders AS ",
+    "SELECT analysis, index, scan, array_length, level, mode, polarity, configuration, lowmz, highmz, bpmz, bpint, tic, rt, mobility, window_mz, ",
+    "window_mzlow AS pre_mzlow, window_mzhigh AS pre_mzhigh, precursor_mz AS pre_mz, precursor_charge AS pre_charge, precursor_intensity AS pre_intensity, activation_ce AS pre_ce ",
+    "FROM MS_SPECTRA_HEADERS WHERE project_id = ", project_id_sql
+  ))
+  DBI::dbExecute(conn, paste0(
+    "CREATE OR REPLACE TEMP VIEW ChromatogramsHeaders AS ",
+    "SELECT analysis, index, id, array_length, polarity, precursor_mz AS pre_mz, product_mz AS pro_mz, activation_ce AS pre_ce ",
+    "FROM MS_CHROMATOGRAMS_HEADERS WHERE project_id = ", project_id_sql
+  ))
+  invisible(TRUE)
+}
+
+#' @noRd
+.write_massspec_analyses_to_project <- function(project_mass_spec, analyses, truncate = FALSE) {
+  incoming_names <- vapply(analyses, function(a) a$name, "")
+  dup_incoming <- incoming_names[duplicated(incoming_names)]
+  if (length(dup_incoming) > 0) {
+    stop("Duplicate analyses within import batch: ", paste(unique(dup_incoming), collapse = ", "))
+  }
+  if (truncate) {
+    existing <- project_mass_spec$list_analyses()
+    if (nrow(existing) > 0) {
+      for (name in existing$analysis) {
+        project_mass_spec$remove_analysis(name)
+      }
+    }
+  }
+  analyses <- analyses[order(incoming_names)]
+  project_mass_spec$import_files(
+    file_paths = vapply(analyses, function(ana) ana$file, ""),
+    analyses = vapply(analyses, function(ana) ana$name, ""),
+    replicates = vapply(analyses, function(ana) {
+      if (is.null(ana$replicate) || is.na(ana$replicate)) "" else as.character(ana$replicate)
+    }, ""),
+    blanks = vapply(analyses, function(ana) {
+      if (is.null(ana$blank) || is.na(ana$blank)) "" else as.character(ana$blank)
+    }, "")
+  )
+
+  if (length(analyses) > 0) {
+    conn <- DBI::dbConnect(duckdb::duckdb(), project_mass_spec$db)
+    on.exit(DBI::dbDisconnect(conn), add = TRUE)
+    for (ana in analyses) {
+      concentration <- if (is.null(ana$concentration) || is.na(ana$concentration)) NA_real_ else as.numeric(ana$concentration)
+      DBI::dbExecute(conn,
+        "UPDATE MS_ANALYSES SET concentration = ? WHERE project_id = ? AND analysis = ?",
+        params = list(concentration, project_mass_spec$project_id, ana$name)
+      )
+    }
   }
   invisible(TRUE)
 }
@@ -1675,7 +1359,7 @@ plot_chromatograms.MassSpecAnalyses <- function(
     }
 
     cache_manager <- NULL
-    if (file.exists(cache_db)) cache_manager <- Cache(projectPath = dirname(cache_db))
+    if (file.exists(cache_db)) cache_manager <- Cache(db = cache_db)
 
     analyses <- lapply(files, function(x) {
       if (!is.null(cache_manager)) {

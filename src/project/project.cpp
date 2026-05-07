@@ -14,6 +14,26 @@ std::filesystem::path normalized_path(const std::string& value) {
   return std::filesystem::absolute(std::filesystem::path(value)).lexically_normal();
 }
 
+std::string normalize_domain(std::string value) {
+  if (value.empty()) {
+    return value;
+  }
+  std::transform(value.begin(), value.end(), value.begin(), [](unsigned char ch) {
+    return static_cast<char>(std::toupper(ch));
+  });
+  return value;
+}
+
+void validate_domain_code(const std::string& value) {
+  const std::string domain = normalize_domain(value);
+  if (domain.empty()) {
+    throw project::ERROR(project::ERROR_CODE::InvalidArgument, "Project domain must not be empty");
+  }
+  if (domain != "MS" && domain != "RAMAN" && domain != "STAT") {
+    throw project::ERROR(project::ERROR_CODE::InvalidArgument, "Unsupported project domain: " + value);
+  }
+}
+
 }  // namespace
 
 static std::shared_ptr<CONTEXT> require_context(const std::shared_ptr<CONTEXT>& ctx) {
@@ -27,6 +47,30 @@ static project::detail::CONNECTION_GUARD connect(const std::shared_ptr<CONTEXT>&
   return project::detail::CONNECTION_GUARD(require_context(ctx));
 }
 
+static void ensure_database_domain_compatible(const std::shared_ptr<CONTEXT>& ctx, const std::string& value) {
+  const std::string domain = normalize_domain(value);
+  if (domain.empty()) {
+    return;
+  }
+
+  auto guard = connect(ctx);
+  std::optional<std::string> existing;
+  project::detail::run_prepared(guard.get(),
+                                "SELECT domain FROM Project WHERE domain IS NOT NULL AND domain <> '' GROUP BY domain ORDER BY domain LIMIT 1",
+                                "load database domain",
+                                [](duckdb_prepared_statement) {},
+                                [&](duckdb_result& result) {
+                                  if (duckdb_row_count(&result) == 0) {
+                                    return;
+                                  }
+                                  existing = normalize_domain(project::detail::result_varchar(&result, 0, 0));
+                                });
+  if (existing && *existing != domain) {
+    throw ERROR(ERROR_CODE::InvalidArgument,
+                "Database domain is already set to " + *existing + " and cannot be changed to " + domain);
+  }
+}
+
 ERROR::ERROR(ERROR_CODE code, std::string message) : std::runtime_error(std::move(message)), code_(code) {}
 
 ERROR_CODE ERROR::code() const noexcept {
@@ -36,29 +80,39 @@ ERROR_CODE ERROR::code() const noexcept {
 void PROJECT::create_schema(const std::shared_ptr<CONTEXT>& ctx) {
   auto guard = connect(ctx);
   project::detail::run_sql(guard.get(),
-          "CREATE TABLE IF NOT EXISTS Project (project_id VARCHAR NOT NULL PRIMARY KEY, metadata JSON, workflow JSON, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
+          "CREATE TABLE IF NOT EXISTS Project (project_id VARCHAR NOT NULL PRIMARY KEY, domain VARCHAR, metadata JSON, workflow JSON, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
           "create Project table");
+
+  const auto columns = project::detail::table_columns(guard.get(), "Project");
+  const auto has_domain = std::find_if(columns.begin(), columns.end(), [](const project::detail::COLUMN_INFO& info) {
+    return info.name == "domain";
+  });
+  if (has_domain == columns.end()) {
+    project::detail::run_sql(guard.get(), "ALTER TABLE Project ADD COLUMN domain VARCHAR", "add Project domain column");
+  }
 }
 
 void PROJECT::validate_schema(const std::shared_ptr<CONTEXT>& ctx) {
   auto guard = connect(ctx);
-  project::detail::validate_columns(guard.get(), "Project", {{"project_id", "VARCHAR", true},
-                                                              {"metadata", "JSON", false},
-                                                              {"workflow", "JSON", false},
-                                                              {"created_at", "TIMESTAMP", false}});
+  project::detail::validate_columns_present(guard.get(), "Project", {{"project_id", "VARCHAR", true},
+                                                                      {"domain", "VARCHAR", false},
+                                                                      {"metadata", "JSON", false},
+                                                                      {"workflow", "JSON", false},
+                                                                      {"created_at", "TIMESTAMP", false}});
 }
 
 void PROJECT::ensure_row_exists(const std::shared_ptr<CONTEXT>& ctx) {
   auto guard = connect(ctx);
   project::detail::run_prepared(guard.get(),
-                "INSERT INTO Project (project_id, metadata, workflow) VALUES (?, ?, ?) ON CONFLICT(project_id) DO NOTHING",
+                "INSERT INTO Project (project_id, domain, metadata, workflow) VALUES (?, ?, ?, ?) ON CONFLICT(project_id) DO NOTHING",
                 "insert Project row",
                 [&](duckdb_prepared_statement statement) {
                   duckdb_bind_varchar(statement, 1, ctx->project_id.c_str());
+                  duckdb_bind_null(statement, 2);
                   const std::string metadata = project::detail::json_to_text(json::object());
                   const std::string workflow = project::detail::json_to_text(json::array());
-                  duckdb_bind_varchar(statement, 2, metadata.c_str());
-                  duckdb_bind_varchar(statement, 3, workflow.c_str());
+                  duckdb_bind_varchar(statement, 3, metadata.c_str());
+                  duckdb_bind_varchar(statement, 4, workflow.c_str());
                 },
                [](duckdb_result&) {});
 }
@@ -67,7 +121,7 @@ PROJECT_ROW PROJECT::read_row(const std::shared_ptr<CONTEXT>& ctx) {
   auto guard = connect(ctx);
   std::optional<PROJECT_ROW> out;
   project::detail::run_prepared(guard.get(),
-                                "SELECT project_id, metadata, workflow, created_at FROM Project WHERE project_id = ? LIMIT 1",
+                                "SELECT project_id, domain, metadata, workflow, created_at FROM Project WHERE project_id = ? LIMIT 1",
                                 "load Project row",
                                 [&](duckdb_prepared_statement statement) { duckdb_bind_varchar(statement, 1, ctx->project_id.c_str()); },
                                 [&](duckdb_result& result) {
@@ -76,9 +130,10 @@ PROJECT_ROW PROJECT::read_row(const std::shared_ptr<CONTEXT>& ctx) {
                                   }
                                   PROJECT_ROW row;
                                   row.project_id = project::detail::result_varchar(&result, 0, 0);
-                                  row.metadata = project::detail::json_from_text(project::detail::result_varchar(&result, 1, 0));
-                                  row.workflow = project::detail::json_from_text(project::detail::result_varchar(&result, 2, 0));
-                                  row.created_at = project::detail::result_varchar(&result, 3, 0);
+                                  row.domain = normalize_domain(project::detail::result_varchar(&result, 1, 0));
+                                  row.metadata = project::detail::json_from_text(project::detail::result_varchar(&result, 2, 0));
+                                  row.workflow = project::detail::json_from_text(project::detail::result_varchar(&result, 3, 0));
+                                  row.created_at = project::detail::result_varchar(&result, 4, 0);
                                   out = std::move(row);
                                 });
   if (!out) {
@@ -92,16 +147,27 @@ void PROJECT::update_row(const std::shared_ptr<CONTEXT>& ctx, const PROJECT_ROW&
     throw ERROR(ERROR_CODE::InvalidArgument, "Project row id does not match the active project");
   }
 
+  PROJECT_ROW value = row;
+  value.domain = normalize_domain(value.domain);
+  if (!value.domain.empty()) {
+    validate_domain_code(value.domain);
+  }
+
   auto guard = connect(ctx);
   project::detail::run_prepared(guard.get(),
-                "INSERT INTO Project (project_id, metadata, workflow) VALUES (?, ?, ?) ON CONFLICT(project_id) DO UPDATE SET metadata = excluded.metadata, workflow = excluded.workflow",
+                "INSERT INTO Project (project_id, domain, metadata, workflow) VALUES (?, ?, ?, ?) ON CONFLICT(project_id) DO UPDATE SET domain = excluded.domain, metadata = excluded.metadata, workflow = excluded.workflow",
                 "update Project row",
                 [&](duckdb_prepared_statement statement) {
-                  duckdb_bind_varchar(statement, 1, row.project_id.c_str());
-                  const std::string metadata = project::detail::json_to_text(row.metadata);
-                  const std::string workflow = project::detail::json_to_text(row.workflow);
-                  duckdb_bind_varchar(statement, 2, metadata.c_str());
-                  duckdb_bind_varchar(statement, 3, workflow.c_str());
+                  duckdb_bind_varchar(statement, 1, value.project_id.c_str());
+                  if (value.domain.empty()) {
+                    duckdb_bind_null(statement, 2);
+                  } else {
+                    duckdb_bind_varchar(statement, 2, value.domain.c_str());
+                  }
+                  const std::string metadata = project::detail::json_to_text(value.metadata);
+                  const std::string workflow = project::detail::json_to_text(value.workflow);
+                  duckdb_bind_varchar(statement, 3, metadata.c_str());
+                  duckdb_bind_varchar(statement, 4, workflow.c_str());
                 },
                [](duckdb_result&) {});
 }
@@ -129,8 +195,15 @@ PROJECT::PROJECT(std::string db_path, std::string project_id)
 
   auto guard = connect(ctx_);
   project::detail::run_sql(guard.get(),
-          "CREATE TABLE IF NOT EXISTS Project (project_id VARCHAR NOT NULL PRIMARY KEY, metadata JSON, workflow JSON, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
+          "CREATE TABLE IF NOT EXISTS Project (project_id VARCHAR NOT NULL PRIMARY KEY, domain VARCHAR, metadata JSON, workflow JSON, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)",
           "create Project table");
+  const auto columns = project::detail::table_columns(guard.get(), "Project");
+  const auto has_domain = std::find_if(columns.begin(), columns.end(), [](const project::detail::COLUMN_INFO& info) {
+    return info.name == "domain";
+  });
+  if (has_domain == columns.end()) {
+    project::detail::run_sql(guard.get(), "ALTER TABLE Project ADD COLUMN domain VARCHAR", "add Project domain column");
+  }
   project::detail::run_sql(guard.get(),
           "CREATE TABLE IF NOT EXISTS Cache (project_id VARCHAR NOT NULL, name VARCHAR NOT NULL, description VARCHAR NOT NULL, hash VARCHAR NOT NULL, data BLOB NOT NULL, created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY(project_id, hash))",
           "create Cache table");
@@ -139,14 +212,15 @@ PROJECT::PROJECT(std::string db_path, std::string project_id)
           "create AuditTrail table");
 
   project::detail::run_prepared(guard.get(),
-                "INSERT INTO Project (project_id, metadata, workflow) VALUES (?, ?, ?) ON CONFLICT(project_id) DO NOTHING",
+                "INSERT INTO Project (project_id, domain, metadata, workflow) VALUES (?, ?, ?, ?) ON CONFLICT(project_id) DO NOTHING",
                 "insert Project row",
                 [&](duckdb_prepared_statement statement) {
                   duckdb_bind_varchar(statement, 1, ctx_->project_id.c_str());
+                  duckdb_bind_null(statement, 2);
                   const std::string metadata = project::detail::json_to_text(json::object());
                   const std::string workflow = project::detail::json_to_text(json::array());
-                  duckdb_bind_varchar(statement, 2, metadata.c_str());
-                  duckdb_bind_varchar(statement, 3, workflow.c_str());
+                  duckdb_bind_varchar(statement, 3, metadata.c_str());
+                  duckdb_bind_varchar(statement, 4, workflow.c_str());
                 },
                [](duckdb_result&) {});
 }
@@ -160,6 +234,10 @@ const std::string& PROJECT::db_path() const noexcept {
 
 const std::string& PROJECT::project_id() const noexcept {
   return ctx_->project_id;
+}
+
+const std::shared_ptr<CONTEXT>& PROJECT::context() const noexcept {
+  return ctx_;
 }
 
 PROJECT_ROW PROJECT::row() const {
@@ -186,10 +264,29 @@ json PROJECT::metadata() const {
   return row().metadata;
 }
 
+std::string PROJECT::domain() const {
+  create_schema(ctx_);
+  return row().domain;
+}
+
 void PROJECT::set_metadata(const json& value) {
   create_schema(ctx_);
   PROJECT_ROW current = row();
   current.metadata = value;
+  update_row(ctx_, current);
+}
+
+void PROJECT::set_domain(const std::string& value) {
+  create_schema(ctx_);
+  const std::string normalized = normalize_domain(value);
+  validate_domain_code(normalized);
+  ensure_database_domain_compatible(ctx_, normalized);
+  PROJECT_ROW current = row();
+  if (!current.domain.empty() && current.domain != normalized) {
+    throw ERROR(ERROR_CODE::InvalidArgument,
+                "Project domain is already set to " + current.domain + " and cannot be changed to " + normalized);
+  }
+  current.domain = normalized;
   update_row(ctx_, current);
 }
 
@@ -209,6 +306,11 @@ void PROJECT::validate() const {
   create_schema(ctx_);
   validate_schema(ctx_);
   ensure_row_exists(ctx_);
+  const PROJECT_ROW current = row();
+  if (!current.domain.empty()) {
+    validate_domain_code(current.domain);
+    ensure_database_domain_compatible(ctx_, current.domain);
+  }
 }
 
 std::vector<std::string> PROJECT::list_tables() const {
@@ -270,6 +372,9 @@ PROJECT* PROJECT::copy(std::string db_path, std::string project_id) const {
   auto target = std::make_unique<PROJECT>(std::move(db_path), std::move(project_id));
 
   const PROJECT_ROW source_row = row();
+  if (!source_row.domain.empty()) {
+    target->set_domain(source_row.domain);
+  }
   target->set_metadata(source_row.metadata);
   target->set_workflow(source_row.workflow);
 

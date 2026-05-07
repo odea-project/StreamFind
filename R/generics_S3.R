@@ -432,26 +432,26 @@ get_spectra <- function(x, ...) {
   UseMethod("get_spectra")
 }
 
-#' @title Generic `get_spectra_bpc`
-#' @description S3 generic to get spectra BPC from `x`.
-#' @param x An object from which the spectra BPC will be retrieved.
+#' @title Generic `get_raw_spectra_bpc`
+#' @description S3 generic to get raw spectra BPC from `x`.
+#' @param x An object from which the raw spectra BPC will be retrieved.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
 #'
-get_spectra_bpc <- function(x, ...) {
-  UseMethod("get_spectra_bpc")
+get_raw_spectra_bpc <- function(x, ...) {
+  UseMethod("get_raw_spectra_bpc")
 }
 
-#' @title Generic `get_spectra_eic`
-#' @description S3 generic to get spectra EIC from `x`.
-#' @param x An object from which the spectra EIC will be retrieved.
+#' @title Generic `get_raw_spectra_eic`
+#' @description S3 generic to get raw spectra EIC from `x`.
+#' @param x An object from which the raw spectra EIC will be retrieved.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
 #'
-get_spectra_eic <- function(x, ...) {
-  UseMethod("get_spectra_eic")
+get_raw_spectra_eic <- function(x, ...) {
+  UseMethod("get_raw_spectra_eic")
 }
 
 #' @title Generic `get_spectra_headers`
@@ -476,26 +476,26 @@ get_spectra_matrix <- function(x, ...) {
   UseMethod("get_spectra_matrix")
 }
 
-#' @title Generic `get_spectra_ms1`
-#' @description S3 generic to get spectra MS1 from `x`.
-#' @param x An object from which the spectra MS1 will be retrieved.
+#' @title Generic `get_raw_spectra_ms1`
+#' @description S3 generic to get raw spectra MS1 from `x`.
+#' @param x An object from which the raw spectra MS1 will be retrieved.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
 #'
-get_spectra_ms1 <- function(x, ...) {
-  UseMethod("get_spectra_ms1")
+get_raw_spectra_ms1 <- function(x, ...) {
+  UseMethod("get_raw_spectra_ms1")
 }
 
-#' @title Generic `get_spectra_ms2`
-#' @description S3 generic to get spectra MS2 from `x`.
-#' @param x An object from which the spectra MS2 will be retrieved.
+#' @title Generic `get_raw_spectra_ms2`
+#' @description S3 generic to get raw spectra MS2 from `x`.
+#' @param x An object from which the raw spectra MS2 will be retrieved.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
 #'
-get_spectra_ms2 <- function(x, ...) {
-  UseMethod("get_spectra_ms2")
+get_raw_spectra_ms2 <- function(x, ...) {
+  UseMethod("get_raw_spectra_ms2")
 }
 
 #' @title Generic `get_spectra_peaks`
@@ -509,15 +509,15 @@ get_spectra_peaks <- function(x, ...) {
   UseMethod("get_spectra_peaks")
 }
 
-#' @title Generic `get_spectra_tic`
-#' @description S3 generic to get spectra TIC from `x`.
-#' @param x An object from which the spectra TIC will be retrieved.
+#' @title Generic `get_raw_spectra_tic`
+#' @description S3 generic to get raw spectra TIC from `x`.
+#' @param x An object from which the raw spectra TIC will be retrieved.
 #' @param ... Additional arguments passed to the method.
 #' @export
 #' @noRd
 #'
-get_spectra_tic <- function(x, ...) {
-  UseMethod("get_spectra_tic")
+get_raw_spectra_tic <- function(x, ...) {
+  UseMethod("get_raw_spectra_tic")
 }
 
 #' @title Generic `get_suspects`

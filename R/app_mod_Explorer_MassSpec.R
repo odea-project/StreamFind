@@ -366,13 +366,13 @@
         selected <- input$spectraAnalysesTable_rows_selected
         if (length(selected) == 0) return()
         if (input$summary_plot_type %in% "TIC") {
-          csv <- get_spectra_tic(
+          csv <- get_raw_spectra_tic(
             reactive_analyses(),
             analyses = selected,
             level = input$summary_plot_level
           )
         } else if (input$summary_plot_type %in% "BPC") {
-          csv <- get_spectra_bpc(
+          csv <- get_raw_spectra_bpc(
             reactive_analyses(),
             analyses = selected,
             level = input$summary_plot_level

@@ -28,7 +28,7 @@ namespace nts
 
   // MARK: merge_MS_TARGETS_SPECTRA
   MS_SPECTRUM merge_MS_TARGETS_SPECTRA(
-      const ms::MS_TARGETS_SPECTRA &spectra,
+      const mass_spec::MS_TARGETS_SPECTRA &spectra,
       const float &mzClust,
       const float &presence);
 
@@ -687,13 +687,13 @@ namespace nts
     std::vector<std::string> replicates;
     std::vector<std::string> blanks;
     std::vector<std::string> files;
-    std::vector<ms::MS_SPECTRA_HEADERS> headers;
+    std::vector<mass_spec::MS_SPECTRA_HEADERS> headers;
     std::vector<FEATURES> features;
     std::vector<SUSPECTS> suspects;
     std::vector<INTERNAL_STANDARDS> internal_standards;
 
     NTS_DATA(const NTS_INFO &info,
-              const std::vector<ms::MS_SPECTRA_HEADERS> &spectra_headers,
+              const std::vector<mass_spec::MS_SPECTRA_HEADERS> &spectra_headers,
              const std::vector<FEATURES> &feature_list,
              const std::vector<SUSPECTS> &suspects_cpp = std::vector<SUSPECTS>(),
              const std::vector<INTERNAL_STANDARDS> &internal_standards_cpp = std::vector<INTERNAL_STANDARDS>())
@@ -720,7 +720,7 @@ namespace nts
       {
         for (size_t i = 0; i < number_analyses; i++)
         {
-          ms::MS_FILE ana(files[i]);
+          mass_spec::MS_FILE ana(files[i]);
           headers[i] = ana.get_spectra_headers();
         }
       }

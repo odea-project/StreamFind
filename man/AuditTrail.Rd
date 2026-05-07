@@ -39,7 +39,7 @@ All typical list and data-frame operations are returned for queries. This is the
 }
 \section{Table Schema}{
 
-Table name: \code{AuditTrail}; columns: operation_type (str), object_type (str), operation_details (json/str), timestamp.
+Table name: \code{AuditTrail}; columns: operation_type (str), object_type (str), operation_details (json/str), created_at.
 }
 
 \section{Usage}{

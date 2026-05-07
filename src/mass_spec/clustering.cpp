@@ -10,7 +10,7 @@
 #include <stdexcept>
 #include <ostream>
 
-namespace ms {
+namespace mass_spec {
 namespace clustering {
 
 SpectraClusterOutput cluster_spectra(

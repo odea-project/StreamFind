@@ -5,7 +5,7 @@
 #include <string>
 #include <map>
 
-namespace ms {
+namespace mass_spec {
 namespace clustering {
 
 /// Cluster spectra by m/z threshold and presence filter

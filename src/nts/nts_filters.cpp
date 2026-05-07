@@ -775,10 +775,10 @@ namespace nts::filter_features_ms2
     {
       if (encoded.empty())
         return {};
-      std::string raw = ms::utils::decode_base64(encoded);
+      std::string raw = mass_spec::utils::decode_base64(encoded);
       if (raw.empty())
         return {};
-      return ms::utils::decode_little_endian_to_float(raw, 4); // 4 bytes = float32
+      return mass_spec::utils::decode_little_endian_to_float(raw, 4); // 4 bytes = float32
     }
 
     // Cluster a flat list of (mz, intensity) pairs from multiple features/analyses.

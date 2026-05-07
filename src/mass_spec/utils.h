@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace ms {
+namespace mass_spec {
 namespace utils {
 
 std::string encode_little_endian_from_float(const std::vector<float>& input, int precision);
